@@ -15,6 +15,8 @@ issue1921/59043_regulatory_analysis.hwp	1
 issue7062/tac_object_host_line_height.hwp	1
 issue7500/tac_table_host_spaces.hwp	3
 issue8755/46551_road_traffic_rule_amendment.hwp	2
+# #9384 용지 높이를 줄인 대조 HWP의 마지막 행 글자 한 줄은 한컴 2020 인쇄에서도 용지 밖이다.
+pr9349-cell-floats/photo-a5-height.hwp	1
 rowbreak-problem-pages.hwpx	14
 task2097/75544_pii_bunseok.hwpx	2
 issue7216/tall_table_before.hwpx	21

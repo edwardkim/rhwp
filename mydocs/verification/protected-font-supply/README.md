@@ -31,6 +31,8 @@
   `HMKMG.otf`를 유지한다.
 - 개요 번호(`outline`)와 종합부동산세법(`issue7905`)은 매니페스트에 기록한 OTF 글꼴을 사용한다.
   같은 파일명의 설치본도 해시가 다를 수 있으므로 Native·WASM에서 파일 순서와 SHA-256을 확인한다.
+- 중첩 표(`nested`)의 Native·WASM은 21개 파일의 순서를 유지한다. 두 경로에서 17쪽을 확인한
+  `H2MJRE.TTF`, `HBATANG.TTF`, `HDOTUM.TTF`, `gulim.TTC`, `pala.ttf`의 문서별 해시 쌍을 허용한다.
 - `font_environment`가 있으면 해당 JSON을 `--font-environment`로 지정한다.
 - 선택 우선순위는 manifest의 `selection_order`를 따른다.
 - `accepted_font_set`, `accepted_font_environment`와 `records/`는 수용 당시의 비교 근거이며, 현재 전쪽 재검증 상태는

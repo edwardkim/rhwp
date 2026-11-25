@@ -1937,6 +1937,8 @@ pub(super) struct CellUnit {
     nested_row: Option<usize>,
     /// 같은 행 생산자가 계상한 호스트 공간. 자식 내용 컷의 물리 높이와 분리한다.
     nested_row_flow_edges: Option<reflowed_nested_row::NestedRowFlowEdges>,
+    /// 이 유닛에서 실제로 잘릴 때만 다시 닫히는 자식 표의 아래 바깥여백.
+    overlay_row: Option<OverlayChildRow>,
     /// [#4069] `CELL` 분할 중첩 표의 한 행을 셀별 cursor로 더 잘게 나눈 조각.
     /// 바깥 CellUnit 컷이 이 조각을 선택하면 렌더러도 같은 자식 컷을 사용한다.
     nested_table_fragment: Option<NestedTableUnitCut>,
@@ -1974,7 +1976,17 @@ pub(super) struct CellUnit {
     carried_float_lead: f64,
 }
 
+#[derive(Debug, Clone, Copy)]
+struct OverlayChildRow {
+    control_index: usize,
+    bottom_margin_at_cut: Option<f64>,
+}
+
 impl CellUnit {
+    fn overlay_cut_bottom_margin(&self) -> Option<f64> {
+        self.overlay_row.and_then(|row| row.bottom_margin_at_cut)
+    }
+
     /// 원본 개체 프레임의 남은 빈 띠는 앞 글줄의 문단을 참조하되 그 잉크를 소유하지 않는다.
     pub(super) fn is_stored_blank_frame_tail(&self) -> bool {
         self.empty_spacer
@@ -3427,7 +3439,8 @@ impl LayoutEngine {
         if !matches!(
             common.text_wrap,
             TextWrap::Square | TextWrap::Tight | TextWrap::Through
-        ) {
+        ) || crate::renderer::float_placement::cell_object_detached_from_cell_flow(common)
+        {
             return 0.0;
         }
 
@@ -3448,6 +3461,26 @@ impl LayoutEngine {
                 _ => 0.0,
             })
             .fold(0.0, f64::max)
+    }
+
+    /// 칸 문단의 자리차지 흐름 높이. 저장 줄 없는 빈 문단에서 '겹침 허용 안 함' 그림이
+    /// 앞 그림 아래로 쌓이면 그 쌓인 높이, 아니면 그림 높이의 최댓값이다.
+    fn cell_paragraph_top_and_bottom_flow_height(
+        &self,
+        source: &Paragraph,
+        controls: &[Control],
+        inner_width: f64,
+    ) -> f64 {
+        let max = self.paragraph_top_and_bottom_non_inline_flow_height(controls);
+        match crate::renderer::float_placement::unstored_cell_topbottom_stack_height(
+            source,
+            inner_width,
+            self.dpi,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(height) => height.map_or(max, |height| height.max(max)),
+            Err(never) => match never {},
+        }
     }
 
     /// 빈 호스트의 그림·캡션은 행 컷 장부가 이미 한 번 예약한 문단 전진을 쓴다.
@@ -3609,8 +3642,13 @@ impl LayoutEngine {
     ///
     /// `TopAndBottom` 은 여기서 제외한 채로 둔다. 그 개체는 줄을 실제로 밀어 한컴이
     /// 저장 vpos 에 흡수하므로(#1486 악보 셀), 여기서 다시 세면 이중 계상이 된다.
+    ///
+    /// 세로 기준이 종이·쪽인 개체는 칸이 아니라 쪽 좌표에 놓이므로 세지 않는다
+    /// ([`crate::renderer::float_placement::cell_object_detached_from_cell_flow`]).
     fn cell_wrap_object_visual_bottom(&self, common: &CommonObjAttr) -> f64 {
-        if common.treat_as_char {
+        if common.treat_as_char
+            || crate::renderer::float_placement::cell_object_detached_from_cell_flow(common)
+        {
             return 0.0;
         }
         if !matches!(
@@ -5217,6 +5255,7 @@ impl LayoutEngine {
             );
         }
 
+        tree.order_cell_overlay_nodes(&mut table_node);
         col_node.children.push(table_node);
 
         // ── 7. 캡션 렌더링 ──
@@ -8835,6 +8874,9 @@ impl LayoutEngine {
                 );
             let mut no_overlap_placer =
                 crate::renderer::float_placement::NoOverlapSquarePlacer::default();
+            // 같은 문단의 '겹침 허용 안 함' 자리차지 그림 쌓기(저장 줄 없는 빈 문단).
+            let mut no_overlap_topbottom_placer =
+                crate::renderer::float_placement::NoOverlapSquarePlacer::default();
 
             for (ctrl_idx, ctrl) in source_controls.iter().enumerate() {
                 match ctrl {
@@ -9822,6 +9864,15 @@ impl LayoutEngine {
                                 pic_y,
                                 self.dpi,
                             );
+                            // 한컴은 겹침 허용 안 함인 자리차지 그림이 같은 문단 앞 그림과 가로로
+                            // 겹치면 그 아래로 내린다(가로로 떨어진 그림은 나란히 둔다).
+                            let pic_y = no_overlap_topbottom_placer.place_topbottom_picture(
+                                &cell.paragraphs[cp_idx],
+                                &pic.common,
+                                pic_x,
+                                pic_y,
+                                self.dpi,
+                            );
                             let pic_x = pic_x + picture_box.map_or(0.0, |frame| frame.margin_left);
                             let pic_y = pic_y + picture_box.map_or(0.0, |frame| frame.margin_top);
                             let pic_area = LayoutRect {
@@ -9882,12 +9933,15 @@ impl LayoutEngine {
                         // Shape/TextBox는 control entry 뒤의 physical fragment에서도
                         // 잔여 내부 문단을 계속 렌더한다. entry-only 판정은 원자적으로
                         // 소유하는 Picture에만 적용한다.
+                        // 종이·쪽 기준 개체도 흐름을 전진시키지 않는 겹침 개체다.
                         let owns_overlay_anchor = start_line == 0
                             && end_line > start_line
-                            && matches!(
+                            && (matches!(
                                 shape.common().text_wrap,
                                 TextWrap::InFrontOfText | TextWrap::BehindText
-                            );
+                            ) || crate::renderer::float_placement::cell_object_detached_from_cell_flow(
+                                shape.common(),
+                            ));
                         // Keep zero-flow overlays with their first source line;
                         // continuation-only text must not repeat the object.
                         if !shape.common().treat_as_char
@@ -10188,9 +10242,21 @@ impl LayoutEngine {
                             {
                                 shape_for_layout.common_mut().vertical_offset = 0;
                             }
+                            // 종이·쪽 기준 개체는 칸 흐름 밖이라 칸 높이가 담지 않는다. 칸 clip 에
+                            // 잘리지 않도록 표 노드에 싣는다(칸 밖 부동 그림과 같은 자리).
+                            let detached =
+                                crate::renderer::float_placement::cell_object_detached_from_cell_flow(
+                                    shape.common(),
+                                );
+                            let shape_parent = if detached {
+                                &mut *table_node
+                            } else {
+                                &mut *cell_node
+                            };
+                            let first_new_child = shape_parent.children.len();
                             self.layout_cell_shape(
                                 tree,
-                                cell_node,
+                                shape_parent,
                                 &shape_for_layout,
                                 &inner_area,
                                 shape_anchor_y,
@@ -10201,6 +10267,11 @@ impl LayoutEngine {
                                 clamp_header_negative_para_offset,
                                 table_cell_ctx,
                             );
+                            if detached {
+                                for child in &shape_parent.children[first_new_child..] {
+                                    tree.mark_cell_overlay_node(child.id, shape.common().text_wrap);
+                                }
+                            }
                             if matches!(shape.common().text_wrap, TextWrap::TopAndBottom) {
                                 rendered_top_and_bottom_non_inline = true;
                             }
@@ -11226,8 +11297,11 @@ impl LayoutEngine {
                 ) {
                     para_y = para_y_before_compose + advance;
                 } else {
-                    para_y +=
-                        self.paragraph_top_and_bottom_non_inline_flow_height(&source_controls);
+                    para_y += self.cell_paragraph_top_and_bottom_flow_height(
+                        &cell.paragraphs[cp_idx],
+                        source_controls,
+                        inner_area.width,
+                    );
                 }
             }
             let tac_host_closing_spacing =
@@ -11855,9 +11929,22 @@ impl LayoutEngine {
                     &cell.paragraphs,
                     styles,
                 );
+                // 그림 띠 아래 빈 앵커 줄은 문단 글자 크기의 줄이다(행 높이 측정과 같은 판정).
+                // 400HU 자리 줄로 세면 가운데 정렬이 그 차이의 절반만큼 그림을 내린다.
+                if crate::renderer::float_placement::unstored_multi_flow_picture_cell(table, cell) {
+                    if let Some(anchor) = crate::renderer::float_placement::unstored_anchor_line_px(
+                        &cell.paragraphs[0],
+                        styles,
+                    ) {
+                        text_height = text_height.max(anchor);
+                    }
+                }
                 for para in &cell.paragraphs {
-                    text_height +=
-                        self.paragraph_top_and_bottom_non_inline_flow_height(&para.controls);
+                    text_height += self.cell_paragraph_top_and_bottom_flow_height(
+                        para,
+                        &para.controls,
+                        inner_width,
+                    );
                     for ctrl in &para.controls {
                         match ctrl {
                             Control::Picture(pic) => {
@@ -11968,6 +12055,7 @@ impl LayoutEngine {
                     // a saved extent; do not rebuild a separate nested sum.
                     self.cell_units_content_height(cell, table, styles)
                         .max(wrap_object_bottom)
+                        .max(self.cell_overlay_table_reach(cell, table, styles))
                 } else {
                     composed_height
                         .max(vpos_height)
@@ -12667,6 +12755,17 @@ impl LayoutEngine {
 
     fn nested_table_is_overlay(&self, table: &crate::model::table::Table) -> bool {
         crate::renderer::float_placement::nested_table_is_overlay(table)
+    }
+
+    /// 글 앞/뒤 표는 칸 안의 글줄과 겹친다. 저장본은 다음 줄이 실제 호스트 줄의
+    /// 높이·간격만큼 전진한 경우에만 같은 흐름으로 본다. 별도의 저장 조각은 유지한다.
+    pub(super) fn nested_table_takes_no_flow(
+        &self,
+        cell: &crate::model::table::Cell,
+        para_idx: usize,
+        table: &crate::model::table::Table,
+    ) -> bool {
+        crate::renderer::float_placement::nested_table_takes_no_flow(cell, para_idx, table)
     }
 
     /// 셀 유닛 컷 `cut`(없으면 셀 전체)이 문단 `para_idx` 의 모든 유닛 — host 글줄과 중첩
@@ -16473,6 +16572,7 @@ impl LayoutEngine {
                     vis_end: li + 1,
                     nested_row: None,
                     nested_row_flow_edges: None,
+                    overlay_row: None,
                     nested_table_fragment: None,
                     mixed_nested_fragment: false,
                     mixed_nested_trailing: false,
@@ -16517,6 +16617,7 @@ impl LayoutEngine {
                 vis_end: 1,
                 nested_row: None,
                 nested_row_flow_edges: None,
+                overlay_row: None,
                 nested_table_fragment: None,
                 mixed_nested_fragment: false,
                 mixed_nested_trailing: false,
@@ -17020,6 +17121,7 @@ impl LayoutEngine {
                         vis_end: 0,
                         nested_row: None,
                         nested_row_flow_edges: None,
+                        overlay_row: None,
                         nested_table_fragment: None,
                         mixed_nested_fragment: false,
                         mixed_nested_trailing: false,
@@ -17060,6 +17162,7 @@ impl LayoutEngine {
                     vis_end: 0,
                     nested_row: None,
                     nested_row_flow_edges: None,
+                    overlay_row: None,
                     nested_table_fragment: None,
                     mixed_nested_fragment: false,
                     mixed_nested_trailing: false,
@@ -17874,9 +17977,11 @@ impl LayoutEngine {
                     None => with_tac(raw_lh),
                 }
             };
-            let has_table_in_para = source_controls
-                .iter()
-                .any(|c| matches!(c, Control::Table(_)));
+            // 저장 줄 없는 문단의 글 앞/뒤 중첩 표는 행 나눔 유닛에 세지 않는다.
+            let has_table_in_para = source_controls.iter().any(|c| {
+                matches!(c, Control::Table(t)
+                    if !self.nested_table_takes_no_flow(cell, pi, t))
+            });
             let frame_owns_table_bands = comp.frame_owns_multiple_inline_tables()
                 && source_controls.iter().enumerate().all(|(index, control)| {
                     !matches!(control, Control::Table(_)) || comp.frame_owns_inline_table(index)
@@ -18599,6 +18704,7 @@ impl LayoutEngine {
                                         vis_end: line_count.max(1),
                                         nested_row: Some(ri),
                                         nested_row_flow_edges: Some(flow_edges),
+                                        overlay_row: None,
                                         nested_table_fragment: Some(fragment),
                                         mixed_nested_fragment: false,
                                         mixed_nested_trailing: false,
@@ -18792,6 +18898,7 @@ impl LayoutEngine {
                             vis_end: line_count.max(1),
                             nested_row: Some(ri),
                             nested_row_flow_edges: Some(flow_edges),
+                            overlay_row: None,
                             // Repeated headers require a child row cursor even
                             // when every body row is atomic. A scalar viewport
                             // cannot represent the additional header ownership.
@@ -19067,6 +19174,7 @@ impl LayoutEngine {
                                 vis_end: line_count,
                                 nested_row: None,
                                 nested_row_flow_edges: None,
+                                overlay_row: None,
                                 nested_table_fragment: None,
                                 mixed_nested_fragment: true,
                                 mixed_nested_trailing: fragment.trailing,
@@ -19203,6 +19311,7 @@ impl LayoutEngine {
                             vis_end: li + 1,
                             nested_row: None,
                             nested_row_flow_edges: None,
+                            overlay_row: None,
                             nested_table_fragment: None,
                             mixed_nested_fragment: false,
                             mixed_nested_trailing: false,
@@ -19372,6 +19481,7 @@ impl LayoutEngine {
                                     vis_end: line_count,
                                     nested_row: Some(fragment.row),
                                     nested_row_flow_edges: None,
+                                    overlay_row: None,
                                     nested_table_fragment: Some(fragment.cut),
                                     mixed_nested_fragment: false,
                                     mixed_nested_trailing: false,
@@ -19485,6 +19595,7 @@ impl LayoutEngine {
                                 vis_end: line_count,
                                 nested_row: None,
                                 nested_row_flow_edges: None,
+                                overlay_row: None,
                                 nested_table_fragment: None,
                                 mixed_nested_fragment: true,
                                 mixed_nested_trailing: fragment.trailing,
@@ -19566,6 +19677,7 @@ impl LayoutEngine {
                 let nested_h: f64 = source_controls
                     .iter()
                     .map(|ctrl| match ctrl {
+                        Control::Table(t) if self.nested_table_takes_no_flow(cell, pi, t) => 0.0,
                         Control::Table(t) => {
                             self.calc_nested_table_height(t, styles)
                                 + if host_is_cell_last_para {
@@ -19608,8 +19720,12 @@ impl LayoutEngine {
                                 .unwrap_or(0.0)
                             }
                     } else if crate::renderer::para_has_no_stored_line_segs(p)
-                        && source_controls.is_empty()
+                        && source_controls.iter().all(|ctrl| {
+                            matches!(ctrl, Control::Table(t)
+                                if self.nested_table_takes_no_flow(cell, pi, t))
+                        })
                     {
+                        // 글 앞/뒤 표만 든 문단도 빈 문단과 같은 줄 하나를 차지한다.
                         // [#2169] NO_LS 순수 빈 문단 = 완전한 em 줄박스 (한글 공식:
                         // 80168 r4 c2 = 10줄×em + 9gap 정확). 비마지막 문단은
                         // fs×ls%(gap 포함 동치), 셀 마지막 문단은 em.
@@ -19754,6 +19870,7 @@ impl LayoutEngine {
                     },
                     nested_row: None,
                     nested_row_flow_edges: None,
+                    overlay_row: None,
                     nested_table_fragment: None,
                     mixed_nested_fragment: false,
                     mixed_nested_trailing: false,
@@ -19925,6 +20042,7 @@ impl LayoutEngine {
                         },
                         nested_row: None,
                         nested_row_flow_edges: None,
+                        overlay_row: None,
                         nested_table_fragment: None,
                         mixed_nested_fragment: false,
                         mixed_nested_trailing: false,
@@ -20302,7 +20420,258 @@ impl LayoutEngine {
         }
         self.preserve_source_page_frame_extents(cell, table, styles, &mut units);
         self.preserve_stored_blank_opening_frame(cell, table, styles, &mut units);
+        self.append_overlay_table_reach_units(cell, styles, &mut units);
         units
+    }
+
+    /// 저장 줄 없는 문단의 글 앞/뒤 중첩 표는 글줄을 밀지 않지만, 표가 글줄보다 길면 칸은
+    /// 표 끝까지 이어진다. 칸이 쪽에서 나뉠 때 남은 몫이 다음 쪽 조각으로 가도록, 흐름 유닛
+    /// 끝에서 표 끝까지를 높이만 가진 유닛으로 잇는다. 유닛은 중첩 표의 행 조각(행 안 컷)
+    /// 또는 행을 하나씩 싣고, 나뉜 칸의 다음 쪽 조각은 이 유닛으로 중첩 표를 그 조각부터
+    /// 이어 그린다. 유닛은 글줄을 갖지 않으므로(`vis_start == vis_end`) 문단 소유를 바꾸지
+    /// 않는다.
+    fn append_overlay_table_reach_units(
+        &self,
+        cell: &crate::model::table::Cell,
+        styles: &ResolvedStyleSet,
+        units: &mut Vec<CellUnit>,
+    ) {
+        let mut origin = 0.0f64;
+        let mut seen_para: Option<usize> = None;
+        // (표 바깥 상자 끝, 조각들(끝 위치, 행, 행 안 컷), 호스트 문단)
+        type Piece = (f64, usize, Option<NestedTableUnitCut>);
+        let mut reach: Option<(f64, Vec<Piece>, usize, OverlayChildRow)> = None;
+        for unit in units.iter() {
+            if seen_para != Some(unit.para_idx) {
+                seen_para = Some(unit.para_idx);
+                if let Some(para) = cell.paragraphs.get(unit.para_idx) {
+                    for (control_index, control) in para.controls.iter().enumerate() {
+                        let Control::Table(child) = control else {
+                            continue;
+                        };
+                        if !self.nested_table_takes_no_flow(cell, unit.para_idx, child) {
+                            continue;
+                        }
+                        let Some(frame) =
+                            crate::renderer::float_placement::nested_overlay_outer_frame(
+                                child,
+                                origin,
+                                self.calc_nested_table_height(child, styles),
+                                self.dpi,
+                            )
+                        else {
+                            continue;
+                        };
+                        if reach.as_ref().is_some_and(|(end, ..)| *end >= frame.end) {
+                            continue;
+                        }
+                        // 행 안쪽까지 나눈 조각(저장 레이아웃)이 있으면 그 경계로, 없으면
+                        // 행 경계로 나눈다.
+                        let mut edge = frame.start
+                            + hwpunit_to_px(i32::from(child.outer_margin_top), self.dpi);
+                        let pieces: Vec<Piece> = if let Some(fragments) =
+                            self.text_host_nested_row_fragments(child, styles)
+                        {
+                            // 행 안에 실제 컷이 있을 때만 재귀 컷을 넘긴다. 온전한 행은
+                            // 행 범위 자체가 소유하며 부모 칸의 남은 띠를 더하지 않는다.
+                            let splits_row =
+                                fragments.iter().any(|fragment| !fragment.cut.terminal);
+                            fragments
+                                .into_iter()
+                                .map(|fragment| {
+                                    edge += fragment.height;
+                                    (edge, fragment.row, splits_row.then_some(fragment.cut))
+                                })
+                                .collect()
+                        } else {
+                            let ncol = child.col_count as usize;
+                            let nrow = child.row_count as usize;
+                            let gap = hwpunit_to_px(i32::from(child.cell_spacing), self.dpi);
+                            self.resolve_row_heights(child, ncol, nrow, None, styles, true)
+                                .into_iter()
+                                .enumerate()
+                                .map(|(row, height)| {
+                                    edge += height + if row + 1 < nrow { gap } else { 0.0 };
+                                    (edge, row, None)
+                                })
+                                .collect()
+                        };
+                        reach = Some((
+                            frame.end,
+                            pieces,
+                            unit.para_idx,
+                            OverlayChildRow {
+                                control_index,
+                                bottom_margin_at_cut: Some(hwpunit_to_px(
+                                    i32::from(child.outer_margin_bottom),
+                                    self.dpi,
+                                )),
+                            },
+                        ));
+                    }
+                }
+            }
+            origin += unit.height;
+        }
+        let Some((end, pieces, host_para, owner)) = reach else {
+            return;
+        };
+        // 높이 유닛은 표의 호스트 문단에 속하되 글줄은 갖지 않는다(호스트 글줄 끝 위치).
+        let host_vis_end = units
+            .iter()
+            .filter(|unit| unit.para_idx == host_para)
+            .map(|unit| unit.vis_end)
+            .max()
+            .unwrap_or(0);
+        // 선언 칸 높이는 행의 최소 물리 높이다. 자식 표에서 확인한 실제
+        // 끝을 그 값으로 잘라 내면 이어받는 조각의 끝 행과 바깥 괘선이 어긋난다.
+        if end <= origin + 0.5 {
+            return;
+        }
+        // 조각마다 유닛 하나. 흐름 끝보다 위에서 끝나는 조각은 높이 0(호스트 줄과 같은 조각에
+        // 놓인다), 흐름 끝에 걸친 조각은 흐름 끝부터 센다. 마지막 조각은 표 끝까지 간다.
+        let piece_count = pieces.len();
+        let mut cursor = origin;
+        for (index, (edge, row, cut)) in pieces.into_iter().enumerate() {
+            let stop = if index + 1 == piece_count {
+                end
+            } else {
+                edge.clamp(cursor, end)
+            };
+            units.push(CellUnit {
+                height: (stop - cursor).max(0.0),
+                following_line_advance: 0.0,
+                reflowed_line_slot: false,
+                hard_break_before: false,
+                stored_frame_break_before: false,
+                page_frame_reset_before: false,
+                vpos_gap_before: false,
+                para_idx: host_para,
+                vis_start: host_vis_end,
+                vis_end: host_vis_end,
+                nested_row: Some(row),
+                nested_row_flow_edges: None,
+                overlay_row: Some(OverlayChildRow {
+                    bottom_margin_at_cut: if index + 1 < piece_count {
+                        owner.bottom_margin_at_cut
+                    } else {
+                        None
+                    },
+                    ..owner
+                }),
+                nested_table_fragment: cut,
+                mixed_nested_fragment: false,
+                mixed_nested_trailing: false,
+                mixed_nested_content_height: 0.0,
+                mixed_nested_recursive: false,
+                mixed_nested_starts_after_table: false,
+                mixed_nested_source_para_idx: None,
+                recursive_block_prelude_role: RecursiveBlockPreludeRole::None,
+                top_and_bottom_flow: false,
+                empty_spacer: false,
+                owns_stored_closing_line: false,
+                nested_host_closing_line_height: 0.0,
+                non_inline_control_range: None,
+                host_trailing_spacing_charged: false,
+                carried_float_lead: 0.0,
+            });
+            cursor = cursor.max(stop);
+        }
+    }
+
+    /// A whole child row may close at a page boundary within the unused part
+    /// of its declared height. Every cell's content and padding must still fit.
+    /// A rowspan or a recursive text cut needs its own row plan.
+    fn compressible_overlay_row_height(
+        &self,
+        cell: &crate::model::table::Cell,
+        unit: &CellUnit,
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        let (Some(owner), Some(row), None) = (
+            unit.overlay_row,
+            unit.nested_row,
+            &unit.nested_table_fragment,
+        ) else {
+            return 0.0;
+        };
+        let Some(Control::Table(child)) = cell
+            .paragraphs
+            .get(unit.para_idx)
+            .and_then(|para| para.controls.get(owner.control_index))
+        else {
+            return 0.0;
+        };
+        let mut minimum = 0.0_f64;
+        let mut nominal = 0.0_f64;
+        for child_cell in &child.cells {
+            let start = usize::from(child_cell.row);
+            if row < start || row >= start + usize::from(child_cell.row_span) {
+                continue;
+            }
+            if child_cell.row_span != 1 {
+                return 0.0;
+            }
+            let (_, _, top, bottom) =
+                self.resolve_stored_nested_cell_padding(child_cell, child, styles);
+            minimum = minimum
+                .max(self.cell_units_content_height(child_cell, child, styles) + top + bottom);
+            nominal = nominal.max(hwpunit_to_px(child_cell.height as i32, self.dpi));
+        }
+        (nominal - minimum).max(0.0).min(unit.height)
+    }
+
+    /// 저장 줄 없는 문단의 글 앞/뒤 중첩 표는 글줄을 밀지 않지만 칸 내용의 끝은 그 표의
+    /// 바깥 상자 끝(문단 원점 + 세로 오프셋 + 바깥 높이)까지 간다. 세로 가운데·아래 정렬의
+    /// 내용 높이는 흐름 유닛 합과 이 끝 가운데 큰 값이다. 표를 빼고 글줄만으로 정렬 여유를
+    /// 잡으면 표가 칸 아래로 밀린다. 행 나눔 유닛에는 더하지 않는다.
+    pub(crate) fn cell_overlay_table_reach(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        if !cell.paragraphs.iter().enumerate().any(|(pi, para)| {
+            para.controls.iter().any(|control| {
+                matches!(control, Control::Table(child)
+                    if self.nested_table_takes_no_flow(cell, pi, child))
+            })
+        }) {
+            return 0.0;
+        }
+        let units = self.cell_units(cell, table, styles);
+        let mut origin = 0.0f64;
+        let mut seen = vec![false; cell.paragraphs.len()];
+        let mut reach = 0.0f64;
+        // 문단 원점은 그 문단의 첫 유닛이다. 표 끝까지 이은 높이 유닛은 호스트 문단에
+        // 속하지만 뒤 문단 유닛 다음에 오므로 다시 세지 않는다.
+        for unit in units.iter() {
+            if seen.get(unit.para_idx).is_some_and(|seen| !seen) {
+                seen[unit.para_idx] = true;
+                if let Some(para) = cell.paragraphs.get(unit.para_idx) {
+                    for control in &para.controls {
+                        let Control::Table(child) = control else {
+                            continue;
+                        };
+                        if !self.nested_table_takes_no_flow(cell, unit.para_idx, child) {
+                            continue;
+                        }
+                        if let Some(frame) =
+                            crate::renderer::float_placement::nested_overlay_outer_frame(
+                                child,
+                                origin,
+                                self.calc_nested_table_height(child, styles),
+                                self.dpi,
+                            )
+                        {
+                            reach = reach.max(frame.end);
+                        }
+                    }
+                }
+            }
+            origin += unit.height;
+        }
+        reach
     }
 
     /// 이어받는 조각 첫머리에서 컷 선택기가 높이 없이 소비하는 빈 spacer 인가.
@@ -24681,7 +25050,14 @@ impl LayoutEngine {
             };
             let Some(child) = cell.paragraphs.get(last.para_idx).and_then(|para| {
                 para.controls.iter().find_map(|control| match control {
-                    Control::Table(child) => Some(child.as_ref()),
+                    // 글 앞/뒤 중첩 표는 칸 흐름을 차지하지 않아 저장 자식 프레임의 빈 띠를
+                    // 칸에 예약하지 않는다. 예약하면 그 띠에 다음 쪽 몫의 행이 겹쳐 그려지고
+                    // 같은 행 칸들의 세로 정렬이 위쪽으로 바뀐다.
+                    Control::Table(child)
+                        if !self.nested_table_takes_no_flow(cell, last.para_idx, child) =>
+                    {
+                        Some(child.as_ref())
+                    }
                     _ => None,
                 })
             }) else {
@@ -25601,7 +25977,8 @@ impl LayoutEngine {
                         );
                     }
                 }
-                let candidate_height = source_opening_height.unwrap_or(h + u.height);
+                let candidate_height = source_opening_height.unwrap_or(h + u.height)
+                    + u.overlay_cut_bottom_margin().unwrap_or(0.0);
                 let capacity_tolerance = capacity_tolerance::for_next_unit(
                     cell,
                     u,
@@ -25611,6 +25988,12 @@ impl LayoutEngine {
                     ROW_CUT_CAPACITY_FP_EPSILON_PX,
                 );
                 if j > start && candidate_height > avail_height + capacity_tolerance {
+                    let excess = candidate_height - avail_height;
+                    if excess <= self.compressible_overlay_row_height(cell, u, styles) {
+                        h += (u.height - excess).max(0.0);
+                        j += 1;
+                        break;
+                    }
                     if std::env::var("RHWP_DIAG_6368").is_ok() {
                         let over = h + u.height - avail_height;
                         if over <= 2.0 {
@@ -27839,7 +28222,17 @@ impl LayoutEngine {
         let units = self.cell_units(cell, table, styles);
         let mut owners = vec![false; cell.paragraphs.len()];
         for unit in units.iter().take(end_unit).skip(start_unit) {
-            if unit.empty_spacer
+            // 글 앞/뒤 중첩 표만 든 저장 줄 없는 문단은 빈 줄 하나를 차지한다.
+            // 그 줄을 가진 조각이 문단과 표를 소유한다.
+            let overlay_table_line = cell.paragraphs.get(unit.para_idx).is_some_and(|para| {
+                !para.controls.is_empty()
+                    && para.text.trim().is_empty()
+                    && para.controls.iter().all(|control| {
+                        matches!(control, Control::Table(child)
+                            if self.nested_table_takes_no_flow(cell, unit.para_idx, child))
+                    })
+            });
+            if (unit.empty_spacer || overlay_table_line)
                 && unit.vis_start == 0
                 && unit.vis_end == 1
                 && unit.nested_row.is_none()
@@ -28753,7 +29146,16 @@ impl LayoutEngine {
         // The child repeats its header even when its first body row starts at
         // an intra-row cut. The header is physical space, independent of the
         // body's unit cursor and of whether the selected row is terminal.
-        if unit.nested_table_fragment.is_none() {
+        // 온전한 overlay 행도 이어받는 쪽의 표 원점에서 위 바깥 여백을 다시 연다.
+        let resumes_overlay_rows =
+            start
+                .checked_sub(1)
+                .and_then(|i| units.get(i))
+                .is_some_and(|previous| {
+                    previous.para_idx == unit.para_idx
+                        && previous.overlay_cut_bottom_margin().is_some()
+                });
+        if unit.nested_table_fragment.is_none() && !resumes_overlay_rows {
             return 0.0;
         }
         let Some(para) = cell.paragraphs.get(unit.para_idx) else {
@@ -28825,10 +29227,20 @@ impl LayoutEngine {
             + 1;
         // 저장 호스트의 원자 행은 기존 첫 프레임/문단 범위를 보존한다.
         // 저장 줄 없는 재조판 호스트의 행과 실제 내부 컷은 같은 재귀 원장을 쓴다.
-        if !Self::nested_row_run_uses_recursive_frame(
-            cell.paragraphs.get(para_idx)?,
-            &units[run_start..run_end],
-        ) {
+        let host = cell.paragraphs.get(para_idx)?;
+        if !Self::nested_row_run_uses_recursive_frame(host, &units[run_start..run_end]) {
+            return None;
+        }
+        // 행 안 컷 없이 행 경계로만 나눈 글 앞/뒤 중첩 표의 높이 유닛은 재귀 원장이 아니라
+        // 행 범위(`nested_row_range_from_cut_units`)로 이어 그린다.
+        if units[run_start..run_end]
+            .iter()
+            .all(|unit| unit.nested_table_fragment.is_none())
+            && host.controls.iter().all(|control| {
+                matches!(control, Control::Table(child)
+                    if self.nested_table_takes_no_flow(cell, para_idx, child))
+            })
+        {
             return None;
         }
         let mut visible_height = 0.0;
@@ -29418,6 +29830,17 @@ impl LayoutEngine {
                 }
                 // 같은 부모 컷 안에 뒤 유닛이 있으면 자식은 점유 끝이 아니라
                 // 다음 내용으로의 전진을 소유한다. 빈 뒤 문단도 순서에서 제외하지 않는다.
+                // 글 앞/뒤 중첩 표의 높이 유닛은 흐름 끝에서 표 끝까지를 이미 담는다.
+                // 호스트 줄 뒤에 자식 표를 쌓는 재귀 예약을 더하지 않는다.
+                if cell.paragraphs.get(pi).is_some_and(|para| {
+                    !para.controls.is_empty()
+                        && para.controls.iter().all(|control| {
+                            matches!(control, Control::Table(child)
+                                if self.nested_table_takes_no_flow(cell, pi, child))
+                        })
+                }) {
+                    continue;
+                }
                 let run_purpose = if hi > u {
                     row_physical_band::CutHeight::Capacity
                 } else {
@@ -30284,10 +30707,15 @@ impl LayoutEngine {
             } else {
                 content
             };
-            // [#9000] 쪽을 넘어 닫힌 빈 블록 표 host 뒤 문단의 흡수된 앞 간격(배치와 같은 값).
-            let content = (content
-                - self.split_block_host_cut_pull(cell, table, styles, &units, su, eu))
-            .max(0.0);
+            // 블록 표 뒤 문단의 흡수된 앞 간격과 마지막 overlay 행의 바깥 여백은
+            // 각 조각이 실제로 소유한 유닛에서 계산한다.
+            let absorbed_spacing =
+                self.split_block_host_cut_pull(cell, table, styles, &units, su, eu);
+            let overlay_bottom_margin = units[su..eu]
+                .last()
+                .and_then(CellUnit::overlay_cut_bottom_margin)
+                .unwrap_or(0.0);
+            let content = (content - absorbed_spacing).max(0.0) + overlay_bottom_margin;
             let (_, _, pad_top, pad_bottom) =
                 self.resolve_stored_nested_cell_padding(cell, table, styles);
             let has_visible_cut = units[su..eu]
@@ -30841,6 +31269,7 @@ mod row_cut_tests {
             vis_end,
             nested_row: None,
             nested_row_flow_edges: None,
+            overlay_row: None,
             nested_table_fragment: None,
             mixed_nested_fragment: false,
             mixed_nested_trailing: false,
@@ -30888,6 +31317,7 @@ mod row_cut_tests {
             vis_end: 1,
             nested_row: None,
             nested_row_flow_edges: None,
+            overlay_row: None,
             nested_table_fragment: None,
             mixed_nested_fragment: true,
             mixed_nested_trailing: false,

@@ -2038,11 +2038,26 @@ impl LayoutEngine {
                     && whole_cell_cut
                     && unstored_shape_paragraph(&cell.paragraphs[pi])
             };
+            // 칸보다 긴 글 앞/뒤 중첩 표의 이어지는 행 유닛을 가진 조각은 빈 호스트 줄이
+            // 없어도 그 문단을 소유해, 중첩 표를 그 행부터 이어 그린다.
+            let overlay_rows_continue = |pi: usize| {
+                let para = &cell.paragraphs[pi];
+                !para.controls.is_empty()
+                    && para.controls.iter().all(|control| {
+                        matches!(control, Control::Table(child)
+                            if self.nested_table_takes_no_flow(cell, pi, child))
+                    })
+                    && cut_units.is_some_and(|(su, eu)| {
+                        self.nested_row_range_from_cut_units(cell, table, styles, su, eu, pi)
+                            .is_some()
+                    })
+            };
             let owns_empty_paragraph = |pi: usize| {
                 empty_paragraphs[pi]
                     && (empty_owners.as_ref().is_none_or(|owners| owners[pi])
                         || control_owned_empty_paragraph(pi)
-                        || whole_cell_shape_paragraph(pi))
+                        || whole_cell_shape_paragraph(pi)
+                        || overlay_rows_continue(pi))
             };
             // 개체로 소유한 빈 문단의 정렬 높이는 빈 줄과 개체 띠 중 큰 쪽이다.
             // 개체는 문단 원점에 오프셋으로 놓이고 빈 줄과 같은 띠를 차지한다.
@@ -2226,7 +2241,9 @@ impl LayoutEngine {
                     .iter()
                     .any(|p| p.controls.iter().any(|c| matches!(c, Control::Table(_))));
                 if has_nested {
-                    let unit_content_h = self.cell_units_content_height(cell, table, styles);
+                    let unit_content_h = self
+                        .cell_units_content_height(cell, table, styles)
+                        .max(self.cell_overlay_table_reach(cell, table, styles));
                     let last_seg_end: i32 = cell
                         .paragraphs
                         .iter()
@@ -2995,6 +3012,48 @@ impl LayoutEngine {
                 ),
                 (None, None) => (0, cell.paragraphs.len()),
             };
+            // 종이 기준 개체는 뒤 문단이 다음 쪽으로 넘어가도 칸의 첫 조각 쪽에 속한다.
+            // 한컴 Print의 paper_square_split은 60번째 문단의 개체를 1쪽에 인쇄한다.
+            // 문단 컷을 순회하기 전에 배치해 첫 조각의 비가시 문단도 앵커를 보존한다.
+            let paper_owned_by_first_fragment = |common: &crate::model::shape::CommonObjAttr| {
+                cut_units.is_some()
+                    && crate::renderer::float_placement::cell_object_detached_from_cell_flow(common)
+                    && matches!(common.vert_rel_to, crate::model::shape::VertRelTo::Paper)
+            };
+            if cut_units.is_some_and(|(start, _)| start == 0) {
+                for (cp_idx, para) in cell.paragraphs.iter().enumerate() {
+                    for (ctrl_idx, control) in para.controls.iter().enumerate() {
+                        if let Control::Shape(shape) = control {
+                            if paper_owned_by_first_fragment(shape.common()) {
+                                let first_new_child = table_node.children.len();
+                                self.layout_cell_shape(
+                                    tree,
+                                    table_node,
+                                    shape,
+                                    &inner_area,
+                                    text_y_start,
+                                    Alignment::Left,
+                                    para.para_shape_id,
+                                    styles,
+                                    bin_data_content,
+                                    clamp_header_negative_para_offset,
+                                    Some((
+                                        section_index,
+                                        para_index,
+                                        control_index,
+                                        cell_idx,
+                                        cp_idx,
+                                        ctrl_idx,
+                                    )),
+                                );
+                                for child in &table_node.children[first_new_child..] {
+                                    tree.mark_cell_overlay_node(child.id, shape.common().text_wrap);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             let reflow_block_flow = self.reflow_block_cell_flow_in_cell(cell, table, styles);
             let carried_child_host = cut_units.and_then(|(start, end)| {
                 self.stored_carried_child_host(table, cell, start, end, styles)
@@ -3008,6 +3067,8 @@ impl LayoutEngine {
                         self.dpi,
                     );
                 let mut no_overlap_placer =
+                    crate::renderer::float_placement::NoOverlapSquarePlacer::default();
+                let mut no_overlap_topbottom_placer =
                     crate::renderer::float_placement::NoOverlapSquarePlacer::default();
                 if empty_paragraphs[cp_idx] && !owns_empty_paragraph(cp_idx) {
                     continue;
@@ -3108,6 +3169,7 @@ impl LayoutEngine {
                     && !visible_non_inline_controls
                     && !uncut_control_only_nested_table
                     && !owns_empty_paragraph(cp_idx)
+                    && !overlay_rows_continue(cp_idx)
                 {
                     continue;
                 }
@@ -4555,6 +4617,14 @@ impl LayoutEngine {
                                         pic_y,
                                         self.dpi,
                                     );
+                                    let pic_y = no_overlap_topbottom_placer
+                                        .place_topbottom_picture(
+                                            &cell.paragraphs[cp_idx],
+                                            &pic.common,
+                                            pic_x,
+                                            pic_y,
+                                            self.dpi,
+                                        );
                                     let pic_area = LayoutRect {
                                         x: pic_x,
                                         y: pic_y,
@@ -4618,17 +4688,23 @@ impl LayoutEngine {
                                 has_preceding_text = true;
                             }
                             Control::Shape(shape) => {
+                                if paper_owned_by_first_fragment(shape.common()) {
+                                    continue;
+                                }
                                 // TextBox를 포함한 Shape는 한 control이 여러 physical
                                 // fragment에 걸쳐 내부 문단을 이어 그릴 수 있다. Picture의
                                 // entry-only owner 규칙을 Shape에 적용하면 뒤 fragment의
                                 // 잔여 TextBox가 통째로 사라진다(rowbreak p17).
+                                // 종이·쪽 기준 개체도 흐름을 전진시키지 않는 겹침 개체다.
                                 let owns_overlay_anchor = start_line == 0
                                     && end_line > start_line
-                                    && matches!(
+                                    && (matches!(
                                         shape.common().text_wrap,
                                         crate::model::shape::TextWrap::InFrontOfText
                                             | crate::model::shape::TextWrap::BehindText
-                                    );
+                                    ) || crate::renderer::float_placement::cell_object_detached_from_cell_flow(
+                                        shape.common(),
+                                    ));
                                 // 흐름을 전진시키지 않는 겹침 개체는 첫 원본 줄에 속한다.
                                 // 존재하지 않는 높이 예약에 속한 것으로 처리하지 않는다.
                                 if !shape.common().treat_as_char
@@ -4722,9 +4798,19 @@ impl LayoutEngine {
                                             shape_for_layout.common_mut().vertical_offset = 0;
                                         }
                                     }
+                                    // 종이·쪽 기준 개체는 칸 clip 밖 표 노드에 싣는다(온전한 칸과 같다).
+                                    let detached = crate::renderer::float_placement::cell_object_detached_from_cell_flow(
+                                        shape.common(),
+                                    );
+                                    let shape_parent = if detached {
+                                        &mut *table_node
+                                    } else {
+                                        &mut cell_node
+                                    };
+                                    let first_new_child = shape_parent.children.len();
                                     self.layout_cell_shape(
                                         tree,
-                                        &mut cell_node,
+                                        shape_parent,
                                         &shape_for_layout,
                                         &inner_area,
                                         shape_anchor_y,
@@ -4735,6 +4821,14 @@ impl LayoutEngine {
                                         clamp_header_negative_para_offset,
                                         table_cell_ctx,
                                     );
+                                    if detached {
+                                        for child in &shape_parent.children[first_new_child..] {
+                                            tree.mark_cell_overlay_node(
+                                                child.id,
+                                                shape.common().text_wrap,
+                                            );
+                                        }
+                                    }
                                     let is_top_and_bottom_shape = matches!(
                                         shape.common().text_wrap,
                                         crate::model::shape::TextWrap::TopAndBottom
@@ -5220,6 +5314,16 @@ impl LayoutEngine {
                                             if r + 1 < end_row {
                                                 vis_h += ncs;
                                             }
+                                        }
+                                        // The row cut assigns the child rows. Their visible
+                                        // frame also reserves the child's outer margins inside
+                                        // the physical fragment of the parent cell.
+                                        if self.nested_table_takes_no_flow(cell, cp_idx, nested_table)
+                                            && crate::renderer::float_placement::nested_table_is_overlay(nested_table)
+                                        {
+                                            let margins = i32::from(nested_table.outer_margin_top)
+                                                + i32::from(nested_table.outer_margin_bottom);
+                                            vis_h = vis_h.min((available_h - hwpunit_to_px(margins, self.dpi)).max(0.0));
                                         }
                                         Some(NestedTableSplit {
                                             start_row,
@@ -5829,7 +5933,15 @@ impl LayoutEngine {
                                                 )
                                                 ..flow_end,
                                         );
-                                    } else if stored_before_visible_host.is_none() {
+                                    } else if stored_before_visible_host.is_none()
+                                        && !self.nested_table_takes_no_flow(
+                                            cell,
+                                            cp_idx,
+                                            nested_table,
+                                        )
+                                    {
+                                        // 저장 호스트가 이미 예약한 표와 흐름 밖의 겹침 표는
+                                        // 후속 문단의 원점을 한 번 더 전진시키지 않는다.
                                         para_y = flow_end;
                                     }
                                     has_preceding_text = true;
@@ -8358,11 +8470,18 @@ impl LayoutEngine {
                         continue;
                     };
                     let end = ranges[pi2].1;
-                    if let Some(seg) = cell
-                        .paragraphs
-                        .get(pi2)
-                        .and_then(|p| p.line_segs.get(end.checked_sub(1).unwrap_or(0)))
+                    let paragraph = &cell.paragraphs[pi2];
+                    // 이어지는 빈 문단들을 가르는 컷은 마지막 빈 줄의 전진 거리까지
+                    // 소유한다. 글자가 없다는 이유로 그 줄의 간격을 두 번 접지 않는다.
+                    if paragraph.controls.is_empty()
+                        && paragraph.text.trim().is_empty()
+                        && cell.paragraphs.get(pi2 + 1).is_some_and(|next| {
+                            next.controls.is_empty() && next.text.trim().is_empty()
+                        })
                     {
+                        continue;
+                    }
+                    if let Some(seg) = paragraph.line_segs.get(end.saturating_sub(1)) {
                         trail = trail.max(hwpunit_to_px(seg.line_spacing.max(0), self.dpi));
                     }
                 }
@@ -8917,6 +9036,7 @@ impl LayoutEngine {
             }
         }
 
+        tree.order_cell_overlay_nodes(&mut table_node);
         col_node.children.push(table_node);
 
         // ── 캡션 렌더링 ──

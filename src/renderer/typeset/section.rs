@@ -479,7 +479,25 @@ impl TypesetEngine {
         );
         st.finish_next_column_stored_frames_with_storage(storage)?;
         st.finish_deferred_column_shapes_with_storage(storage)?;
-        if st.has_column_content() {
+        // 글 앞/뒤 표는 본문 흐름을 밀지 않는다. 본문보다 긴 표나, 실제 앵커 아래
+        // 남은 공간에서 중첩 표 행이 잘린 경우에는 마지막 본문 뒤에도 그 행을 이어 그린다.
+        let base_available = st.base_available_height();
+        let needs_overlay_page = st.pending_overlay_continuations.iter().any(|cont| {
+            let control = paragraphs.get(cont.para_index)
+                .and_then(|host| host.controls.get(cont.control_index));
+            matches!(control, Some(crate::model::control::Control::Table(table))
+                if matches!(table.layout_page_break(), crate::model::table::TablePageBreak::RowBreak)
+                    && table.cells.iter().any(crate::renderer::float_placement::cell_contains_detached_paragraph_table))
+                || measured_tables.iter().any(|mt| {
+                    mt.para_index == cont.para_index
+                        && mt.control_index == cont.control_index
+                        && mt.total_height > base_available
+                })
+        });
+        if needs_overlay_page {
+            st.force_new_page_with_storage(storage)?;
+            st.flush_column_always_with_storage(storage)?;
+        } else if st.has_column_content() {
             st.flush_column_always_with_storage(storage)?;
         }
         // 마지막 본문 뒤의 저장 각주 suffix도 버리지 않는다. 실제 다음 쪽을

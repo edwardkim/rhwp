@@ -3,7 +3,7 @@
   "created_at": "2026-11-08T22:37:56.286882+09:00",
   "baseline_kind": "수용된 전쪽 검증과 개별 승인 조정을 반영한 보호 하한. CI·병합 상태는 별도 기록한다.",
   "table": "final.tsv",
-  "table_sha256": "1f7ac7a52290acef829c03e15f2dd27e23c6a3450415266d4cc4067b70dfdcc8",
+  "table_sha256": "56c0b80121c204e4f1c2f025b7a6720661773deb9aadbfa9fe8b4229601f51c1",
   "row_count": 4046,
   "document_count": 23,
   "dataset_count": 46,
@@ -4089,21 +4089,21 @@
         "radius_px": 2
       },
       "page_count": 103,
-      "accepted_at": "2026-11-23T21:57:49.920882+09:00",
+      "accepted_at": "2026-11-26T04:01:25+09:00",
       "source": {
-        "pr": null,
-        "evidence_commit": "dc5368b3932bd39293a3e0067d809ec90ce641b1",
-        "code_commit": "330af8608ac741b14041d3e372284a6111346b9c",
-        "condition_evidence": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected-validation.json",
-        "condition_evidence_sha256": "3fc96e934c4918ae75ea10331b901e6ffc1c70d076c4fde80fdc8a9365cfe04b",
-        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/chemical/wasm/silhouette.tsv",
-        "sha256": "d55cc0d20d9cf48ab7af6139c63f9c7ce9d90ff2cd4d0c668a810fccb2ae63f3",
+        "pr": 9412,
+        "evidence_commit": "d388231783ed697fefdb1b6cbc5d79a5f72e2518",
+        "code_commit": "f3d137d9cbe36cae93f859baac3a29ae4a543f75",
+        "path": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/current-9415/chemical-wasm.tsv",
+        "sha256": "2b4dc472b3c8267e03c34e0a4a62fe65c3987f7caab39ce1cde6c6d744bcd573",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
+        "condition_evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/current-9415/runs.tsv",
+        "condition_evidence_sha256": "ca3607ec633db47dc2500306fecd603487c50bcec0a972bff94464a3c737b333",
+        "precision": "최종 전쪽 TSV의 공식 소수 둘째 자리 표시값"
       },
-      "minimum_display": "99.99",
+      "minimum_display": "100.00",
       "source_history": [
         {
           "pr": null,
@@ -4144,16 +4144,29 @@
           "page_column": "page",
           "document_filter": null,
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "dc5368b3932bd39293a3e0067d809ec90ce641b1",
+          "code_commit": "330af8608ac741b14041d3e372284a6111346b9c",
+          "condition_evidence": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected-validation.json",
+          "condition_evidence_sha256": "3fc96e934c4918ae75ea10331b901e6ffc1c70d076c4fde80fdc8a9365cfe04b",
+          "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/chemical/wasm/silhouette.tsv",
+          "sha256": "d55cc0d20d9cf48ab7af6139c63f9c7ce9d90ff2cd4d0c668a810fccb2ae63f3",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ],
       "previous_source": {
         "pr": null,
-        "evidence_commit": "70fca853bee65aba00820c5dbe39d0f4aa899d86",
-        "code_commit": "521f69d19da9176e7947ceb318cf9838bec5ca75",
-        "condition_evidence": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json",
-        "condition_evidence_sha256": "96f0acd6b6345f20f5667d0515eab42b21baa79774eeee5760c9644127d56f81",
-        "path": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/chemical.tsv",
-        "sha256": "29b4f5e65e65a6955fe74cc9bb0d95f48d2e671d58e1206b73c5f0220df5bcb6",
+        "evidence_commit": "dc5368b3932bd39293a3e0067d809ec90ce641b1",
+        "code_commit": "330af8608ac741b14041d3e372284a6111346b9c",
+        "condition_evidence": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected-validation.json",
+        "condition_evidence_sha256": "3fc96e934c4918ae75ea10331b901e6ffc1c70d076c4fde80fdc8a9365cfe04b",
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/chemical/wasm/silhouette.tsv",
+        "sha256": "d55cc0d20d9cf48ab7af6139c63f9c7ce9d90ff2cd4d0c668a810fccb2ae63f3",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
@@ -5460,9 +5473,21 @@
       "evaluated_row_count": 74,
       "increased_row_count": 4,
       "decreased_row_count": 0
+    },
+    {
+      "pr": 9412,
+      "evidence_commit": "d388231783ed697fefdb1b6cbc5d79a5f72e2518",
+      "code_commit": "f3d137d9cbe36cae93f859baac3a29ae4a543f75",
+      "condition_evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/current-9415/runs.tsv",
+      "condition_evidence_sha256": "ca3607ec633db47dc2500306fecd603487c50bcec0a972bff94464a3c737b333",
+      "accepted_at": "2026-11-26T04:01:25+09:00",
+      "acceptance_basis": "46개 전쪽 데이터셋의 공식 표시값을 대조했다. 화학물질 표시 기준의 브라우저 26쪽이 99.99%에서 100.00%로 올랐다.",
+      "registration_receipt": "mydocs/pr/assets/visual-protected-baseline/updates/pr9352-9384-9407-20261125.json",
+      "increased_row_count": 1,
+      "evaluated_row_count": 4046
     }
   ],
-  "updated_at": "2026-11-25T20:59:46.983722+09:00",
-  "previous_table_sha256": "2e51f8ff60713ce2a4d4cca53ce19fd861e19a9915dad7606de07b94620124ae",
+  "updated_at": "2026-11-26T04:01:25+09:00",
+  "previous_table_sha256": "1f7ac7a52290acef829c03e15f2dd27e23c6a3450415266d4cc4067b70dfdcc8",
   "deduplication_scope": "source_dataset_count·removed_duplicate_datasets·deduplicated_sources는 최초 통합의 이력이다. 현행 46개 데이터셋은 기존 18문서·36개 데이터셋의 수용 출처와 후속 상승 기록을 보존하고, 2026-11-18의 동일 최종 전쪽 실행에서 다섯 원본·10개 데이터셋을 추가한 결과다. 각 데이터셋의 source와 source_history를 따른다."
 }

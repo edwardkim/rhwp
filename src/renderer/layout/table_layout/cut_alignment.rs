@@ -42,6 +42,10 @@ impl LayoutEngine {
                 - self.continued_cut_nested_atom_tail(cell, &units, lo, lo + window.len(), styles)
                 + self.mixed_nested_flow_extra_from_cut(cell, table, styles, lo, lo + window.len())
                 - trailing
+                + window
+                    .last()
+                    .and_then(|unit| unit.overlay_cut_bottom_margin())
+                    .unwrap_or(0.0)
         } else {
             0.0
         }
