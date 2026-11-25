@@ -14,6 +14,9 @@
   명시된 해시의 `DotumChe-Regular.ttf`를 공급할 수 있다.
   종합부동산세법(`issue7905`)에는 Windows 10의 Arial·Courier New·Times New Roman 각 4종과
   `gulim.ttc`의 검증된 해시를 허용한다. `sample10`의 Native 공급 목록에도 같은 해시를 허용한다.
+  `yeongwol`과 `sample16` 저장본 3종은 설치본 `HYHWPEQ.TTF`(`a3a3cd992a89…`)를 기준으로 사용한다.
+  이전 해시 `c4f768c176ce…`는 같은 문서의 검증된 공급 파일에서만 허용한다. 수식 글꼴은 다운로드
+  폴더에서 직접 공급하지 않고 사용자·시스템 설치 경로나 해시를 확인한 검증용 사본을 사용한다.
 - `font_environment`가 있으면 해당 JSON을 `--font-environment`로 지정한다.
 - 선택 우선순위는 manifest의 `selection_order`를 따른다.
 - `accepted_font_set`, `accepted_font_environment`와 `records/`는 수용 당시의 비교 근거이며, 현재 전쪽 재검증 상태는

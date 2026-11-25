@@ -9587,7 +9587,7 @@
         }
       ]
     },
-    "c1f1fb90ad8d6ecc": {
+    "94cf52effd4f949b": {
       "files": [
         {
           "filename": "ENBASKVL.otf",
@@ -10370,8 +10370,8 @@
           "sha256": "82f70d5e221412b10df0431f353f095885888823f5d026694691237c9a3004e8"
         },
         {
-          "filename": "c4f768c176ce-HYHWPEQ.TTF",
-          "sha256": "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
+          "filename": "HYHWPEQ.TTF",
+          "sha256": "a3a3cd992a89ac38e7707b58143ebdb1da9511d3c462f019cda7f92c30467807"
         },
         {
           "filename": "HYMJRE.TTF",
@@ -10407,7 +10407,7 @@
         }
       ]
     },
-    "87d88777e181d5a9": {
+    "35b43de1f244e444": {
       "files": [
         {
           "filename": "ENBASKVL.otf",
@@ -11190,8 +11190,8 @@
           "sha256": "82f70d5e221412b10df0431f353f095885888823f5d026694691237c9a3004e8"
         },
         {
-          "filename": "c4f768c176ce-HYHWPEQ.TTF",
-          "sha256": "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
+          "filename": "HYHWPEQ.TTF",
+          "sha256": "a3a3cd992a89ac38e7707b58143ebdb1da9511d3c462f019cda7f92c30467807"
         },
         {
           "filename": "HYMJRE.TTF",
@@ -11451,7 +11451,7 @@
         }
       ]
     },
-    "ccea6770fda567ac": {
+    "89ef2bbf36b53b41": {
       "files": [
         {
           "filename": "ENGGT.otf",
@@ -11670,8 +11670,8 @@
           "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
         },
         {
-          "filename": "c4f768c176ce-HYHWPEQ.TTF",
-          "sha256": "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
+          "filename": "HYHWPEQ.TTF",
+          "sha256": "a3a3cd992a89ac38e7707b58143ebdb1da9511d3c462f019cda7f92c30467807"
         },
         {
           "filename": "gulim.ttc",
@@ -13232,9 +13232,15 @@
       "page_count": 4,
       "compat": "2022",
       "dpi": 96,
+      "accepted_sha256_pairs": {
+        "HYHWPEQ.TTF": [
+          "a3a3cd992a89ac38e7707b58143ebdb1da9511d3c462f019cda7f92c30467807",
+          "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
+        ]
+      },
       "backends": {
         "native": {
-          "font_set": "c1f1fb90ad8d6ecc",
+          "font_set": "94cf52effd4f949b",
           "inventory_kind": "recorded_supply",
           "inventory_source": {
             "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-accepted-validation.json",
@@ -13396,7 +13402,7 @@
           }
         },
         "wasm": {
-          "font_set": "87d88777e181d5a9",
+          "font_set": "35b43de1f244e444",
           "inventory_kind": "recorded_supply",
           "inventory_source": {
             "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-accepted-validation.json",
@@ -14023,9 +14029,15 @@
       "page_count": 64,
       "compat": "2024",
       "dpi": 96,
+      "accepted_sha256_pairs": {
+        "HYHWPEQ.TTF": [
+          "a3a3cd992a89ac38e7707b58143ebdb1da9511d3c462f019cda7f92c30467807",
+          "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
+        ]
+      },
       "backends": {
         "native": {
-          "font_set": "ccea6770fda567ac",
+          "font_set": "89ef2bbf36b53b41",
           "inventory_kind": "recorded_supply",
           "inventory_source": {
             "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-accepted-validation.json",
@@ -14121,7 +14133,7 @@
           }
         },
         "wasm": {
-          "font_set": "ccea6770fda567ac",
+          "font_set": "89ef2bbf36b53b41",
           "inventory_kind": "recorded_supply",
           "inventory_source": {
             "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-accepted-validation.json",
@@ -14231,9 +14243,15 @@
       "page_count": 64,
       "compat": "2022",
       "dpi": 96,
+      "accepted_sha256_pairs": {
+        "HYHWPEQ.TTF": [
+          "a3a3cd992a89ac38e7707b58143ebdb1da9511d3c462f019cda7f92c30467807",
+          "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
+        ]
+      },
       "backends": {
         "native": {
-          "font_set": "ccea6770fda567ac",
+          "font_set": "89ef2bbf36b53b41",
           "inventory_kind": "recorded_supply",
           "inventory_source": {
             "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-accepted-validation.json",
@@ -14329,7 +14347,7 @@
           }
         },
         "wasm": {
-          "font_set": "ccea6770fda567ac",
+          "font_set": "89ef2bbf36b53b41",
           "inventory_kind": "recorded_supply",
           "inventory_source": {
             "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-accepted-validation.json",
@@ -15200,9 +15218,15 @@
       "page_count": 64,
       "compat": "2024",
       "dpi": 96,
+      "accepted_sha256_pairs": {
+        "HYHWPEQ.TTF": [
+          "a3a3cd992a89ac38e7707b58143ebdb1da9511d3c462f019cda7f92c30467807",
+          "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
+        ]
+      },
       "backends": {
         "native": {
-          "font_set": "ccea6770fda567ac",
+          "font_set": "89ef2bbf36b53b41",
           "inventory_kind": "recorded_supply",
           "inventory_source": {
             "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-accepted-validation.json",
@@ -15298,7 +15322,7 @@
           }
         },
         "wasm": {
-          "font_set": "ccea6770fda567ac",
+          "font_set": "89ef2bbf36b53b41",
           "inventory_kind": "recorded_supply",
           "inventory_source": {
             "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-accepted-validation.json",
