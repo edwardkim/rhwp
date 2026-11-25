@@ -128,7 +128,8 @@ pub(in crate::renderer::typeset) fn finalize_pages_with_storage<S: crate::storag
         pages, paragraphs, storage,
     )?;
     let mut assigner =
-        crate::renderer::page_number::PageNumberAssigner::new_for_pages(&events.new_numbers, 1);
+        crate::renderer::page_number::PageNumberAssigner::new_for_pages(&events.new_numbers, 1)
+            .with_parity_adjusts(&events.parity_adjusts);
 
     for (i, page) in pages.iter_mut().enumerate() {
         let page_num = assigner.assign_with_storage(page, storage)?;
