@@ -223,7 +223,7 @@ pub(crate) fn normalized_empty_control_frame(
     Some(frame)
 }
 
-fn clean_single_saved_line(para: &Paragraph) -> Option<&LineSeg> {
+pub(crate) fn clean_single_saved_line(para: &Paragraph) -> Option<&LineSeg> {
     let [line] = para.line_segs.as_slice() else {
         return None;
     };
@@ -271,7 +271,7 @@ fn saved_single_line_ladder_end(
 }
 
 /// The host line owns the child's complete painted box, including outside margins.
-fn stored_inline_tail_table_fits_line(para: &Paragraph) -> bool {
+pub(crate) fn stored_inline_tail_table_fits_line(para: &Paragraph) -> bool {
     let [Control::Table(child)] = para.controls.as_slice() else {
         return false;
     };
