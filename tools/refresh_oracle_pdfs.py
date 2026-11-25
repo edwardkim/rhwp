@@ -33,7 +33,7 @@ TOOLS_DIR = pathlib.Path(__file__).resolve().parent
 if str(TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(TOOLS_DIR))
 
-from oracle_public.audit_print_pairs import digest, print_details
+from oracle_public.audit_print_pairs import DRIVER_2024, DRIVER_FIELDS, digest, print_details
 from oracle_pdf_selection import (
     canonical_filename,
     canonical_pdf_path,
@@ -188,7 +188,8 @@ def nested_value(data, key):
     return None
 
 
-def make_print_receipt(source, snapshot, destination, produced, job_id, engine, status, download):
+def make_print_receipt(source, snapshot, destination, produced, job_id, engine, status, download,
+                       request_options=None):
     """성공한 같은 job의 인쇄 조건과 실제 전송·다운로드 바이트를 연결한다."""
     result = status.get('result')
     if (status.get('status') not in ('success', 'succeeded') or status.get('job_id') != job_id
@@ -198,12 +199,24 @@ def make_print_receipt(source, snapshot, destination, produced, job_id, engine, 
               'pdf_page_count', 'preprocess')
     origin = {'kind': 'MCP Print', 'engine': engine, 'job_id': job_id,
               'print_result': {k: result[k] for k in fields if k in result}}
-    if print_details(origin) is None:
-        raise RuntimeError('이 job의 독립 Print 경로를 확인할 수 없다')
     pdf_sha = digest(produced)
     if (download.get('status') != 'success' or download.get('job_id') != job_id
-            or download.get('size') != produced.stat().st_size or download.get('sha256') != pdf_sha):
+            or type(download.get('size')) is not int
+            or download['size'] != produced.stat().st_size or download.get('sha256') != pdf_sha):
         raise RuntimeError('다운로드 기록과 실제 PDF가 일치하지 않는다')
+    if result.get('pdf_output_mode') == DRIVER_2024:
+        server = download.get('server')
+        if not isinstance(server, dict):
+            raise RuntimeError('다운로드 응답에 서버의 Print 기록이 없다')
+        fields = (*DRIVER_FIELDS, 'bytes', 'preprocess')
+        origin['print_result'] = {k: result[k] for k in fields if k in result}
+        fields = (*DRIVER_FIELDS, 'size', 'sha256', 'preprocess')
+        origin['download_result'] = {k: server[k] for k in fields if k in server}
+        origin['request_options'] = request_options
+    elif 'input_preprocess' in result:
+        origin['print_result']['input_preprocess'] = result['input_preprocess']
+    if print_details(origin, pdf_sha, download['size']) is None:
+        raise RuntimeError('이 job의 독립 Print 경로를 확인할 수 없다')
     source_sha = digest(snapshot)
     if digest(source) != source_sha:
         raise RuntimeError('Print 실행 중 원본 바이트가 변경됐다')
@@ -225,13 +238,15 @@ def convert_one(args, source, engine, destination, logger, env_file, lane):
             submitted.parent.mkdir()
             shutil.copyfile(source, submitted)
         started = time.monotonic()
+        # The bundled client sends only this option to start_conversion.
+        request_options = {'timeout_seconds': args.timeout_seconds}
         start_response = run_mcp(
             mcp_command(args, env_file, 'start', [
                 '--input', str(submitted),
                 '--target', 'pdf',
                 '--engine', engine,
                 '--output-filename', output_name,
-                '--timeout-seconds', str(args.timeout_seconds),
+                '--timeout-seconds', str(request_options['timeout_seconds']),
             ]),
             'MCP start lane=%s' % lane,
             logger,
@@ -297,7 +312,7 @@ def convert_one(args, source, engine, destination, logger, env_file, lane):
             shutil.copyfile(produced, staged_pdf)
             if args.receipt_dir is not None:
                 receipt = make_print_receipt(pathlib.Path(source), submitted, destination, staged_pdf,
-                                             job_id, engine, status_response, download_response)
+                                             job_id, engine, status_response, download_response, request_options)
                 args.receipt_dir.mkdir(parents=True, exist_ok=True)
                 receipt_stage = cleanup.enter_context(tempfile.TemporaryDirectory(dir=args.receipt_dir))
                 staged_receipt = pathlib.Path(receipt_stage) / 'receipt.json'

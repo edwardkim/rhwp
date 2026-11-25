@@ -1,5 +1,6 @@
 """Print 갱신의 다운로드 검증과 독립 감사 사이의 파일 계약."""
 
+import copy
 import hashlib
 import json
 import os
@@ -12,7 +13,7 @@ from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 import refresh_oracle_pdfs as refresh
-from oracle_public.audit_print_pairs import audit
+from oracle_public.audit_print_pairs import DRIVER_2024, audit, print_details
 
 
 class PrintReceipts(unittest.TestCase):
@@ -37,7 +38,7 @@ class PrintReceipts(unittest.TestCase):
         self.download = {'status': 'success', 'job_id': 'job', 'size': 6,
                          'sha256': hashlib.sha256(b'output').hexdigest()}
 
-    def convert(self, change_source=False):
+    def convert(self, change_source=False, engine='2020'):
         def client(argv, label, logger):
             action = argv[argv.index('hwp2024-mcp-convert') + 1]
             if action == 'start':
@@ -53,7 +54,7 @@ class PrintReceipts(unittest.TestCase):
             (directory / self.pdf.name).write_bytes(b'output')
             return self.download
         with patch.object(refresh, 'run_mcp', side_effect=client):
-            refresh.convert_one(self.args, str(self.source), '2020', self.pdf, Mock(), 'env', 0)
+            refresh.convert_one(self.args, str(self.source), engine, self.pdf, Mock(), 'env', 0)
 
     def test_receipt_matches_installed_pair_and_detects_replacement(self):
         self.convert()
@@ -83,6 +84,62 @@ class PrintReceipts(unittest.TestCase):
             self.convert(change_source=True)
         self.assertEqual(self.pdf.read_bytes(), b'previous')
         self.assertEqual(list(self.out.glob('*.json')), [])
+
+    def set_driver_response(self):
+        self.result.pop('preprocess')
+        self.result.update(engine='2024', hancom_version='13.0.0.4225',
+                           pdf_output_mode=DRIVER_2024, input_preprocess='none',
+                           bytes=6, job_id='job', comment='글꼴 이름 문법 보정')
+        self.download['server'] = dict(self.result, size=6, sha256=self.download['sha256'])
+
+    def test_driver_receipt_keeps_actual_profile_and_audits_current_files(self):
+        self.set_driver_response()
+        self.convert(engine='2024')
+        receipt, = self.out.glob('*.json')
+        document = json.loads(receipt.read_bytes())
+        case, = document['cases']
+        origin = case['origin']
+        self.assertEqual(origin['request_options'], {'timeout_seconds': self.args.timeout_seconds})
+        self.assertNotIn('preprocess', origin['print_result'])
+        row, = audit(Path.cwd(), {'pairs': [], 'unmatched': []}, document)['pairs']
+        self.assertEqual(row['status'], 'verified')
+        self.assertEqual(row['print']['result']['pdf_output_mode'], DRIVER_2024)
+        self.assertEqual(row['print']['result']['comment'], self.result['comment'])
+        for options in (None, {'clear_distribution': True}, {'table_patch_last_row_count': True},
+                        {'unknown_preprocessing': False}, {'clear_distribution': 0}):
+            with self.subTest(options=options):
+                changed = dict(origin, request_options=options)
+                self.assertIsNone(print_details(changed, case['pdf_sha256'], self.pdf.stat().st_size))
+        changed = copy.deepcopy(document)
+        changed['cases'][0]['origin']['download_result']['sha256'] = 'f' * 64
+        row, = audit(Path.cwd(), {'pairs': [], 'unmatched': []}, changed)['pairs']
+        self.assertEqual(row['status'], 'candidate')
+
+    def test_driver_rejects_missing_changed_and_non_print_evidence(self):
+        self.set_driver_response()
+        server = self.download['server']
+        for data, key, value in (
+            (self.result, 'input_preprocess', None), (server, 'input_preprocess', 'scripts_disabled'),
+            (server, 'pdf_print_method', False), (server, 'size', 5), (server, 'sha256', 'other'),
+            (server, 'job_id', 'other'), (self.result, 'job_id', 'other'),
+            (server, 'hancom_version', 'other'), (self.result, 'pdf_print_method', None),
+            (self.result, 'pdf_output_mode', 'hancom2024_pdf_save_as'),
+            (self.result, 'preprocess', None), (server, 'pdf_page_count', True),
+        ):
+            with self.subTest(key=key, value=value), patch.dict(data, {key: value}):
+                with self.assertRaises(RuntimeError):
+                    self.convert(engine='2024')
+        with patch.dict(self.result, bytes=7), patch.dict(server, size=7):
+            with self.assertRaises(RuntimeError):
+                self.convert(engine='2024')
+        for data, field in ((self.result, 'input_preprocess'), (server, 'input_preprocess'),
+                            (self.download, 'server')):
+            with patch.dict(data):
+                del data[field]
+                with self.assertRaises(RuntimeError):
+                    self.convert(engine='2024')
+        self.assertEqual(self.pdf.read_bytes(), b'previous')
+        self.assertFalse(self.out.exists())
 
     def test_existing_download_without_receipt_option(self):
         self.args.receipt_dir = None
