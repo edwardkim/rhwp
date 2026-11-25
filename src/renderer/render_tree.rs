@@ -2189,6 +2189,8 @@ pub struct PageLayoutContext {
     next_id: NodeId,
     /// 인라인 Shape 좌표 맵: (section, para, control, cell_path) → (x, y)
     inline_shape_positions: std::collections::HashMap<InlineShapeKey, (f64, f64)>,
+    /// 셀에서 나중에 그릴 인라인 그림의 왼쪽 잉크 경계. (출력한 글줄 ID, 원본 개체 번호).
+    deferred_picture_offsets: std::collections::HashMap<(NodeId, usize), f64>,
     /// 페이지 인덱스. 재귀가 페인트 root 의 `PageNode` 에서 읽던 값 (#4277).
     page_index: u32,
     /// 페이지 bbox. 재귀가 페인트 root 의 bbox 에서 읽던 값 — 레이아웃 도중 불변이다.
@@ -2205,6 +2207,7 @@ impl PageLayoutContext {
         Self {
             next_id: 1,
             inline_shape_positions: std::collections::HashMap::new(),
+            deferred_picture_offsets: std::collections::HashMap::new(),
             page_index,
             page_bbox: BoundingBox::new(0.0, 0.0, width, height),
             horizontal_shaping_sidecars: HorizontalShapingPageSidecars::default(),
@@ -2295,6 +2298,34 @@ impl PageLayoutContext {
     /// 인라인 Shape 좌표 전체 참조 (hitTest용)
     pub fn inline_shape_positions(&self) -> &std::collections::HashMap<InlineShapeKey, (f64, f64)> {
         &self.inline_shape_positions
+    }
+
+    pub(crate) fn defer_picture_left(&mut self, line: &RenderNode, control: usize, left: f64) {
+        self.deferred_picture_offsets
+            .insert((line.id, control), left - line.bbox.x);
+    }
+
+    pub(crate) fn take_cell_picture_left(
+        &mut self,
+        cell: &RenderNode,
+        section: usize,
+        paragraph: usize,
+        control: usize,
+    ) -> Option<f64> {
+        if self.deferred_picture_offsets.is_empty() {
+            return None;
+        }
+        cell.children.iter().rev().find_map(|node| {
+            let RenderNodeType::TextLine(line) = &node.node_type else {
+                return None;
+            };
+            if line.section_index != Some(section) || line.para_index != Some(paragraph) {
+                return None;
+            }
+            self.deferred_picture_offsets
+                .remove(&(node.id, control))
+                .map(|offset| node.bbox.x + offset)
+        })
     }
 
     /// 새 노드 ID 할당

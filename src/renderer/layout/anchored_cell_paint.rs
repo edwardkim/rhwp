@@ -43,7 +43,10 @@ impl LayoutEngine {
         );
         if cell_ctx.is_some_and(|ctx| !ctx.in_textbox)
             && !picture.common.treat_as_char
-            && matches!(picture.common.text_wrap, TextWrap::BehindText)
+            && matches!(
+                picture.common.text_wrap,
+                TextWrap::BehindText | TextWrap::InFrontOfText
+            )
         {
             let stable_index = cell_ctx
                 .and_then(|ctx| ctx.path.last())
@@ -51,15 +54,18 @@ impl LayoutEngine {
                     Self::object_stable_index(entry.cell_para_index, control_index.unwrap_or(0))
                 })
                 .unwrap_or(0);
+            // 셀의 편집 소유는 ImageNode.cell_context에 남기고 그리기 소속만 구분한다.
+            let behind = matches!(picture.common.text_wrap, TextWrap::BehindText);
+            // 글 앞으로 그림은 셀 본문 안에서만 앞선다. z 순서를 정할 때까지
+            // 정렬 키를 보관하되 표 전체의 쪽 그리기 계층은 덮어쓰지 않는다.
             let mut layer = RenderLayerInfo::new(
-                Some(TextWrap::BehindText),
+                behind.then_some(TextWrap::BehindText),
                 picture.common.z_order,
                 stable_index,
             );
-            // 셀의 편집 소유는 ImageNode.cell_context에 남기고 그리기 소속만 구분한다.
-            if !picture.common.flow_with_text
-                && !crate::model::border_paint::is_cell_frame_attributes(&picture.common)
-            {
+            let cell_frame =
+                behind && crate::model::border_paint::is_cell_frame_attributes(&picture.common);
+            if behind && !picture.common.flow_with_text && !cell_frame {
                 layer.independent_page_paint = parent_node
                     .children
                     .get(children_before)
@@ -67,8 +73,7 @@ impl LayoutEngine {
             }
             for child in parent_node.children.iter_mut().skip(children_before) {
                 child.set_layer(layer);
-                child.cell_frame_paint =
-                    crate::model::border_paint::is_cell_frame_attributes(&picture.common);
+                child.cell_frame_paint = cell_frame;
             }
         }
     }
@@ -175,6 +180,11 @@ impl LayoutEngine {
         };
         behind.sort_by_key(order);
         lifted.sort_by_key(order);
+        for child in &mut lifted {
+            if child.layer.is_some_and(|key| key.text_wrap.is_none()) {
+                child.layer = active_layer;
+            }
+        }
         for child in &mut behind {
             child.layer = active_layer;
             if let RenderNodeType::Image(image) = &mut child.node_type {

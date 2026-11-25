@@ -12323,6 +12323,11 @@ impl LayoutEngine {
                         // 셀의 그림·표는 기존 소유 경로가 출력한다. 앞 도형의 가로
                         // 줄 소속만 공유하고, 다른 개체를 여기서 중복 출력하지 않는다.
                         if !empty_line_tac_allowed {
+                            if let Control::Picture(picture) = ctrl {
+                                let (left, _, _, _) =
+                                    tac_picture_outer_margins_px(picture, self.dpi);
+                                tree.defer_picture_left(line_node, tac_ci, img_x + left);
+                            }
                             img_x += tac_w;
                             empty_line_mark_x = img_x;
                             empty_line_logical_end += 1;

@@ -1,0 +1,86 @@
+[
+  {
+    "case": "source",
+    "build": "base",
+    "page": 8,
+    "backend": "canvas2d",
+    "width": 136,
+    "height": 289,
+    "mean_absolute_rgb_difference_0_to_255": 66.608,
+    "capture_sha256": "fffe11eb2493e93194849406a5e4bac110e60d50d37dd6403df1829400c27c41"
+  },
+  {
+    "case": "source",
+    "build": "candidate",
+    "page": 8,
+    "backend": "canvas2d",
+    "width": 136,
+    "height": 289,
+    "mean_absolute_rgb_difference_0_to_255": 41.158,
+    "capture_sha256": "9975faf6479893becb12e9859748249c6f0d479d9412d59e7d832c461e7723b5",
+    "identical_to_devel": false
+  },
+  {
+    "case": "photo",
+    "build": "base",
+    "page": 1,
+    "backend": "canvas2d",
+    "width": 136,
+    "height": 289,
+    "mean_absolute_rgb_difference_0_to_255": 9.103,
+    "capture_sha256": "90ee5946f91b0bb497cbcd166a0615b5b6e8d2eaab089a8dbb5e46f0131f6e30"
+  },
+  {
+    "case": "photo",
+    "build": "candidate",
+    "page": 1,
+    "backend": "canvas2d",
+    "width": 136,
+    "height": 289,
+    "mean_absolute_rgb_difference_0_to_255": 9.103,
+    "capture_sha256": "90ee5946f91b0bb497cbcd166a0615b5b6e8d2eaab089a8dbb5e46f0131f6e30",
+    "identical_to_devel": true
+  },
+  {
+    "case": "normal",
+    "build": "base",
+    "page": 1,
+    "backend": "canvas2d",
+    "width": 136,
+    "height": 289,
+    "mean_absolute_rgb_difference_0_to_255": 9.103,
+    "capture_sha256": "90ee5946f91b0bb497cbcd166a0615b5b6e8d2eaab089a8dbb5e46f0131f6e30"
+  },
+  {
+    "case": "normal",
+    "build": "candidate",
+    "page": 1,
+    "backend": "canvas2d",
+    "width": 136,
+    "height": 289,
+    "mean_absolute_rgb_difference_0_to_255": 9.103,
+    "capture_sha256": "90ee5946f91b0bb497cbcd166a0615b5b6e8d2eaab089a8dbb5e46f0131f6e30",
+    "identical_to_devel": true
+  },
+  {
+    "case": "padded",
+    "build": "base",
+    "page": 1,
+    "backend": "canvas2d",
+    "width": 136,
+    "height": 289,
+    "mean_absolute_rgb_difference_0_to_255": 9.103,
+    "capture_sha256": "90ee5946f91b0bb497cbcd166a0615b5b6e8d2eaab089a8dbb5e46f0131f6e30"
+  },
+  {
+    "case": "padded",
+    "build": "candidate",
+    "page": 1,
+    "backend": "canvas2d",
+    "width": 136,
+    "height": 289,
+    "mean_absolute_rgb_difference_0_to_255": 9.103,
+    "capture_sha256": "90ee5946f91b0bb497cbcd166a0615b5b6e8d2eaab089a8dbb5e46f0131f6e30",
+    "identical_to_devel": true
+  }
+]

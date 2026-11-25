@@ -9109,6 +9109,16 @@ impl LayoutEngine {
                                     })
                                     .unwrap_or(0.0)
                                 };
+                                if !wrapped_by_width {
+                                    if let Some(left) = tree.take_cell_picture_left(
+                                        cell_node,
+                                        section_index,
+                                        cp_idx,
+                                        ctrl_idx,
+                                    ) {
+                                        inline_x = left;
+                                    }
+                                }
                                 let picture_y = tac_img_y + baseline_offset;
                                 if std::env::var("RHWP_6313_DBG").is_ok() && tac_img_y > 700.0 {
                                     let segs: Vec<(i32, i32)> = para
