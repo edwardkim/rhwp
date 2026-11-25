@@ -1,5 +1,7 @@
 # 셀 안 도형·사진·중첩 표의 검증 결과
 
+#9415를 포함한 제품 소스 `f3d137d9cbe3`에서 세 기여와 글꼴 공급을 재검증했다. [최종 전쪽 검증](current-9415/README.md)
+
 #9411을 실제 병합한 제품 소스 `8d1403eb14bb`에서도 아래의 후보 출력 220개가 같았다. [최신 devel과 병합 후보의 검증](current-develop/README.md)
 
 제품 소스 `b12b85ad6ec037fff9ce41ac6fc34b8865d93920`을 Native Skia와 최적화한 새 WASM Canvas2D로 빌드했다. 각 경로에서 71개 조합, 110쪽을 한컴 인쇄와 96 DPI로 비교했다. 아래 값은 색상 경계 보정 전 2px 실루엣의 쪽별 일치율이다. [입력·인쇄본과 SHA-256](inputs.tsv) · [한컴 직접 인쇄 기록](hancom-print.tsv) · [전체 쪽별 결과](page-comparison.tsv) · [빌드·렌더러·입력별 검증 조건](visual-manifests.json)

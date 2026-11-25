@@ -4,6 +4,8 @@
 
 **메인터너 보정 후 수용 가능.** 세 PR은 모두 `devel`을 대상으로 하고 리뷰어는 `edwardkim`이다. 원 head 세 개를 보존한 뒤 기여자가 제공한 HWP·HWPX, 한컴 직접 인쇄, 반례를 기준으로 보완했다. 최초 제출 때 검증한 제품 소스는 `b12b85ad6ec037fff9ce41ac6fc34b8865d93920`, 비교한 `devel`은 `50324d194d1cd7c46d168f07a58515086530f03b`다. [접수·원 head](hyunmyungjanelee_20261125_review_plan.md) · [보완 전 반례](hyunmyungjanelee_20261125_review_impl.md)
 
+#9415의 재저장 글상자와 크기 보호 처리를 병합한 제품 소스 `f3d137d9cbe36cae93f859baac3a29ae4a543f75`에서 같은 입력·한컴 Print로 다시 검증했다. 전체 회귀 14,166건, Native Skia 4,227건과 세 PR 및 새 기준의 집중 회귀 64건을 통과했다. [현재 기준에서 세 PR의 쪽별 결과](assets/hyunmyungjanelee-20261125/maintainer/current-9415/README.md)
+
 | 원 PR | 기여와 메인테이너 보완 결과 |
 |---|---|
 | [#9352](pr_9352_review.md) | 칸 밖에 놓인 종이 기준 도형의 위치를 보존했다. 흰 도형 안으로 보이던 표 괘선 130줄이 0줄이 됐다. 글상자 본문의 기존 수직 정렬도 유지했다. |
