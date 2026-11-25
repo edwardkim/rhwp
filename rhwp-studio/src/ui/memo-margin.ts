@@ -83,6 +83,7 @@ export class MemoMargin {
     this.guides.setAttribute('aria-hidden', 'true');
     container.after(this.panel, this.guides);
     this.cards.addEventListener('scroll', schedule, { passive: true });
+    this.setupDocumentClick();
     bus.on('memo-compose', value => this.compose(value as MemoComposeRequest));
     bus.on('memo-before-action', value => {
       const action = value as MemoActionRequest;
@@ -141,35 +142,76 @@ export class MemoMargin {
     this.schedule();
   }
 
+  private setupDocumentClick(): void {
+    let press: { x: number; y: number } | null = null;
+    this.container.addEventListener('pointerdown', event => {
+      press = event.isPrimary && event.button === 0 ? { x: event.clientX, y: event.clientY } : null;
+    });
+    this.container.addEventListener('pointermove', event => {
+      // 문서 편집기의 셀 끌기 시작 거리와 같게 적용한다.
+      if (press && Math.hypot(event.clientX - press.x, event.clientY - press.y) >= 3) press = null;
+    });
+    this.container.addEventListener('pointercancel', () => { press = null; });
+    this.container.addEventListener('pointerleave', event => {
+      if (event.pointerType === 'mouse') press = null;
+    });
+    this.container.addEventListener('click', event => {
+      const start = press;
+      press = null;
+      if (!start || event.button !== 0 || event.ctrlKey || event.altKey || event.metaKey || event.shiftKey
+        || Math.hypot(event.clientX - start.x, event.clientY - start.y) >= 3
+        || !this.visible || this.switchDialog) return;
+      const target = event.target;
+      if (target !== this.container && !(target instanceof Element
+        && target.matches('#scroll-content, #scroll-content canvas, .page-placeholder'))) return;
+
+      const clearSelection = () => {
+        this.selected = this.hovered = this.focused = null;
+        this.schedule();
+      };
+      // click 이후라 본문의 기존 캐럿 배치가 먼저 끝난 상태다.
+      if (this.composer) void this.leaveComposer(this.composer, 'document', clearSelection);
+      else clearSelection();
+    });
+  }
+
   private async switchTo(action: MemoActionRequest, composer: MemoComposer): Promise<void> {
     if (composer.request.kind === action.kind && composer.request.memoId === action.memoId) {
       this.setVisible(true);
       composer.focus();
       return;
     }
+    await this.leaveComposer(composer, 'memo', action.run);
+  }
 
-    if (composer.hasChanges()) {
-      const dialog = this.switchDialog = new MemoSwitchDialog();
-      try {
-        const choice = await dialog.ask();
-        if (this.composer !== composer) return;
-        if (choice === 'continue' || (choice === 'apply' && !composer.apply())) {
-          this.setVisible(true);
-          composer.focus();
-          return;
-        }
-        this.closeComposer(false);
-        if (choice === 'apply') {
-          // 반영된 카드가 다시 그려진 뒤 다음 작업의 입력칸을 붙인다.
-          await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
-        }
-      } finally {
-        if (this.switchDialog === dialog) this.switchDialog = null;
-      }
-    } else {
+  private async leaveComposer(
+    composer: MemoComposer, destination: 'memo' | 'document', finish: () => void,
+  ): Promise<void> {
+    if (!composer.hasChanges()) {
       this.closeComposer(false);
+      finish();
+      return;
     }
-    action.run();
+
+    const dialog = this.switchDialog = new MemoSwitchDialog(destination);
+    try {
+      const choice = await dialog.ask();
+      if (this.composer !== composer) return;
+      if (choice === 'continue' || (choice === 'apply' && !composer.apply())) {
+        this.setVisible(true);
+        composer.focus();
+        return;
+      }
+      this.closeComposer(false);
+      if (choice === 'apply' && destination === 'memo') {
+        // 반영된 카드가 다시 그려진 뒤 다음 작업의 입력칸을 붙인다.
+        await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+        if (this.switchDialog !== dialog) return;
+      }
+    } finally {
+      if (this.switchDialog === dialog) this.switchDialog = null;
+    }
+    finish();
   }
 
   private closeComposer(restoreFocus: boolean): void {
@@ -219,9 +261,9 @@ export class MemoMargin {
     const focus = () => textarea.focus({ preventScroll: true });
     const save = document.createElement('button');
     save.type = 'submit';
-    save.textContent = t('dialog.memo.applyInline');
+    save.textContent = t('dialog.memo.apply');
     const buttons = document.createElement('div');
-    buttons.append(save, action(t('dialog.memo.cancelInline'), () => this.closeComposer(true)));
+    buttons.append(save, action(t('dialog.dialog.cancelBtn.text'), () => this.closeComposer(true)));
     form.append(title, author, textarea, buttons, error);
     form.addEventListener('submit', event => {
       event.preventDefault();
@@ -279,8 +321,9 @@ export class MemoMargin {
     if (memo.editable) {
       const tools = document.createElement('div');
       tools.className = 'memo-card-actions';
-      tools.append(action(t('dialog.memo.editHere'), () => this.open(memo.id, 'update')),
-        action(t('dialog.memo.reply').replace(/^↳\s*/, ''), () => this.open(memo.id, 'reply')));
+      const edit = action(t('dialog.memo.editCard'), () => this.open(memo.id, 'update'));
+      edit.setAttribute('aria-label', t('dialog.memo.editHere'));
+      tools.append(edit, action(t('dialog.memo.reply').replace(/^↳\s*/, ''), () => this.open(memo.id, 'reply')));
       card.append(tools);
     }
     if (replies.length) {

@@ -7,8 +7,8 @@ export class MemoSwitchDialog extends ModalDialog {
   private choice: MemoSwitchChoice = 'continue';
   private resolve?: (choice: MemoSwitchChoice) => void;
 
-  constructor() {
-    super(t('dialog.memo.switchTitle'), 420);
+  constructor(private destination: 'memo' | 'document') {
+    super(t(destination === 'memo' ? 'dialog.memo.switchTitle' : 'dialog.memo.finishTitle'), 420);
   }
 
   protected createBody(): HTMLElement {
@@ -37,18 +37,19 @@ export class MemoSwitchDialog extends ModalDialog {
       this.dialog.dataset.memoSwitch = '';
       this.dialog.setAttribute('role', 'alertdialog');
       this.dialog.setAttribute('aria-modal', 'true');
-      this.dialog.setAttribute('aria-label', t('dialog.memo.switchTitle'));
+      const title = this.destination === 'memo' ? 'dialog.memo.switchTitle' : 'dialog.memo.finishTitle';
+      this.dialog.setAttribute('aria-label', t(title));
       this.dialog.setAttribute('aria-describedby', 'memo-switch-description');
       const footer = this.dialog.querySelector('.dialog-footer')!;
       const apply = footer.querySelector<HTMLButtonElement>('.dialog-btn-primary')!;
       const keep = footer.querySelector<HTMLButtonElement>('.dialog-btn:not(.dialog-btn-primary)')!;
-      apply.textContent = t('dialog.memo.switchApply');
+      apply.textContent = t(this.destination === 'memo' ? 'dialog.memo.switchApply' : 'dialog.memo.finishApply');
       keep.textContent = t('dialog.memo.switchContinue');
       this.dialog.querySelector('.dialog-close')!.setAttribute('aria-label', keep.textContent);
       const discard = document.createElement('button');
       discard.type = 'button';
       discard.className = 'dialog-btn memo-switch-discard';
-      discard.textContent = t('dialog.memo.switchDiscard');
+      discard.textContent = t(this.destination === 'memo' ? 'dialog.memo.switchDiscard' : 'dialog.memo.finishDiscard');
       discard.addEventListener('click', () => {
         this.choice = 'discard';
         this.hide();
