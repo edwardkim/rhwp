@@ -1272,3 +1272,12 @@ pre.dialog-pdf-import-json { margin: 0; max-height: 160px; overflow: auto; }
     width: 100dvw;
   }
 }
+
+[data-memo-switch] .dialog-footer { flex-wrap: wrap; }
+
+@media (max-width: 767px) {
+  .modal-overlay:has(> [data-memo-switch]) {
+    width: 100vw;
+    width: 100dvw;
+  }
+}

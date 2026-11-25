@@ -14,6 +14,7 @@ export type MemoEdit = { kind: 'insert'; author: string; text: string }
 export interface MemoComposeRequest {
   kind: 'insert' | 'update' | 'reply';
   cardId: number | null;
+  memoId: number | null;
   anchor?: MemoAnchor;
   restoreFocus: () => void;
   author: string;
@@ -98,4 +99,11 @@ export function validateMemoEdit(edit: MemoEdit, memos: readonly MemoInfo[]): vo
   if (edit.kind === 'remove' && countMemoReplies(edit.id, memos) !== (edit.confirmedReplies ?? 0)) {
     throw new Error(t(edit.confirmedReplies === undefined ? 'dialog.memo.hasReplies' : 'dialog.memo.changed'));
   }
+}
+
+export interface MemoActionRequest {
+  kind: MemoComposeRequest['kind'] | 'view' | 'remove';
+  memoId: number | null;
+  handled: boolean;
+  run: () => void;
 }

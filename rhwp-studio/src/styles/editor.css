@@ -228,7 +228,12 @@
 .memo-card-actions button { min-height: 24px; }
 .memo-card details { border-top: 1px solid var(--ui-note-border); font-size: 12px; }
 .memo-card summary { cursor: pointer; padding: 3px; }
-.memo-card-reply { margin-inline-start: 7px; border-inline-start: 2px solid var(--ui-note-border); }
+.memo-card-reply {
+  margin-inline-start: 7px;
+  border-inline-start: 2px solid var(--ui-note-border);
+  padding: 5px 0 5px 5px;
+}
+.memo-card-reply + .memo-card-reply { border-top: 1px solid var(--ui-note-border); }
 .memo-inline-editor { display: grid; gap: 6px; min-width: 0; }
 .memo-margin > .memo-inline-editor { grid-row: 2; margin: 4px; }
 .memo-margin:has(> .memo-inline-editor) { grid-template-rows: auto auto minmax(0, 1fr); }

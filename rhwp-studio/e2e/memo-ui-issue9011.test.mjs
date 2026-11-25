@@ -618,7 +618,9 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
   await page.waitForSelector(card + ' details summary');
   assert.equal(await page.$eval(card + ' details summary', e => e.textContent), '댓글 1개');
   await page.click(card + ' details summary');
-  assert.ok((await page.$eval(card + ' .memo-reply-open', e => e.textContent)).endsWith(longReply));
+  assert.equal(await page.$eval(card + ' .memo-card-reply header strong', el => el.textContent), '검토담당작성자'.repeat(7));
+  assert.ok(await page.$eval(card + ' .memo-card-reply time', el => el.dateTime));
+  assert.equal(await page.$eval(card + ' .memo-reply-open', el => el.textContent), longReply);
   await page.click(card + ' header', { button: 'right' });
   await page.waitForSelector('.context-menu .md-item', { visible: true });
   await page.click('.context-menu .md-item:last-child');
@@ -682,7 +684,9 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
     if (await page.$eval(card + ' details', details => !details.open)) await page.click(card + ' summary');
     assert.equal(await page.$eval(card, item => {
       const reply = item.querySelector('.memo-reply-open');
+      const author = item.querySelector('.memo-card-reply strong');
       return item.scrollWidth <= item.clientWidth + 1 && reply.scrollWidth <= reply.clientWidth + 1
+        && author.scrollWidth <= author.clientWidth + 1
         && reply.offsetHeight > parseFloat(getComputedStyle(reply).fontSize) * 2;
     }), true, width + 'px에서 긴 작성자와 URL이 여백 카드 안에서 줄바꿈된다');
   }
@@ -702,6 +706,60 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
   await page.keyboard.press('Escape');
   assert.equal(await page.$eval(memoMenu, menu => menu.open), false);
   console.log('  보기 메모 하위 메뉴, 320·390·600px 목록·카드 줄바꿈, 호버와 키보드 펼치기');
+
+  const replyButton = card + ' .memo-reply-open';
+  const otherMemo = (await state(page)).find(memo => memo.text === '빠른 메뉴 선택 메모');
+  const otherCard = '.memo-card[data-memo-id="' + otherMemo.id + '"]';
+  const otherEdit = otherCard + ' .memo-card-actions button:first-child';
+  const inlineField = '.memo-inline-editor textarea';
+  const choice = '[data-memo-switch]';
+  const draftValue = value => page.$eval(inlineField, (field, text) => { field.value = text; }, value);
+  const textOfDraft = () => page.$eval(inlineField, field => field.value);
+  const chooseSwitch = async button => {
+    await page.waitForSelector(choice, { visible: true });
+    await page.click(choice + ' ' + button);
+    await page.waitForSelector(choice, { hidden: true });
+  };
+  await page.click(replyButton);
+  await page.waitForSelector(inlineField + ':focus');
+  await page.click(otherEdit);
+  assert.equal(await textOfDraft(), otherMemo.text, '변경이 없으면 다른 편집으로 바로 전환');
+  assert.equal(await page.$(choice), null);
+
+  await draftValue('반영하지 않을 본문 메모 수정');
+  await page.click(otherEdit);
+  assert.equal(await textOfDraft(), '반영하지 않을 본문 메모 수정', '같은 항목은 작성 중 내용 유지');
+  assert.equal(await page.$(choice), null);
+  await page.click(replyButton);
+  await page.waitForSelector(choice, { visible: true });
+  assert.equal(await focused(), '계속 편집');
+  await page.keyboard.press('Escape');
+  await page.waitForSelector(inlineField + ':focus');
+  assert.equal(await textOfDraft(), '반영하지 않을 본문 메모 수정', 'Esc는 원래 편집으로 복귀');
+  await page.click(replyButton);
+  await chooseSwitch('.memo-switch-discard');
+  assert.equal(await textOfDraft(), longReply);
+  assert.equal((await state(page)).find(memo => memo.id === otherMemo.id).text, otherMemo.text);
+
+  await draftValue('');
+  await page.click(otherEdit);
+  await chooseSwitch('.dialog-btn-primary');
+  assert.equal(await textOfDraft(), '');
+  assert.match(await page.$eval('.memo-inline-editor [role="alert"]', el => el.textContent), /내용을 입력/);
+  assert.equal(await page.$eval(inlineField, el => el.closest('.memo-card').dataset.memoId), String(cellMemo.id));
+
+  await draftValue('전환 전에 반영한 댓글');
+  await page.click(otherCard + ' .memo-card-open');
+  await chooseSwitch('.dialog-btn-primary');
+  await page.waitForSelector('#memo-text', { visible: true });
+  assert.equal(await page.$eval('#memo-text', el => el.value), otherMemo.text);
+  assert.equal(await page.$('.memo-inline-editor'), null);
+  assert.ok((await state(page)).some(memo => memo.text === '전환 전에 반영한 댓글'));
+  await fill(page, '전환 뒤 수정한 본문 메모');
+  await page.click('[data-memo-dialog] .dialog-btn-primary');
+  assert.equal((await state(page)).find(memo => memo.id === otherMemo.id).text, '전환 뒤 수정한 본문 메모');
+  await close(page);
+  console.log('  댓글 작성자·시각·본문, 바로 전환·계속 편집·버리기·반영·반영 실패');
 
   await toggleMemoView(page, 'view:memo-guides');
   await createNewDocument(page);
