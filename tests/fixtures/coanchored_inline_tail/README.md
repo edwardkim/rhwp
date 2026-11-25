@@ -8,3 +8,11 @@
 
 - HWP SHA-256 `5ce948af486c1c745153fa21e49479dcba1031bd2eefa97f1a889795b8261f18`
 - PDF SHA-256 `56f20f5abfdce8ccf3555d6e73b487de2c603b9b0d647f04fdc91d6cd3c4763d`
+
+## 한컴 재저장 대조군
+
+- [160% 재저장본](negative-spacing-hancom-resaved.hwp)과 [독립 Print PDF](../../../pdf/coanchored-inline-tail-negative-spacing/negative-spacing-hancom-resaved-2020.pdf)
+- [90% 재저장본](negative-spacing-90-percent-hancom-resaved.hwp)과 [독립 Print PDF](../../../pdf/coanchored-inline-tail-negative-spacing/negative-spacing-90-percent-hancom-resaved-2020.pdf)
+
+한컴 2020 11.0.0.9172의 재저장·인쇄 영수증과 Native·fresh WASM 전쪽 TSV는
+[통합 검토 증거](../../../mydocs/pr/assets/puckqook-9042-integration/README.md#한컴-재저장-대조군)에 있다.
