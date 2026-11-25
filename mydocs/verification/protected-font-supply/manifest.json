@@ -3,11 +3,11 @@
   "baseline": {
     "manifest": {
       "path": "mydocs/pr/assets/visual-protected-baseline/manifest.json",
-      "sha256": "2f744b6f090c7568b76a2575c7972c57dbc47ef1a308987595c69199db3938df"
+      "sha256": "3efd53d82c2897301df951fd8d38294777167d6614558559532e255a6c98aa6b"
     },
     "table": {
       "path": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
-      "sha256": "2e51f8ff60713ce2a4d4cca53ce19fd861e19a9915dad7606de07b94620124ae"
+      "sha256": "1f7ac7a52290acef829c03e15f2dd27e23c6a3450415266d4cc4067b70dfdcc8"
     }
   },
   "accepted_sha256_pairs": {
@@ -12567,7 +12567,7 @@
         }
       ]
     },
-    "80fb086e8bef6668": {
+    "ffed1691eeb8b824": {
       "files": [
         {
           "filename": "HMKMM.TTF",
@@ -12588,6 +12588,10 @@
         {
           "filename": "pala.ttf",
           "sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d"
+        },
+        {
+          "filename": "HMKMG.TTF",
+          "sha256": "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280"
         }
       ]
     },
@@ -16946,7 +16950,7 @@
       "dpi": 96,
       "backends": {
         "native": {
-          "font_set": "80fb086e8bef6668",
+          "font_set": "ffed1691eeb8b824",
           "inventory_kind": "recorded_supply",
           "inventory_source": {
             "path": "mydocs/verification/protected-font-supply/records/recorded-system-font-inventory.json",

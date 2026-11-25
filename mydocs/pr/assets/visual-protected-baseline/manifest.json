@@ -3,7 +3,7 @@
   "created_at": "2026-11-08T22:37:56.286882+09:00",
   "baseline_kind": "수용된 전쪽 검증과 개별 승인 조정을 반영한 보호 하한. CI·병합 상태는 별도 기록한다.",
   "table": "final.tsv",
-  "table_sha256": "2e51f8ff60713ce2a4d4cca53ce19fd861e19a9915dad7606de07b94620124ae",
+  "table_sha256": "1f7ac7a52290acef829c03e15f2dd27e23c6a3450415266d4cc4067b70dfdcc8",
   "row_count": 4046,
   "document_count": 23,
   "dataset_count": 46,
@@ -4408,21 +4408,21 @@
         "radius_px": 2
       },
       "page_count": 74,
-      "accepted_at": "2026-11-25T20:45:01.506105+09:00",
+      "accepted_at": "2026-11-25T20:59:46.983722+09:00",
       "source": {
         "pr": null,
-        "evidence_commit": "882451d176d43e9571f5ba3bdaf0f4be555bfeea",
+        "evidence_commit": "d10cd17985e2051647d0263d60fac4d351ce43c3",
         "code_commit": "8355876d60cb96ff9ec36104202aef208aec7df1",
-        "path": "mydocs/pr/assets/planet6897_20261125/protected-native-mac/decree/silhouette.tsv",
-        "sha256": "66433cdacda5567ec1afa2ba8f8d5db06247bda10f9a64a5e6f945d6bf08021d",
+        "path": "mydocs/pr/assets/planet6897_20261125/protected-native-mac/decree-ttf/silhouette.tsv",
+        "sha256": "71762c0b40f0cb54b8b352b2c6865fbe64bc9c3a3d1f8e469f6e33541bdf2ed5",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/planet6897_20261125/protected-native-mac/validation.json",
-        "condition_evidence_sha256": "111ca6ee6a6a95e2601bc8673a3e5fb88ee55351dbceedb05b8974a1e1c2802c",
+        "condition_evidence": "mydocs/pr/assets/planet6897_20261125/protected-native-mac/decree-ttf/validation.json",
+        "condition_evidence_sha256": "a62e656d2fb8919e066a7fbe125d4462501acc21327ee6b52c7cdaa6f6222931",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
-      "minimum_display": "99.90",
+      "minimum_display": "99.98",
       "source_history": [
         {
           "pr": null,
@@ -4463,19 +4463,32 @@
           "page_column": "page",
           "document_filter": null,
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "882451d176d43e9571f5ba3bdaf0f4be555bfeea",
+          "code_commit": "8355876d60cb96ff9ec36104202aef208aec7df1",
+          "path": "mydocs/pr/assets/planet6897_20261125/protected-native-mac/decree/silhouette.tsv",
+          "sha256": "66433cdacda5567ec1afa2ba8f8d5db06247bda10f9a64a5e6f945d6bf08021d",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/planet6897_20261125/protected-native-mac/validation.json",
+          "condition_evidence_sha256": "111ca6ee6a6a95e2601bc8673a3e5fb88ee55351dbceedb05b8974a1e1c2802c",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ],
       "previous_source": {
         "pr": null,
-        "evidence_commit": "70fca853bee65aba00820c5dbe39d0f4aa899d86",
-        "code_commit": "521f69d19da9176e7947ceb318cf9838bec5ca75",
-        "condition_evidence": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json",
-        "condition_evidence_sha256": "96f0acd6b6345f20f5667d0515eab42b21baa79774eeee5760c9644127d56f81",
-        "path": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/decree.tsv",
-        "sha256": "71762c0b40f0cb54b8b352b2c6865fbe64bc9c3a3d1f8e469f6e33541bdf2ed5",
+        "evidence_commit": "882451d176d43e9571f5ba3bdaf0f4be555bfeea",
+        "code_commit": "8355876d60cb96ff9ec36104202aef208aec7df1",
+        "path": "mydocs/pr/assets/planet6897_20261125/protected-native-mac/decree/silhouette.tsv",
+        "sha256": "66433cdacda5567ec1afa2ba8f8d5db06247bda10f9a64a5e6f945d6bf08021d",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/planet6897_20261125/protected-native-mac/validation.json",
+        "condition_evidence_sha256": "111ca6ee6a6a95e2601bc8673a3e5fb88ee55351dbceedb05b8974a1e1c2802c",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       }
     },
@@ -5434,9 +5447,22 @@
       "evaluated_row_count": 91,
       "decreased_row_count": 14,
       "increased_row_count": 0
+    },
+    {
+      "pr": null,
+      "code_commit": "8355876d60cb96ff9ec36104202aef208aec7df1",
+      "evidence_commit": "d10cd17985e2051647d0263d60fac4d351ce43c3",
+      "accepted_at": "2026-11-25T20:59:46.983722+09:00",
+      "condition_evidence": "mydocs/pr/assets/planet6897_20261125/protected-native-mac/decree-ttf/validation.json",
+      "condition_evidence_sha256": "a62e656d2fb8919e066a7fbe125d4462501acc21327ee6b52c7cdaa6f6222931",
+      "registration_receipt": "mydocs/pr/assets/visual-protected-baseline/updates/planet6897-decree-hmkmg-20261125.json",
+      "acceptance_basis": "휴먼고딕 TTF 공급으로 시행령 Native 74쪽의 조정 전 보호값을 복원했다.",
+      "evaluated_row_count": 74,
+      "increased_row_count": 4,
+      "decreased_row_count": 0
     }
   ],
-  "updated_at": "2026-11-25T20:45:01.506105+09:00",
-  "previous_table_sha256": "be050f801ed2f2152017357249f4b7c1068dc83c50347266d16599d61a1f4a5c",
+  "updated_at": "2026-11-25T20:59:46.983722+09:00",
+  "previous_table_sha256": "2e51f8ff60713ce2a4d4cca53ce19fd861e19a9915dad7606de07b94620124ae",
   "deduplication_scope": "source_dataset_count·removed_duplicate_datasets·deduplicated_sources는 최초 통합의 이력이다. 현행 46개 데이터셋은 기존 18문서·36개 데이터셋의 수용 출처와 후속 상승 기록을 보존하고, 2026-11-18의 동일 최종 전쪽 실행에서 다섯 원본·10개 데이터셋을 추가한 결과다. 각 데이터셋의 source와 source_history를 따른다."
 }

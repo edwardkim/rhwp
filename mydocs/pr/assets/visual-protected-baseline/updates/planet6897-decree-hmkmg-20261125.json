@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "candidate_source": "8355876d60cb96ff9ec36104202aef208aec7df1",
+  "evidence_commit": "d10cd17985e2051647d0263d60fac4d351ce43c3",
+  "previous_table_sha256": "2e51f8ff60713ce2a4d4cca53ce19fd861e19a9915dad7606de07b94620124ae",
+  "table_sha256": "1f7ac7a52290acef829c03e15f2dd27e23c6a3450415266d4cc4067b70dfdcc8",
+  "compared_native_rows": 74,
+  "increased_rows": [
+    {
+      "page": 9,
+      "previous": "99.90",
+      "accepted": "100.00"
+    },
+    {
+      "page": 32,
+      "previous": "99.93",
+      "accepted": "100.00"
+    },
+    {
+      "page": 50,
+      "previous": "99.93",
+      "accepted": "100.00"
+    },
+    {
+      "page": 66,
+      "previous": "99.93",
+      "accepted": "100.00"
+    }
+  ]
+}
