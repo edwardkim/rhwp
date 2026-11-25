@@ -9059,6 +9059,15 @@ pub(crate) fn nested_table_takes_no_flow(
             || stored_overlay_host_flow_line(host, cell.paragraphs.get(para_idx + 1)).is_some())
 }
 
+pub(crate) fn cell_contains_detached_paragraph_table(cell: &crate::model::table::Cell) -> bool {
+    cell.paragraphs.iter().enumerate().any(|(pi, paragraph)| {
+        paragraph.controls.iter().any(|control| {
+            matches!(control, Control::Table(child)
+                if nested_table_is_overlay(child) && nested_table_takes_no_flow(cell, pi, child))
+        })
+    })
+}
+
 fn stored_empty_flow_lines(para: &Paragraph) -> Option<&[crate::model::paragraph::LineSeg]> {
     use crate::model::paragraph::LineSeg;
     if para_has_non_whitespace_text(para)

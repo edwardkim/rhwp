@@ -1188,8 +1188,9 @@ pub struct OverlayRowFragment {
     pub opening_height: f64,
     pub remaining_height: f64,
     pub owns_stored_frame: bool,
+    pub fully_consumed: bool,
 }
-crate::storage::clone_fields!(OverlayRowFragment, {end_cut, opening_height, remaining_height, owns_stored_frame});
+crate::storage::clone_fields!(OverlayRowFragment, {end_cut, opening_height, remaining_height, owns_stored_frame, fully_consumed});
 
 /// [#4568] 쪽을 넘긴 overlay 표의 잔여 행 조각.
 #[derive(Debug, Clone)]

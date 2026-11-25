@@ -893,7 +893,7 @@ fn measured_rows_match_declared(measured: &MeasuredTable, table: &Table, dpi: f6
 }
 
 /// 행 `row` 의 선언 높이(px) — 그 행에서 세로 병합 없는 칸의 최댓값.
-fn declared_row_height_px(table: &Table, row: usize, dpi: f64) -> f64 {
+pub(crate) fn declared_row_height_px(table: &Table, row: usize, dpi: f64) -> f64 {
     table
         .cells
         .iter()

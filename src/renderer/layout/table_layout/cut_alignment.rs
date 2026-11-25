@@ -44,7 +44,7 @@ impl LayoutEngine {
                 - trailing
                 + window
                     .last()
-                    .and_then(|unit| unit.overlay_cut_bottom_margin)
+                    .and_then(|unit| unit.overlay_cut_bottom_margin())
                     .unwrap_or(0.0)
         } else {
             0.0

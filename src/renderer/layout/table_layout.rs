@@ -1936,7 +1936,7 @@ pub(super) struct CellUnit {
     /// 같은 행 생산자가 계상한 호스트 공간. 자식 내용 컷의 물리 높이와 분리한다.
     nested_row_flow_edges: Option<reflowed_nested_row::NestedRowFlowEdges>,
     /// 이 유닛에서 실제로 잘릴 때만 다시 닫히는 자식 표의 아래 바깥여백.
-    overlay_cut_bottom_margin: Option<f64>,
+    overlay_row: Option<OverlayChildRow>,
     /// [#4069] `CELL` 분할 중첩 표의 한 행을 셀별 cursor로 더 잘게 나눈 조각.
     /// 바깥 CellUnit 컷이 이 조각을 선택하면 렌더러도 같은 자식 컷을 사용한다.
     nested_table_fragment: Option<NestedTableUnitCut>,
@@ -1974,7 +1974,17 @@ pub(super) struct CellUnit {
     carried_float_lead: f64,
 }
 
+#[derive(Debug, Clone, Copy)]
+struct OverlayChildRow {
+    control_index: usize,
+    bottom_margin_at_cut: Option<f64>,
+}
+
 impl CellUnit {
+    fn overlay_cut_bottom_margin(&self) -> Option<f64> {
+        self.overlay_row.and_then(|row| row.bottom_margin_at_cut)
+    }
+
     /// 원본 개체 프레임의 남은 빈 띠는 앞 글줄의 문단을 참조하되 그 잉크를 소유하지 않는다.
     pub(super) fn is_stored_blank_frame_tail(&self) -> bool {
         self.empty_spacer
@@ -16514,7 +16524,7 @@ impl LayoutEngine {
                     vis_end: li + 1,
                     nested_row: None,
                     nested_row_flow_edges: None,
-                    overlay_cut_bottom_margin: None,
+                    overlay_row: None,
                     nested_table_fragment: None,
                     mixed_nested_fragment: false,
                     mixed_nested_trailing: false,
@@ -16559,7 +16569,7 @@ impl LayoutEngine {
                 vis_end: 1,
                 nested_row: None,
                 nested_row_flow_edges: None,
-                overlay_cut_bottom_margin: None,
+                overlay_row: None,
                 nested_table_fragment: None,
                 mixed_nested_fragment: false,
                 mixed_nested_trailing: false,
@@ -17063,7 +17073,7 @@ impl LayoutEngine {
                         vis_end: 0,
                         nested_row: None,
                         nested_row_flow_edges: None,
-                        overlay_cut_bottom_margin: None,
+                        overlay_row: None,
                         nested_table_fragment: None,
                         mixed_nested_fragment: false,
                         mixed_nested_trailing: false,
@@ -17104,7 +17114,7 @@ impl LayoutEngine {
                     vis_end: 0,
                     nested_row: None,
                     nested_row_flow_edges: None,
-                    overlay_cut_bottom_margin: None,
+                    overlay_row: None,
                     nested_table_fragment: None,
                     mixed_nested_fragment: false,
                     mixed_nested_trailing: false,
@@ -18582,7 +18592,7 @@ impl LayoutEngine {
                                         vis_end: line_count.max(1),
                                         nested_row: Some(ri),
                                         nested_row_flow_edges: Some(flow_edges),
-                                        overlay_cut_bottom_margin: None,
+                                        overlay_row: None,
                                         nested_table_fragment: Some(fragment),
                                         mixed_nested_fragment: false,
                                         mixed_nested_trailing: false,
@@ -18776,7 +18786,7 @@ impl LayoutEngine {
                             vis_end: line_count.max(1),
                             nested_row: Some(ri),
                             nested_row_flow_edges: Some(flow_edges),
-                            overlay_cut_bottom_margin: None,
+                            overlay_row: None,
                             // Repeated headers require a child row cursor even
                             // when every body row is atomic. A scalar viewport
                             // cannot represent the additional header ownership.
@@ -19052,7 +19062,7 @@ impl LayoutEngine {
                                 vis_end: line_count,
                                 nested_row: None,
                                 nested_row_flow_edges: None,
-                                overlay_cut_bottom_margin: None,
+                                overlay_row: None,
                                 nested_table_fragment: None,
                                 mixed_nested_fragment: true,
                                 mixed_nested_trailing: fragment.trailing,
@@ -19183,7 +19193,7 @@ impl LayoutEngine {
                             vis_end: li + 1,
                             nested_row: None,
                             nested_row_flow_edges: None,
-                            overlay_cut_bottom_margin: None,
+                            overlay_row: None,
                             nested_table_fragment: None,
                             mixed_nested_fragment: false,
                             mixed_nested_trailing: false,
@@ -19351,7 +19361,7 @@ impl LayoutEngine {
                                     vis_end: line_count,
                                     nested_row: Some(fragment.row),
                                     nested_row_flow_edges: None,
-                                    overlay_cut_bottom_margin: None,
+                                    overlay_row: None,
                                     nested_table_fragment: Some(fragment.cut),
                                     mixed_nested_fragment: false,
                                     mixed_nested_trailing: false,
@@ -19465,7 +19475,7 @@ impl LayoutEngine {
                                 vis_end: line_count,
                                 nested_row: None,
                                 nested_row_flow_edges: None,
-                                overlay_cut_bottom_margin: None,
+                                overlay_row: None,
                                 nested_table_fragment: None,
                                 mixed_nested_fragment: true,
                                 mixed_nested_trailing: fragment.trailing,
@@ -19740,7 +19750,7 @@ impl LayoutEngine {
                     },
                     nested_row: None,
                     nested_row_flow_edges: None,
-                    overlay_cut_bottom_margin: None,
+                    overlay_row: None,
                     nested_table_fragment: None,
                     mixed_nested_fragment: false,
                     mixed_nested_trailing: false,
@@ -19912,7 +19922,7 @@ impl LayoutEngine {
                         },
                         nested_row: None,
                         nested_row_flow_edges: None,
-                        overlay_cut_bottom_margin: None,
+                        overlay_row: None,
                         nested_table_fragment: None,
                         mixed_nested_fragment: false,
                         mixed_nested_trailing: false,
@@ -20310,12 +20320,12 @@ impl LayoutEngine {
         let mut seen_para: Option<usize> = None;
         // (표 바깥 상자 끝, 조각들(끝 위치, 행, 행 안 컷), 호스트 문단)
         type Piece = (f64, usize, Option<NestedTableUnitCut>);
-        let mut reach: Option<(f64, Vec<Piece>, usize, f64)> = None;
+        let mut reach: Option<(f64, Vec<Piece>, usize, OverlayChildRow)> = None;
         for unit in units.iter() {
             if seen_para != Some(unit.para_idx) {
                 seen_para = Some(unit.para_idx);
                 if let Some(para) = cell.paragraphs.get(unit.para_idx) {
-                    for control in &para.controls {
+                    for (control_index, control) in para.controls.iter().enumerate() {
                         let Control::Table(child) = control else {
                             continue;
                         };
@@ -20370,14 +20380,20 @@ impl LayoutEngine {
                             frame.end,
                             pieces,
                             unit.para_idx,
-                            hwpunit_to_px(i32::from(child.outer_margin_bottom), self.dpi),
+                            OverlayChildRow {
+                                control_index,
+                                bottom_margin_at_cut: Some(hwpunit_to_px(
+                                    i32::from(child.outer_margin_bottom),
+                                    self.dpi,
+                                )),
+                            },
                         ));
                     }
                 }
             }
             origin += unit.height;
         }
-        let Some((end, pieces, host_para, bottom_margin)) = reach else {
+        let Some((end, pieces, host_para, owner)) = reach else {
             return;
         };
         // 높이 유닛은 표의 호스트 문단에 속하되 글줄은 갖지 않는다(호스트 글줄 끝 위치).
@@ -20415,7 +20431,14 @@ impl LayoutEngine {
                 vis_end: host_vis_end,
                 nested_row: Some(row),
                 nested_row_flow_edges: None,
-                overlay_cut_bottom_margin: (index + 1 < piece_count).then_some(bottom_margin),
+                overlay_row: Some(OverlayChildRow {
+                    bottom_margin_at_cut: if index + 1 < piece_count {
+                        owner.bottom_margin_at_cut
+                    } else {
+                        None
+                    },
+                    ..owner
+                }),
                 nested_table_fragment: cut,
                 mixed_nested_fragment: false,
                 mixed_nested_trailing: false,
@@ -20436,24 +20459,46 @@ impl LayoutEngine {
         }
     }
 
-    /// 장식 표의 끝 컷이 실제로 중첩 표의 행 중간을 가르는지 확인한다.
-    pub(crate) fn row_cut_splits_cell_overlay(
+    /// A whole child row may close at a page boundary within the unused part
+    /// of its declared height. Every cell's content and padding must still fit.
+    /// A rowspan or a recursive text cut needs its own row plan.
+    fn compressible_overlay_row_height(
         &self,
-        table: &crate::model::table::Table,
-        row: usize,
-        cut: &[usize],
+        cell: &crate::model::table::Cell,
+        unit: &CellUnit,
         styles: &ResolvedStyleSet,
-    ) -> bool {
-        Self::row_cut_cell_order(table, row)
-            .into_iter()
-            .zip(cut)
-            .any(|(index, &end)| {
-                let cell = &table.cells[index];
-                let units = self.cell_units(cell, table, styles);
-                end.checked_sub(1)
-                    .and_then(|last| units.get(last))
-                    .is_some_and(|unit| unit.overlay_cut_bottom_margin.is_some())
-            })
+    ) -> f64 {
+        let (Some(owner), Some(row), None) = (
+            unit.overlay_row,
+            unit.nested_row,
+            &unit.nested_table_fragment,
+        ) else {
+            return 0.0;
+        };
+        let Some(Control::Table(child)) = cell
+            .paragraphs
+            .get(unit.para_idx)
+            .and_then(|para| para.controls.get(owner.control_index))
+        else {
+            return 0.0;
+        };
+        let mut minimum = 0.0_f64;
+        let mut nominal = 0.0_f64;
+        for child_cell in &child.cells {
+            let start = usize::from(child_cell.row);
+            if row < start || row >= start + usize::from(child_cell.row_span) {
+                continue;
+            }
+            if child_cell.row_span != 1 {
+                return 0.0;
+            }
+            let (_, _, top, bottom) =
+                self.resolve_stored_nested_cell_padding(child_cell, child, styles);
+            minimum = minimum
+                .max(self.cell_units_content_height(child_cell, child, styles) + top + bottom);
+            nominal = nominal.max(hwpunit_to_px(child_cell.height as i32, self.dpi));
+        }
+        (nominal - minimum).max(0.0).min(unit.height)
     }
 
     /// 저장 줄 없는 문단의 글 앞/뒤 중첩 표는 글줄을 밀지 않지만 칸 내용의 끝은 그 표의
@@ -25808,7 +25853,7 @@ impl LayoutEngine {
                     }
                 }
                 let candidate_height = source_opening_height.unwrap_or(h + u.height)
-                    + u.overlay_cut_bottom_margin.unwrap_or(0.0);
+                    + u.overlay_cut_bottom_margin().unwrap_or(0.0);
                 let capacity_tolerance = capacity_tolerance::for_next_unit(
                     cell,
                     u,
@@ -25818,6 +25863,12 @@ impl LayoutEngine {
                     ROW_CUT_CAPACITY_FP_EPSILON_PX,
                 );
                 if j > start && candidate_height > avail_height + capacity_tolerance {
+                    let excess = candidate_height - avail_height;
+                    if excess <= self.compressible_overlay_row_height(cell, u, styles) {
+                        h += (u.height - excess).max(0.0);
+                        j += 1;
+                        break;
+                    }
                     if std::env::var("RHWP_DIAG_6368").is_ok() {
                         let over = h + u.height - avail_height;
                         if over <= 2.0 {
@@ -28940,7 +28991,7 @@ impl LayoutEngine {
                 .and_then(|i| units.get(i))
                 .is_some_and(|previous| {
                     previous.para_idx == unit.para_idx
-                        && previous.overlay_cut_bottom_margin.is_some()
+                        && previous.overlay_cut_bottom_margin().is_some()
                 });
         if unit.nested_table_fragment.is_none() && !resumes_overlay_rows {
             return 0.0;
@@ -30497,7 +30548,7 @@ impl LayoutEngine {
             let content = content
                 + units[su..eu]
                     .last()
-                    .and_then(|unit| unit.overlay_cut_bottom_margin)
+                    .and_then(CellUnit::overlay_cut_bottom_margin)
                     .unwrap_or(0.0);
             let (_, _, pad_top, pad_bottom) =
                 self.resolve_stored_nested_cell_padding(cell, table, styles);
@@ -31052,7 +31103,7 @@ mod row_cut_tests {
             vis_end,
             nested_row: None,
             nested_row_flow_edges: None,
-            overlay_cut_bottom_margin: None,
+            overlay_row: None,
             nested_table_fragment: None,
             mixed_nested_fragment: false,
             mixed_nested_trailing: false,
@@ -31100,7 +31151,7 @@ mod row_cut_tests {
             vis_end: 1,
             nested_row: None,
             nested_row_flow_edges: None,
-            overlay_cut_bottom_margin: None,
+            overlay_row: None,
             nested_table_fragment: None,
             mixed_nested_fragment: true,
             mixed_nested_trailing: false,
