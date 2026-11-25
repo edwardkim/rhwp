@@ -3322,6 +3322,36 @@ impl LayoutEngine {
                         );
                     }
                 }
+                // [#9000] 쪽을 넘어 닫힌 빈 블록 표 host 뒤 문단은 이 조각이 연 저장 프레임의
+                // vpos 에 놓인다(조각 내용 위 = 프레임 원점). 행 컷 높이(`row_cut_height`)도
+                // 같은 당김을 뺀다.
+                if cp_idx > 0
+                    && start_line == 0
+                    && start_line < end_line
+                    && cut_units.is_some_and(|cut| {
+                        self.fragment_opens_split_block_host_frame(
+                            cell,
+                            table,
+                            styles,
+                            cut,
+                            cp_idx - 1,
+                        )
+                    })
+                {
+                    if let Some(line) = para.line_segs.first() {
+                        let spacing_before = styles
+                            .para_styles
+                            .get(para.para_shape_id as usize)
+                            .map_or(0.0, |style| style.spacing_before.max(0.0));
+                        para_y -= self.split_block_host_successor_pull(
+                            &cell.paragraphs[cp_idx - 1],
+                            para,
+                            styles,
+                            para_y + spacing_before,
+                            text_y_start + hwpunit_to_px(line.vertical_pos, self.dpi),
+                        );
+                    }
+                }
                 let para_y_before_compose = para_y;
                 let paragraph_picture_band =
                     crate::renderer::float_placement::paragraph_picture_band(para, self.dpi)

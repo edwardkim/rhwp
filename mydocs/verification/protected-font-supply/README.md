@@ -14,6 +14,23 @@
   명시된 해시의 `DotumChe-Regular.ttf`를 공급할 수 있다.
   종합부동산세법(`issue7905`)에는 Windows 10의 Arial·Courier New·Times New Roman 각 4종과
   `gulim.ttc`의 검증된 해시를 허용한다. `sample10`의 Native 공급 목록에도 같은 해시를 허용한다.
+  `yeongwol`과 `sample16` 저장본 3종은 설치본 `HYHWPEQ.TTF`(`a3a3cd992a89…`)를 기준으로 사용한다.
+  이전 해시 `c4f768c176ce…`는 같은 문서의 검증된 공급 파일에서만 허용한다. 수식 글꼴은 다운로드
+  폴더에서 직접 공급하지 않고 사용자·시스템 설치 경로나 해시를 확인한 검증용 사본을 사용한다.
+- 시행령(`decree`)과 중첩 표(`nested`)의 Native·WASM은 Mac 사용자 설치본과 같은
+  Palatino Linotype Regular(`pala.ttf`, SHA-256 `e47d594e2e2b…`)를 공급한다.
+  시행령의 휴먼고딕 `HMKMG.TTF`와 휴먼명조 `HMKMM.TTF`는 각각 사용자 글꼴 폴더의
+  `HMKMG_MAC.TTF`, `HMKMM_MAC.TTF`도 공급할 수 있다. 문서별 허용 SHA-256을 확인한다.
+  Mac 설치본을 공급한 Native·fresh WASM의 74쪽 표시값이 기존 공급 조건과 모두 같았다.
+- Mac용 `HMK*_MAC.TTF`는 Native·fresh WASM의 전쪽 표시값이 모두 일치한 문서의
+  `accepted_sha256_pairs`에 등록한다. Mac에서는 해당 파일을 사용자 글꼴 폴더에서 직접
+  공급한다. Windows TTF에 대응하는 Mac 파일은 시행령, 화학물질 표시 기준, 영월, 개요 번호,
+  sample16 저장본 3종 및 행정업무운영 편람 HWP·HWPX에서 검증했다. 두 경로의 2,296쪽
+  표시값이 각각 기존 기준과 일치했다. 영월과 sample16 저장본 3종은 Mac 파일로 해당 OTF까지
+  함께 대체한 392쪽의 값이 모두 일치해 그 허용 쌍도 등록했다. 중첩 표의 휴먼고딕은
+  `HMKMG.otf`를 유지한다.
+- 개요 번호(`outline`)와 종합부동산세법(`issue7905`)은 매니페스트에 기록한 OTF 글꼴을 사용한다.
+  같은 파일명의 설치본도 해시가 다를 수 있으므로 Native·WASM에서 파일 순서와 SHA-256을 확인한다.
 - `font_environment`가 있으면 해당 JSON을 `--font-environment`로 지정한다.
 - 선택 우선순위는 manifest의 `selection_order`를 따른다.
 - `accepted_font_set`, `accepted_font_environment`와 `records/`는 수용 당시의 비교 근거이며, 현재 전쪽 재검증 상태는

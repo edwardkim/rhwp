@@ -102,7 +102,14 @@ pub(super) fn prepare(
     let document = roxmltree::Document::parse(source).ok()?;
     let mut edits = Vec::new();
     let mut changed = std::collections::HashSet::new();
-    for (node, image) in super::catalog::image_uses(&document)? {
+    let uses = super::catalog::image_uses(&document)?;
+    let single_bitmap = uses.len() == 1
+        && document
+            .root_element()
+            .children()
+            .filter(|node| node.is_element())
+            .all(|node| matches!(node.tag_name().name(), "defs" | "image" | "use"));
+    for (node, image) in uses {
         let Some(("image/png", bytes)) = xml::href(image).and_then(xml::image_bytes) else {
             continue;
         };
@@ -110,7 +117,16 @@ pub(super) fn prepare(
             continue;
         }
         let jpeg = catalogue.jpeg(&bytes)?;
-        let (rect, flip_x, flip_y) = placement(node, image)?;
+        let (mut rect, flip_x, flip_y) = placement(node, image)?;
+        // 단일 양축 DIB가 원점부터 WMF 창의 마지막 좌표까지 덮으면
+        // 한컴 Print는 포함된 마지막 픽셀까지 그림 틀 전체를 사용한다.
+        if single_bitmap
+            && !flip_x
+            && !flip_y
+            && rect == [0.0, 0.0, viewport.0 - 1.0, viewport.1 - 1.0]
+        {
+            rect = [0.0, 0.0, viewport.0, viewport.1];
+        }
         let marker = Marker {
             frame: frame.nested_raster(rect, viewport)?,
             flip_x,

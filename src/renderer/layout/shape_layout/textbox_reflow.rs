@@ -20,3 +20,20 @@ pub(super) fn in_frame(
     // 없이 공통 채움의 실제 글자 폭과 문단 여백으로 다시 구성한다.
     reflow_line_segs(paragraph, paragraph_box, styles, dpi);
 }
+
+// 줄 수가 그대로인 경우 현재 안쪽 폭에서 계산한 글줄 경계만 반영한다.
+// 저장 줄의 세로 기준선과 안 여백을 함께 바꾸면 글상자와 부모의 높이가 어긋난다.
+pub(super) fn refold_preserving_row_geometry(
+    paragraph: &mut Paragraph,
+    available_width: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) {
+    let mut folded = paragraph.clone();
+    in_frame(&mut folded, available_width, styles, dpi);
+    if folded.line_segs.len() == paragraph.line_segs.len() {
+        for (line, resolved) in paragraph.line_segs.iter_mut().zip(folded.line_segs) {
+            line.text_start = resolved.text_start;
+        }
+    }
+}
