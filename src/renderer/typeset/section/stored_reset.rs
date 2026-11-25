@@ -546,7 +546,7 @@ impl TypesetEngine {
                             // 신호지 자리차지 밴드까지 옮기라는 신호가 아니다.
                             // 한글은 밴드를 떠나는 쪽의 흐름 말미에 남기고 본문 아래
                             // 여백으로 흘린다.
-                            st.spill_page_tail_floats(para_idx, para);
+                            st.spill_page_tail_floats(para_idx, para, paragraphs.get(para_idx + 1));
                             st.advance_column_or_new_page_with_storage(storage)?;
                         }
                     }

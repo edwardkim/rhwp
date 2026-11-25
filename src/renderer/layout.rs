@@ -1612,6 +1612,59 @@ pub(crate) fn stored_pushed_anchor_line_offset_hu(
     i32::try_from(previous_end - i64::from(para.line_segs[0].vertical_pos)).ok()
 }
 
+/// [#9396] 문단 마지막 줄에 앵커된 자리차지 개체가 **다음 문단**을 자기 아래로 민 저장
+/// 사다리의 개체 원점(문단 첫 줄 기준 HWPUNIT).
+///
+/// #8435 와 같은 한/글 규칙이다 — 문단 기준 세로 오프셋은 앵커 줄이 놓인 자리에서 잰다.
+/// 앵커 줄이 문단의 마지막 줄이면 개체 띠는 그 줄 뒤에 놓이고 다음 문단이 띠 아래로
+/// 밀린다. 1660000-200700020 구역 1 문단 1211: 그림 control 은 글 415자 뒤, 마지막 줄
+/// (vpos 18000)의 유일한 글자다. 다음 문단 vpos 30061 = 18000 + 오프셋 2161 + 그림 9900.
+/// 한/글 2020 Print 는 그림을 이 문단 글 뒤, 다음 문단 위에 그린다.
+///
+/// 저장 간격이 개체 상자(오프셋 + 바깥 여백 + 높이)와 **정확히** 같을 때만 받아들인다.
+/// 다음 문단이 사다리를 되감거나(쪽 리셋) 저장 줄이 아니면 증거가 없어 `None` 이다.
+/// #6146 156583583 문단 24(줄 끝 = 다음 문단 3236, 로고 3736)는 이 형상이 아니다.
+pub(crate) fn stored_band_after_last_anchor_line_offset_hu(
+    para: &Paragraph,
+    next: Option<&Paragraph>,
+    common: &crate::model::shape::CommonObjAttr,
+    outer_margin_hu: i64,
+    control_index: usize,
+) -> Option<i32> {
+    use crate::model::paragraph::LineSeg;
+    use crate::model::shape::{TextWrap, VertAlign, VertRelTo};
+    let stored = |p: &Paragraph| {
+        !p.stored_text_partition_is_dirty()
+            && !p.cell_format_vpos_dirty
+            && !p
+                .line_segs
+                .iter()
+                .any(|ls| ls.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+    };
+    let v_off = i64::from(signed_hwpunit(common.vertical_offset));
+    if common.treat_as_char
+        || common.text_wrap != TextWrap::TopAndBottom
+        || common.vert_rel_to != VertRelTo::Para
+        || common.vert_align != VertAlign::Top
+        || v_off < 0
+        || !stored(para)
+    {
+        return None;
+    }
+    let next_first = next.filter(|n| stored(n))?.line_segs.first()?;
+    let first = para.line_segs.first()?;
+    let line = control_line_seg_index(para, control_index)?;
+    if line + 1 != para.line_segs.len() || next_first.vertical_pos < first.vertical_pos {
+        return None;
+    }
+    let anchor = para.line_segs.get(line)?;
+    let frame = v_off + outer_margin_hu + i64::from(common.height);
+    if frame <= 0 || i64::from(next_first.vertical_pos) - i64::from(anchor.vertical_pos) != frame {
+        return None;
+    }
+    i32::try_from(i64::from(anchor.vertical_pos) - i64::from(first.vertical_pos)).ok()
+}
+
 /// [#4610 · #4599 ④] 결재문서 템플릿의 공백-전용 TAC 캐리어 문단 페인트 변위.
 ///
 /// 선행 문단이 앵커한 자리차지 표가 흐름 커서를 표 하단까지 밀어낸 뒤에 오는,
