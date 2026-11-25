@@ -15819,7 +15819,7 @@
           },
           "font_environment": {
             "path": "mydocs/verification/protected-font-supply/environments/sample10-native.json",
-            "sha256": "11055ee9df8350c92dfb5203c48d9aa9f3a38afb457f38d519051d5c597f9b09"
+            "sha256": "90643398dedda2c21a45fe64973a2474ee4746da13ef89e0cef32555d136bda0"
           },
           "accepted_condition_evidence": {
             "path": "mydocs/verification/protected-font-supply/records/nested-table-protected-validation.json",
@@ -15840,7 +15840,7 @@
           },
           "accepted_font_set": "5f486e0383f58ba7",
           "accepted_font_environment": {
-            "path": "mydocs/verification/protected-font-supply/environments/sample10-native.json",
+            "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/sample10-font-condition/font-environment.json",
             "sha256": "11055ee9df8350c92dfb5203c48d9aa9f3a38afb457f38d519051d5c597f9b09"
           },
           "supply_mode": "document_selected_files_from_recorded_environment",
