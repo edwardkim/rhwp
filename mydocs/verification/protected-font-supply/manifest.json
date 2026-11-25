@@ -12567,7 +12567,7 @@
         }
       ]
     },
-    "a57202a71a3063be": {
+    "80fb086e8bef6668": {
       "files": [
         {
           "filename": "HMKMM.TTF",
@@ -12584,6 +12584,10 @@
         {
           "filename": "e50c7200521c-H2HDRM.TTF",
           "sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831"
+        },
+        {
+          "filename": "pala.ttf",
+          "sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d"
         }
       ]
     },
@@ -13320,6 +13324,94 @@
         {
           "filename": "pala.ttf",
           "sha256": "6f98bd91b902a1b8ef86c53b084d61d40282f1c1260fce08be7dd7034713f8ad"
+        },
+        {
+          "filename": "6ff0f49540ef-Gulim.ttf",
+          "sha256": "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab"
+        }
+      ]
+    },
+    "082bb886b86a6fd8": {
+      "files": [
+        {
+          "filename": "HMKMG.otf",
+          "sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9"
+        },
+        {
+          "filename": "HMEPO.otf",
+          "sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385"
+        },
+        {
+          "filename": "ENJGT.otf",
+          "sha256": "be6bb7a453d15aa9aebe230925fff89641b1cea1331db880257d087f6939c81c"
+        },
+        {
+          "filename": "ENMJ.otf",
+          "sha256": "6055db675c538c216942788d7b83c8812c955d5bef37c2d6903a5cdb00c2930b"
+        },
+        {
+          "filename": "ENSMJ.otf",
+          "sha256": "97cf924058802123f52b26e365f5d9bfe35d379cb4ccab688285179e8e39b3f2"
+        },
+        {
+          "filename": "H2GTRM.TTF",
+          "sha256": "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5"
+        },
+        {
+          "filename": "H2HDRM.TTF",
+          "sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831"
+        },
+        {
+          "filename": "H2MJRE.TTF",
+          "sha256": "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002"
+        },
+        {
+          "filename": "HBATANG.TTF",
+          "sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068"
+        },
+        {
+          "filename": "HDOTUM.TTF",
+          "sha256": "4e7f536a6715270e06c6cc3b5474456007c193a7754131335195286d889f6757"
+        },
+        {
+          "filename": "HMEHL.otf",
+          "sha256": "a49e5cb16f806afef0e69f05c3c3668dda3db90e3229a9a3cd2d1f83995e34d4"
+        },
+        {
+          "filename": "HYGPRM.TTF",
+          "sha256": "cf8614cb09e038ff24c0edb2ba2cfa6b8911c7c913cfe590e7e56014e7e63e5a"
+        },
+        {
+          "filename": "MALGUN.TTF",
+          "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f"
+        },
+        {
+          "filename": "SPMJ.otf",
+          "sha256": "87c4cd1acd713cca565bd34694b2df5aa3240d6ef8c8d178b6b36782cd46edd2"
+        },
+        {
+          "filename": "SPSMJ.otf",
+          "sha256": "c9825ad4daaea9809b50dfeb0f1145a2ddccbbccbdd076e491d0570ea38d5ce3"
+        },
+        {
+          "filename": "TETGREN.otf",
+          "sha256": "e3601c10b4ffd156c14d1e0138cd7ab5fd439214347d8883c6524a39cbc2a5a5"
+        },
+        {
+          "filename": "TETGTEN.otf",
+          "sha256": "678e0724266842b469ccee25e4f089c24cb78de8698cc4054248fb76776a1198"
+        },
+        {
+          "filename": "batang.TTC",
+          "sha256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8"
+        },
+        {
+          "filename": "gulim.TTC",
+          "sha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c"
+        },
+        {
+          "filename": "pala.ttf",
+          "sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d"
         },
         {
           "filename": "6ff0f49540ef-Gulim.ttf",
@@ -15222,7 +15314,7 @@
       "dpi": 96,
       "backends": {
         "native": {
-          "font_set": "e3c38b4af39c5cb7",
+          "font_set": "082bb886b86a6fd8",
           "inventory_kind": "recorded_supply",
           "inventory_source": {
             "path": "mydocs/verification/protected-font-supply/records/nested-table-wasm-original-programs-validation.json",
@@ -15266,7 +15358,7 @@
           }
         },
         "wasm": {
-          "font_set": "e3c38b4af39c5cb7",
+          "font_set": "082bb886b86a6fd8",
           "inventory_kind": "ordered_supply",
           "inventory_source": {
             "path": "mydocs/verification/protected-font-supply/records/nested-table-wasm-original-programs-validation.json",
@@ -16854,7 +16946,7 @@
       "dpi": 96,
       "backends": {
         "native": {
-          "font_set": "a57202a71a3063be",
+          "font_set": "80fb086e8bef6668",
           "inventory_kind": "recorded_supply",
           "inventory_source": {
             "path": "mydocs/verification/protected-font-supply/records/recorded-system-font-inventory.json",
