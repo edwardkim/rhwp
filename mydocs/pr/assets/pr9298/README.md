@@ -1,6 +1,6 @@
 # 규제영향분석서 8쪽 JPEG 방향 검증
 
-원본은 [규제영향분석서 HWP](../../../../samples/issue1921/59043_regulatory_analysis.hwp)이며 SHA-256은 `da9f9c9862475d1710f6ecf93e3ce134726054fe0be0d9523b9d60d1a90c82ef`이다. 한컴에서 만든 독립 [2022 PDF](../../../../pdf/issue1921/59043_regulatory_analysis-2022.pdf)와 [2024 PDF](../../../../pdf/semanticist21-20261123/59043_regulatory_analysis-2024.pdf)를 96 DPI로 비교했다. [현재 판단](../../pr_9298_review.md)
+원본은 [규제영향분석서 HWP](../../../../samples/issue1921/59043_regulatory_analysis.hwp)이며 SHA-256은 `da9f9c9862475d1710f6ecf93e3ce134726054fe0be0d9523b9d60d1a90c82ef`이다. 한컴에서 만든 독립 [2022 PDF](../../../../pdf/issue1921/59043_regulatory_analysis-2022.pdf)와 [2024 PDF](../../../../pdf/semanticist21-20261123/59043_regulatory_analysis-2024.pdf)를 96 DPI로 비교했다. [현재 판단](../../archives/pr_9298_review.md)
 
 | 확인한 항목 | 실측 근거 |
 | --- | --- |
