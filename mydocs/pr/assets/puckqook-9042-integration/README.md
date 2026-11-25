@@ -1,8 +1,8 @@
 # 저장 표 통합 검토의 출력 증거
 
-`upstream/devel` 기준은 `32014de6e0ade1a3baea8852c02270e40b27b345`다.
+초기 `upstream/devel` 기준은 `32014de6e0ade1a3baea8852c02270e40b27b345`다.
 Native와 fresh WASM은 제품 소스 `e766629fc7519e23b8aa8dcb861564eb9a63349d`에서 만들었다.
-회귀 커밋 `d4df7bf7a6f9584f0bc1796c240a01af9b5048ae` 이후 제품 소스와 의존성은 같은 상태다.
+초기 제출 때 회귀 커밋 `d4df7bf7a6f9584f0bc1796c240a01af9b5048ae`과 제품 소스는 같았다.
 
 한컴 Print PDF를 96 DPI에서 인쇄 배치로 대조했다. TSV는 색상 경계 보정 전 2px 실루엣의
 `silhouette_raw_match_percent` 표시값을 담고 있다. 각 디렉터리의 `review_*.png`는 RHWP·한컴 PDF·
@@ -47,3 +47,22 @@ macOS에서 fmt, Native·WASM32 Clippy, workspace 빌드·all-targets Clippy와
 라이브러리와 CI의 21개 통합 모듈을 실행해 4,225건 통과, 실패 0건, ignored 12건을 기록했다.
 Ubuntu 최소 글꼴 환경의 집중 회귀는 12건을 통과했다. macOS 최소 글꼴 환경의 전체 nextest는 14,127건 통과, 실패 0건, skip 45건이었으며 SVG golden 검사도 통과했다.
 [실행 건수와 글꼴 격리 근거](regression-audit.json)
+
+## #9412 병합 후 재검증
+
+제품 기준 `5fa8cede504eca188d2e003931a50e9a8434d6da`와 후보 `c8c869349182a68067b8da69fbabcbd164b0cc73`의 Native 및 최적화 WASM을 각각 빌드했다.
+#9412가 검증한 71개 입력·인쇄 조합에서 각 출력 경로의 PNG 110쪽이 기준과 바이트 단위로
+같았고, 52,694개 칸이 있는 대형 표의 161쪽 배치 JSON도 같았다.
+[#9412 쪽별 대조 기록](9412-preservation.json)
+
+정본 보호 23종의 두 출력 경로 4,046개 쪽은 기준 표시값과 모두 일치했다. 화학물질 표시 기준
+WASM 26쪽은 macOS 같은 조건에서 기준과 후보가 99.99%였으며 둘의 PNG가 같았다. 동일한
+WASM과 검증된 글꼴 52개를 Ubuntu Chromium 158.0.8127.36에 공급해 문서 전체를
+다시 검사했다. 기준과 후보의 103쪽 PNG는 전부 같았고 26쪽은 #9412의 PNG 해시와
+100.00%를 재현했다. [호스트 대조 기록](chemical-wasm-cross-host.json) ·
+[Ubuntu 전쪽 TSV](chemical-wasm-ubuntu.tsv)
+
+원 PR 네 문서 9쪽은 Native와 WASM에서 모두 100.00%였다. #9362의 8.9px 간격과 90%
+압축 대조본을 확인했고, 브라우저와 Studio의 쪽·표·본문 검사도 통과했다.
+최소 글꼴 환경의 Ubuntu 집중 회귀 45건과 전체 nextest 14,169건,
+macOS Native Skia 4,225건이 통과했다. [실행 건수](regression-audit.json)

@@ -22,6 +22,10 @@
 
 원 PR과 최종 후보의 96dpi 전쪽 표시값·TSV 해시는 [통합 대조 기록](../assets/puckqook-9042-integration/fixture-audit.json)에 보존했습니다.
 
+## #9412 병합 후 재검증
+
+새 기준을 반영한 제품 소스 `c8c869349`에서 13pt·10pt 원본의 양쪽 출력을 새로 확인했습니다. 각각 3·2쪽이며 원 PR 제출 표시값 대비 하락이 없었습니다. [최신 후보 검증 기록](../assets/puckqook-9042-integration/README.md#9412-병합-후-재검증)
+
 ## Merge 후 contributor PR comment 계획
 
 제목 크기 두 조건의 3쪽·2쪽 배치와 표 사이 경계를 적고 두 경로의 전쪽 표시값과 최종 CI·회귀 결과를 기재합니다. 첫 comment에 13pt 원본의 1–3쪽과 10pt 원본의 1–2쪽 Native·fresh WASM 비교 및 overlay를 포함하고 병합 SHA로 고정합니다.

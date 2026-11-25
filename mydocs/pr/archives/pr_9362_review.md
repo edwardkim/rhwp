@@ -27,6 +27,10 @@
 
 원 PR과 최종 후보의 96dpi 전쪽 표시값·TSV 해시는 [통합 대조 기록](../assets/puckqook-9042-integration/fixture-audit.json)에 보존했습니다.
 
+## #9412 병합 후 재검증
+
+새 기준을 반영한 제품 소스 `c8c869349`에서도 1·2쪽이 양쪽 출력에서 100.00%였습니다. 1쪽 뒤 글줄과 표 하단 간격은 8.9px였고, 실제 한컴 90% 대조군의 음수 간격을 함께 확인했습니다. [최신 후보 검증 기록](../assets/puckqook-9042-integration/README.md#9412-병합-후-재검증)
+
 ## Merge 후 contributor PR comment 계획
 
 1쪽의 제목 표·본문 표 배치 성과를 적고, 160% 합성 입력과 독립 한컴 재저장값의 차이에 대해 메인터너가 공통 렌더 사본을 보정한 근거를 설명합니다. 두 경로의 1·2쪽 표시값과 최종 CI·회귀 결과를 기재합니다. 첫 comment에 1쪽과 2쪽의 Native·fresh WASM 비교 및 overlay를 포함하고 병합 SHA로 고정합니다.
