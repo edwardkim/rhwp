@@ -1,6 +1,8 @@
 //! 표 컨트롤 진입 시 저장 줄 이월과 데코레이션 경로 선택 조회.
 //! 페이지 전환·항목 발행·표 측정/분할은 수행하지 않는다.
-use super::super::{para_has_visible_text, para_is_non_tac_overlay_table_anchor};
+use super::super::{
+    para_has_non_whitespace_text, para_has_visible_text, para_is_non_tac_overlay_table_anchor,
+};
 use crate::model::{paragraph::Paragraph, table::Table};
 use crate::renderer::{
     float_placement::{original_hwpx_infront_para_flow_paginates, signed_hwpunit},
@@ -63,6 +65,7 @@ pub(super) fn uses_decoration_placement(
     paper_height: f64,
     dpi: f64,
     flow_height: f64,
+    following: &[Paragraph],
     base_available_height: impl FnOnce() -> f64,
     original_hwpx: impl FnOnce() -> bool,
 ) -> bool {
@@ -116,6 +119,7 @@ pub(super) fn uses_decoration_placement(
             para,
             table,
             next_para,
+            following,
             table_measured_h,
             flow_height,
             base_available,
@@ -204,6 +208,7 @@ fn line_flow_continues_under_overlay(
     para: &Paragraph,
     table: &Table,
     next_para: Option<&Paragraph>,
+    following: &[Paragraph],
     measured_height: f64,
     flow_height: f64,
     base_available: f64,
@@ -241,12 +246,60 @@ fn line_flow_continues_under_overlay(
         && hwpunit_to_px(gap, dpi) < measured_height
         && anchor_y >= 0.0
         && anchor_y + measured_height <= 2.0 * base_available
+        && first_content_overlaps_overlay(
+            anchor,
+            following,
+            measured_height,
+            anchor_y + measured_height - base_available,
+            dpi,
+        )
         && !crate::renderer::float_placement::saved_overlay_table_fits(
             table,
             measured_height,
             base_available - anchor_y,
             dpi,
         )
+}
+
+/// 앵커 뒤 빈 문단(공백·개체 없음)을 건너 처음 나오는 내용 문단이 줄 좌표상 표와 겹치는가.
+/// 같은 쪽이면 앵커 줄부터 표 높이 안, 한 번 쪽이 바뀐 뒤면 다음 쪽으로 넘어갈 표 꼬리 안이다.
+/// 빈 문단 사다리가 표 높이와 다음 쪽 꼬리까지 덮고 그 뒤에 내용이 오면(#4514 필러 형상)
+/// 표가 흐름을 밀든 말든 배치가 같으므로 종전 본문 분할 경로를 둔다.
+fn first_content_overlaps_overlay(
+    anchor: &crate::model::paragraph::LineSeg,
+    following: &[Paragraph],
+    measured_height: f64,
+    tail_height: f64,
+    dpi: f64,
+) -> bool {
+    let mut previous = anchor.vertical_pos;
+    let mut page_changed = false;
+    for paragraph in following {
+        let (Some(first), Some(last)) = (paragraph.line_segs.first(), paragraph.line_segs.last())
+        else {
+            return false;
+        };
+        if (first.tag ^ anchor.tag) & 0x8000_0000 != 0 {
+            return false;
+        }
+        if first.vertical_pos < previous {
+            if page_changed {
+                return false;
+            }
+            page_changed = true;
+        }
+        previous = last.vertical_pos;
+        if paragraph.controls.is_empty() && !para_has_non_whitespace_text(paragraph) {
+            continue;
+        }
+        return if page_changed {
+            hwpunit_to_px(first.vertical_pos, dpi) < tail_height
+        } else {
+            first.vertical_pos > anchor.vertical_pos
+                && hwpunit_to_px(first.vertical_pos - anchor.vertical_pos, dpi) < measured_height
+        };
+    }
+    false
 }
 
 fn paper_table_is_outside_body(
