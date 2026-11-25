@@ -116,7 +116,8 @@
         "product_build_observation": "mydocs/manual/verification/hangul_version_oracle.md#51-설치된-버전-확인",
         "matching_mcp_2020_example": "pdf/issue9210/sme_announcement_split_table_successor-2020.pdf",
         "matching_mcp_receipts": "mydocs/pr/assets/planet6897_stored_layout_20261123/hancom-print-receipts.json",
-        "reissued_pdf": "MCP 재출력은 PDF page tree 검증 실패. 기존 Print 파일을 그대로 사용."
+        "reissued_pdf": "갱신 전 MCP는 PDF page tree 검증에 실패했다. 갱신 뒤 같은 원본의 한컴 2020 인쇄는 성공했으며 원 PR과의 대조에는 최초 제출 인쇄본을 사용했다.",
+        "mcp_reissue_evidence": "mcp-print-reissue.json"
       }
     },
     "kaf-appendix": {
@@ -147,7 +148,8 @@
         "product_build_observation": "mydocs/manual/verification/hangul_version_oracle.md#51-설치된-버전-확인",
         "matching_mcp_2020_example": "pdf/issue9210/sme_announcement_split_table_successor-2020.pdf",
         "matching_mcp_receipts": "mydocs/pr/assets/planet6897_stored_layout_20261123/hancom-print-receipts.json",
-        "reissued_pdf": "MCP 재출력은 PDF page tree 검증 실패. 기존 Print 파일을 그대로 사용."
+        "reissued_pdf": "갱신 전 MCP는 PDF page tree 검증에 실패했다. 갱신 뒤 같은 원본의 한컴 2020 인쇄는 성공했으며 원 PR과의 대조에는 최초 제출 인쇄본을 사용했다.",
+        "mcp_reissue_evidence": "mcp-print-reissue.json"
       }
     }
   },

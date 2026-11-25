@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**WMF 전체 자르기와 글 상자 피치의 개선을 재현했다.** 메인터너가 36쪽 셋째 줄의 잘림을 보정했다. 원 PR의 제출 TSV보다 낮은 출력 항목은 동일 조건에서 원 PR head와 최종 후보를 다시 비교하기 위해 통합을 보류한다.
+**WMF 전체 자르기와 글 상자 피치의 개선을 재현했다.** 메인터너가 36쪽 셋째 줄의 잘림을 보정했다. 원 PR head와 통합 후보를 같은 Mac에서 재출력한 결과 Native와 fresh WASM 모두 전쪽에서 하락한 쪽은 0쪽이다.
 
 [원 PR #9400](https://github.com/edwardkim/rhwp/pull/9400) · [이슈 #9379](https://github.com/edwardkim/rhwp/issues/9379) · [글 상자 높이 후속 이슈 #9395](https://github.com/edwardkim/rhwp/issues/9395)
 
@@ -32,5 +32,14 @@ KAF 회의자료의 33~44쪽 표를 제거한 54쪽 파생본에 두 계약을 �
 기존 비교는 `0fbee2c04e`와 통합 후보 `53b15ed46f`의 결과다. #9298이 반영된 `fb98e8bff3` 위로 충돌 없이 리베이스했으며, 기존 PDF와 PNG를 같은 입력에서의 비교 자료로 사용했다.
 
 36쪽은 같은 Mac의 이전 후보 대비 fresh WASM 91.59→95.03%로 올랐다. 휴먼명조 TrueType을 공급한 Native·WASM 전체 54쪽 비교에서 원 PR 제출값보다 낮은 값이 남은 곳은 Native 38쪽(−0.01%p), WASM 21쪽(−0.11%p), 38·39쪽(각 −0.02%p)이다. WASM 38·39쪽 PNG는 리베이스 전 후보와 같다. 전체 Canvas 내보내기에서 윤곽 글꼴 세션 한도에 닿아, 같은 입력·글꼴·WASM으로 6개 세션에서 직접 출력했다. 54쪽의 빠진 쪽·중복을 검사한 후 Visual Sweep으로 전쪽 TSV를 계산했다. [페이지별 결과](../assets/planet6897_20261125/kaf-font-recheck.json)
+
+## 원 PR head와 같은 조건으로 재측정
+
+원 PR head `d53cf0751b`와 통합 후보 `049fd5ed2fa1`를 같은 macOS에서 빌드했다. 같은 원본·한컴 Print PDF·공급 글꼴 순서와 96 DPI, compat 2022로 각각 54쪽을 비교했다. Native는 2쪽, fresh WASM은 2쪽이 개선됐다. 메인터너 보정을 적용한 36쪽은 Native 91.58→95.13%, fresh WASM 91.59→95.03%다.
+
+제출 TSV보다 낮았던 Native 38쪽 97.86%와 fresh WASM 21·38·39쪽 99.23%·97.85%·99.98%는 동일 조건의 원 PR head에서도 같은 점수와 PNG를 재현했다. 제출된 38·39쪽 review의 PDF 영역은 이번 PDF 래스터와 픽셀이 같다. Native 38쪽은 제출 이미지와 비교해 WMF 프레임 내부 픽셀이 같았고, fresh WASM 39쪽은 차이가 주로 그림 프레임에 있었다. 제출자의 구체적인 실행 환경은 확인되지 않았다.
+
+- 같은 조건 전쪽 비교 [Native TSV](../assets/planet6897_20261125/kaf-appendix/maintainer/native/same-environment-head-comparison.tsv) · [fresh WASM TSV](../assets/planet6897_20261125/kaf-appendix/maintainer/wasm/same-environment-head-comparison.tsv) · [양쪽 head와 PNG 대조 기록](../assets/planet6897_20261125/same-environment-head-comparison.json)
+- fresh WASM 38쪽 [review](../assets/planet6897_20261125/kaf-appendix/maintainer/wasm/review_038.png) · [overlay](../assets/planet6897_20261125/kaf-appendix/maintainer/wasm/overlay_038.png)
 
 [원 PR·통합 SHA 및 빌드 출처](../assets/planet6897_20261125/review-provenance.json) · [입력·기준 PDF 출처](../assets/planet6897_20261125/print-provenance.json)
