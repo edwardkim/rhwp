@@ -1,0 +1,183 @@
+{
+  "font": {
+    "family": "휴먼명조",
+    "format": "TrueType",
+    "file": "HMKMM.TTF",
+    "origin": "win10-ted C:\\Windows\\Fonts\\HMKMM.TTF",
+    "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+    "retained_locally": true
+  },
+  "p26": {
+    "native_before": 92.76,
+    "native_after": 99.93,
+    "pdf_embedded_family": "휴먼명조 CID TrueType",
+    "same_page_in_table_and_appendix": true
+  },
+  "measurements": {
+    "kaf-appendix": {
+      "native": {
+        "pages": 54,
+        "minimum": "95.13",
+        "below_98": [
+          24,
+          36,
+          38
+        ],
+        "original_pr_declines": [
+          {
+            "page": 38,
+            "source_pr": "97.87",
+            "candidate": "97.86",
+            "delta_pp": "-0.01"
+          }
+        ]
+      },
+      "wasm": {
+        "pages": 54,
+        "minimum": "95.03",
+        "below_98": [
+          24,
+          36,
+          38
+        ],
+        "original_pr_declines": [
+          {
+            "page": 21,
+            "source_pr": "99.34",
+            "candidate": "99.23",
+            "delta_pp": "-0.11"
+          },
+          {
+            "page": 38,
+            "source_pr": "97.87",
+            "candidate": "97.85",
+            "delta_pp": "-0.02"
+          },
+          {
+            "page": 39,
+            "source_pr": "100.00",
+            "candidate": "99.98",
+            "delta_pp": "-0.02"
+          }
+        ],
+        "capture_policy": "동일 WASM·입력·PDF·글꼴을 사용한 6개 세션의 직접 Canvas PNG. 전체 54쪽과 중복·누락을 확인하고 Visual Sweep --png-pair로 전쪽 TSV 계산.",
+        "full_single_session": "글꼴 윤곽 등록의 64 MiB 세션 한도에 도달. 한도 유지."
+      }
+    },
+    "kaf-table": {
+      "native": {
+        "pages": 44,
+        "minimum": "96.88",
+        "below_98": [
+          24
+        ],
+        "original_pr_declines": [
+          {
+            "page": 35,
+            "source_pr": "99.19",
+            "candidate": "99.18",
+            "delta_pp": "-0.01"
+          }
+        ]
+      },
+      "wasm": {
+        "pages": 44,
+        "minimum": "96.93",
+        "below_98": [
+          24
+        ],
+        "original_pr_declines": [
+          {
+            "page": 21,
+            "source_pr": "99.34",
+            "candidate": "99.23",
+            "delta_pp": "-0.11"
+          },
+          {
+            "page": 36,
+            "source_pr": "98.42",
+            "candidate": "98.38",
+            "delta_pp": "-0.04"
+          }
+        ]
+      }
+    }
+  },
+  "comparison_otf": {
+    "file": "HMKSM.otf",
+    "format": "OpenType CFF",
+    "sha256": "6070c3bee1f213cee8eaf6f5c50e8ed899989b4a2f848d77bfe4dca572eb5af1",
+    "page": 26,
+    "native_raw": 92.76298,
+    "ttf_native_raw": 99.92516,
+    "same_png_as_ambient_selection": true,
+    "common_unicode_advances_over_0_001em_delta": 0,
+    "shared_unicode_points": 11223,
+    "printable_ascii_coverage": {
+      "otf": 0,
+      "ttf": 95
+    },
+    "normalized_hhea_ascent_descent_line_gap": {
+      "otf": [
+        1.0,
+        -0.2,
+        0.0
+      ],
+      "ttf": [
+        0.859375,
+        -0.1953125,
+        0.09375
+      ]
+    },
+    "glyph_outline_placement_differs": true
+  },
+  "pre_rebase_control": {
+    "source": "53b15ed46fe2711c1823a891f9aea1cd17c4047b",
+    "compared_to": "049fd5ed2fa1b9647c5c44aaa1bf73ded7d0cf54",
+    "raw_pngs": [
+      {
+        "case": "kaf-table",
+        "backend": "native",
+        "page": 35,
+        "same_raw_png_sha256": true
+      },
+      {
+        "case": "kaf-table",
+        "backend": "wasm",
+        "page": 21,
+        "same_raw_png_sha256": true
+      },
+      {
+        "case": "kaf-table",
+        "backend": "wasm",
+        "page": 36,
+        "same_raw_png_sha256": false
+      },
+      {
+        "case": "kaf-appendix",
+        "backend": "wasm",
+        "page": 38,
+        "same_raw_png_sha256": true,
+        "previous_ambient_environment": true
+      },
+      {
+        "case": "kaf-appendix",
+        "backend": "wasm",
+        "page": 39,
+        "same_raw_png_sha256": true,
+        "previous_ambient_environment": true
+      }
+    ],
+    "kaf_table_wasm_p36_pixel_diff": {
+      "bbox": [
+        122,
+        456,
+        704,
+        468
+      ],
+      "pixels": 2129,
+      "old_and_new_display_score": "98.38",
+      "render_tree_same": true
+    }
+  }
+}

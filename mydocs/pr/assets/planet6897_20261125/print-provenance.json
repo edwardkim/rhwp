@@ -1,0 +1,211 @@
+{
+  "datasets": {
+    "allowance": {
+      "input": {
+        "path": "samples/issue497/18561241_allowance_table.hwp",
+        "sha256": "c443a6009099ccc7c131ff66317e84f550c3459f54f7e11e16da0c162e2dd304",
+        "sha1": "e68c161c7c42d81eb83cbaaa8e7982d692c9a1ce",
+        "bytes": 21504
+      },
+      "pdf": {
+        "path": "pdf/issue497/18561241_allowance_table-2024.pdf",
+        "sha256": "e0d117aa663eb8001344f8e3ca5e0d6d2ac3c833f889a06cae9fb2a4847d50c9",
+        "sha1": "f8253938c3ac06cb6669cfa9495a8502b455a8f6",
+        "bytes": 49738
+      },
+      "classification": "Hancom Print 2024 verified by MCP receipt",
+      "pdfinfo": {
+        "Creator": "Hwp 2024 13.0.0.4225",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "595 x 841 pts (A4)",
+        "PDF version": "1.4"
+      }
+    },
+    "food": {
+      "input": {
+        "path": "mydocs/pr/assets/planet6897_clean20_20261113/counterexamples/1543000-202100035-food-security-report.hwp",
+        "sha256": "8cc9b219a5c54fdc2324f63da32b224a1ac23877c6c92976c407e6c42475317c",
+        "sha1": "5c2623f1576455bf4e691017f86295deaedd1cf9",
+        "bytes": 2528256
+      },
+      "pdf": {
+        "path": "pdf/issue8997/1543000-202100035-food-security-report-2020.pdf",
+        "sha256": "4c2d909332e5fe3be5044a76cc9d5448e29e98087b4688907fdf1ce093dccc04",
+        "sha1": "a2cf713526720f7896500aaec7b05d94a6350777",
+        "bytes": 1894417
+      },
+      "classification": "Hancom Print 2020 previously accepted in PR #9388",
+      "pdfinfo": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "141",
+        "Page size": "595 x 841 pts (A4)",
+        "PDF version": "1.4"
+      }
+    },
+    "jeju-2020": {
+      "input": {
+        "path": "samples/issue8759/6500000-201700118_jeju_tourism_education_plan.hwp",
+        "sha256": "fa87e135c3d609324457adb37230e220be9406ba99a94d26a813ba7132244ac9",
+        "sha1": "4df57942af7cc209309b4c4e912ae9cc04f8412e",
+        "bytes": 24698880
+      },
+      "pdf": {
+        "path": "pdf/issue8759/6500000-201700118_jeju_tourism_education_plan-2020.pdf",
+        "sha256": "56f1bf8b3d92065e2e51ae27f1abbf4a97ccbd83474f29f3c00b4e2bca26659e",
+        "sha1": "efc6f72097c2362099ac5288e61e21bc22f6b3f6",
+        "bytes": 23313820
+      },
+      "classification": "Hancom Print 2020, source PR comparison, known chart image differences",
+      "pdfinfo": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "313",
+        "Page size": "595 x 841 pts (A4)",
+        "PDF version": "1.4"
+      }
+    },
+    "jeju-2024": {
+      "input": {
+        "path": "samples/issue8759/6500000-201700118_jeju_tourism_education_plan.hwp",
+        "sha256": "fa87e135c3d609324457adb37230e220be9406ba99a94d26a813ba7132244ac9",
+        "sha1": "4df57942af7cc209309b4c4e912ae9cc04f8412e",
+        "bytes": 24698880
+      },
+      "pdf": {
+        "path": "pdf/issue8759/6500000-201700118_jeju_tourism_education_plan-2024.pdf",
+        "sha256": "4c7292f010ceecc9b8f4656f77e25b570e24534324b04574851bb5e34187604e",
+        "sha1": "2202e446f18a2c732a723954ef2c945bd605a38f",
+        "bytes": 7599306
+      },
+      "classification": "Hancom Print 2024 previously accepted in PR #9388",
+      "pdfinfo": {
+        "Creator": "Hwp 2024 13.0.0.3901",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "313",
+        "Page size": "595 x 841 pts (A4)",
+        "PDF version": "1.6"
+      }
+    },
+    "kaf-table": {
+      "input": {
+        "path": "samples/issue9000/kaf_table_section.hwp",
+        "sha256": "b03eaad4854504f54eafe8a1aa10eafd56e9ad75db3e40ae2ed43a31dd666c0f",
+        "sha1": "4807512bf3f1f056e724798c3e126d9cbc9841cb",
+        "bytes": 2758656
+      },
+      "pdf": {
+        "path": "pdf/issue9000/kaf_table_section-2020.pdf",
+        "sha256": "3c526bf9968c9ec90b5174963492762c57662ab16c2c09c62ca182b55d9ed899",
+        "sha1": "6fe089dd432de033559096f1522a1f99bc163a52",
+        "bytes": 738730
+      },
+      "classification": "reused desktop Hancom 2020 Hancom PDF Print reference",
+      "pdfinfo": {
+        "Creator": "Hwp 2018 11.0.0.1623",
+        "Producer": "Hancom PDF 1.3.0.404",
+        "Pages": "44",
+        "Page size": "841 x 595 pts (A4)",
+        "PDF version": "1.4"
+      },
+      "print_provenance": {
+        "recorded_in_original_pr": "https://github.com/edwardkim/rhwp/pull/9386",
+        "verified_product": "Windows 데스크톱 한컴 2020 11.0.0.1623",
+        "pdf_creator_literal": "Hwp 2018 11.0.0.1623",
+        "product_build_observation": "mydocs/manual/verification/hangul_version_oracle.md#51-설치된-버전-확인",
+        "matching_mcp_2020_example": "pdf/issue9210/sme_announcement_split_table_successor-2020.pdf",
+        "matching_mcp_receipts": "mydocs/pr/assets/planet6897_stored_layout_20261123/hancom-print-receipts.json",
+        "reissued_pdf": "갱신된 MCP에서 한컴 2020 11.0.0.9172의 Hancom PDF 인쇄로 재산출했다. 최신 제출 판정에는 이 PDF를 원 PR과 통합 후보 양쪽에 적용한다.",
+        "mcp_reissue_evidence": "mcp-print-reissue.json"
+      },
+      "submission_reference": {
+        "path": "pdf/issue9000/mcp-11.0.0.9172/kaf_table_section-2020.pdf",
+        "sha256": "71c1a67fa80ed3535f3a807acb1d4b26f3e37c7275f61559a8ebbd36641ba0aa",
+        "bytes": 705504,
+        "job_id": "10e19b34-db61-48b3-90a8-1db299c73532"
+      }
+    },
+    "kaf-appendix": {
+      "input": {
+        "path": "samples/issue9379/kaf_appendix.hwp",
+        "sha256": "f5f835cb60fdb1883f5857bcc0799c22dfe24e4c1b683dfc10e9382da30d77c2",
+        "sha1": "f785c0b5c0af737bea0c5b2bd82c9497eb2513dd",
+        "bytes": 2762240
+      },
+      "pdf": {
+        "path": "pdf/issue9379/kaf_appendix-2020.pdf",
+        "sha256": "7787910c514b5947639fb5857e1a5847616000115f18210a76eff05765c07a2c",
+        "sha1": "629924e0bedc4a0ffee45a370b12c1ec7aa67313",
+        "bytes": 812384
+      },
+      "classification": "reused desktop Hancom 2020 Hancom PDF Print reference",
+      "pdfinfo": {
+        "Creator": "Hwp 2018 11.0.0.1623",
+        "Producer": "Hancom PDF 1.3.0.404",
+        "Pages": "54",
+        "Page size": "841 x 595 pts (A4)",
+        "PDF version": "1.4"
+      },
+      "print_provenance": {
+        "recorded_in_original_pr": "https://github.com/edwardkim/rhwp/pull/9400",
+        "verified_product": "Windows 데스크톱 한컴 2020 11.0.0.1623",
+        "pdf_creator_literal": "Hwp 2018 11.0.0.1623",
+        "product_build_observation": "mydocs/manual/verification/hangul_version_oracle.md#51-설치된-버전-확인",
+        "matching_mcp_2020_example": "pdf/issue9210/sme_announcement_split_table_successor-2020.pdf",
+        "matching_mcp_receipts": "mydocs/pr/assets/planet6897_stored_layout_20261123/hancom-print-receipts.json",
+        "reissued_pdf": "갱신된 MCP에서 한컴 2020 11.0.0.9172의 Hancom PDF 인쇄로 재산출했다. 최신 제출 판정에는 이 PDF를 원 PR과 통합 후보 양쪽에 적용한다.",
+        "mcp_reissue_evidence": "mcp-print-reissue.json"
+      },
+      "submission_reference": {
+        "path": "pdf/issue9379/mcp-11.0.0.9172/kaf_appendix-2020.pdf",
+        "sha256": "eb36dfb00712626b4aa6abb006ffd81e8aa3fd7932d3e04c6ffa691b337b5bf1",
+        "bytes": 784026,
+        "job_id": "9a8239f3-ea09-46f3-81c5-43b649a29795"
+      }
+    }
+  },
+  "mcp_jobs": {
+    "18561241_allowance_table-status": {
+      "status": "succeeded",
+      "job_id": "570601d6-0eac-49e7-8710-93500c4060be",
+      "error": null,
+      "terminal": true,
+      "result": {
+        "pdf_output_mode": "hancom2024_pdf_driver_one_up",
+        "pdf_print_method": 0,
+        "pdf_page_count": 1
+      }
+    },
+    "kaf-original-status": {
+      "status": "failed",
+      "job_id": "3f70f8c5-9400-4333-aef9-cbeea45f31a8",
+      "error": "HANCOM_PDF_VALIDATION_FAILED: The PDF page tree could not be read. Hancom PDF Save As failed: The PDF page tree could not be read.",
+      "terminal": true
+    },
+    "kaf_appendix-2020-status": {
+      "status": "failed",
+      "job_id": "f131977e-46bd-40e8-b6ba-23608954084c",
+      "error": "HANCOM_PDF_VALIDATION_FAILED: The PDF page tree could not be read. Hancom PDF Save As failed: The PDF page tree could not be read.",
+      "terminal": true
+    },
+    "kaf_appendix-status": {
+      "status": "failed",
+      "job_id": "2101e18c-ed89-4636-a9b4-35579d41c2d0",
+      "error": "HANCOM_PDF_VALIDATION_FAILED: The PDF page tree could not be read. Hancom PDF Save As failed: The expected document page count could not be established.",
+      "terminal": true
+    },
+    "kaf_table_section-2020-status": {
+      "status": "failed",
+      "job_id": "38952d74-d121-49a1-be52-a9f150f0344f",
+      "error": "HANCOM_PDF_VALIDATION_FAILED: The PDF page tree could not be read. Hancom PDF Save As failed: The PDF page tree could not be read.",
+      "terminal": true
+    },
+    "kaf_table_section-status": {
+      "status": "failed",
+      "job_id": "3c17057c-c176-46c8-ab33-2296536f69f6",
+      "error": "HANCOM_PDF_VALIDATION_FAILED: The PDF page tree could not be read. Hancom PDF Save As failed: The expected document page count could not be established.",
+      "terminal": true
+    }
+  }
+}

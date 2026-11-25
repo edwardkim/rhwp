@@ -1853,9 +1853,7 @@ impl LayoutEngine {
             paragraphs,
             styles,
             area_width,
-            hwpunit_to_px(shape.separator_above_margin_hu() as i32, self.dpi)
-                + border_width_to_px(shape.separator_line_width).max(0.5)
-                + hwpunit_to_px(shape.separator_below_margin_hu() as i32, self.dpi),
+            crate::renderer::pagination::footnote_separator_overhead_px(shape, self.dpi),
             hwpunit_to_px(shape.between_notes_margin_hu() as i32, self.dpi),
         )
     }
@@ -2024,7 +2022,8 @@ impl LayoutEngine {
             super::note_separator::append(
                 tree, fn_node, shape, fn_area.x, y, sep_length, line_width,
             );
-            y += line_width;
+            // 구분선 중심 아래는 굵기와 관계없이 같은 띠다(`footnote_separator_overhead_px`).
+            y += crate::renderer::pagination::footnote_separator_band_px(shape, self.dpi);
 
             // (3) 구분선 아래 여백
             y += hwpunit_to_px(shape.separator_below_margin_hu() as i32, self.dpi);

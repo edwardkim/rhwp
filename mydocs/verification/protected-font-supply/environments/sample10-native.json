@@ -156,6 +156,13 @@
       "programId": "a5851385b7c5bebcdb595a1eaa4f508b9eb764eff5ec2bcda2686fc609218bbc",
       "query": "휴먼옛체",
       "trueType": true
+    },
+    "한양중고딕": {
+      "family": "HY Junggothic",
+      "query": "HYJunggothic-SPJGT",
+      "programId": "sweep-484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480",
+      "openTypeCff": true,
+      "trueType": false
     }
   },
   "substitutions": {

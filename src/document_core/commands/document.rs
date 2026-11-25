@@ -1,6 +1,7 @@
 //! 문서 생성/로딩/저장/설정 관련 native 메서드
 
 mod cell_line_frame;
+mod font_line_height;
 mod grown_table_heights;
 mod initial_fields;
 mod legacy_font_outlines;
@@ -404,6 +405,8 @@ impl DocumentCore {
         // [#7436] 저장 줄 없는 번호 문단도 번호 폭을 뺀 상자로 줄을 나눈다 — 재조판 전에
         // 문서 순서로 번호 문자열을 정해 둔다.
         crate::renderer::layout::assign_numbering_markers(&mut document.sections, &styles);
+        // [#9379] 글꼴에 어울리는 줄 높이를 적용하지 않고 저장된 줄의 세로 치수를 먼저 고친다.
+        font_line_height::refresh_stale_font_line_heights(&mut document);
         Self::reflow_zero_height_paragraphs(
             &mut document,
             &styles,

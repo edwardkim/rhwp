@@ -19,6 +19,7 @@ mod reflowed_nested_row;
 mod row_block_cut;
 mod row_defaults;
 mod row_physical_band;
+mod split_block_host_successor;
 mod stored_block_frames;
 mod stored_body_closed_frame;
 mod stored_column_boundaries;
@@ -34,6 +35,7 @@ mod stored_intra_paragraph_frame;
 mod stored_mixed_opening_frame;
 mod stored_nested_fragment_frame;
 mod stored_nested_frame;
+mod stored_nested_frame_row_end;
 mod stored_nested_host_flow;
 mod stored_nested_outer_frame;
 mod stored_nested_padding;
@@ -2558,11 +2560,18 @@ fn stored_text_paragraphs_share_vpos_frame(
                                 previous_style.spacing_after + next_style.spacing_before,
                                 dpi,
                             );
-                            i64::from(after.vertical_pos)
-                                == i64::from(before.vertical_pos)
-                                    + i64::from(before.line_height)
-                                    + i64::from(before.line_spacing.max(0))
-                                    + i64::from(paragraph_gap)
+                            // [#9000] 저장 줄의 전진은 줄 높이 + 저장 줄 간격이다. 음수 줄
+                            // 간격(줄 상자가 겹치는 사다리, KAF 중첩 표 0열 lh 900·ls −92 →
+                            // 808HU 전진)도 같은 좌표계를 전진하므로 그대로 쓴다. 0 으로
+                            // 자르면 같은 칸의 저장 프레임 되감김을 인증하지 못한다.
+                            let start = i64::from(before.vertical_pos)
+                                + i64::from(before.line_height)
+                                + i64::from(paragraph_gap);
+                            let after = i64::from(after.vertical_pos);
+                            after == start + i64::from(before.line_spacing.max(0))
+                                || (before.line_spacing < 0
+                                    && before.line_height + before.line_spacing > 0
+                                    && after == start + i64::from(before.line_spacing))
                         })
             })
     })
@@ -2580,6 +2589,23 @@ fn stored_line_advance_is_negative_step(
             == i64::from(previous.vertical_pos)
                 + i64::from(previous.line_height)
                 + i64::from(previous.line_spacing)
+}
+
+/// 문단 경계에서 다음 문단의 첫 저장 줄이 앞 문단 끝 줄의 원점 이하로 돌아가는가.
+///
+/// [#8743] 같은 원점(앞 줄 vpos == 다음 줄 vpos)도 되감김이다. 앞 줄이 실제로 전진하는
+/// 줄(줄 높이 + 줄 간격 > 0)이면 다음 문단이 같은 프레임에서 그 자리에 다시 놓일 수
+/// 없으므로, 다음 문단은 새 프레임의 자기 앞 간격 원점에서 시작한 것이다. KAF 회의자료
+/// 11×6 표 행 3 칸 5: p0·p1 모두 vpos 600(lh 900, ls 0) — 한/글은 p0 만 33쪽에 둔다.
+/// 전진하지 않는 줄(줄 간격 = −줄 높이로 겹쳐 쌓는 사다리)의 같은 원점은 되감김이 아니다.
+fn stored_paragraph_origin_restarts(
+    before: &crate::model::paragraph::LineSeg,
+    after: &crate::model::paragraph::LineSeg,
+) -> bool {
+    after.vertical_pos < before.vertical_pos
+        || (after.vertical_pos == before.vertical_pos
+            && before.line_height > 0
+            && before.line_height + before.line_spacing > 0)
 }
 
 /// 원본 셀의 변경되지 않은 글줄 사이에서 확인한 물리 프레임 되감김.
@@ -2609,7 +2635,7 @@ fn stored_plain_text_paragraph_frame_reset(
                     && stored(after)
                     && before.vertical_pos > 0
                     && after.vertical_pos >= 0
-                    && after.vertical_pos < before.vertical_pos
+                    && stored_paragraph_origin_restarts(before, after)
                     && styles
                         .para_styles
                         .get(next.para_shape_id as usize)
@@ -18383,19 +18409,66 @@ impl LayoutEngine {
                                 let row_extra = (*rh - driver_total).max(0.0);
                                 let mut driver_before = 0.0;
                                 let mut source_frame_start = vec![0; row_cells.len()];
+                                // [#9000] 칸마다 저장 쪽 프레임이 시작하는 유닛. 한/글은 한 행의
+                                // 모든 칸을 같은 순번의 저장 프레임 경계에서 함께 끊는다. 높이 축
+                                // 칸(driver)이 j번째 프레임을 닫는 조각에서 다른 칸도 자기 j번째
+                                // 프레임 끝까지를 이 조각 몫으로 두고, 프레임 안에서는 그 프레임
+                                // 시작부터 잰 높이 축으로 나눈다. 프레임이 더 없는 칸은 종전처럼
+                                // 행 시작부터 잰 높이 축을 쓴다.
+                                let frame_starts: Vec<Vec<usize>> = row_units
+                                    .iter()
+                                    .map(|cell_units| {
+                                        cell_units
+                                            .iter()
+                                            .enumerate()
+                                            .skip(1)
+                                            .filter(|(_, unit)| unit.hard_break_before)
+                                            .map(|(index, _)| index)
+                                            .collect()
+                                    })
+                                    .collect();
+                                let mut driver_frame = 0usize;
+                                let mut driver_frame_top = 0.0;
+                                let mut previous_end: RowCut = vec![0; row_units.len()];
 
                                 for (fragment_index, driver_unit) in driver_units.iter().enumerate()
                                 {
+                                    if fragment_index > 0 && driver_unit.hard_break_before {
+                                        driver_frame += 1;
+                                        driver_frame_top = driver_before;
+                                    }
                                     let driver_after = driver_before + driver_unit.height;
+                                    let closes_frame = driver_units
+                                        .get(fragment_index + 1)
+                                        .is_some_and(|next| next.hard_break_before);
                                     let cuts_at = |height: f64| -> RowCut {
                                         row_units
                                             .iter()
-                                            .map(|cell_units| {
+                                            .zip(frame_starts.iter())
+                                            .map(|(cell_units, starts)| {
+                                                let framed = driver_frame > 0
+                                                    && starts.len() >= driver_frame;
+                                                let (base, budget) = if framed {
+                                                    (
+                                                        starts[driver_frame - 1],
+                                                        height - driver_frame_top,
+                                                    )
+                                                } else {
+                                                    (0, height)
+                                                };
+                                                let cap = if framed || driver_frame == 0 {
+                                                    starts
+                                                        .get(driver_frame)
+                                                        .copied()
+                                                        .unwrap_or(cell_units.len())
+                                                } else {
+                                                    cell_units.len()
+                                                };
                                                 let mut consumed = 0.0;
-                                                let mut count = 0usize;
-                                                while count < cell_units.len()
+                                                let mut count = base;
+                                                while count < cap
                                                     && consumed + cell_units[count].height
-                                                        <= height + 0.1
+                                                        <= budget + 0.1
                                                 {
                                                     consumed += cell_units[count].height;
                                                     count += 1;
@@ -18404,8 +18477,25 @@ impl LayoutEngine {
                                             })
                                             .collect()
                                     };
-                                    let start_cut = cuts_at(driver_before);
-                                    let end_cut = cuts_at(driver_after);
+                                    let start_cut = previous_end.clone();
+                                    let mut end_cut = cuts_at(driver_after);
+                                    for ((end, start), starts) in end_cut
+                                        .iter_mut()
+                                        .zip(start_cut.iter())
+                                        .zip(frame_starts.iter())
+                                    {
+                                        if closes_frame {
+                                            if let Some(frame_end) = starts.get(driver_frame) {
+                                                *end = *frame_end;
+                                            }
+                                        }
+                                        *end = (*end).max(*start);
+                                    }
+                                    if fragment_index + 1 == driver_units.len() {
+                                        end_cut =
+                                            row_units.iter().map(|units| units.len()).collect();
+                                    }
+                                    previous_end.clone_from(&end_cut);
                                     let terminal = row_units
                                         .iter()
                                         .zip(end_cut.iter())
@@ -20978,9 +21068,14 @@ impl LayoutEngine {
                 seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
             })
             .map(|seg| seg.vertical_pos);
+        // [#8743] 문단 경계에서는 같은 원점으로의 재시작도 되감김이다.
         let returns_to_positive_origin = next_seg.vertical_pos > 0
             && source_origin == Some(next_seg.vertical_pos)
-            && next_seg.vertical_pos < previous_seg.vertical_pos;
+            && if same_paragraph {
+                next_seg.vertical_pos < previous_seg.vertical_pos
+            } else {
+                stored_paragraph_origin_restarts(previous_seg, next_seg)
+            };
         if previous_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
             || next_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
             || previous_seg.vertical_pos <= 0
@@ -30545,11 +30640,15 @@ impl LayoutEngine {
             } else {
                 content
             };
-            let content = content
-                + units[su..eu]
-                    .last()
-                    .and_then(CellUnit::overlay_cut_bottom_margin)
-                    .unwrap_or(0.0);
+            // 블록 표 뒤 문단의 흡수된 앞 간격과 마지막 overlay 행의 바깥 여백은
+            // 각 조각이 실제로 소유한 유닛에서 계산한다.
+            let absorbed_spacing =
+                self.split_block_host_cut_pull(cell, table, styles, &units, su, eu);
+            let overlay_bottom_margin = units[su..eu]
+                .last()
+                .and_then(CellUnit::overlay_cut_bottom_margin)
+                .unwrap_or(0.0);
+            let content = (content - absorbed_spacing).max(0.0) + overlay_bottom_margin;
             let (_, _, pad_top, pad_bottom) =
                 self.resolve_stored_nested_cell_padding(cell, table, styles);
             let has_visible_cut = units[su..eu]

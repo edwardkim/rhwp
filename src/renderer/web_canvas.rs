@@ -4621,7 +4621,7 @@ impl WebCanvasRenderer {
                 })
         };
         let original_size_hu = if is_wmf {
-            super::metafile_geometry::wmf_crop_reference(original_size_hu)
+            super::metafile_geometry::wmf_crop_reference(original_size_hu, Some(data), crop)
         } else {
             original_size_hu
         };

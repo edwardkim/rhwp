@@ -230,7 +230,11 @@ impl Catalogue {
             let full_crop = usage.crop.is_none_or(|crop| {
                 crate::renderer::svg::compute_image_crop_src(
                     crop,
-                    crate::renderer::metafile_geometry::wmf_crop_reference(usage.crop_reference),
+                    crate::renderer::metafile_geometry::wmf_crop_reference(
+                        usage.crop_reference,
+                        Some(usage.data.as_ref()),
+                        Some(crop),
+                    ),
                     width,
                     height,
                 ) == (0.0, 0.0, width, height)

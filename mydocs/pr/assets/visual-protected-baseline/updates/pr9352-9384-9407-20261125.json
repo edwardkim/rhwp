@@ -1,6 +1,6 @@
 {
-  "previous_table_sha256": "be050f801ed2f2152017357249f4b7c1068dc83c50347266d16599d61a1f4a5c",
-  "table_sha256": "14797cff63f004876863ea8945032cfd7d6fcacd181d7932ad7ba22ee3aa4177",
+  "previous_table_sha256": "1f7ac7a52290acef829c03e15f2dd27e23c6a3450415266d4cc4067b70dfdcc8",
+  "table_sha256": "56c0b80121c204e4f1c2f025b7a6720661773deb9aadbfa9fe8b4229601f51c1",
   "evidence_commit": "7b10442580c89ed8b78d3b8f017309274347e25c",
   "code_commit": "b12b85ad6ec037fff9ce41ac6fc34b8865d93920",
   "producers": {
