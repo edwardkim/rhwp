@@ -13480,6 +13480,34 @@
         "HMKMS.otf": [
           "486455d5230e2103761a21abc37dbc92038d97007c6f9af4bdd698562403a997",
           "2af0469b7181f2da99fa96f5fe99bd16fe3beed181cbc3ff737b46f67c79b477"
+        ],
+        "HYGPRM.TTF": [
+          "cf8614cb09e038ff24c0edb2ba2cfa6b8911c7c913cfe590e7e56014e7e63e5a",
+          "29ed78060ed63c47be29862b2fbb86ceb30321aa915d4b446261b4512f0221a4"
+        ],
+        "HYGTRE.TTF": [
+          "82f70d5e221412b10df0431f353f095885888823f5d026694691237c9a3004e8",
+          "5277e990b1d956cebe9ab722af163be67e3c1386359de78096800285a308e6f0"
+        ],
+        "HYMJRE.TTF": [
+          "a101a7a219ffd57273374a423e734adfba1529e5eaf2e9a7476f7150708ea506",
+          "c31bfab2e19969cc91a0b6f84e5848d10f1948ee374809049ec0e2a439897042"
+        ],
+        "ENOCRA.otf": [
+          "3f8b53a314e6abe6ce8ebb10b216d5718b4436a65496741fcd4b02edcfe6b7c6",
+          "b5b081ac075c21dacd963e888ef4be010e13618a4e6af955510328c8f4f72553"
+        ],
+        "HMKBP.otf": [
+          "8821e21176dae703139321ab3da964cdc12a312cfb3475861bb62c54a28a6d38",
+          "dbf9fe485344fedf0185615be800a2f0b37f9113d0951ca305db55e2b79170b6"
+        ],
+        "HMKBS.otf": [
+          "d74f53661d802ff85c66f01508411b63013fcf986e5fa0f3977d4c6543e0275f",
+          "7a574fa9670d36d968c30abd2ea0b1ffdf12cf0f570686e3572a0344ba7e70b7"
+        ],
+        "HMKOLD.otf": [
+          "f2122c5200148d46a3f13b703e27536748fc5abf912a9b44d8ccd0f2b7f4ce97",
+          "43fcb2a88b484f396329a907fa43bad1c164abf10c5b230b0f69c2140edc0119"
         ]
       },
       "backends": {
@@ -15380,6 +15408,12 @@
       "page_count": 17,
       "compat": "2022",
       "dpi": 96,
+      "accepted_sha256_pairs": {
+        "HYGPRM.TTF": [
+          "cf8614cb09e038ff24c0edb2ba2cfa6b8911c7c913cfe590e7e56014e7e63e5a",
+          "29ed78060ed63c47be29862b2fbb86ceb30321aa915d4b446261b4512f0221a4"
+        ]
+      },
       "backends": {
         "native": {
           "font_set": "082bb886b86a6fd8",
@@ -16834,6 +16868,12 @@
       "page_count": 71,
       "compat": "2022",
       "dpi": 96,
+      "accepted_sha256_pairs": {
+        "HYGTRE.TTF": [
+          "82f70d5e221412b10df0431f353f095885888823f5d026694691237c9a3004e8",
+          "5277e990b1d956cebe9ab722af163be67e3c1386359de78096800285a308e6f0"
+        ]
+      },
       "backends": {
         "native": {
           "font_set": "804451b9faaa3995",
