@@ -15881,6 +15881,12 @@
             }
           }
         }
+      },
+      "accepted_sha256_pairs": {
+        "HMKMM.TTF": [
+          "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+          "c45c30b92569bf9066ac6003e90779e5405d522ceef7e36a4a0fab2ddc431c1c"
+        ]
       }
     },
     {
