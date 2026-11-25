@@ -2045,7 +2045,7 @@ impl LayoutEngine {
                 !para.controls.is_empty()
                     && para.controls.iter().all(|control| {
                         matches!(control, Control::Table(child)
-                            if self.nested_table_takes_no_flow(para, child))
+                            if self.nested_table_takes_no_flow(cell, pi, child))
                     })
                     && cut_units.is_some_and(|(su, eu)| {
                         self.nested_row_range_from_cut_units(cell, table, styles, su, eu, pi)
@@ -3047,7 +3047,7 @@ impl LayoutEngine {
                                     )),
                                 );
                                 for child in &table_node.children[first_new_child..] {
-                                    tree.mark_cell_overlay_node(child.id);
+                                    tree.mark_cell_overlay_node(child.id, shape.common().text_wrap);
                                 }
                             }
                         }
@@ -3067,6 +3067,8 @@ impl LayoutEngine {
                         self.dpi,
                     );
                 let mut no_overlap_placer =
+                    crate::renderer::float_placement::NoOverlapSquarePlacer::default();
+                let mut no_overlap_topbottom_placer =
                     crate::renderer::float_placement::NoOverlapSquarePlacer::default();
                 if empty_paragraphs[cp_idx] && !owns_empty_paragraph(cp_idx) {
                     continue;
@@ -4577,6 +4579,14 @@ impl LayoutEngine {
                                         pic_y,
                                         self.dpi,
                                     );
+                                    let pic_y = no_overlap_topbottom_placer
+                                        .place_topbottom_picture(
+                                            &cell.paragraphs[cp_idx],
+                                            &pic.common,
+                                            pic_x,
+                                            pic_y,
+                                            self.dpi,
+                                        );
                                     let pic_area = LayoutRect {
                                         x: pic_x,
                                         y: pic_y,
@@ -4775,7 +4785,10 @@ impl LayoutEngine {
                                     );
                                     if detached {
                                         for child in &shape_parent.children[first_new_child..] {
-                                            tree.mark_cell_overlay_node(child.id);
+                                            tree.mark_cell_overlay_node(
+                                                child.id,
+                                                shape.common().text_wrap,
+                                            );
                                         }
                                     }
                                     let is_top_and_bottom_shape = matches!(
@@ -5867,7 +5880,11 @@ impl LayoutEngine {
                                                 )
                                                 ..flow_end,
                                         );
-                                    } else if !self.nested_table_takes_no_flow(para, nested_table) {
+                                    } else if !self.nested_table_takes_no_flow(
+                                        cell,
+                                        cp_idx,
+                                        nested_table,
+                                    ) {
                                         // 저장 줄 없는 문단의 글 앞/뒤 표는 흐름을 전진시키지 않는다
                                         // (온전한 칸의 `nested_table_flow_advance` 와 같다).
                                         para_y = flow_end;
@@ -8352,7 +8369,6 @@ impl LayoutEngine {
             fold_last_row,
             &mut fold_slack,
         );
-        tree.move_cell_overlay_nodes_last(&mut table_node);
 
         // [#6976] 접기 적용 — 자르는 양은 두 상한의 작은 쪽이다.
         //
@@ -8958,6 +8974,7 @@ impl LayoutEngine {
             }
         }
 
+        tree.order_cell_overlay_nodes(&mut table_node);
         col_node.children.push(table_node);
 
         // ── 캡션 렌더링 ──

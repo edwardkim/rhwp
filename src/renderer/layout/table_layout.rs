@@ -1935,6 +1935,8 @@ pub(super) struct CellUnit {
     nested_row: Option<usize>,
     /// 같은 행 생산자가 계상한 호스트 공간. 자식 내용 컷의 물리 높이와 분리한다.
     nested_row_flow_edges: Option<reflowed_nested_row::NestedRowFlowEdges>,
+    /// 이 유닛에서 실제로 잘릴 때만 다시 닫히는 자식 표의 아래 바깥여백.
+    overlay_cut_bottom_margin: Option<f64>,
     /// [#4069] `CELL` 분할 중첩 표의 한 행을 셀별 cursor로 더 잘게 나눈 조각.
     /// 바깥 CellUnit 컷이 이 조각을 선택하면 렌더러도 같은 자식 컷을 사용한다.
     nested_table_fragment: Option<NestedTableUnitCut>,
@@ -3431,10 +3433,18 @@ impl LayoutEngine {
         &self,
         source: &Paragraph,
         controls: &[Control],
+        inner_width: f64,
     ) -> f64 {
         let max = self.paragraph_top_and_bottom_non_inline_flow_height(controls);
-        crate::renderer::float_placement::unstored_cell_topbottom_stack_height(source, self.dpi)
-            .map_or(max, |stacked| stacked.max(max))
+        match crate::renderer::float_placement::unstored_cell_topbottom_stack_height(
+            source,
+            inner_width,
+            self.dpi,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(height) => height.map_or(max, |height| height.max(max)),
+            Err(never) => match never {},
+        }
     }
 
     /// 빈 호스트의 그림·캡션은 행 컷 장부가 이미 한 번 예약한 문단 전진을 쓴다.
@@ -5095,7 +5105,6 @@ impl LayoutEngine {
                 ),
             &cellzone_diagonal_origin_covered,
         );
-        tree.move_cell_overlay_nodes_last(&mut table_node);
 
         if !cellzone_diagonal_nodes.is_empty() {
             table_node.children.extend(cellzone_diagonal_nodes);
@@ -5210,6 +5219,7 @@ impl LayoutEngine {
             );
         }
 
+        tree.order_cell_overlay_nodes(&mut table_node);
         col_node.children.push(table_node);
 
         // ── 7. 캡션 렌더링 ──
@@ -9812,14 +9822,13 @@ impl LayoutEngine {
                             );
                             // 한컴은 겹침 허용 안 함인 자리차지 그림이 같은 문단 앞 그림과 가로로
                             // 겹치면 그 아래로 내린다(가로로 떨어진 그림은 나란히 둔다).
-                            let pic_y = if crate::renderer::float_placement::unstored_cell_no_overlap_topbottom_picture(
+                            let pic_y = no_overlap_topbottom_placer.place_topbottom_picture(
                                 &cell.paragraphs[cp_idx],
                                 &pic.common,
-                            ) {
-                                no_overlap_topbottom_placer.place_box(&pic.common, pic_x, pic_y, self.dpi)
-                            } else {
-                                pic_y
-                            };
+                                pic_x,
+                                pic_y,
+                                self.dpi,
+                            );
                             let pic_x = pic_x + picture_box.map_or(0.0, |frame| frame.margin_left);
                             let pic_y = pic_y + picture_box.map_or(0.0, |frame| frame.margin_top);
                             let pic_area = LayoutRect {
@@ -10216,7 +10225,7 @@ impl LayoutEngine {
                             );
                             if detached {
                                 for child in &shape_parent.children[first_new_child..] {
-                                    tree.mark_cell_overlay_node(child.id);
+                                    tree.mark_cell_overlay_node(child.id, shape.common().text_wrap);
                                 }
                             }
                             if matches!(shape.common().text_wrap, TextWrap::TopAndBottom) {
@@ -11233,6 +11242,7 @@ impl LayoutEngine {
                     para_y += self.cell_paragraph_top_and_bottom_flow_height(
                         &cell.paragraphs[cp_idx],
                         source_controls,
+                        inner_area.width,
                     );
                 }
             }
@@ -11872,8 +11882,11 @@ impl LayoutEngine {
                     }
                 }
                 for para in &cell.paragraphs {
-                    text_height +=
-                        self.cell_paragraph_top_and_bottom_flow_height(para, &para.controls);
+                    text_height += self.cell_paragraph_top_and_bottom_flow_height(
+                        para,
+                        &para.controls,
+                        inner_width,
+                    );
                     for ctrl in &para.controls {
                         match ctrl {
                             Control::Picture(pic) => {
@@ -12686,17 +12699,23 @@ impl LayoutEngine {
         crate::renderer::float_placement::nested_table_is_overlay(table)
     }
 
-    /// 저장 줄 없는 문단의 글 앞/뒤 중첩 표(문단·쪽·종이 기준)는 칸의 글줄을 밀지 않는다.
-    /// 칸 흐름 높이처럼 행 나눔 유닛에도 흐름 띠로 세지 않는다. 저장 줄이 있는 문단은
-    /// 한/글이 저장한 조각 상자(#8715)를 따르므로 이 규칙 밖이다.
+    /// 글 앞/뒤 표는 칸 안의 글줄과 겹친다. 저장본은 다음 줄이 실제 호스트 줄의
+    /// 높이·간격만큼 전진한 경우에만 같은 흐름으로 본다. 별도의 저장 조각은 유지한다.
     pub(super) fn nested_table_takes_no_flow(
         &self,
-        host: &Paragraph,
+        cell: &crate::model::table::Cell,
+        para_idx: usize,
         table: &crate::model::table::Table,
     ) -> bool {
-        crate::renderer::para_has_no_stored_line_segs(host)
-            && (self.nested_table_is_overlay(table)
-                || crate::renderer::float_placement::nested_table_is_page_overlay(table))
+        let host = &cell.paragraphs[para_idx];
+        (self.nested_table_is_overlay(table)
+            || crate::renderer::float_placement::nested_table_is_page_overlay(table))
+            && (crate::renderer::para_has_no_stored_line_segs(host)
+                || crate::renderer::float_placement::stored_overlay_host_flow_line(
+                    host,
+                    cell.paragraphs.get(para_idx + 1),
+                )
+                .is_some())
     }
 
     /// 셀 유닛 컷 `cut`(없으면 셀 전체)이 문단 `para_idx` 의 모든 유닛 — host 글줄과 중첩
@@ -16503,6 +16522,7 @@ impl LayoutEngine {
                     vis_end: li + 1,
                     nested_row: None,
                     nested_row_flow_edges: None,
+                    overlay_cut_bottom_margin: None,
                     nested_table_fragment: None,
                     mixed_nested_fragment: false,
                     mixed_nested_trailing: false,
@@ -16547,6 +16567,7 @@ impl LayoutEngine {
                 vis_end: 1,
                 nested_row: None,
                 nested_row_flow_edges: None,
+                overlay_cut_bottom_margin: None,
                 nested_table_fragment: None,
                 mixed_nested_fragment: false,
                 mixed_nested_trailing: false,
@@ -17050,6 +17071,7 @@ impl LayoutEngine {
                         vis_end: 0,
                         nested_row: None,
                         nested_row_flow_edges: None,
+                        overlay_cut_bottom_margin: None,
                         nested_table_fragment: None,
                         mixed_nested_fragment: false,
                         mixed_nested_trailing: false,
@@ -17090,6 +17112,7 @@ impl LayoutEngine {
                     vis_end: 0,
                     nested_row: None,
                     nested_row_flow_edges: None,
+                    overlay_cut_bottom_margin: None,
                     nested_table_fragment: None,
                     mixed_nested_fragment: false,
                     mixed_nested_trailing: false,
@@ -17907,7 +17930,7 @@ impl LayoutEngine {
             // 저장 줄 없는 문단의 글 앞/뒤 중첩 표는 행 나눔 유닛에 세지 않는다.
             let has_table_in_para = source_controls.iter().any(|c| {
                 matches!(c, Control::Table(t)
-                    if !self.nested_table_takes_no_flow(&cell.paragraphs[pi], t))
+                    if !self.nested_table_takes_no_flow(cell, pi, t))
             });
             let frame_owns_table_bands = comp.frame_owns_multiple_inline_tables()
                 && source_controls.iter().enumerate().all(|(index, control)| {
@@ -18567,6 +18590,7 @@ impl LayoutEngine {
                                         vis_end: line_count.max(1),
                                         nested_row: Some(ri),
                                         nested_row_flow_edges: Some(flow_edges),
+                                        overlay_cut_bottom_margin: None,
                                         nested_table_fragment: Some(fragment),
                                         mixed_nested_fragment: false,
                                         mixed_nested_trailing: false,
@@ -18760,6 +18784,7 @@ impl LayoutEngine {
                             vis_end: line_count.max(1),
                             nested_row: Some(ri),
                             nested_row_flow_edges: Some(flow_edges),
+                            overlay_cut_bottom_margin: None,
                             // Repeated headers require a child row cursor even
                             // when every body row is atomic. A scalar viewport
                             // cannot represent the additional header ownership.
@@ -19035,6 +19060,7 @@ impl LayoutEngine {
                                 vis_end: line_count,
                                 nested_row: None,
                                 nested_row_flow_edges: None,
+                                overlay_cut_bottom_margin: None,
                                 nested_table_fragment: None,
                                 mixed_nested_fragment: true,
                                 mixed_nested_trailing: fragment.trailing,
@@ -19165,6 +19191,7 @@ impl LayoutEngine {
                             vis_end: li + 1,
                             nested_row: None,
                             nested_row_flow_edges: None,
+                            overlay_cut_bottom_margin: None,
                             nested_table_fragment: None,
                             mixed_nested_fragment: false,
                             mixed_nested_trailing: false,
@@ -19332,6 +19359,7 @@ impl LayoutEngine {
                                     vis_end: line_count,
                                     nested_row: Some(fragment.row),
                                     nested_row_flow_edges: None,
+                                    overlay_cut_bottom_margin: None,
                                     nested_table_fragment: Some(fragment.cut),
                                     mixed_nested_fragment: false,
                                     mixed_nested_trailing: false,
@@ -19445,6 +19473,7 @@ impl LayoutEngine {
                                 vis_end: line_count,
                                 nested_row: None,
                                 nested_row_flow_edges: None,
+                                overlay_cut_bottom_margin: None,
                                 nested_table_fragment: None,
                                 mixed_nested_fragment: true,
                                 mixed_nested_trailing: fragment.trailing,
@@ -19526,11 +19555,7 @@ impl LayoutEngine {
                 let nested_h: f64 = source_controls
                     .iter()
                     .map(|ctrl| match ctrl {
-                        Control::Table(t)
-                            if self.nested_table_takes_no_flow(&cell.paragraphs[pi], t) =>
-                        {
-                            0.0
-                        }
+                        Control::Table(t) if self.nested_table_takes_no_flow(cell, pi, t) => 0.0,
                         Control::Table(t) => {
                             self.calc_nested_table_height(t, styles)
                                 + if host_is_cell_last_para {
@@ -19575,7 +19600,7 @@ impl LayoutEngine {
                     } else if crate::renderer::para_has_no_stored_line_segs(p)
                         && source_controls.iter().all(|ctrl| {
                             matches!(ctrl, Control::Table(t)
-                                if self.nested_table_takes_no_flow(&cell.paragraphs[pi], t))
+                                if self.nested_table_takes_no_flow(cell, pi, t))
                         })
                     {
                         // 글 앞/뒤 표만 든 문단도 빈 문단과 같은 줄 하나를 차지한다.
@@ -19723,6 +19748,7 @@ impl LayoutEngine {
                     },
                     nested_row: None,
                     nested_row_flow_edges: None,
+                    overlay_cut_bottom_margin: None,
                     nested_table_fragment: None,
                     mixed_nested_fragment: false,
                     mixed_nested_trailing: false,
@@ -19894,6 +19920,7 @@ impl LayoutEngine {
                         },
                         nested_row: None,
                         nested_row_flow_edges: None,
+                        overlay_cut_bottom_margin: None,
                         nested_table_fragment: None,
                         mixed_nested_fragment: false,
                         mixed_nested_trailing: false,
@@ -20292,7 +20319,7 @@ impl LayoutEngine {
         let mut seen_para: Option<usize> = None;
         // (표 바깥 상자 끝, 조각들(끝 위치, 행, 행 안 컷), 호스트 문단)
         type Piece = (f64, usize, Option<NestedTableUnitCut>);
-        let mut reach: Option<(f64, Vec<Piece>, usize)> = None;
+        let mut reach: Option<(f64, Vec<Piece>, usize, f64)> = None;
         for unit in units.iter() {
             if seen_para != Some(unit.para_idx) {
                 seen_para = Some(unit.para_idx);
@@ -20301,7 +20328,7 @@ impl LayoutEngine {
                         let Control::Table(child) = control else {
                             continue;
                         };
-                        if !self.nested_table_takes_no_flow(para, child) {
+                        if !self.nested_table_takes_no_flow(cell, unit.para_idx, child) {
                             continue;
                         }
                         let Some(frame) =
@@ -20314,7 +20341,7 @@ impl LayoutEngine {
                         else {
                             continue;
                         };
-                        if reach.as_ref().is_some_and(|(end, _, _)| *end >= frame.end) {
+                        if reach.as_ref().is_some_and(|(end, ..)| *end >= frame.end) {
                             continue;
                         }
                         // 행 안쪽까지 나눈 조각(저장 레이아웃)이 있으면 그 경계로, 없으면
@@ -20343,13 +20370,18 @@ impl LayoutEngine {
                                 })
                                 .collect()
                         };
-                        reach = Some((frame.end, pieces, unit.para_idx));
+                        reach = Some((
+                            frame.end,
+                            pieces,
+                            unit.para_idx,
+                            hwpunit_to_px(i32::from(child.outer_margin_bottom), self.dpi),
+                        ));
                     }
                 }
             }
             origin += unit.height;
         }
-        let Some((end, pieces, host_para)) = reach else {
+        let Some((end, pieces, host_para, bottom_margin)) = reach else {
             return;
         };
         // 높이 유닛은 표의 호스트 문단에 속하되 글줄은 갖지 않는다(호스트 글줄 끝 위치).
@@ -20398,6 +20430,7 @@ impl LayoutEngine {
                 vis_end: host_vis_end,
                 nested_row: Some(row),
                 nested_row_flow_edges: None,
+                overlay_cut_bottom_margin: (index + 1 < piece_count).then_some(bottom_margin),
                 nested_table_fragment: cut,
                 mixed_nested_fragment: false,
                 mixed_nested_trailing: false,
@@ -20418,6 +20451,26 @@ impl LayoutEngine {
         }
     }
 
+    /// 장식 표의 끝 컷이 실제로 중첩 표의 행 중간을 가르는지 확인한다.
+    pub(crate) fn row_cut_splits_cell_overlay(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        Self::row_cut_cell_order(table, row)
+            .into_iter()
+            .zip(cut)
+            .any(|(index, &end)| {
+                let cell = &table.cells[index];
+                let units = self.cell_units(cell, table, styles);
+                end.checked_sub(1)
+                    .and_then(|last| units.get(last))
+                    .is_some_and(|unit| unit.overlay_cut_bottom_margin.is_some())
+            })
+    }
+
     /// 저장 줄 없는 문단의 글 앞/뒤 중첩 표는 글줄을 밀지 않지만 칸 내용의 끝은 그 표의
     /// 바깥 상자 끝(문단 원점 + 세로 오프셋 + 바깥 높이)까지 간다. 세로 가운데·아래 정렬의
     /// 내용 높이는 흐름 유닛 합과 이 끝 가운데 큰 값이다. 표를 빼고 글줄만으로 정렬 여유를
@@ -20428,10 +20481,10 @@ impl LayoutEngine {
         table: &crate::model::table::Table,
         styles: &ResolvedStyleSet,
     ) -> f64 {
-        if !cell.paragraphs.iter().any(|para| {
+        if !cell.paragraphs.iter().enumerate().any(|(pi, para)| {
             para.controls.iter().any(|control| {
                 matches!(control, Control::Table(child)
-                    if self.nested_table_takes_no_flow(para, child))
+                    if self.nested_table_takes_no_flow(cell, pi, child))
             })
         }) {
             return 0.0;
@@ -20450,7 +20503,7 @@ impl LayoutEngine {
                         let Control::Table(child) = control else {
                             continue;
                         };
-                        if !self.nested_table_takes_no_flow(para, child) {
+                        if !self.nested_table_takes_no_flow(cell, unit.para_idx, child) {
                             continue;
                         }
                         if let Some(frame) =
@@ -24845,7 +24898,9 @@ impl LayoutEngine {
                     // 글 앞/뒤 중첩 표는 칸 흐름을 차지하지 않아 저장 자식 프레임의 빈 띠를
                     // 칸에 예약하지 않는다. 예약하면 그 띠에 다음 쪽 몫의 행이 겹쳐 그려지고
                     // 같은 행 칸들의 세로 정렬이 위쪽으로 바뀐다.
-                    Control::Table(child) if !self.nested_table_takes_no_flow(para, child) => {
+                    Control::Table(child)
+                        if !self.nested_table_takes_no_flow(cell, last.para_idx, child) =>
+                    {
                         Some(child.as_ref())
                     }
                     _ => None,
@@ -25767,7 +25822,8 @@ impl LayoutEngine {
                         );
                     }
                 }
-                let candidate_height = source_opening_height.unwrap_or(h + u.height);
+                let candidate_height = source_opening_height.unwrap_or(h + u.height)
+                    + u.overlay_cut_bottom_margin.unwrap_or(0.0);
                 let capacity_tolerance = capacity_tolerance::for_next_unit(
                     cell,
                     u,
@@ -27975,7 +28031,7 @@ impl LayoutEngine {
                     && para.text.trim().is_empty()
                     && para.controls.iter().all(|control| {
                         matches!(control, Control::Table(child)
-                            if self.nested_table_takes_no_flow(para, child))
+                            if self.nested_table_takes_no_flow(cell, unit.para_idx, child))
                     })
             });
             if (unit.empty_spacer || overlay_table_line)
@@ -28975,7 +29031,7 @@ impl LayoutEngine {
             .all(|unit| unit.nested_table_fragment.is_none())
             && host.controls.iter().all(|control| {
                 matches!(control, Control::Table(child)
-                    if self.nested_table_takes_no_flow(host, child))
+                    if self.nested_table_takes_no_flow(cell, para_idx, child))
             })
         {
             return None;
@@ -29573,7 +29629,7 @@ impl LayoutEngine {
                     !para.controls.is_empty()
                         && para.controls.iter().all(|control| {
                             matches!(control, Control::Table(child)
-                                if self.nested_table_takes_no_flow(para, child))
+                                if self.nested_table_takes_no_flow(cell, pi, child))
                         })
                 }) {
                     continue;
@@ -30444,6 +30500,11 @@ impl LayoutEngine {
             } else {
                 content
             };
+            let content = content
+                + units[su..eu]
+                    .last()
+                    .and_then(|unit| unit.overlay_cut_bottom_margin)
+                    .unwrap_or(0.0);
             let (_, _, pad_top, pad_bottom) =
                 self.resolve_stored_nested_cell_padding(cell, table, styles);
             let has_visible_cut = units[su..eu]
@@ -30997,6 +31058,7 @@ mod row_cut_tests {
             vis_end,
             nested_row: None,
             nested_row_flow_edges: None,
+            overlay_cut_bottom_margin: None,
             nested_table_fragment: None,
             mixed_nested_fragment: false,
             mixed_nested_trailing: false,
@@ -31044,6 +31106,7 @@ mod row_cut_tests {
             vis_end: 1,
             nested_row: None,
             nested_row_flow_edges: None,
+            overlay_cut_bottom_margin: None,
             nested_table_fragment: None,
             mixed_nested_fragment: true,
             mixed_nested_trailing: false,

@@ -1549,16 +1549,30 @@ impl NoOverlapSquarePlacer {
         self.place_box(common, x, y, dpi)
     }
 
-    /// 쌓기 대상으로 정해진 그림 상자를 놓는다. 앞서 놓인 상자와 겹치면 그 아래로 내린다.
-    pub(crate) fn place_box(&mut self, common: &CommonObjAttr, x: f64, y: f64, dpi: f64) -> f64 {
+    /// 앞 그림과 겹치면 그 아래로 이동한다. x와 y는 바깥 상자의 원점이다.
+    fn place_box(&mut self, common: &CommonObjAttr, x: f64, y: f64, dpi: f64) -> f64 {
+        match self.place_box_with_storage(common, x, y, dpi, &crate::storage::Unbounded) {
+            Ok(y) => y,
+            Err(never) => match never {},
+        }
+    }
+
+    fn place_box_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        common: &CommonObjAttr,
+        x: f64,
+        y: f64,
+        dpi: f64,
+        storage: &S,
+    ) -> Result<f64, S::Error> {
         const EPS: f64 = 0.01;
-        let px = |hu: i64| hwpunit_to_px(hu as i32, dpi);
-        let outer_w = px(i64::from(signed_hwpunit(common.width))
-            + i64::from(common.margin.left)
-            + i64::from(common.margin.right));
-        let outer_h = px(i64::from(signed_hwpunit(common.height))
-            + i64::from(common.margin.top)
-            + i64::from(common.margin.bottom));
+        let px = |hu| hwpunit_to_px(hu, dpi);
+        let outer_w = px(signed_hwpunit(common.width))
+            + px(i32::from(common.margin.left))
+            + px(i32::from(common.margin.right));
+        let outer_h = px(signed_hwpunit(common.height))
+            + px(i32::from(common.margin.top))
+            + px(i32::from(common.margin.bottom));
         let (x0, x1) = (x, x + outer_w);
         let mut y0 = y;
         while let Some(lower) = self
@@ -1572,76 +1586,74 @@ impl NoOverlapSquarePlacer {
         {
             y0 = lower;
         }
-        self.placed.push((x0, x1, y0, y0 + outer_h));
-        y0
+        storage.push(&mut self.placed, (x0, x1, y0, y0 + outer_h))?;
+        Ok(y0)
+    }
+
+    /// 온전한 칸과 분할 칸 모두 이 조각에 실제로 놓인 그림끼리 충돌을 해결한다.
+    pub(crate) fn place_topbottom_picture(
+        &mut self,
+        para: &Paragraph,
+        common: &CommonObjAttr,
+        x: f64,
+        y: f64,
+        dpi: f64,
+    ) -> f64 {
+        if !unstored_cell_no_overlap_topbottom_picture(para, common) {
+            return y;
+        }
+        self.place_box(
+            common,
+            x - hwpunit_to_px(i32::from(common.margin.left), dpi),
+            y,
+            dpi,
+        )
     }
 }
 
-/// 저장 줄 없는 빈 칸 문단의 '겹침 허용 안 함' 문단 기준 자리차지(TopAndBottom) 그림.
-///
-/// 한컴은 이런 그림이 같은 문단에서 앞 그림과 가로로 겹치면 앞 그림 아래로 내려 놓는다
-/// (가로로 떨어진 그림은 같은 높이에 나란히 둔다). 행 높이 측정의 가로 띠 쌓기
-/// (`stacked_band_height`)와 같은 결과다. 저장 줄이 있는 문단은 한컴이 보존한 줄 위치가
-/// 그림 자리를 정하므로 대상이 아니다. 가로 자리가 오프셋만으로 정해지는(문단·단 기준
-/// 왼쪽 정렬) 그림만 다룬다.
-pub(crate) fn unstored_cell_no_overlap_topbottom_picture(
-    para: &Paragraph,
-    common: &CommonObjAttr,
-) -> bool {
+/// 저장 줄 없는 빈 칸 문단에서 문단·단 기준 그림은 같은 칸 안쪽을 가로 기준으로 삼는다.
+fn unstored_cell_no_overlap_topbottom_picture(para: &Paragraph, common: &CommonObjAttr) -> bool {
     !common.treat_as_char
         && !common.allow_overlap
         && common.flow_with_text
         && matches!(common.text_wrap, TextWrap::TopAndBottom)
         && matches!(common.vert_rel_to, VertRelTo::Para)
         && matches!(common.horz_rel_to, HorzRelTo::Para | HorzRelTo::Column)
-        && matches!(common.horz_align, HorzAlign::Left)
         && para.text.trim().is_empty()
         && crate::renderer::para_has_no_stored_line_segs(para)
 }
 
-/// `unstored_cell_no_overlap_topbottom_picture` 그림을 앞 그림 아래로 내려 쌓았을 때 그
-/// 문단의 자리차지 흐름 높이(px). 내려간 그림이 없으면 None — 호출자는 종전처럼 그림
-/// 높이의 최댓값을 쓴다. 배치(`NoOverlapSquarePlacer::place_box`)와 같은 순서·판정이다.
-pub(crate) fn unstored_cell_topbottom_stack_height(para: &Paragraph, dpi: f64) -> Option<f64> {
-    let mut placed: Vec<(i64, i64, i64, i64)> = Vec::new();
-    let mut pushed = false;
+/// 칸 기준으로 해석한 그림의 물리 상자를 배치와 같은 순서로 쌓는다.
+pub(crate) fn unstored_cell_topbottom_stack_height<S: crate::storage::Storage>(
+    para: &Paragraph,
+    inner_width: f64,
+    dpi: f64,
+    storage: &S,
+) -> Result<Option<f64>, S::Error> {
+    if para.controls.len() < 2 {
+        return Ok(None);
+    }
+    let mut placer = NoOverlapSquarePlacer::default();
     for control in &para.controls {
         let Control::Picture(picture) = control else {
-            continue;
+            return Ok(None);
         };
         let common = &picture.common;
-        if !unstored_cell_no_overlap_topbottom_picture(para, common) {
-            continue;
+        if !unstored_cell_no_overlap_topbottom_picture(para, common) || picture.caption.is_some() {
+            return Ok(None);
         }
-        let x0 = i64::from(signed_hwpunit(common.horizontal_offset));
-        let x1 = x0
-            + i64::from(signed_hwpunit(common.width))
-            + i64::from(common.margin.left)
-            + i64::from(common.margin.right);
-        let outer_h = i64::from(signed_hwpunit(common.height))
-            + i64::from(common.margin.top)
-            + i64::from(common.margin.bottom);
-        if x1 <= x0 || outer_h <= 0 {
-            return None;
-        }
-        let original_y = i64::from(topbottom_flow_vertical_offset_hu(common));
-        let mut y0 = original_y;
-        while let Some(lower) = placed
-            .iter()
-            .filter(|&&(px0, px1, py0, py1)| x0 < px1 && px0 < x1 && y0 < py1 && py0 < y0 + outer_h)
-            .map(|&(_, _, _, py1)| py1)
-            .max()
-        {
-            y0 = lower;
-        }
-        pushed |= y0 > original_y;
-        placed.push((x0, x1, y0, y0 + outer_h));
+        let width = hwpunit_to_px(signed_hwpunit(common.width), dpi);
+        let x = crate::renderer::object_alignment::aligned_horizontal_origin(
+            0.0,
+            inner_width,
+            width,
+            common.horz_align,
+            hwpunit_to_px(signed_hwpunit(common.horizontal_offset), dpi),
+        ) - hwpunit_to_px(i32::from(common.margin.left), dpi);
+        let y = hwpunit_to_px(topbottom_flow_vertical_offset_hu(common), dpi);
+        placer.place_box_with_storage(common, x, y, dpi, storage)?;
     }
-    let bottom = placed.iter().map(|&(_, _, _, y1)| y1).max()?;
-    if !pushed {
-        return None;
-    }
-    Some(hwpunit_to_px(i32::try_from(bottom).ok()?, dpi))
+    Ok(placer.placed.iter().map(|placed| placed.3).reduce(f64::max))
 }
 
 /// 글자처럼 취급한 쪽 나눔(RowBreak) 표에서 저장 줄 없는 빈 문단 하나가 문단 기준 자리차지
@@ -8103,13 +8115,13 @@ impl ObjectPlacementFrame<'_> {
                 HorzRelTo::Column => self.column,
                 HorzRelTo::Para => self.container,
             };
-            match common.horz_align {
-                HorzAlign::Left | HorzAlign::Inside => reference.x + h_offset,
-                HorzAlign::Center => reference.x + (reference.width - width) / 2.0 + h_offset,
-                HorzAlign::Right | HorzAlign::Outside => {
-                    reference.x + reference.width - width - h_offset
-                }
-            }
+            crate::renderer::object_alignment::aligned_horizontal_origin(
+                reference.x,
+                reference.width,
+                width,
+                common.horz_align,
+                h_offset,
+            )
         };
         let y = if common.treat_as_char {
             self.paragraph_y

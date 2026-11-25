@@ -2934,6 +2934,16 @@ impl HeightMeasurer {
                     // 분리는 선택된 실제 줄을 아는 CellUnit 소비자가 맡는다.
                     return Ok(band.height);
                 }
+                if let Some(height) =
+                    crate::renderer::float_placement::unstored_cell_topbottom_stack_height(
+                        para,
+                        reference_width as f64 * self.dpi / 7200.0,
+                        self.dpi,
+                        storage,
+                    )?
+                {
+                    return Ok(height);
+                }
                 let mut bands: Vec<(i64, i64, f64)> = Vec::new();
                 for ctrl in &para.controls {
                     let common = match ctrl {
