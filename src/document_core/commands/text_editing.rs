@@ -6899,8 +6899,21 @@ impl DocumentCore {
 
         // path를 따라 마지막 셀까지 진입
         for (i, &(ctrl_idx, cell_idx, _cpi)) in path.iter().enumerate() {
-            let table = match para.controls.get_mut(ctrl_idx) {
-                Some(Control::Table(t)) => t.as_mut(),
+            let paragraphs = match para.controls.get_mut(ctrl_idx) {
+                Some(Control::Table(t)) => t
+                    .cells
+                    .get_mut(cell_idx)
+                    .map(|cell| &mut cell.paragraphs)
+                    .ok_or_else(|| HwpError::RenderError("셀 범위 초과".to_string()))?,
+                // 글상자: 표 칸 안 글상자와 글상자 안 표 칸도 같은 경로로 내려간다.
+                // 커서·누르기가 그 글상자 글을 `[표 셀, 글상자]` 경로로 준다(#1138).
+                Some(Control::Shape(shape)) => {
+                    super::super::helpers::get_textbox_at_mut(shape, cell_idx)
+                        .map(|text_box| &mut text_box.paragraphs)
+                        .ok_or_else(|| {
+                            HwpError::RenderError("경로: 글상자가 아닙니다".to_string())
+                        })?
+                }
                 // 머리말·꼬리말 뿌리: 그 문단에 든 표로 내려간다(머리말 문단 자체는 머리말 API가 맡는다).
                 Some(ctrl @ (Control::Header(_) | Control::Footer(_)))
                     if i == 0 && cell_idx == 0 && path.len() > 1 =>
@@ -6913,30 +6926,29 @@ impl DocumentCore {
                         })?;
                     continue;
                 }
-                _ => return Err(HwpError::RenderError("경로: 표가 아닙니다".to_string())),
+                _ => {
+                    return Err(HwpError::RenderError(
+                        "경로: 표나 글상자가 아닙니다".to_string(),
+                    ))
+                }
             };
-            let cell = table
-                .cells
-                .get_mut(cell_idx)
-                .ok_or_else(|| HwpError::RenderError("셀 범위 초과".to_string()))?;
             if i == path.len() - 1 {
                 // 이 셀에서 문단 분할. 리플로우/shift/recalc 는 borrow 해제 후 루프 밖에서 한다.
-                if cell_para_idx >= cell.paragraphs.len() {
+                if cell_para_idx >= paragraphs.len() {
                     return Err(HwpError::RenderError("셀문단 범위 초과".to_string()));
                 }
-                split_origin_vpos = cell.paragraphs[cell_para_idx]
+                split_origin_vpos = paragraphs[cell_para_idx]
                     .line_segs
                     .first()
                     .map(|seg| seg.vertical_pos);
-                let mut new_para = cell.paragraphs[cell_para_idx].split_at(char_offset);
+                let mut new_para = paragraphs[cell_para_idx].split_at(char_offset);
                 if let Some(meta) = restore_meta {
                     restore_para_meta(&mut new_para, meta, &self.document.doc_info.para_shapes);
                 }
-                cell.paragraphs.insert(cell_para_idx + 1, new_para);
+                paragraphs.insert(cell_para_idx + 1, new_para);
                 break;
             }
-            para = cell
-                .paragraphs
+            para = paragraphs
                 .get_mut(_cpi)
                 .ok_or_else(|| HwpError::RenderError("셀문단 범위 초과".to_string()))?;
         }
@@ -7016,8 +7028,21 @@ impl DocumentCore {
         // 사라지는 문단의 스코프 메타 — undo(split)가 되돌릴 값이다 (Task #2342).
         let mut removed_meta: Option<ParaMeta> = None;
         for (i, &(ctrl_idx, cell_idx, _cpi)) in path.iter().enumerate() {
-            let table = match para.controls.get_mut(ctrl_idx) {
-                Some(Control::Table(t)) => t.as_mut(),
+            let paragraphs = match para.controls.get_mut(ctrl_idx) {
+                Some(Control::Table(t)) => t
+                    .cells
+                    .get_mut(cell_idx)
+                    .map(|cell| &mut cell.paragraphs)
+                    .ok_or_else(|| HwpError::RenderError("셀 범위 초과".to_string()))?,
+                // 글상자: 표 칸 안 글상자와 글상자 안 표 칸도 같은 경로로 내려간다.
+                // 커서·누르기가 그 글상자 글을 `[표 셀, 글상자]` 경로로 준다(#1138).
+                Some(Control::Shape(shape)) => {
+                    super::super::helpers::get_textbox_at_mut(shape, cell_idx)
+                        .map(|text_box| &mut text_box.paragraphs)
+                        .ok_or_else(|| {
+                            HwpError::RenderError("경로: 글상자가 아닙니다".to_string())
+                        })?
+                }
                 // 머리말·꼬리말 뿌리: 그 문단에 든 표로 내려간다(머리말 문단 자체는 머리말 API가 맡는다).
                 Some(ctrl @ (Control::Header(_) | Control::Footer(_)))
                     if i == 0 && cell_idx == 0 && path.len() > 1 =>
@@ -7030,29 +7055,28 @@ impl DocumentCore {
                         })?;
                     continue;
                 }
-                _ => return Err(HwpError::RenderError("경로: 표가 아닙니다".to_string())),
+                _ => {
+                    return Err(HwpError::RenderError(
+                        "경로: 표나 글상자가 아닙니다".to_string(),
+                    ))
+                }
             };
-            let cell = table
-                .cells
-                .get_mut(cell_idx)
-                .ok_or_else(|| HwpError::RenderError("셀 범위 초과".to_string()))?;
             if i == path.len() - 1 {
-                if cell_para_idx >= cell.paragraphs.len() {
+                if cell_para_idx >= paragraphs.len() {
                     return Err(HwpError::RenderError("셀문단 범위 초과".to_string()));
                 }
-                merge_origin_vpos = cell.paragraphs[prev_idx]
+                merge_origin_vpos = paragraphs[prev_idx]
                     .line_segs
                     .first()
                     .map(|seg| seg.vertical_pos);
-                let removed = cell.paragraphs.remove(cell_para_idx);
+                let removed = paragraphs.remove(cell_para_idx);
                 removed_meta = Some(removed.capture_meta());
-                let prev = &mut cell.paragraphs[prev_idx];
+                let prev = &mut paragraphs[prev_idx];
                 merge_point = prev.text.chars().count();
                 prev.merge_from(&removed);
                 break;
             }
-            para = cell
-                .paragraphs
+            para = paragraphs
                 .get_mut(_cpi)
                 .ok_or_else(|| HwpError::RenderError("셀문단 범위 초과".to_string()))?;
         }
