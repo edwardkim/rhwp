@@ -22,6 +22,10 @@
   시행령의 휴먼고딕 `HMKMG.TTF`와 휴먼명조 `HMKMM.TTF`는 각각 사용자 글꼴 폴더의
   `HMKMG_MAC.TTF`, `HMKMM_MAC.TTF`도 공급할 수 있다. 문서별 허용 SHA-256을 확인한다.
   Mac 설치본을 공급한 Native·fresh WASM의 74쪽 표시값이 기존 공급 조건과 모두 같았다.
+- Mac용 `HMK*_MAC.TTF`는 Native·fresh WASM의 전쪽 표시값이 모두 일치한 문서의
+  `accepted_sha256_pairs`에 등록한다. Mac에서는 해당 파일을 사용자 글꼴 폴더에서 직접
+  공급한다. 글꼴 이름이 같아도 OTF의 허용 쌍은 문서마다 확인한다. 중첩 표의 휴먼고딕은
+  `HMKMG.otf`를 유지한다.
 - 개요 번호(`outline`)와 종합부동산세법(`issue7905`)은 매니페스트에 기록한 OTF 글꼴을 사용한다.
   같은 파일명의 설치본도 해시가 다를 수 있으므로 Native·WASM에서 파일 순서와 SHA-256을 확인한다.
 - `font_environment`가 있으면 해당 JSON을 `--font-environment`로 지정한다.
