@@ -28943,7 +28943,16 @@ impl LayoutEngine {
         // The child repeats its header even when its first body row starts at
         // an intra-row cut. The header is physical space, independent of the
         // body's unit cursor and of whether the selected row is terminal.
-        if unit.nested_table_fragment.is_none() {
+        // 온전한 overlay 행도 이어받는 쪽의 표 원점에서 위 바깥 여백을 다시 연다.
+        let resumes_overlay_rows =
+            start
+                .checked_sub(1)
+                .and_then(|i| units.get(i))
+                .is_some_and(|previous| {
+                    previous.para_idx == unit.para_idx
+                        && previous.overlay_cut_bottom_margin.is_some()
+                });
+        if unit.nested_table_fragment.is_none() && !resumes_overlay_rows {
             return 0.0;
         }
         let Some(para) = cell.paragraphs.get(unit.para_idx) else {

@@ -253,12 +253,6 @@ fn line_flow_continues_under_overlay(
             anchor_y + measured_height - base_available,
             dpi,
         )
-        && !crate::renderer::float_placement::saved_overlay_table_fits(
-            table,
-            measured_height,
-            base_available - anchor_y,
-            dpi,
-        )
 }
 
 /// 앵커 뒤 빈 문단(공백·개체 없음)을 건너 처음 나오는 내용 문단이 줄 좌표상 표와 겹치는가.
