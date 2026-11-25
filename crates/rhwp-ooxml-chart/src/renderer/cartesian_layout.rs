@@ -137,58 +137,19 @@ fn positive_axis_floor(data_min: f64, max: f64) -> Option<f64> {
     }
 }
 
-/// 두 글줄 사이에 들어가는 눈금 수와 양 끝을 포함해 원 데이터에 최대 열 칸을 배정한다.
-/// 10% 범위 여유는 표시 범위에 포함하며 원 데이터의 최대값을 축 끝에 붙이지 않는다.
-/// `data_min` 은 0으로 내리기 전의 원 최솟값이다. 값이 몰린 양수 축은
-/// [`positive_axis_floor`] 에서 시작하고, 끝은 올린 눈금이 최댓값에 단위의 0.2 이내로
-/// 붙을 때만 한 칸 더 둔다(4.65,4.95→4~5, 98,99→85~105).
-///
-/// 0이 아닌 값에서 시작하는 세로 값축(`vertical`)의 칸 수는 그림 영역 높이에서 글줄 3.1개를
-/// 뺀 길이를 글줄 1.35개로 나눈 값(2~9칸)이고, 간격은 그 칸 수로 나눈 값 **이상**의 가장
-/// 작은 1·2·5 단위다. 웹한글기안기에서 같은 값의 차트 높이만 13000~45000 HU 로 바꿔 잰
-/// 값과 맞춘 것이다(2.9,3: 0.2→0.1→0.05, 4.65~4.95: 0.5→0.2→0.1). 0부터 시작하는 축과
-/// 가로 값축은 종전 예산을 그대로 쓴다.
-fn automatic_scale(
-    data_min: f64,
-    min: f64,
-    max: f64,
-    length: f64,
-    font: f64,
-    vertical: bool,
-) -> ValueScale {
-    if length.abs() <= f64::EPSILON {
-        return ValueScale::from_tuple((0.0, 0.0, 1.0));
-    }
-    let floor = positive_axis_floor(data_min, max);
-    let min = floor.unwrap_or(min.min(0.0));
-    let max = max.max(0.0);
-    let span = (max - min).max(f64::EPSILON);
-    let line_height = axis_line_height(font);
-    let floored_vertical = vertical && floor.is_some();
-    let budget = if floored_vertical {
-        ((length.abs() - line_height * 3.1) / (line_height * 1.35))
-            .round()
-            .clamp(2.0, 9.0)
-    } else {
-        (1.0 + (length.abs() / (line_height * 2.0)).round()).clamp(3.0, 10.0)
-    };
-    let raw_step = span / budget;
-    let magnitude = 10.0_f64.powf(raw_step.log10().floor());
-    let step = [1.0, 2.0, 5.0, 10.0]
-        .into_iter()
-        .map(|n| n * magnitude)
-        .find(|n| {
-            if floored_vertical {
-                *n >= raw_step * (1.0 - 1e-9)
-            } else {
-                *n > raw_step * (1.0 + 1e-9)
-            }
-        })
-        .unwrap_or(magnitude * 20.0);
-    if floor.is_some() {
+/// 바닥값을 정한 양수 축은 최댓값 아래로 이 칸 수보다 적게 남으면 한 칸 더 내린다.
+/// 데스크톱 한컴 2020 Print 에서 남는 칸이 3.2 이면 내리고(9.6,10.1→8~10.5)
+/// 3.4 이면 그대로 둔다(9.7,10.2→8.5~10.5).
+const FLOOR_MIN_STEPS_BELOW_MAX: f64 = 3.3;
+
+/// 주어진 단위로 만든 자동 축. `floor` 가 있으면 그 값에서, 없으면 0(또는 음수 최솟값)에서 시작한다.
+fn scale_with_step(floor: Option<f64>, min: f64, max: f64, span: f64, step: f64) -> ValueScale {
+    if let Some(floor) = floor {
         let top = (max / step - 1e-9).ceil() * step;
+        let bottom = (floor / step + 1e-9).floor() * step;
+        let lowest = ((max - step * FLOOR_MIN_STEPS_BELOW_MAX) / step + 1e-9).floor() * step;
         return ValueScale {
-            min: (min / step + 1e-9).floor() * step,
+            min: bottom.min(lowest),
             max: if top - max <= step * (0.2 + 1e-9) {
                 top + step
             } else {
@@ -212,6 +173,80 @@ fn automatic_scale(
         step,
     }
 }
+
+/// 1·2·5 단위를 작은 것부터 늘어놓는다. `span` 을 천 칸으로 나눈 크기에서 시작한다.
+fn nice_steps(span: f64) -> impl Iterator<Item = f64> {
+    let start = 10.0_f64.powf((span / 1000.0).log10().floor());
+    (0..30).flat_map(move |exp| {
+        let magnitude = start * 10.0_f64.powi(exp);
+        [1.0, 2.0, 5.0].into_iter().map(move |n| n * magnitude)
+    })
+}
+
+/// 값축 자동 범위와 단위.
+///
+/// 세로 값축은 그림 영역 높이를 글줄 1.5개로 나눈 칸 수(3~10칸)를 넘지 않는 가장 작은 1·2·5
+/// 단위를 쓴다. 칸 수는 그 단위로 실제로 만든 축(시작·끝 포함)으로 센다. 데스크톱 한컴 2020
+/// Print 실측(10pt): 그림 높이 137px 에서 5칸(1,5→0~6 2 단위, 3,3→0~4 1 단위), 187px 에서
+/// 7칸(3,3→0~3.5 0.5 단위, 9.6,9.95→8.6~10 0.2 단위, 9.5,9.8→8~10 0.5 단위), 283px 에서
+/// 10칸(2,4.5→0~5 0.5 단위).
+///
+/// 가로 값축은 0부터 시작하면 종전 글줄 예산을 쓴다. 0이 아닌 값에서 시작하면 눈금 사이
+/// 간격이 가장 넓은 눈금 숫자의 [`HORIZONTAL_LABEL_PITCH`] 배 이상인 가장 작은 단위를 쓴다.
+/// 데스크톱 한컴 2020 Print 에서 2.9,3 은 그림 너비 262px 에서 0.1(0.05 이면 간격/숫자 1.12배),
+/// 315px 에서 0.05(1.35배), 4.65~4.95 는 281px 에서 0.1(1.73배)이다.
+/// `data_min` 은 0으로 내리기 전의 원 최솟값이다. 값이 몰린 양수 축은
+/// [`positive_axis_floor`] 에서 시작하고, 끝은 올린 눈금이 최댓값에 단위의 0.2 이내로
+/// 붙을 때만 한 칸 더 둔다(4.65,4.95→4~5, 98,99→85~105).
+fn automatic_scale(
+    data_min: f64,
+    min: f64,
+    max: f64,
+    length: f64,
+    font: f64,
+    vertical: bool,
+    label_width: &dyn Fn(ValueScale) -> f64,
+) -> ValueScale {
+    if length.abs() <= f64::EPSILON {
+        return ValueScale::from_tuple((0.0, 0.0, 1.0));
+    }
+    let floor = positive_axis_floor(data_min, max);
+    let min = floor.unwrap_or(min.min(0.0));
+    let max = max.max(0.0);
+    let span = (max - min).max(f64::EPSILON);
+    let line_height = axis_line_height(font);
+    if vertical {
+        let limit = (length.abs() / (line_height * 1.5))
+            .floor()
+            .clamp(3.0, 10.0);
+        return nice_steps(span)
+            .map(|step| scale_with_step(floor, min, max, span, step))
+            .find(|scale| (scale.max - scale.min) / scale.step <= limit + 1e-9)
+            .unwrap_or_else(|| ValueScale::from_tuple((min, max, span)));
+    }
+    if floor.is_some() {
+        return nice_steps(span)
+            .map(|step| scale_with_step(floor, min, max, span, step))
+            .find(|scale| {
+                let count = ((scale.max - scale.min) / scale.step).round();
+                count <= 10.0
+                    && length.abs() / count >= label_width(*scale) * HORIZONTAL_LABEL_PITCH
+            })
+            .unwrap_or_else(|| ValueScale::from_tuple((min, max, span)));
+    }
+    let budget = (1.0 + (length.abs() / (line_height * 2.0)).round()).clamp(3.0, 10.0);
+    let raw_step = span / budget;
+    let magnitude = 10.0_f64.powf(raw_step.log10().floor());
+    let step = [1.0, 2.0, 5.0, 10.0]
+        .into_iter()
+        .map(|n| n * magnitude)
+        .find(|n| *n > raw_step * (1.0 + 1e-9))
+        .unwrap_or(magnitude * 20.0);
+    scale_with_step(None, min, max, span, step)
+}
+
+/// 0이 아닌 값에서 시작하는 가로 값축의 눈금 간격 / 가장 넓은 눈금 숫자 너비의 하한.
+const HORIZONTAL_LABEL_PITCH: f64 = 1.25;
 
 /// 3D 세로 축은 최대 다섯 칸을 두고 큰 글줄에는 더 성긴 단위를 고른다.
 /// 묶은 막대의 원래 최댓값이 눈금에 닿으면 그 범위를 유지하되 두 칸은 확보한다.
@@ -280,8 +315,14 @@ pub(super) struct ChartScales {
 }
 
 impl ChartScales {
-    pub fn new(chart: &OoxmlChart, width: f64, height: f64) -> Self {
+    pub fn new(
+        chart: &OoxmlChart,
+        width: f64,
+        height: f64,
+        measure: &dyn Fn(&str, f64, &str) -> f64,
+    ) -> Self {
         let font = label_font_px(chart);
+        let label_width = |scale: ValueScale| scale.label_width(chart, 0, measure);
         let (min, max) = raw_value_bounds(chart.series.iter());
         if chart.chart_type == OoxmlChartType::Scatter {
             return Self {
@@ -294,21 +335,21 @@ impl ChartScales {
             };
         }
         let data_min = raw_data_min(chart.series.iter());
-        let mut primary = automatic_scale(data_min, min, max, height, font, true);
+        let mut primary = automatic_scale(data_min, min, max, height, font, true, &label_width);
         let secondary = if chart.is_combo() || chart.has_secondary_axis {
             let pri: Vec<_> = chart.series.iter().filter(|s| s.axis_group == 0).collect();
             let sec: Vec<_> = chart.series.iter().filter(|s| s.axis_group == 1).collect();
             if !pri.is_empty() {
                 let data_min = raw_data_min(pri.iter().copied());
                 let (min, max) = raw_value_bounds(pri.into_iter());
-                primary = automatic_scale(data_min, min, max, height, font, true);
+                primary = automatic_scale(data_min, min, max, height, font, true, &label_width);
             }
             if sec.is_empty() {
                 ValueScale::from_tuple((0.0, 1.0, 0.2))
             } else {
                 let data_min = raw_data_min(sec.iter().copied());
                 let (min, max) = raw_value_bounds(sec.into_iter());
-                automatic_scale(data_min, min, max, height, font, true)
+                automatic_scale(data_min, min, max, height, font, true, &label_width)
             }
         } else {
             let bars = matches!(
@@ -359,6 +400,7 @@ impl ChartScales {
                         length,
                         font,
                         !horizontal,
+                        &label_width,
                     )
                 };
             } else if chart.is_3d && bars {
@@ -371,7 +413,7 @@ impl ChartScales {
                 let (min, max, step) = nice_axis_no_headroom(min, max, VERTICAL_AXIS_TICKS);
                 primary = ValueScale::from_tuple((min, max + step, step));
             } else if horizontal {
-                primary = automatic_scale(data_min, min, max, length, font, false);
+                primary = automatic_scale(data_min, min, max, length, font, false, &label_width);
             }
             // 저장 범위는 측정 뒤 paint에서 덮어쓰지 않고 이 결과에서 확정한다.
             if bars {
@@ -556,7 +598,7 @@ impl CartesianLayout {
             } else {
                 remaining_height
             };
-            let mut scales = ChartScales::new(chart, plot_width, plot_height);
+            let mut scales = ChartScales::new(chart, plot_width, plot_height, measure);
             if crosses_inside || (horizontal && !chart.is_3d) {
                 category.axis_fraction = scales.primary.zero_fraction();
             }
