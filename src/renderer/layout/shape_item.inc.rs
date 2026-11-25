@@ -164,7 +164,7 @@ impl LayoutEngine {
                                 page_content.section_index,
                                 para_index,
                                 control_index,
-                                false,
+                                None,
                             );
                             let layer = Self::render_layer_from_common(
                                 &pic.common,
@@ -327,6 +327,12 @@ impl LayoutEngine {
                             } else {
                                 (vpos_accounts_for_height, pic_y)
                             };
+                            // [#8735] 저장 gap 이 그림 상자를 담으면 상자 바닥은 host 의 저장 줄
+                            // 윗변이다. 문단 시작은 그 줄에서 문단 위 간격을 뺀 자리이므로 위
+                            // 간격을 되돌려 줄 윗변을 구한다(오프셋은 줄 위 띠 안에 이미 들어 있다).
+                            let stored_gap_line_y = vpos_accounts_for_height.then(|| {
+                                pic_y + para_style.map_or(0.0, |s| s.spacing_before)
+                            });
                             // 조판이 확정한 저장 그림 프레임은 실제 배치에서도 같은 앵커를 쓴다.
                             // 뒤 호스트 줄의 원점이나 그림 높이로 이 앵커를 다시 추정하지 않는다.
                             let stored_picture = ctx.paragraph_float_placements
@@ -385,7 +391,7 @@ impl LayoutEngine {
                                 page_content.section_index,
                                 para_index,
                                 control_index,
-                                vpos_accounts_for_height,
+                                stored_gap_line_y.filter(|_| vpos_accounts_for_height),
                             );
                             result_y = picture_placement.flow_end;
                             if own_line_below_band {
