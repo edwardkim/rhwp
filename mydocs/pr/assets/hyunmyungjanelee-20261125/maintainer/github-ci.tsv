@@ -1,0 +1,8 @@
+workflow	target_sha	result	attempt	url
+CI	a5f01c69392dd4cf6919c8291023ddc84466e181	success	1	https://github.com/edwardkim/rhwp/actions/runs/45681369703
+CodeQL	a5f01c69392dd4cf6919c8291023ddc84466e181	success	1	https://github.com/edwardkim/rhwp/actions/runs/45681369645
+Render Diff	a5f01c69392dd4cf6919c8291023ddc84466e181	success	1	https://github.com/edwardkim/rhwp/actions/runs/45681369756
+Adapter inter-diff	a5f01c69392dd4cf6919c8291023ddc84466e181	success	1	https://github.com/edwardkim/rhwp/actions/runs/45681369592
+Proptest roundtrip	a5f01c69392dd4cf6919c8291023ddc84466e181	success	1	https://github.com/edwardkim/rhwp/actions/runs/45681369736
+CI Impact Policy	a5f01c69392dd4cf6919c8291023ddc84466e181	success		https://github.com/edwardkim/rhwp/actions/runs/45687402867
+Refresh nextest target duration data	5fa8cede504eca188d2e003931a50e9a8434d6da	success	1	https://github.com/edwardkim/rhwp/actions/runs/45687733465
