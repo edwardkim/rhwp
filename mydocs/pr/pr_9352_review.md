@@ -1,5 +1,9 @@
 # PR #9352 검토 · 칸 안 종이·쪽 기준 도형
 
+## 최종 판정
+
+**메인터너 보정 후 수용 가능.** 원 기여 `04d560696bedf76ee589fd538deb7705bcca281d`의 기능에 종이를 기준으로 놓은 흰 도형의 앞뒤 그리기와 중첩 글상자 안쪽의 세로 정렬을 보완한 제품 소스는 `b12b85ad6ec037fff9ce41ac6fc34b8865d93920`이다. 대조 기준은 `50324d194d1cd7c46d168f07a58515086530f03b`이다. 원 기여에서 남았던 증상과 보정본의 측정·배치 경로를 아래에 기록했다. 통합에는 중첩 표 한 문서의 글꼴 해시 등록과 1,033pt 추가 인쇄 대조군의 판정, 원격 처리 승인과 제출 커밋의 필수 CI·셀프 리뷰가 남는다. [세 PR의 최종 검토](hyunmyungjanelee_20261125_review.md) · [원 기여와 보정 후 쪽별 측정](assets/hyunmyungjanelee-20261125/maintainer/original-pr-comparison.tsv)
+
 원 기여자는 hyunmyungJaneLee이고 원 head는 `04d560696bedf76ee589fd538deb7705bcca281d`이다. #9349의 빈 칸이 커지고 도형이 잘리는 증상, 글상자 안의 도형, 쪽을 넘는 행의 첫 조각을 검토한다. [원 PR](https://github.com/edwardkim/rhwp/pull/9352) · [연결 이슈](https://github.com/edwardkim/rhwp/issues/9349)
 
 최신 devel `50324d194d`에 원 head를 적용한 로컬 커밋은 `c16783823f`이다. 후속 #9384·#9407과의 누적 검토 소스는 `f11b8624fd`이다. 원 head의 CodeQL 요약은 devel에 있는 세 분석 구성을 찾지 못해 NEUTRAL이다. [검토 계획](hyunmyungjanelee_20261125_review_plan.md)
@@ -21,3 +25,11 @@
 원 기여에서 분할 HWPX의 흰 도형 안으로 괘선 130줄이 보였다. 보정 소스 `b12b85ad6e`의 Native·fresh WASM은 한컴처럼 도형 안에서 0줄, 위아래에서 65줄·60줄을 그린다. 글 뒤 배치와 기존 #9298의 일반 셀 그림도 각각 원래 그리기 순서를 유지했다. [앞뒤 배치 확대](assets/hyunmyungjanelee-20261125/maintainer/9352-placement.png) · [쪽별 판정](assets/hyunmyungjanelee-20261125/maintainer/README.md)
 
 같은 호스트에서 원 기여 커밋도 다시 빌드해 Native 12쪽을 대조했다. 분할 HWP 자체를 한컴 2024로 인쇄한 두 쪽에서 일치율은 95.55%→95.98%, 96.21%→96.21%였다. 두 번째 쪽의 PNG는 보정 전후 바이트가 같다. [동일 입력·글꼴·인쇄본으로 재측정한 원 PR](assets/hyunmyungjanelee-20261125/maintainer/pr9352-same-host.tsv)
+
+## Merge 후 contributor PR comment 계획
+
+[기여 PR](https://github.com/edwardkim/rhwp/pull/9352)에 기여와 공개 재현 자료에 대한 감사를 전하고 수용 PR·병합 SHA와 [연결 이슈](https://github.com/edwardkim/rhwp/issues/9349)를 연결한다. 분할 HWP 2쪽의 96.22%는 원 기여자가 보고한 값이다. 같은 호스트의 원 PR과 보정본은 이 쪽이 모두 96.21%이고 PNG의 바이트도 같다. 글 앞의 흰 사각형 아래는 괘선이 가려지고, 글 뒤의 사각형에서는 괘선이 보인다.
+
+원 PR의 입력·인쇄 조합에서 Native·fresh WASM 각각 15쪽을 검토했다. 자동 표시 0/30개이며, 픽셀 일치율 범위는 95.78~98.39%, 본문 픽셀 보조값은 19.32~35.94%다. 측정 대상과 보조값의 분모가 다르다. 각 페이지의 검토 그림과 오버레이 파일명·SHA-256은 [쪽별 검토표](assets/hyunmyungjanelee-20261125/maintainer/full-review.tsv)에 있다. [Visual Sweep의 GitHub 댓글 절차](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)
+
+첫 댓글에는 각 입력·쪽·출력 경로별 `reviews/<backend>/<case>/review_NNN.png`와 `overlay_NNN.png`를 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/` 아래로 연결한다. 실제 병합 SHA의 이미지 형식과 바이트 해시를 대조한 뒤 UTF-8 본문 파일로 게시하고 공개 댓글의 본문과 이미지를 확인한다.
