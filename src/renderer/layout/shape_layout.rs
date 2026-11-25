@@ -3788,6 +3788,27 @@ impl LayoutEngine {
                 .paragraphs
                 .iter()
                 .any(hidden_guide_object_rows_need_reflow);
+        // 폭을 줄이고 높이를 늘린 독립 인라인 글상자는 이미 현재 크기의
+        // 세로 행을 저장한다. 실제 폭으로 줄 경계만 다시 나눈다.
+        let refolds_resized_inline = text_direction == 0
+            && parent_treat_as_char
+            && self.profile.get().hwp5_stored_pagination_layout()
+            && !self.profile.get().session_edited()
+            && matches!(shape_node.node_type, RenderNodeType::Rectangle(_))
+            && sa.group_level == 0
+            && sa.render_sx > 0.0
+            && sa.render_sx < 1.0
+            && sa.render_sy > 1.0
+            && sa.render_b == 0.0
+            && sa.render_c == 0.0
+            && !sa.horz_flip
+            && !sa.vert_flip
+            && sa.rotation_angle.rem_euclid(360) == 0
+            && text_box.vertical_align == crate::model::table::VerticalAlign::Center
+            && text_box.paint_clip.is_none()
+            && matches!(text_box.paragraphs.as_slice(), [para]
+                if matrix_textbox_lines_need_reflow(para) && !para.stored_text_partition_is_dirty()
+                    && !para.cell_format_vpos_dirty);
         let reflowed_textbox_paragraphs = if reflows_matrix_lines || reflows_hidden_guide_rows {
             let mut paragraphs = text_box.paragraphs.clone();
             for index in 0..paragraphs.len() {
@@ -3830,6 +3851,15 @@ impl LayoutEngine {
                     );
                 }
             }
+            Some(paragraphs)
+        } else if refolds_resized_inline {
+            let mut paragraphs = text_box.paragraphs.clone();
+            textbox_reflow::refold_preserving_row_geometry(
+                &mut paragraphs[0],
+                inner_area.width,
+                styles,
+                self.dpi,
+            );
             Some(paragraphs)
         } else {
             None

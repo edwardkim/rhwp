@@ -96,8 +96,14 @@ pub(super) fn prepare(
         return None;
     }
     if let Some(required) = refreshed_line_box_height(shape, dpi) {
-        return (required > height).then(|| PreparedTextBox {
-            shape: shape.clone(),
+        if required <= height {
+            return None;
+        }
+        let mut prepared = shape.clone();
+        let paragraph = &mut prepared.drawing_mut()?.text_box.as_mut()?.paragraphs[0];
+        super::textbox_reflow::refold_preserving_row_geometry(paragraph, inner_width, styles, dpi);
+        return Some(PreparedTextBox {
+            shape: prepared,
             height: required,
         });
     }

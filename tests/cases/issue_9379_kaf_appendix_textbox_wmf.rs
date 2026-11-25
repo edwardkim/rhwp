@@ -37,14 +37,16 @@
 //! - 전쪽 최저: Native head 91.77(36쪽), fresh WASM head 92.09(36쪽); base 는 Native 30.67·WASM 33.72(39쪽).
 //!   그 밖의 쪽은 base 와 head 가 같다. base = devel `8a26c00869`, head = 이 수정(source `e6df26160c`).
 //!   devel `0fbee2c04e` 와 그 위로 rebase 한 수정(source `26518dbadc`)의 재측정 TSV 4개가 바이트 단위로 같다.
-//! - 36쪽 남은 차이: 한/글 2020 은 내용이 넘치는 글 상자를 내용 높이로 늘려 그린다(#9395), 첫 줄 `such`
-//!   줄 나눔 차이. 줄 피치 자체는 한컴과 같다.
+//! - 36쪽은 내용에 맞춰 늘어난 인쇄 상자에 셋째 줄과 안 여백이 들어가는지 확인한다(#9395).
+//!   새 한컴 2020 Print에서 `such as`는 둘째 줄, `and Cadastre`는 셋째 줄에 있으며 위 검사로 보존한다.
 //! - 증거: `mydocs/pr/assets/issue_9379/`(전쪽 Native·fresh WASM·base TSV, 36·38·39·40·42·52쪽 review·overlay).
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::Path;
 
+use base64::Engine;
 use rhwp::document_core::DocumentCore;
+use rhwp::paint::RenderProfile;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/issue9379/kaf_appendix.hwp";
@@ -52,9 +54,9 @@ const SAMPLE: &str = "samples/issue9379/kaf_appendix.hwp";
 const HANCOM_PAGES: u32 = 54;
 /// 한/글 2020 재저장 줄 피치 3243 HU 를 96 DPI 픽셀로.
 const HANCOM_PITCH_PX: f64 = 3243.0 * 96.0 / 7200.0;
-/// (쪽, 글 상자 줄 첫머리 글들). 저장 줄 나눔대로의 각 줄 첫머리.
+/// (쪽, 글 상자 줄 첫머리 글들). 넘친 36쪽은 한컴 Print의 다시 나눈 경계를 확인한다.
 const TEXT_BOX_LINES: &[(u32, &[&str])] = &[
-    (36, &["In each", "as 'Road", "Cadastre"]),
+    (36, &["In each", "such as", "and Cadastre"]),
     (
         40,
         &[
@@ -141,7 +143,7 @@ fn restored_font_line_height_keeps_the_last_line_inside_its_print_frame() {
     let core = open();
     let tree = core.build_page_render_tree(35).unwrap();
     let (textbox, last_line) =
-        find_textbox_with_line(&tree.root, "Cadastre").expect("36쪽 글 상자의 마지막 줄");
+        find_textbox_with_line(&tree.root, "and Cadastre").expect("36쪽 글 상자의 마지막 줄");
     let clip = textbox.print_clip_bbox.expect("글 상자 인쇄 경계");
     let line_bottom = last_line.bbox.y + last_line.bbox.height;
     let clip_bottom = clip.y + clip.height;
@@ -149,6 +151,68 @@ fn restored_font_line_height_keeps_the_last_line_inside_its_print_frame() {
         line_bottom < clip_bottom,
         "마지막 글줄 뒤에 아래 안 여백이 있어야 한다 ({line_bottom:.2} < {clip_bottom:.2})"
     );
+}
+
+#[test]
+fn resized_inline_textbox_refolds_inside_the_stored_rows() {
+    let tree = open().build_page_render_tree(23).unwrap();
+    let (textbox, first) = find_textbox_with_line(&tree.root, "그동안").expect("24쪽 설명 글상자");
+    let rows: Vec<_> = textbox
+        .children
+        .iter()
+        .filter(|node| matches!(node.node_type, RenderNodeType::TextLine(_)))
+        .collect();
+    assert_eq!(rows.len(), 4, "높이를 소유한 저장 글줄 수를 유지한다");
+    assert_eq!(rows[0].id, first.id);
+    let mut runs = Vec::new();
+    text_runs(rows[2], &mut runs);
+    assert!(runs
+        .first()
+        .is_some_and(|(text, _)| text.starts_with("법률")));
+    runs.clear();
+    text_runs(rows[3], &mut runs);
+    assert!(runs
+        .first()
+        .is_some_and(|(text, _)| text.starts_with("도로명주소로")));
+}
+
+#[test]
+fn full_single_bitmap_wmf_replays_the_full_print_frame() {
+    let core = open();
+    let svg = core
+        .render_page_svg_layer_with_profile_native(37, RenderProfile::Print)
+        .unwrap();
+    let page = roxmltree::Document::parse(&svg).unwrap();
+    let data = page
+        .descendants()
+        .filter(|node| node.has_tag_name("image"))
+        .find_map(|node| {
+            node.attribute("href")?
+                .strip_prefix("data:image/svg+xml;base64,")
+        })
+        .expect("38쪽 WMF 인쇄 자원");
+    let embedded = base64::engine::general_purpose::STANDARD
+        .decode(data)
+        .unwrap();
+    let wmf = roxmltree::Document::parse(std::str::from_utf8(&embedded).unwrap()).unwrap();
+    let outer = wmf
+        .root_element()
+        .attribute("data-rhwp-print-wmf-frame")
+        .unwrap();
+    let inner = wmf
+        .descendants()
+        .find_map(|node| node.attribute("data-rhwp-print-wmf-image"))
+        .unwrap();
+    // 버전과 용지 치수에 이어 나오는 장치 좌표·크기·클립은 같은 틀이다.
+    let frame = |marker: &str| {
+        marker
+            .split_ascii_whitespace()
+            .skip(3)
+            .take(6)
+            .map(|value| value.parse::<f64>().unwrap())
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(frame(inner), frame(outer));
 }
 
 fn nested_crop_windows(svg: &str) -> usize {
