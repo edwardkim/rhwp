@@ -458,4 +458,10 @@ raw 100.00%였고, 표 366 영역은 각각 51.58%·51.02%였다. 표 366의 실
 
 #7786 작업 트리의 workspace 서식 검사에서 `packaging/crates-io/examples/pdf_isolation_host.rs`
 누락을 찾아 후보 희소 체크아웃에 추가했다. #7786 서식 재검사와 suite manifest 검사는 모두
-종료 코드 0이었다. 집중 nextest는 별도로 실행 중이다.
+종료 코드 0이었다. 집중 nextest는 두 통합 suite 중 첫 suite에서 `include_bytes!` 입력 8개를
+읽지 못해 테스트 시작 전에 101로 종료했다. 같은 마운트를 별도 명령에서 확인한 뒤 재실행은
+희소 체크아웃의 실제 파일도 확보하도록 했다. 두 suite의 Rust 파일 참조 187개를 따라가며
+누락된 추적 입력 15개만 해당 commit에서 가져왔고 blob 일치 및 Git 무변경을 확인했다.
+로그는 `7786-focused/compile-fixtures-first-attempt/`, 파일 목록은
+`7786-focused/materialized-includes.txt`에 있다. 현재 시작한 #7777의 수정 후보 빌드가
+끝나면 #7786의 동일 집중 검사를 다시 실행하도록 순차 작업을 조정했다.
