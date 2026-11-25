@@ -34,3 +34,7 @@
 ## Merge 후 contributor PR comment 계획
 
 1쪽의 제목 표·본문 표 배치 성과를 적고, 160% 합성 입력과 독립 한컴 재저장값의 차이에 대해 메인터너가 공통 렌더 사본을 보정한 근거를 설명합니다. 두 경로의 1·2쪽 표시값과 최종 CI·회귀 결과를 기재합니다. 첫 comment에 1쪽과 2쪽의 Native·fresh WASM 비교 및 overlay를 포함하고 병합 SHA로 고정합니다.
+
+## 통합 반영
+
+[통합 PR #9417](https://github.com/edwardkim/rhwp/pull/9417)의 코드 head `7671c17a0f43590ccce98a5ac9d4c9a665ff1507`에서 로컬 검증과 [코드 CI](https://github.com/edwardkim/rhwp/actions/runs/45701811247)가 통과했습니다. [통합 검토 기록](pr_9417_review.md)

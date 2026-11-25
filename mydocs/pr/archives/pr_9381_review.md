@@ -29,3 +29,7 @@
 ## Merge 후 contributor PR comment 계획
 
 제목 크기 두 조건의 3쪽·2쪽 배치와 표 사이 경계를 적고 두 경로의 전쪽 표시값과 최종 CI·회귀 결과를 기재합니다. 첫 comment에 13pt 원본의 1–3쪽과 10pt 원본의 1–2쪽 Native·fresh WASM 비교 및 overlay를 포함하고 병합 SHA로 고정합니다.
+
+## 통합 반영
+
+[통합 PR #9417](https://github.com/edwardkim/rhwp/pull/9417)의 코드 head `7671c17a0f43590ccce98a5ac9d4c9a665ff1507`에서 로컬 검증과 [코드 CI](https://github.com/edwardkim/rhwp/actions/runs/45701811247)가 통과했습니다. [통합 검토 기록](pr_9417_review.md)
