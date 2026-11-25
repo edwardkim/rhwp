@@ -40,11 +40,14 @@ pub(super) fn query(
     let overlay_frame = layout
         .row_cut_splits_cell_overlay(table, row, &cut.end_cut, styles)
         .then(|| {
-            available
-                - hwpunit_to_px(
-                    i32::from(table.outer_margin_top) + i32::from(table.outer_margin_bottom),
-                    engine.dpi,
-                )
+            crate::renderer::float_placement::rowbreak_fragment_bounds(
+                table,
+                available - hwpunit_to_px(i32::from(table.outer_margin_top), engine.dpi),
+                engine.dpi,
+                false,
+                true,
+            )
+            .blank_bottom
         });
     if let Some(frame) = overlay_frame {
         cut = layout.advance_row_cut(table, row, &[], frame, styles);

@@ -9076,6 +9076,14 @@ fn stored_empty_flow_line(para: &Paragraph) -> Option<&crate::model::paragraph::
     Some(line)
 }
 
+/// 칸의 유일한 문단이 글 앞/뒤 개체의 앵커이고, 실제 저장 줄의 높이가 글자 높이일 때
+/// 그 줄에는 개체의 높이가 들어 있지 않다. 다음 저장 줄이 없는 마지막 문단의 경우다.
+pub(super) fn single_stored_overlay_anchor(para: &Paragraph) -> bool {
+    !para.controls.is_empty()
+        && crate::renderer::empty_host_controls_are_flow_neutral(para)
+        && stored_empty_flow_line(para).is_some_and(|line| line.line_height == line.text_height)
+}
+
 /// 비자리차지 부동 개체나 표지는 호스트의 저장 글줄을 지우지 않는다.
 /// 다음 독립 저장 줄이 줄 상자와 후행 간격을 정확히 닫아야 한다.
 /// 개체 높이나 쪽 제한 속성은 호스트 줄의 소유 근거가 아니다.

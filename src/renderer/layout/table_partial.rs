@@ -8415,11 +8415,18 @@ impl LayoutEngine {
                         continue;
                     };
                     let end = ranges[pi2].1;
-                    if let Some(seg) = cell
-                        .paragraphs
-                        .get(pi2)
-                        .and_then(|p| p.line_segs.get(end.checked_sub(1).unwrap_or(0)))
+                    let paragraph = &cell.paragraphs[pi2];
+                    // 이어지는 빈 문단들을 가르는 컷은 마지막 빈 줄의 전진 거리까지
+                    // 소유한다. 글자가 없다는 이유로 그 줄의 간격을 두 번 접지 않는다.
+                    if paragraph.controls.is_empty()
+                        && paragraph.text.trim().is_empty()
+                        && cell.paragraphs.get(pi2 + 1).is_some_and(|next| {
+                            next.controls.is_empty() && next.text.trim().is_empty()
+                        })
                     {
+                        continue;
+                    }
+                    if let Some(seg) = paragraph.line_segs.get(end.saturating_sub(1)) {
                         trail = trail.max(hwpunit_to_px(seg.line_spacing.max(0), self.dpi));
                     }
                 }

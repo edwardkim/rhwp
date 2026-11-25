@@ -12711,6 +12711,8 @@ impl LayoutEngine {
         (self.nested_table_is_overlay(table)
             || crate::renderer::float_placement::nested_table_is_page_overlay(table))
             && (crate::renderer::para_has_no_stored_line_segs(host)
+                || (cell.paragraphs.len() == 1
+                    && crate::renderer::float_placement::single_stored_overlay_anchor(host))
                 || crate::renderer::float_placement::stored_overlay_host_flow_line(
                     host,
                     cell.paragraphs.get(para_idx + 1),
