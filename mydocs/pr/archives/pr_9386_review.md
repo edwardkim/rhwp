@@ -2,9 +2,11 @@
 
 ## 최종 판정
 
-메인터너 보정 뒤 최신 MCP 기준 24쪽은 Native·fresh WASM 모두 **100.00%**다. 31쪽은 새 한컴
-2020·2024 MCP PDF에서 같은 잘못된 글꼴 참조가 확인됐다. 유효한 별도 2020 Print와의 대조 및
-제출 검증 상태는 [KAF 최종 후보 비교](../assets/planet6897_20261125/kaf-print-repair/README.md)에 기록한다.
+메인터너 보정 뒤 최신 MCP 기준 24쪽은 Native·fresh WASM 모두 **100.00%**다. 같은 한컴 2020
+재인쇄본으로 원 PR과 최종 후보를 대조한 44쪽에서 양 backend 모두 하락 0쪽이다. 31쪽에는 새
+한컴 2020·2024 MCP PDF의 CID 참조 오류가 있으며, 유효한 최초 한컴 2020 Print에서는 양쪽
+**98.84%**였다. 최초 인쇄본 기준 전쪽 최저는 Native 98.33%·fresh WASM 98.38%다.
+[KAF 최종 후보 비교](../assets/planet6897_20261125/kaf-print-repair/README.md)
 
 [원 PR #9386](https://github.com/edwardkim/rhwp/pull/9386) · [이슈 #9000](https://github.com/edwardkim/rhwp/issues/9000)
 

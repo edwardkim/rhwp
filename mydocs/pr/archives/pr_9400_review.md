@@ -3,7 +3,10 @@
 ## 최종 판정
 
 메인터너 보정 뒤 새 MCP 인쇄본 기준 24·36쪽은 Native·fresh WASM 모두 **100.00%**, 38쪽은
-**100.00%·99.93%**다. 31쪽은 새 MCP PDF의 글꼴 자원 오류를 재현했다.
+**100.00%·99.93%**다. 후보에서 기록한 글꼴 순서로 원 PR을 다시 실행해 Native 54쪽 하락
+0쪽을 확인했다. 같은 조건의 fresh WASM 54쪽도 하락 0쪽이다. 31쪽에서 새 MCP PDF의 글꼴
+자원 오류를 재현했으며, 유효한 최초 한컴 2020 Print에 대조한 전쪽 최저는 Native
+98.23%·fresh WASM 98.22%다.
 [최종 후보의 두 Print 기준과 증적](../assets/planet6897_20261125/kaf-print-repair/README.md)
 
 [원 PR #9400](https://github.com/edwardkim/rhwp/pull/9400) · [이슈 #9379](https://github.com/edwardkim/rhwp/issues/9379) · [글 상자 높이 후속 이슈 #9395](https://github.com/edwardkim/rhwp/issues/9395)

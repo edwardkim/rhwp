@@ -70,3 +70,25 @@ software compat/default가 각각 8회 선택됐다. 초기화 요청 24회의 �
 CanvasKit은 36쪽의 screen·print와 38·39쪽의 screen에서 지원되지 않는 이미지
 명령과 재생 실패를 보고했다. 같은 글꼴을 공급한 보정 전 패키지와 비교하니 실패한
 쪽·프로필·모드·오류 종류가 모두 같았다. 양쪽 실행의 실패 기록을 보존했다.
+
+## 최종 후보 재검증
+
+변경된 Mac 글꼴 목록을 사용한 Native 재실행에서 부록 41·42·43·45·46쪽이
+이전 환경의 원 PR 측정값보다 낮았다. 이번 후보 실행에 기록된 1,106개 파일의 순서와
+SHA-256을 고정하고 원 PR `d53cf0751b`를 그 조건으로 다시 실행했다. 동일한 한컴 2020
+재인쇄 PDF로 비교한 54쪽에서 5쪽이 상승했고 하락은 0쪽이었다.
+[원 PR Native TSV](final-verification/appendix-original-pr-native.tsv) ·
+[최종 후보 Native TSV](final-verification/appendix-final-native.tsv) ·
+[글꼴 및 실행 파일 대조](final-verification/native-original-pr-same-fonts.json)
+
+최종 Native Skia와 macOS의 `wasm-opt` 포함 fresh WASM으로 표 44쪽과 부록 54쪽을 다시
+검증했다. 최초 인쇄본의 Creator 문자열에는 2018이 표시되지만 빌드 `11.0.0.1623`은
+실측 및 MCP 영수증에서 한컴 2020으로 확인됐다. 최초 인쇄본에서 두 문서 모두 전쪽
+98.00% 이상이다. 신규 인쇄본의 31쪽에는 앞서 확인한 CID 오류가 계속 있으며, 유효한
+최초 인쇄본에서 31쪽의 98.84%를 다시 확인했다. 같은 신규 한컴 2020 인쇄본을 원 PR과
+후보에 적용한 페이지별 비교는 두 경로 모두 하락 0쪽이다.
+[두 문서의 전쪽 비교](final-verification/full-comparisons.json)
+
+Studio가 초기화한 WASM 24회의 바이트 해시는 최적화 패키지와 같았다. 후보의 대표 인쇄
+이미지 6장은 기존 증적과 동일하며 CanvasKit 재생 진단도 같은 조건의 앞선 실행과 일치했다.
+[패키지·브라우저·인쇄 이미지 신원](final-verification/optimized-wasm-and-studio.json)
