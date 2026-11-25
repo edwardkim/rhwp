@@ -305,18 +305,21 @@ fn stale_inline_table_tail_spacing(
         style.line_spacing,
         dpi,
     );
+    // 비율 간격은 4 HWPUNIT 단위로 저장된다. 한컴 재저장에서 확인한
+    // 정확한 중간값은 양쪽 표기가 가능하므로 현재 후속 줄의 실제 값을 쓴다.
+    let stored_spacing = next_line.line_spacing;
+    let nominal_spacing = f64::from(metrics.line_height) * (style.line_spacing - 100.0) / 100.0;
+    let matches_percent_spacing = stored_spacing == metrics.line_spacing
+        || (stored_spacing % 4 == 0 && (f64::from(stored_spacing) - nominal_spacing).abs() == 2.0);
     if nominal_height(next, styles, dpi, false)? != metrics.line_height
         || next_line.line_height != metrics.line_height
         || next_line.text_height != metrics.text_height
         || next_line.baseline_distance != metrics.baseline_distance
-        || next_line.line_spacing != metrics.line_spacing
+        || !matches_percent_spacing
     {
         return None;
     }
-    Some((
-        metrics.line_spacing,
-        host_bottom.checked_add(metrics.line_spacing)?,
-    ))
+    Some((stored_spacing, host_bottom.checked_add(stored_spacing)?))
 }
 
 fn project(
