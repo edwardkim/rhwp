@@ -10,6 +10,8 @@ KAF 회의자료에서 표 구간을 남긴 44쪽 파생본이다. 코드는 칸
 
 원 PR의 전쪽 최저는 Native 94.32%·WASM 93.13%로 1쪽 표지에서 발생했고, 주장하는 33~44쪽은 양쪽 98% 이상이었다. 첨부 PDF는 PDF 1.4, A4 가로 44쪽이며 `Creator`에는 `Hwp 2018 11.0.0.1623`, `Producer`에는 `Hancom PDF 1.3.0.404`가 기록됐다. 저장소의 실행 파일 실측에서 이 빌드는 한컴 2020이며, 기존 MCP 2020 Print PDF에서도 같은 Creator·Producer를 확인했다. 원 PR이 기록한 동일 파생본의 Hancom PDF Print와 SHA-256이 첨부본에 맞아 기존 PDF를 기준으로 재사용했다. [제품 버전 실측](../../manual/verification/hangul_version_oracle.md#51-설치된-버전-확인) · [MCP 대조 기록](pr_9317_review.md#입력과-독립-인쇄-기준)
 
+갱신된 MCP에서 같은 원본을 한컴 2020으로 다시 출력했다. client 0.10.0에서 `start --engine 2020 --target pdf --timeout-seconds 1800`을 호출하고, `status`가 성공한 뒤 같은 job을 `download`로 받았다. `status.result`와 `download.server`의 `pdf_output_mode`는 `hancom2020_pdf_driver_one_up`, `pdf_print_method`는 `0`이다. MCP는 PDF 글꼴 이름의 공백 문법을 보정하고 전체 44쪽을 확인했다. 새 한컴 빌드 `11.0.0.9172`의 인쇄본을 원 PR 인쇄본과 96 DPI로 비교하면 표시값이 100.00% 미만인 쪽이 22쪽이다. 원 PR과 통합 후보의 비교는 기존에 제출된 같은 인쇄본을 기준으로 유지한다. [두 인쇄본 대조 및 MCP 영수증](../assets/planet6897_20261125/mcp-print-reissue.json) · [MCP 기준 PDF 인쇄 계약](../../manual/mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)
+
 ## 문구의 쪽 소속 재현
 
 `Standard: KAF address standard`, `landmark`, `surname, given`은 devel 34·38·43쪽에서 후보 33·37·42쪽으로 옮겨갔다. 첨부 PDF에서도 각각 33·37·42쪽에 1회씩 있다. PDF·devel·후보 모두 44쪽이다. 34쪽의 표 아래 괘선, 칸 경계, 마지막 행의 위치를 확대해 확인했다. 34쪽의 일부 겹친 글줄은 PDF에서도 겹친다.

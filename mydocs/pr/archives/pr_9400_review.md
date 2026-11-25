@@ -12,6 +12,8 @@ KAF 회의자료의 33~44쪽 표를 제거한 54쪽 파생본에 두 계약을 �
 
 첨부 PDF는 PDF 1.4, A4 가로 54쪽이다. `Creator`에 표시된 `Hwp 2018 11.0.0.1623`은 저장소에서 한컴 2020으로 실측한 빌드다. 이전 MCP 2020 Print PDF의 Creator·Producer도 각각 `Hwp 2018 11.0.0.1623`과 `Hancom PDF 1.3.0.404`다. 원 PR의 동일 파생본에 대한 Hancom PDF Print 기록과 대조해 첨부 PDF를 재사용했다. 66쪽 전체 원본의 MCP 재출력은 PDF 검증 단계에서 실패했다. [제품 버전 실측](../../manual/verification/hangul_version_oracle.md#51-설치된-버전-확인) · [MCP 대조 기록](pr_9317_review.md#입력과-독립-인쇄-기준)
 
+갱신된 MCP에서 같은 원본을 한컴 2020으로 다시 출력했다. client 0.10.0에서 `start --engine 2020 --target pdf --timeout-seconds 1800`을 호출하고, `status`가 성공한 뒤 같은 job을 `download`로 받았다. `status.result`와 `download.server`의 `pdf_output_mode`는 `hancom2020_pdf_driver_one_up`, `pdf_print_method`는 `0`이다. MCP는 PDF 글꼴 이름의 공백 문법을 보정하고 전체 54쪽을 확인했다. 새 한컴 빌드 `11.0.0.9172`의 인쇄본을 원 PR 인쇄본과 96 DPI로 비교하면 표시값이 100.00% 미만인 쪽이 23쪽이다. 원 PR과 통합 후보의 비교는 기존에 제출된 같은 인쇄본을 기준으로 유지한다. [두 인쇄본 대조 및 MCP 영수증](../assets/planet6897_20261125/mcp-print-reissue.json) · [MCP 기준 PDF 인쇄 계약](../../manual/mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)
+
 ## 글 상자의 셋째 줄 잘림
 
 36쪽의 Native 원본 PNG를 직접 대조했다. devel에서는 셋째 줄 `Cadastre’` 전체가 상자 안에 보인다. 후보에서 피치 보정으로 셋째 줄 상단이 y=245.1에서 265.1로 내려가면서, 저장 크기로 고정된 상자가 글자 하단을 자른다. 첨부 PDF의 상자는 더 높고 셋째 줄 전체가 보인다. 줄 피치 계산 개선과 별개로 실제 보이는 내용이 줄어든다. 전체 자르기 WMF 38·39·52쪽은 같은 SVG 경로에서 이미지 1개를 유지한 채 자르기 창이 1개에서 0개로 줄었고, 부분 자르기 36쪽은 창 1개를 유지했다.
