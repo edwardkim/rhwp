@@ -43,7 +43,10 @@ impl LayoutEngine {
         );
         if cell_ctx.is_some_and(|ctx| !ctx.in_textbox)
             && !picture.common.treat_as_char
-            && matches!(picture.common.text_wrap, TextWrap::BehindText)
+            && matches!(
+                picture.common.text_wrap,
+                TextWrap::BehindText | TextWrap::InFrontOfText
+            )
         {
             let stable_index = cell_ctx
                 .and_then(|ctx| ctx.path.last())
@@ -52,14 +55,15 @@ impl LayoutEngine {
                 })
                 .unwrap_or(0);
             let mut layer = RenderLayerInfo::new(
-                Some(TextWrap::BehindText),
+                Some(picture.common.text_wrap),
                 picture.common.z_order,
                 stable_index,
             );
             // 셀의 편집 소유는 ImageNode.cell_context에 남기고 그리기 소속만 구분한다.
-            if !picture.common.flow_with_text
-                && !crate::model::border_paint::is_cell_frame_attributes(&picture.common)
-            {
+            let behind = matches!(picture.common.text_wrap, TextWrap::BehindText);
+            let cell_frame =
+                behind && crate::model::border_paint::is_cell_frame_attributes(&picture.common);
+            if behind && !picture.common.flow_with_text && !cell_frame {
                 layer.independent_page_paint = parent_node
                     .children
                     .get(children_before)
@@ -67,8 +71,7 @@ impl LayoutEngine {
             }
             for child in parent_node.children.iter_mut().skip(children_before) {
                 child.set_layer(layer);
-                child.cell_frame_paint =
-                    crate::model::border_paint::is_cell_frame_attributes(&picture.common);
+                child.cell_frame_paint = cell_frame;
             }
         }
     }

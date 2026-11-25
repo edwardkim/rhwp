@@ -3803,19 +3803,27 @@ impl LayoutEngine {
                                         // 저장 글줄은 공백과 개체를 함께 소유한다.
                                         // 인라인 표와 같은 순서의 펜 위치를 사용하며, 앞 텍스트와
                                         // 분리해 그림만 독립적으로 가운데 정렬하지 않는다.
-                                        let stored_picture_left = self
-                                            .stored_inline_control_pen(
-                                                para,
-                                                &composed,
+                                        let stored_picture_left = tree
+                                            .take_cell_picture_left(
+                                                &cell_node,
+                                                section_index,
+                                                cp_idx,
                                                 ctrl_idx,
-                                                styles,
-                                                &inner_area,
                                             )
-                                            .map(|pen| {
-                                                pen + hwpunit_to_px(
-                                                    pic.common.margin.left as i32,
-                                                    self.dpi,
+                                            .or_else(|| {
+                                                self.stored_inline_control_pen(
+                                                    para,
+                                                    &composed,
+                                                    ctrl_idx,
+                                                    styles,
+                                                    &inner_area,
                                                 )
+                                                .map(|pen| {
+                                                    pen + hwpunit_to_px(
+                                                        pic.common.margin.left as i32,
+                                                        self.dpi,
+                                                    )
+                                                })
                                             });
                                         if all_runs_empty && para.line_segs.len() > 1 {
                                             let target_line =
