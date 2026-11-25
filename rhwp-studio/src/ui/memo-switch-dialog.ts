@@ -55,7 +55,7 @@ export class MemoSwitchDialog extends ModalDialog {
         this.hide();
       });
       footer.insertBefore(discard, keep);
-      keep.focus();
+      keep.focus({ preventScroll: true });
     });
   }
 

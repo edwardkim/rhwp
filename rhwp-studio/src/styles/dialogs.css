@@ -1279,5 +1279,7 @@ pre.dialog-pdf-import-json { margin: 0; max-height: 160px; overflow: auto; }
   .modal-overlay:has(> [data-memo-switch]) {
     width: 100vw;
     width: 100dvw;
+    height: 100vh;
+    height: 100dvh;
   }
 }
