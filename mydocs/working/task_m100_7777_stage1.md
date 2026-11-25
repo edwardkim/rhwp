@@ -765,6 +765,8 @@ nextest를 완료했다. `regression_suite_006`에서 오른쪽 끝 정렬·첫 
 희소 작업 트리에서 Rust 원본 4,559개의 include 경로를 읽고 컴파일에 필요한 추적 입력 197개를
 고정 head에서 가져와 Git blob을 대조했다. 준비 증거는 `7786-rebased/all-target-includes.json`,
 lint 명령별 로그와 종료 코드는 `7786-rebased/lint/`에 기록한다.
+같은 집중 nextest 바이너리로 목차 정렬과 점 중심 검사 두 건을 최소 글꼴 환경에서 두 번
+직접 실행했다. 두 실행에서 두 검사 모두 통과했고 테스트명과 판정이 일치했다.
 
 ### #7779·#7784 38쪽에서 앞 TAC 표 뒤의 줄간격
 
@@ -850,6 +852,41 @@ PNG SHA-256은 `5f764877300b8226fa1d1d1ac63dae0bafd06aaeb1da105b1269e494aa636a41
 같게 유지했다. 확인한 글꼴 파일과 대조는 `fragment-ownership/minimal-font/`에 있다.
 Canvas의 실제 WASM 모듈 해시와 렌더 트리를 확인하는 검사도 연결했다. 같은 검사에서 Native
 후보는 6개 관계를 만족했고 기준 Canvas는 쪽 소속 5개가 달랐다.
+
+후보의 최적화 WASM 모듈 SHA-256은
+`a2c90c9cc84a107d79345087adcfaf1310733b902b57d511690ecd943f91b3d7`이다. 컴파일 로그의 작업
+트리와 빌드 전후 인덱스 패치를 확인했다. 모듈을 고정한 뒤 Canvas 검증을 시작했고, #7778은
+공유 Cargo 경로를 넘겨받아 자기 작업 트리의 `rhwp`를 컴파일했다.
+
+최소 글꼴에서 후보 Native 49쪽의 본문 넘침, 쪽 밖 배치, 글자 겹침 및 셀 넘침은 모두 0건이다.
+`fragment-ownership/minimal-font/`에 기하 검사와 전쪽 SVG 내보내기의 집계가 있다. 기존 개별
+이관 목록과 공통 이관 원장에서 이 입력을 해제하고, 쪽수 원장에 독립 Print 49쪽과 출력 49쪽을
+복원하는 패치 초안은 `corpus-restoration-draft.patch`다. 24·37쪽의 Native와 한컴 PDF에서
+앞 표의 이어받기 행과 뒤 표의 경계·셀 내용 순서를 직접 확인했다. 같은 원본 래스터로 만든
+Native `native-review/`의 비교·overlay를 보존했고, 후보 Canvas 패널도 전쪽 비교 뒤 만든다.
+
+후보 Canvas는 한컴과 같은 49쪽을 출력했다. 실제 모듈 해시, 14·27쪽의 쪽번호, 제목과 표의
+소속·순서, 6쪽에서 앞 문단과 표가 겹치지 않는지를 포함한 검사 7건을 통과했다. 전쪽 TSV
+SHA-256은 `86b37aca842ca619cd70774d2b074e434f2d0eaf1d91e70012b619462d5a87cd`다.
+쪽번호만 보이는 14·27쪽은 각각 raw 84.21053%·88.43537%였다. 순서대로 잉크 합집합
+133·147픽셀 중 미대응 21·17픽셀이고 다른 47쪽의 최저값은 26쪽 99.10830%다.
+Canvas의 모듈·관계 검사와 비교 패널은 `wasm-rebuild/print-tree.json`, `wasm-rebuild/review-panels/`다.
+시각 하한 미달로 회귀 복원과 보호 대조군 단계는 대기 상태다.
+
+14·27쪽의 독립 Print는 9.9546pt Haansoft Batang을 쓰고 글자 기준선은 96 DPI 환산
+1081.69784px다. 후보의 SVG 기준선은 1080.26222px로, 원본 종이에서 아래쪽 여백과
+기본 하강값 1/3em을 뺀 값과 같다. Native와 Canvas의
+쪽번호 렌더 트리 상자는 같으나 Canvas에서 숫자 잉크가 더 일찍 시작하고 끝났다. Haansoft Batang
+TrueType 지정 및 `바탕`에 Haansoft Batang을 명시하는 두 글꼴 실험 모두 기존 Canvas의 두 PNG와
+바이트가 일치했다. Canvas 래스터를 1px 아래로 옮긴 합성 진단에서 두 쪽은 98.46154%·98.51852%로
+계산됐고, 실제 그리기·측정에는 기존 좌표와 조건을 사용했다.
+
+원본의 종이 높이는 84,188 HU, 아래쪽과 꼬리말 여백은 각각 2,835 HU다. 841pt Print 용지에서
+아래쪽 여백을 빼면 실제 Haansoft Batang 기준선까지 1.83550px가 남는다. PDF 부분 글꼴과 공급
+HBATANG.TTF는 모두 `hhea` 하강값 145/1024em이고, Print 크기에서 이 값은 약 1.88px다.
+명시 HCR Dotum을 쓰는 #1133 원본·아래 여백 15mm 대조군의 Print 하강값은 3.13·3.08px로
+다르다. 이 비교는 글꼴별 기준선과 출력 용지 원점을 함께 검증해야 하는 근거다. 글꼴 실험과
+독립 기준선은 `wasm-rebuild/footer-{font-probe,face-probe,panel-controls}/`에 보존했다.
 
 ### #7778 Native 대기 복구
 
