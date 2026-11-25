@@ -1,8 +1,11 @@
 //! 관계형·고정형 검사. 사진끼리의 겹침과 칸 내부 배치, 독립 인쇄의 한 쪽 구성을 검사한다.
-//! 2026-11-25 21:12 KST 갱신. 직전 변경은 2026-11-24 13:10:46 +0900, 8fa154f009.
+//! 2026-11-25 21:55 KST 갱신. 직전 변경은 2026-11-25 21:13:07 +0900, 6f3b11acfa.
 //! 96 DPI, 2px raw. 원본·오른쪽·가운데·가로로 맞닿은 대조 HWP 각 1쪽 전부 Native와 fresh WASM
 //! 100.00%. 독립 한컴 2020 PDF는 `pdf/pr9349-cell-floats/`, TSV는
 //! `mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/`에 보존한다.
+//! 용지 높이를 줄인 대조 HWP 두 개도 각 1쪽, Native·fresh WASM 모두 100.00%였다.
+//! 한컴 2020 Print에서 용지 끝에 일부만 보이는 사진은 720pt 용지의 7행 둘째 사진과
+//! 595pt 용지의 6행 첫째 사진이다. 원본에는 사진 15장이 모두 보인다.
 //!
 //! 저장 줄 없는 사진 칸에 나란히 놓인 자리차지 그림 두 장의 행 높이.
 //!
@@ -181,6 +184,46 @@ fn first_page_photo_cells(core: &DocumentCore) -> BTreeMap<u16, (f64, Vec<(f64, 
     let mut cells = BTreeMap::new();
     walk(&tree.root, &mut cells);
     cells
+}
+
+#[test]
+fn page_edge_clips_only_the_photos_outside_the_shortened_paper() {
+    for (path, visible_count, partial_photo) in [
+        (FIXTURE, 15, None),
+        (
+            "samples/pr9349-cell-floats/photo-short-page.hwp",
+            15,
+            Some((OVERLAP_ROW, 1)),
+        ),
+        (
+            "samples/pr9349-cell-floats/photo-a5-height.hwp",
+            13,
+            Some((SINGLE_ROW, 0)),
+        ),
+    ] {
+        let core = load_path(path);
+        assert_eq!(core.page_count(), 1, "{path}");
+        let tree = core.build_page_render_tree(0).expect("render tree");
+        let page_bottom = tree.root.bbox.y + tree.root.bbox.height;
+        let mut visible = 0;
+        let mut partial = Vec::new();
+        for (row, (_, photos)) in first_page_photo_cells(&core) {
+            for (index, (_, top)) in photos.iter().enumerate() {
+                if *top < page_bottom {
+                    visible += 1;
+                    if top + PIC_PX > page_bottom {
+                        partial.push((row, index));
+                    }
+                }
+            }
+        }
+        assert_eq!(visible, visible_count, "{path}: 용지에 보이는 사진 수");
+        assert_eq!(
+            partial.as_slice(),
+            partial_photo.as_slice(),
+            "{path}: 용지 끝 사진"
+        );
+    }
 }
 
 /// 나란한 사진 칸: 그림 두 장이 같은 높이에 놓이고, 그림 띠 + 글자 크기 앵커 줄이 칸을 채워

@@ -18,4 +18,6 @@
 
 보정본에서는 종이 기준 도형의 글 앞·글 뒤 속성을 괘선 그리기가 끝날 때까지 보존한다. 같은 흰 사각형을 앞과 뒤로 바꾼 인쇄본, 글상자 내부의 독립 도형, #9298의 셀 내용 그림을 함께 확인했다. [측정과 배치의 연결](assets/hyunmyungjanelee-20261125/maintainer/placement.md)
 
-최종 소스 `b12b85ad6e`에서 분할 HWPX 원본의 흰 도형 안으로 새던 괘선 130줄을 확인했다. 보정 후 한컴·Native·fresh WASM은 도형 안에서 0줄, 위아래에서 65줄·60줄을 그린다. 글 뒤 배치와 기존 #9298의 일반 셀 그림도 각각 원래 그리기 순서를 유지했다. [앞뒤 배치 확대](assets/hyunmyungjanelee-20261125/maintainer/9352-placement.png) · [쪽별 판정](assets/hyunmyungjanelee-20261125/maintainer/README.md)
+원 기여에서 분할 HWPX의 흰 도형 안으로 괘선 130줄이 보였다. 보정 소스 `b12b85ad6e`의 Native·fresh WASM은 한컴처럼 도형 안에서 0줄, 위아래에서 65줄·60줄을 그린다. 글 뒤 배치와 기존 #9298의 일반 셀 그림도 각각 원래 그리기 순서를 유지했다. [앞뒤 배치 확대](assets/hyunmyungjanelee-20261125/maintainer/9352-placement.png) · [쪽별 판정](assets/hyunmyungjanelee-20261125/maintainer/README.md)
+
+같은 호스트에서 원 기여 커밋도 다시 빌드해 Native 12쪽을 대조했다. 분할 HWP 자체를 한컴 2024로 인쇄한 두 쪽에서 일치율은 95.55%→95.98%, 96.21%→96.21%였다. 두 번째 쪽의 PNG는 보정 전후 바이트가 같다. [동일 입력·글꼴·인쇄본으로 재측정한 원 PR](assets/hyunmyungjanelee-20261125/maintainer/pr9352-same-host.tsv)
