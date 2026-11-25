@@ -1,0 +1,11 @@
+# PR #9352 검토 · 칸 안 종이·쪽 기준 도형
+
+원 기여자는 hyunmyungJaneLee이고 원 head는 `04d560696bedf76ee589fd538deb7705bcca281d`이다. #9349의 빈 칸이 커지고 도형이 잘리는 증상, 글상자 안의 도형, 쪽을 넘는 행의 첫 조각을 검토한다. [원 PR](https://github.com/edwardkim/rhwp/pull/9352) · [연결 이슈](https://github.com/edwardkim/rhwp/issues/9349)
+
+최신 devel `50324d194d`에 원 head를 적용한 로컬 커밋은 `c16783823f`이다. 후속 #9384·#9407과의 누적 검토 소스는 `f11b8624fd`이다. 원 head의 CodeQL 요약은 devel에 있는 세 분석 구성을 찾지 못해 NEUTRAL이다. [검토 계획](hyunmyungjanelee_20261125_review_plan.md)
+
+한컴 2020 PDF 네 개의 기록은 각각 HWPX를 입력으로 명시하며, 제출된 PDF의 SHA-256과 일치한다. 같은 이름의 HWP는 별도 입력이다. 한컴 2020에서 제출된 `paper_square_split.hwp`를 직접 인쇄할 때 문서 열기 경고로 변환이 중단됐다. HWPX의 인쇄 결과와 한컴으로 다시 저장한 HWP의 결과를 구분해 대조한다. [기여자가 기록한 입력·PDF](assets/pk40991_cell_paper_shape/hancom-print-provenance.json)
+
+#9298에 수용된 셀 내용 그림은 괘선이 그림 앞에 그려진다. 이번 독립 Print의 종이 기준 흰 사각형은 반대로 괘선을 덮는다. 분할 표 경로는 먼저 종이 기준 도형을 칸 뒤로 옮기고 뒤에서 표 괘선을 붙인다. 검토 중인 수정은 두 개체의 그리기 순서를 각각 보호해야 한다. [#9298의 셀 그림 검증](archives/pr_9298_review.md)
+
+칸 안 사각형 4종의 제출 HWP 네 파일 모두 동일 바이트로 한컴 2024에서 열고 직접 인쇄했다. 같은 네 파일은 한컴 2020에서 문서 열기 경고가 발생했다. 따라서 제출 HWP의 독립 검사에는 파일별 2024 인쇄본과 2024 호환 모드를 사용하고, HWPX의 2020 인쇄본을 사용한 기여자 수치는 별도 대조로 기록한다. [제출 HWP의 버전별 인쇄 기록](assets/hyunmyungjanelee-20261125/submitted-hwp-print.tsv)
