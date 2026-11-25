@@ -761,6 +761,11 @@ nextest를 완료했다. `regression_suite_006`에서 오른쪽 끝 정렬·첫 
 6건을 모두 통과했다. 종료 코드는 0, 실행 ID는 `16598f04-004c-4873-bee7-d3f7cd4b290a`다.
 실행 명령·노출 글꼴·시험 결과는 `merged-cbebdbeeca/7786-rebased/nextest.log`에 있다.
 
+같은 복원 후보의 Rust lint 묶음과 전체 suite 매니페스트 검사를 Native 대기열 뒤에 등록했다.
+희소 작업 트리에서 Rust 원본 4,559개의 include 경로를 읽고 컴파일에 필요한 추적 입력 197개를
+고정 head에서 가져와 Git blob을 대조했다. 준비 증거는 `7786-rebased/all-target-includes.json`,
+lint 명령별 로그와 종료 코드는 `7786-rebased/lint/`에 기록한다.
+
 ### #7779·#7784 38쪽에서 앞 TAC 표 뒤의 줄간격
 
 38쪽에서 바깥 표 358의 물리 하단과 잉크는 한컴과 맞지만, 그 뒤 제목 세 개의 잉크가
@@ -830,6 +835,30 @@ PNG SHA-256은 `5f764877300b8226fa1d1d1ac63dae0bafd06aaeb1da105b1269e494aa636a41
 [기존 편람 글꼴 검증](task_m100_planet6897_handbook_font_environment.md)에서 같은 현상을 확인한
 등록 환경 `handbook-wasm-and-hwpx.json`을 매니페스트 SHA-256과 대조해 편람 383쪽을 다시
 실행했다. 새 출력은 `7777-candidate/handbook-native-registered-font/`에 기록한다.
+
+기본 환경의 편람 검사는 383쪽을 모두 산출했고 145쪽 한 곳에서만 정본 표시값이 하락했다.
+등록 환경의 재검사는 383쪽을 모두 산출했고 정본 대비 하락 없이 통과했다. 130쪽은 정본과
+같은 99.97%, 145쪽과 나머지 381쪽은 100.00%다. 등록 환경 전쪽 TSV SHA-256은
+`261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590`이다.
+새 WASM 빌드 로그에는 후보 작업 트리의 `rhwp` crate를 컴파일한 행이 있다. 최적화한 모듈
+해시와 Canvas 결과는 해당 단계의 종료로 확인한다. 6쪽의 앞 문단·표, 23–24·36–37쪽의 두 표,
+빈 호스트 종료 컷과 후속 제목의 소속을 보호하는 관계 검사 초안을 별도로 준비했다. 새 WASM
+전쪽 확인 뒤 실측값과 증적을 연결해 회귀 suite에 넣는다.
+최신 devel과 후보의 조판 덤프에 같은 조건 5개를 적용했고 devel은 5건 실패, 후보는 5건
+통과했다. `fragment-ownership/relationship-regression-controls.json`에 각 조건을 기록했다.
+후보의 최소 글꼴 Native는 49쪽과 변경 대상의 쪽·표 소속 22개 항목을 전체 글꼴 Native와
+같게 유지했다. 확인한 글꼴 파일과 대조는 `fragment-ownership/minimal-font/`에 있다.
+Canvas의 실제 WASM 모듈 해시와 렌더 트리를 확인하는 검사도 연결했다. 같은 검사에서 Native
+후보는 6개 관계를 만족했고 기준 Canvas는 쪽 소속 5개가 달랐다.
+
+### #7778 Native 대기 복구
+
+기존 대기 프로세스가 빌드 로그와 실행 파일을 만들기 전에 종료됐다. 당시 `waiting 0`은
+Native 검사 완료 근거가 될 수 없다. 원래 후보 트리와 종료 기록을 보존하고 새 프로세스로
+다시 대기열을 연결했다. #7777 WASM 빌드 직후 #7778을 실행한 뒤 #7787, #7779·#7784,
+#7785가 순서대로 공유 Cargo 경로를 사용한다.
+각 후보 빌드의 소스 패치, 실제 컴파일 작업 트리, 실행 파일 해시를 대조해 `native-identity.json`에
+기록하도록 했다.
 
 ### #7779 명시 글꼴 WASM과 4·5쪽 줄바꿈
 
