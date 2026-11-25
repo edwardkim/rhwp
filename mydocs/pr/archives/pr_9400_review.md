@@ -1,0 +1,34 @@
+# PR #9400 검토 — KAF 부록의 WMF 자르기와 글 상자 줄 높이
+
+## 최종 판정
+
+**WMF 전체 자르기와 글 상자 피치의 개선을 재현했다.** 메인터너가 36쪽 셋째 줄의 잘림을 보정했다. 원 PR의 제출 TSV보다 낮은 출력 항목은 동일 조건에서 원 PR head와 최종 후보를 다시 비교하기 위해 통합을 보류한다.
+
+[원 PR #9400](https://github.com/edwardkim/rhwp/pull/9400) · [이슈 #9379](https://github.com/edwardkim/rhwp/issues/9379) · [글 상자 높이 후속 이슈 #9395](https://github.com/edwardkim/rhwp/issues/9395)
+
+KAF 회의자료의 33~44쪽 표를 제거한 54쪽 파생본에 두 계약을 적용한다. imgDim이 없고 저장 자르기가 WMF 원래 범위 전체와 같은 그림은 화면·인쇄에서 전체 범위를 사용한다. 부분 자르기는 기존 창을 유지한다. 글 상자는 bit 22, 확인된 글꼴의 세로 상자, 저장 줄·간격을 함께 확인하고 구형 저장본의 줄 피치만 보정한다.
+
+원 PR의 36쪽은 Native 91.77%·WASM 92.09%이며, 한컴에서 상자가 내용에 맞춰 늘어나는 차이와 첫 줄의 `such` 줄바꿈 차이가 남아 있다. 기하 차이는 #9395에서 추적 중이다. 줄 피치 테스트는 원 출력의 3243 HU를 96 DPI에서 43.24±0.5px로 비교한다. 이 값은 줄 사이 상대 거리의 고정 수치이며, 36쪽의 페이지 일치율과 적용 가능한 회귀 조건을 함께 확인해야 한다.
+
+첨부 PDF는 PDF 1.4, A4 가로 54쪽이다. `Creator`에 표시된 `Hwp 2018 11.0.0.1623`은 저장소에서 한컴 2020으로 실측한 빌드다. 이전 MCP 2020 Print PDF의 Creator·Producer도 각각 `Hwp 2018 11.0.0.1623`과 `Hancom PDF 1.3.0.404`다. 원 PR의 동일 파생본에 대한 Hancom PDF Print 기록과 대조해 첨부 PDF를 재사용했다. 66쪽 전체 원본의 MCP 재출력은 PDF 검증 단계에서 실패했다. [제품 버전 실측](../../manual/verification/hangul_version_oracle.md#51-설치된-버전-확인) · [MCP 대조 기록](pr_9317_review.md#입력과-독립-인쇄-기준)
+
+## 글 상자의 셋째 줄 잘림
+
+36쪽의 Native 원본 PNG를 직접 대조했다. devel에서는 셋째 줄 `Cadastre’` 전체가 상자 안에 보인다. 후보에서 피치 보정으로 셋째 줄 상단이 y=245.1에서 265.1로 내려가면서, 저장 크기로 고정된 상자가 글자 하단을 자른다. 첨부 PDF의 상자는 더 높고 셋째 줄 전체가 보인다. 줄 피치 계산 개선과 별개로 실제 보이는 내용이 줄어든다. 전체 자르기 WMF 38·39·52쪽은 같은 SVG 경로에서 이미지 1개를 유지한 채 자르기 창이 1개에서 0개로 줄었고, 부분 자르기 36쪽은 창 1개를 유지했다.
+
+메인터너 보정 `049fd5ed2f`는 열기 단계에서 글꼴 세로 치수를 실제로 복원한 독립 가로 글 상자에서 글줄 끝과 아래 안 여백을 테두리·인쇄 경계에 반영한다. 36쪽 SVG에서 사각형 원점과 폭을 유지하면서 인쇄 경계 높이가 104.73px에서 116.64px로 늘어났다. 마지막 글줄과 아래 안 여백이 인쇄 경계 안에 있는지 확인하는 관계형 회귀를 추가했다.
+
+같은 첨부 PDF로 재측정한 Native 36쪽은 91.58%에서 95.13%로 올랐다. 셋째 줄 전체가 보이며 아래 본문의 시작 위치도 유지됐다. 상자 안의 `such`와 `and`의 줄 소속은 PDF와 다르다. Native 전쪽 54쪽의 리베이스 전 후보 대비 하락은 0쪽이며, 38·39·40·42·52쪽은 각각 97.86%·100.00%·100.00%·100.00%·100.00%로 유지됐다.
+
+- 보정 뒤 36쪽 Native [review](../assets/planet6897_20261125/kaf-appendix/maintainer/native/review_036.png) · [overlay](../assets/planet6897_20261125/kaf-appendix/maintainer/native/overlay_036.png) · [54쪽 TSV](../assets/planet6897_20261125/kaf-appendix/maintainer/native/silhouette.tsv)
+- 보정 뒤 36쪽 fresh WASM [review](../assets/planet6897_20261125/kaf-appendix/maintainer/wasm/review_036.png) · [overlay](../assets/planet6897_20261125/kaf-appendix/maintainer/wasm/overlay_036.png) · [최종 글꼴 공급 54쪽 TSV](../assets/planet6897_20261125/kaf-appendix/maintainer/wasm/silhouette-verified-hmkmm.tsv)
+
+- 36쪽 [devel PNG](../assets/planet6897_20261125/kaf-appendix/native/base-036.png) · [후보 PNG](../assets/planet6897_20261125/kaf-appendix/native/candidate-036.png) · [review](../assets/planet6897_20261125/kaf-appendix/native/review_036.png) · [overlay](../assets/planet6897_20261125/kaf-appendix/native/overlay_036.png)
+- 38쪽 [review](../assets/planet6897_20261125/kaf-appendix/native/review_038.png) · [overlay](../assets/planet6897_20261125/kaf-appendix/native/overlay_038.png)
+- [출력 위치 증적](../assets/planet6897_20261125/claim-native-structural-evidence.json) · [WMF 자르기 창 확인](../assets/planet6897_20261125/kaf-appendix-svg-consumer.json)
+
+기존 비교는 `0fbee2c04e`와 통합 후보 `53b15ed46f`의 결과다. #9298이 반영된 `fb98e8bff3` 위로 충돌 없이 리베이스했으며, 기존 PDF와 PNG를 같은 입력에서의 비교 자료로 사용했다.
+
+36쪽은 같은 Mac의 이전 후보 대비 fresh WASM 91.59→95.03%로 올랐다. 휴먼명조 TrueType을 공급한 Native·WASM 전체 54쪽 비교에서 원 PR 제출값보다 낮은 값이 남은 곳은 Native 38쪽(−0.01%p), WASM 21쪽(−0.11%p), 38·39쪽(각 −0.02%p)이다. WASM 38·39쪽 PNG는 리베이스 전 후보와 같다. 전체 Canvas 내보내기에서 윤곽 글꼴 세션 한도에 닿아, 같은 입력·글꼴·WASM으로 6개 세션에서 직접 출력했다. 54쪽의 빠진 쪽·중복을 검사한 후 Visual Sweep으로 전쪽 TSV를 계산했다. [페이지별 결과](../assets/planet6897_20261125/kaf-font-recheck.json)
+
+[원 PR·통합 SHA 및 빌드 출처](../assets/planet6897_20261125/review-provenance.json) · [입력·기준 PDF 출처](../assets/planet6897_20261125/print-provenance.json)

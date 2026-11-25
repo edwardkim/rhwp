@@ -1,0 +1,46 @@
+{
+  "base": [
+    {
+      "page": 36,
+      "nested_crop_viewports": 1,
+      "images": 1
+    },
+    {
+      "page": 38,
+      "nested_crop_viewports": 1,
+      "images": 1
+    },
+    {
+      "page": 39,
+      "nested_crop_viewports": 1,
+      "images": 1
+    },
+    {
+      "page": 52,
+      "nested_crop_viewports": 1,
+      "images": 1
+    }
+  ],
+  "candidate": [
+    {
+      "page": 36,
+      "nested_crop_viewports": 1,
+      "images": 1
+    },
+    {
+      "page": 38,
+      "nested_crop_viewports": 0,
+      "images": 1
+    },
+    {
+      "page": 39,
+      "nested_crop_viewports": 0,
+      "images": 1
+    },
+    {
+      "page": 52,
+      "nested_crop_viewports": 0,
+      "images": 1
+    }
+  ]
+}
