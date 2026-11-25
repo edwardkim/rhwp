@@ -756,6 +756,11 @@ Print 각각 27쪽의 WASM PNG와 TSV가 앞서 사용한 #9417 검토 빌드의
 독립 Print 좌표와의 최대 차이는 0.058px였다. 전쪽·번호 소속과 순서 검사 결과는
 `merged-cbebdbeeca/wasm-local/ktx-reproduction.json`이다.
 
+복원 후보 `84c222ef7338872038fd89e83b7a0eccecb26288`에서 최신 devel 기반 최소 글꼴 집중
+nextest를 완료했다. `regression_suite_006`에서 오른쪽 끝 정렬·첫 점 간격 및 점선 대조 검사
+6건을 모두 통과했다. 종료 코드는 0, 실행 ID는 `16598f04-004c-4873-bee7-d3f7cd4b290a`다.
+실행 명령·노출 글꼴·시험 결과는 `merged-cbebdbeeca/7786-rebased/nextest.log`에 있다.
+
 ### #7779·#7784 38쪽에서 앞 TAC 표 뒤의 줄간격
 
 38쪽에서 바깥 표 358의 물리 하단과 잉크는 한컴과 맞지만, 그 뒤 제목 세 개의 잉크가
@@ -817,6 +822,14 @@ SHA-256 `9e1c8416ec0b2a72fc43aceaf03f01f8b2ecd82c4756dc6735d3198a75075904`가 �
 통과하면 `7777-candidate/contributor-gate/`에서 이어진다. #7777·#7785 작업 트리에 추적된
 `tests`를 펼치고 생성 suite를 준비한 뒤 소스 트리가 같은 것을 확인했다. 이 상태에서 두 후보의
 `cargo fmt --all -- --check`는 모두 종료 코드 0이었다.
+
+기본 글꼴 환경의 편람 145쪽은 후보와 최신 devel에서 모두 raw 99.95%였다. 두 Native 출력의
+PNG SHA-256은 `5f764877300b8226fa1d1d1ac63dae0bafd06aaeb1da105b1269e494aa636a41`로
+같으며, 기준 PDF PNG도 같은 것을 확인했다. 일치하지 않는 실루엣 74픽셀은 첫 예시 안의
+정부상징 그림과 `행정안전부장관` 글줄 영역에 있다. 기록은 `7777-candidate/handbook-devel-145/`다.
+[기존 편람 글꼴 검증](task_m100_planet6897_handbook_font_environment.md)에서 같은 현상을 확인한
+등록 환경 `handbook-wasm-and-hwpx.json`을 매니페스트 SHA-256과 대조해 편람 383쪽을 다시
+실행했다. 새 출력은 `7777-candidate/handbook-native-registered-font/`에 기록한다.
 
 ### #7779 명시 글꼴 WASM과 4·5쪽 줄바꿈
 
