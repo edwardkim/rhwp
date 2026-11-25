@@ -63,7 +63,8 @@ fn insert_row_keeps_table_width_with_merged_only_columns() {
         .filter(|cell| cell.row == 1)
         .map(|cell| cell.width)
         .collect();
-    assert_eq!(new_row, vec![A, B, C, D]);
+    // 한컴처럼 새 줄은 기준 줄(A | B+C | D)의 가로 병합을 따른다.
+    assert_eq!(new_row, vec![A, B + C, D]);
     assert_eq!(table.common.width, A + B + C + D);
 }
 

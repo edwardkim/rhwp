@@ -1891,6 +1891,20 @@ impl Table {
             400
         };
 
+        // 한컴은 새 행을 기준 행의 가로 병합대로 만든다(2칸을 합친 셀 아래에는 2칸짜리
+        // 새 셀). 기준 행을 덮는 셀마다 시작 열과 열 span을 옮기기 전에 적어 둔다.
+        let mut base_spans: Vec<Option<(u16, u16)>> = vec![None; self.col_count as usize];
+        for cell in &self.cells {
+            if cell.row <= row_idx
+                && checked_table_span_end(cell.row, cell.row_span, "행")? > row_idx
+            {
+                let end = cell.col.saturating_add(cell.col_span).min(self.col_count);
+                for c in cell.col.min(self.col_count)..end {
+                    base_spans[c as usize] = Some((cell.col, end - cell.col));
+                }
+            }
+        }
+
         // 병합 셀 확장 + 기존 셀 시프트 (커버리지 맵 생성용으로 먼저 처리)
         // 삽입 지점을 걸치는 병합 셀 추적
         let mut covered_cols = vec![false; self.col_count as usize];
@@ -1917,16 +1931,40 @@ impl Table {
         // 새 셀 생성: 병합 셀에 의해 커버되지 않는 열에만
         // 삽입 지점 아래 행의 셀을 템플릿으로 우선 사용 (헤더 행 대신 데이터 행)
         // target_row 아래(+1)의 셀이 원래 데이터 행이므로 먼저 시도, 없으면 위(-1), 그래도 없으면 아무 셀
+        // 옮긴 뒤 기준 행의 인덱스. 위에 넣으면 기준 행이 한 줄 내려간다.
+        let base_row = if below { row_idx } else { target_row + 1 };
         for c in 0..self.col_count {
             if !covered_cols[c as usize] {
-                let width = col_widths[c as usize];
-                let template = self
-                    .cells
+                // 기준 행의 가로 병합 셀: 시작 열에서 한 번만 같은 폭으로 만든다.
+                let span = match base_spans[c as usize] {
+                    Some((start, span)) if span > 1 => {
+                        if start != c {
+                            continue;
+                        }
+                        span
+                    }
+                    _ => 1,
+                };
+                let width = col_widths[c as usize..(c + span) as usize]
                     .iter()
-                    .find(|cell| {
-                        cell.col == c
-                            && cell.col_span == 1
-                            && cell.row == target_row.saturating_add(1)
+                    .fold(0, |sum: HwpUnit, w| sum.saturating_add(*w));
+                let merged = (span > 1)
+                    .then(|| {
+                        self.cells.iter().find(|cell| {
+                            cell.col == c
+                                && cell.col_span == span
+                                && cell.row <= base_row
+                                && cell.row.saturating_add(cell.row_span) > base_row
+                        })
+                    })
+                    .flatten();
+                let template = merged
+                    .or_else(|| {
+                        self.cells.iter().find(|cell| {
+                            cell.col == c
+                                && cell.col_span == 1
+                                && cell.row == target_row.saturating_add(1)
+                        })
                     })
                     .or_else(|| {
                         if target_row > 0 {
@@ -1945,7 +1983,9 @@ impl Table {
                     // 열 c 가 전부 병합 셀이면 위 탐색이 모두 실패한다. 서식 0 짜리 셀을
                     // 만드느니 표의 아무 셀이나 템플릿으로 쓴다 (주석의 "아무 셀").
                     .or_else(|| self.cells.first());
-                let new_cell = if let Some(tpl) = template {
+                // 합친 셀의 폭은 그 셀이 가진 값이 맞다. 열마다 나눈 폭은 추정일 수 있다.
+                let width = merged.map_or(width, |cell| cell.width);
+                let mut new_cell = if let Some(tpl) = template {
                     let cell = Cell::new_from_template(c, target_row, width, new_cell_height, tpl);
                     inherit(&cell, tpl);
                     cell
@@ -1953,6 +1993,7 @@ impl Table {
                     // 셀이 하나도 없는 표 — 상속원이 존재하지 않는 유일한 경우
                     Cell::new_empty(c, target_row, width, new_cell_height, self.border_fill_id)
                 };
+                new_cell.col_span = span;
                 self.cells.push(new_cell);
             }
         }

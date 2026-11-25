@@ -2095,7 +2095,8 @@ fn merged_retained_neighbors_inherit_real_sides_across_structure_edits_and_both_
                 t.cells.len(),
                 if mode >= 5 && mode != 6 && mode != 7 {
                     2
-                } else if name.starts_with("colspan") && mode == 3 {
+                } else if name.starts_with("colspan") && matches!(mode, 0 | 1 | 3) {
+                    // 합친 머리 줄 옆에 넣은 줄은 그 줄처럼 합친 셀 하나다.
                     4
                 } else {
                     5
