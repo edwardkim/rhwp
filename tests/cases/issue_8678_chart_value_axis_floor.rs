@@ -88,3 +88,104 @@ fn tall_column_axis_uses_finer_step() {
         &[2.6, 2.65, 2.7, 2.75, 2.8, 2.85, 2.9, 2.95, 3.0, 3.05],
     );
 }
+
+/// 모든 쪽의 차트마다 값축 눈금의 (시작, 끝, 간격) 을 쪽·차트 순서대로 모은다.
+fn chart_axes(sample: &str) -> Vec<(f64, f64, f64)> {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(sample);
+    let core = DocumentCore::from_bytes(&std::fs::read(&path).expect("read sample")).expect("open");
+    let mut axes = Vec::new();
+    for page in 0..core.page_count() {
+        let svg = core.render_page_svg_native(page).expect("SVG");
+        let doc = roxmltree::Document::parse(&svg).expect("SVG 파싱");
+        for chart in doc
+            .descendants()
+            .filter(|n| n.attribute("class") == Some("hwp-ooxml-chart"))
+        {
+            let mut labels: Vec<f64> = chart
+                .descendants()
+                .filter(|n| n.has_tag_name("text"))
+                .filter_map(|n| n.text())
+                .filter_map(|t| t.trim().parse::<f64>().ok())
+                .collect();
+            labels.sort_by(|a, b| a.partial_cmp(b).unwrap());
+            labels.dedup();
+            assert!(labels.len() >= 2, "{sample}: 눈금 부족 {labels:?}");
+            let step = labels[1] - labels[0];
+            assert!(
+                labels
+                    .windows(2)
+                    .all(|w| ((w[1] - w[0]) - step).abs() < 1e-9),
+                "{sample}: 간격이 고르지 않음 {labels:?}"
+            );
+            axes.push((labels[0], *labels.last().unwrap(), step));
+        }
+    }
+    axes
+}
+
+fn assert_axes(sample: &str, expected: &[(f64, f64, f64)]) {
+    let actual = chart_axes(sample);
+    assert_eq!(actual.len(), expected.len(), "{sample}: 차트 수 {actual:?}");
+    for (i, (a, e)) in actual.iter().zip(expected).enumerate() {
+        assert!(
+            (a.0 - e.0).abs() < 1e-9 && (a.1 - e.1).abs() < 1e-9 && (a.2 - e.2).abs() < 1e-9,
+            "{sample}: {}번째 차트 {a:?} != 데스크톱 {e:?}",
+            i + 1
+        );
+    }
+}
+
+/// 값만 바꾼 묶은 세로·가로 막대 18개. 기대값은 같은 문서의 데스크톱 한컴 2020 Print
+/// (`pdf/issue8678/axis_residual_set1-hwpx-2020.pdf`) 에서 읽은 눈금이다.
+/// 9.5,9.8 · 95,98 · 9.5,9.9 는 최댓값 아래로 3칸 남짓만 남아 한 칸 더 내려가고,
+/// 3,3(18750 HU) 은 0~3.5 0.5 단위, 가로 2.9,3(32250 HU) 은 0.1 단위다.
+#[test]
+fn desktop_axis_set1_matches_print() {
+    assert_axes(
+        "samples/issue8678/axis_residual_set1.hwpx",
+        &[
+            (8.0, 10.0, 0.5),
+            (80.0, 100.0, 5.0),
+            (8.6, 10.0, 0.2),
+            (8.0, 10.0, 0.5),
+            (8.6, 10.0, 0.2),
+            (8.0, 10.5, 0.5),
+            (86.0, 100.0, 2.0),
+            (2.6, 3.1, 0.1),
+            (17.0, 20.5, 0.5),
+            (75.0, 100.0, 5.0),
+            (0.0, 4.0, 1.0),
+            (0.0, 3.5, 0.5),
+            (0.0, 3.5, 0.5),
+            (0.0, 5.0, 1.0),
+            (2.6, 3.1, 0.1),
+            (2.6, 3.05, 0.05),
+            (2.6, 3.1, 0.1),
+            (4.1, 5.0, 0.1),
+        ],
+    );
+}
+
+/// 바닥값을 내리는 경계(최댓값 아래 3.2칸은 내리고 3.4칸은 유지), 칸 수 한도로 고르는
+/// 간격(9.6,9.95 → 0.2, 1,5 → 2, 2,4.5 높은 차트 → 0.5), 가로 막대 너비별 간격 12개.
+/// 기대값은 `pdf/issue8678/axis_residual_set2-hwpx-2020.pdf` 에서 읽었다.
+#[test]
+fn desktop_axis_set2_matches_print() {
+    assert_axes(
+        "samples/issue8678/axis_residual_set2.hwpx",
+        &[
+            (8.0, 10.5, 0.5),
+            (8.0, 10.5, 0.5),
+            (8.5, 10.5, 0.5),
+            (8.6, 10.0, 0.2),
+            (0.0, 7.0, 1.0),
+            (0.0, 6.0, 2.0),
+            (0.0, 5.0, 0.5),
+            (0.0, 7.0, 1.0),
+            (8.4, 10.0, 0.2),
+            (2.6, 3.1, 0.1),
+            (2.6, 3.05, 0.05),
+            (4.1, 5.0, 0.1),
+        ],
+    );
+}
