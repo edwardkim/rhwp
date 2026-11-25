@@ -1,5 +1,5 @@
 //! 관계형·고정형 — [#8735] 이어지는 표 조각 뒤·단 첫머리의 문단 기준 표 host 는 저장 첫 줄 − 문단 위 간격을 문단 상단으로 쓴다.
-//! 주석 갱신: 2026-11-25 KST_TIME KST (처음 작성)
+//! 주석 갱신: 2026-11-25 15:57 KST (처음 작성)
 //!
 //! 입력: `samples/issue8732/1741000-202200045_second_interim_report.hwp`
 //! (기준 `pdf/issue8732/1741000-202200045_second_interim_report-2020.pdf`, 138쪽).
@@ -20,15 +20,15 @@
 //!   반례: 문단 시작이 저장 줄 − 문단 위 간격인 10k 1480000-200600042 221쪽(위 간격 1000)은 같은
 //!   규칙으로 93.44 → 99.99.
 //! - 관계형: 표 윗변 = 본문 위끝 + 저장 첫 줄 + max(오프셋 − 문단 위 간격, 0) + 바깥 위 여백,
-//!   뒤 문단 줄 간격 = 저장 vpos 차. 고정형: 같은 위치를 독립 저장값으로 ±2px 고정(세 쪽 모두
+//!   뒤 문단 줄 간격 = 저장 vpos 차. 고정형: 같은 위치를 독립 저장값으로 ±2px 고정(네 쪽 모두
 //!   Native·fresh WASM 98 이상, 독립 PDF 확대 대조 완료).
 //!
 //! 측정: 2026-11-25, `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96`
 //! (`silhouette_raw_match_percent`, 색상 경계 보정 전 2px 내용 실루엣), 글꼴은 맑은 고딕·바탕 +
-//! `ttfs/opensource` 를 Native·WASM 두 경로에 공급. source MEASURE_SHA(devel `0fbee2c04e` 위).
-//! - 66쪽 Native N66·WASM W66, 134쪽 Native N134·WASM W134, 73쪽 Native N73·WASM W73,
-//!   15쪽 Native N15·WASM W15.
-//! - 전체 138쪽(기준 PDF 와 같음). 전쪽 최저 Native NMIN·WASM WMIN.
+//! `ttfs/opensource` 를 Native·WASM 두 경로에 공급. source `768517e716`(devel `fb98e8bff3` 위).
+//! - 66쪽 Native 100.00·WASM 99.95, 134쪽 Native 99.66·WASM 99.93, 73쪽 Native 99.71·WASM 99.79,
+//!   15쪽 Native 99.71·WASM 99.99.
+//! - 전체 138쪽(기준 PDF 와 같음). 전쪽 최저 Native 95.41·WASM 95.64(1~4쪽 표지 글꼴 차이, devel 과 같은 값). 90 미만 없음.
 //! - 증거: `mydocs/pr/assets/issue_8735/{native,wasm,base-native}/second_interim_report_silhouette.tsv`, 대표 review·overlay PNG.
 #![cfg(not(target_arch = "wasm32"))]
 
