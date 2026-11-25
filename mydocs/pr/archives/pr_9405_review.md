@@ -2,10 +2,11 @@
 
 ## 최종 판정
 
-**머지 보류 — 운영 시험과 문서 검증을 완료했으며 작업지시자의 병합 승인을 기다립니다.**
+**승인 — 운영 시험·문서 검증과 최신 head의 CI를 통과했으며 작업지시자의 병합·후속 처리 승인을 받았습니다.**
 
-제출 head의 CI는 성공했습니다. 이 기록을 추가한 trailing head의 CI·mergeability를 다시 확인하고,
-승인 후 병합과 `post_merge.md` 후속 처리를 수행합니다. 검증 완료와 병합 승인을 구분합니다.
+제출 head와 검토 기록 head `449e291f92fc30b4733694b09fb7f1ea3b9bb915`의 CI가 성공했습니다.
+2026-11-25 작업지시자의 승인으로 최종 판정을 확정했습니다. 승인 기록 commit의 CI와
+mergeability를 다시 확인한 뒤 병합과 `post_merge.md` 후속 처리를 수행합니다.
 
 ## 접수와 변경 범위
 
@@ -78,8 +79,11 @@ rhwp source·test·fixture·baseline·CI 정책을 바꾸지 않으며, 별도 �
 [CI Impact Policy](https://github.com/edwardkim/rhwp/actions/runs/45556333831)도 성공했습니다.
 제출 head의 mergeability는 확인 당시 `MERGEABLE`·`CLEAN`이었습니다.
 
-이 기록의 trailing head에서 required check와 실제 fast-pass를 확인하고 사용자 승인을 받은 뒤
-병합합니다. 후속 기록은 이미 이 PR에 포함하므로 별도 기록 PR을 만들지 않습니다.
+검토 기록 head의 [CI](https://github.com/edwardkim/rhwp/actions/runs/45556677251)도
+`all-review-only-no-code-impact` 경로로 성공했으며 `Build & Test`와
+[CI Impact Policy](https://github.com/edwardkim/rhwp/actions/runs/45556741631)를 확인했습니다.
+승인 기록 commit에서도 required check와 실제 fast-pass를 다시 확인한 뒤 병합합니다.
+후속 기록은 이미 이 PR에 포함하므로 별도 기록 PR을 만들지 않습니다.
 병합 뒤 devel 동기화, 관련 이슈 상태와 PR 후속 설명, 소유·미사용을 확인한 작업 브랜치와
 `output/`·`target/pr-review/debug` 정리를 [종료 절차](../../manual/pr_review/post_merge.md)에 따라
 수행합니다. 병합 뒤 확정되는 값과 실제 정리 결과는 후속 설명·저장소 밖 로그로 남깁니다.
