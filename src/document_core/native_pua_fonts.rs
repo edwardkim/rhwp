@@ -148,17 +148,17 @@ impl DocumentCore {
     /// 뒤늦은 paint-time 검색이나 모든 글자 모양의 글꼴 선등록을 하지 않는다.
     pub fn native_pua_font_requests(&self) -> Vec<NativePuaFontRequest> {
         use super::queries::rendering::{
-            collect_exact_font_slots_from_paragraphs_filtered, ExactFontSlotFilter,
+            collect_exact_font_slots_from_paragraphs_selected, ExactFontSlotSelection,
         };
         let mut requests = BTreeMap::new();
         let mut work = 1_000_000;
         for (filter, literal_figure_space) in [
-            (ExactFontSlotFilter::Pua, false),
-            (ExactFontSlotFilter::LiteralFigureSpace, true),
+            (ExactFontSlotSelection::NativePua(&self.styles), false),
+            (ExactFontSlotSelection::LiteralFigureSpace, true),
         ] {
             let mut slots = HashSet::<ExactFontSlot>::new();
             for section in &self.document.sections {
-                collect_exact_font_slots_from_paragraphs_filtered(
+                collect_exact_font_slots_from_paragraphs_selected(
                     &section.paragraphs,
                     &mut slots,
                     &mut work,
@@ -166,7 +166,7 @@ impl DocumentCore {
                     filter,
                 );
                 for master in &section.section_def.master_pages {
-                    collect_exact_font_slots_from_paragraphs_filtered(
+                    collect_exact_font_slots_from_paragraphs_selected(
                         &master.paragraphs,
                         &mut slots,
                         &mut work,

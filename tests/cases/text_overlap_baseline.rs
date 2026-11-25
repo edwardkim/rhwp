@@ -1,3 +1,20 @@
+//! 관계형·고정형 회귀 — #7766·#7774의 렌더링 검증 범위를 복원한다.
+//! 주석 갱신 2026-11-23 20:18 KST. 직전 변경 2026-11-23 16:50:07 KST
+//! `d9dc704e1aa543bb4f3ff3997754ea4b601c0574`.
+//! 2026-11-23 독립 한컴 Print, 96 DPI, 2px raw 실루엣.
+//! #7766 전52쪽 Native/fresh WASM 최저 98.40%/98.40%, 44·45쪽 양쪽 100.00%.
+//! #7774 두 변환본 각각 전763쪽 최저 99.57%/96.82%, 489쪽 100.00%/99.98%.
+//! 근거는 `mydocs/pr/assets/issue7766/`과
+//! `mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/`에 있다.
+//!
+//! 관계형·고정형: 기존 계약을 유지하고 #7754~#7765의 수용한 원본 범위를 복원한다.
+//! 주석 갱신: 2026-11-22T03:21:21+09:00; 직전 파일 변경: 2026-11-21T10:11:20+09:00 ca231d64f43f19da1d1d1aec4cf26a05b817aa22.
+//! 복원 원본 측정: 2026-11-22 KST,96DPI·Print·PDFium·보정 전2px raw, 각 독립 Print와 같은 전체 쪽수.
+//! Native/fresh WASM 전쪽 최저: 7754 평문24쪽98.29/98.22%,7755 315쪽98.40/98.40%,
+//! 7756 1쪽99.00/98.99%,7757 3쪽99.78/99.80%,7759 1쪽99.94/99.94%,7760 19쪽99.18/99.18%,
+//! 7761 HWP46쪽99.98/99.98%,7762 HWPX46쪽99.98/99.98%,7765 HWP64쪽98.08/98.11%·HWPX64쪽98.69/98.69%.
+//! 근거: mydocs/pr/assets/issues7754_7765/source32/README.md; 시장구조조사의 선행 전쪽 교차 증거는 같은 상위 market-source7/README.md.
+//! 이번 복원 범위 밖 입력의 기존 계약·근거는 아래 기록을 유지한다. 시스템 글꼴을 요구하지 않는다.
 //! 고정형: 기존 글자 겹침 원장 상한. #7727은 전쪽 수용한 CBTA 입력의 검사 범위만 복원한다.
 //! 주석 갱신: 2026-11-06T08:29:51+09:00; 직전 파일 커밋: 2026-10-27T12:59:15+09:00 (a85d6121f83b).
 //! 복원 입력 2026-11-06 측정: 96DPI·compat2022·PDFium·2px raw 전204쪽,
@@ -238,6 +255,10 @@ const SAMPLES_ROOT: &str = "samples";
 const BASELINE_PATH: &str = "tests/fixtures/text_overlap_baseline.tsv";
 const PARTITIONS: usize = 16;
 const SLOW_SAMPLE_LOG_THRESHOLD: Duration = Duration::from_secs(30);
+const SQL_CONVERSION_SAMPLES: &[&str] = &[
+    "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwp5.hwp",
+    "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwpx.hwpx",
+];
 
 /// 전용 장기 sentinel 이 담당하는 fixture.
 ///
@@ -261,22 +282,10 @@ const DEFERRED_TEXT_OVERLAP_FIXTURES: &[&str] = &[
     "issue5792/2700727_animal_facility_standards.hwpx",
     // #7445: CGMP 48쪽은 다른 작업이 보정한다. 사용자 요청으로 이 입력의 회귀를 제거한다.
     "issue6035/cgmp_evaluation_table.hwpx",
-    // #7445: 신규 겹침1건, Native 전10쪽 중8쪽 미달·최저0%; 다른 검사는 유지한다.
-    "issue2439/issue2439_repeat_table_overlap.hwp",
     // #7445: 정확한 한컴2020 정본 전82쪽 중43쪽 미달, 최저14.15%; 6쪽 쪽번호 겹침.
     "issue1891/76076_regulatory_analysis.hwpx",
     // #7445: PDF49쪽/Native47쪽, 공통47쪽 최저0.22%로 렌더링 회귀 보류.
     "issue5699/37787_regulatory_impact.hwp",
-    // #7445: 전52쪽 최저39.97%, 렌더링 회귀는 전체 피델리티 개선 후 복원.
-    "issue1853_caption_precedes_body_split.hwpx",
-    // #7445: pr-1674 HWP 전35쪽 최저54.09%, 렌더링 회귀 보류.
-    "pr-1674.hwp",
-    // #7445: 전11쪽 최저36.70%, 전체 피델리티 개선 전 렌더링 회귀 보류.
-    "hwpx/156160455-social-pig-farm-income.hwpx",
-    // #7445: 86712 두 형식의 전체 피델리티 개선은 별도 처리한다.
-    "86712_regulatory_analysis.hwp",
-    // #7445 동일 원문 피델리티 이관 및 사용자 지시: 렌더링 회귀에서 제외한다.
-    "issue1891/86712_regulatory_analysis.hwpx",
     "issue1937_rowbreak_footnote_overpagination.hwp",
     "task1749/saved_bounds_cumulative_page_break.hwpx",
 ];
@@ -307,6 +316,16 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
     }
     let mut acc = Vec::new();
     walk(Path::new(SAMPLES_ROOT), Path::new(SAMPLES_ROOT), &mut acc);
+    // 변환본의 보존 위치에서도 이전 원장 이름을 사용한다.
+    acc.extend(SQL_CONVERSION_SAMPLES.iter().map(|file| {
+        let path = PathBuf::from(file);
+        let name = path
+            .file_name()
+            .expect("SQL 변환본 이름")
+            .to_string_lossy()
+            .into_owned();
+        (path, name)
+    }));
     acc.retain(|(_, rel)| {
         !DEDICATED_SLOW_FIXTURES.contains(&rel.as_str())
             && !DEFERRED_TEXT_OVERLAP_FIXTURES.contains(&rel.as_str())

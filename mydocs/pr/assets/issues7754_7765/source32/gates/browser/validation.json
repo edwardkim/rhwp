@@ -1,0 +1,68 @@
+{
+  "production_source": "2f46647df16da00365b22a1364cdc0b28b8344bc",
+  "files": {
+    "rhwp.js": "23130c8002fe1aa4e6545910d92ef5716ccb92097747662d2b64ef129ff27b08",
+    "rhwp_bg.wasm": "00206b93702fa10fc92203713a15d5992fee487cbcf9b9e996c605726489e4a8"
+  },
+  "started": 1795284926.6005094,
+  "results": [
+    {
+      "cwd": "/home/tsjang/rhwp",
+      "command": [
+        "node",
+        "--test",
+        "scripts/tests/visual-sweep-canvas-fonts.browser.mjs"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-browser-gates/gate-0.log",
+      "exit_code": 0,
+      "seconds": 81.92191536701284
+    },
+    {
+      "cwd": "/home/tsjang/rhwp/rhwp-studio",
+      "command": [
+        "node",
+        "e2e/run-with-vite.mjs",
+        "--",
+        "node",
+        "e2e/canvas-font-alias-issue9077.test.mjs",
+        "--mode=headless"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-browser-gates/gate-1.log",
+      "exit_code": 0,
+      "seconds": 10.515809283126146
+    },
+    {
+      "cwd": "/home/tsjang/rhwp/rhwp-studio",
+      "command": [
+        "node",
+        "e2e/run-with-vite.mjs",
+        "--",
+        "node",
+        "e2e/canvas-render-diff.test.mjs",
+        "--mode=headless"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-browser-gates/gate-2.log",
+      "exit_code": 0,
+      "seconds": 20.35089510702528
+    },
+    {
+      "cwd": "/home/tsjang/rhwp/rhwp-studio",
+      "command": [
+        "node",
+        "e2e/run-with-vite.mjs",
+        "--",
+        "node",
+        "e2e/renderer-baseline.mjs",
+        "--mode=headless",
+        "--manifest=/home/tsjang/rhwp/scripts/renderer_baseline_manifest.json",
+        "--profiles=screen",
+        "--readiness-only",
+        "--output=/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-browser-gates/canvaskit-readiness"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-browser-gates/gate-3.log",
+      "exit_code": 0,
+      "seconds": 77.86201198492199
+    }
+  ],
+  "ended": 1795285117.2544632
+}

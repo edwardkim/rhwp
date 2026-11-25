@@ -1,0 +1,6 @@
+
+running 2 tests
+test full_page_evidence_rejects_missing_duplicate_low_or_nonfinite_values ... ok
+test real_registered_sources_are_retained ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s

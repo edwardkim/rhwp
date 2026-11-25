@@ -1,0 +1,5 @@
+control	backend	independent_pdf	x	y	pdf_rgb	candidate_rgb	pdf_owner	measured_owner	raw
+source-first-on-top	native	44e73a1f7105fcad4dba44769bb328d695f3cca5f6188175e42706ebdf48290c	209	239	190,56,47	195,58,48	sign	sign	100.00
+source-first-on-top	wasm	44e73a1f7105fcad4dba44769bb328d695f3cca5f6188175e42706ebdf48290c	209	239	190,56,47	195,58,48	sign	sign	100.00
+source-last-on-top	native	76f0329fda18a53e403e3f091de5d59ebcf63a4efc49947637cecc6cb4897420	209	239	38,114,166	37,117,170	neighbor	neighbor	100.00
+source-last-on-top	wasm	76f0329fda18a53e403e3f091de5d59ebcf63a4efc49947637cecc6cb4897420	209	239	38,114,166	37,117,170	neighbor	neighbor	100.00

@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/mcp_hwp2024Convert_usage.md
-last_verified: 2026-10-20
+last_verified: 2026-11-25
 ---
 
 # HWP 2024 변환 MCP client 사용법
@@ -29,7 +29,8 @@ PR review 기준 PDF를 만들 때는 기본 engine 값에 의존하지 않고 �
 
 조판·렌더링 검증의 공식 기준 PDF는 **Windows 데스크톱 한컴 2020 또는 2024의
 `Hancom PDF` Print 인쇄본**을 사용한다. MCP는 `2020`/`2024` engine을 명시하고
-`start → status → download`로 산출한다.
+`start → status → download`로 산출한다. 인쇄 오류가 검출되어 같은 엔진의 PDF 저장본으로
+대체된 경우에는 [대체 저장본 확인](#인쇄-오류-시-pdf-대체-저장본-확인)을 거쳐 공식 기준으로 사용한다.
 기존 `Producer`가 Cairo이면 같은 원본의 저장 제품을 확인한 뒤 위 엔진 선택 규칙으로
 다시 인쇄한다. 기존 `Creator: Hwp 2022` 인쇄본은 같은 입력을 `--engine 2024`로 다시
 인쇄한다. 원본의 저장 제품 판정과 기존 PDF의 실제 출력 제품 판정은 별개다.
@@ -39,16 +40,19 @@ PR review 기준 PDF를 만들 때는 기본 engine 값에 의존하지 않고 �
 현재 MCP의 `status.result`에 있는 `engine`, `hancom_version`, `pdf_print_method`,
 `pdf_output_mode`를 확인한다. 예를 들어 2020 출력의 `pdf_print_method: 0`과
 `pdf_output_mode: hancom2020_pdf_driver_one_up`은 한 쪽씩 PDF 인쇄 경로의 실행 증거다.
-결과 필드가 누락되거나 다른 모드이면 해당 engine의 실제 인쇄 경로를 별도로 확인한다.
+대체 저장 모드는 아래 예외 조건을 확인한다. 그 밖의 모드이거나 필드가 누락되면 해당 engine의
+실제 출력 경로를 별도로 확인한다.
 
 - 수동 출력도 해당 한컴에서 **파일 → 인쇄(Print) → PDF 출력**을 사용한다.
-  PDF로 저장/내보내기(Save As PDF), 다른 오피스의 변환 결과를 기준으로 대신하지 않는다.
+  MCP의 인쇄 오류 복구 예외 외에 PDF로 저장/내보내기(Save As PDF), 다른 오피스의 변환 결과를
+  기준으로 대신하지 않는다.
 - 기본은 원본 용지·방향을 유지한 전체 문서, 100% 배율·한 쪽씩(1-up) 인쇄다.
   모아 찍기·맞춰 찍기·용지 재지정이 검증 대상이면 설정과 비교 범위를 별도로 기록한다.
 - 입력 SHA-256·저장 제품 판정, 실제 한컴 제품/빌드·OS·글꼴, Print 출력 방법과 인쇄 설정,
   PDF SHA-256·전체 쪽수, MCP engine·job 식별자를 증적에 연결한다. 인증 정보는 기록하지 않는다.
 - 기존 PDF는 같은 원본, 한컴 2020·2024 중 실제 출력 제품, `Hancom PDF` 인쇄 경로를
-  확인한 경우 재사용한다. PDF 형식 버전은 이 출력 제품 판정과 별개다.
+  확인한 경우 재사용한다. MCP 대체 저장본도 아래 예외 근거를 확인하면 재사용한다.
+  PDF 형식 버전은 이 출력 제품 판정과 별개다.
 - 일반 기여자는 MCP 권한 없이 한컴 2020 또는 2024에서 직접 Print 출력해 제출할 수 있다.
   직접 출력본은 실제 출력 제품으로 이름 붙인다. 여러 제품의 동작을 다루면 비교 자료별
   버전과 용도를 구분한다.
@@ -93,12 +97,91 @@ python3 tools/oracle_public/audit_print_pairs.py --repo-root . \
 
 실제 기록 형식은 [34쌍의 보존 영수증](../pr/assets/hyunmyungjanelee_20261112/mcp-print-reference/receipts.json)에서 확인할 수 있다.
 
+### 출력 모드와 글꼴 이름 문법 보정 확인
+
+`pdf_output_mode`는 실제로 실행한 출력 방법이다. `one_up`은 모아 찍기를 해제한 한 쪽씩
+인쇄를 뜻하며, 문서의 시각적 정확성을 보증하는 값은 아니다.
+
+| `pdf_output_mode` | 실행 경로 | `pdf_print_method` |
+| --- | --- | --- |
+| `hancom2020_pdf_driver_one_up` | 한컴 2020의 Hancom PDF 인쇄, 한 쪽씩 | `0` |
+| `hancom2024_pdf_driver_one_up` | 한컴 2024의 Hancom PDF 인쇄, 한 쪽씩 | `0` |
+| `hancom2020_pdf_save_as` | 인쇄 오류 후 같은 입력을 한컴 2020의 PDF로 저장하기로 다시 생성 | `null` |
+| `hancom2024_pdf_save_as` | 인쇄 오류 후 같은 입력을 한컴 2024의 PDF로 저장하기로 다시 생성 | `null` |
+
+일부 한컴 PDF에는 `/BaseFont /HCI Poppy`처럼 PDF 글꼴 이름 안의 공백이 이스케이프되지
+않은 문법 오류가 있다. MCP는 보정 가능한 경우 이를 `/BaseFont /HCI#20Poppy`로 고치고,
+파일 위치 정보를 갱신한 뒤 구조·전체 쪽 참조 검사를 다시 수행한다. 글꼴 프로그램이나 페이지
+내용 스트림을 바꾸지 않으며, 검사에 통과한 인쇄본은 `*_pdf_driver_one_up` 모드를 유지한다.
+이 경우에도 `comment`가 포함되므로 **설명 유무만으로 PDF 대체 저장 여부를 판단하지 않는다.**
+
+다음은 글꼴 이름 문법을 보정한 2024 인쇄본의 상태 응답에서 확인할 필드다.
+
+```json
+{
+  "status": "succeeded",
+  "result": {
+    "engine": "2024",
+    "hancom_version": "13.0.0.4225",
+    "pdf_page_count": 54,
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2024_pdf_driver_one_up",
+    "comment": "한컴 PDF 출력의 글꼴 이름 공백 문법 오류를 보정했습니다. PDF 구조 및 전체 쪽 검사를 통과했습니다."
+  }
+}
+```
+
+이 응답은 client `0.10.0`의 `status.result`, `download.server`에서 확인할 수 있다.
+기존 client archive와 아래 `npx` 명령을 그대로 사용한다. 원본·결과 SHA-256과 전체 쪽수,
+동일 job의 출력 모드·제품 빌드·설명 원문을 보존하고, 실제 출력은 별도로 판독한다.
+
+### 인쇄 오류 시 PDF 대체 저장본 확인
+
+MCP는 PDF 인쇄 후 구조·참조 오류를 검사한다. 위 글꼴 이름 문법 보정 후에도 검사를
+통과하지 못하거나 내용·이미지 참조 오류 등이 있으면 같은 입력·같은 엔진에서 한컴의
+PDF로 저장하기로 한 번 다시 생성하고, 저장본의 구조와 쪽수를 검사한다. 저장본도 검사에
+실패하거나 확인된 원래 쪽수보다 줄어들면 성공 결과로 반환하지 않는다.
+성공한 대체 저장 결과에는 `*_pdf_save_as` 모드와 `comment`가 포함된다.
+
+다음은 2024 복구 응답의 확인 필드 예시다. 2020 복구는 `engine: "2020"`과
+`pdf_output_mode: "hancom2020_pdf_save_as"`를 반환한다.
+
+```json
+{
+  "status": "succeeded",
+  "result": {
+    "engine": "2024",
+    "hancom_version": "13.0.0.4225",
+    "pdf_page_count": 313,
+    "pdf_print_method": null,
+    "pdf_output_mode": "hancom2024_pdf_save_as",
+    "comment": "한컴 PDF 인쇄 결과에서 오류가 검출되어 한컴의 PDF로 저장하기로 다시 생성했습니다. 저장본은 PDF 구조 및 전체 313쪽 검사를 통과했습니다."
+  }
+}
+```
+
+`succeeded`를 확인한 뒤 기존 `download` 명령으로 수신한다. 상태 조회만으로 client PC에
+파일이 저장되지는 않는다. `status`·`download` 응답의 job ID와 엔진을 맞추고, 원본 SHA-256,
+실제 다운로드 PDF의 바이트 수·SHA-256·전체 쪽수, 출력 제품·빌드와 `comment` 원문을 보존한다.
+응답에 서버 URL·인증 정보가 포함되지 않았는지 확인해 검토 증적에 연결한다.
+
+이 기록과 실제 PDF 검사를 [거버넌스의 수용 조건](verification/visual_verification_governance.md#한컴-print-오류-시-mcp-대체-저장본-수용)에
+맞춰 확인하면 **「한컴 Print 버그 예외 — MCP PDF 대체 저장본」**으로 표기하고 Visual Sweep을
+계속한다. `pdf_print_method: null`을 이유로 재인쇄를 반복하지 않는다. 대체 저장 중에도
+`stage: converting_document`와 미제공 페이지 진행률, 결과 확정 전 `output_bytes: 0`이 표시될 수 있다.
+
+위 Print 영수증 생성·감사 도구는 현재 Print 경로만 수용한다. 대체 저장본은 이 도구의 Print
+성공 기록으로 작성하지 않고, 같은 job의 상태·다운로드 JSON과 입력·PDF 해시를 별도 증적으로
+연결해 위 예외로 검토한다. 성공 응답과 구조 검사만으로 시각 일치를 판정하지 않으며,
+전쪽 래스터화·Native/fresh WASM TSV와 알려진 오류 영역의 직접 판독을 수행한다.
+
 ## 개요
 
 - MCP server 이름: `hwp2024Convert`
+- 새 변환 시작: [대기열을 조회](#새-변환을-시작하기-전-대기열-확인)하고 `idle`일 때만 제출한다.
 - 실행 방식: `hwp2024-mcp-convert` CLI의 비동기 `start → status → download` 흐름.
   모든 문서 변환과 PR review 기준 PDF는 이 흐름을 사용한다.
-- VS Code 연동 방식: stdio MCP bridge `hwp2024-mcp-bridge`. 비동기 tool만 사용한다.
+- stdio MCP bridge: `hwp2024-mcp-bridge`. 비동기 변환 도구를 사용한다.
 - 지원 입력: `.hwp`, `.hwpx`
 - 지원 출력: `pdf`, `hwp`, `hwpx`
 - 지원 방향: `.hwp → pdf|hwp|hwpx`, `.hwpx → pdf|hwp`
@@ -124,17 +207,17 @@ Slack에 가입한 뒤 메인터너 또는 collaborator에게 접근 정보를 �
 
 ## 최신 client artifact
 
-rhwp에는 HWP 2024용 최신 client artifact 하나를 유지한다.
+새 변환에는 아래 client archive를 사용한다.
 
 ```text
-tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz
+tools/hwp-convert-mcp-2024-client-0.10.0.tgz
 ```
 
 | 항목 | 값 |
 | --- | --- |
-| package version | `0.9.0` |
-| archive bytes | 8,558 |
-| archive SHA-256 | `830b1f7ff3696a9b499d0043e48e3dccfba7817797a698003bd909226f13cf72` |
+| package version | `0.10.0` |
+| archive bytes | 8,655 |
+| archive SHA-256 | `79b3734bee610ba1d1bac85cdb9f9b2fdb2781246bd1f92bfe7618f7c42c9a57` |
 | 외부 npm runtime dependency | 없음 |
 | 포함 명령 | `hwp2024-mcp-bridge`, `hwp2024-mcp-convert` |
 
@@ -149,9 +232,9 @@ directory의 `$HOME/hwp-convert-2024/.env.local`에만 둔다. macOS와 Linux를
 
 | client OS | rhwp archive | 비공개 환경 파일 |
 | --- | --- | --- |
-| macOS | `$HOME/rhwp/tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz` | `$HOME/hwp-convert-2024/.env.local` |
-| Linux | `$HOME/rhwp/tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz` | `$HOME/hwp-convert-2024/.env.local` |
-| Windows | `C:\Users\<사용자>\rhwp\tools\hwp-convert-mcp-2024-client-20260824-011002.tar.gz` | `C:\Users\<사용자>\hwp-convert-2024\.env.local` |
+| macOS | `$HOME/rhwp/tools/hwp-convert-mcp-2024-client-0.10.0.tgz` | `$HOME/hwp-convert-2024/.env.local` |
+| Linux | `$HOME/rhwp/tools/hwp-convert-mcp-2024-client-0.10.0.tgz` | `$HOME/hwp-convert-2024/.env.local` |
+| Windows | `C:\Users\<사용자>\rhwp\tools\hwp-convert-mcp-2024-client-0.10.0.tgz` | `C:\Users\<사용자>\hwp-convert-2024\.env.local` |
 
 ```env
 HWP2024_MCP_SERVER_URL=http://<관리자가_제공한_MCP_endpoint>
@@ -178,17 +261,28 @@ HTTPS reverse proxy 뒤에 둔다.
 MCP tool에서는 요청의 선택적 `password` 필드로만 전달한다. client는 암호를 결과 JSON, job 상태,
 파일명 또는 로그에 기록하지 않는다.
 
+## 새 변환을 시작하기 전 대기열 확인
+
+새 변환을 시작하기 직전에 rhwp 저장소 루트에서 아래 명령으로 같은 MCP 서버의 대기열을 확인한다.
+`EnvFile`에는 기존 비공개 환경 파일 경로를 지정한다.
+
+```text
+npx -y --package="file:tools/hwp-convert-mcp-2024-client-0.10.0.tgz" -- hwp2024-mcp-convert queue-status --env-file "$EnvFile"
+```
+
+응답 JSON의 `status`가 `idle`일 때만 새 변환을 한 건 제출한다. `busy`이거나 조회에 실패하면
+제출을 보류한다. 다음 변환을 시작하기 직전에 다시 조회한다.
+
 ## 터미널 CLI
 
-macOS·Linux에서는 `npx`의 절대 경로를 확인한다. macOS GUI VS Code는 shell `PATH`를 상속하지 않을 수
-있으므로 VS Code 등록 시에도 이 경로를 사용한다.
+macOS·Linux에서는 `npx`의 절대 경로를 확인한다.
 
 ```bash
 command -v npx
 # macOS Homebrew 예: /opt/homebrew/bin/npx
 # Ubuntu 예: /usr/bin/npx
 
-export HWP2024_MCP_PACKAGE="$HOME/rhwp/tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz"
+export HWP2024_MCP_PACKAGE="$HOME/rhwp/tools/hwp-convert-mcp-2024-client-0.10.0.tgz"
 export HWP2024_MCP_ENV_FILE="$HOME/hwp-convert-2024/.env.local"
 ```
 
@@ -196,7 +290,7 @@ Windows PowerShell에서는 다음 변수로 경로를 한 번만 정의한다.
 
 ```powershell
 $Npx = 'C:\Program Files\nodejs\npx.cmd'
-$Package = 'C:\Users\<사용자>\rhwp\tools\hwp-convert-mcp-2024-client-20260824-011002.tar.gz'
+$Package = 'C:\Users\<사용자>\rhwp\tools\hwp-convert-mcp-2024-client-0.10.0.tgz'
 $EnvFile = 'C:\Users\<사용자>\hwp-convert-2024\.env.local'
 & $Npx --version
 ```
@@ -288,7 +382,7 @@ status의 terminal 상태는 `succeeded`, `failed`, `expired`다. `succeeded`일
 변환 중에도 상태 조회와 완료 결과 다운로드는 가능하다.
 
 CLI의 `status`는 서버 상태 필드를 최상위에 펼치고 `terminal`만 추가한다. HTTP MCP tool
-`get_conversion_status`와 VS Code tool `get_local_conversion_status`는 상태 JSON을
+`get_conversion_status`와 MCP tool `get_local_conversion_status`는 상태 JSON을
 `content`의 text로 반환하며 `terminal`은 추가하지 않는다. MCP envelope의 `isError: false`는
 상태 조회가 성공했다는 뜻이다. 조회된 job 자체는 `failed`일 수 있으므로 내부 `status`도 확인한다.
 
@@ -400,95 +494,9 @@ metadata이며 status 응답 전체를 감싼 객체가 아니다.
 3. 생성된 PDF를 직접 열어 누락·빈 페이지·출력 손상을 확인한다. 원본과 생성 PDF를 함께 보존하고,
    검증 기록에는 MCP 실패 코드, 수동 생성 사실과 실제 사용한 한컴 버전을 남긴다.
 
-## VS Code MCP 등록
-
-VS Code Chat에서 tool을 사용할 때만 stdio bridge를 등록한다. terminal에서 bridge를 미리 실행해 두지
-않는다. workspace의 `.vscode/mcp.json` 또는 VS Code user MCP 설정에서 client OS에 맞는 하나만 사용한다.
-
-### macOS
-
-macOS GUI VS Code에서는 `command -v npx`의 절대 경로를 `command`에 쓰고, Homebrew 경로를 `PATH`에
-포함한다.
-
-```json
-{
-  "servers": {
-    "hwp2024Convert": {
-      "type": "stdio",
-      "command": "/opt/homebrew/bin/npx",
-      "args": [
-        "-y",
-        "--package=file:${userHome}/rhwp/tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz",
-        "--",
-        "hwp2024-mcp-bridge"
-      ],
-      "envFile": "${userHome}/hwp-convert-2024/.env.local",
-      "env": {
-        "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-      }
-    }
-  }
-}
-```
-
-Intel Mac에서 Node.js가 `/usr/local/bin/npx`에 설치됐거나 다른 경로가 나오면 `command`와 `PATH`를
-`command -v npx`의 결과로 바꾼다.
-
-### Linux
-
-Linux에서 Node.js가 system package로 설치됐다면 보통 `/usr/bin/npx`를 사용한다. nvm 등으로 설치했다면
-`command -v npx`의 절대 경로로 교체한다.
-
-```json
-{
-  "servers": {
-    "hwp2024Convert": {
-      "type": "stdio",
-      "command": "/usr/bin/npx",
-      "args": [
-        "-y",
-        "--package=file:${userHome}/rhwp/tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz",
-        "--",
-        "hwp2024-mcp-bridge"
-      ],
-      "envFile": "${userHome}/hwp-convert-2024/.env.local"
-    }
-  }
-}
-```
-
-### Windows PowerShell
-
-```json
-{
-  "servers": {
-    "hwp2024Convert": {
-      "type": "stdio",
-      "command": "C:\\Program Files\\nodejs\\npx.cmd",
-      "args": [
-        "-y",
-        "--package=file:${userHome}/rhwp/tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz",
-        "--",
-        "hwp2024-mcp-bridge"
-      ],
-      "envFile": "${userHome}/hwp-convert-2024/.env.local"
-    }
-  }
-}
-```
-
-VS Code MCP 접근이 차단되어 있으면 user settings에 다음을 추가한다.
-
-```json
-{
-  "chat.mcp.access": "all"
-}
-```
-
-설정 후 `Developer: Reload Window` 또는 VS Code 재시작을 수행한다. `MCP: List Servers`에서
-`hwp2024Convert`와 4개 tool이 보여야 한다.
-
 ## MCP tool 사용
+
+새 변환 도구를 호출하기 직전에 [대기열 상태](#새-변환을-시작하기-전-대기열-확인)가 `idle`인지 확인한다.
 
 ### 비동기 시작
 
@@ -646,12 +654,14 @@ open·PDF smoke가 통과하기 전까지는 원본 제공자에게 양식 없�
 - `engine`: `start`와 `status` 응답에서 요청한 engine과 일치해야 한다. PR review 기준 PDF는
   [기준 PDF 인쇄 계약](#기준-pdf-인쇄-계약)에 따라 `2020` 또는 `2024`를 명시한다. 결과 파일명에는
   요청한 엔진의 연도를 붙인다.
-- `server.engine`: 서버가 반환할 수 있는 concrete backend 식별자다. 요청한 engine과의 일치 여부를
-  판정하는 값으로 사용하지 않는다. 현재 배포의 2024 backend는
-  `hancom-2024-direct-host`를 반환한다.
+- `server.engine`: 현재 배포는 요청 엔진 `2020` 또는 `2024`를 반환한다. 이전 서버에서 concrete
+  backend 식별자를 반환할 수 있으므로 요청 엔진은 `start`·`status`와 `engine_profile`로도 확인한다.
 - `server.engine_profile`, `server.hancom_version`: 서버가 제공하면 선택한 runtime의 추가 증적으로
   기록한다. 이 필드는 현재 배포 응답에 없을 수 있으므로 부재만으로 변환을 실패로 판단하지 않는다.
-- `server.backend: hwp-managed-direct-dll-host`
+- `server.backend`: 일반 직접 실행은 `hwp-managed-direct-dll-host`, 2020 대체 저장은
+  `hwp-automation-local-server`다.
+- PDF 대체 저장 결과는 `server.pdf_output_mode`와 `server.comment`를 함께 확인하고
+  [인쇄 오류 복구 예외](#인쇄-오류-시-pdf-대체-저장본-확인)에 따라 기준 PDF로 사용한다.
 - `server.worker_bits: 32`
 - client가 보고한 `size`, `sha256`과 local file이 일치
 - PDF는 `%PDF-` header와 `%%EOF`, HWPX는 ZIP signature, HWP는 CFB signature가 정상

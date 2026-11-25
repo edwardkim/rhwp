@@ -1,0 +1,884 @@
+{
+  "started": 1795312184.5916402,
+  "pid": 1704793,
+  "results": [
+    {
+      "key": "sample16-hwp2022",
+      "page": 51,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--hwp",
+        "samples/hwp3-sample16-hwp5-2022.hwp",
+        "--pdf",
+        "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+        "--key",
+        "sample16-hwp2022-p051-recovered-originals",
+        "--pages",
+        "51",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source36-optimized",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-recovered-protected-font-probe",
+        "--font-environment",
+        "/home/tsjang/rhwp/mydocs/pr/assets/pr8896/font-supply/sample16-hwp2022-font-environment.json",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/472830cfd4f5edc2d9dc9d0a8e3078839977c4bb0e317b198549ce278075bd26.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/ed503552219ae16332e595c4b2999a3462d55509a4032dfce29c5ee4d0407346.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/dbdf067e6e1d40bb8baeae72ca06289a4b8be15ded97f831262f28e8901ee54f.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/a953806c6ec22f68e9c636efe875b4d83e9306ac29391f0f105214a00e5a57d6.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/da4f226e7df89a487af199b836be7d8ea90704330d44b7dbd14dc85d960c4859.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/d33ce840dd69a599a9e2cd4e1b06129b817b2bb3679375adde95ea131c9ce679.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/fc0a42f9de898629e3c0e18ba59b7f243deba0ab2595425a760e2344195034cf.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/8db67a2414128fff3b26353393d8f49fb1851cf846947293eed79bde926cc426.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/2b97862b3496d11adce1c77ef1eca63b4bd15cb188d9a408b29c189bab024882.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/9332b9367ca26fd755c4a8c49097768b3caffb9336de499e0fb44056426aa68c.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/869158e2be56c343baf14e40c32d8497b8de3f691747d3ae38b555b606788d07.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/85a60f7efbc9926e8a634e702442edc0245e86874af3efe640f6402ae56e36f7.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/b654b6944b6c45a5581d218b8aa0e2e4125a7f348b9f8f91803831f29ce37040.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/f2122c5200148d46a3f13b703e27536748fc5abf912a9b44d8ccd0f2b7f4ce97.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/aef1b4e32ba55e42764385e1042b0bc5fbb51998571a380ce7b5e63a0a82c4b2.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/691205fe589ff8e46e7c840304316ea6d0459e54259b16eef6e49dfa66018e2a.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/464e83498110c175392228b406fef6c3c86a54464700fb03cc993f7aae7b8a06.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/d475b282463329667b2f7018812556c143e1b07bad31f07287600ef78997af27.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/4287579604bb420cf62906b885228b070f2a093b3fb09dfa617822862a0c7d3d.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/1d7e232e98ba8a11e763ea69ff7be6cf36b2fc2c2d632a6b3115c4723969f0e9.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/3f13c08d9c437a79e27f359dc8f6931aa1a82718ebede2b83a9a51c3cb0c3963.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/91839ccb18c63ab15463648c4927429c9b098bf422dcab55269a55314cdcccfd.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/7c073a836d6837771668cc5be0f1816f502e54d5397f8e05e7b2f0281647219a.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/49bfc7e5f23e6dc28a687bcd671e2eba5fa15bbae8b46aff5a64fca97931b269.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece.otf",
+        "--font-path",
+        "/opt/hnc/hoffice11/Shared/TTF/All/HBATANG.TTF",
+        "--font-path",
+        "/opt/hnc/hoffice11/Shared/TTF/Hwp/HMKMM.TTF",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts/rhwp-protected-reference/c4f768c176ce-HYHWPEQ.TTF"
+      ],
+      "exit_code": 0,
+      "seconds": 28.079947471618652,
+      "missing_declared_files": [
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/sample16-hwp2022/02-windows/batang.ttc",
+          "sha256": "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/sample16-hwp2022/02-windows/cour.ttf",
+          "sha256": "6aab1f79264ccda1e7129dba62dbe3750b10eaa27408a327dadb808724e62c84"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/sample16-hwp2022/02-windows/courbd.ttf",
+          "sha256": "e376f24c9f27eb7370b25aa366d78da731834a1aea651858801c9a14e8906943"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/sample16-hwp2022/02-windows/courbi.ttf",
+          "sha256": "ac3b362cf998eb33475655e12ab7cb2f6a35d1f2eff6f76af00ebb6f81c53ee7"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/sample16-hwp2022/02-windows/couri.ttf",
+          "sha256": "546406ddbb3e3f6b876a5e8a5dee62ac090d1448662e98d8844b22393813dd13"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/sample16-hwp2022/02-windows/gulim.ttc",
+          "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/sample16-hwp2022/02-windows/times.ttf",
+          "sha256": "fbb57cdb0079137adc0e478913ca134dfee02aa2ef443738ec5e839bf97a1f7f"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/sample16-hwp2022/02-windows/timesbd.ttf",
+          "sha256": "e94ff9111656f17bd81e9f822f1e234edcd370bcbacfdebf998b8938f525ac77"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/sample16-hwp2022/02-windows/timesbi.ttf",
+          "sha256": "8d2c8d8d25d9fc529d08558c42effa771617914a455603881e212a26e2f2ddcd"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/sample16-hwp2022/02-windows/timesi.ttf",
+          "sha256": "c2c134968be4259aaa78845d3aca5e91c4a0bd10d98e4d2e48ac3c12f3c63b89"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/legacy-equation/legacy-equation.otf",
+          "sha256": "9366877ba5d2cad2ed97963b0f127ce4c9bb72c09764783e60c6cf5c2301c375"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/arial-prior-fonts/arial.ttf",
+          "sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/arial-prior-fonts/arialbd.ttf",
+          "sha256": "3680a1bbffab914f36b27d5fd97b193de5bccfab882c41b41b5f8f99457b4820"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/arial-prior-fonts/arialbi.ttf",
+          "sha256": "77a0b63c5f73eb85923f10359e68b8fc768487ae88ad902a1ea21276954e205b"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/arial-prior-fonts/ariali.ttf",
+          "sha256": "c30c71d614e143c0d4e42aaf04d9a1f50f90b365a2654eb3f2c6598e5655af08"
+        }
+      ],
+      "explicit_files": [
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9.otf",
+          "sha256": "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/472830cfd4f5edc2d9dc9d0a8e3078839977c4bb0e317b198549ce278075bd26.otf",
+          "sha256": "472830cfd4f5edc2d9dc9d0a8e3078839977c4bb0e317b198549ce278075bd26"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/ed503552219ae16332e595c4b2999a3462d55509a4032dfce29c5ee4d0407346.otf",
+          "sha256": "ed503552219ae16332e595c4b2999a3462d55509a4032dfce29c5ee4d0407346"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659.otf",
+          "sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f.otf",
+          "sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d.otf",
+          "sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b.otf",
+          "sha256": "6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/dbdf067e6e1d40bb8baeae72ca06289a4b8be15ded97f831262f28e8901ee54f.otf",
+          "sha256": "dbdf067e6e1d40bb8baeae72ca06289a4b8be15ded97f831262f28e8901ee54f"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e.otf",
+          "sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b.otf",
+          "sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/a953806c6ec22f68e9c636efe875b4d83e9306ac29391f0f105214a00e5a57d6.otf",
+          "sha256": "a953806c6ec22f68e9c636efe875b4d83e9306ac29391f0f105214a00e5a57d6"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/da4f226e7df89a487af199b836be7d8ea90704330d44b7dbd14dc85d960c4859.otf",
+          "sha256": "da4f226e7df89a487af199b836be7d8ea90704330d44b7dbd14dc85d960c4859"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/d33ce840dd69a599a9e2cd4e1b06129b817b2bb3679375adde95ea131c9ce679.otf",
+          "sha256": "d33ce840dd69a599a9e2cd4e1b06129b817b2bb3679375adde95ea131c9ce679"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/fc0a42f9de898629e3c0e18ba59b7f243deba0ab2595425a760e2344195034cf.otf",
+          "sha256": "fc0a42f9de898629e3c0e18ba59b7f243deba0ab2595425a760e2344195034cf"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/8db67a2414128fff3b26353393d8f49fb1851cf846947293eed79bde926cc426.otf",
+          "sha256": "8db67a2414128fff3b26353393d8f49fb1851cf846947293eed79bde926cc426"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/2b97862b3496d11adce1c77ef1eca63b4bd15cb188d9a408b29c189bab024882.otf",
+          "sha256": "2b97862b3496d11adce1c77ef1eca63b4bd15cb188d9a408b29c189bab024882"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/9332b9367ca26fd755c4a8c49097768b3caffb9336de499e0fb44056426aa68c.otf",
+          "sha256": "9332b9367ca26fd755c4a8c49097768b3caffb9336de499e0fb44056426aa68c"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/869158e2be56c343baf14e40c32d8497b8de3f691747d3ae38b555b606788d07.otf",
+          "sha256": "869158e2be56c343baf14e40c32d8497b8de3f691747d3ae38b555b606788d07"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68.otf",
+          "sha256": "da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/85a60f7efbc9926e8a634e702442edc0245e86874af3efe640f6402ae56e36f7.otf",
+          "sha256": "85a60f7efbc9926e8a634e702442edc0245e86874af3efe640f6402ae56e36f7"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/b654b6944b6c45a5581d218b8aa0e2e4125a7f348b9f8f91803831f29ce37040.otf",
+          "sha256": "b654b6944b6c45a5581d218b8aa0e2e4125a7f348b9f8f91803831f29ce37040"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287.otf",
+          "sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0.otf",
+          "sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1.otf",
+          "sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba.otf",
+          "sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9.otf",
+          "sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52.otf",
+          "sha256": "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385.otf",
+          "sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9.otf",
+          "sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/f2122c5200148d46a3f13b703e27536748fc5abf912a9b44d8ccd0f2b7f4ce97.otf",
+          "sha256": "f2122c5200148d46a3f13b703e27536748fc5abf912a9b44d8ccd0f2b7f4ce97"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d.otf",
+          "sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63.otf",
+          "sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c.otf",
+          "sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a.otf",
+          "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480.otf",
+          "sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834.otf",
+          "sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497.otf",
+          "sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/aef1b4e32ba55e42764385e1042b0bc5fbb51998571a380ce7b5e63a0a82c4b2.otf",
+          "sha256": "aef1b4e32ba55e42764385e1042b0bc5fbb51998571a380ce7b5e63a0a82c4b2"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/691205fe589ff8e46e7c840304316ea6d0459e54259b16eef6e49dfa66018e2a.otf",
+          "sha256": "691205fe589ff8e46e7c840304316ea6d0459e54259b16eef6e49dfa66018e2a"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/464e83498110c175392228b406fef6c3c86a54464700fb03cc993f7aae7b8a06.otf",
+          "sha256": "464e83498110c175392228b406fef6c3c86a54464700fb03cc993f7aae7b8a06"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/d475b282463329667b2f7018812556c143e1b07bad31f07287600ef78997af27.otf",
+          "sha256": "d475b282463329667b2f7018812556c143e1b07bad31f07287600ef78997af27"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/4287579604bb420cf62906b885228b070f2a093b3fb09dfa617822862a0c7d3d.otf",
+          "sha256": "4287579604bb420cf62906b885228b070f2a093b3fb09dfa617822862a0c7d3d"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/1d7e232e98ba8a11e763ea69ff7be6cf36b2fc2c2d632a6b3115c4723969f0e9.otf",
+          "sha256": "1d7e232e98ba8a11e763ea69ff7be6cf36b2fc2c2d632a6b3115c4723969f0e9"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/3f13c08d9c437a79e27f359dc8f6931aa1a82718ebede2b83a9a51c3cb0c3963.otf",
+          "sha256": "3f13c08d9c437a79e27f359dc8f6931aa1a82718ebede2b83a9a51c3cb0c3963"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/91839ccb18c63ab15463648c4927429c9b098bf422dcab55269a55314cdcccfd.otf",
+          "sha256": "91839ccb18c63ab15463648c4927429c9b098bf422dcab55269a55314cdcccfd"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/7c073a836d6837771668cc5be0f1816f502e54d5397f8e05e7b2f0281647219a.otf",
+          "sha256": "7c073a836d6837771668cc5be0f1816f502e54d5397f8e05e7b2f0281647219a"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/49bfc7e5f23e6dc28a687bcd671e2eba5fa15bbae8b46aff5a64fca97931b269.otf",
+          "sha256": "49bfc7e5f23e6dc28a687bcd671e2eba5fa15bbae8b46aff5a64fca97931b269"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3.otf",
+          "sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3.otf",
+          "sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27.otf",
+          "sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631.otf",
+          "sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece.otf",
+          "sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece"
+        },
+        {
+          "path": "/opt/hnc/hoffice11/Shared/TTF/All/HBATANG.TTF",
+          "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+        },
+        {
+          "path": "/opt/hnc/hoffice11/Shared/TTF/Hwp/HMKMM.TTF",
+          "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+        },
+        {
+          "path": "/home/tsjang/.local/share/fonts/rhwp-protected-reference/c4f768c176ce-HYHWPEQ.TTF",
+          "sha256": "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
+        }
+      ],
+      "scope": "Focused cause probe using exact declared archive font bytes; not complete canonical condition reproduction"
+    },
+    {
+      "key": "nested",
+      "page": 16,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--hwp",
+        "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+        "--pdf",
+        "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+        "--key",
+        "nested-p016-recovered-originals",
+        "--pages",
+        "16",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source36-optimized",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-recovered-protected-font-probe",
+        "--font-environment",
+        "/home/tsjang/rhwp/mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/nested-font-environment.json",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/7853ab58b7a8dfab3159e28b1ad8ab157fe534c2c5bcfdd2246a8a547bdac75c.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/4d1cee6065faf8306d01715349b6878982e7e4ecc809956be79a30d95185e8dd.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9.otf"
+      ],
+      "exit_code": 0,
+      "seconds": 30.92675805091858,
+      "missing_declared_files": [],
+      "explicit_files": [
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52.otf",
+          "sha256": "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385.otf",
+          "sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f.otf",
+          "sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/7853ab58b7a8dfab3159e28b1ad8ab157fe534c2c5bcfdd2246a8a547bdac75c.otf",
+          "sha256": "7853ab58b7a8dfab3159e28b1ad8ab157fe534c2c5bcfdd2246a8a547bdac75c"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/4d1cee6065faf8306d01715349b6878982e7e4ecc809956be79a30d95185e8dd.otf",
+          "sha256": "4d1cee6065faf8306d01715349b6878982e7e4ecc809956be79a30d95185e8dd"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a.otf",
+          "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63.otf",
+          "sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9.otf",
+          "sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9"
+        }
+      ],
+      "scope": "Focused cause probe using exact declared archive font bytes; not complete canonical condition reproduction"
+    },
+    {
+      "key": "issue8040-insert",
+      "page": 1,
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--hwp",
+        "samples/pr8040/exam-social-insert.hwp",
+        "--pdf",
+        "pdf/pr8040/exam-social-insert-2020.pdf",
+        "--key",
+        "issue8040-insert-p001-recovered-originals",
+        "--pages",
+        "1",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source36-optimized",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-recovered-protected-font-probe",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/92f7b9f4aab6a183da9adedc051eeadb329db563bfb5a3187e4cc861365e633c.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/34e58d7685669addf992dd969f14bfea6eb3f7b7aa2b3ff17bba1275d353768b.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/d292d1972ff9de8641c52e3bff41fa0d5ba012c3fd0a1b6514f49e4a5f29fced.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/00eae1decfbbee1f2344ff95ec396eacd7581a70d65849a3305d3e2df5137b13.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/fc341efba989722650bbba15690cbf91db2eb34fdc0eaaad6c8f04ea4a26154f.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/131637753baf43730900998e21694da10d6b12ca08d08634bc1c00d39f30fd92.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/2d7451e56c62084fa3debd781825890e18c12fef78409f656057d687a3abd684.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/aad05d3cb2ebc9c2e5bc7fb731745179ec51d75fb9b54fb61b2950bf19a305c4.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/a73255db51e05eb4a170321f1f6b0288a9dcf7d0e5b86a1e553c16a5635c263b.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/e5a90d4446f551d3ae2f412990fe8011395a2d75e5af3ea7f2ed51dde5be366e.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/a2b6e400e1e8beaea1661e55bf5977ee823e2a4ae67033e758574f9238611860.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/5c9e1ea0fc307c155ae7910a9d4acdf618d72ae78489aeac28902c680e426cce.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/96ee02cb33abb83c7985bed4ff49e7b8c3757299865e06f13c61c750a1f98d1c.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/becde524c507ba1e555360eae97f99e1770ac4403a55eda2b8b64ff313d602c9.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/674bc8b40889eefecddc7833cfd6de1367bc7ed15656814b3cbf6a26fea211cf.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/ae4361b1549046dfc09b9415a9a8cdb52a076e96c8415b9eefd046d82465e1be.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/653e3453afb3a8a44144b7b9dc5e149f2ae7924c9f908ee04f171749935768cc.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/2845c370f3eb07eaea5e76ffef82fd104108c406d9dd2c1803aa5c1036612cf7.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/1d7e232e98ba8a11e763ea69ff7be6cf36b2fc2c2d632a6b3115c4723969f0e9.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/3f13c08d9c437a79e27f359dc8f6931aa1a82718ebede2b83a9a51c3cb0c3963.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/91839ccb18c63ab15463648c4927429c9b098bf422dcab55269a55314cdcccfd.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/48158aad4e733ed85968c3bb93576134a11f2041568efb09ff45a076d6349ea1.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/51346f5f5cf82c7de4b8f0bd2ba6ff488cada811d98f110bc47f535ddbee2867.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/4d1cee6065faf8306d01715349b6878982e7e4ecc809956be79a30d95185e8dd.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631.otf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece.otf",
+        "--font-path",
+        "/opt/hnc/hoffice11/Shared/TTF/All/HBATANG.TTF"
+      ],
+      "exit_code": 0,
+      "seconds": 23.474279165267944,
+      "missing_declared_files": [
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/issue8040-insert/02-windows/cour.ttf",
+          "sha256": "6aab1f79264ccda1e7129dba62dbe3750b10eaa27408a327dadb808724e62c84"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/issue8040-insert/02-windows/courbd.ttf",
+          "sha256": "e376f24c9f27eb7370b25aa366d78da731834a1aea651858801c9a14e8906943"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/issue8040-insert/02-windows/courbi.ttf",
+          "sha256": "ac3b362cf998eb33475655e12ab7cb2f6a35d1f2eff6f76af00ebb6f81c53ee7"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/issue8040-insert/02-windows/couri.ttf",
+          "sha256": "546406ddbb3e3f6b876a5e8a5dee62ac090d1448662e98d8844b22393813dd13"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/issue8040-insert/02-windows/gulim.ttc",
+          "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/issue8040-insert/02-windows/times.ttf",
+          "sha256": "fbb57cdb0079137adc0e478913ca134dfee02aa2ef443738ec5e839bf97a1f7f"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/issue8040-insert/02-windows/timesbd.ttf",
+          "sha256": "e94ff9111656f17bd81e9f822f1e234edcd370bcbacfdebf998b8938f525ac77"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/issue8040-insert/02-windows/timesbi.ttf",
+          "sha256": "8d2c8d8d25d9fc529d08558c42effa771617914a455603881e212a26e2f2ddcd"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/issue8040-insert/02-windows/timesi.ttf",
+          "sha256": "c2c134968be4259aaa78845d3aca5e91c4a0bd10d98e4d2e48ac3c12f3c63b89"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/issue8040-insert/03-ttfs/hamchob-r.ttf",
+          "sha256": "ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/arial-prior-fonts/arial.ttf",
+          "sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/arial-prior-fonts/arialbd.ttf",
+          "sha256": "3680a1bbffab914f36b27d5fd97b193de5bccfab882c41b41b5f8f99457b4820"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/arial-prior-fonts/arialbi.ttf",
+          "sha256": "77a0b63c5f73eb85923f10359e68b8fc768487ae88ad902a1ea21276954e205b"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/arial-prior-fonts/ariali.ttf",
+          "sha256": "c30c71d614e143c0d4e42aaf04d9a1f50f90b365a2654eb3f2c6598e5655af08"
+        }
+      ],
+      "explicit_files": [
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/92f7b9f4aab6a183da9adedc051eeadb329db563bfb5a3187e4cc861365e633c.otf",
+          "sha256": "92f7b9f4aab6a183da9adedc051eeadb329db563bfb5a3187e4cc861365e633c"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659.otf",
+          "sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f.otf",
+          "sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d.otf",
+          "sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e.otf",
+          "sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b.otf",
+          "sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/34e58d7685669addf992dd969f14bfea6eb3f7b7aa2b3ff17bba1275d353768b.otf",
+          "sha256": "34e58d7685669addf992dd969f14bfea6eb3f7b7aa2b3ff17bba1275d353768b"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287.otf",
+          "sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0.otf",
+          "sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1.otf",
+          "sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba.otf",
+          "sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9.otf",
+          "sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63.otf",
+          "sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c.otf",
+          "sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a.otf",
+          "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480.otf",
+          "sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834.otf",
+          "sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497.otf",
+          "sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/d292d1972ff9de8641c52e3bff41fa0d5ba012c3fd0a1b6514f49e4a5f29fced.otf",
+          "sha256": "d292d1972ff9de8641c52e3bff41fa0d5ba012c3fd0a1b6514f49e4a5f29fced"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/00eae1decfbbee1f2344ff95ec396eacd7581a70d65849a3305d3e2df5137b13.otf",
+          "sha256": "00eae1decfbbee1f2344ff95ec396eacd7581a70d65849a3305d3e2df5137b13"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/fc341efba989722650bbba15690cbf91db2eb34fdc0eaaad6c8f04ea4a26154f.otf",
+          "sha256": "fc341efba989722650bbba15690cbf91db2eb34fdc0eaaad6c8f04ea4a26154f"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/131637753baf43730900998e21694da10d6b12ca08d08634bc1c00d39f30fd92.otf",
+          "sha256": "131637753baf43730900998e21694da10d6b12ca08d08634bc1c00d39f30fd92"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/2d7451e56c62084fa3debd781825890e18c12fef78409f656057d687a3abd684.otf",
+          "sha256": "2d7451e56c62084fa3debd781825890e18c12fef78409f656057d687a3abd684"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/aad05d3cb2ebc9c2e5bc7fb731745179ec51d75fb9b54fb61b2950bf19a305c4.otf",
+          "sha256": "aad05d3cb2ebc9c2e5bc7fb731745179ec51d75fb9b54fb61b2950bf19a305c4"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/a73255db51e05eb4a170321f1f6b0288a9dcf7d0e5b86a1e553c16a5635c263b.otf",
+          "sha256": "a73255db51e05eb4a170321f1f6b0288a9dcf7d0e5b86a1e553c16a5635c263b"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/e5a90d4446f551d3ae2f412990fe8011395a2d75e5af3ea7f2ed51dde5be366e.otf",
+          "sha256": "e5a90d4446f551d3ae2f412990fe8011395a2d75e5af3ea7f2ed51dde5be366e"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/a2b6e400e1e8beaea1661e55bf5977ee823e2a4ae67033e758574f9238611860.otf",
+          "sha256": "a2b6e400e1e8beaea1661e55bf5977ee823e2a4ae67033e758574f9238611860"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/5c9e1ea0fc307c155ae7910a9d4acdf618d72ae78489aeac28902c680e426cce.otf",
+          "sha256": "5c9e1ea0fc307c155ae7910a9d4acdf618d72ae78489aeac28902c680e426cce"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/96ee02cb33abb83c7985bed4ff49e7b8c3757299865e06f13c61c750a1f98d1c.otf",
+          "sha256": "96ee02cb33abb83c7985bed4ff49e7b8c3757299865e06f13c61c750a1f98d1c"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/becde524c507ba1e555360eae97f99e1770ac4403a55eda2b8b64ff313d602c9.otf",
+          "sha256": "becde524c507ba1e555360eae97f99e1770ac4403a55eda2b8b64ff313d602c9"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/674bc8b40889eefecddc7833cfd6de1367bc7ed15656814b3cbf6a26fea211cf.otf",
+          "sha256": "674bc8b40889eefecddc7833cfd6de1367bc7ed15656814b3cbf6a26fea211cf"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/ae4361b1549046dfc09b9415a9a8cdb52a076e96c8415b9eefd046d82465e1be.otf",
+          "sha256": "ae4361b1549046dfc09b9415a9a8cdb52a076e96c8415b9eefd046d82465e1be"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/653e3453afb3a8a44144b7b9dc5e149f2ae7924c9f908ee04f171749935768cc.otf",
+          "sha256": "653e3453afb3a8a44144b7b9dc5e149f2ae7924c9f908ee04f171749935768cc"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/2845c370f3eb07eaea5e76ffef82fd104108c406d9dd2c1803aa5c1036612cf7.otf",
+          "sha256": "2845c370f3eb07eaea5e76ffef82fd104108c406d9dd2c1803aa5c1036612cf7"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/1d7e232e98ba8a11e763ea69ff7be6cf36b2fc2c2d632a6b3115c4723969f0e9.otf",
+          "sha256": "1d7e232e98ba8a11e763ea69ff7be6cf36b2fc2c2d632a6b3115c4723969f0e9"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/3f13c08d9c437a79e27f359dc8f6931aa1a82718ebede2b83a9a51c3cb0c3963.otf",
+          "sha256": "3f13c08d9c437a79e27f359dc8f6931aa1a82718ebede2b83a9a51c3cb0c3963"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/91839ccb18c63ab15463648c4927429c9b098bf422dcab55269a55314cdcccfd.otf",
+          "sha256": "91839ccb18c63ab15463648c4927429c9b098bf422dcab55269a55314cdcccfd"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/48158aad4e733ed85968c3bb93576134a11f2041568efb09ff45a076d6349ea1.otf",
+          "sha256": "48158aad4e733ed85968c3bb93576134a11f2041568efb09ff45a076d6349ea1"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/51346f5f5cf82c7de4b8f0bd2ba6ff488cada811d98f110bc47f535ddbee2867.otf",
+          "sha256": "51346f5f5cf82c7de4b8f0bd2ba6ff488cada811d98f110bc47f535ddbee2867"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/4d1cee6065faf8306d01715349b6878982e7e4ecc809956be79a30d95185e8dd.otf",
+          "sha256": "4d1cee6065faf8306d01715349b6878982e7e4ecc809956be79a30d95185e8dd"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3.otf",
+          "sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3.otf",
+          "sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27.otf",
+          "sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631.otf",
+          "sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece.otf",
+          "sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece"
+        },
+        {
+          "path": "/opt/hnc/hoffice11/Shared/TTF/All/HBATANG.TTF",
+          "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+        }
+      ],
+      "scope": "Focused cause probe using exact declared archive font bytes; not complete canonical condition reproduction"
+    }
+  ],
+  "running": null,
+  "complete": true,
+  "ended": 1795312270.956704
+}

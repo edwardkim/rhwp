@@ -1,30 +1,18 @@
-"""독립 구형 수식 문자 표본에서 로컬 CFF 글꼴을 준비한다.
-
-대상 문서의 정답 PDF는 글꼴 원본으로 사용하지 않는다. 생성한 전체 문자 표본을
-한컴에서 Print 출력한 PDF만 받는다. 사설 글꼴은 로컬에 공급하며 배포하지 않는다.
-"""
+"""한컴 Print의 구형 수식 기호 비교에 사용할 독립 HWPX 표본을 작성한다."""
 from pathlib import Path
 import argparse
 import copy
 import hashlib
 import json
-import re
 import string
 import zipfile
 import xml.etree.ElementTree as ET
 
-import pymupdf
-from fontTools.fontBuilder import FontBuilder
-from fontTools.pens.t2CharStringPen import T2CharStringPen
-
-from prepare_hft_hangul_font import (
-    font_encoding, font_reference, mapped_characters, restore_outline,
-    source_horizontal_metrics,
-)
 
 HP = 'http://www.hancom.co.kr/hwpml/2011/paragraph'
 ROLE = 'independent-legacy-equation-alphabet-v1'
 ARITHMETIC_ROLE = 'independent-legacy-equation-alphabet-with-arithmetic-v2'
+# 표본 manifest에 기록할 렌더러의 기존 요청 이름.
 FAMILY = 'RHWP Hancom Legacy Equation'
 ARITHMETIC_EXTRA = [('times', '×'), ('div', '÷')]
 EXTRA = [
@@ -100,71 +88,6 @@ def create(template, output, *, include_arithmetic=False):
         json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 
 
-def recover(pdf, manifest_path, output):
-    manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
-    include_arithmetic = manifest.get('role') == ARITHMETIC_ROLE
-    expected_probes = probes(include_arithmetic)
-    if (manifest.get('role') not in (ROLE, ARITHMETIC_ROLE)
-            or manifest.get('probes') != expected_probes
-            or digest(manifest['input']) != manifest['input_sha256']):
-        raise ValueError('동일한 독립 문자 표본과 입력 SHA-256이 필요합니다')
-    document = pymupdf.open(pdf)
-    observed = ''.join(c for page in document for c in page.get_text() if not c.isspace())
-    if observed != ''.join(item['expected'] for item in expected_probes):
-        raise ValueError('대상 PDF는 사용할 수 없습니다. 전체 독립 문자 표본을 Print 하세요')
-    glyphs = {}
-    fonts = {font[0] for page in document for font in page.get_fonts() if font[2] == 'Type3'}
-    for reference in sorted(fonts):
-        body = document.xref_object(reference)
-        matrix = list(map(float, re.search(r'/FontMatrix\s*\[([^\]]+)\]', body)[1].split()))
-        if matrix != [0.001, 0, 0, 0.001, 0, 0]:
-            raise ValueError('원본 em 행렬이 아닌 글리프는 받지 않습니다')
-        encoding = font_encoding(document, font_reference(body, 'Encoding'))
-        procedures = {name: int(value) for name, value in re.findall(
-            r'/([^\s/]+)\s+(\d+)\s+0\s+R',
-            document.xref_object(font_reference(body, 'CharProcs')))}
-        for code, scalar in mapped_characters(document, font_reference(body, 'ToUnicode')):
-            program = document.xref_stream(procedures[encoding[code]]).decode('ascii')
-            if scalar in glyphs and glyphs[scalar] != program:
-                raise ValueError(f'서로 다른 글리프 U+{scalar:04X}')
-            glyphs[scalar] = program
-    required = set(map(ord, string.ascii_letters + string.digits + '+-=:<>,./()[]'))
-    if include_arithmetic:
-        required.update(map(ord, '×÷'))
-    if set(glyphs) != required:
-        raise ValueError(f'구형의 독립 Type3 문자 {len(required)}개 전체가 필요합니다')
-    builder = FontBuilder(1000, isTTF=False)
-    builder.setupGlyphOrder(['.notdef'] + [f'uni{c:04X}' for c in sorted(glyphs)])
-    builder.setupCharacterMap({c: f'uni{c:04X}' for c in glyphs})
-    strings = {'.notdef': T2CharStringPen(1000, None).getCharString()}
-    widths = {'.notdef': (1000, 0)}
-    for scalar, program in sorted(glyphs.items()):
-        width, charstring = restore_outline(program)
-        strings[f'uni{scalar:04X}'] = charstring
-        widths[f'uni{scalar:04X}'] = (width, 0)
-    ps_name = 'RHWP-Hancom-Legacy-Equation-Local'
-    builder.setupHorizontalMetrics(widths)
-    builder.setupHorizontalHeader(ascent=1000, descent=-200)
-    builder.setupNameTable({'familyName': FAMILY, 'styleName': 'Regular',
-                           'uniqueFontIdentifier': ps_name + '-' + digest(pdf)[:16],
-                           'fullName': FAMILY, 'psName': ps_name, 'version': 'Version 1.000'})
-    builder.setupOS2(sTypoAscender=1000, sTypoDescender=-200, usWinAscent=1000, usWinDescent=200)
-    builder.setupPost()
-    builder.setupCFF(ps_name, {'FullName': FAMILY, 'FamilyName': FAMILY, 'Weight': 'Regular'}, strings, {})
-    builder.setupHorizontalMetrics({name: source_horizontal_metrics(widths[name][0], value)
-                                    for name, value in strings.items()})
-    output.parent.mkdir(parents=True, exist_ok=True)
-    builder.save(output)
-    evidence = {'role': manifest['role'], 'input_sha256': manifest['input_sha256'],
-                'pdf': str(pdf), 'pdf_sha256': digest(pdf), 'font': str(output),
-                'font_sha256': digest(output), 'family': FAMILY,
-                'glyph_transform': 'identity; no target PDF, shift, scale or contour correction',
-                'source_glyph_sha256': {f'{c:04X}': hashlib.sha256(value.encode()).hexdigest()
-                                        for c, value in sorted(glyphs.items())}}
-    output.with_suffix('.provenance.json').write_text(
-        json.dumps(evidence, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest='command', required=True)
@@ -172,17 +95,9 @@ def main():
     create_parser.add_argument('--template', type=Path, required=True)
     create_parser.add_argument('--output', type=Path, required=True)
     create_parser.add_argument('--include-arithmetic-operators', action='store_true',
-                               help='구형 ×·÷도 포함한 86문자/Type3 77자 독립 표본')
-    recover_parser = commands.add_parser('recover')
-    recover_parser.add_argument('--pdf', type=Path, required=True)
-    recover_parser.add_argument('--manifest', type=Path, required=True)
-    recover_parser.add_argument('--output', type=Path, required=True)
+                               help='표본에 구형 ×·÷ 포함')
     args = parser.parse_args()
-    if args.command == 'create':
-        create(args.template, args.output,
-               include_arithmetic=args.include_arithmetic_operators)
-    else:
-        recover(args.pdf, args.manifest, args.output)
+    create(args.template, args.output, include_arithmetic=args.include_arithmetic_operators)
 
 
 if __name__ == '__main__':

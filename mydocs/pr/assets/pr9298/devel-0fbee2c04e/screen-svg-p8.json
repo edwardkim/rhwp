@@ -1,0 +1,26 @@
+{
+  "base": {
+    "encoded_pixels": [
+      1321,
+      2137
+    ],
+    "display_pixels": [
+      2137,
+      1321
+    ],
+    "orientation": 6,
+    "payload_sha256": "f086a28321e8902efe93dc2d509a8f8a521b89fa8b1b933f7998dabb754f0649"
+  },
+  "candidate": {
+    "encoded_pixels": [
+      1321,
+      2137
+    ],
+    "display_pixels": [
+      1321,
+      2137
+    ],
+    "orientation": 1,
+    "payload_sha256": "2ac98731d12e44a860a7ed3b79b683b5178aa09b7863bdad1c198c8beb3c2ce1"
+  }
+}

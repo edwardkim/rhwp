@@ -160,74 +160,25 @@ fn clearing_one_family_preserves_the_other_and_allows_reregistration() {
     );
 }
 
-/// 실제 공개 프로그램의 H 윤곽에 합성 cmap 주소만 부여한다.
-/// 원본 파일은 바꾸지 않으며 사설 글꼴·사설 glyph 비트셋을 요구하지 않는다.
-fn visible_pua_program() -> Vec<u8> {
-    let mut bytes = source_font();
-    let glyph = ttf_parser::Face::parse(&bytes, 0)
-        .unwrap()
-        .glyph_index('H')
-        .unwrap()
-        .0;
-    let be16 = |bytes: &[u8], at| u16::from_be_bytes(bytes[at..at + 2].try_into().unwrap());
-    let be32 =
-        |bytes: &[u8], at| u32::from_be_bytes(bytes[at..at + 4].try_into().unwrap()) as usize;
-    let cmap = (0..usize::from(be16(&bytes, 4)))
-        .map(|index| 12 + index * 16)
-        .find(|&at| &bytes[at..at + 4] == b"cmap")
-        .map(|at| be32(&bytes, at + 8))
-        .unwrap();
-    let words = [
-        4,
-        32,
-        0,
-        4,
-        4,
-        1,
-        0,
-        0xf53a,
-        0xffff,
-        0,
-        0xf53a,
-        0xffff,
-        glyph.wrapping_sub(0xf53a),
-        1,
-        0,
-        0,
-    ];
-    let mut changed = 0;
-    for index in 0..usize::from(be16(&bytes, cmap + 2)) {
-        let at = cmap + be32(&bytes, cmap + 4 + index * 8 + 4);
-        if be16(&bytes, at) != 4 {
-            continue;
-        }
-        for (index, word) in words.iter().enumerate() {
-            bytes[at + index * 2..at + index * 2 + 2].copy_from_slice(&word.to_be_bytes());
-        }
-        changed += 1;
-    }
-    assert!(changed > 0);
-    let parsed = ttf_parser::Face::parse(&bytes, 0).unwrap();
-    assert_eq!(parsed.glyph_index('\u{f53a}').unwrap().0, glyph);
-    assert!(parsed
-        .glyph_bounding_box(ttf_parser::GlyphId(glyph))
-        .is_some());
-    bytes
-}
-
 #[test]
 fn oversized_optional_face_cannot_reuse_visible_pua_after_later_registration() {
     let mut core = document("\u{1112}\u{119e}\u{11ab}", false);
     let source = core.export_hwp_native().unwrap();
-    let program = visible_pua_program();
-    core.register_text_font_glyph_coverage_native(FAMILY, &program, 0)
+    // 배포 원본의 BMP 전용 영역 표시를 사용해 적재 실패 전후의 선택만 검사한다.
+    let program = include_bytes!("../fixtures/fonts/last-resort/LastResortHE-Regular.ttf");
+    let face = ttf_parser::Face::parse(program, 0).unwrap();
+    let glyph = face
+        .glyph_index('\u{f53a}')
+        .expect("배포 원본의 전용 영역 글리프");
+    assert!(face.glyph_bounding_box(glyph).is_some());
+    core.register_text_font_glyph_coverage_native(FAMILY, program, 0)
         .unwrap();
     assert!(core.render_page_svg_native(0).unwrap().contains('\u{f53a}'));
 
     core.register_text_font_glyph_coverage_native(FAMILY, &vec![0; 32 * 1024 * 1024 + 1], 0)
         .unwrap();
     assert!(!core.render_page_svg_native(0).unwrap().contains('\u{f53a}'));
-    core.register_text_font_glyph_coverage_native(FAMILY, &program, 0)
+    core.register_text_font_glyph_coverage_native(FAMILY, program, 0)
         .unwrap();
     assert!(!core.render_page_svg_native(0).unwrap().contains('\u{f53a}'));
     assert_eq!(core.export_hwp_native().unwrap(), source);

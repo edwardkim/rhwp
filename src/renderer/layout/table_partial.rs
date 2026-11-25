@@ -3803,19 +3803,27 @@ impl LayoutEngine {
                                         // 저장 글줄은 공백과 개체를 함께 소유한다.
                                         // 인라인 표와 같은 순서의 펜 위치를 사용하며, 앞 텍스트와
                                         // 분리해 그림만 독립적으로 가운데 정렬하지 않는다.
-                                        let stored_picture_left = self
-                                            .stored_inline_control_pen(
-                                                para,
-                                                &composed,
+                                        let stored_picture_left = tree
+                                            .take_cell_picture_left(
+                                                &cell_node,
+                                                section_index,
+                                                cp_idx,
                                                 ctrl_idx,
-                                                styles,
-                                                &inner_area,
                                             )
-                                            .map(|pen| {
-                                                pen + hwpunit_to_px(
-                                                    pic.common.margin.left as i32,
-                                                    self.dpi,
+                                            .or_else(|| {
+                                                self.stored_inline_control_pen(
+                                                    para,
+                                                    &composed,
+                                                    ctrl_idx,
+                                                    styles,
+                                                    &inner_area,
                                                 )
+                                                .map(|pen| {
+                                                    pen + hwpunit_to_px(
+                                                        pic.common.margin.left as i32,
+                                                        self.dpi,
+                                                    )
+                                                })
                                             });
                                         if all_runs_empty && para.line_segs.len() > 1 {
                                             let target_line =
@@ -7524,7 +7532,29 @@ impl LayoutEngine {
                 col_area.y + col_area.height,
                 self.dpi,
             );
-            let pinned_height = (box_bottom - y_start).max(0.0);
+            let source_content_height = table.cells.first().and_then(|cell| {
+                let padding = cell.effective_padding(&table.padding);
+                (is_continuation
+                    && start_cut.first().is_some_and(|&cut| cut > 0)
+                    && self.profile.get().hwp5_stored_pagination_layout()
+                    && !self.profile.get().session_edited()
+                    && !cell.dirty_flag
+                    && cell.vertical_align == crate::model::table::VerticalAlign::Top
+                    && i64::from(cell.height) <= i64::from(padding.top) + i64::from(padding.bottom)
+                    && cell.paragraphs.iter().all(|p| {
+                        p.controls.is_empty()
+                            && !p.stored_text_partition_is_dirty()
+                            && !p.cell_format_vpos_dirty
+                            && !crate::renderer::para_has_no_stored_line_segs(p)
+                    }))
+                // 원본 높이에 패딩만 있는 칸은 후속 글줄의 끝이 조각을 닫는다.
+                // 칸 전체의 아래 패딩은 맨 마지막 조각에서 소비한다.
+                .then(|| row_heights[0] - hwpunit_to_px(i32::from(padding.bottom), self.dpi))
+                .filter(|&height| height > 0.0)
+            });
+            let pinned_height = (box_bottom - y_start)
+                .max(0.0)
+                .min(source_content_height.unwrap_or(f64::INFINITY));
             // 호환성 투영은 떠 있는 그림의 세로 묶음을 독립적인 인라인 개체로 바꿀 수 있다.
             // 그 합성 줄 지오메트리는 저장된 전쪽 프레임이 아니다(issue2004 5쪽: PDF 끝은 1023px이 아닌 약 931px).
             // 1×1 표 모양만으로 프레임 소유를 추정하지 않고 같은 컷의 줄 출처를 소비한다.
@@ -8002,11 +8032,30 @@ impl LayoutEngine {
                     .then_some(frame)
             })
             .flatten();
+        let owns_repeat_grid_terminal_band =
+            !is_continuation
+                && !is_block_split
+                && !end_cut.is_empty()
+                && start_cut.is_empty()
+                && start_row == 0
+                && end_row == row_count
+                && end_row_height_override.is_some_and(|height| {
+                    paragraphs.get(para_index).and_then(|host| {
+                    crate::renderer::float_placement::native_repeat_grid_terminal_row_height_hu(
+                        self.profile.get().hwp5_stored_pagination_layout()
+                            && !self.profile.get().session_edited(),
+                        host,
+                        table,
+                        paragraphs.get(para_index + 1),
+                    )
+                }).is_some_and(|declared| height < hwpunit_to_px(declared, self.dpi))
+                });
         let owns_accepted_row_frame = end_row_height_override.is_some()
             && end_row.checked_sub(1).is_some_and(|row| {
                 self.native_stored_row_has_text_frame_boundary(table, row, styles)
                     // 같은 첫 물리 상자를 다시 접지 않는다. 셀 정렬 소유와는 별도다.
                     || accepted_nested_opening_frame.is_some()
+                    || owns_repeat_grid_terminal_band
                     // 독립 최소를 가진 칸이 수용한 빈 띠만 보존한다.
                     // scan과 같은 소유 판정으로 일반 내용 행의 여백을 늘리지 않는다.
                     || ((self.row_has_continuing_reflow_minimum(table, row, styles)

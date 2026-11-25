@@ -1,0 +1,169 @@
+{
+  "key": "nested-row-split-nested-30-hwpx",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3
+  ],
+  "missing_pages": [],
+  "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-features-native/candidate/nested-row-split-nested-30-hwpx/silhouette.tsv",
+  "tsv_sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+  "dpi": 96,
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-features-native/candidate/nested-row-split-nested-30-hwpx/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "c7cab3ff4761527f3a845e6d42d94d9aa01746393061c3fa0798079844d16f0f",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-features-native/candidate/nested-row-split-nested-30-hwpx/pdf_png/pdf-001.png",
+      "pdf_sha256": "78cb65231503cebad3c8146f0eaf18bd16a654d4f1ad97dc7371a80357f87c55"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-features-native/candidate/nested-row-split-nested-30-hwpx/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "c1ab44871bc8951ddf05e8e8f0f3f46a3b613c6faa984c6de456c3bb96bb0b9c",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-features-native/candidate/nested-row-split-nested-30-hwpx/pdf_png/pdf-002.png",
+      "pdf_sha256": "90d876aef92f5c97a862d96dffd01c0e5deea1f0622a9ce7c0ca78a95906c86c"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-features-native/candidate/nested-row-split-nested-30-hwpx/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "eb6bbc185685a855e6da7b570e31476f83959187f0fe854642c43a7096201ed7",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-features-native/candidate/nested-row-split-nested-30-hwpx/pdf_png/pdf-003.png",
+      "pdf_sha256": "abd60cc4c066ed7e3f3c2574a3cb74d0ae99d2c69a91307bbfc82c2b5ba3318c"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 194195,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 151780,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.06894,
+      "silhouette_raw_unmatched_pixels": 2191,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 113461,
+      "tolerant_content_match_percent": 98.06894
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+    "pillow_version": "12.3.0",
+    "pillow_core_sha256": "94310f4a073e9773a067df88513804649f50a974f78bd85a52c52d21170783f2",
+    "zlib_version": "1.3"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 3,
+      "pdf": 3
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "mydocs/pr/assets/semanticist21-20261121/nested-row-split/saved/nested-30.hwpx",
+      "sha256": "102a9ca342705fb63522d31553da731d4553beed143fcf3c5ca0866bf314395e"
+    },
+    "pdf": {
+      "path": "pdf/pr9273-nested-row-split/nested-30-hwpx-2020.pdf",
+      "sha256": "a6de9354e4e18214658ca14450d4194f531919d98824441ae6572f66fe0b4658"
+    },
+    "git_head": "4230d331b3e715761224fd515b1fed7ce28ba318",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "c3a60c2d34dea583ac6516417a55175b299d17ec8edf480abf4509cd82b252cb"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+      "pillow_version": "12.3.0",
+      "pillow_core_sha256": "94310f4a073e9773a067df88513804649f50a974f78bd85a52c52d21170783f2",
+      "zlib_version": "1.3"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source33-optimized",
+      "path": "output/pr-review/issue7754-nine/bin/rhwp-source33-optimized",
+      "sha256": "14d4ae261ee487dfa3603e13b928f16d38326462b31d828d56b0d7f4670bb6bb"
+    },
+    "native_webfont_fallback": {
+      "registry_sha256": "35f3e1ac64348a6497b50cc98c7235a8adcb4c99bfa78fec6302bde6f525a299",
+      "mappings": {},
+      "document_glyph_fallbacks": [],
+      "unmapped_sources": [],
+      "local_document_substitutes": [],
+      "resources": [],
+      "module_sha256": "c6f7a75ee9ff965e004bf029a7c4211240e2e359dc01c2635efbe883222819d1"
+    },
+    "raster_backend": "native-skia",
+    "png_exporter_sha256": "c45e30335911d290b888a6d5b1bdae99caab701bd9949cf0d0698c7b36c8b1e9",
+    "layout_generation": "2022",
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "none",
+      "files": []
+    }
+  },
+  "checkpoint": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-features-native/candidate/nested-row-split-nested-30-hwpx/silhouette-checkpoint.json"
+}

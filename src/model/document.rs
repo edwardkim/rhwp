@@ -15,6 +15,13 @@ use super::*;
 /// 마커가 사라져 native HWPX로 취급된다.
 pub const HWP5_ORIGIN_HWPX_MARKER_PATH: &str = "META-INF/rhwp-hwp5-origin";
 
+/// rhwp가 채우기·선 `alpha`를 한/글처럼 0~255 정수로 쓴 HWPX임을 표시하는 ZIP 보조 엔트리.
+///
+/// 예전 rhwp는 `alpha`를 0.0~1.0 비율로 써서 완전 투명(255)이 정수 `1`과 같은 글자가 된다.
+/// rhwp 원본 마커(HWP5·HWP3)가 있는데 이 표지가 없으면 그 시절 저장본이므로 비율로 읽는다.
+/// 한컴에서 다시 저장하면 두 마커가 모두 사라져 한컴 정수 규칙을 따른다.
+pub const RHWP_BYTE_ALPHA_HWPX_MARKER_PATH: &str = "META-INF/rhwp-byte-alpha";
+
 /// 제어 슬롯을 포함하는 문단 UTF-16 축으로 LineSeg를 저장하는 생산자 계약.
 /// 이전 `1` 산출물의 축 해석은 읽기 호환 경로에서 유지한다.
 pub const HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS: &[u8] = b"2:paragraph-utf16";
@@ -53,6 +60,15 @@ pub const HWPX_ORIGIN_STREAM_PATH: &str = "/RhwpHwpxOrigin";
 /// 줄을 재구성해야 같은 조판 입력이 된다. 종전 값 `1` 은 이 계약 없이 쓴 변환본이므로
 /// 값으로 구분해 종전 파일의 읽기 규칙을 바꾸지 않는다.
 pub const HWPX_ORIGIN_SOURCE_LINES: &[u8] = b"2";
+
+/// [#9039] `/RhwpHwpxOrigin` 의 HWP 줄 규칙 값(`1`)을 HWPX 로 옮기는 ZIP 보조 엔트리.
+///
+/// 값 `1` 의 HWP 는 HWPX 계보(`hwpx_stored_layout`)로 조판하지만 저장 줄은 HWP 규칙으로
+/// 읽는다 — XML import 의 줄 재구성(원점에 머문 본문 사다리 재조판 등)을 하지 않는다.
+/// 이 계약을 싣지 않고 HWPX 로 저장하면 다시 열 때 같은 저장 줄이 XML 규칙으로 다시
+/// 짜여 원본과 갈라진다(`issue2439_…`: 33문단의 저장 줄 전부). 값은 원본 스트림 값을
+/// 그대로 싣고, HWPX → HWP 저장은 이 값을 `/RhwpHwpxOrigin` 으로 되돌린다.
+pub const HWPX_ORIGIN_HWPX_MARKER_PATH: &str = "META-INF/rhwp-hwpx-origin";
 
 /// [#3707] HWP3 출처 마커. `RhwpHwpxOrigin` 과 같은 방식이다.
 ///
@@ -338,6 +354,17 @@ pub struct Section {
     pub raw_provenance: Option<crate::model::raw_provenance::SectionSeal>,
 }
 
+/// HWP5 구역 정의 속성 bit 20-21 값과 쪽 번호 종류(`page_num_type`, 1=홀수·2=짝수)를 서로 바꾼다.
+/// 한컴 12.30은 HWP에 홀수 시작을 2, 짝수 시작을 1로 쓴다(HWPX `ODD`·`EVEN` 저장본을 HWP로 저장해 확인).
+/// 서로 맞바꾸기라 읽기와 쓰기에 함께 쓴다.
+pub fn hwp_page_num_type(value: u8) -> u8 {
+    match value {
+        1 => 2,
+        2 => 1,
+        other => other,
+    }
+}
+
 /// 구역 정의 (HWPTAG_CTRL_HEADER - 'secd')
 #[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct SectionDef {
@@ -495,6 +522,13 @@ impl Document {
             .map(|(_, d)| d.as_slice())
     }
 
+    /// Paragraph text in HWP5 before 5.0.1.6 uses the legacy Hancom symbol encoding.
+    pub(crate) fn uses_legacy_body_symbols(&self) -> bool {
+        let v = &self.header.version;
+        self.provenance.format == crate::model::provenance::SourceFormat::Hwp5
+            && (v.major, v.minor, v.build, v.revision) < (5, 0, 1, 6)
+    }
+
     /// [#8310] 이 HWP 가 원본 HWPX 의 저장 줄 계약(원본 좌표·저장 줄 없음)을 지니는가.
     ///
     /// `/RhwpHwpxOrigin` 의 값이 [`HWPX_ORIGIN_SOURCE_LINES`] 일 때만 참이다. 종전 값(`1`)의
@@ -503,6 +537,21 @@ impl Document {
         self.extra_streams.iter().any(|(path, value)| {
             path == HWPX_ORIGIN_STREAM_PATH && value == HWPX_ORIGIN_SOURCE_LINES
         })
+    }
+
+    /// [#9039] HWPX 계보로 조판하되 저장 줄은 HWP 규칙으로 읽는 문서의 출처 값.
+    ///
+    /// HWP 는 `/RhwpHwpxOrigin` 값이 [`HWPX_ORIGIN_SOURCE_LINES`] 가 아닐 때(종전 값 `1`),
+    /// HWPX 는 그 값을 옮겨 실은 [`HWPX_ORIGIN_HWPX_MARKER_PATH`] 가 있을 때 값을 돌려준다.
+    /// 두 형식에서 같은 문서가 같은 줄 읽기 규칙을 쓰도록 저장·읽기가 이 값을 공유한다.
+    pub fn hwpx_origin_hwp_line_rules(&self) -> Option<&[u8]> {
+        self.extra_streams
+            .iter()
+            .find(|(path, value)| {
+                path == HWPX_ORIGIN_STREAM_PATH && value != HWPX_ORIGIN_SOURCE_LINES
+            })
+            .map(|(_, value)| value.as_slice())
+            .or_else(|| self.hwpx_aux_entry(HWPX_ORIGIN_HWPX_MARKER_PATH))
     }
 
     /// [#2403 Stage 1] 레이아웃 호환 정책 질의 표면.

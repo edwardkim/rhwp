@@ -1,0 +1,740 @@
+{
+  "verified_at": 1795345257.986363,
+  "reason": "No Cargo/Rust/WASM builders or open FD references after old-head quiescence. Recover space for post-9318 rebuild; only inactive incremental child caches. All target profiles, deps, fingerprints, binaries preserved.",
+  "initial_attempt": "Read-only lock descriptor rejected exclusive POSIX lock before any deletion. Corrected descriptor to r+b; repeated all checks.",
+  "target": "/home/tsjang/rhwp/target/pr-review",
+  "active_builders": [],
+  "used_fd_refs": [],
+  "removed": [
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_codec_resource-37jwserlylgjw",
+      "allocated_bytes": 3555328,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/corpus_integrity-2gc6hty21e7q1",
+      "allocated_bytes": 1245184,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/pdf_oxide-0aa2qo7fjd8ec",
+      "allocated_bytes": 0,
+      "locks_checked": 0,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/classify-2owozdf7uk4hd",
+      "allocated_bytes": 638976,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/mock_rhwp-2meo758mfg6ji",
+      "allocated_bytes": 5746688,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/dump_source_images-2ezlipit7qfp4",
+      "allocated_bytes": 2195456,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/build_issue_505_fixture-1qjue1np0e063",
+      "allocated_bytes": 4972544,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/cli-0nbl6evp879px",
+      "allocated_bytes": 1998848,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/build_script_build-1iiitlzpr44x5",
+      "allocated_bytes": 1286144,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/envelope_bind-3v0w0vcjqedlg",
+      "allocated_bytes": 679936,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/font_metric_coverage_worker-0v5s1ykeoi4pp",
+      "allocated_bytes": 2592768,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/build_square_stamp_cell_fixture-1dv9kidnrv9hz",
+      "allocated_bytes": 5038080,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4126_cursor_rect_empty_para_pages-1r3f3qrbtp3k8",
+      "allocated_bytes": 2093056,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_2833_hml_adapter_row_sizes-2bvojuungbmgs",
+      "allocated_bytes": 1568768,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/build_script_build-09nk9o3ew7tlj",
+      "allocated_bytes": 1810432,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/cli_exit_codes_native-01x0w3ktsairz",
+      "allocated_bytes": 81920,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/cli_exit_codes-0x3w238or823n",
+      "allocated_bytes": 1253376,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/build_photo_caption_rows_fixture-3mkp9p24877b8",
+      "allocated_bytes": 5246976,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_contracts-263g1y1p0eyaw",
+      "allocated_bytes": 2875392,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_subsecond-1ot3tjxnt8z6x",
+      "allocated_bytes": 65536,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/vproto_classify-1xexy2zsxs6z7",
+      "allocated_bytes": 344064,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/hayro_ccitt-377ikfmdarbm6",
+      "allocated_bytes": 4710400,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/decompose-1ap0i6hh2nbk3",
+      "allocated_bytes": 794624,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/build_script_build-1z6xlmthz81cg",
+      "allocated_bytes": 1777664,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/build_script_build-12we3blq3ek1i",
+      "allocated_bytes": 1294336,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/mock_rhwp-3ezqy4la8m9rx",
+      "allocated_bytes": 942080,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/audit_image_magic-356rhzk7eyra9",
+      "allocated_bytes": 3235840,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/corpus_sample-0wlowq3ycwbu7",
+      "allocated_bytes": 1179648,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_contracts-1vivzw14pcpin",
+      "allocated_bytes": 2883584,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_codec_resource-067dgb86x7zr4",
+      "allocated_bytes": 5066752,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_1144-27j6uf2866m3i",
+      "allocated_bytes": 2752512,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/hwpx_roundtrip-37hhisbzdjo5s",
+      "allocated_bytes": 1474560,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/hayro_ccitt-1mpj0tq8f61yv",
+      "allocated_bytes": 5890048,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/hwpx_dump_text-364kv04siul9q",
+      "allocated_bytes": 1327104,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/dump_layer_json_page-2yl6gimjdjfhi",
+      "allocated_bytes": 1925120,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/corpus_integrity-26a2xx1d52u7y",
+      "allocated_bytes": 1253376,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_1144_native-2yztt3m370c92",
+      "allocated_bytes": 81920,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/mock_rhwp-0i6f786izu32e",
+      "allocated_bytes": 974848,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_subsecond-0nlsom1rnkeki",
+      "allocated_bytes": 221184,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/extract-023p3bxpsblcj",
+      "allocated_bytes": 401408,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/vproto_classify-2kc3rvqsjwzh6",
+      "allocated_bytes": 2547712,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4128_cell_cursor_page_narrowing-0a3djeq3ki0fs",
+      "allocated_bytes": 2461696,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp-0o6btuubjfu4v",
+      "allocated_bytes": 0,
+      "locks_checked": 0,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/build_square_floor_empty_lead_fixture-04zghtx6l5i6n",
+      "allocated_bytes": 4952064,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/build_issue_5800_fixture-2uqey79ic45gl",
+      "allocated_bytes": 5779456,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_subsecond-3kro0152wk512",
+      "allocated_bytes": 98304,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4179_cursor_rect_text_host_para_pages-32z0kj1o5f8t7",
+      "allocated_bytes": 2101248,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/audit_studio_image_parity-05zts2moykchx",
+      "allocated_bytes": 6615040,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/vproto_classify-1giizxupv5ev1",
+      "allocated_bytes": 319488,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_contracts-07er851qjjtrc",
+      "allocated_bytes": 3411968,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/hwpx_hwp_ir_diff-1e7p6tepsjoek",
+      "allocated_bytes": 2039808,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/hwpx_dump_empty-1lcpz12239sub",
+      "allocated_bytes": 2170880,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/qcms-1926ok7fx0dk8",
+      "allocated_bytes": 7163904,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/hayro_ccitt-177zyvkd8jznc",
+      "allocated_bytes": 2269184,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp_contracts-3aecxjy0g2toy",
+      "allocated_bytes": 2494464,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp_password_crypto-37ond1rqblaq4",
+      "allocated_bytes": 12275712,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/pdf_oxide-1uw6fu58u9vaw",
+      "allocated_bytes": 306094080,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/pdf_oxide-0qaikia8shqlz",
+      "allocated_bytes": 306204672,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/jpeg_decoder_limited-2t2h9lb4ne1nt",
+      "allocated_bytes": 8527872,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/hayro_jpeg2000-32mu5j8m9llqr",
+      "allocated_bytes": 8667136,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/zune_jpeg_limited-0q4te8l23gnqu",
+      "allocated_bytes": 9162752,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp-3q9xu8gwh98xb",
+      "allocated_bytes": 993034240,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp_contracts-0cyh3jte6g30s",
+      "allocated_bytes": 2543616,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp_ooxml_chart-3vec9i6r5xol5",
+      "allocated_bytes": 5517312,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/hayro_jpeg2000-0ci7ij5lioq1m",
+      "allocated_bytes": 17342464,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/hayro_ccitt-1py9wscy734dl",
+      "allocated_bytes": 1708032,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/hayro_ccitt-0a4iirb5fvqzb",
+      "allocated_bytes": 3416064,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp-2b1mhsqo8qsiy",
+      "allocated_bytes": 527675392,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/hayro_ccitt-01x7rtkrm5izv",
+      "allocated_bytes": 3420160,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp_ooxml_chart-3787gjogpkzht",
+      "allocated_bytes": 14508032,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/pdf_oxide-0a8e08q4s2gps",
+      "allocated_bytes": 306053120,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp-0t4m4zwhq6fh3",
+      "allocated_bytes": 1219190784,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/hayro_jpeg2000-0eygx4bg6ah21",
+      "allocated_bytes": 19787776,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp-0q36wll4br9db",
+      "allocated_bytes": 1041059840,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/zune_jpeg_limited-09d8j673m9nwo",
+      "allocated_bytes": 9060352,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/jpeg_encoder-0aphgqfkrh4q0",
+      "allocated_bytes": 5599232,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp_contracts-14yu3r2cpy6sg",
+      "allocated_bytes": 2494464,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp-1tkij0f3rxxsd",
+      "allocated_bytes": 981725184,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp_password_crypto-3askx1gml4s2m",
+      "allocated_bytes": 5742592,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp_ooxml_chart-1vv25vvcubsz8",
+      "allocated_bytes": 5443584,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/jpeg_decoder_limited-1rs1om3bwm9fu",
+      "allocated_bytes": 8445952,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp_password_crypto-2w32p8tgmpmqk",
+      "allocated_bytes": 5697536,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp-3t54jvy13sg7p",
+      "allocated_bytes": 1075036160,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/pdf_oxide-1nikw16msd41h",
+      "allocated_bytes": 304566272,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/jpeg_decoder_limited-0zxny9rb0ojui",
+      "allocated_bytes": 8462336,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/hayro_jbig2-1juj7aws6teon",
+      "allocated_bytes": 15753216,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/jpeg_encoder-0a465joazr1ny",
+      "allocated_bytes": 7327744,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp-26k196hn0bvmc",
+      "allocated_bytes": 500555776,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/pdf_oxide-1xtv3i82kru79",
+      "allocated_bytes": 153083904,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/hayro_jbig2-12f1el1ylpstt",
+      "allocated_bytes": 14274560,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp_codec_resource-1rdn9x153aewm",
+      "allocated_bytes": 2228224,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/pdf_oxide-0ggm2xccvz3py",
+      "allocated_bytes": 148951040,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp_contracts-19vpq1cohz5f0",
+      "allocated_bytes": 1253376,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/pdf_oxide-38dnwmxv86eal",
+      "allocated_bytes": 297889792,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp_contracts-3og9pcvkabf98",
+      "allocated_bytes": 2531328,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp-0g4n00k4v3sg0",
+      "allocated_bytes": 920539136,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/qcms-21lq0tvomvyy2",
+      "allocated_bytes": 3575808,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/hayro_jbig2-32yvjchwcvnwg",
+      "allocated_bytes": 14262272,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/pdf_oxide-0v61qpoofiua9",
+      "allocated_bytes": 423313408,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp_codec_resource-0tznnjnuw5kuk",
+      "allocated_bytes": 1662976,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/jpeg_encoder-24u5qa5kcwp4i",
+      "allocated_bytes": 7315456,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp_contracts-19k8dr33v3ob4",
+      "allocated_bytes": 6225920,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp_codec_resource-2aqnnhpwxqoey",
+      "allocated_bytes": 2297856,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp-1qe54w83uhrna",
+      "allocated_bytes": 1064521728,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp_password_crypto-2v4jyj6d1f6lh",
+      "allocated_bytes": 5697536,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp_codec_resource-33rceuwnu5gzr",
+      "allocated_bytes": 1146880,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp_ooxml_chart-2na2xfr1nsv13",
+      "allocated_bytes": 11014144,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/hayro_jbig2-2tczju12fk4u8",
+      "allocated_bytes": 7131136,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/qcms-1s96pc8qk2uwi",
+      "allocated_bytes": 7958528,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/zune_jpeg_limited-2w0fcht5hcwmy",
+      "allocated_bytes": 9150464,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp-2pc1lrss35r0w",
+      "allocated_bytes": 1084825600,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/qcms-2zls36wzq7td1",
+      "allocated_bytes": 7151616,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/hayro_jpeg2000-27kpwdpkgdasc",
+      "allocated_bytes": 17334272,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/pdf_oxide-2htad5vmv3q8m",
+      "allocated_bytes": 153014272,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp_ooxml_chart-0b2r6rkj3eu6h",
+      "allocated_bytes": 11046912,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp_password_crypto-0xbewty29xih9",
+      "allocated_bytes": 5750784,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp_password_crypto-346hq13xy1ttr",
+      "allocated_bytes": 2805760,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp_password_crypto-36wspw4phos87",
+      "allocated_bytes": 5726208,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp-2y8mi2e44zdex",
+      "allocated_bytes": 1045778432,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp_password_crypto-0x87k0j1whxmx",
+      "allocated_bytes": 2846720,
+      "locks_checked": 1,
+      "used_fd_count": 0
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/debug/incremental/rhwp-0clq6y0av7sge",
+      "allocated_bytes": 914472960,
+      "locks_checked": 2,
+      "used_fd_count": 0
+    }
+  ],
+  "expected_allocated_bytes": 14226780160,
+  "free_before": 1480474624,
+  "free_after": 14911492096,
+  "all_removed": true
+}

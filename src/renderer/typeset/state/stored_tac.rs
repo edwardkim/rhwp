@@ -34,16 +34,9 @@ impl TypesetState {
                 });
         }
         let dpi = self.data.layout.dpi;
-        let source_origin_hu =
-            if crate::renderer::stored_page_origin::stored_first_margin_is_page_relative(
-                para, next, styles, dpi,
-            ) {
-                0
-            } else {
-                crate::renderer::float_placement::stored_table_column_origin(
-                    para, next, false, None, dpi,
-                )?
-            };
+        let source_origin_hu = crate::renderer::float_placement::stored_table_column_origin(
+            para, next, false, None, styles, dpi,
+        )?;
         Some(StoredColumnFrame {
             source_origin_hu,
             column_anchor_y: self.data.vpos_col_anchor,
@@ -55,6 +48,7 @@ impl TypesetState {
         &mut self,
         para_index: usize,
         paragraphs: &[Paragraph],
+        styles: &crate::renderer::style_resolver::ResolvedStyleSet,
     ) {
         if self.data.col_count == 1 {
             self.data.vpos_prev_layout_para = Some(para_index);
@@ -95,7 +89,7 @@ impl TypesetState {
                     // Whole paragraph-following tables keep the column's
                     // source axis in paint. A table opening the column owns
                     // the same initial origin as build_single_column.
-                    self.seed_whole_table_column_origin(para_index, paragraphs);
+                    self.seed_whole_table_column_origin(para_index, paragraphs, styles);
                 } else {
                     self.data.vpos_page_base = None;
                     self.data.vpos_lazy_base = None;
@@ -113,6 +107,7 @@ impl TypesetState {
         &mut self,
         para_index: usize,
         paragraphs: &[Paragraph],
+        styles: &crate::renderer::style_resolver::ResolvedStyleSet,
     ) {
         if let Some(&PageItem::Table {
             para_index: first,
@@ -138,6 +133,7 @@ impl TypesetState {
                         self.data
                             .paragraph_float_placements
                             .get(&(first, control_index)),
+                        styles,
                         self.data.layout.dpi,
                     )
                 });

@@ -27,6 +27,7 @@ pub(super) fn hide_rowbreak_guide(
     para_idx: usize,
     current_height: f64,
     dpi: f64,
+    stored_frame_base: Option<i32>,
 ) -> bool {
     // [Task #1686] RowBreak 표 조각 뒤에 남는 빈 guide 문단 흡수.
     // pr-1674처럼 표 셀 내부 vpos reset으로 페이지가 갈린 뒤, 뒤따르는 빈 문단들이
@@ -38,6 +39,23 @@ pub(super) fn hide_rowbreak_guide(
         && !para_has_visible_text(para)
         && para.line_segs.len() == 1
     {
+        // 뒤 문단의 되감김은 다음 쪽의 경계일 수도 있다. 인증한 같은 저장
+        // 프레임에서 이 빈 줄이 수용한 표 조각 끝에 이어지면 실제 줄 상자다.
+        // 안내 줄로 없애지 않고 일반 fit과 쪽 첫 두 줄 감추기가 점유를 정한다.
+        let line = &para.line_segs[0];
+        if !para.stored_text_partition_is_dirty()
+            && !para.cell_format_vpos_dirty
+            && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            && stored_frame_base.is_some_and(|base| {
+                line.vertical_pos.checked_sub(base).is_some_and(|top| {
+                    top >= 0
+                        && (crate::renderer::hwpunit_to_px(top, dpi) - current_height).abs()
+                            <= dpi / crate::renderer::HWPUNIT_PER_INCH
+                })
+            })
+        {
+            return false;
+        }
         let curr_vpos = para.line_segs.first().map(|s| s.vertical_pos);
         let anchor_idx = paragraphs
             .iter()
@@ -51,7 +69,14 @@ pub(super) fn hide_rowbreak_guide(
             (curr_vpos, next_anchor_vpos, anchor_idx)
         {
             const EMPTY_GUIDE_RESET_GAP_HU: i32 = 2000;
-            if curr > next + EMPTY_GUIDE_RESET_GAP_HU {
+            const STORED_ADVANCE_ROUNDING_PX: f64 = 1.0;
+            // 이 빈 줄의 저장 위치가 표 조각이 끝난 지금 흐름 위치와 같으면 옛 좌표의
+            // guide 가 아니라 이 쪽에서 표 바로 아래에 조판된 줄이다. 뒤 앵커가 되감겨도
+            // 그 줄 상자는 이 쪽에 남는다.
+            let continues_current_flow =
+                (crate::renderer::hwpunit_to_px(curr, dpi) - current_height).abs()
+                    <= STORED_ADVANCE_ROUNDING_PX;
+            if curr > next + EMPTY_GUIDE_RESET_GAP_HU && !continues_current_flow {
                 // 되감긴 다음 앵커의 저장 위치가 지금 흐름 위치에서 이 빈 줄들의 저장 전진을
                 // 모두 담을 만큼 아래면, 한컴은 새 쪽에서도 빈 줄 자리를 남겼다. 그 줄은
                 // 옛 좌표의 guide 가 아니다(1480000 44쪽 pi=264: 표 끝+아래 여백 677.8px
@@ -68,7 +93,6 @@ pub(super) fn hide_rowbreak_guide(
                     })
                     .sum();
                 let anchor_px = crate::renderer::hwpunit_to_px(next, dpi);
-                const STORED_ADVANCE_ROUNDING_PX: f64 = 1.0;
                 let stored_room_keeps_lines =
                     anchor_px - current_height >= empty_advance_px - STORED_ADVANCE_ROUNDING_PX;
                 return !stored_room_keeps_lines;

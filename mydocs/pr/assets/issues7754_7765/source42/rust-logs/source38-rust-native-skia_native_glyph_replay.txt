@@ -1,0 +1,34 @@
+[RustTestSuite] skia_native_glyph_replay -> regression_suite_014::skia_native_glyph_replay
+[RustTestSuite] cargo nextest run --locked --test regression_suite_014 -E test(/(^|::)skia_native_glyph_replay::/) --cargo-profile release-test --target-dir /home/tsjang/rhwp/target/pr-review --features native-skia --test-threads 12 --no-fail-fast
+   Compiling rhwp v0.9.1 (/home/tsjang/rhwp-worktrees/task-7754-rebase-5665)
+    Finished `release-test` profile [optimized] target(s) in 55.13s
+────────────
+ Nextest run ID 3492fab0-d45f-4d1a-b1f1-eba00023dc6b with nextest profile: default
+    Starting 25 tests across 1 binary (324 tests skipped)
+        PASS [   0.049s] ( 1/25) rhwp::regression_suite_014 skia_native_glyph_replay::issue_7640_system_program::available_system_faces_match_their_actual_program_snapshot
+        PASS [   0.051s] ( 2/25) rhwp::regression_suite_014 skia_native_glyph_replay::issue_8856_replacement_symbol_ink_keeps_the_intrinsic_cell_under_negative_tracking
+        PASS [   0.056s] ( 3/25) rhwp::regression_suite_014 skia_native_glyph_replay::native_bounded_vertical_replay_uses_exact_upright_glyph_at_producer_origin
+        PASS [   0.072s] ( 4/25) rhwp::regression_suite_014 skia_native_glyph_replay::issue_7640_system_program::explicit_regular_and_bold_programs_keep_their_own_outlines
+        PASS [   0.083s] ( 5/25) rhwp::regression_suite_014 skia_native_glyph_replay::native_glyph_replay_changes_ink_for_exact_synthetic_instances
+        PASS [   0.093s] ( 6/25) rhwp::regression_suite_014 skia_native_glyph_replay::issue_8856_legacy_native_exporter_prepares_the_actual_supplied_program
+        PASS [   0.106s] ( 7/25) rhwp::regression_suite_014 skia_native_glyph_replay::bounded_vertical_replay_checks_source_scalars_before_a_cached_glyph_is_selected
+        PASS [   0.058s] ( 8/25) rhwp::regression_suite_014 skia_native_glyph_replay::native_glyph_replay_keeps_the_prepared_continuous_shadow_samples
+        PASS [   0.115s] ( 9/25) rhwp::regression_suite_014 skia_native_glyph_replay::native_containers::native_directory_order_does_not_promote_ttc_over_ttf
+        PASS [   0.076s] (10/25) rhwp::regression_suite_014 skia_native_glyph_replay::native_glyph_replay_constructs_ttf_and_exact_nonzero_ttc_face
+        PASS [   0.076s] (11/25) rhwp::regression_suite_014 skia_native_glyph_replay::native_glyph_replay_decodes_bitmap_before_selection_and_preserves_payload_placement
+        PASS [   0.041s] (12/25) rhwp::regression_suite_014 skia_native_glyph_replay::native_glyph_replay_renders_outline_fill_rule_transform_and_stroke_order
+        PASS [   0.135s] (13/25) rhwp::regression_suite_014 skia_native_glyph_replay::native_glyph_preparation_reports_exact_proof_with_and_without_picture_cache
+        PASS [   0.145s] (14/25) rhwp::regression_suite_014 skia_native_glyph_replay::native_containers::native_supplied_bytes_prefer_ttf_over_nonzero_ttc_face_in_both_orders
+        PASS [   0.049s] (15/25) rhwp::regression_suite_014 skia_native_glyph_replay::native_outline_preparation_reports_payload_failure_and_retains_fallback
+        PASS [   0.071s] (16/25) rhwp::regression_suite_014 skia_native_glyph_replay::native_glyph_replay_renders_resolved_colrv0_layers_in_order
+        PASS [   0.073s] (17/25) rhwp::regression_suite_014 skia_native_glyph_replay::native_glyph_replay_requires_every_variant_part_and_every_path
+        PASS [   0.063s] (18/25) rhwp::regression_suite_014 skia_native_glyph_replay::native_picture_diagnostics_do_not_retain_a_previous_siblings_report_cap
+        PASS [   0.092s] (19/25) rhwp::regression_suite_014 skia_native_glyph_replay::native_glyph_replay_uses_static_svg_viewbox_and_rejects_unsafe_resources
+        PASS [   0.144s] (20/25) rhwp::regression_suite_014 skia_native_glyph_replay::native_glyph_replay_preserves_shadow_outline_and_relief_passes
+        PASS [   0.229s] (21/25) rhwp::regression_suite_014 skia_native_glyph_replay::native_glyph_replay_constructs_requested_variable_axis_and_rejects_invalid_tuples
+        PASS [   0.156s] (22/25) rhwp::regression_suite_014 skia_native_glyph_replay::native_glyph_replay_rejects_invalid_bytes_digest_face_and_geometry_without_font_lookup
+        PASS [   0.182s] (23/25) rhwp::regression_suite_014 skia_native_glyph_replay::native_vertical_replay_keeps_fallback_for_unproven_modes_and_malformed_bounded_claims
+        PASS [   0.354s] (24/25) rhwp::regression_suite_014 skia_native_glyph_replay::installed_character_fallback::installed_serif_supplies_missing_subset_glyphs_without_overriding_declared_programs
+        PASS [   0.426s] (25/25) rhwp::regression_suite_014 skia_native_glyph_replay::native_preparation_reports_bound_count_and_unicode_identifiers_on_public_replay
+────────────
+     Summary [   0.563s] 25 tests run: 25 passed, 324 skipped

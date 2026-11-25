@@ -120,6 +120,15 @@ fn connector_line_style(
     }
 }
 
+/// 공통 접선이 만나는 모서리와 양 끝점으로 ¼타원을 그린다.
+fn connector_quarter_ellipse(from: (f64, f64), corner: (f64, f64), to: (f64, f64)) -> PathCommand {
+    const KAPPA: f64 = 0.552_284_749_830_793_6;
+    let tangent = |(x, y): (f64, f64)| (x + KAPPA * (corner.0 - x), y + KAPPA * (corner.1 - y));
+    let (c1x, c1y) = tangent(from);
+    let (c2x, c2y) = tangent(to);
+    PathCommand::CurveTo(c1x, c1y, c2x, c2y, to.0, to.1)
+}
+
 /// 글상자에 공백이 아닌 실제 텍스트가 한 글자라도 있는지.
 /// 그림을 원래 크기로 상자 안 한 자리에 놓는 채우기 모드.
 fn is_placement_fill_mode(mode: crate::model::style::ImageFillMode) -> bool {
@@ -870,6 +879,52 @@ fn should_reflow_matrix_textbox_lines(
         })
 }
 
+/// 한/글 개체 속성의 기울이기만 저장한 독립 도형(회전·대칭 없음)의 쪽 공간 행렬과
+/// 원래 크기(px). 저장 행렬은 원래 좌표를 개체 틀(외접 상자) 안으로 옮긴다.
+/// 다각형은 꼭짓점에 저장 행렬을 직접 적용하므로 여기서 다시 기울이지 않는다.
+fn skew_page_matrix(
+    shape: &crate::model::shape::ShapeObject,
+    x: f64,
+    y: f64,
+    dpi: f64,
+) -> Option<([f64; 6], f64, f64)> {
+    use crate::model::shape::ShapeObject;
+    if !matches!(
+        shape,
+        ShapeObject::Rectangle(_)
+            | ShapeObject::Ellipse(_)
+            | ShapeObject::Arc(_)
+            | ShapeObject::Curve(_)
+    ) {
+        return None;
+    }
+    let sa = shape.shape_attr();
+    if sa.rotation_angle.rem_euclid(360) != 0
+        || sa.horz_flip
+        || sa.vert_flip
+        || (sa.render_b.abs() <= 1e-6 && sa.render_c.abs() <= 1e-6)
+        || sa.original_width == 0
+        || sa.original_height == 0
+        || !sa.has_saved_affine_geometry()
+    {
+        return None;
+    }
+    let unit = dpi / super::super::HWPUNIT_PER_INCH;
+    let (a, b, c, d) = (sa.render_sx, sa.render_b, sa.render_c, sa.render_sy);
+    Some((
+        [
+            a,
+            c,
+            b,
+            d,
+            x - a * x - b * y + sa.render_tx * unit,
+            y - c * x - d * y + sa.render_ty * unit,
+        ],
+        f64::from(sa.original_width) * unit,
+        f64::from(sa.original_height) * unit,
+    ))
+}
+
 fn reflow_matrix_textbox_para(
     para: &mut Paragraph,
     available_width: f64,
@@ -1180,9 +1235,20 @@ impl LayoutEngine {
             && i64::from(crate::renderer::float_placement::signed_hwpunit(
                 common.vertical_offset,
             )) == -i64::from(common.height as i32);
+        // '쪽 영역 안으로 제한'(`flow_with_text`)인 글 앞·뒤 도형도 문단 기준 음수 세로
+        // 오프셋을 0 으로 본다. 한/글 12.30 Mac 에서 #8324 타원(문단 기준·위 정렬, -876)을
+        // 글 앞·글 뒤로 열면 문단 위끝에 그리고, 제한을 끄면 876 만큼 위에 그린다. 글이
+        // 비켜 가지 않는 배치라 조판 점유는 바뀌지 않는다.
+        let clamps_negative_offset = clamp_negative_para_offset
+            || common.flow_with_text
+                && matches!(
+                    common.text_wrap,
+                    crate::model::shape::TextWrap::InFrontOfText
+                        | crate::model::shape::TextWrap::BehindText
+                );
         let adjusted_common;
         let common_for_position = if self_displacement_offset
-            || clamp_negative_para_offset
+            || clamps_negative_offset
                 && !common.treat_as_char
                 && matches!(common.vert_rel_to, crate::model::shape::VertRelTo::Para)
                 && matches!(
@@ -1687,34 +1753,22 @@ impl LayoutEngine {
                 // 회전된 타원: 원래 상자에 내접한 타원을 베지어 4개로 만들어 아핀 변환한다.
                 // 아핀 변환은 베지어 제어점에 그대로 적용되므로 모양이 정확히 유지된다.
                 // 두 모서리 AABB 폴백은 회전 타원을 축 정렬 타원으로 찌그러뜨렸다.
-                const K: f64 = 0.552_284_749_830_793_4;
                 let (rx, ry) = (
                     sa.original_width as f64 / 2.0,
                     sa.original_height as f64 / 2.0,
                 );
-                let pt = |ux: f64, uy: f64| transform_pt(rx + rx * ux, ry + ry * uy);
-                let quarters = [
-                    [(1.0, K), (K, 1.0), (0.0, 1.0)],
-                    [(-K, 1.0), (-1.0, K), (-1.0, 0.0)],
-                    [(-1.0, -K), (-K, -1.0), (0.0, -1.0)],
-                    [(K, -1.0), (1.0, -K), (1.0, 0.0)],
-                ];
-                let start = pt(1.0, 0.0);
-                let mut commands = vec![PathCommand::MoveTo(start.0, start.1)];
-                let (mut min_x, mut min_y, mut max_x, mut max_y) =
-                    (start.0, start.1, start.0, start.1);
-                for q in quarters {
-                    let [c1, c2, end] = q.map(|(ux, uy)| pt(ux, uy));
-                    commands.push(PathCommand::CurveTo(c1.0, c1.1, c2.0, c2.1, end.0, end.1));
-                    for (px, py) in [c1, c2, end] {
-                        min_x = min_x.min(px);
-                        min_y = min_y.min(py);
-                        max_x = max_x.max(px);
-                        max_y = max_y.max(py);
-                    }
-                }
-                commands.push(PathCommand::ClosePath);
+                let (mut min_x, mut min_y) = (f64::INFINITY, f64::INFINITY);
+                let (mut max_x, mut max_y) = (f64::NEG_INFINITY, f64::NEG_INFINITY);
                 let (style, gradient) = drawing_to_shape_style(&ellipse.drawing, self.dpi);
+                let patterned = style.stroke_color.is_some() && style.stroke_dash.is_hwp_pattern();
+                let commands = crate::renderer::ellipse::outline(patterned, |x, y| {
+                    let (px, py) = transform_pt(rx + rx * x, ry + ry * y);
+                    min_x = min_x.min(px);
+                    min_y = min_y.min(py);
+                    max_x = max_x.max(px);
+                    max_y = max_y.max(py);
+                    (px, py)
+                });
                 let node_id = tree.next_id();
                 parent.children.push(RenderNode::new(
                     node_id,
@@ -1927,15 +1981,17 @@ impl LayoutEngine {
         // 같은 원점을 소비하도록 실제 좌표를 만들기 전에 한 번 이동한다.
         // 묶음 자식은 renderingInfo가 정한 본체 원점을 그대로 보존한다.
         let (base_x, base_y) = if !matrix_positioned {
+            let unit = self.dpi / super::super::HWPUNIT_PER_INCH;
             let origin = shape.drawing().and_then(|drawing| {
-                crate::model::shape::shadow::parallel_body_origin_hu(
+                crate::model::shape::shadow::body_origin_hu(
                     drawing.shadow_type,
                     drawing.shadow_offset_x,
                     drawing.shadow_offset_y,
+                    w / unit,
+                    h / unit,
                 )
             });
             origin.map_or((base_x, base_y), |(x, y)| {
-                let unit = self.dpi / super::super::HWPUNIT_PER_INCH;
                 (base_x + x * unit, base_y + y * unit)
             })
         } else {
@@ -1943,7 +1999,7 @@ impl LayoutEngine {
         };
 
         // 공통: 회전/대칭 정보 추출
-        let transform = if matrix_positioned {
+        let mut transform = if matrix_positioned {
             ShapeTransform::default()
         } else {
             let mut transform = extract_shape_transform(shape.shape_attr());
@@ -1954,6 +2010,18 @@ impl LayoutEngine {
                 transform.rotation = 0.0;
             }
             transform
+        };
+
+        // 기울인 독립 도형은 원래 크기로 그리고 저장 행렬로 기울인다. 개체 틀은 기울인 외접 상자다.
+        let (w, h) = match (!matrix_positioned)
+            .then(|| skew_page_matrix(shape, base_x, base_y, self.dpi))
+            .flatten()
+        {
+            Some((matrix, width, height)) => {
+                transform.skew = Some(matrix);
+                (width, height)
+            }
+            None => (w, h),
         };
 
         // [Task #1138] 표 셀 내 도형 식별을 위한 cell 정보 추출 (helper)
@@ -2164,7 +2232,20 @@ impl LayoutEngine {
                         let mut path_end_y = conn_y2;
                         commands.push(PathCommand::MoveTo(path_start_x, path_start_y));
 
-                        if conn.link_type.is_arc() {
+                        if conn.link_type.is_arc() && conn.midpoint_axis().is_some() {
+                            // 가운데 점이 있는 곡선 연결선: 한/글 인쇄처럼 안쪽 제어점 둘을 모서리로 삼아
+                            // 시작점→가운데 점(두 점의 가운데)→끝점을 4분의 1 타원 두 개로 잇는다.
+                            // 곡선은 옮긴 가운데 점을 지나고 거기서 가운데 선 방향으로 꺾임 없이 이어진다.
+                            let a = connector_point_xy(&conn.control_points[1]);
+                            let b = connector_point_xy(&conn.control_points[2]);
+                            let mid = ((a.0 + b.0) / 2.0, (a.1 + b.1) / 2.0);
+                            let end = (conn_x2, conn_y2);
+                            for (from, at, to) in
+                                [((path_start_x, path_start_y), a, mid), (mid, b, end)]
+                            {
+                                commands.push(connector_quarter_ellipse(from, at, to));
+                            }
+                        } else if conn.link_type.is_arc() {
                             // 곡선 연결선: 제어점(type=2)을 bezier 제어점으로, 나머지는 앵커로 사용
                             let cps = &conn.control_points;
                             let end_x = conn_x2;
@@ -2176,9 +2257,25 @@ impl LayoutEngine {
                                 .map(connector_point_xy)
                                 .collect();
                             match ctrl_pts.len() {
+                                // 양 끝 표식만 저장한 곡선에는 그릴 호가 없다.
+                                0 if first_control_is_start
+                                    && last_control_is_end
+                                    && cps.len() == 2 => {}
                                 0 => {
                                     // 제어점 없음 → 직선
                                     commands.push(PathCommand::LineTo(end_x, end_y));
+                                }
+                                1 if first_control_is_start
+                                    && last_control_is_end
+                                    && cps.len() == 3
+                                    && ((cps[1].x == cps[0].x && cps[1].y == cps[2].y)
+                                        || (cps[1].y == cps[0].y && cps[1].x == cps[2].x)) =>
+                                {
+                                    commands.push(connector_quarter_ellipse(
+                                        (path_start_x, path_start_y),
+                                        ctrl_pts[0],
+                                        (end_x, end_y),
+                                    ));
                                 }
                                 1 => {
                                     // 제어점 1개 → quadratic bezier (cubic으로 변환)
@@ -2244,12 +2341,13 @@ impl LayoutEngine {
 
                         // 비표시 연결선도 원본 제어점·선택 끝점을 유지한다.
                         // 직선 fallback으로 바꾸지 않고 획·화살촉만 제외한다.
-                        let line_visible = line.drawing.border_line.attr & 0x3F != 0;
-                        let style = if line_visible {
+                        let has_stroke = line_visible && commands.len() > 1;
+                        let style = if has_stroke {
                             ShapeStyle {
                                 stroke_color: Some(line_style.color),
                                 stroke_width: line_style.width,
                                 stroke_dash: line_style.dash.clone(),
+                                stroke_alpha: line_style.alpha,
                                 fill_color: None,
                                 ..Default::default()
                             }
@@ -2268,7 +2366,7 @@ impl LayoutEngine {
                         // 연결선: 시작/끝 좌표 (선 선택 방식용) + 화살표
                         path_node.connector_endpoints =
                             Some((path_start_x, path_start_y, path_end_x, path_end_y));
-                        if line_visible
+                        if has_stroke
                             && (line_style.start_arrow != super::super::ArrowStyle::None
                                 || line_style.end_arrow != super::super::ArrowStyle::None)
                         {
@@ -3332,6 +3430,24 @@ impl LayoutEngine {
                             &ole_container_path,
                         );
                     }
+                } else if ole.raw_tag_data.len() == 26
+                    && ole.drawing.border_line.attr & 0x3F != 0
+                    && parent
+                        .children
+                        .last()
+                        .is_some_and(|node| matches!(node.node_type, RenderNodeType::RawSvg(_)))
+                {
+                    // 프레젠테이션 자체의 안쪽 선과 OLE 레코드의 바깥 선을 각각 그린다.
+                    let border = crate::model::shape::DrawingObjAttr {
+                        border_line: ole.drawing.border_line,
+                        ..Default::default()
+                    };
+                    let (style, _) = drawing_to_shape_style(&border, self.dpi);
+                    parent.children.push(RenderNode::new(
+                        tree.next_id(),
+                        RenderNodeType::Rectangle(RectangleNode::new(0.0, style, None)),
+                        BoundingBox::new(render_x, render_y, render_w, render_h),
+                    ));
                 }
             }
         }

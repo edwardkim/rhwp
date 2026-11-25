@@ -1,0 +1,30 @@
+use rhwp::{DocumentCore,diagnostics::layout_anomaly::{scan_page,AnomalyOptions}};
+fn main(){
+ for sample in SOURCES {
+ let data=std::fs::read(sample).unwrap();let mut doc=DocumentCore::from_bytes(&data).unwrap();
+ if std::env::var_os("RHWP_PROBE_DEFAULT").is_none(){doc.set_hangul2024_compat(!["시장구조조사", "distribution_doc", "143E433", "수출입"].iter().any(|s|sample.contains(s)));
+ if sample.ends_with("issue1891/86712_regulatory_analysis.hwpx") { doc.set_font_environment(Some(rhwp::renderer::font_environment::FontEnvironment::from_json(include_str!("/home/tsjang/rhwp/mydocs/pr/assets/issues7754_7765/source32/regulatory-hwpx-font-environment.json")).unwrap())).unwrap(); }
+ }
+ let (mut off,mut body,mut overlap,mut cell)=(0usize,0usize,0usize,0u64);
+ let pages=doc.page_count();let _=doc.take_overflow_cell_lines();
+ for p in 0..pages {
+ let tree=doc.build_page_render_tree(p).unwrap();let a=scan_page(p,&tree.root,pages,&AnomalyOptions::default());
+ off+=a.off_canvas.len();overlap+=a.text_overlap.len();if !a.text_overlap.is_empty(){println!("OVERLAP {sample} p{} {:?}",p+1,a.text_overlap);}
+ let a=scan_page(p,&tree.root,pages,&AnomalyOptions{overflow_tolerance_px:2.0,..AnomalyOptions::default()});
+ body+=a.overflow.iter().filter(|x|x.over_bottom>2.0).count();cell+=u64::from(doc.take_overflow_cell_lines());
+ }
+ println!("{sample}\t{pages}\t{off}\t{body}\t{overlap}\t{cell}");
+ }
+}
+const SOURCES:&[&str]=&[
+"samples/issue1891/86712_regulatory_analysis.hwpx",
+"samples/복학원서.hwp",
+"samples/143E433F503322BD33.hwp",
+"samples/task1768/distribution_doc.hwpx",
+"samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+"samples/HWP5-nopassword-123456.hwpx",
+"samples/[2027] 온새미로 1 본교재.hwpx",
+"samples/[2027] 온새미로 1 본교재.hwp",
+"samples/86712_regulatory_analysis.hwp",
+"samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp",
+];

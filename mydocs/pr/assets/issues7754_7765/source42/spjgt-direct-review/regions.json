@@ -1,0 +1,80 @@
+[
+  {
+    "page": 61,
+    "dpi": 96,
+    "crop_px": [
+      165,
+      306,
+      231,
+      352
+    ],
+    "magnification": 4,
+    "image": "output/pr-review/issue7754-nine/source43-spjgt-direct-review/chemical-p061-4x.png",
+    "input_pngs": [
+      {
+        "path": "output/pr-review/issue7754-nine/source43-spjgt-focus/wasm/after/chemical/pdf_png/pdf-061.png",
+        "sha256": "a36d8fd61846df216abe07948a5ceca858f8726db23d4dea3e350233b676bc00"
+      },
+      {
+        "path": "output/pr-review/issue7754-nine/source43-spjgt-focus/wasm/before/chemical/rhwp_png/rhwp_061.png",
+        "sha256": "37a78602d60e69ea5d326e4fe4a2535e1aa364a3ff2cc9b0be71a9fd7bb6f661"
+      },
+      {
+        "path": "output/pr-review/issue7754-nine/source43-spjgt-focus/wasm/after/chemical/rhwp_png/rhwp_061.png",
+        "sha256": "8dcca3f943ea387696100137d72146fb54426fb35ca2c71d7306c4cb0fb20660"
+      }
+    ]
+  },
+  {
+    "page": 74,
+    "dpi": 96,
+    "crop_px": [
+      520,
+      260,
+      599,
+      316
+    ],
+    "magnification": 4,
+    "image": "output/pr-review/issue7754-nine/source43-spjgt-direct-review/chemical-p074-4x.png",
+    "input_pngs": [
+      {
+        "path": "output/pr-review/issue7754-nine/source43-spjgt-focus/wasm/after/chemical/pdf_png/pdf-074.png",
+        "sha256": "6fc040c64acb99a30f569e7fe3c11a7c0851fe462b09fdd733c87d24b0e09b89"
+      },
+      {
+        "path": "output/pr-review/issue7754-nine/source43-spjgt-focus/wasm/before/chemical/rhwp_png/rhwp_074.png",
+        "sha256": "80dffd476aea839d9bb3b2a938d6c12deaa78bc77b6e281338b153c5a3148c34"
+      },
+      {
+        "path": "output/pr-review/issue7754-nine/source43-spjgt-focus/wasm/after/chemical/rhwp_png/rhwp_074.png",
+        "sha256": "ea9e0d41b8e28773d9dbc66d854e240c6c8706a44c5994fafd73a22001e97cfd"
+      }
+    ]
+  },
+  {
+    "page": 91,
+    "dpi": 96,
+    "crop_px": [
+      346,
+      711,
+      399,
+      752
+    ],
+    "magnification": 4,
+    "image": "output/pr-review/issue7754-nine/source43-spjgt-direct-review/chemical-p091-4x.png",
+    "input_pngs": [
+      {
+        "path": "output/pr-review/issue7754-nine/source43-spjgt-focus/wasm/after/chemical/pdf_png/pdf-091.png",
+        "sha256": "98d14f8f5744362bca905986a6f4064b18e2a8231b615ee2db3a64aa7ad2b96f"
+      },
+      {
+        "path": "output/pr-review/issue7754-nine/source43-spjgt-focus/wasm/before/chemical/rhwp_png/rhwp_091.png",
+        "sha256": "f854be5b55568ab6c13ecd317a3e5d5377aa8dfa53c5ef5d996b9eacc406880b"
+      },
+      {
+        "path": "output/pr-review/issue7754-nine/source43-spjgt-focus/wasm/after/chemical/rhwp_png/rhwp_091.png",
+        "sha256": "2db004e451f86e499fb8c8a3e9d2cea6f94d88cedd63b8304c7f7e0776726d32"
+      }
+    ]
+  }
+]

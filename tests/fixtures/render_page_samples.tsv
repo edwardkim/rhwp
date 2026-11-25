@@ -79,6 +79,7 @@ samples/issue-505-equations.hwp	4	4	0
 samples/issue1663_coanchored_float_orphan.hwpx	2	2	0
 samples/issue1770_rowsplit_tolerance.hwpx	4	4	0
 samples/issue1835_tac_stale_height.hwp	3	3	0
+samples/issue1853_caption_precedes_body_split.hwpx	52	52	0
 samples/issue1893_clickhere_field_roundtrip.hwpx	1	1	0
 samples/issue1921/59043_regulatory_analysis.hwp	37	37	0
 samples/issue1950_hwp3_tab_charoffset.hwp	1	1	0
@@ -126,6 +127,7 @@ samples/pic-in-head-02.hwp	6	6	0
 samples/pic-in-table-01.hwp	22	22	0
 samples/pic2.hwp	2	2	0
 samples/pr-149.hwp	1	1	0
+samples/pr-1674.hwp	35	35	0
 samples/pua-test.hwp	1	1	0
 samples/re-01-hangul-only-empty-hancom.hwp	1	1	0
 samples/re-01-hangul-only-hancom.hwp	1	1	0
@@ -241,3 +243,12 @@ mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.h
 samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp	103	103	0
 samples/issue6795/1341000-201100013-cyber-university-application.hwp	45	45	0
 samples/rowbreak-problem-pages.hwpx	18	18	0
+samples/143E433F503322BD33.hwp	1	1	0
+samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp	19	19	0
+samples/86712_regulatory_analysis.hwp	64	64	0
+samples/HWP5-nopassword-123456.hwpx	24	24	0
+samples/[2027] 온새미로 1 본교재.hwp	46	46	0
+samples/[2027] 온새미로 1 본교재.hwpx	46	46	0
+samples/issue1891/86712_regulatory_analysis.hwpx	64	64	0
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	315	315	0
+samples/복학원서.hwp	1	1	0

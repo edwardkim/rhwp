@@ -1,0 +1,264 @@
+[
+  {
+    "label": "skewed",
+    "format": "hwp",
+    "stage": "resized",
+    "expected": {
+      "width": 16000,
+      "height": 8000,
+      "skewX": 21.33,
+      "skewY": 0,
+      "rotationAngle": 0,
+      "horzOffset": 25000,
+      "vertOffset": 5000
+    },
+    "actual": {
+      "width": 16000,
+      "height": 8000,
+      "skewX": 21.33,
+      "skewY": 0,
+      "rotationAngle": 0,
+      "horzOffset": 25000,
+      "vertOffset": 5000
+    }
+  },
+  {
+    "label": "skewed",
+    "format": "hwp",
+    "stage": "restored",
+    "expected": {
+      "width": 14912,
+      "height": 8000,
+      "skewX": 20,
+      "skewY": 0,
+      "rotationAngle": 0,
+      "horzOffset": 25000,
+      "vertOffset": 5000
+    },
+    "actual": {
+      "width": 14912,
+      "height": 8000,
+      "skewX": 20,
+      "skewY": 0,
+      "rotationAngle": 0,
+      "horzOffset": 25000,
+      "vertOffset": 5000
+    }
+  },
+  {
+    "label": "skewed",
+    "format": "hwpx",
+    "stage": "resized",
+    "expected": {
+      "width": 16000,
+      "height": 8000,
+      "skewX": 21.33,
+      "skewY": 0,
+      "rotationAngle": 0,
+      "horzOffset": 25000,
+      "vertOffset": 5000
+    },
+    "actual": {
+      "width": 16000,
+      "height": 8000,
+      "skewX": 21.33,
+      "skewY": 0,
+      "rotationAngle": 0,
+      "horzOffset": 25000,
+      "vertOffset": 5000
+    }
+  },
+  {
+    "label": "skewed",
+    "format": "hwpx",
+    "stage": "restored",
+    "expected": {
+      "width": 14912,
+      "height": 8000,
+      "skewX": 20,
+      "skewY": 0,
+      "rotationAngle": 0,
+      "horzOffset": 25000,
+      "vertOffset": 5000
+    },
+    "actual": {
+      "width": 14912,
+      "height": 8000,
+      "skewX": 20,
+      "skewY": 0,
+      "rotationAngle": 0,
+      "horzOffset": 25000,
+      "vertOffset": 5000
+    }
+  },
+  {
+    "label": "plain",
+    "format": "hwp",
+    "stage": "resized",
+    "expected": {
+      "width": 13000,
+      "height": 8000,
+      "skewX": 0,
+      "skewY": 0,
+      "rotationAngle": 0,
+      "horzOffset": 5000,
+      "vertOffset": 5000
+    },
+    "actual": {
+      "width": 13000,
+      "height": 8000,
+      "skewX": 0,
+      "skewY": 0,
+      "rotationAngle": 0,
+      "horzOffset": 5000,
+      "vertOffset": 5000
+    }
+  },
+  {
+    "label": "plain",
+    "format": "hwp",
+    "stage": "restored",
+    "expected": {
+      "width": 12000,
+      "height": 8000,
+      "skewX": 0,
+      "skewY": 0,
+      "rotationAngle": 0,
+      "horzOffset": 5000,
+      "vertOffset": 5000
+    },
+    "actual": {
+      "width": 12000,
+      "height": 8000,
+      "skewX": 0,
+      "skewY": 0,
+      "rotationAngle": 0,
+      "horzOffset": 5000,
+      "vertOffset": 5000
+    }
+  },
+  {
+    "label": "plain",
+    "format": "hwpx",
+    "stage": "resized",
+    "expected": {
+      "width": 13000,
+      "height": 8000,
+      "skewX": 0,
+      "skewY": 0,
+      "rotationAngle": 0,
+      "horzOffset": 5000,
+      "vertOffset": 5000
+    },
+    "actual": {
+      "width": 13000,
+      "height": 8000,
+      "skewX": 0,
+      "skewY": 0,
+      "rotationAngle": 0,
+      "horzOffset": 5000,
+      "vertOffset": 5000
+    }
+  },
+  {
+    "label": "plain",
+    "format": "hwpx",
+    "stage": "restored",
+    "expected": {
+      "width": 12000,
+      "height": 8000,
+      "skewX": 0,
+      "skewY": 0,
+      "rotationAngle": 0,
+      "horzOffset": 5000,
+      "vertOffset": 5000
+    },
+    "actual": {
+      "width": 12000,
+      "height": 8000,
+      "skewX": 0,
+      "skewY": 0,
+      "rotationAngle": 0,
+      "horzOffset": 5000,
+      "vertOffset": 5000
+    }
+  },
+  {
+    "label": "atomic",
+    "state": {
+      "rotationAngle": 30
+    },
+    "patch": {
+      "skewX": 20,
+      "width": 14600
+    },
+    "format": "hwp"
+  },
+  {
+    "label": "atomic",
+    "state": {
+      "rotationAngle": 30
+    },
+    "patch": {
+      "skewX": 20,
+      "width": 14600
+    },
+    "format": "hwpx"
+  },
+  {
+    "label": "atomic",
+    "state": {},
+    "patch": {
+      "skewY": 90,
+      "width": 14600
+    },
+    "format": "hwp"
+  },
+  {
+    "label": "atomic",
+    "state": {},
+    "patch": {
+      "skewY": 90,
+      "width": 14600
+    },
+    "format": "hwpx"
+  },
+  {
+    "label": "atomic",
+    "state": {},
+    "patch": {
+      "skewX": -90,
+      "width": 14600
+    },
+    "format": "hwp"
+  },
+  {
+    "label": "atomic",
+    "state": {},
+    "patch": {
+      "skewX": -90,
+      "width": 14600
+    },
+    "format": "hwpx"
+  },
+  {
+    "label": "atomic",
+    "state": {},
+    "patch": {
+      "rotationAngle": 30,
+      "skewX": 20,
+      "width": 14600
+    },
+    "format": "hwp"
+  },
+  {
+    "label": "atomic",
+    "state": {},
+    "patch": {
+      "rotationAngle": 30,
+      "skewX": 20,
+      "width": 14600
+    },
+    "format": "hwpx"
+  }
+]

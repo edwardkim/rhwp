@@ -6,7 +6,7 @@ use rhwp::renderer::{
 };
 
 #[test]
-fn declared_hft_bold_ascii_keeps_natural_width_and_separate_tracking() {
+fn declared_legacy_bold_ascii_keeps_natural_width_and_separate_tracking() {
     // 독립 ASCII95 × 고딕/명조/산세리프 ×10/20pt Print:
     // 일반·굵게 /Widths500, 굵은 비공백 원점만 추가0.05em이다.
     // C144의 실제 Native/fresh WASM 원본 전64/151쪽도 모두90% 이상이다.

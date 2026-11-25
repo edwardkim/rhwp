@@ -1,0 +1,38 @@
+[
+  {
+    "scope": "body",
+    "input": "keyboard",
+    "fieldsInSerializedXML": {
+      "가": "x",
+      "나": "y"
+    },
+    "fileSHA256": "63011eb707b6961df2ae7c4afd563ff9fd07a5eb7d9753222370e43b3b78d733"
+  },
+  {
+    "scope": "cell",
+    "input": "keyboard",
+    "fieldsInSerializedXML": {
+      "가": "x",
+      "나": "y"
+    },
+    "fileSHA256": "88b23fc9edfdf80705c6a3553294b4faf91554d8cb3aa921ccea5641832b804b"
+  },
+  {
+    "scope": "body",
+    "input": "ime",
+    "fieldsInSerializedXML": {
+      "가": "한",
+      "나": "글"
+    },
+    "fileSHA256": "642a4884053632a8ab7b193fec620f754c732ad1740bdacf2c87e7e953009da0"
+  },
+  {
+    "scope": "cell",
+    "input": "ime",
+    "fieldsInSerializedXML": {
+      "가": "한",
+      "나": "글"
+    },
+    "fileSHA256": "b343e861949d9942132f0f8ed588c1677c4f6c1f06df5f3ef5c19886e36f84a0"
+  }
+]

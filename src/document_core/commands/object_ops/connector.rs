@@ -2,7 +2,33 @@
 
 use crate::document_core::DocumentCore;
 use crate::model::control::Control;
-use crate::model::shape::ShapeObject;
+use crate::model::shape::{LineShape, ShapeObject};
+
+/// 도형 속성 JSON의 연결선 꼬리: 종류, 안쪽 제어점(type=2) 평균 좌표, 가운데 점 이동 축.
+pub(crate) fn connector_props_json(line: &LineShape) -> String {
+    let Some(conn) = line.connector.as_ref() else {
+        return String::new();
+    };
+    let inner: Vec<_> = conn
+        .control_points
+        .iter()
+        .filter(|cp| cp.point_type == 2)
+        .collect();
+    if inner.is_empty() {
+        return format!(",\"connectorType\":{}", conn.link_type as u32);
+    }
+    let count = inner.len() as i64;
+    let x = inner.iter().map(|p| i64::from(p.x)).sum::<i64>() / count;
+    let y = inner.iter().map(|p| i64::from(p.y)).sum::<i64>() / count;
+    let axis = conn
+        .midpoint_axis()
+        .map(|axis| format!(",\"connectorMidAxis\":\"{axis}\""))
+        .unwrap_or_default();
+    format!(
+        ",\"connectorType\":{},\"connectorMidX\":{x},\"connectorMidY\":{y}{axis}",
+        conn.link_type as u32
+    )
+}
 
 impl DocumentCore {
     /// 연결선의 SubjectID를 갱신한다 (연결선 생성 후 호출)
@@ -270,14 +296,16 @@ impl DocumentCore {
             }
         }
 
-        // 2) 커넥터 찾기 및 좌표 갱신
+        // 2) 커넥터 찾기 및 좌표 갱신. 이은 개체가 움직여 끝점이 바뀐 연결선만 고치고 다시 잇는다.
+        //    한/글처럼 끝점이 그대로인 연결선은 옮겨 둔 가운데 점(제어점)을 지킨다.
         let mut geometry_updated = false;
+        let mut routing_targets: Vec<(usize, usize, u32, u32)> = Vec::new();
         let section = match self.document.sections.get_mut(section_idx) {
             Some(s) => s,
             None => return,
         };
-        for para in &mut section.paragraphs {
-            for ctrl in &mut para.controls {
+        for (pi, para) in section.paragraphs.iter_mut().enumerate() {
+            for (ci, ctrl) in para.controls.iter_mut().enumerate() {
                 let line = match ctrl {
                     Control::Shape(ref mut s) => match s.as_mut() {
                         ShapeObject::Line(ref mut l) if l.connector.is_some() => l,
@@ -308,6 +336,22 @@ impl DocumentCore {
                 let new_w = (max_x - min_x).max(1) as u32;
                 let new_h = (max_y - min_y).max(1) as u32;
 
+                let unchanged = line.common.horizontal_offset == min_x as u32
+                    && line.common.vertical_offset == min_y as u32
+                    && line.common.width == new_w
+                    && line.common.height == new_h
+                    && (line.start.x, line.start.y) == (gsx - min_x, gsy - min_y)
+                    && (line.end.x, line.end.y) == (gex - min_x, gey - min_y);
+                let routed = !conn.control_points.is_empty();
+                if unchanged
+                    && (routed || (!conn.link_type.is_stroke() && !conn.link_type.is_arc()))
+                {
+                    continue;
+                }
+                if conn.link_type.is_stroke() || conn.link_type.is_arc() {
+                    routing_targets.push((pi, ci, si as u32, ei as u32));
+                }
+
                 line.common.horizontal_offset = min_x as u32;
                 line.common.vertical_offset = min_y as u32;
                 line.common.width = new_w;
@@ -337,32 +381,7 @@ impl DocumentCore {
             section.raw_stream = None;
         }
 
-        // 3) 제어점 재계산 (인덱스 수집 후 별도 루프 — borrow checker 대응)
-        let mut routing_targets: Vec<(usize, usize, u32, u32)> = Vec::new();
-        {
-            let section = match self.document.sections.get(section_idx) {
-                Some(s) => s,
-                None => return,
-            };
-            for (pi, para) in section.paragraphs.iter().enumerate() {
-                for (ci, ctrl) in para.controls.iter().enumerate() {
-                    if let Control::Shape(ref s) = ctrl {
-                        if let ShapeObject::Line(ref l) = s.as_ref() {
-                            if let Some(ref c) = l.connector {
-                                if c.link_type.is_stroke() || c.link_type.is_arc() {
-                                    routing_targets.push((
-                                        pi,
-                                        ci,
-                                        c.start_subject_index,
-                                        c.end_subject_index,
-                                    ));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        // 3) 끝점이 바뀐 꺾인·곡선 연결선만 제어점을 다시 계산한다.
         for (pi, ci, si, ei) in routing_targets {
             self.recalculate_connector_routing(section_idx, pi, ci, si, ei);
         }

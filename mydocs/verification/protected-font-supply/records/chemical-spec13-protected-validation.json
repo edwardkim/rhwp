@@ -1,0 +1,1491 @@
+{
+  "source": "521f69d19da9176e7947ceb318cf9838bec5ca75",
+  "devel": "d7b5286cbf6401678a70eed3d66236a68dd2a72c",
+  "baseline_commit": "d7b5286cbf6401678a70eed3d66236a68dd2a72c",
+  "baseline_sha256": "7f558bd4a1c8b901001492a977476efe1b1df3165dd3fef220f43ca1f87f55e3",
+  "native_sha256": "d3fcb8f43cecae77530c38ef29968d9d120fad7751604b348d898f4ce0b056b4",
+  "wasm_sha256": "4327fe4dfdee45a5fdb64b9638ffcc5ee10e4904f5fdd5cfc60b60d7e4567bcb",
+  "wasm_js_sha256": "f38b73899bde75b74e9eb4ed924627595dee12339706d4ed88eeaf5d7c9d81fe",
+  "metric": "silhouette_raw_match_percent",
+  "dpi": 96,
+  "matched_conditions": 46,
+  "matched_pages": 4046,
+  "initial_declines": 53,
+  "final_declines": 0,
+  "missing": 0,
+  "increased": 75,
+  "conditions": [
+    {
+      "document": "yeongwol",
+      "document_id": "0b7e7d0538284271",
+      "backend": "native",
+      "pages": 4,
+      "minimum": "100.00",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/yeongwol.tsv",
+      "tsv_sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1",
+      "input": {
+        "path": "samples/issue5699/20099369_yeongwol_forms.hwp",
+        "sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+        "bytes": 20800
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7642-failed-inputs-followup-20261011/20099369_yeongwol_forms-2020.pdf",
+        "sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123",
+        "bytes": 91696
+      },
+      "identity": {
+        "input_sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+        "reference_pdf_sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "5354cd74afcf2bcfb394e86653e908593ca5a7f536c749812348c018b6d4dcbf",
+        "environment_sha256": "fa15a5cc106788922437324b4f501e124fc3043eec8756f1e1ba8faaed890a9d"
+      }
+    },
+    {
+      "document": "yeongwol",
+      "document_id": "0b7e7d0538284271",
+      "backend": "wasm",
+      "pages": 4,
+      "minimum": "100.00",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/yeongwol.tsv",
+      "tsv_sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1",
+      "input": {
+        "path": "samples/issue5699/20099369_yeongwol_forms.hwp",
+        "sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+        "bytes": 20800
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7642-failed-inputs-followup-20261011/20099369_yeongwol_forms-2020.pdf",
+        "sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123",
+        "bytes": 91696
+      },
+      "identity": {
+        "input_sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+        "reference_pdf_sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "5354cd74afcf2bcfb394e86653e908593ca5a7f536c749812348c018b6d4dcbf",
+        "environment_sha256": "fa15a5cc106788922437324b4f501e124fc3043eec8756f1e1ba8faaed890a9d"
+      }
+    },
+    {
+      "document": "seo-body-list-typed",
+      "document_id": "2b43ec3782a748e1",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/seo-body-list-typed.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "input": {
+        "path": "tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp",
+        "sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687",
+        "bytes": 4096
+      },
+      "reference_pdf": {
+        "path": "pdf/issue8109/print/body-list-typed-hwp-2020.pdf",
+        "sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3",
+        "bytes": 19110
+      },
+      "identity": {
+        "input_sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687",
+        "reference_pdf_sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "ec32f36d5f7bdf68f9261c9820ea37d147a1ede78ecbaef81b2db03ae32770db",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "seo-body-list-typed",
+      "document_id": "2b43ec3782a748e1",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/seo-body-list-typed.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "input": {
+        "path": "tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp",
+        "sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687",
+        "bytes": 4096
+      },
+      "reference_pdf": {
+        "path": "pdf/issue8109/print/body-list-typed-hwp-2020.pdf",
+        "sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3",
+        "bytes": 19110
+      },
+      "identity": {
+        "input_sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687",
+        "reference_pdf_sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "ec32f36d5f7bdf68f9261c9820ea37d147a1ede78ecbaef81b2db03ae32770db",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "handbook-hwp",
+      "document_id": "2fb2575d58042dcf",
+      "backend": "native",
+      "pages": 383,
+      "minimum": "99.97",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/handbook-hwp.tsv",
+      "tsv_sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590",
+      "input": {
+        "path": "samples/2025 행정업무운영 편람(최종).hwp",
+        "sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+        "bytes": 10687488
+      },
+      "reference_pdf": {
+        "path": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+        "sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+        "bytes": 4692840
+      },
+      "identity": {
+        "input_sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+        "reference_pdf_sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+        "compat": "2024",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "bd6f697aa950ed20adbab7b57dcf20857cee23bfeb77f69d38b5e767ac4cc2bf",
+        "environment_sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25"
+      }
+    },
+    {
+      "document": "handbook-hwp",
+      "document_id": "2fb2575d58042dcf",
+      "backend": "wasm",
+      "pages": 383,
+      "minimum": "99.96",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/handbook-hwp.tsv",
+      "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+      "input": {
+        "path": "samples/2025 행정업무운영 편람(최종).hwp",
+        "sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+        "bytes": 10687488
+      },
+      "reference_pdf": {
+        "path": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+        "sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+        "bytes": 4692840
+      },
+      "identity": {
+        "input_sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+        "reference_pdf_sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+        "compat": "2024",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "bd6f697aa950ed20adbab7b57dcf20857cee23bfeb77f69d38b5e767ac4cc2bf",
+        "environment_sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25"
+      }
+    },
+    {
+      "document": "seo-helvetica-styles",
+      "document_id": "4314830495cfde87",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/seo-helvetica-styles.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "input": {
+        "path": "tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp",
+        "sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da",
+        "bytes": 4096
+      },
+      "reference_pdf": {
+        "path": "pdf/issue8109/print/control-styles-hwp-2020.pdf",
+        "sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba",
+        "bytes": 43664
+      },
+      "identity": {
+        "input_sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da",
+        "reference_pdf_sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "ec32f36d5f7bdf68f9261c9820ea37d147a1ede78ecbaef81b2db03ae32770db",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "seo-helvetica-styles",
+      "document_id": "4314830495cfde87",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/seo-helvetica-styles.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "input": {
+        "path": "tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp",
+        "sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da",
+        "bytes": 4096
+      },
+      "reference_pdf": {
+        "path": "pdf/issue8109/print/control-styles-hwp-2020.pdf",
+        "sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba",
+        "bytes": 43664
+      },
+      "identity": {
+        "input_sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da",
+        "reference_pdf_sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "ec32f36d5f7bdf68f9261c9820ea37d147a1ede78ecbaef81b2db03ae32770db",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "sample16-hwpx",
+      "document_id": "43c0a207f6daa0bb",
+      "backend": "native",
+      "pages": 64,
+      "minimum": "99.99",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/sample16-hwpx.tsv",
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5.hwpx",
+        "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+        "bytes": 3061900
+      },
+      "reference_pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+        "sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+        "bytes": 2234018
+      },
+      "identity": {
+        "input_sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+        "reference_pdf_sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+        "compat": "2024",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "4d39463bafa0842e75c8061b1431b01f7710484e2925fac92447b307907699c0",
+        "environment_sha256": "300d7233a5527172ad4df993214d791fe214a69cf6e36017a637ca7cb928d183"
+      }
+    },
+    {
+      "document": "sample16-hwpx",
+      "document_id": "43c0a207f6daa0bb",
+      "backend": "wasm",
+      "pages": 64,
+      "minimum": "99.99",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/sample16-hwpx.tsv",
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5.hwpx",
+        "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+        "bytes": 3061900
+      },
+      "reference_pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+        "sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+        "bytes": 2234018
+      },
+      "identity": {
+        "input_sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+        "reference_pdf_sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+        "compat": "2024",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "4d39463bafa0842e75c8061b1431b01f7710484e2925fac92447b307907699c0",
+        "environment_sha256": "300d7233a5527172ad4df993214d791fe214a69cf6e36017a637ca7cb928d183"
+      }
+    },
+    {
+      "document": "sample16-hwp2022",
+      "document_id": "4bac5a5d1702df5f",
+      "backend": "native",
+      "pages": 64,
+      "minimum": "100.00",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/sample16-hwp2022.tsv",
+      "tsv_sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5-2022.hwp",
+        "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+        "bytes": 3048448
+      },
+      "reference_pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+        "sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+        "bytes": 1830277
+      },
+      "identity": {
+        "input_sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+        "reference_pdf_sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "4d39463bafa0842e75c8061b1431b01f7710484e2925fac92447b307907699c0",
+        "environment_sha256": "e64dc04a55787efcbd55dcddd9f7a9fc8454a1df06a20c4cd9e99c9dd88de36b"
+      }
+    },
+    {
+      "document": "sample16-hwp2022",
+      "document_id": "4bac5a5d1702df5f",
+      "backend": "wasm",
+      "pages": 64,
+      "minimum": "100.00",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/sample16-hwp2022.tsv",
+      "tsv_sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5-2022.hwp",
+        "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+        "bytes": 3048448
+      },
+      "reference_pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+        "sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+        "bytes": 1830277
+      },
+      "identity": {
+        "input_sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+        "reference_pdf_sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "4d39463bafa0842e75c8061b1431b01f7710484e2925fac92447b307907699c0",
+        "environment_sha256": "e64dc04a55787efcbd55dcddd9f7a9fc8454a1df06a20c4cd9e99c9dd88de36b"
+      }
+    },
+    {
+      "document": "seo-re-03-latin",
+      "document_id": "52ee61fe7201e36b",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/seo-re-03-latin.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "input": {
+        "path": "samples/re-03-latin-only-hancom.hwp",
+        "sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+        "bytes": 9216
+      },
+      "reference_pdf": {
+        "path": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+        "sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+        "bytes": 11752
+      },
+      "identity": {
+        "input_sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+        "reference_pdf_sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "c418a81bf16743a82940d19adb009848712f55e00b4582b392b5db23172ed2ce",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "seo-re-03-latin",
+      "document_id": "52ee61fe7201e36b",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/seo-re-03-latin.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "input": {
+        "path": "samples/re-03-latin-only-hancom.hwp",
+        "sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+        "bytes": 9216
+      },
+      "reference_pdf": {
+        "path": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+        "sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+        "bytes": 11752
+      },
+      "identity": {
+        "input_sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+        "reference_pdf_sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "c418a81bf16743a82940d19adb009848712f55e00b4582b392b5db23172ed2ce",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "angle-narrow",
+      "document_id": "59f6ab1155623bda",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/angle-narrow.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "input": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+        "sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+        "bytes": 6848
+      },
+      "reference_pdf": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+        "sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+        "bytes": 10328
+      },
+      "identity": {
+        "input_sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+        "reference_pdf_sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "c418a81bf16743a82940d19adb009848712f55e00b4582b392b5db23172ed2ce",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "angle-narrow",
+      "document_id": "59f6ab1155623bda",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/angle-narrow.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "input": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+        "sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+        "bytes": 6848
+      },
+      "reference_pdf": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+        "sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+        "bytes": 10328
+      },
+      "identity": {
+        "input_sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+        "reference_pdf_sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "c418a81bf16743a82940d19adb009848712f55e00b4582b392b5db23172ed2ce",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "outline",
+      "document_id": "69bcf084e2ae31a5",
+      "backend": "native",
+      "pages": 9,
+      "minimum": "100.00",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/outline.tsv",
+      "tsv_sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+      "input": {
+        "path": "samples/task3307/issue3307_outline_number.hwpx",
+        "sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+        "bytes": 57890
+      },
+      "reference_pdf": {
+        "path": "pdf/task3307/issue3307_outline_number-2020.pdf",
+        "sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+        "bytes": 237518
+      },
+      "identity": {
+        "input_sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+        "reference_pdf_sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "7d064f79fd6f1fdeff20bd2a1bfa42d9b9e5c9d77fa6ff9d3db9dae7f8d181a1",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "outline",
+      "document_id": "69bcf084e2ae31a5",
+      "backend": "wasm",
+      "pages": 9,
+      "minimum": "100.00",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/outline.tsv",
+      "tsv_sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+      "input": {
+        "path": "samples/task3307/issue3307_outline_number.hwpx",
+        "sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+        "bytes": 57890
+      },
+      "reference_pdf": {
+        "path": "pdf/task3307/issue3307_outline_number-2020.pdf",
+        "sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+        "bytes": 237518
+      },
+      "identity": {
+        "input_sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+        "reference_pdf_sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "7d064f79fd6f1fdeff20bd2a1bfa42d9b9e5c9d77fa6ff9d3db9dae7f8d181a1",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "issue8040-insert",
+      "document_id": "71f98206e45c354a",
+      "backend": "native",
+      "pages": 4,
+      "minimum": "99.99",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/issue8040-insert.tsv",
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "input": {
+        "path": "samples/pr8040/exam-social-insert.hwp",
+        "sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82",
+        "bytes": 514560
+      },
+      "reference_pdf": {
+        "path": "pdf/pr8040/exam-social-insert-2020.pdf",
+        "sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74",
+        "bytes": 641866
+      },
+      "identity": {
+        "input_sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82",
+        "reference_pdf_sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "3a1220e6e622658e1f1b15fde16680980e44bd7ba69f581f318588c4ad4ccfb5",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "issue8040-insert",
+      "document_id": "71f98206e45c354a",
+      "backend": "wasm",
+      "pages": 4,
+      "minimum": "99.99",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/issue8040-insert.tsv",
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "input": {
+        "path": "samples/pr8040/exam-social-insert.hwp",
+        "sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82",
+        "bytes": 514560
+      },
+      "reference_pdf": {
+        "path": "pdf/pr8040/exam-social-insert-2020.pdf",
+        "sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74",
+        "bytes": 641866
+      },
+      "identity": {
+        "input_sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82",
+        "reference_pdf_sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "3a1220e6e622658e1f1b15fde16680980e44bd7ba69f581f318588c4ad4ccfb5",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "nested",
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "pages": 17,
+      "minimum": "99.98",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/nested.tsv",
+      "tsv_sha256": "065e29b177f9d5d2f16bfe073d878c98cc03399681ae727daf0a15a845b1f592",
+      "input": {
+        "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+        "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+        "bytes": 51712
+      },
+      "reference_pdf": {
+        "path": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+        "sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+        "bytes": 625577
+      },
+      "identity": {
+        "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+        "reference_pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "33c8bd7781a3fbcde3d59ef6860e5f8be30e493617e02b42ece9da5859c423d1",
+        "environment_sha256": "93f9b17725871ff485807485ac848a4abc193ba79f88cf3076441966a1ed9965"
+      }
+    },
+    {
+      "document": "nested",
+      "document_id": "78e1720edfe2277d",
+      "backend": "wasm",
+      "pages": 17,
+      "minimum": "99.98",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/nested.tsv",
+      "tsv_sha256": "065e29b177f9d5d2f16bfe073d878c98cc03399681ae727daf0a15a845b1f592",
+      "input": {
+        "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+        "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+        "bytes": 51712
+      },
+      "reference_pdf": {
+        "path": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+        "sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+        "bytes": 625577
+      },
+      "identity": {
+        "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+        "reference_pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "33c8bd7781a3fbcde3d59ef6860e5f8be30e493617e02b42ece9da5859c423d1",
+        "environment_sha256": "93f9b17725871ff485807485ac848a4abc193ba79f88cf3076441966a1ed9965"
+      }
+    },
+    {
+      "document": "sample16-hwp2024",
+      "document_id": "7df4af8174abd82a",
+      "backend": "native",
+      "pages": 64,
+      "minimum": "99.99",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/sample16-hwp2024.tsv",
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5-2024.hwp",
+        "sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+        "bytes": 3044864
+      },
+      "reference_pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-2024-hwp-2024.pdf",
+        "sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+        "bytes": 2234015
+      },
+      "identity": {
+        "input_sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+        "reference_pdf_sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+        "compat": "2024",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "4d39463bafa0842e75c8061b1431b01f7710484e2925fac92447b307907699c0",
+        "environment_sha256": "4fb70119f4959fb6461ed304d4b166c499b58caab0cc428f9fbab5fb2ef79b8b"
+      }
+    },
+    {
+      "document": "sample16-hwp2024",
+      "document_id": "7df4af8174abd82a",
+      "backend": "wasm",
+      "pages": 64,
+      "minimum": "99.99",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/sample16-hwp2024.tsv",
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5-2024.hwp",
+        "sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+        "bytes": 3044864
+      },
+      "reference_pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-2024-hwp-2024.pdf",
+        "sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+        "bytes": 2234015
+      },
+      "identity": {
+        "input_sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+        "reference_pdf_sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+        "compat": "2024",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "4d39463bafa0842e75c8061b1431b01f7710484e2925fac92447b307907699c0",
+        "environment_sha256": "4fb70119f4959fb6461ed304d4b166c499b58caab0cc428f9fbab5fb2ef79b8b"
+      }
+    },
+    {
+      "document": "handbook-hwpx",
+      "document_id": "941fe0c3549c0017",
+      "backend": "native",
+      "pages": 383,
+      "minimum": "99.97",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/handbook-hwpx.tsv",
+      "tsv_sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590",
+      "input": {
+        "path": "samples/2025 행정업무운영 편람(최종).hwpx",
+        "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+        "bytes": 13639865
+      },
+      "reference_pdf": {
+        "path": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+        "sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+        "bytes": 4692840
+      },
+      "identity": {
+        "input_sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+        "reference_pdf_sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+        "compat": "2024",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "a9b7ff1276ae9f8f102d1d9118e5c571ed21319d573d2c586c36a2524f92f09f",
+        "environment_sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25"
+      }
+    },
+    {
+      "document": "handbook-hwpx",
+      "document_id": "941fe0c3549c0017",
+      "backend": "wasm",
+      "pages": 383,
+      "minimum": "99.96",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/handbook-hwpx.tsv",
+      "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+      "input": {
+        "path": "samples/2025 행정업무운영 편람(최종).hwpx",
+        "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+        "bytes": 13639865
+      },
+      "reference_pdf": {
+        "path": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+        "sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+        "bytes": 4692840
+      },
+      "identity": {
+        "input_sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+        "reference_pdf_sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+        "compat": "2024",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "a9b7ff1276ae9f8f102d1d9118e5c571ed21319d573d2c586c36a2524f92f09f",
+        "environment_sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25"
+      }
+    },
+    {
+      "document": "issue7905",
+      "document_id": "a8e95b4accc79fa8",
+      "backend": "native",
+      "pages": 6,
+      "minimum": "98.86",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/issue7905.tsv",
+      "tsv_sha256": "f6879a02ba8764cd58d12fdc6514c1336bcc5dbd3c22631bf0e6aa85f72fa893",
+      "input": {
+        "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx",
+        "sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+        "bytes": 140149
+      },
+      "reference_pdf": {
+        "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law_hancom2018_print.pdf",
+        "sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511",
+        "bytes": 287952
+      },
+      "identity": {
+        "input_sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+        "reference_pdf_sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511",
+        "compat": "2024",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "6de4759984a89f800c5838b60b969acf02833862058003ea717b2e47a3115e5c",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "issue7905",
+      "document_id": "a8e95b4accc79fa8",
+      "backend": "wasm",
+      "pages": 6,
+      "minimum": "98.86",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/issue7905.tsv",
+      "tsv_sha256": "2bffc1537a24f58a1447d9211be6c987290b133882b6336c97ac762d6a222c56",
+      "input": {
+        "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx",
+        "sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+        "bytes": 140149
+      },
+      "reference_pdf": {
+        "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law_hancom2018_print.pdf",
+        "sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511",
+        "bytes": 287952
+      },
+      "identity": {
+        "input_sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+        "reference_pdf_sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511",
+        "compat": "2024",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "6de4759984a89f800c5838b60b969acf02833862058003ea717b2e47a3115e5c",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "sample10",
+      "document_id": "b1a9055c4c7e6f09",
+      "backend": "native",
+      "pages": 763,
+      "minimum": "99.57",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/sample10.tsv",
+      "tsv_sha256": "248740c943667ee2121afdfc125ed838ae7e196e1c90265284613afc48f508bd",
+      "input": {
+        "path": "samples/hwp3-sample10.hwp",
+        "sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+        "bytes": 945360
+      },
+      "reference_pdf": {
+        "path": "pdf/issue8371/hwp3-sample10-2020.pdf",
+        "sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+        "bytes": 96185197
+      },
+      "identity": {
+        "input_sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+        "reference_pdf_sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "ce00fcab6f0859ff8d4323a439dcde1e0c2196204b99311abf399f4dfeb648d3",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "sample10",
+      "document_id": "b1a9055c4c7e6f09",
+      "backend": "wasm",
+      "pages": 763,
+      "minimum": "99.57",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/sample10.tsv",
+      "tsv_sha256": "f0ff5f22ed2dfb65f1063f73a3b80fad44ba4f331d714a4acc16657628498de5",
+      "input": {
+        "path": "samples/hwp3-sample10.hwp",
+        "sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+        "bytes": 945360
+      },
+      "reference_pdf": {
+        "path": "pdf/issue8371/hwp3-sample10-2020.pdf",
+        "sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+        "bytes": 96185197
+      },
+      "identity": {
+        "input_sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+        "reference_pdf_sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "ce00fcab6f0859ff8d4323a439dcde1e0c2196204b99311abf399f4dfeb648d3",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "issue8040-insert-delete",
+      "document_id": "ccd0cd0b7e76fe2f",
+      "backend": "native",
+      "pages": 4,
+      "minimum": "99.99",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/issue8040-insert-delete.tsv",
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "input": {
+        "path": "samples/pr8040/exam-social-insert-delete.hwp",
+        "sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee",
+        "bytes": 514560
+      },
+      "reference_pdf": {
+        "path": "pdf/pr8040/exam-social-insert-delete-2020.pdf",
+        "sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d",
+        "bytes": 641867
+      },
+      "identity": {
+        "input_sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee",
+        "reference_pdf_sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "3a1220e6e622658e1f1b15fde16680980e44bd7ba69f581f318588c4ad4ccfb5",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "issue8040-insert-delete",
+      "document_id": "ccd0cd0b7e76fe2f",
+      "backend": "wasm",
+      "pages": 4,
+      "minimum": "99.99",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/issue8040-insert-delete.tsv",
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "input": {
+        "path": "samples/pr8040/exam-social-insert-delete.hwp",
+        "sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee",
+        "bytes": 514560
+      },
+      "reference_pdf": {
+        "path": "pdf/pr8040/exam-social-insert-delete-2020.pdf",
+        "sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d",
+        "bytes": 641867
+      },
+      "identity": {
+        "input_sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee",
+        "reference_pdf_sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "3a1220e6e622658e1f1b15fde16680980e44bd7ba69f581f318588c4ad4ccfb5",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "seo-pic-crop-01",
+      "document_id": "cdacd874b6e6ac66",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/seo-pic-crop-01.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "input": {
+        "path": "samples/pic-crop-01.hwp",
+        "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+        "bytes": 131072
+      },
+      "reference_pdf": {
+        "path": "pdf/pic-crop-01-2022.pdf",
+        "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+        "bytes": 19211
+      },
+      "identity": {
+        "input_sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+        "reference_pdf_sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "c418a81bf16743a82940d19adb009848712f55e00b4582b392b5db23172ed2ce",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "seo-pic-crop-01",
+      "document_id": "cdacd874b6e6ac66",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/seo-pic-crop-01.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "input": {
+        "path": "samples/pic-crop-01.hwp",
+        "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+        "bytes": 131072
+      },
+      "reference_pdf": {
+        "path": "pdf/pic-crop-01-2022.pdf",
+        "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+        "bytes": 19211
+      },
+      "identity": {
+        "input_sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+        "reference_pdf_sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "c418a81bf16743a82940d19adb009848712f55e00b4582b392b5db23172ed2ce",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "seo-shape-group-02",
+      "document_id": "d03a9dde3d5dc7ac",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/seo-shape-group-02.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "input": {
+        "path": "samples/shape-group-02.hwp",
+        "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+        "bytes": 16384
+      },
+      "reference_pdf": {
+        "path": "pdf/shape-group-02-hwp-2020.pdf",
+        "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+        "bytes": 89651
+      },
+      "identity": {
+        "input_sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+        "reference_pdf_sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "c418a81bf16743a82940d19adb009848712f55e00b4582b392b5db23172ed2ce",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "seo-shape-group-02",
+      "document_id": "d03a9dde3d5dc7ac",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/seo-shape-group-02.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "input": {
+        "path": "samples/shape-group-02.hwp",
+        "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+        "bytes": 16384
+      },
+      "reference_pdf": {
+        "path": "pdf/shape-group-02-hwp-2020.pdf",
+        "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+        "bytes": 89651
+      },
+      "identity": {
+        "input_sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+        "reference_pdf_sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "c418a81bf16743a82940d19adb009848712f55e00b4582b392b5db23172ed2ce",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "pages": 103,
+      "minimum": "99.88",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/chemical.tsv",
+      "tsv_sha256": "29b4f5e65e65a6955fe74cc9bb0d95f48d2e671d58e1206b73c5f0220df5bcb6",
+      "input": {
+        "path": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+        "sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+        "bytes": 193536
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+        "sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+        "bytes": 1245068
+      },
+      "identity": {
+        "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+        "reference_pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "bf3d91ff282ef16e101b47116d35d0d3dfc2714382c3c5466245baf24ae1b22c",
+        "environment_sha256": "374d724612dab2e845b5d16cc96895b21f114aede6aa21153b6e700704f79dfa"
+      }
+    },
+    {
+      "document": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "pages": 103,
+      "minimum": "99.88",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/chemical.tsv",
+      "tsv_sha256": "29b4f5e65e65a6955fe74cc9bb0d95f48d2e671d58e1206b73c5f0220df5bcb6",
+      "input": {
+        "path": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+        "sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+        "bytes": 193536
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+        "sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+        "bytes": 1245068
+      },
+      "identity": {
+        "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+        "reference_pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "bf3d91ff282ef16e101b47116d35d0d3dfc2714382c3c5466245baf24ae1b22c",
+        "environment_sha256": "d31081d4da1a713143035483b80ada9533cbe84be8a6edde24efa794d784183b"
+      }
+    },
+    {
+      "document": "spec13",
+      "document_id": "3298ed895b9a645c",
+      "backend": "native",
+      "pages": 71,
+      "minimum": "99.92",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/spec13.tsv",
+      "tsv_sha256": "8872491efcc58b013f7647fcabdf0c9be12fdf14677b74410227ab3c4cdb477e",
+      "input": {
+        "path": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+        "sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+        "bytes": 342528
+      },
+      "reference_pdf": {
+        "path": "pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf",
+        "sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+        "bytes": 830986
+      },
+      "identity": {
+        "input_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+        "reference_pdf_sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "5a691a3257902d1bbb21987664ddd84c13d33013206a384aafa3187d084e37a3",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "spec13",
+      "document_id": "3298ed895b9a645c",
+      "backend": "wasm",
+      "pages": 71,
+      "minimum": "99.92",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/spec13.tsv",
+      "tsv_sha256": "8872491efcc58b013f7647fcabdf0c9be12fdf14677b74410227ab3c4cdb477e",
+      "input": {
+        "path": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+        "sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+        "bytes": 342528
+      },
+      "reference_pdf": {
+        "path": "pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf",
+        "sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+        "bytes": 830986
+      },
+      "identity": {
+        "input_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+        "reference_pdf_sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "521bb49347a3c3c6ab762421e90b08dd855d822669d130ae0ba0d840bb31b696",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "outline-demo",
+      "document_id": "6456507d769ec90b",
+      "backend": "native",
+      "pages": 3,
+      "minimum": "100.00",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/outline-demo.tsv",
+      "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "input": {
+        "path": "samples/pr4093/outline_navigation_panel_demo.hwpx",
+        "sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4",
+        "bytes": 8468
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7382-regression-review/outline_navigation_panel_demo-2020.pdf",
+        "sha256": "c24e248c56bad280219bbd32f59fc6f07a3895fb5146b225c9ae4f9e4ac662be",
+        "bytes": 31954
+      },
+      "identity": {
+        "input_sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4",
+        "reference_pdf_sha256": "c24e248c56bad280219bbd32f59fc6f07a3895fb5146b225c9ae4f9e4ac662be",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "4f7ab73863f0e0592ad7a5b833294bb3adc3efa17348169d18c326f75a4d474a",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "outline-demo",
+      "document_id": "6456507d769ec90b",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": "100.00",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/outline-demo.tsv",
+      "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "input": {
+        "path": "samples/pr4093/outline_navigation_panel_demo.hwpx",
+        "sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4",
+        "bytes": 8468
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7382-regression-review/outline_navigation_panel_demo-2020.pdf",
+        "sha256": "c24e248c56bad280219bbd32f59fc6f07a3895fb5146b225c9ae4f9e4ac662be",
+        "bytes": 31954
+      },
+      "identity": {
+        "input_sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4",
+        "reference_pdf_sha256": "c24e248c56bad280219bbd32f59fc6f07a3895fb5146b225c9ae4f9e4ac662be",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "4f7ab73863f0e0592ad7a5b833294bb3adc3efa17348169d18c326f75a4d474a",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "decree",
+      "document_id": "61c6ae96913006c5",
+      "backend": "native",
+      "pages": 74,
+      "minimum": "99.98",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/decree.tsv",
+      "tsv_sha256": "71762c0b40f0cb54b8b352b2c6865fbe64bc9c3a3d1f8e469f6e33541bdf2ed5",
+      "input": {
+        "path": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+        "sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+        "bytes": 576512
+      },
+      "reference_pdf": {
+        "path": "pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+        "sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9",
+        "bytes": 745736
+      },
+      "identity": {
+        "input_sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+        "reference_pdf_sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "be2c5daccb663865d0314e5e6fbfaf56d20caeb9c36664734adfb7378befd70d",
+        "environment_sha256": "4811005db14bede74017ab7206a2f9a17deb2207bd8d84c325c853941d7098ab"
+      }
+    },
+    {
+      "document": "decree",
+      "document_id": "61c6ae96913006c5",
+      "backend": "wasm",
+      "pages": 74,
+      "minimum": "99.98",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/decree.tsv",
+      "tsv_sha256": "71762c0b40f0cb54b8b352b2c6865fbe64bc9c3a3d1f8e469f6e33541bdf2ed5",
+      "input": {
+        "path": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+        "sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+        "bytes": 576512
+      },
+      "reference_pdf": {
+        "path": "pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+        "sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9",
+        "bytes": 745736
+      },
+      "identity": {
+        "input_sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+        "reference_pdf_sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "be2c5daccb663865d0314e5e6fbfaf56d20caeb9c36664734adfb7378befd70d",
+        "environment_sha256": "d3ee0027e75691a3130acaf169666bb59f059f42d3ea5ad5043d578fc4886252"
+      }
+    },
+    {
+      "document": "outline-minimal",
+      "document_id": "12ba0f8dcb5ba0f5",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/outline-minimal.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "input": {
+        "path": "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+        "sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+        "bytes": 7755
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7382-regression-review/outline_navigation_table_cell_number-2020.pdf",
+        "sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81",
+        "bytes": 14962
+      },
+      "identity": {
+        "input_sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+        "reference_pdf_sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "ae5a763a9fd4e173925744b4ec5f866d5764cd62416c193f21c495fcc3dfe062",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "outline-minimal",
+      "document_id": "12ba0f8dcb5ba0f5",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "tsv": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/outline-minimal.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "input": {
+        "path": "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+        "sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+        "bytes": 7755
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7382-regression-review/outline_navigation_table_cell_number-2020.pdf",
+        "sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81",
+        "bytes": 14962
+      },
+      "identity": {
+        "input_sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+        "reference_pdf_sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "font_supply": {
+        "programs_sha256": "ae5a763a9fd4e173925744b4ec5f866d5764cd62416c193f21c495fcc3dfe062",
+        "environment_sha256": null
+      }
+    }
+  ]
+}

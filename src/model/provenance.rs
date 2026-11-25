@@ -24,6 +24,41 @@ pub enum SourceFormat {
     Pdf,
 }
 
+/// Decode a paragraph-text unit using the source document's symbol encoding.
+/// The extra body codes are attested in Hancom's 5.0.1.5/5.0.1.6 save pairs.
+/// ComposeText has a separate lookup. Other BMP characters remain Unicode.
+pub(crate) fn body_symbol(c: char, legacy: bool) -> char {
+    if !legacy || !('\u{a000}'..='\u{afff}').contains(&c) {
+        return c;
+    }
+    let unit = c as u16;
+    let cp = crate::parser::tags::hancom_symbol_to_plane15(unit).or_else(|| {
+        matches!(
+            unit,
+            0xA805
+                | 0xA806
+                | 0xA808
+                | 0xA809
+                | 0xA80C
+                | 0xA811
+                | 0xA813
+                | 0xA817
+                | 0xA81C
+                | 0xA827
+                | 0xA847
+                | 0xA848
+                | 0xA849
+        )
+        .then(|| 0xF0000 | u32::from(unit & 0x0FFF))
+    });
+    cp.and_then(char::from_u32).unwrap_or(c)
+}
+
+/// Decode one source scalar at a time without changing paragraph or run indices.
+pub(crate) fn body_chars(text: &str, legacy: bool) -> impl Clone + Iterator<Item = char> + '_ {
+    text.chars().map(move |ch| body_symbol(ch, legacy))
+}
+
 /// 문서 출처 서명 — 파서가 확정하며 이후 read-only.
 ///
 /// 기존 `Document.is_hwp3_variant`/`is_hwpx_variant` 는 Stage 1 동안 shim 으로
@@ -41,7 +76,7 @@ pub struct SourceProvenance {
     /// [#7051] 저장 줄 사다리가 HFT 한글 전용 face 의 ASCII 반각 조판을 증언한다.
     /// 계보 신호(`hwp3_lineage`)가 없는 저장본 — HWP3 변환 HWP5 를 한컴이 HWPX 로 다시
     /// 저장한 파일 등 — 을 위해 `DocumentCore` 가 로드 시 한 번 판정한다
-    /// (`renderer::hft_ascii_evidence`). 파서는 `false` 로 둔다.
+    /// (`renderer::legacy_ascii_evidence`). 파서는 `false` 로 둔다.
     pub hft_ascii_halfwidth_witnessed: bool,
     /// [#7702] 마지막 저장 제품이 한/글 2020(11.x) 보다 앞선다고 문서 메타데이터가 밝힌다.
     /// 그 저장 줄은 한/글 2020 의 공백 최소값(condense) 낱말 흡수 없이 끊겼을 수 있다.
@@ -156,6 +191,16 @@ impl LayoutCompatibilityProfile {
     /// 계약 분기. 기존 `is_hwp3_source` 동치.
     pub fn hwp3_native_layout(&self) -> bool {
         self.hwp3_native_layout
+    }
+
+    /// [#9291] 저장 줄의 세로 사다리(vpos)가 한/글이 저장한 값인지 여부.
+    ///
+    /// HWP3 원본(과 rhwp 가 HWP3 에서 만든 HWPX)에는 HWP5 LINE_SEG 가 없어 파서가 한글97
+    /// 쪽 y 와 줄 높이·줄간격을 누적해 vpos 를 만든다. 그 사다리는 구성상 항상 닫히므로
+    /// 한/글이 어떤 줄의 전진을 계상했는지 알리는 저장 증거가 아니다. HWP3 를 한/글이 HWP5
+    /// 로 저장한 변환본의 vpos 는 한/글 저장값이다.
+    pub fn saved_vertical_ladder(&self) -> bool {
+        !self.hwp3_native_layout
     }
 
     /// Stored LineSeg horizontal origins whose legacy HWP3 provenance is not

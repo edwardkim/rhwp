@@ -1,0 +1,16 @@
+{
+  "time": "2026-11-22T12:12:56.419765+09:00",
+  "before_source": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+  "before_alias_probe_exit_code": 101,
+  "python_command": [
+    "python3",
+    "-m",
+    "unittest",
+    "tools/test_oracle_pdf_selection.py"
+  ],
+  "python_exit_code": 0,
+  "python_tests": 18,
+  "rust_reference_probe_exit_code": 0,
+  "rust_reference_probe_tests": 2,
+  "scope": "Preflight only; production new Native/WASM, internal unit and full Rust gates are pending and mandatory."
+}

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import importlib.util
 import base64
-import io
 import json
 import os
 import re
@@ -348,63 +347,24 @@ class LabelFontTests(unittest.TestCase):
             ):
                 self.assertEqual(SWEEP.configured_label_font_paths(), [font_path])
 
-    @staticmethod
-    def write_label_fixture(path: Path, text: str) -> None:
-        """시스템 글꼴 설치 없이 실제 cmap과 FreeType 로딩을 검사하는 합성 글꼴."""
-        from fontTools.fontBuilder import FontBuilder
-        from fontTools.pens.ttGlyphPen import TTGlyphPen
-
-        cmap = {ord(char): f"u{ord(char):04X}" for char in text}
-        order = [".notdef", *dict.fromkeys(cmap.values())]
-        builder = FontBuilder(1000, isTTF=True)
-        builder.setupGlyphOrder(order)
-        builder.setupCharacterMap(cmap)
-        glyphs = {}
-        for name in order:
-            pen = TTGlyphPen(None)
-            pen.moveTo((100, 0))
-            pen.lineTo((500, 0))
-            pen.lineTo((500, 700))
-            pen.lineTo((100, 700))
-            pen.closePath()
-            glyphs[name] = pen.glyph()
-        builder.setupGlyf(glyphs)
-        builder.setupHorizontalMetrics({name: (600, 0) for name in order})
-        builder.setupHorizontalHeader(ascent=800, descent=-200)
-        builder.setupNameTable({"familyName": "SweepLabelContract", "styleName": "Regular"})
-        builder.setupOS2(sTypoAscender=800, sTypoDescender=-200, usWinAscent=800, usWinDescent=200)
-        builder.setupPost()
-        builder.setupMaxp()
-        builder.save(path)
-
     def test_label_font_skips_loadable_font_without_korean_legend_glyphs(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
-            latin = Path(temp_dir) / "latin.ttf"
-            korean = Path(temp_dir) / "korean.ttf"
-            ascii_text = "".join(chr(code) for code in range(32, 127))
-            self.write_label_fixture(latin, ascii_text)
-            self.write_label_fixture(
-                korean,
-                ascii_text + "색상파랑만빨강주황양쪽차이회색일치코멘트판정값실루엣이웃확인불가·",
-            )
-            with patch.object(SWEEP, "configured_label_font_paths", return_value=[latin, korean]):
-                font = SWEEP.label_font()
-            self.assertEqual(Path(font.path), korean, "로드 성공만으로 한글 라벨을 표시할 수는 없다")
-            # Windows FreeType은 로드한 파일을 잡고 있으므로 임시 디렉터리 삭제 전에 놓는다.
-            SWEEP.label_font.cache_clear()
-            del font
+        repository = MODULE_PATH.parents[1]
+        latin = repository / "vendor/rhwp-pdf-import-backend/src/fonts/assets/DejaVuSans.ttf"
+        korean = repository / "ttfs/opensource/NotoSansKR-Regular.ttf"
+        with patch.object(SWEEP, "configured_label_font_paths", return_value=[latin, korean]):
+            font = SWEEP.label_font()
+        self.assertEqual(Path(font.path), korean, "로드 성공만으로 한글 라벨을 표시할 수는 없다")
 
     def test_label_font_falls_back_to_bundled_korean_after_latin_only_candidates(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
-            latin = Path(temp_dir) / "latin.ttf"
-            self.write_label_fixture(latin, "".join(chr(code) for code in range(32, 127)))
-            with patch.object(SWEEP, "configured_label_font_paths", return_value=[latin]):
-                font = SWEEP.label_font()
-            self.assertEqual(
-                Path(font.path),
-                MODULE_PATH.parents[1] / "ttfs/opensource/NotoSansKR-Regular.ttf",
-                "기본 라벨 글꼴에 한글이 없으면 저장소의 공개 글꼴을 사용한다",
-            )
+        repository = MODULE_PATH.parents[1]
+        latin = repository / "vendor/rhwp-pdf-import-backend/src/fonts/assets/DejaVuSans.ttf"
+        with patch.object(SWEEP, "configured_label_font_paths", return_value=[latin]):
+            font = SWEEP.label_font()
+        self.assertEqual(
+            Path(font.path),
+            repository / "ttfs/opensource/NotoSansKR-Regular.ttf",
+            "기본 라벨 글꼴에 한글이 없으면 저장소의 공개 글꼴을 사용한다",
+        )
 
     def test_label_font_reports_missing_korean_instead_of_silent_default(self) -> None:
         with (
@@ -537,15 +497,8 @@ class PdfRasterFillStateTests(unittest.TestCase):
 
 
 class EmbeddedFontPreflightTests(unittest.TestCase):
-    def font_bytes(self, *, remove_cmap=False):
-        from fontTools.ttLib import TTFont
-        fixture = MODULE_PATH.parents[1] / 'tests/fixtures/fonts/RHWPExactKerningSmoke.ttf'
-        with TTFont(fixture) as font:
-            if remove_cmap:
-                del font['cmap']
-            data = io.BytesIO()
-            font.save(data)
-            return data.getvalue()
+    def font_bytes(self, name='RHWPExactKerningSmoke.ttf'):
+        return (MODULE_PATH.parents[1] / 'tests/fixtures/fonts' / name).read_bytes()
 
     def svg(self, data):
         encoded = base64.b64encode(data).decode('ascii')
@@ -562,11 +515,16 @@ class EmbeddedFontPreflightTests(unittest.TestCase):
             self.assertGreater(records[0]['unicode_mapping_count'], 0)
 
     def test_pdf_style_font_without_cmap_blocks_capture_and_records_failure(self):
+        from fontTools.ttLib import TTFont
+
         with tempfile.TemporaryDirectory() as temp:
             svg = Path(temp) / 'p001.svg'
-            svg.write_text(self.svg(self.font_bytes(remove_cmap=True)))
+            svg.write_text(self.svg(self.font_bytes('RHWPHostFixture-Preferred.ttf')))
             report = Path(temp) / 'font-check.json'
-            with self.assertRaisesRegex(SystemExit, 'Unicode cmap'):
+            with (
+                patch.object(TTFont, 'getBestCmap', return_value=None),
+                self.assertRaisesRegex(SystemExit, 'Unicode cmap'),
+            ):
                 SWEEP.check_sweep_embedded_fonts([svg], report)
             record = json.loads(report.read_text(encoding="utf-8"))
             self.assertEqual(record['status'], 'failed')
@@ -579,12 +537,15 @@ class EmbeddedFontPreflightTests(unittest.TestCase):
             self.assertEqual(SWEEP.inspect_svg_embedded_fonts(svg)[0]['status'], 'failed')
 
     def test_wasm_font_policy_cannot_bypass_font_validation(self):
+        from fontTools.ttLib import TTFont
+
         with tempfile.TemporaryDirectory() as temp:
             svg = Path(temp) / 'p001.svg'
             source = '<svg><text x="12" y="34" font-family="Fixture">AV</text></svg>'
-            policy = self.svg(self.font_bytes(remove_cmap=True))
+            policy = self.svg(self.font_bytes('RHWPHostFixture-Preferred.ttf'))
             svg.write_text(SWEEP.apply_svg_font_policy(source, re.findall(r"@font-face\s*\{[^{}]*\}", policy)))
-            self.assertEqual(SWEEP.inspect_svg_embedded_fonts(svg)[0]['status'], 'failed')
+            with patch.object(TTFont, 'getBestCmap', return_value=None):
+                self.assertEqual(SWEEP.inspect_svg_embedded_fonts(svg)[0]['status'], 'failed')
 
     def test_subset_request_is_rejected_even_from_python_api(self):
         with self.assertRaisesRegex(SystemExit, '--embed-fonts=full'):
@@ -658,6 +619,8 @@ class EmbeddedFontPreflightTests(unittest.TestCase):
             handbook.assert_called_once()
 
     def test_font_failure_invalidates_old_passed_summary_before_raster_or_resume(self):
+        from fontTools.ttLib import TTFont
+
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             (root / 'a.hwp').write_bytes(b'input')
@@ -667,10 +630,11 @@ class EmbeddedFontPreflightTests(unittest.TestCase):
             base = out / 'fixture'
             (base / 'svg').mkdir(parents=True)
             (base / 'render_tree').mkdir()
-            (base / 'svg/p001.svg').write_text(self.svg(self.font_bytes(remove_cmap=True)))
+            (base / 'svg/p001.svg').write_text(self.svg(self.font_bytes('RHWPHostFixture-Preferred.ttf')))
             (base / 'render_tree/p001.json').write_text('{}')
             SWEEP.update_root_summary(out, {'key': 'fixture', 'pr_review_gate': {'status': 'passed'}})
             with (
+                patch.object(TTFont, 'getBestCmap', return_value=None),
                 patch.object(SWEEP, 'sweep_provenance', return_value={}),
                 patch.object(SWEEP, 'run_manifest_for_target', return_value={}),
                 patch.object(SWEEP, 'load_note_shape', return_value={}),

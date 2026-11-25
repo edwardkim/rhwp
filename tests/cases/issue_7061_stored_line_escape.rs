@@ -1,3 +1,10 @@
+//! 관계형·고정형 회귀 — 저장 줄 이탈의 검출과 #7776 정상 23쪽의 줄 소속.
+//! 주석 갱신 2026-11-23 KST. 직전 파일 변경 2026-10-13T20:07:32+09:00
+//! `c0ba1e0f0c94386b5e0fa813bdf9293b71734628`.
+//! 2026-11-23 한컴 2020 Print, 96 DPI 2px raw 실루엣. 35쪽 Native/fresh WASM 최저 98.38/98.51%.
+//! 23쪽은 Native/fresh WASM 각각 100.00%다.
+//! 근거는 `mydocs/pr/assets/issue7776/`의 전쪽 TSV와 확대 비교다.
+//!
 //! [#7061] 여섯째 축 — 글자가 자기 저장 줄을 벗어나 **남의 저장 줄** baseline 에 앉았다.
 //!
 //! 다섯 축은 전부 "상자를 넘었나 / 둘이 겹쳤나"라, 이탈이 쪽 밖으로 나가지도 다른 상자와
@@ -315,6 +322,7 @@ fn oracle_backed_pages_report_no_escape() {
     // 좁힘 조건을 빼면 이 쪽들이 각각 14·1·27·3 건으로 올라왔다. 한/글 2020 정본은
     // 이 쪽들에서 rhwp 가 1px 안에서 맞다고 말한다(모듈 주석의 표).
     for (path, page) in [
+        ("samples/pr-1674.hwp", 22),
         ("samples/tac-case-003.hwp", 0),
         (
             "samples/issue6181/156562368_inline_tac_table_line_advance.hwpx",

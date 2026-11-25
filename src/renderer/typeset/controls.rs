@@ -728,7 +728,7 @@ pub(super) fn try_place_empty_para_float_table(
         styles,
         para_start_height,
         lanes,
-        st.empty_float_page(paragraphs),
+        st.empty_float_page(paragraphs, para_idx),
         table_reflowed,
         preceding_fragment_reflowed,
         || st.empty_float_available_height(ft.table_footnote_height, ft.table_footnote_count),
@@ -897,7 +897,7 @@ pub(super) fn try_place_stored_tac_paragraph(
         // 원본 저장 줄의 좌표축은 이미 확립돼 있다. 합성 줄의 확정 끝만
         // lazy 원점으로 역산하며, 실제 저장 표 뒤 사다리는 유지한다.
         if rebase_line_origin {
-            st.commit_deferred_table_anchor(para_idx, paragraphs);
+            st.commit_deferred_table_anchor(para_idx, paragraphs, styles);
             st.record_vpos_lazy_origin(lazy_origin);
             st.mark_vpos_ladder_dirty();
         }
@@ -948,7 +948,7 @@ pub(super) fn try_place_stored_tac_paragraph(
         st.commit_stored_tac_control(para_idx, placement);
     }
     if let Some(frame) = plan.source_frame {
-        st.commit_deferred_table_anchor(para_idx, paragraphs);
+        st.commit_deferred_table_anchor(para_idx, paragraphs, styles);
         st.record_vpos_page_origin(Some(frame.source_origin_hu));
         st.record_vpos_column_anchor(frame.column_anchor_y);
         st.record_vpos_origin_provenance(true);

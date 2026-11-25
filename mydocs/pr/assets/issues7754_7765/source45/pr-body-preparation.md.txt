@@ -1,0 +1,22 @@
+이관됐던 9개 문서의 원본 출력을 보정하고, 잘못된 전체 SVG 해시·과거 쪽수 핀을 문단·줄·개체의 소유와 내용 보존 검사로 복원한다. 저장 글줄의 페이지 되감김과 표 이어받기 프레임을 공유하고 실제 선택한 원본 글꼴 프로그램을 측정과 출력에서 유지한다.
+
+Refs #7754, #7755, #7756, #7757, #7759, #7760, #7761, #7762, #7765.
+
+원본 10종 583쪽의 Native·최적화 fresh WASM 전쪽이 각각 raw 98% 이상이며 같은 조건의 고정 base 대비 표시값 하락은 없다. 회귀는 변경 핵심과 경계를 보호하며 양쪽 100% → 99%대 → 98%대 순서로 완료 페이지를 선정했다. 원본 TTF → 검증 TTC → CFF 순서와 설치 글꼴에 의존하지 않는 자동 검사 계약을 유지한다.
+
+현재 작업 코드의 검증:
+
+- 전체 Rust 13,972건 통과, 기존 45건 skip. Native lib 4,033건, 기존 Native selector 193건, 집중 selector 28건 통과.
+- workspace·WASM Clippy, workspace build, Studio 2,834건과 TypeScript 통과.
+- 실제 편집·저장·재열기와 새 devel 유입 기능을 같은 base·후보에서 대조. 실제 CTRL_DATA 소유 경로·payload 8회 대조 통과.
+- 공개 기여자 시각 gate 4종 양쪽 통과. 최종 보호문서·필수 편람의 검증은 아래 제출 보류 항목을 해소한 뒤 갱신한다.
+
+증거:
+
+- `mydocs/pr/assets/issues7754_7765/source38/source38-rebase-production-equivalence.json`
+- `mydocs/pr/assets/issues7754_7765/source41/`
+- `mydocs/pr/assets/issues7754_7765/source42/`
+- `mydocs/pr/assets/issues7754_7765/source43/completed-incoming-summary.json`
+- `mydocs/working/task_m100_7754_stage13.md`
+
+제출 보류: 사용자가 지정한 PR #9293의 실제 머지 뒤 최신 devel에 동기화하고 최종 head에서 필요한 검증을 확정한다. 현재 정본 보호 전쪽의 글꼴 공급 재현과 필수 편람 검증은 진행 중이다. `980516d956c3cfba7bdf0e22ddb3d10e04b12ea1`과의 로컬 병합 시뮬레이션은 충돌 없지만, 이를 실제 통합이나 최종 head 검증으로 간주하지 않는다. 이 파일은 로컬 준비 초안이며 원격 PR은 생성하지 않았다.

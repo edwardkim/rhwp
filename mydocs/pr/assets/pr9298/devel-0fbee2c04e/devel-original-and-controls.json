@@ -1,0 +1,102 @@
+[
+  {
+    "case": "source-2022",
+    "backend": "native",
+    "pages": 37,
+    "page8_or_control": "94.32",
+    "minimum": "38.23",
+    "below90": [
+      12,
+      14,
+      15,
+      16,
+      20,
+      25,
+      28,
+      37
+    ]
+  },
+  {
+    "case": "source-2022",
+    "backend": "wasm",
+    "pages": 37,
+    "page8_or_control": "94.34",
+    "minimum": "37.56",
+    "below90": [
+      12,
+      14,
+      15,
+      16,
+      20,
+      25,
+      28,
+      37
+    ]
+  },
+  {
+    "case": "source-2024",
+    "backend": "native",
+    "pages": 37,
+    "page8_or_control": "92.92",
+    "minimum": "38.23",
+    "below90": [
+      12,
+      14,
+      15,
+      16,
+      20,
+      25,
+      28,
+      37
+    ]
+  },
+  {
+    "case": "source-2024",
+    "backend": "wasm",
+    "pages": 37,
+    "page8_or_control": "92.94",
+    "minimum": "38.20",
+    "below90": [
+      12,
+      14,
+      15,
+      16,
+      20,
+      25,
+      28,
+      37
+    ]
+  },
+  {
+    "case": "photo",
+    "backend": "native",
+    "pages": 1,
+    "page8_or_control": "99.98",
+    "minimum": "99.98",
+    "below90": []
+  },
+  {
+    "case": "photo",
+    "backend": "wasm",
+    "pages": 1,
+    "page8_or_control": "99.98",
+    "minimum": "99.98",
+    "below90": []
+  },
+  {
+    "case": "padded",
+    "backend": "native",
+    "pages": 1,
+    "page8_or_control": "99.98",
+    "minimum": "99.98",
+    "below90": []
+  },
+  {
+    "case": "padded",
+    "backend": "wasm",
+    "pages": 1,
+    "page8_or_control": "99.98",
+    "minimum": "99.98",
+    "below90": []
+  }
+]

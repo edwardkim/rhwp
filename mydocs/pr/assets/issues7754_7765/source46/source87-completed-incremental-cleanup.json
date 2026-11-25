@@ -1,0 +1,122 @@
+{
+  "started": 1795335345.061838,
+  "scope": "Completed review-only debug incremental sessions, selected by actual size. No Cargo/Rust process, no active file references, exclusive locks obtained. Preserve deps, other profiles, frozen artifacts and all visual evidence.",
+  "roots": [
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_019-1dpnknu3gcx79",
+      "bytes": 66560000
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_q-35igalmbo0c7y",
+      "bytes": 64471040
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_020-1kk9pc8wq62f8",
+      "bytes": 62783488
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp-0lbdbicnhqqbz",
+      "bytes": 61935616
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp-0rlejfnbvntlj",
+      "bytes": 61243392
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp-3qn06hga5fhnp",
+      "bytes": 61112320
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_008-3ewnvcwv41xqf",
+      "bytes": 59891712
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_016-2nkddfb5sq7pv",
+      "bytes": 59338752
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_023-2nb5ptimdzz7g",
+      "bytes": 58691584
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_004-2ky2uo7eaaa4x",
+      "bytes": 56004608
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_007-1f128gcllsebf",
+      "bytes": 55922688
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_002-0kaaegmdmwz75",
+      "bytes": 54865920
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_009-08c1sf9xefs1b",
+      "bytes": 54579200
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_025-3vqu5gemlhtf2",
+      "bytes": 54480896
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_024-0qcqt1jhf123g",
+      "bytes": 54226944
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_010-1zqimu0vuh8gq",
+      "bytes": 53665792
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_005-0yoz84gob1w90",
+      "bytes": 53587968
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_agent-3vyc4iygicx6o",
+      "bytes": 53395456
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_021-3o9s1uz3wd95q",
+      "bytes": 53182464
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_017-3qiq0svpxja6r",
+      "bytes": 53149696
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_011-2836ilv6pxpgk",
+      "bytes": 52465664
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_013-2kszv1tggdqun",
+      "bytes": 52375552
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_018-3tmccunp4m9el",
+      "bytes": 51912704
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_003-2fv6rka3j0rvn",
+      "bytes": 51900416
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_022-2cdmeaefektvg",
+      "bytes": 51572736
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_026-1w2fln6pbq80a",
+      "bytes": 51523584
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_012-0oichzp94ubf9",
+      "bytes": 51478528
+    }
+  ],
+  "processes": [],
+  "references": [],
+  "locks": 54,
+  "free_before": 1138311168,
+  "ended": 1795335345.9686773,
+  "free_after": 2645270528,
+  "complete": true,
+  "actual_free_delta": 1506959360
+}

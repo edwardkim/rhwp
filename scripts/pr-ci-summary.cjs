@@ -3,14 +3,16 @@
 const { WORKFLOW_PATHS, selectLatestWorkflowRun } = require('./ci-impact-policy.cjs');
 const MARKER = '<!-- rhwp-pr-ci-summary:v1 -->';
 const FAILED = new Set(['failure', 'timed_out', 'action_required', 'startup_failure']);
-const VISUAL_STEPS = new Set(['Run canvas visual diff and PDF report', 'Run selected CanvasKit readiness gate', 'Run frontend Canvas gates']);
+const VISUAL_STEPS = new Map([
+  ['Run frontend Canvas gates', '프런트엔드 Canvas 검사'],
+]);
 
 function selectRuns(pull, runs) {
   return Object.entries(WORKFLOW_PATHS).map(([name, path]) => ({
     name,
     run: selectLatestWorkflowRun(runs, {
       name, path, headSha: pull.head.sha, headBranch: pull.head.ref,
-      headRepository: pull.head.repo.full_name, pullNumber: pull.number, baseRef: pull.base.ref,
+      headRepository: pull.head.repo.full_name, pullNumber: pull.number, baseRef: pull.base.ref, baseSha: pull.base.sha,
     }),
   }));
 }
@@ -23,27 +25,63 @@ function state(run) {
 }
 
 function summary(pull, reports) {
-  const states = reports.map(({run}) => state(run));
-  const outcome = ['실패', '취소', '진행 중', '결과 확인 필요'].find(s => states.includes(s))
-    || (states.every(s => s === '통과') ? '통과' : '일부 실행만 확인');
   const base = pull.base.repo.html_url;
-  const lines = [MARKER, '### CI 요약 · ' + outcome, '', '커밋 `' + pull.head.sha + '`', ''];
-  for (const {name, run, jobs = []} of reports) {
-    if (!run) { lines.push('- ' + name + ' · 실행 기록 없음'); continue; }
+  const sha = pull.head.sha;
+  const lines = [
+    MARKER, '### PR 검증 결과', '', '대상 커밋 [`' + sha.slice(0, 12) + '`](' + base + '/commit/' + sha + ')',
+    '', '| 검증 항목 | 결과 | 리뷰 포인트 | 근거 |', '| --- | --- | --- | --- |',
+  ];
+  const problems = [];
+  const other = [];
+  const measurements = [];
+  const passedRuns = [];
+  let latestUpdate = 0;
+  for (const {name, run, jobs = [], evidence = []} of reports) {
+    if (!run) continue;
     const url = base + '/actions/runs/' + run.id;
-    lines.push('- [' + name + ' · 실행 ' + run.id + ', 시도 ' + run.run_attempt + '](' +
-      url + '/attempts/' + run.run_attempt + ') · ' + state(run));
+    const attempt = run.run_attempt;
+    const runLink = '[시도 ' + attempt + '](' + url + '/attempts/' + attempt + ')';
+    let hasDetails = evidence.length > 0;
+    for (const entry of evidence) {
+      const point = entry.point.slice(0, 300).split('\n').slice(0, 4)
+        .map(line => line.replace(/[^\p{L}\p{N} _./()%×↔:+,-]/gu, ' ')).join('`<br>`');
+      measurements.push({rank:entry.rank, row:'| ' + entry.name + ' | ' + entry.result +
+        ' | `' + point + '` | ' + entry.link + ' |'});
+    }
+    const workerFailed = jobs.some(j => j.name !== 'Build & Test' && FAILED.has(j.conclusion));
+    const updated = Date.parse(run.updated_at);
+    if (Number.isFinite(updated)) latestUpdate = Math.max(latestUpdate, updated);
+
     for (const job of jobs) {
       const link = url + '/job/' + job.id;
       if (FAILED.has(job.conclusion) || job.conclusion === 'cancelled') {
-        const label = job.name.replace(/[^\p{L}\p{N} ._()/&:-]/gu, ' ').slice(0, 120);
-        lines.push('  - [' + label + '](' + link + ') · ' + state(job));
+        const failedStep = job.steps?.find(step => FAILED.has(step.conclusion));
+        if (workerFailed && job.name === 'Build & Test' && failedStep?.name === 'Check Build & Test worker results') continue;
+        const label = (failedStep?.name || job.name).replace(/[^\p{L}\p{N} ._()/&:-]/gu, ' ').slice(0, 120);
+        problems.push('| ' + name + ' | ' + state(job) + ' | ' + label + ' | [작업 로그](' + link + ') |');
+        hasDetails = true;
       }
       for (const step of job.steps || []) {
-        if (VISUAL_STEPS.has(step.name) && step.conclusion === 'success')
-          lines.push('  - [' + step.name + '](' + link + ') · 실행 완료');
+        if (!evidence.length && VISUAL_STEPS.has(step.name) && step.conclusion === 'success') {
+          other.push('| ' + name + ' | 완료 | ' + VISUAL_STEPS.get(step.name) + ' | [검사 로그](' + link + ') |');
+          hasDetails = true;
+        }
       }
     }
+    if (!hasDetails && state(run) === '통과') {
+      passedRuns.push('[' + name + ' 시도 ' + attempt + '](' + url + '/attempts/' + attempt + ')');
+    } else if (!hasDetails || run.status !== 'completed' ||
+        (state(run) !== '통과' && !jobs.some(j => FAILED.has(j.conclusion) || j.conclusion === 'cancelled'))) {
+      other.push('| ' + name + ' | ' + state(run) + ' | 전체 실행 | ' + runLink + ' |');
+    }
+  }
+  lines.push(...problems, ...measurements.sort((a,b) => a.rank - b.rank).map(entry => entry.row), ...other);
+  if (!problems.length && !measurements.length && !other.length && passedRuns.length) {
+    lines.push('| 일반 CI | 통과 | 전체 실행 | ' + passedRuns.join(' / ') + ' |');
+  }
+  if (latestUpdate) {
+    const timestamp = new Date(latestUpdate).toISOString().slice(0, 19).replace('T', ' ');
+    lines.push('', '최근 실행 갱신 ' + timestamp + ' UTC');
   }
   return lines.join('\n');
 }

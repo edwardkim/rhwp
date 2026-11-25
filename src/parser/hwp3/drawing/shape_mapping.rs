@@ -292,6 +292,7 @@ pub(super) fn map_to_shape_object(
             }
         },
         outline_style: 0,
+        alpha: 0,
     };
     // 기본 속성 표 69의 시작/끝 화살표를 보존한다. 무색 선은 그대로 비가시다.
     let border_line = ShapeBorderLine {

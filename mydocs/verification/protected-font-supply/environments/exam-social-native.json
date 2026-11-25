@@ -1,0 +1,144 @@
+{
+  "id": "issue8040-provided-singraphic-native-stored-plus-auto",
+  "preserveSourceMetrics": true,
+  "selectedPrograms": {
+    "굴림": {
+      "family": "Gulim",
+      "openTypeCff": false,
+      "programId": "5156b4eb79fe5ffb616278674a649d749d25968903844089b39d181398cdb0c8",
+      "query": "굴림",
+      "trueType": true
+    },
+    "명조": {
+      "family": "Myeongjo",
+      "openTypeCff": true,
+      "programId": "85f22f1dfb6616fdefa7cf58eab802d2fd28f28d5a31053dd739713dc25895fc",
+      "query": "명조",
+      "trueType": false
+    },
+    "신명 견명조": {
+      "family": "Sinmyeong Gyeonmyeongjo",
+      "openTypeCff": true,
+      "programId": "9d39f314a5d32a7d63dc393d1527b14c19ea8a33d6efaaab5e0467da55480d77",
+      "query": "신명 견명조",
+      "trueType": false
+    },
+    "신명 디나루": {
+      "family": "Sinmyeong Dinaru",
+      "openTypeCff": true,
+      "programId": "7b94eb7b02601f27f50480ebfd0637ea21a952439bbc4127cfc7df28e7ea7072",
+      "query": "신명 디나루",
+      "trueType": false
+    },
+    "신명 신명조": {
+      "family": "Sinmyeong Sinmyeongjo",
+      "openTypeCff": true,
+      "programId": "d84cbd7e4e34b7664238ecb33fdbc36962e5e6c2570421582b145efbdaf3f666",
+      "query": "신명 신명조",
+      "trueType": false
+    },
+    "신명 중고딕": {
+      "family": "Sinmyeong Junggothic",
+      "openTypeCff": true,
+      "programId": "c41fd74adcb573bd08418be00019bfff24191af06e34c7ac060b78dad42da1f0",
+      "query": "신명 중고딕",
+      "trueType": false
+    },
+    "신명 중명조": {
+      "family": "Sinmyeong Jungmyeongjo",
+      "openTypeCff": true,
+      "programId": "fa265ebc3c3b9f9cc21070447427c28fff43d5996dd78c01efedb38be98636a3",
+      "query": "신명 중명조",
+      "trueType": false
+    },
+    "신명 태고딕": {
+      "family": "Sinmyeong Taegothic",
+      "openTypeCff": true,
+      "programId": "33618aa736531fdfc63f2aa76dda477afd2c8c4e1fea38574cf70e3704f7c94c",
+      "query": "신명 태고딕",
+      "trueType": false
+    },
+    "신명 태그래픽": {
+      "family": "Sinmyeong Taegraphic",
+      "openTypeCff": true,
+      "programId": "c3ad8452f6fff02d96193e347f68e0c674486d83f75119ce1538393e85fbb4a8",
+      "query": "신명 태그래픽",
+      "trueType": false
+    },
+    "한양견명조": {
+      "family": "HY Gyeonmyeongjo",
+      "openTypeCff": true,
+      "programId": "a94253bd5a6ff28970afad296a2f5fdbdda6fc55bfab1389bb3d8115a78b753b",
+      "query": "한양견명조",
+      "trueType": false
+    },
+    "한양신명조": {
+      "family": "HY Sinmyeongjo",
+      "openTypeCff": true,
+      "programId": "c20485a292d437a1f4fd2ac1def811401b8e8bff598449416656fa9b97d8e4e8",
+      "query": "한양신명조",
+      "trueType": false
+    },
+    "한양중고딕": {
+      "family": "HY Junggothic",
+      "openTypeCff": true,
+      "programId": "b41dc5e093f179def3a2f12912c5ad114f4139db04da62122554ebd533e0343d",
+      "query": "한양중고딕",
+      "trueType": false
+    },
+    "한컴바탕": {
+      "family": "Haansoft Batang",
+      "openTypeCff": false,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "trueType": true
+    },
+    "함초롬바탕": {
+      "family": "HCR Batang",
+      "openTypeCff": false,
+      "programId": "6247c14b4d48d9c44d37124d74a8d3428c822e82dfa2cd3cd66cd74489e0171b",
+      "query": "함초롬바탕",
+      "trueType": true
+    }
+  },
+  "substitutions": {
+    "굴림": "Gulim",
+    "명조": "Myeongjo",
+    "신명 견명조": "Sinmyeong Gyeonmyeongjo",
+    "신명 디나루": "Sinmyeong Dinaru",
+    "신명 신명조": "Sinmyeong Sinmyeongjo",
+    "신명 중고딕": "Sinmyeong Junggothic",
+    "신명 중명조": "Sinmyeong Jungmyeongjo",
+    "신명 태고딕": "Sinmyeong Taegothic",
+    "신명 태그래픽": "Sinmyeong Taegraphic",
+    "한양견명조": "HY Gyeonmyeongjo",
+    "한양신명조": "HY Sinmyeongjo",
+    "한양중고딕": "HY Junggothic",
+    "한컴바탕": "Haansoft Batang",
+    "함초롬바탕": "HCR Batang"
+  },
+  "trueTypeFaces": [
+    "Gulim",
+    "HCR Batang",
+    "Haansoft Batang",
+    "SinGraphic"
+  ],
+  "documentSubstitutions": [
+    {
+      "source": "신명 신그래픽",
+      "target": "SinGraphic",
+      "query": "SinGraphic",
+      "fontId": 5,
+      "languageSlot": 0,
+      "programId": "c8a21806907be6b0765efb30809f65a576ae4714a5317f625b0cef25e9d00d37"
+    },
+    {
+      "source": "신명 신그래픽",
+      "target": "SinGraphic",
+      "query": "SinGraphic",
+      "fontId": 5,
+      "languageSlot": 1,
+      "programId": "c8a21806907be6b0765efb30809f65a576ae4714a5317f625b0cef25e9d00d37"
+    }
+  ]
+}

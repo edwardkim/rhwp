@@ -512,44 +512,19 @@ pub fn parse_paragraph(records: &[Record]) -> Result<Paragraph, BodyTextError> {
                 let ctrl_records = &records[ctrl_start..i];
                 let mut control = parse_ctrl_header(ctrl_records);
 
-                // CTRL_DATA 레코드 추출 (라운드트립 보존용)
-                // 중첩 CTRL_HEADER 이전까지만 검색하여 내부 컨트롤의 CTRL_DATA 혼입 방지
-                //
-                // SectionDef는 바탕쪽 같은 중첩 raw record를 extra_child_records에도 보존하므로,
-                // 다음 중첩 CTRL_HEADER 전의 직접 자식만 문단 control 슬롯의 canonical owner로
-                // 삼는다. 다른 control은 Picture/Shape처럼 CTRL_DATA가 더 깊은 level에 올 수
-                // 있어 기존 탐색 계약을 유지한다.
-                let ctrl_data_record = if matches!(control, Control::SectionDef(_)) {
-                    section_def_ctrl_data_index(&ctrl_records[1..], ctrl_records[0].level)
-                        .map(|index| &ctrl_records[index + 1])
-                } else if matches!(control, Control::Shape(_)) {
-                    // [#8225] 그리기 개체는 CTRL_HEADER 바로 아래나 맨 위 SHAPE_COMPONENT 바로 아래의
-                    // CTRL_DATA 만 이 컨트롤의 것이다. 묶음 안 자식 도형의 CTRL_DATA 는 그 자식이
-                    // `ShapeComponentAttr.ctrl_data` 로 갖는다 — 여기서 가져가면 저장 때 두 번 쓰인다.
-                    let max_level = ctrl_records[0].level + 2;
-                    ctrl_records[1..]
-                        .iter()
-                        .take_while(|r| r.tag_id != tags::HWPTAG_CTRL_HEADER)
-                        .find(|r| r.tag_id == tags::HWPTAG_CTRL_DATA && r.level <= max_level)
-                } else {
-                    ctrl_records[1..]
+                let ctrl_data = match &mut control {
+                    Control::Shape(shape) => drawing_ctrl_data(ctrl_records, shape.common_mut()),
+                    Control::Picture(pic) => drawing_ctrl_data(ctrl_records, &mut pic.common),
+                    Control::SectionDef(_) => {
+                        section_def_ctrl_data_index(&ctrl_records[1..], record.level)
+                            .map(|index| ctrl_records[index + 1].data.clone())
+                    }
+                    _ => ctrl_records[1..]
                         .iter()
                         .take_while(|r| r.tag_id != tags::HWPTAG_CTRL_HEADER)
                         .find(|r| r.tag_id == tags::HWPTAG_CTRL_DATA)
+                        .map(|r| r.data.clone()),
                 };
-                let ctrl_data = ctrl_data_record.map(|r| r.data.clone());
-
-                // 첫 글자 장식 방식은 그리기 개체 CTRL_DATA의 파라미터 셋에 있다(HWPX dropcapstyle).
-                if let Some(style) = ctrl_data
-                    .as_deref()
-                    .and_then(crate::model::shape::DropCapStyle::from_hwp5_ctrl_data)
-                {
-                    match &mut control {
-                        Control::Shape(shape) => shape.common_mut().drop_cap_style = style,
-                        Control::Picture(picture) => picture.common.drop_cap_style = style,
-                        _ => {}
-                    }
-                }
 
                 // CTRL_DATA에서 필드 이름 추출 → Field.ctrl_data_name에 설정
                 if let Control::Field(ref mut field) = control {
@@ -579,6 +554,44 @@ pub fn parse_paragraph(records: &[Record]) -> Result<Paragraph, BodyTextError> {
 
     para.import_markpen_range_tags();
     Ok(para)
+}
+
+/// 그림 헤더와 구성 요소에 같은 ParameterSet이 있어도 각 소유자의 레코드를 보존한다.
+fn drawing_ctrl_data(
+    records: &[Record],
+    common: &mut crate::model::shape::CommonObjAttr,
+) -> Option<Vec<u8>> {
+    use crate::model::shape::DropCapStyle;
+
+    fn direct_data(owner: &[Record]) -> Option<&[u8]> {
+        let (parent, descendants) = owner.split_first()?;
+        descendants
+            .iter()
+            .take_while(|r| r.level > parent.level)
+            .find(|r| r.level == parent.level + 1 && r.tag_id == tags::HWPTAG_CTRL_DATA)
+            .map(|r| r.data.as_slice())
+    }
+
+    let header = direct_data(records);
+    let component = records
+        .iter()
+        .position(|r| {
+            r.level == records[0].level + 1
+                && matches!(
+                    r.tag_id,
+                    tags::HWPTAG_SHAPE_COMPONENT | tags::HWPTAG_SHAPE_COMPONENT_CONTAINER
+                )
+        })
+        .and_then(|i| direct_data(&records[i..]));
+    common.hwp5_header_ctrl_data = header.map(Box::from);
+    if let Some(style) = [header, component]
+        .into_iter()
+        .flatten()
+        .find_map(DropCapStyle::from_hwp5_ctrl_data)
+    {
+        common.drop_cap_style = style;
+    }
+    component.map(<[u8]>::to_vec)
 }
 
 /// PARA_HEADER 바이너리 데이터 파싱
@@ -1124,7 +1137,8 @@ fn parse_section_def(ctrl_data: &[u8], child_records: &[Record], ctrl_level: u16
     sd.first_page_border = sd.flags & 0x0100 != 0;
     sd.first_page_fill = sd.flags & 0x0200 != 0;
     sd.hide_empty_line = sd.flags & 0x00080000 != 0; // bit 19: 빈 줄 감추기
-    sd.page_num_type = ((sd.flags >> 20) & 0x03) as u8; // bit 20-21: 쪽 번호 종류 (0=이어서, 1=홀수, 2=짝수)
+                                                     // bit 20-21: 쪽 번호 종류 (0=이어서, 1=짝수, 2=홀수)
+    sd.page_num_type = crate::model::document::hwp_page_num_type(((sd.flags >> 20) & 0x03) as u8);
 
     // 자식 레코드에서 PAGE_DEF, FOOTNOTE_SHAPE, PAGE_BORDER_FILL 파싱
     let mut footnote_count = 0u32;

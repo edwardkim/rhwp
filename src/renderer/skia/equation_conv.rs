@@ -16,6 +16,7 @@ const EQ_FONT_FAMILY: &str =
 
 /// Font resources supplied to body text and every recursive equation branch.
 pub(super) struct EquationFonts<'a> {
+    pub(super) pdf_fonts: Option<&'a super::pdf_fonts::PdfFontCache>,
     pub(super) font_mgr: &'a FontMgr,
     pub(super) system_families: &'a SystemFontFamilies,
     pub(super) custom_typefaces: &'a TypefaceCatalog,

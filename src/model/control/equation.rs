@@ -65,6 +65,16 @@ impl Equation {
         self.implicit_legacy_font && self.font_name.is_empty() && self.version_info.is_empty()
     }
 
+    /// Version 60은 글꼴 선택을 생략하면 기본 수식 글꼴을 사용한다.
+    /// 저장 문자열은 왕복을 위해 보존하고 해석할 때만 기본값을 해소한다.
+    pub(crate) fn uses_hyhwpeq_font(&self) -> bool {
+        self.font_name.eq_ignore_ascii_case("HYhwpEQ")
+            || (self.font_name.is_empty()
+                && self
+                    .version_info
+                    .eq_ignore_ascii_case("Equation Version 60"))
+    }
+
     /// 색·호스트 이동과 분리된 수식 내용 및 선언 프레임의 서명.
     pub(crate) fn declared_frame_signature(&self) -> [u8; 32] {
         crate::model::raw_provenance::record_digest(&(

@@ -11,6 +11,15 @@
 
 import { EditorTransport } from './transport.js';
 import {
+  PASSWORD_SAVE_CAPABILITY,
+  PasswordSaveError,
+  validateHostSaveRequest,
+  validateHostSaveResult,
+  validatePasswordExportRequest,
+  validatePasswordProtectedExport,
+  validateSaveProtectionState,
+} from './password-save-contract.js';
+import {
   assertCapability,
   validateApplyTextCommand,
   validateBodyParagraphTarget,
@@ -280,6 +289,33 @@ export class RhwpEditor {
     }
     const params = typeof fileName === 'string' && fileName.length > 0 ? { fileName } : {};
     return this._request('notifySaved', params);
+  }
+
+  async getSaveProtectionState() {
+    return validateSaveProtectionState(await this._requestPasswordSave('getSaveProtectionState'));
+  }
+
+  async exportPasswordProtectedDocument(request) {
+    const params = { ...validatePasswordExportRequest(request) };
+    const result = await this._requestPasswordSave('exportPasswordProtectedDocument', params);
+    return validatePasswordProtectedExport(result, params);
+  }
+
+  async acknowledgeHostSave(request) {
+    return validateHostSaveResult(await this._requestPasswordSave(
+      'acknowledgeHostSave', validateHostSaveRequest(request),
+    ));
+  }
+
+  async _requestPasswordSave(method, params) {
+    if (!this._transport.supports(PASSWORD_SAVE_CAPABILITY)) {
+      throw new PasswordSaveError('UNSUPPORTED_CAPABILITY');
+    }
+    try {
+      return await this._request(method, params);
+    } catch (error) {
+      throw new PasswordSaveError(error?.code);
+    }
   }
 
   /** 현재 문서의 에이전트 명령 fence와 SHA-256 상태를 반환합니다. */

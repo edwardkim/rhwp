@@ -382,6 +382,11 @@ pub struct ParaShape {
     /// 패키지 xmlVersion 1.4 이상에서 평문 여백이 물리 HWPUNIT인지 보존한다.
     /// 이전 버전은 저장값이 이미 공통 IR 단위이므로 직렬화에서도 절반으로 줄이지 않는다.
     pub hwpx_plain_para_margin_physical: bool,
+    /// 구판 자체 변환본의 저장 줄을 인증할 때만 쓰는 fallback 원본 값.
+    /// 현재 case의 단위를 덮어쓰지 않으며 직렬화·논리적 동등성에는 참여하지 않는다.
+    /// 순서는 왼쪽·오른쪽·들여쓰기이며 HWP 저장 단위와 단위 표지를 그대로 보존한다.
+    #[serde(skip)]
+    pub hwpx_default_horizontal_margins: Option<[i32; 3]>,
     /// [#1986] HWPX breakSetting@breakLatinWord 원문 보존
     /// (BREAK_WORD/KEEP_WORD/HYPHENATION). 파서 미수집 시 None → 직렬화 기본값
     /// KEEP_WORD. 값이 3가지라 attr1 비트 인코딩 대신 원문 보존으로 무손실 방출.
@@ -1000,6 +1005,9 @@ pub struct ShapeBorderLine {
     pub attr: u32,
     /// 아웃라인 스타일 (0: normal, 1: outer, 2: inner)
     pub outline_style: u8,
+    /// 선 투명도 (0=불투명 ~ 255=투명). HWP는 SHAPE_COMPONENT의 인스턴스 ID 다음 바이트,
+    /// HWPX는 `lineShape@alpha` 정수다(한컴 12.30의 개체 속성 > 투명도 설정).
+    pub alpha: u8,
 }
 
 /// 글자 모양 수정 사항 (None이면 해당 속성 변경 안 함)
@@ -1220,6 +1228,7 @@ impl ParaShapeMods {
         let mut ps = base.clone();
         // 수정된 ParaShape는 원본 바이트와 달라지므로 raw_data 무효화
         ps.raw_data = None;
+        ps.hwpx_default_horizontal_margins = None;
         if let Some(v) = self.alignment {
             ps.alignment = v;
         }

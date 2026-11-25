@@ -1,0 +1,30 @@
+from pathlib import Path
+import json,time,subprocess,csv,hashlib,traceback,os
+R=Path('/home/tsjang/rhwp');O=R/'output/pr-review/issue7754-nine';P=O/'source124-qualified-outline-state.json';s={'started':time.time(),'pid':os.getpid(),'results':[],'scope':'Baseline auto-environment output snapshot is not an input contract. Qualify actual original glyph programs: exact canonical CFF supply, identical public source/native font hashes, and all 215 observed TTF glyph programs matching independent Print. Reject the similarly named original-TTF candidate with 32 different DotumChe glyphs; use the independently verified collection face.'}
+def save():P.write_text(json.dumps(s,ensure_ascii=False,indent=2)+'\n')
+def sha(p):
+ with Path(p).open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
+try:
+ proof=json.load(open(O/'source123-used-ttc-glyph-identity.json'));assert proof['passed'];s['glyph_identity_proof_sha256']=sha(O/'source123-used-ttc-glyph-identity.json')
+ original=json.load(open(R/'mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json'));baseline=next(x for x in original['datasets'] if x['key']=='outline' and x['backend']=='native');assert '--font-environment' not in baseline['command'];s['baseline_environment_is_auto_generated_output']=True;s['unrecovered_historical_snapshot_sha256']=baseline['provenance']['font_environment']['sha256']
+ actual=json.load(open(O/'source109-protected-native-state.json'));record=next(x for x in actual['results'] if x['key']=='outline');meta=json.load(open(record['manifest']));native_env=Path(meta['provenance']['font_environment']['path']);env=json.load(open(native_env));env['id']='outline-original-glyph-programs-verified-collection';entry=env['selectedPrograms']['돋움체'];entry.update(programId=hashlib.sha256(Path('/home/tsjang/.local/share/fonts/rhwp-pr9237/gulim.ttc').read_bytes()+(3).to_bytes(4,'big')).hexdigest(),trueType=True,openTypeCff=False)
+ D=O/'private-source124-outline';D.mkdir(mode=0o700,exist_ok=True);e=D/'environment.json';e.write_text(json.dumps(env,ensure_ascii=False,indent=2)+'\n');e.chmod(0o600)
+ public=meta['provenance']['native_webfont_fallback']['resources'];old_public=baseline['provenance']['native_webfont_fallback']['resources'];assert [(x['source_sha256'],x['native_sha256']) for x in public]==[(x['source_sha256'],x['native_sha256']) for x in old_public]
+ public_font=R/'output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf';assert sha(public_font)=='af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834'
+ s['public_font_source_sha256']=public[0]['source_sha256'];s['public_native_font_sha256']=sha(public_font);s['qualified_environment_sha256']=sha(e)
+ build=json.load(open(O/'source105-corrected-build-state.json'));assert build['completed']
+ for backend in ['native','wasm']:
+  for role in ['base','candidate']:
+   command=list(record['command']);binary=O/'bin'/('rhwp-source88-base-optimized' if role=='base' else 'rhwp-source105-candidate-optimized');command[command.index('--rhwp-bin')+1]=str(binary);out=O/'source124-qualified-outline'/backend/role;command[command.index('--out')+1]=str(out)
+   if '--font-environment' in command:command[command.index('--font-environment')+1]=str(e)
+   else:command+=['--font-environment',str(e)]
+   for font in ['/home/tsjang/.local/share/fonts/rhwp-pr9237/gulim.ttc','/home/tsjang/.local/share/fonts/rhwp-protected-reference/0ea38ac53e8d-batang.TTC',str(public_font)]:command+=['--font-path',font]
+   if backend=='wasm':
+    command[command.index('--'):command.index('--')]=['--setenv','VISUAL_SWEEP_CHROME',str(O/'chrome155-private-font-context.sh')];command+=['--wasm-pkg',str(O/('pkg-source88-base' if role=='base' else 'pkg-source105-candidate'))]
+   q=next(x for x in build['results'] if x['label']==role+'-'+backend);s['running']={'backend':backend,'role':role};save();log=O/'logs'/f'source124-outline-{backend}-{role}.txt';t=time.monotonic()
+   with log.open('w') as f:r=subprocess.run(command,cwd=R,stdout=f,stderr=subprocess.STDOUT,timeout=1800)
+   folder=out/'outline';tsv=folder/'silhouette.tsv';rows=list(csv.DictReader(tsv.open(),delimiter='\t'));assert [int(x['page']) for x in rows]==list(range(1,10));assert json.load(open(folder/'silhouette_manifest.json'))['pr_review_gate']['document_page_counts']=={'rhwp':9,'pdf':9}
+   s['results'].append({'backend':backend,'role':role,'source_head':q['source_head'],'command':command,'exit_code':r.returncode,'seconds':time.monotonic()-t,'pages':len(rows),'minimum':min(x['silhouette_raw_match_percent'] for x in rows),'tsv':str(tsv),'tsv_sha256':sha(tsv),'manifest':str(folder/'silhouette_manifest.json'),'log':str(log)});save();assert r.returncode==0 and all(x['silhouette_raw_match_percent']=='100.00' for x in rows)
+ s.update(passed=True,complete_coverage=True,running=None)
+except Exception as e:s['error']=str(e);s['traceback']=traceback.format_exc();print(s['traceback'],flush=True)
+finally:s['ended']=time.time();save()

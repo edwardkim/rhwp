@@ -28,11 +28,6 @@ pub(crate) fn implicit_symbol_advance_em(character: char) -> Option<f64> {
         // A854/A855 프로그램을 사용한다. /W512, UPEM1024이며 표시용
         // 전각 흰 겹낫표의 폭으로 원본 반각 전진을 덮어쓰지 않는다.
         '\u{F0854}' | '\u{F0855}' => Some(0.5),
-        // #5793의 독립 Print와 sample10 474쪽은 원 HNC 이중선을
-        // 본문 face와 별개인 Haansoft Batang의 반각 프로그램으로 출력한다.
-        // 원시 HWP5 별칭과 평면15 키는 같은 프로그램이며 굵은 본문에도
-        // 기호 고유 전진을 쓴다. 리터럴 Unicode ═에는 이 계약을 옮기지 않는다.
-        '\u{A827}' | '\u{F0827}' => Some(0.5),
         // 편람의 한컴 2020·2024 Print는 원 PUA 삼각 기호를
         // Haansoft Batang CID13, /W500으로 출력한다. 실제 원 프로그램을
         // 준비한 경우의 전진은 앞선 native_pua_metrics가 소유하고,
@@ -40,6 +35,13 @@ pub(crate) fn implicit_symbol_advance_em(character: char) -> Option<f64> {
         '\u{F02FC}' => Some(0.5),
         _ => None,
     }
+}
+
+/// #5793과 sample10 474쪽 독립 Print에서 원 HNC 이중선은 본문과 별도인
+/// Haansoft Batang 반각 프로그램을 사용한다. 표시용 PUA의 hmtx가 이
+/// 원본 전진을 정하지 않는다. 리터럴 Unicode ═에는 적용하지 않는다.
+pub(crate) fn implicit_double_rule_advance_em(character: char) -> Option<f64> {
+    matches!(character, '\u{A827}' | '\u{F0827}').then_some(0.5)
 }
 
 /// 원본 face의 일부 글리프만 독립적으로 확인한 경우의 자연 전진폭.
@@ -301,6 +303,17 @@ pub(crate) fn declared_original_glyph_advance_em(
     if face == "한양신명조" && !bold && !italic && matches!(character, '\u{2218}' | '\u{2219}')
     {
         return Some(1.0);
+    }
+    // SQL 변환본의 한컴 2024 Print는 명조 굵은 기울임 대괄호를 0.5em으로
+    // 전진시킨다. 표시용 CFF의 전각 hmtx와 구분해 원본 폭을 소비한다.
+    if face == "명조" && bold && italic && matches!(character, '[' | ']') {
+        return Some(0.5);
+    }
+    // 독립 한컴 Print의 중첩 표 6·12·16쪽은 굵은 HCI Poppy의 가운뎃점을
+    // 같은 Type 3 글리프로 그린다. /Widths와 CharProc의 전진은 모두 384/1000em이다.
+    // 문서가 선언한 원본 폭을 적용하며 표시용 글꼴의 hmtx와 구분한다.
+    if face == "HCI Poppy" && bold && !italic && character == '·' {
+        return original_glyph_advance_em(face, false, false, character);
     }
     // 독립 전체 ASCII 표본의 한컴2020 Print Type3는 95자 모두500/1000em이다.
     // 원본 HFT 선언을 확인한 호출자만 이 부분 표를 받는다. 실제 TrueType,

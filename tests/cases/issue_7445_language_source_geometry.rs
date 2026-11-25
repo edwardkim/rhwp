@@ -69,7 +69,7 @@ fn automatic_environment(c: &DocumentCore) -> FontEnvironment {
 }
 
 #[test]
-fn automatic_display_fallback_keeps_original_hft_bracket_advance_and_following_text() {
+fn automatic_display_fallback_keeps_original_legacy_bracket_advance_and_following_text() {
     let mut c = DocumentCore::from_bytes(
         &std::fs::read(concat!(
             env!("CARGO_MANIFEST_DIR"),
@@ -135,7 +135,7 @@ fn automatic_display_fallback_keeps_original_hft_bracket_advance_and_following_t
         .unwrap();
     assert!(
         (advance - source_size_hu * 729.0 / 1000.0).abs() <= 1.0,
-        "독립 HFT 자연 전진과 원본 크기: actual={advance}, sourceSize={source_size_hu}"
+        "독립 Print의 자연 전진폭과 원본 글자 크기: actual={advance}, sourceSize={source_size_hu}"
     );
     let page = c
         .build_page_layer_tree_with_profile(1, RenderProfile::Print)
@@ -156,7 +156,7 @@ fn automatic_display_fallback_keeps_original_hft_bracket_advance_and_following_t
     let expected_x = 1154.0 * 0.12 * 96.0 / 72.0;
     assert!(
         (x - expected_x).abs() <= 2.0,
-        "원본 HFT 괄호 뒤 실제 Print 원점 ±2CSSpx: actual={x}, PDF={expected_x}"
+        "원본 괄호 뒤 독립 Print 원점 ±2 CSS px: actual={x}, PDF={expected_x}"
     );
     let mut actual = String::new();
     let mut lines = vec![];

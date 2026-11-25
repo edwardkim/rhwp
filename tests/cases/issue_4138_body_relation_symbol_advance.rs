@@ -48,7 +48,7 @@ fn check(alias: bool) {
     };
     assert!(
         !run.style.source_font_is_ttf,
-        "원본 HFT 선언을 대체 TTF로 승격하지 않는다"
+        "표시용 대체 TTF를 원본 글꼴로 취급하지 않는다"
     );
     // 독립 PDF의 T4 U+2264 /Widths·CharProc d1=1000, FontMatrix=.001이다.
     assert!(
@@ -75,7 +75,7 @@ fn check(alias: bool) {
 }
 
 #[test]
-fn original_hft_relation_symbol_owns_a_full_em() {
+fn original_legacy_relation_symbol_owns_a_full_em() {
     check(false);
 }
 

@@ -62,6 +62,7 @@ pub(super) fn print() {
     println!("      --json                 stdout에 PNG 산출물·전체 쪽수 JSON만 출력");
     println!("      --metadata-only        PNG 없이 전체 쪽수 JSON만 출력");
     println!("      --render-tree-output <폴더> 같은 문서의 선택 쪽 render tree를 함께 저장");
+    println!("      --print-bmp-full-color  Print JPEG에서 24·32비트 BI_RGB의 원본 색을 유지");
     println!("      --print-png-rgb555     Print의 불투명 PNG 압축에 RGB555 장치색을 적용");
     println!("      --print-job-context <JSON> 자동 인쇄 바닥글용 파일명과 현지 시각");
     println!("      --font-environment <JSON> 조판/출력의 명시적 글꼴 환경 적용");
@@ -269,6 +270,7 @@ pub(super) fn print() {
     println!();
     println!("  export-hwpx <입력.hwp|입력.hwpx> [출력.hwpx] [--verify] [--verify-pages]");
     println!("      HWP 문서를 HWPX(ZIP+XML)로 변환 저장. 출력 생략 시 <입력 stem>.hwpx");
+    println!("      --recover-legacy-alpha  구버전 rhwp가 저장한 HWPX의 완전 투명 채움 복원");
     println!(
         "      --verify              변환 후 산출물을 재파싱해 IR 차이를 검출 (차이 시 exit 3)"
     );

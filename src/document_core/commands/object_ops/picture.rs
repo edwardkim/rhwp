@@ -26,7 +26,7 @@ pub(super) struct PictureBandGeometry {
     vert_rel_to: u8,
     horz_align: u8,
     vert_align: u8,
-    treat_as_char: bool,
+    pub(super) treat_as_char: bool,
     text_wrap: u8,
     margin: (i16, i16, i16, i16),
 }
@@ -1052,6 +1052,9 @@ impl DocumentCore {
                 "Left" => crate::model::shape::HorzAlign::Left,
                 "Center" => crate::model::shape::HorzAlign::Center,
                 "Right" => crate::model::shape::HorzAlign::Right,
+                // 한/글 가로 정렬 안쪽·바깥쪽(맞쪽이 아니면 왼쪽·오른쪽과 같다)
+                "Inside" => crate::model::shape::HorzAlign::Inside,
+                "Outside" => crate::model::shape::HorzAlign::Outside,
                 _ => pic.common.horz_align,
             };
         }

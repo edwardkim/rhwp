@@ -1,0 +1,160 @@
+{
+  "key": "seo-helvetica-styles",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1
+  ],
+  "completed_pages": [
+    1
+  ],
+  "missing_pages": [],
+  "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source67-seo-win-arial/wasm/candidate/seo-helvetica-styles/silhouette.tsv",
+  "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+  "dpi": 96,
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source67-seo-win-arial/wasm/candidate/seo-helvetica-styles/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "0baf2c11566a9957440ac00757b843efca2f0e19eae64fb2a94ec8721ec4e467",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source67-seo-win-arial/wasm/candidate/seo-helvetica-styles/pdf_png/pdf-001.png",
+      "pdf_sha256": "e80aa14102f23e4bdd84f1b2c01d3d4a599d991fe5bf9f8d8cca2026f2039d18"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 3029,
+      "tolerant_content_match_percent": 100.0
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+    "pillow_version": "12.3.0",
+    "pillow_core_sha256": "94310f4a073e9773a067df88513804649f50a974f78bd85a52c52d21170783f2",
+    "zlib_version": "1.3"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp",
+      "sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da"
+    },
+    "pdf": {
+      "path": "pdf/issue8109/print/control-styles-hwp-2020.pdf",
+      "sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba"
+    },
+    "git_head": "84bdda2d167c8e0041ac780385dbfefe98d59f91",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "c3a60c2d34dea583ac6516417a55175b299d17ec8edf480abf4509cd82b252cb"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+      "pillow_version": "12.3.0",
+      "pillow_core_sha256": "94310f4a073e9773a067df88513804649f50a974f78bd85a52c52d21170783f2",
+      "zlib_version": "1.3"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source37-optimized",
+      "path": "output/pr-review/issue7754-nine/bin/rhwp-source37-optimized",
+      "sha256": "249e11dedc91f4f2c90b145e82b9bd0102d27a0b1e1ebaa15030431178cdfa02"
+    },
+    "raster_backend": "wasm-canvas2d",
+    "png_exporter_sha256": "c45e30335911d290b888a6d5b1bdae99caab701bd9949cf0d0698c7b36c8b1e9",
+    "layout_generation": "2022",
+    "wasm": {
+      "files": [
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37/rhwp.js",
+          "sha256": "36fa6ce45be4ef3c5617535a640a90bbd7363927fd47f8b8c7a5f7760585ed6e"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37/rhwp_bg.wasm",
+          "sha256": "76f7c64d27fe8fbbd7bd5baa2fdb3d30af9c8014fd16fb6b83afc498907ba7e3"
+        }
+      ],
+      "exporter_sha256": "f0db771cef8386e121ba33ddaf87f8da982500b3a94b262549e5a5553300bd38",
+      "font_registration_sha256": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+      "comparison_profile": "print",
+      "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "/usr/local/share/fonts/rhwp-issue8160-ted2/system-fonts/hancom-office-2020/All/HBATANG.TTF",
+          "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-font-supply-20261122/arial.ttf",
+          "sha256": "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-font-supply-20261122/arialbd.ttf",
+          "sha256": "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-font-supply-20261122/arialbi.ttf",
+          "sha256": "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-font-supply-20261122/ariali.ttf",
+          "sha256": "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62"
+        }
+      ]
+    }
+  },
+  "checkpoint": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source67-seo-win-arial/wasm/candidate/seo-helvetica-styles/silhouette-checkpoint.json"
+}

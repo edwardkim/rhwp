@@ -50,7 +50,7 @@ use super::utils::{
 use super::SerializeError;
 use super::{picture, table};
 
-const EMPTY_SECTION_XML: &str = include_str!("templates/empty_section0.xml");
+pub(crate) const EMPTY_SECTION_XML: &str = include_str!("templates/empty_section0.xml");
 
 /// MEMO subList 여는 태그 (#1391) — 실물(aift) 고정 속성.
 /// `textDirection` 만 원본값 보존(가변); 나머지는 실측 고정 속성.
@@ -715,6 +715,8 @@ where
         super::super::column_sizes::for_export_with_storage(section, storage).map_err(xml_error)?;
     let section = section.as_ref();
     let mut vert_cursor: u32 = 0;
+    ctx.body_uses_source_frames =
+        crate::serializer::line_cache::body_uses_source_line_frames(&section.paragraphs);
 
     let first_para = section.paragraphs.first();
     // [#1584] 첫 문단 렌더 직전 set — 본문 첫 ColumnDef(섹션 템플릿 흡수분)의 인라인
@@ -1047,6 +1049,11 @@ pub(super) fn render_paragraph_parts_with_storage<S: crate::storage::Storage>(
 where
     S::Error: std::fmt::Display,
 {
+    let symbols = super::body_symbols::BodySymbolExpansion::for_paragraph(
+        para,
+        ctx.legacy_body_symbols,
+        storage,
+    )?;
     // 첫 run의 secPr/colPr는 각각 실제 8유닛 슬롯이다. 원본에 없는 정의만
     // 템플릿이 추가하면 뒤 줄의 시작도 같은 폭만큼 전진해야 한다.
     let injected_prefix_units = if ctx.line_segs_on_paragraph_axis
@@ -1136,7 +1143,8 @@ where
         let hwp5_only_units = 8 * hwp5_only_slot_positions.len() as u32;
         let serializable_line_segs = para.serializable_line_segs();
         let rebased_line_segs: Option<Vec<LineSeg>> = if (!hwp5_only_slot_positions.is_empty()
-            || ctx.line_segs_on_paragraph_axis)
+            || ctx.line_segs_on_paragraph_axis
+            || !symbols.is_empty())
             && !serializable_line_segs.is_empty()
         {
             Some(
@@ -1151,14 +1159,19 @@ where
                             .iter()
                             .filter(|&&pos| pos < text_start)
                             .count() as u32;
+                        // Convert only the measured characters before this source boundary.
+                        // Slot removal and symbol expansion both use the original paragraph axis.
+                        let paragraph_pos = para.line_seg_text_start_of(seg.text_start);
+                        let symbol_units = symbols.project(paragraph_pos) - paragraph_pos;
                         LineSeg {
-                            text_start: text_start.saturating_sub(shift).saturating_add(
-                                if text_start == 0 {
+                            text_start: text_start
+                                .saturating_add(symbol_units)
+                                .saturating_sub(shift)
+                                .saturating_add(if text_start == 0 {
                                     0
                                 } else {
                                     injected_prefix_units
-                                },
-                            ),
+                                }),
                             ..seg.clone()
                         }
                     }))
@@ -1171,21 +1184,22 @@ where
             .as_deref()
             .unwrap_or(serializable_line_segs);
 
-        let line_seg_axis_end = para
-            .char_count
-            .max(serialized_axis_end)
+        let line_seg_axis_end = symbols
+            .project(para.char_count.max(serialized_axis_end))
             .saturating_add(injected_prefix_units)
             .saturating_sub(hwp5_only_units);
-        let axis_line_segs =
-            if !crate::serializer::line_cache::can_serialize_hwpx_line_partition(para) {
-                // The retained rows are an edit-reflow template, not a partition of
-                // the current text. Omit the cache and let the consumer recompute it.
-                &source_line_segs[..0]
-            } else if line_seg_axis_end > 0 {
-                line_segs_within_text_axis(source_line_segs, line_seg_axis_end)
-            } else {
-                source_line_segs
-            };
+        let axis_line_segs = if !crate::serializer::line_cache::can_serialize_hwpx_line_partition(
+            para,
+            ctx.sub_list_depth == 0 && ctx.body_uses_source_frames,
+        ) {
+            // The retained rows are an edit-reflow template, not a partition of
+            // the current text. Omit the cache and let the consumer recompute it.
+            &source_line_segs[..0]
+        } else if line_seg_axis_end > 0 {
+            line_segs_within_text_axis(source_line_segs, line_seg_axis_end)
+        } else {
+            source_line_segs
+        };
 
         // [#5847] 줄 전체가 reflow 합성(bit31)인 문단 — 원본에 linesegarray 가 없어
         // rhwp 가 조판용으로 만든 줄이다. 파일로 내면 구역 누적 vertpos 와 bit31
@@ -1203,7 +1217,7 @@ where
                 // 캐시를 신뢰해 조판을 폐기한다(08818: 81쪽 → 5쪽). axis 절단은 앞
                 // 접두 슬라이스라 인덱스가 그대로 대응한다.
                 let source_vpos = crate::serializer::line_cache::source_vertical_positions(para)
-                    .map(|v| &v[..axis_line_segs.len()]);
+                    .map(|v| &v[..axis_line_segs.len().min(v.len())]);
                 let linesegs = xml_value(
                     storage,
                     format_args!(
@@ -1250,14 +1264,9 @@ pub(crate) fn hwpx_collapsed_page_number_pos_indices(para: &Paragraph) -> Vec<us
         .collect()
 }
 
-/// [#5140] 한컴 사용자 정의 기호를 HWPX 표기(평면 15 보충 PUA)로 올린다.
-///
-/// 같은 글자를 HWP5 는 `0xA000 | X`, HWPX 는 `U+F0000 | X` 로 싣는다. IR 정본은 HWP5 쪽
-/// 사영이므로 HWPX 로 낼 때만 올려 준다 — 리터럴로 내면 한글이 그 자리를 Yi 음절(U+A8xx)
-/// 로 읽어 글자가 깨진다. 표에 없는 글자는 그대로 통과한다(`0xA813` 반례 참고).
-///
-/// 본문 텍스트(`hp:t`)와 글자겹침(`hp:compose/@composeText`) 두 경로 모두 이 규칙을 쓴다 —
-/// 한글 SaveAs 실측에서 둘 다 예외 없이 평면 15 로 갔다.
+/// Existing #5140 composeText lookup. Paragraph text additionally requires the
+/// file-version gate and UTF-16 expansion in `body_symbols`. The compose version
+/// contract has not been established by the paragraph-only boundary samples.
 fn hancom_symbol_for_hwpx(c: char) -> char {
     let Ok(unit) = u16::try_from(u32::from(c)) else {
         return c;
@@ -1292,6 +1301,8 @@ fn text_positions_unshifted(para: &Paragraph) -> bool {
 /// 방출로 조각이 갈려도 같은 커서를 물려줘야 제자리에 실린다.
 #[derive(Default)]
 pub(crate) struct InlineCursor<'a> {
+    /// Applied only to paragraph text from legacy HWP5; compose has its own contract.
+    legacy_body_symbols: bool,
     /// 다음에 소비할 `tab_extended` 인덱스
     pub tab_idx: usize,
     /// 문단의 제목 차례 표시 전체 (문자 인덱스 오름차순)
@@ -1618,7 +1629,10 @@ where
             }
             c if (c as u32) < 0x20 => { /* 기타 제어문자 무시 */ }
             c => storage
-                .push_char(&mut buf, hancom_symbol_for_hwpx(c))
+                .push_char(
+                    &mut buf,
+                    crate::model::provenance::body_symbol(c, cursor.legacy_body_symbols),
+                )
                 .map_err(xml_error)?,
         }
     }
@@ -2400,6 +2414,7 @@ where
         }))
         .map_err(xml_error)?;
     let mut cursor = InlineCursor {
+        legacy_body_symbols: ctx.legacy_body_symbols,
         title_marks: &para.title_marks,
         markpen_marks: &para.markpen_marks,
         markpen_idx: 0,

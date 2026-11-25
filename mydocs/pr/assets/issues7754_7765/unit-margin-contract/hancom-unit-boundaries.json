@@ -1,0 +1,382 @@
+[
+  {
+    "operation": "independent Hancom HWPX to HWP save, not PDF Print",
+    "source": "samples/issue1891/86712_regulatory_analysis.hwpx",
+    "source_sha256": "0f4f055c74a3d39f70e417ca6c700880d9645a202798cd0e5c11f6e32c180a19",
+    "source_package_version": {
+      "tagetApplication": "WORDPROCESSOR",
+      "major": "5",
+      "minor": "1",
+      "micro": "0",
+      "buildNumber": "1",
+      "os": "1",
+      "xmlVersion": "1.5",
+      "application": "Hancom Office Hangul",
+      "appVersion": "11, 0, 0, 3524 WIN32LEWindows_8"
+    },
+    "source_head_version": "1.2",
+    "source_para_shapes": [
+      {
+        "id": 24,
+        "xml": "<ns0:paraPr xmlns:ns0=\"http://www.hancom.co.kr/hwpml/2011/head\" xmlns:ns1=\"http://www.hancom.co.kr/hwpml/2011/paragraph\" xmlns:ns2=\"http://www.hancom.co.kr/hwpml/2011/core\" id=\"24\" tabPrIDRef=\"0\" condense=\"0\" fontLineHeight=\"0\" snapToGrid=\"1\" suppressLineNumbers=\"0\" checked=\"0\"><ns0:align horizontal=\"JUSTIFY\" vertical=\"BASELINE\" /><ns0:heading type=\"NONE\" idRef=\"0\" level=\"0\" /><ns0:breakSetting breakLatinWord=\"KEEP_WORD\" breakNonLatinWord=\"KEEP_WORD\" widowOrphan=\"0\" keepWithNext=\"0\" keepLines=\"0\" pageBreakBefore=\"0\" lineWrap=\"BREAK\" /><ns0:autoSpacing eAsianEng=\"0\" eAsianNum=\"0\" /><ns1:switch><ns1:case ns1:required-namespace=\"http://www.hancom.co.kr/hwpml/2016/HwpUnitChar\"><ns0:margin><ns2:intent value=\"-1233\" unit=\"HWPUNIT\" /><ns2:left value=\"150\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"130\" unit=\"HWPUNIT\" /></ns1:case><ns1:default><ns0:margin><ns2:intent value=\"-2467\" unit=\"HWPUNIT\" /><ns2:left value=\"300\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"130\" unit=\"HWPUNIT\" /></ns1:default></ns1:switch><ns0:border borderFillIDRef=\"25\" offsetLeft=\"0\" offsetRight=\"0\" offsetTop=\"0\" offsetBottom=\"0\" connect=\"0\" ignoreMargin=\"0\" /></ns0:paraPr>"
+      },
+      {
+        "id": 34,
+        "xml": "<ns0:paraPr xmlns:ns0=\"http://www.hancom.co.kr/hwpml/2011/head\" xmlns:ns1=\"http://www.hancom.co.kr/hwpml/2011/paragraph\" xmlns:ns2=\"http://www.hancom.co.kr/hwpml/2011/core\" id=\"34\" tabPrIDRef=\"0\" condense=\"0\" fontLineHeight=\"0\" snapToGrid=\"1\" suppressLineNumbers=\"0\" checked=\"0\"><ns0:align horizontal=\"JUSTIFY\" vertical=\"BASELINE\" /><ns0:heading type=\"NONE\" idRef=\"0\" level=\"0\" /><ns0:breakSetting breakLatinWord=\"KEEP_WORD\" breakNonLatinWord=\"KEEP_WORD\" widowOrphan=\"0\" keepWithNext=\"0\" keepLines=\"0\" pageBreakBefore=\"0\" lineWrap=\"BREAK\" /><ns0:autoSpacing eAsianEng=\"0\" eAsianNum=\"0\" /><ns1:switch><ns1:case ns1:required-namespace=\"http://www.hancom.co.kr/hwpml/2016/HwpUnitChar\"><ns0:margin><ns2:intent value=\"-1250\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"150\" unit=\"HWPUNIT\" /></ns1:case><ns1:default><ns0:margin><ns2:intent value=\"-2500\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"150\" unit=\"HWPUNIT\" /></ns1:default></ns1:switch><ns0:border borderFillIDRef=\"25\" offsetLeft=\"0\" offsetRight=\"0\" offsetTop=\"0\" offsetBottom=\"0\" connect=\"0\" ignoreMargin=\"0\" /></ns0:paraPr>"
+      },
+      {
+        "id": 35,
+        "xml": "<ns0:paraPr xmlns:ns0=\"http://www.hancom.co.kr/hwpml/2011/head\" xmlns:ns1=\"http://www.hancom.co.kr/hwpml/2011/paragraph\" xmlns:ns2=\"http://www.hancom.co.kr/hwpml/2011/core\" id=\"35\" tabPrIDRef=\"0\" condense=\"0\" fontLineHeight=\"0\" snapToGrid=\"1\" suppressLineNumbers=\"0\" checked=\"0\"><ns0:align horizontal=\"JUSTIFY\" vertical=\"BASELINE\" /><ns0:heading type=\"NONE\" idRef=\"0\" level=\"0\" /><ns0:breakSetting breakLatinWord=\"KEEP_WORD\" breakNonLatinWord=\"KEEP_WORD\" widowOrphan=\"0\" keepWithNext=\"0\" keepLines=\"0\" pageBreakBefore=\"0\" lineWrap=\"BREAK\" /><ns0:autoSpacing eAsianEng=\"0\" eAsianNum=\"0\" /><ns1:switch><ns1:case ns1:required-namespace=\"http://www.hancom.co.kr/hwpml/2016/HwpUnitChar\"><ns0:margin><ns2:intent value=\"-1500\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"160\" unit=\"HWPUNIT\" /></ns1:case><ns1:default><ns0:margin><ns2:intent value=\"-3001\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"160\" unit=\"HWPUNIT\" /></ns1:default></ns1:switch><ns0:border borderFillIDRef=\"25\" offsetLeft=\"0\" offsetRight=\"0\" offsetTop=\"0\" offsetBottom=\"0\" connect=\"0\" ignoreMargin=\"0\" /></ns0:paraPr>"
+      },
+      {
+        "id": 40,
+        "xml": "<ns0:paraPr xmlns:ns0=\"http://www.hancom.co.kr/hwpml/2011/head\" xmlns:ns1=\"http://www.hancom.co.kr/hwpml/2011/paragraph\" xmlns:ns2=\"http://www.hancom.co.kr/hwpml/2011/core\" id=\"40\" tabPrIDRef=\"0\" condense=\"0\" fontLineHeight=\"0\" snapToGrid=\"1\" suppressLineNumbers=\"0\" checked=\"0\"><ns0:align horizontal=\"JUSTIFY\" vertical=\"BASELINE\" /><ns0:heading type=\"NONE\" idRef=\"0\" level=\"0\" /><ns0:breakSetting breakLatinWord=\"KEEP_WORD\" breakNonLatinWord=\"KEEP_WORD\" widowOrphan=\"0\" keepWithNext=\"0\" keepLines=\"0\" pageBreakBefore=\"0\" lineWrap=\"BREAK\" /><ns0:autoSpacing eAsianEng=\"0\" eAsianNum=\"0\" /><ns1:switch><ns1:case ns1:required-namespace=\"http://www.hancom.co.kr/hwpml/2016/HwpUnitChar\"><ns0:margin><ns2:intent value=\"-1073\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"150\" unit=\"HWPUNIT\" /></ns1:case><ns1:default><ns0:margin><ns2:intent value=\"-2147\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"150\" unit=\"HWPUNIT\" /></ns1:default></ns1:switch><ns0:border borderFillIDRef=\"25\" offsetLeft=\"0\" offsetRight=\"0\" offsetTop=\"0\" offsetBottom=\"0\" connect=\"0\" ignoreMargin=\"0\" /></ns0:paraPr>"
+      },
+      {
+        "id": 43,
+        "xml": "<ns0:paraPr xmlns:ns0=\"http://www.hancom.co.kr/hwpml/2011/head\" xmlns:ns1=\"http://www.hancom.co.kr/hwpml/2011/paragraph\" xmlns:ns2=\"http://www.hancom.co.kr/hwpml/2011/core\" id=\"43\" tabPrIDRef=\"0\" condense=\"0\" fontLineHeight=\"0\" snapToGrid=\"1\" suppressLineNumbers=\"0\" checked=\"0\"><ns0:align horizontal=\"JUSTIFY\" vertical=\"BASELINE\" /><ns0:heading type=\"NONE\" idRef=\"0\" level=\"0\" /><ns0:breakSetting breakLatinWord=\"KEEP_WORD\" breakNonLatinWord=\"KEEP_WORD\" widowOrphan=\"0\" keepWithNext=\"0\" keepLines=\"0\" pageBreakBefore=\"0\" lineWrap=\"BREAK\" /><ns0:autoSpacing eAsianEng=\"0\" eAsianNum=\"0\" /><ns1:switch><ns1:case ns1:required-namespace=\"http://www.hancom.co.kr/hwpml/2016/HwpUnitChar\"><ns0:margin><ns2:intent value=\"-1168\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"150\" unit=\"HWPUNIT\" /></ns1:case><ns1:default><ns0:margin><ns2:intent value=\"-2337\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"150\" unit=\"HWPUNIT\" /></ns1:default></ns1:switch><ns0:border borderFillIDRef=\"25\" offsetLeft=\"0\" offsetRight=\"0\" offsetTop=\"0\" offsetBottom=\"0\" connect=\"0\" ignoreMargin=\"0\" /></ns0:paraPr>"
+      }
+    ],
+    "saved_hwp_sha256": "84632464374c9bb1f987ac11826c5b59647e9c79a7b31108673011e44bfe6041",
+    "job_id": "47e76288-3dbd-4933-b9ee-8630877ebb8e",
+    "engine": 2020,
+    "hancom_version": "11.0.0.9136",
+    "worker_bits": 32,
+    "raw_para_shapes": [
+      {
+        "id": 24,
+        "tag": 25,
+        "record_hex": "800100002c010000000000005ef6ffff000000000000000082000000000000001900000000000000000000000000000000008200000000000000",
+        "margin_left_right_indent_before_after_line_spacing": [
+          300,
+          0,
+          -2466,
+          0,
+          0,
+          130
+        ]
+      },
+      {
+        "id": 34,
+        "tag": 25,
+        "record_hex": "8001000000000000000000003cf6ffff000000000000000096000000000000001900000000000000000000000000000000009600000000000000",
+        "margin_left_right_indent_before_after_line_spacing": [
+          0,
+          0,
+          -2500,
+          0,
+          0,
+          150
+        ]
+      },
+      {
+        "id": 35,
+        "tag": 25,
+        "record_hex": "80010000000000000000000048f4ffff0000000000000000a000000000000000190000000000000000000000000000000000a000000000000000",
+        "margin_left_right_indent_before_after_line_spacing": [
+          0,
+          0,
+          -3000,
+          0,
+          0,
+          160
+        ]
+      },
+      {
+        "id": 40,
+        "tag": 25,
+        "record_hex": "8001000000000000000000009ef7ffff000000000000000096000000000000001900000000000000000000000000000000009600000000000000",
+        "margin_left_right_indent_before_after_line_spacing": [
+          0,
+          0,
+          -2146,
+          0,
+          0,
+          150
+        ]
+      },
+      {
+        "id": 43,
+        "tag": 25,
+        "record_hex": "800100000000000000000000e0f6ffff000000000000000096000000000000001900000000000000000000000000000000009600000000000000",
+        "margin_left_right_indent_before_after_line_spacing": [
+          0,
+          0,
+          -2336,
+          0,
+          0,
+          150
+        ]
+      }
+    ],
+    "note": "Selected low resource IDs were checked directly. Later IDs may be renumbered during resource deduplication."
+  },
+  {
+    "operation": "independent Hancom HWPX to HWP save, not PDF Print",
+    "source": "samples/issue1891/86712_regulatory_analysis.hwpx",
+    "source_sha256": "0f4f055c74a3d39f70e417ca6c700880d9645a202798cd0e5c11f6e32c180a19",
+    "source_package_version": {
+      "tagetApplication": "WORDPROCESSOR",
+      "major": "5",
+      "minor": "1",
+      "micro": "0",
+      "buildNumber": "1",
+      "os": "1",
+      "xmlVersion": "1.5",
+      "application": "Hancom Office Hangul",
+      "appVersion": "11, 0, 0, 3524 WIN32LEWindows_8"
+    },
+    "source_head_version": "1.2",
+    "source_para_shapes": [
+      {
+        "id": 24,
+        "xml": "<ns0:paraPr xmlns:ns0=\"http://www.hancom.co.kr/hwpml/2011/head\" xmlns:ns1=\"http://www.hancom.co.kr/hwpml/2011/paragraph\" xmlns:ns2=\"http://www.hancom.co.kr/hwpml/2011/core\" id=\"24\" tabPrIDRef=\"0\" condense=\"0\" fontLineHeight=\"0\" snapToGrid=\"1\" suppressLineNumbers=\"0\" checked=\"0\"><ns0:align horizontal=\"JUSTIFY\" vertical=\"BASELINE\" /><ns0:heading type=\"NONE\" idRef=\"0\" level=\"0\" /><ns0:breakSetting breakLatinWord=\"KEEP_WORD\" breakNonLatinWord=\"KEEP_WORD\" widowOrphan=\"0\" keepWithNext=\"0\" keepLines=\"0\" pageBreakBefore=\"0\" lineWrap=\"BREAK\" /><ns0:autoSpacing eAsianEng=\"0\" eAsianNum=\"0\" /><ns1:switch><ns1:case ns1:required-namespace=\"http://www.hancom.co.kr/hwpml/2016/HwpUnitChar\"><ns0:margin><ns2:intent value=\"-1233\" unit=\"HWPUNIT\" /><ns2:left value=\"150\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"130\" unit=\"HWPUNIT\" /></ns1:case><ns1:default><ns0:margin><ns2:intent value=\"-2467\" unit=\"HWPUNIT\" /><ns2:left value=\"300\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"130\" unit=\"HWPUNIT\" /></ns1:default></ns1:switch><ns0:border borderFillIDRef=\"25\" offsetLeft=\"0\" offsetRight=\"0\" offsetTop=\"0\" offsetBottom=\"0\" connect=\"0\" ignoreMargin=\"0\" /></ns0:paraPr>"
+      },
+      {
+        "id": 34,
+        "xml": "<ns0:paraPr xmlns:ns0=\"http://www.hancom.co.kr/hwpml/2011/head\" xmlns:ns1=\"http://www.hancom.co.kr/hwpml/2011/paragraph\" xmlns:ns2=\"http://www.hancom.co.kr/hwpml/2011/core\" id=\"34\" tabPrIDRef=\"0\" condense=\"0\" fontLineHeight=\"0\" snapToGrid=\"1\" suppressLineNumbers=\"0\" checked=\"0\"><ns0:align horizontal=\"JUSTIFY\" vertical=\"BASELINE\" /><ns0:heading type=\"NONE\" idRef=\"0\" level=\"0\" /><ns0:breakSetting breakLatinWord=\"KEEP_WORD\" breakNonLatinWord=\"KEEP_WORD\" widowOrphan=\"0\" keepWithNext=\"0\" keepLines=\"0\" pageBreakBefore=\"0\" lineWrap=\"BREAK\" /><ns0:autoSpacing eAsianEng=\"0\" eAsianNum=\"0\" /><ns1:switch><ns1:case ns1:required-namespace=\"http://www.hancom.co.kr/hwpml/2016/HwpUnitChar\"><ns0:margin><ns2:intent value=\"-1250\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"150\" unit=\"HWPUNIT\" /></ns1:case><ns1:default><ns0:margin><ns2:intent value=\"-2500\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"150\" unit=\"HWPUNIT\" /></ns1:default></ns1:switch><ns0:border borderFillIDRef=\"25\" offsetLeft=\"0\" offsetRight=\"0\" offsetTop=\"0\" offsetBottom=\"0\" connect=\"0\" ignoreMargin=\"0\" /></ns0:paraPr>"
+      },
+      {
+        "id": 35,
+        "xml": "<ns0:paraPr xmlns:ns0=\"http://www.hancom.co.kr/hwpml/2011/head\" xmlns:ns1=\"http://www.hancom.co.kr/hwpml/2011/paragraph\" xmlns:ns2=\"http://www.hancom.co.kr/hwpml/2011/core\" id=\"35\" tabPrIDRef=\"0\" condense=\"0\" fontLineHeight=\"0\" snapToGrid=\"1\" suppressLineNumbers=\"0\" checked=\"0\"><ns0:align horizontal=\"JUSTIFY\" vertical=\"BASELINE\" /><ns0:heading type=\"NONE\" idRef=\"0\" level=\"0\" /><ns0:breakSetting breakLatinWord=\"KEEP_WORD\" breakNonLatinWord=\"KEEP_WORD\" widowOrphan=\"0\" keepWithNext=\"0\" keepLines=\"0\" pageBreakBefore=\"0\" lineWrap=\"BREAK\" /><ns0:autoSpacing eAsianEng=\"0\" eAsianNum=\"0\" /><ns1:switch><ns1:case ns1:required-namespace=\"http://www.hancom.co.kr/hwpml/2016/HwpUnitChar\"><ns0:margin><ns2:intent value=\"-1500\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"160\" unit=\"HWPUNIT\" /></ns1:case><ns1:default><ns0:margin><ns2:intent value=\"-3001\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"160\" unit=\"HWPUNIT\" /></ns1:default></ns1:switch><ns0:border borderFillIDRef=\"25\" offsetLeft=\"0\" offsetRight=\"0\" offsetTop=\"0\" offsetBottom=\"0\" connect=\"0\" ignoreMargin=\"0\" /></ns0:paraPr>"
+      },
+      {
+        "id": 40,
+        "xml": "<ns0:paraPr xmlns:ns0=\"http://www.hancom.co.kr/hwpml/2011/head\" xmlns:ns1=\"http://www.hancom.co.kr/hwpml/2011/paragraph\" xmlns:ns2=\"http://www.hancom.co.kr/hwpml/2011/core\" id=\"40\" tabPrIDRef=\"0\" condense=\"0\" fontLineHeight=\"0\" snapToGrid=\"1\" suppressLineNumbers=\"0\" checked=\"0\"><ns0:align horizontal=\"JUSTIFY\" vertical=\"BASELINE\" /><ns0:heading type=\"NONE\" idRef=\"0\" level=\"0\" /><ns0:breakSetting breakLatinWord=\"KEEP_WORD\" breakNonLatinWord=\"KEEP_WORD\" widowOrphan=\"0\" keepWithNext=\"0\" keepLines=\"0\" pageBreakBefore=\"0\" lineWrap=\"BREAK\" /><ns0:autoSpacing eAsianEng=\"0\" eAsianNum=\"0\" /><ns1:switch><ns1:case ns1:required-namespace=\"http://www.hancom.co.kr/hwpml/2016/HwpUnitChar\"><ns0:margin><ns2:intent value=\"-1073\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"150\" unit=\"HWPUNIT\" /></ns1:case><ns1:default><ns0:margin><ns2:intent value=\"-2147\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"150\" unit=\"HWPUNIT\" /></ns1:default></ns1:switch><ns0:border borderFillIDRef=\"25\" offsetLeft=\"0\" offsetRight=\"0\" offsetTop=\"0\" offsetBottom=\"0\" connect=\"0\" ignoreMargin=\"0\" /></ns0:paraPr>"
+      },
+      {
+        "id": 43,
+        "xml": "<ns0:paraPr xmlns:ns0=\"http://www.hancom.co.kr/hwpml/2011/head\" xmlns:ns1=\"http://www.hancom.co.kr/hwpml/2011/paragraph\" xmlns:ns2=\"http://www.hancom.co.kr/hwpml/2011/core\" id=\"43\" tabPrIDRef=\"0\" condense=\"0\" fontLineHeight=\"0\" snapToGrid=\"1\" suppressLineNumbers=\"0\" checked=\"0\"><ns0:align horizontal=\"JUSTIFY\" vertical=\"BASELINE\" /><ns0:heading type=\"NONE\" idRef=\"0\" level=\"0\" /><ns0:breakSetting breakLatinWord=\"KEEP_WORD\" breakNonLatinWord=\"KEEP_WORD\" widowOrphan=\"0\" keepWithNext=\"0\" keepLines=\"0\" pageBreakBefore=\"0\" lineWrap=\"BREAK\" /><ns0:autoSpacing eAsianEng=\"0\" eAsianNum=\"0\" /><ns1:switch><ns1:case ns1:required-namespace=\"http://www.hancom.co.kr/hwpml/2016/HwpUnitChar\"><ns0:margin><ns2:intent value=\"-1168\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"150\" unit=\"HWPUNIT\" /></ns1:case><ns1:default><ns0:margin><ns2:intent value=\"-2337\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"150\" unit=\"HWPUNIT\" /></ns1:default></ns1:switch><ns0:border borderFillIDRef=\"25\" offsetLeft=\"0\" offsetRight=\"0\" offsetTop=\"0\" offsetBottom=\"0\" connect=\"0\" ignoreMargin=\"0\" /></ns0:paraPr>"
+      }
+    ],
+    "saved_hwp_sha256": "1b96364e363ee8ab559ed6247d4dc7e31f3532759ddc889ac3371b26ce3e2a09",
+    "job_id": "e7ff0687-1dd1-4d38-a063-2e0aff51a743",
+    "engine": 2024,
+    "hancom_version": "13.0.0.3901",
+    "worker_bits": 32,
+    "raw_para_shapes": [
+      {
+        "id": 24,
+        "tag": 25,
+        "record_hex": "800100002c010000000000005ef6ffff000000000000000082000000000000001900000000000000000008000000000000008200000000000000",
+        "margin_left_right_indent_before_after_line_spacing": [
+          300,
+          0,
+          -2466,
+          0,
+          0,
+          130
+        ]
+      },
+      {
+        "id": 34,
+        "tag": 25,
+        "record_hex": "8001000000000000000000003cf6ffff000000000000000096000000000000001900000000000000000008000000000000009600000000000000",
+        "margin_left_right_indent_before_after_line_spacing": [
+          0,
+          0,
+          -2500,
+          0,
+          0,
+          150
+        ]
+      },
+      {
+        "id": 35,
+        "tag": 25,
+        "record_hex": "80010000000000000000000048f4ffff0000000000000000a000000000000000190000000000000000000800000000000000a000000000000000",
+        "margin_left_right_indent_before_after_line_spacing": [
+          0,
+          0,
+          -3000,
+          0,
+          0,
+          160
+        ]
+      },
+      {
+        "id": 40,
+        "tag": 25,
+        "record_hex": "8001000000000000000000009ef7ffff000000000000000096000000000000001900000000000000000008000000000000009600000000000000",
+        "margin_left_right_indent_before_after_line_spacing": [
+          0,
+          0,
+          -2146,
+          0,
+          0,
+          150
+        ]
+      },
+      {
+        "id": 43,
+        "tag": 25,
+        "record_hex": "800100000000000000000000e0f6ffff000000000000000096000000000000001900000000000000000008000000000000009600000000000000",
+        "margin_left_right_indent_before_after_line_spacing": [
+          0,
+          0,
+          -2336,
+          0,
+          0,
+          150
+        ]
+      }
+    ],
+    "note": "Selected low resource IDs were checked directly. Later IDs may be renumbered during resource deduplication."
+  },
+  {
+    "operation": "independent Hancom HWPX to HWP save, not PDF Print",
+    "source": "samples/issue1891/80168_regulatory_analysis.hwpx",
+    "source_sha256": "1e00b54e1139515258260a657217e0b3baa0b1b652a2cd28dd4b9bc48aa262fe",
+    "source_package_version": {
+      "tagetApplication": "WORDPROCESSOR",
+      "major": "5",
+      "minor": "1",
+      "micro": "0",
+      "buildNumber": "1",
+      "os": "1",
+      "xmlVersion": "1.2",
+      "application": "Hancom Office Hangul",
+      "appVersion": "11, 0, 0, 3524 WIN32LEWindows_8"
+    },
+    "source_head_version": "1.2",
+    "source_para_shapes": [
+      {
+        "id": 34,
+        "xml": "<ns0:paraPr xmlns:ns0=\"http://www.hancom.co.kr/hwpml/2011/head\" xmlns:ns1=\"http://www.hancom.co.kr/hwpml/2011/paragraph\" xmlns:ns2=\"http://www.hancom.co.kr/hwpml/2011/core\" id=\"34\" tabPrIDRef=\"0\" condense=\"25\" fontLineHeight=\"0\" snapToGrid=\"1\" suppressLineNumbers=\"0\" checked=\"0\"><ns0:align horizontal=\"JUSTIFY\" vertical=\"BASELINE\" /><ns0:heading type=\"NONE\" idRef=\"0\" level=\"0\" /><ns0:breakSetting breakLatinWord=\"KEEP_WORD\" breakNonLatinWord=\"KEEP_WORD\" widowOrphan=\"0\" keepWithNext=\"0\" keepLines=\"0\" pageBreakBefore=\"0\" lineWrap=\"BREAK\" /><ns0:autoSpacing eAsianEng=\"0\" eAsianNum=\"0\" /><ns1:switch><ns1:case ns1:required-namespace=\"http://www.hancom.co.kr/hwpml/2016/HwpUnitChar\"><ns0:margin><ns2:intent value=\"-2440\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"180\" unit=\"HWPUNIT\" /></ns1:case><ns1:default><ns0:margin><ns2:intent value=\"-4880\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"180\" unit=\"HWPUNIT\" /></ns1:default></ns1:switch><ns0:border borderFillIDRef=\"1\" offsetLeft=\"0\" offsetRight=\"0\" offsetTop=\"0\" offsetBottom=\"0\" connect=\"0\" ignoreMargin=\"0\" /></ns0:paraPr>"
+      },
+      {
+        "id": 35,
+        "xml": "<ns0:paraPr xmlns:ns0=\"http://www.hancom.co.kr/hwpml/2011/head\" xmlns:ns1=\"http://www.hancom.co.kr/hwpml/2011/paragraph\" xmlns:ns2=\"http://www.hancom.co.kr/hwpml/2011/core\" id=\"35\" tabPrIDRef=\"0\" condense=\"0\" fontLineHeight=\"0\" snapToGrid=\"1\" suppressLineNumbers=\"0\" checked=\"0\"><ns0:align horizontal=\"JUSTIFY\" vertical=\"BASELINE\" /><ns0:heading type=\"NONE\" idRef=\"0\" level=\"0\" /><ns0:breakSetting breakLatinWord=\"KEEP_WORD\" breakNonLatinWord=\"KEEP_WORD\" widowOrphan=\"0\" keepWithNext=\"0\" keepLines=\"0\" pageBreakBefore=\"0\" lineWrap=\"BREAK\" /><ns0:autoSpacing eAsianEng=\"0\" eAsianNum=\"0\" /><ns1:switch><ns1:case ns1:required-namespace=\"http://www.hancom.co.kr/hwpml/2016/HwpUnitChar\"><ns0:margin><ns2:intent value=\"-2500\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"150\" unit=\"HWPUNIT\" /></ns1:case><ns1:default><ns0:margin><ns2:intent value=\"-5000\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"150\" unit=\"HWPUNIT\" /></ns1:default></ns1:switch><ns0:border borderFillIDRef=\"4\" offsetLeft=\"0\" offsetRight=\"0\" offsetTop=\"0\" offsetBottom=\"0\" connect=\"0\" ignoreMargin=\"0\" /></ns0:paraPr>"
+      },
+      {
+        "id": 43,
+        "xml": "<ns0:paraPr xmlns:ns0=\"http://www.hancom.co.kr/hwpml/2011/head\" xmlns:ns1=\"http://www.hancom.co.kr/hwpml/2011/paragraph\" xmlns:ns2=\"http://www.hancom.co.kr/hwpml/2011/core\" id=\"43\" tabPrIDRef=\"0\" condense=\"0\" fontLineHeight=\"0\" snapToGrid=\"1\" suppressLineNumbers=\"0\" checked=\"0\"><ns0:align horizontal=\"JUSTIFY\" vertical=\"BASELINE\" /><ns0:heading type=\"NONE\" idRef=\"0\" level=\"0\" /><ns0:breakSetting breakLatinWord=\"KEEP_WORD\" breakNonLatinWord=\"KEEP_WORD\" widowOrphan=\"0\" keepWithNext=\"0\" keepLines=\"0\" pageBreakBefore=\"0\" lineWrap=\"BREAK\" /><ns0:autoSpacing eAsianEng=\"0\" eAsianNum=\"0\" /><ns1:switch><ns1:case ns1:required-namespace=\"http://www.hancom.co.kr/hwpml/2016/HwpUnitChar\"><ns0:margin><ns2:intent value=\"-2420\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"150\" unit=\"HWPUNIT\" /></ns1:case><ns1:default><ns0:margin><ns2:intent value=\"-4840\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"150\" unit=\"HWPUNIT\" /></ns1:default></ns1:switch><ns0:border borderFillIDRef=\"4\" offsetLeft=\"0\" offsetRight=\"0\" offsetTop=\"0\" offsetBottom=\"0\" connect=\"0\" ignoreMargin=\"0\" /></ns0:paraPr>"
+      }
+    ],
+    "saved_hwp_sha256": "cb943b4734de0960b3e285f2089c8de837ab093511b1f5b1e398a372fb6b8a2c",
+    "job_id": "97dbd263-15d8-42d5-b5e0-7badb3840022",
+    "engine": 2020,
+    "hancom_version": "11.0.0.9136",
+    "worker_bits": 32,
+    "raw_para_shapes": [
+      {
+        "id": 34,
+        "tag": 25,
+        "record_hex": "80330000000000000000000078f6ffff0000000000000000b400000000000000010000000000000000000000000000000000b400000000000000",
+        "margin_left_right_indent_before_after_line_spacing": [
+          0,
+          0,
+          -2440,
+          0,
+          0,
+          180
+        ]
+      },
+      {
+        "id": 35,
+        "tag": 25,
+        "record_hex": "8001000000000000000000003cf6ffff000000000000000096000000000000000400000000000000000000000000000000009600000000000000",
+        "margin_left_right_indent_before_after_line_spacing": [
+          0,
+          0,
+          -2500,
+          0,
+          0,
+          150
+        ]
+      },
+      {
+        "id": 43,
+        "tag": 25,
+        "record_hex": "8001000000000000000000008cf6ffff000000000000000096000000000000000400000000000000000000000000000000009600000000000000",
+        "margin_left_right_indent_before_after_line_spacing": [
+          0,
+          0,
+          -2420,
+          0,
+          0,
+          150
+        ]
+      }
+    ],
+    "note": "Selected low resource IDs were checked directly. Later IDs may be renumbered during resource deduplication."
+  },
+  {
+    "operation": "independent Hancom HWPX to HWP save, not PDF Print",
+    "source": "samples/issue1891/80168_regulatory_analysis.hwpx",
+    "source_sha256": "1e00b54e1139515258260a657217e0b3baa0b1b652a2cd28dd4b9bc48aa262fe",
+    "source_package_version": {
+      "tagetApplication": "WORDPROCESSOR",
+      "major": "5",
+      "minor": "1",
+      "micro": "0",
+      "buildNumber": "1",
+      "os": "1",
+      "xmlVersion": "1.2",
+      "application": "Hancom Office Hangul",
+      "appVersion": "11, 0, 0, 3524 WIN32LEWindows_8"
+    },
+    "source_head_version": "1.2",
+    "source_para_shapes": [
+      {
+        "id": 34,
+        "xml": "<ns0:paraPr xmlns:ns0=\"http://www.hancom.co.kr/hwpml/2011/head\" xmlns:ns1=\"http://www.hancom.co.kr/hwpml/2011/paragraph\" xmlns:ns2=\"http://www.hancom.co.kr/hwpml/2011/core\" id=\"34\" tabPrIDRef=\"0\" condense=\"25\" fontLineHeight=\"0\" snapToGrid=\"1\" suppressLineNumbers=\"0\" checked=\"0\"><ns0:align horizontal=\"JUSTIFY\" vertical=\"BASELINE\" /><ns0:heading type=\"NONE\" idRef=\"0\" level=\"0\" /><ns0:breakSetting breakLatinWord=\"KEEP_WORD\" breakNonLatinWord=\"KEEP_WORD\" widowOrphan=\"0\" keepWithNext=\"0\" keepLines=\"0\" pageBreakBefore=\"0\" lineWrap=\"BREAK\" /><ns0:autoSpacing eAsianEng=\"0\" eAsianNum=\"0\" /><ns1:switch><ns1:case ns1:required-namespace=\"http://www.hancom.co.kr/hwpml/2016/HwpUnitChar\"><ns0:margin><ns2:intent value=\"-2440\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"180\" unit=\"HWPUNIT\" /></ns1:case><ns1:default><ns0:margin><ns2:intent value=\"-4880\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"180\" unit=\"HWPUNIT\" /></ns1:default></ns1:switch><ns0:border borderFillIDRef=\"1\" offsetLeft=\"0\" offsetRight=\"0\" offsetTop=\"0\" offsetBottom=\"0\" connect=\"0\" ignoreMargin=\"0\" /></ns0:paraPr>"
+      },
+      {
+        "id": 35,
+        "xml": "<ns0:paraPr xmlns:ns0=\"http://www.hancom.co.kr/hwpml/2011/head\" xmlns:ns1=\"http://www.hancom.co.kr/hwpml/2011/paragraph\" xmlns:ns2=\"http://www.hancom.co.kr/hwpml/2011/core\" id=\"35\" tabPrIDRef=\"0\" condense=\"0\" fontLineHeight=\"0\" snapToGrid=\"1\" suppressLineNumbers=\"0\" checked=\"0\"><ns0:align horizontal=\"JUSTIFY\" vertical=\"BASELINE\" /><ns0:heading type=\"NONE\" idRef=\"0\" level=\"0\" /><ns0:breakSetting breakLatinWord=\"KEEP_WORD\" breakNonLatinWord=\"KEEP_WORD\" widowOrphan=\"0\" keepWithNext=\"0\" keepLines=\"0\" pageBreakBefore=\"0\" lineWrap=\"BREAK\" /><ns0:autoSpacing eAsianEng=\"0\" eAsianNum=\"0\" /><ns1:switch><ns1:case ns1:required-namespace=\"http://www.hancom.co.kr/hwpml/2016/HwpUnitChar\"><ns0:margin><ns2:intent value=\"-2500\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"150\" unit=\"HWPUNIT\" /></ns1:case><ns1:default><ns0:margin><ns2:intent value=\"-5000\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"150\" unit=\"HWPUNIT\" /></ns1:default></ns1:switch><ns0:border borderFillIDRef=\"4\" offsetLeft=\"0\" offsetRight=\"0\" offsetTop=\"0\" offsetBottom=\"0\" connect=\"0\" ignoreMargin=\"0\" /></ns0:paraPr>"
+      },
+      {
+        "id": 43,
+        "xml": "<ns0:paraPr xmlns:ns0=\"http://www.hancom.co.kr/hwpml/2011/head\" xmlns:ns1=\"http://www.hancom.co.kr/hwpml/2011/paragraph\" xmlns:ns2=\"http://www.hancom.co.kr/hwpml/2011/core\" id=\"43\" tabPrIDRef=\"0\" condense=\"0\" fontLineHeight=\"0\" snapToGrid=\"1\" suppressLineNumbers=\"0\" checked=\"0\"><ns0:align horizontal=\"JUSTIFY\" vertical=\"BASELINE\" /><ns0:heading type=\"NONE\" idRef=\"0\" level=\"0\" /><ns0:breakSetting breakLatinWord=\"KEEP_WORD\" breakNonLatinWord=\"KEEP_WORD\" widowOrphan=\"0\" keepWithNext=\"0\" keepLines=\"0\" pageBreakBefore=\"0\" lineWrap=\"BREAK\" /><ns0:autoSpacing eAsianEng=\"0\" eAsianNum=\"0\" /><ns1:switch><ns1:case ns1:required-namespace=\"http://www.hancom.co.kr/hwpml/2016/HwpUnitChar\"><ns0:margin><ns2:intent value=\"-2420\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"150\" unit=\"HWPUNIT\" /></ns1:case><ns1:default><ns0:margin><ns2:intent value=\"-4840\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"150\" unit=\"HWPUNIT\" /></ns1:default></ns1:switch><ns0:border borderFillIDRef=\"4\" offsetLeft=\"0\" offsetRight=\"0\" offsetTop=\"0\" offsetBottom=\"0\" connect=\"0\" ignoreMargin=\"0\" /></ns0:paraPr>"
+      }
+    ],
+    "saved_hwp_sha256": "50d8c1bea2102bb22c789f56f303411a9d48e02532246b210a7a3b571c28943a",
+    "job_id": "59e66de0-b75c-4e95-b92b-1bb63b2ca4ec",
+    "engine": 2024,
+    "hancom_version": "13.0.0.3901",
+    "worker_bits": 32,
+    "raw_para_shapes": [
+      {
+        "id": 34,
+        "tag": 25,
+        "record_hex": "80330000000000000000000078f6ffff0000000000000000b400000000000000010000000000000000000800000000000000b400000000000000",
+        "margin_left_right_indent_before_after_line_spacing": [
+          0,
+          0,
+          -2440,
+          0,
+          0,
+          180
+        ]
+      },
+      {
+        "id": 35,
+        "tag": 25,
+        "record_hex": "8001000000000000000000003cf6ffff000000000000000096000000000000000400000000000000000008000000000000009600000000000000",
+        "margin_left_right_indent_before_after_line_spacing": [
+          0,
+          0,
+          -2500,
+          0,
+          0,
+          150
+        ]
+      },
+      {
+        "id": 43,
+        "tag": 25,
+        "record_hex": "8001000000000000000000008cf6ffff000000000000000096000000000000000400000000000000000008000000000000009600000000000000",
+        "margin_left_right_indent_before_after_line_spacing": [
+          0,
+          0,
+          -2420,
+          0,
+          0,
+          150
+        ]
+      }
+    ],
+    "note": "Selected low resource IDs were checked directly. Later IDs may be renumbered during resource deduplication."
+  }
+]

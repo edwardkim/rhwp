@@ -1,0 +1,320 @@
+{
+  "candidates": {
+    "native": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+    "wasm": "e7ed8f68fb0e5c27866177ba0a4b98ee2b919752c8102d7237196af964b4b3db"
+  },
+  "cases": [
+    {
+      "document": "inline-shape-hwp",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": null
+    },
+    {
+      "document": "inline-shape-hwpx",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": null
+    },
+    {
+      "document": "merged-grid-column-hwp",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": null
+    },
+    {
+      "document": "merged-grid-column-hwpx",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": null
+    },
+    {
+      "document": "merged-grid-row-hwp",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": null
+    },
+    {
+      "document": "merged-grid-row-hwpx",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": null
+    },
+    {
+      "document": "merged-grid-source-hwp",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": null
+    },
+    {
+      "document": "merged-grid-source-hwpx",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": null
+    },
+    {
+      "document": "nested-table-hwp",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": null
+    },
+    {
+      "document": "nested-table-hwpx",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": null
+    },
+    {
+      "document": "shadow-presets",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "99.72",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": null
+    },
+    {
+      "document": "single-row-resize-hwp",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": null
+    },
+    {
+      "document": "single-row-resize-hwpx",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": null
+    },
+    {
+      "document": "table-cell-notes-hwp",
+      "backend": "native",
+      "pages": 2,
+      "minimum": "99.65",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": null
+    },
+    {
+      "document": "table-cell-notes-hwpx",
+      "backend": "native",
+      "pages": 2,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": null
+    },
+    {
+      "document": "textbox-notes-hwp",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": null
+    },
+    {
+      "document": "textbox-notes-hwpx",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": null
+    },
+    {
+      "document": "inline-shape-hwp",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": "e7ed8f68fb0e5c27866177ba0a4b98ee2b919752c8102d7237196af964b4b3db"
+    },
+    {
+      "document": "inline-shape-hwpx",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": "e7ed8f68fb0e5c27866177ba0a4b98ee2b919752c8102d7237196af964b4b3db"
+    },
+    {
+      "document": "merged-grid-column-hwp",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": "e7ed8f68fb0e5c27866177ba0a4b98ee2b919752c8102d7237196af964b4b3db"
+    },
+    {
+      "document": "merged-grid-column-hwpx",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": "e7ed8f68fb0e5c27866177ba0a4b98ee2b919752c8102d7237196af964b4b3db"
+    },
+    {
+      "document": "merged-grid-row-hwp",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": "e7ed8f68fb0e5c27866177ba0a4b98ee2b919752c8102d7237196af964b4b3db"
+    },
+    {
+      "document": "merged-grid-row-hwpx",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": "e7ed8f68fb0e5c27866177ba0a4b98ee2b919752c8102d7237196af964b4b3db"
+    },
+    {
+      "document": "merged-grid-source-hwp",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": "e7ed8f68fb0e5c27866177ba0a4b98ee2b919752c8102d7237196af964b4b3db"
+    },
+    {
+      "document": "merged-grid-source-hwpx",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": "e7ed8f68fb0e5c27866177ba0a4b98ee2b919752c8102d7237196af964b4b3db"
+    },
+    {
+      "document": "nested-table-hwp",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": "e7ed8f68fb0e5c27866177ba0a4b98ee2b919752c8102d7237196af964b4b3db"
+    },
+    {
+      "document": "nested-table-hwpx",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": "e7ed8f68fb0e5c27866177ba0a4b98ee2b919752c8102d7237196af964b4b3db"
+    },
+    {
+      "document": "shadow-presets",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "99.72",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": "e7ed8f68fb0e5c27866177ba0a4b98ee2b919752c8102d7237196af964b4b3db"
+    },
+    {
+      "document": "single-row-resize-hwp",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": "e7ed8f68fb0e5c27866177ba0a4b98ee2b919752c8102d7237196af964b4b3db"
+    },
+    {
+      "document": "single-row-resize-hwpx",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": "e7ed8f68fb0e5c27866177ba0a4b98ee2b919752c8102d7237196af964b4b3db"
+    },
+    {
+      "document": "table-cell-notes-hwp",
+      "backend": "wasm",
+      "pages": 2,
+      "minimum": "99.68",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": "e7ed8f68fb0e5c27866177ba0a4b98ee2b919752c8102d7237196af964b4b3db"
+    },
+    {
+      "document": "table-cell-notes-hwpx",
+      "backend": "wasm",
+      "pages": 2,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": "e7ed8f68fb0e5c27866177ba0a4b98ee2b919752c8102d7237196af964b4b3db"
+    },
+    {
+      "document": "textbox-notes-hwp",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": "e7ed8f68fb0e5c27866177ba0a4b98ee2b919752c8102d7237196af964b4b3db"
+    },
+    {
+      "document": "textbox-notes-hwpx",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "below": [],
+      "native_sha256": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+      "wasm_sha256": "e7ed8f68fb0e5c27866177ba0a4b98ee2b919752c8102d7237196af964b4b3db"
+    }
+  ],
+  "rows": 38,
+  "below": 0,
+  "minimum_by_backend": {
+    "native": "99.65",
+    "wasm": "99.68"
+  }
+}

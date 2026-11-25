@@ -1,8 +1,13 @@
-//! 관계형·고정형: 합성 저장 LineSeg의 본문 원점과 run 소속을 검사한다.
-//! 주석 갱신: 2026-11-06T21:01:51+09:00.
+//! 관계형·고정형 회귀 — 반복 점검표의 행 이어받기와 합성 저장 LineSeg의 원점을 보호한다.
+//! 주석 갱신 2026-11-23 22:35 KST. 직전 파일 변경 2026-11-09T21:27:26+09:00
+//! `64ba43fe0dfb81fbea26ec873ea7516dc3fa6f44`.
+//! 실물 점검표는 2026-11-23 한컴 2024 Print에 96 DPI 2px raw 실루엣으로 대조했다.
+//! Native/fresh WASM 각각 전10쪽과 2·3·4쪽이 100.00%다.
+//! 근거는 `mydocs/pr/assets/issue7769/2439-repeat-grid/`의 전쪽 TSV와 확대 비교다.
+//! 아래 이동 기록은 기존 합성 검사에 해당한다.
 //! 이동 직전 원본 변경: 2026-11-06T20:11:29+09:00 6844f6ec0854b1c8150244d65cc1a099031287ac.
 //! 기존 내부 검사 5건을 공개 Document·LayoutEngine 경로로 이동했다.
-//! 입력은 이 파일에서 구성한 합성 Paragraph이며 실물 HWP/HWPX·Print PDF는 없다.
+//! 합성 검사의 입력은 이 파일에서 구성한 Paragraph다.
 //! 원본 단위에서 정한 기대 좌표와 run 연결 관계를 보존한다. 설치 글꼴에 의존하지 않는다.
 //! Native/fresh WASM raw·전쪽 최저값·TSV·PNG는 이 합성 단위 계약의 실측 근거가 아니며
 //! 해당 수치를 추정하지 않는다. 실제 문서의 조판 일치율을 검증하는 검사로 취급하지 않는다.
@@ -335,4 +340,98 @@ fn body_textline_and_textruns_follow_authoritative_lineseg_start() {
         "TextLine right edge must remain at the column right edge: {:?}",
         literal_line.bbox,
     );
+}
+
+#[test]
+fn saved_repeat_grid_keeps_its_page_edge_and_the_same_cell_continuation() {
+    use rhwp::document_core::DocumentCore;
+    use rhwp::model::control::Control;
+
+    let mut document = DocumentCore::from_bytes(include_bytes!(
+        "../../samples/issue2439/issue2439_repeat_table_overlap.hwp"
+    ))
+    .expect("반복 점검표 원본");
+    document.set_hangul2024_compat(true);
+    assert_eq!(document.page_count(), 10, "독립 한컴 Print의 전체 쪽수");
+    let first = document
+        .build_page_render_tree(1)
+        .expect("끝 행을 자르는 2쪽");
+    let second = document
+        .build_page_render_tree(2)
+        .expect("같은 행을 이어받는 3쪽");
+    let following = document
+        .build_page_render_tree(3)
+        .expect("이어받는 표 뒤의 4쪽");
+
+    fn body(root: &RenderNode) -> &RenderNode {
+        root.children
+            .iter()
+            .find(|node| matches!(node.node_type, RenderNodeType::Body { .. }))
+            .expect("쪽 본문")
+    }
+    let mut nodes_first = Vec::new();
+    collect_render_nodes(&first.root, &mut nodes_first);
+    let mut nodes_second = Vec::new();
+    collect_render_nodes(&second.root, &mut nodes_second);
+    let mut nodes_following = Vec::new();
+    collect_render_nodes(&following.root, &mut nodes_following);
+    fn select_tables<'a>(nodes: &[&'a RenderNode], paragraph: usize) -> Vec<&'a RenderNode> {
+        nodes.iter().copied().filter(|node| matches!(&node.node_type,
+            RenderNodeType::Table(table) if table.para_index == Some(paragraph) && table.cell_context.is_none()))
+            .collect()
+    }
+    let first_tables = select_tables(&nodes_first, 5);
+    let second_tables = select_tables(&nodes_second, 5);
+    let ([first_grid], [second_grid]) = (first_tables.as_slice(), second_tables.as_slice()) else {
+        panic!("양쪽에 같은 표의 조각이 하나씩 있어야 한다");
+    };
+    let first_body = body(&first.root);
+    let [Control::Table(original)] = document.document().sections[0].paragraphs[5]
+        .controls
+        .as_slice()
+    else {
+        panic!("문단 5의 원본 반복 표");
+    };
+    let reserved_bottom = first_body.bbox.y + first_body.bbox.height
+        - f64::from(original.outer_margin_bottom) * DPI / 7200.0;
+    assert!(
+        (first_grid.bbox.y + first_grid.bbox.height - reserved_bottom).abs() <= 1.0,
+        "이어지는 끝 행의 괘선은 본문 하한에서 원본 바깥여백만 뺀 곳에 닫힌다"
+    );
+
+    fn right_end_cell_text(grid: &RenderNode) -> String {
+        let cell = grid
+            .children
+            .iter()
+            .find(|child| {
+                matches!(&child.node_type,
+            RenderNodeType::TableCell(cell) if cell.row == 14 && cell.col == 32)
+            })
+            .expect("마지막 행의 오른쪽 점검 주기 칸");
+        let mut nodes = Vec::new();
+        collect_render_nodes(cell, &mut nodes);
+        nodes
+            .iter()
+            .filter_map(|node| match &node.node_type {
+                RenderNodeType::TextRun(run) => Some(run.text.as_str()),
+                _ => None,
+            })
+            .flat_map(str::chars)
+            .filter(|ch| !ch.is_whitespace())
+            .collect()
+    }
+    assert_eq!(right_end_cell_text(first_grid), "2개월1회주기");
+    assert_eq!(right_end_cell_text(second_grid), "체크권장");
+
+    let signed_tables = select_tables(&nodes_following, 12);
+    let [top, bottom] = signed_tables.as_slice() else {
+        panic!("4쪽의 점검 표 두 개")
+    };
+    assert!(top.bbox.y + top.bbox.height < bottom.bbox.y);
+    let signing_text = body(&following.root).children.iter()
+        .filter(|node| matches!(node.node_type, RenderNodeType::Column(_)))
+        .flat_map(|column| &column.children)
+        .find(|node| matches!(&node.node_type, RenderNodeType::TextLine(line) if line.para_index == Some(14)))
+        .expect("두 점검 표 뒤의 본문");
+    assert!(bottom.bbox.y + bottom.bbox.height < signing_text.bbox.y);
 }

@@ -11,8 +11,8 @@ use crate::model::paragraph::{CharShapeRef, ColumnBreakType, LineSeg, Paragraph,
 use crate::model::style::{Alignment, HeadType, LineSpacingType};
 use crate::renderer::equation_tac_flow::indent_leaves_line_room_hwp;
 use crate::renderer::layout::{
-    estimate_text_width, estimate_text_width_unrounded, glyph_letter_spacing_advance,
-    hancom_regenerated_space_width, is_cjk_char, kopub_space_advance_em, resolved_letter_spacing,
+    estimate_text_width, glyph_letter_spacing_advance, hancom_regenerated_space_width, is_cjk_char,
+    kopub_space_advance_em, line_break_text_width, resolved_letter_spacing,
 };
 use crate::renderer::layout_frame::{FrameRowMetrics, LayoutFrame, ParagraphBox, RowSegment};
 use crate::renderer::style_resolver::storage::{Storage, Unbounded};
@@ -303,7 +303,14 @@ fn break_before_text_token(
 /// 독립 Print에서 낱말 유지 문단도 한점 리더·분철점 뒤에서 나뉜다.
 /// 같은 폭의 U+00B7·ASCII 마침표는 라틴 낱말을 유지한다. 글꼴 슬롯과
 /// 줄 경계는 별도 계약이며, 이미 분리한 기호 토큰의 끝을 공통 소비한다.
-fn can_break_after_text_token(ch: char, korean_break_unit: u8) -> bool {
+pub(crate) fn can_break_after_text_token(token: &[char], korean_break_unit: u8) -> bool {
+    let Some((&ch, tail)) = token.split_first() else {
+        return false;
+    };
+    // 글자 단위의 줄 끝은 그 글자에 붙은 줄머리 금칙 문자까지 함께 소비한다.
+    if !tail.iter().all(|ch| is_line_start_forbidden(*ch)) {
+        return false;
+    }
     if is_hangul(ch) || ch.is_ascii_digit() {
         korean_break_unit == 1
     } else {
@@ -440,7 +447,7 @@ impl SpaceMetric {
     fn space_advance(self, style: &crate::renderer::TextStyle) -> f64 {
         let mut selected = style.clone();
         self.apply_to_style(&mut selected);
-        estimate_text_width_unrounded(" ", &selected)
+        line_break_text_width(" ", &selected)
     }
 }
 
@@ -472,7 +479,7 @@ pub(crate) fn text_word_ranges_with_storage<S: crate::storage::Storage>(
     styles: &ResolvedStyleSet,
     storage: &S,
 ) -> Result<Vec<Range<usize>>, S::Error> {
-    let chars: Vec<_> = storage.collect(para.text.chars())?;
+    let chars: Vec<_> = storage.collect(styles.body_chars(&para.text))?;
     let style = styles.para_styles.get(para.para_shape_id as usize);
     storage.collect(
         try_tokenize_paragraph_with_regenerated_space_metric(
@@ -569,7 +576,7 @@ fn try_tokenize_paragraph_with_regenerated_space_metric<
                 &mut tokens,
                 BreakToken::DiscretionaryHyphen {
                     idx: i,
-                    width: estimate_text_width_unrounded("-", &style),
+                    width: line_break_text_width("-", &style),
                     max_font_size: token_line_font_size(styles, shape),
                 },
             )?;
@@ -801,7 +808,7 @@ fn try_tokenize_paragraph_with_regenerated_space_metric<
                 let cluster_end = hangul_jamo_cluster_end(text_chars, i);
                 let mut single = [0u8; 4];
                 let display = metric_display(&text_chars[i..cluster_end], &mut single, storage)?;
-                let mut w = estimate_text_width_unrounded(&display, &ts)
+                let mut w = line_break_text_width(&display, &ts)
                     + (i..cluster_end)
                         .map(|idx| inline_width_px_at(inline_controls, idx, styles))
                         .sum::<f64>();
@@ -1026,7 +1033,7 @@ fn try_tokenize_paragraph_with_regenerated_space_metric<
 fn reflow_scalar_width(ch: char, style: &crate::renderer::TextStyle) -> f64 {
     let display = super::verified_pua_replay_scalar(ch).unwrap_or(ch);
     let mut bytes = [0u8; 4];
-    estimate_text_width_unrounded(display.encode_utf8(&mut bytes), style)
+    line_break_text_width(display.encode_utf8(&mut bytes), style)
 }
 
 /// 토큰 텍스트의 폭을 글자별 언어 인식 측정으로 합산한다.
@@ -1145,8 +1152,8 @@ fn try_measure_token_chars<S: crate::renderer::style_resolver::storage::Storage>
         // 원문과 언어 슬롯은 유지하고 paint와 같은 1:1 표시 글리프로 잰다.
         let mut single = [0u8; 4];
         let display = metric_display(&chars[offset..cluster_end], &mut single, storage)?;
-        let width = estimate_text_width_unrounded(&display, &ts)
-            + inline_width_px_at(inline_controls, idx, styles);
+        let width =
+            line_break_text_width(&display, &ts) + inline_width_px_at(inline_controls, idx, styles);
         total += width;
         if retain_widths {
             char_widths.push(width);
@@ -1391,7 +1398,7 @@ pub(super) fn compose_horizontal_shaping_handoff(
         return None;
     }
 
-    let text_chars = para.text.chars().collect::<Vec<_>>();
+    let text_chars = styles.body_chars(&para.text).collect::<Vec<_>>();
     let inline_controls = flow_inline_controls(para, styles);
     let projection = prepare_paragraph_projection(
         para,
@@ -2799,10 +2806,12 @@ fn fill_one_interval(
                 // admitted the same glyph on 36966 − 980 = 35708 ≤ 36587. Sharing
                 // `text_token_fits_line_hwp` makes all six rows of that cell
                 // character-identical to the HWP 2024 PDF.
-                let tail_all_line_start_forbidden = text_chars[*start_idx + 1..*end_idx]
-                    .iter()
-                    .all(|c| is_line_start_forbidden(*c));
-                if tail_all_line_start_forbidden && token_fits {
+                if token_fits
+                    && can_break_after_text_token(
+                        &text_chars[*start_idx..*end_idx],
+                        korean_break_unit,
+                    )
+                {
                     // 글자 모드의 후행 금칙 흡수분도 같은 "줄 끝 자리"로 본다.
                     //
                     // 한컴은 줄 끝 금칙 문자를 상자 밖에 매달지 않고 **그 줄 안에** 넣는다
@@ -2810,16 +2819,11 @@ fn fill_one_interval(
                     // 종전 `== 1` 가드는 흡수가 만든 2글자 묶음(`력·`)을 폭 판정에 통과하고도
                     // 줄 끝 후보에서 배제해, 줄이 묶음 **앞** 한 글자로 되감겼다 — 원본이
                     // `…상호 협력·` 로 끝내는 자리에서 우리는 `…상호 협` 으로 끝나 두 글자를 잃었다.
-                    // 1글자 토큰은 아래 슬라이스가 비어 `all()` 이 참이라 종전 동작 그대로다.
-                    let c = text_chars[*start_idx];
-                    let allow_break = can_break_after_text_token(c, korean_break_unit);
-                    if allow_break {
-                        cursor.last_break_token_idx = Some(ti);
-                        cursor.last_break_char_idx = *end_idx; // 이 글자 다음 (이 글자 포함)
-                        cursor.width_at_last_break = cursor.lw + w_hwp; // 이 글자 폭 포함
-                        cursor.condense_budget_at_last_break = cursor.line_condense_budget;
-                        cursor.fs_at_last_break = cursor.line_max_fs;
-                    }
+                    cursor.last_break_token_idx = Some(ti);
+                    cursor.last_break_char_idx = *end_idx; // 이 글자 다음 (이 글자 포함)
+                    cursor.width_at_last_break = cursor.lw + w_hwp; // 이 글자 폭 포함
+                    cursor.condense_budget_at_last_break = cursor.line_condense_budget;
+                    cursor.fs_at_last_break = cursor.line_max_fs;
                 }
                 if !token_fits {
                     if *start_idx > cursor.line_start_idx {
@@ -3149,20 +3153,18 @@ fn fill_lines_before_cursor(
                     new_word_natural,
                 );
                 // Same single predicate as the live fill — see the note there.
-                let tail_all_line_start_forbidden = text_chars[*start_idx + 1..*end_idx]
-                    .iter()
-                    .all(|c| is_line_start_forbidden(*c));
                 // 위 `fill_one_interval` 과 같은 계약(흡수 묶음도 줄 끝 후보).
-                if tail_all_line_start_forbidden && token_fits {
-                    let c = text_chars[*start_idx];
-                    let allow_break = can_break_after_text_token(c, korean_break_unit);
-                    if allow_break {
-                        last_break_token_idx = Some(ti);
-                        last_break_char_idx = *end_idx; // 이 글자 다음 (이 글자 포함)
-                        width_at_last_break = lw + w_hwp; // 이 글자 폭 포함
-                        condense_budget_at_last_break = line_condense_budget;
-                        fs_at_last_break = line_max_fs;
-                    }
+                if token_fits
+                    && can_break_after_text_token(
+                        &text_chars[*start_idx..*end_idx],
+                        korean_break_unit,
+                    )
+                {
+                    last_break_token_idx = Some(ti);
+                    last_break_char_idx = *end_idx; // 이 글자 다음 (이 글자 포함)
+                    width_at_last_break = lw + w_hwp; // 이 글자 폭 포함
+                    condense_budget_at_last_break = line_condense_budget;
+                    fs_at_last_break = line_max_fs;
                 }
                 if !text_token_fits_line_hwp(
                     lw,
@@ -4890,7 +4892,7 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
             .char_offsets
             .partition_point(|offset| *offset < source_start_utf16),
     };
-    let mut text_chars = storage.collect(para.text.chars())?;
+    let mut text_chars = storage.collect(styles.body_chars(&para.text))?;
     // 필드는 공백을 건너뛰는 줄 경계가 아닌 원자 토큰이다. 토큰화 전용
     // 필드 마커로 투영하며 원문과 모델 축은 바꾸지 않는다.
     for (position, _) in &para.layout_field_values {
@@ -6814,7 +6816,7 @@ fn try_reflow_line_segs_impl<S: Storage>(
         }
     }
 
-    let mut text_chars = storage.collect(para.text.chars())?;
+    let mut text_chars = storage.collect(styles.body_chars(&para.text))?;
     // 필드는 공백을 건너뛰는 줄 경계가 아닌 원자 토큰이다. 토큰화 전용
     // 필드 마커로 투영하며 원문과 모델 축은 바꾸지 않는다.
     for (position, _) in &para.layout_field_values {

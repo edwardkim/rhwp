@@ -1,0 +1,261 @@
+{
+  "before": "b8baf0bc29bfbcff1aed9eb6c44982c71242d4d1",
+  "rebase_base": "626a5b30ab773a48aec004a22ad789e508ae9c49",
+  "after": "e70dc6231a22ec0bd569537c4e5cb0ff930fd606",
+  "mac_wasm": {
+    "mode": "wasm-pack locked --no-opt locally",
+    "sha256": "6b40a11cd07d446042c405220c16cfc79d408ad1eeb242c447ee23becd7f75f7",
+    "js_sha256": "d2d2b445cf853cf162c7664288fe34f4bb1468f0fba5512cbe79441bb53345b2"
+  },
+  "native_sha256": "0504940223a9bbc11811428ad732e699463d90dfb8ff2e7763cd8c271cafd79f",
+  "primary": {
+    "input_sha256": "6c9b83e37bb56492e7ec654e4c57bca93d5ef0822b2e20da44bfa43449ff9bfd",
+    "reference_pdf": "pdf/issue9353/uiwang_lane_min_length-2024.pdf",
+    "reference_pdf_sha256": "84249e6ae57e4c95074afd48ad48963536cbd3dd17f5d33489f4484a91dc35e5",
+    "reference_version": "13.0.0.564"
+  },
+  "control": {
+    "engine": "2024",
+    "hancom_version": "13.0.0.3901",
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2024_pdf_driver_one_up",
+    "job_id": "046d5453-70ba-4dfb-bc57-2f3b852bf1c9",
+    "reference_pdf": "pdf/issue9353/mcp-13.0.0.3901/uiwang_lane_min_length-2024.pdf",
+    "reference_pdf_sha256": "7b3e8d0549068473cc7382b0b651cd733dddc616a1a06559f46cf051134a1965",
+    "input_sha256": "6c9b83e37bb56492e7ec654e4c57bca93d5ef0822b2e20da44bfa43449ff9bfd",
+    "native_and_wasm_control_pixels_identical": true
+  },
+  "records": [
+    {
+      "mode": "hcr",
+      "backend": "native",
+      "before": {
+        "1": "100.00",
+        "2": "95.38",
+        "3": "95.71"
+      },
+      "after": {
+        "1": "100.00",
+        "2": "100.00",
+        "3": "100.00"
+      },
+      "page3_note_lines": [
+        "3. 위 표 마목부터 사목까지의 주차 대수를 산정할 때에는 「주차장법 시행령」 별표",
+        "1의 설치기준에 따른다."
+      ],
+      "files": {
+        "before_tsv": {
+          "path": "native/hcr/base-silhouette.tsv",
+          "sha256": "0b500ad8b4ba9390dd3bf2af6a713a476ce3aa069fa3beb77c74e114a7e2a418"
+        },
+        "after_tsv": {
+          "path": "native/hcr/silhouette.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af"
+        },
+        "p002": {
+          "raw": {
+            "path": "native/hcr/raw-002.png",
+            "sha256": "20e1f6ae3138a7ae75ba583b9b287742863c5b0678ac272e7848fdcd4f576dfd"
+          },
+          "pdf": {
+            "path": "native/hcr/pdf-002.png",
+            "sha256": "eee4763f6505175d7ca5aed7a78f24da6dd283de41b7a723013884d4667b831c"
+          },
+          "review": {
+            "path": "native/hcr/review-002.png",
+            "sha256": "6dd7efc67e8be0b3df06d5a30e4a820737046bcc81a39179a530c5e59eb95caf"
+          },
+          "overlay": {
+            "path": "native/hcr/overlay-002.png",
+            "sha256": "3f79e5c5d6025f4210b47c8d1de6d01a229b3bf3a75f56addb43ee59218ce542"
+          }
+        },
+        "p003": {
+          "raw": {
+            "path": "native/hcr/raw-003.png",
+            "sha256": "6a14707091ee811dbaa22e3963cf52a9eb97d1e9e18a5620c00b16feb90cf82c"
+          },
+          "pdf": {
+            "path": "native/hcr/pdf-003.png",
+            "sha256": "9651fb893ab59adaf9af0fe5a9cfa70a82cbca9b9c37317d3d08f4fa5d60215a"
+          },
+          "review": {
+            "path": "native/hcr/review-003.png",
+            "sha256": "c1387ae634679032b229650918ab2afb4d972e6421d3945fbb0ac4466376a429"
+          },
+          "overlay": {
+            "path": "native/hcr/overlay-003.png",
+            "sha256": "20a89b8b68213e4679722d274c650bbfbf1dd3bb9e7a1dabf701678d614e3f59"
+          }
+        }
+      }
+    },
+    {
+      "mode": "fullwidth-control",
+      "backend": "native",
+      "before": {
+        "1": "100.00",
+        "2": "100.00",
+        "3": "100.00"
+      },
+      "after": {
+        "1": "100.00",
+        "2": "100.00",
+        "3": "100.00"
+      },
+      "page3_note_lines": [
+        "3. 위 표 마목부터 사목까지의 주차 대수를 산정할 때에는 「주차장법 시행령」 별",
+        "표 1의 설치기준에 따른다."
+      ],
+      "files": {
+        "before_tsv": {
+          "path": "native/fullwidth-control/base-silhouette.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af"
+        },
+        "after_tsv": {
+          "path": "native/fullwidth-control/silhouette.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af"
+        },
+        "p003": {
+          "raw": {
+            "path": "native/fullwidth-control/raw-003.png",
+            "sha256": "b4536f50feae1a641260ed450d09b510270ad0f283c218d4411a62c93dcc590e"
+          },
+          "pdf": {
+            "path": "native/fullwidth-control/pdf-003.png",
+            "sha256": "1c252fa6bbead6e7d33d66258fb9acd821941c6d4d837f14e700dd64e0ea4d3f"
+          },
+          "review": {
+            "path": "native/fullwidth-control/review-003.png",
+            "sha256": "2c6b15633042ccc04f9f8bf9495fcc6906dcf19496b56f601fc2a67f3c3411d2"
+          },
+          "overlay": {
+            "path": "native/fullwidth-control/overlay-003.png",
+            "sha256": "413d961db9dcf07ccc4a1191977a480adfe3a37373ac6745a0ba6b3af176d2e7"
+          }
+        }
+      }
+    },
+    {
+      "mode": "hcr",
+      "backend": "wasm",
+      "before": {
+        "1": "100.00",
+        "2": "95.36",
+        "3": "95.65"
+      },
+      "after": {
+        "1": "100.00",
+        "2": "100.00",
+        "3": "100.00"
+      },
+      "page3_note_lines": [
+        "3. 위 표 마목부터 사목까지의 주차 대수를 산정할 때에는 「주차장법 시행령」 별표",
+        "1의 설치기준에 따른다."
+      ],
+      "files": {
+        "before_tsv": {
+          "path": "wasm/hcr/base-silhouette.tsv",
+          "sha256": "c1a69e4cbca6bdf11167fb73d48bcad77b2010455afc1a5255bc2476e3590127"
+        },
+        "after_tsv": {
+          "path": "wasm/hcr/silhouette.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af"
+        },
+        "p002": {
+          "raw": {
+            "path": "wasm/hcr/raw-002.png",
+            "sha256": "039f42c43900d9fec957559ff8a2c2add57952cb56d4a5f25d9f6a0b8f6fc74d"
+          },
+          "pdf": {
+            "path": "wasm/hcr/pdf-002.png",
+            "sha256": "eee4763f6505175d7ca5aed7a78f24da6dd283de41b7a723013884d4667b831c"
+          },
+          "review": {
+            "path": "wasm/hcr/review-002.png",
+            "sha256": "7ec1729023b7c92469c7f8ece1f7b9b8d04b4ca5039b67d83434e3a6fa4a18c2"
+          },
+          "overlay": {
+            "path": "wasm/hcr/overlay-002.png",
+            "sha256": "e6162203f840e3d3db913ea0c1729a532069e946a93d6dab702d32bb5749b1d6"
+          }
+        },
+        "p003": {
+          "raw": {
+            "path": "wasm/hcr/raw-003.png",
+            "sha256": "8938d6946fc5bee7678b08ed4183c8b5f52197f2790622fc8fe026ccd2b1ef84"
+          },
+          "pdf": {
+            "path": "wasm/hcr/pdf-003.png",
+            "sha256": "9651fb893ab59adaf9af0fe5a9cfa70a82cbca9b9c37317d3d08f4fa5d60215a"
+          },
+          "review": {
+            "path": "wasm/hcr/review-003.png",
+            "sha256": "d8acb28a151893511a5b3ae28fc92a5321f229d8467e4e02f9752daee28c77b5"
+          },
+          "overlay": {
+            "path": "wasm/hcr/overlay-003.png",
+            "sha256": "afc08e22a1b8e83317b087531fd9f6a61b6b9fd22a2cbce73178dc798393d061"
+          }
+        }
+      }
+    },
+    {
+      "mode": "fullwidth-control",
+      "backend": "wasm",
+      "before": {
+        "1": "100.00",
+        "2": "100.00",
+        "3": "100.00"
+      },
+      "after": {
+        "1": "100.00",
+        "2": "100.00",
+        "3": "100.00"
+      },
+      "page3_note_lines": [
+        "3. 위 표 마목부터 사목까지의 주차 대수를 산정할 때에는 「주차장법 시행령」 별",
+        "표 1의 설치기준에 따른다."
+      ],
+      "files": {
+        "before_tsv": {
+          "path": "wasm/fullwidth-control/base-silhouette.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af"
+        },
+        "after_tsv": {
+          "path": "wasm/fullwidth-control/silhouette.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af"
+        },
+        "p003": {
+          "raw": {
+            "path": "wasm/fullwidth-control/raw-003.png",
+            "sha256": "7ad0d07340f34d0d3de7f5185089af8e292aaa9034d17bc54cf23d691a351557"
+          },
+          "pdf": {
+            "path": "wasm/fullwidth-control/pdf-003.png",
+            "sha256": "1c252fa6bbead6e7d33d66258fb9acd821941c6d4d837f14e700dd64e0ea4d3f"
+          },
+          "review": {
+            "path": "wasm/fullwidth-control/review-003.png",
+            "sha256": "9e2fc3097c5792f6f7ddf54d58ce6fa5a9082528fe68ab95c4574db2e2e391ea"
+          },
+          "overlay": {
+            "path": "wasm/fullwidth-control/overlay-003.png",
+            "sha256": "087c85932f893157ce39c65874d8c28a77f9ce265f2d3124ac1ca889bf87f80e"
+          }
+        }
+      }
+    }
+  ],
+  "font_programs": {
+    "Haansoft Batang": {
+      "file": "HBATANG.TTF",
+      "quote_em": 1
+    },
+    "HCR Batang": {
+      "file": "HANBatang.ttf",
+      "quote_em": 0.5
+    }
+  },
+  "metric": "96 DPI 2px raw silhouette"
+}

@@ -51,10 +51,15 @@ test('분할 OTF는 준비된 순서대로 Canvas family 사다리에 포함한�
     assert.deepEqual(records.map(record => record.postscriptName), ['Split-Latin', 'Split-Hangul']);
     const outlines: string[] = [], coverage: string[] = [], clears: string[] = [];
     const chains: Array<{family: string; programs: Uint8Array[]}> = [];
-    await f.session.prepare(records, {registerHftOutlineFont(family) { outlines.push(family); },
-      registerHftOutlineFontCandidates(family, programs) { chains.push({family, programs}); },
-      registerTextFontGlyphCoverage(family) { coverage.push(family); },
-      clearTextFontFamily(family) { clears.push(family); }});
+    const owner = { getHftOutlineFontContext: () => 'split document',
+      registerHftOutlineFont(family: string) { outlines.push(family); },
+      registerHftOutlineFontCandidates(family: string, programs: Uint8Array[]) { chains.push({family, programs}); },
+      registerTextFontGlyphCoverage(family: string) { coverage.push(family); },
+      clearTextFontFamily(family: string) { clears.push(family); } };
+    await f.session.prepare(records, owner);
+    const prepared = [clears.length, coverage.length, outlines.length, chains.length];
+    await f.session.prepare(records, owner);
+    assert.deepEqual([clears.length, coverage.length, outlines.length, chains.length], prepared);
     assert.equal(clears.filter(family => family === 'Split').length, 1,
       '분할 family의 이전 세대 coverage를 한 번 비운다');
     assert.equal(outlines.filter(family => family.toLowerCase() === 'split').length, 0,
@@ -66,6 +71,93 @@ test('분할 OTF는 준비된 순서대로 Canvas family 사다리에 포함한�
       '마지막 조각의 cmap을 family 전체의 coverage로 기록하지 않는다');
     const css = withHostCanvasFonts(f.session, () => scopedHostCanvasFont('20px "Split", serif'));
     assert.match(css!, /__rhwp_host_face_\d+_1.*__rhwp_host_face_\d+_2/);
+  } finally { await f.dispose(); }
+});
+
+test('지속 등록은 문서·프로그램·별칭별로 재사용하고 변경·해제 시 다시 설치한다', async () => {
+  const f = await fixture();
+  const font = (file: string) => Uint8Array.from(readFileSync(new URL(
+    '../../tests/fixtures/fonts/' + file, import.meta.url))).buffer;
+  const cff = font('RHWPHftOutline.otf');
+  const ttf = font('RHWPHostFixture-Regular.ttf');
+  const family = 'Host Registration';
+  const alias = 'Host Alias';
+  const postscriptName = 'HostRegistration-Regular';
+  let programs = cff;
+  const provider = { ...f.provider,
+    async getSnapshot() { return { revision: programs === cff ? 'cff' : 'ttf', faces: [{
+      id: 'regular', family, fullName: family, postscriptName, style: 'Regular',
+      aliases: [alias], weight: 400, slant: 'normal' as const,
+    }] }; },
+    async readFace() { return { bytes: programs }; },
+  };
+  const makeOwner = () => {
+    const coverage = new Map<string, ArrayBufferLike>();
+    const outlines = new Set<string>();
+    const coverageCalls: string[] = [];
+    const outlineCalls: string[] = [];
+    let eligible = false;
+    const owner = {
+      getHftOutlineFontContext: () => String(eligible),
+      registerTextFontGlyphCoverage(name: string, bytes: Uint8Array) {
+        coverageCalls.push(name);
+        coverage.set(name, bytes.buffer);
+        return false;
+      },
+      registerHftOutlineFont(name: string, bytes: Uint8Array) {
+        outlineCalls.push(name);
+        if (!eligible || bytes.buffer.byteLength !== cff.byteLength) return false;
+        outlines.add(name);
+        return true;
+      },
+      registerHftOutlineFontFaces(name: string) { outlines.add(name); },
+      clearTextFontOutline(name: string) { outlines.delete(name); },
+      clearTextFontFamily(name: string) { coverage.delete(name); outlines.delete(name); },
+    };
+    return { owner, coverage, outlines, coverageCalls, outlineCalls, enableOutline: () => { eligible = true; } };
+  };
+  const records = () => [resolveRendererLocalFont(family)!];
+  const first = makeOwner();
+  const next = makeOwner();
+  try {
+    await setHostFontProvider(provider);
+    await f.session.prepare(records(), first.owner);
+    const initialCoverage = [...first.coverageCalls];
+    const initialOutline = [...first.outlineCalls];
+    assert(initialCoverage.includes(alias));
+    assert(initialOutline.includes(family));
+    await f.session.prepare(records(), first.owner);
+    assert.deepEqual(first.coverageCalls, initialCoverage);
+    assert.deepEqual(first.outlineCalls, initialOutline, '같은 문서 조건의 거절도 반복하지 않는다');
+
+    first.enableOutline();
+    await f.session.prepare(records(), first.owner);
+    assert.deepEqual(first.coverageCalls, initialCoverage);
+    assert(first.outlines.has(family), '문서의 소유 조건이 바뀌면 윤곽 등록을 다시 시도한다');
+
+    f.session.clearFamily(first.owner, alias);
+    await f.session.prepare(records(), first.owner);
+    assert.deepEqual(first.coverageCalls.slice(initialCoverage.length), [alias]);
+    assert(first.outlines.has(alias));
+
+    await f.session.prepare(records(), first.owner, () => true, true);
+    for (let paint = 0; paint < 2; paint++) {
+      f.session.withPageOutlines(records(), first.owner, () => assert(first.outlines.has(family)));
+      assert(!first.outlines.has(family));
+    }
+    await f.session.prepare(records(), first.owner);
+    assert(first.outlines.has(family), '쪽별 paint에서 비운 윤곽을 지속 경로로 돌아갈 때 다시 설치한다');
+
+    await f.session.prepare(records(), next.owner);
+    assert.equal(first.coverage.size, 0);
+    assert.deepEqual(next.coverageCalls, initialCoverage);
+    const previousProgram = next.coverage.get(alias);
+    programs = ttf;
+    await setHostFontProvider(provider);
+    assert.equal(next.coverage.size, 0);
+    await f.session.prepare(records(), next.owner);
+    assert.notEqual(next.coverage.get(alias), previousProgram);
+    assert.deepEqual(new Uint8Array(next.coverage.get(alias)!), new Uint8Array(ttf));
   } finally { await f.dispose(); }
 });
 

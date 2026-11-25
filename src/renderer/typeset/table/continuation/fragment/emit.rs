@@ -41,10 +41,19 @@ impl TypesetEngine {
         let table_footnotes = &input.prepared.table_footnotes;
         let table_footnotes_follow_terminal = table.cells.iter().any(|cell| cell.row_span > 1);
         let host_spacing_total = input.prepared.host_spacing_total;
-        let terminal_host_spacing = input.prepared.terminal_host_spacing;
         let relax_terminal_table_footnote_fit = input.prepared.relax_terminal_table_footnote_fit;
         let cursor_row = input.start.cursor_row;
         let is_continuation = input.start.is_continuation;
+        let terminal_host_spacing = input.prepared.terminal_host_spacing
+            + crate::renderer::layout::stored_unconsumed_rowbreak_host_advance_hu(
+                st.profile.hwp5_stored_pagination_layout(),
+                input.source.paragraph,
+                table,
+                input.source.paragraphs_all.get(para_idx + 1),
+                st.pre_emitted_host_paras.contains(&para_idx),
+                is_continuation,
+            )
+            .map_or(0.0, |advance| hwpunit_to_px(advance, self.dpi));
         let start_cut_is_block = input.start.start_cut_is_block;
         let start_row_height_override = input.start.start_row_height_override;
         let start_cut = &input.start.start_cut;
@@ -2055,14 +2064,14 @@ impl TypesetEngine {
         if let Some((row, used, height)) = accepted_stored_row_frame {
             continuation.stored_row_box_sum = Some((row, used + height));
         }
-        // [#2238] 중간 조각의 가시 높이 기록 — used_height(페이지 확정 시 current_height)
-        // 표시용. 전진 직후 current_height 가 리셋되므로 흐름/기하 불변.
-        st.advance_flow_by(
-            host_before_overhead
-                + vert_offset_overhead
-                + partial_height
-                + fragment_outer_bottom_overhead,
-        );
+        // 첫 부동 조각이 앞의 같은 문단 개체와 앵커를 공유하면 scan에서 사용한
+        // 원점으로 하단을 대조한다. 앞 개체가 소비한 높이를 조각에 다시 더하지 않는다.
+        let fragment_end = budget.fragment_flow_origin
+            + host_before_overhead
+            + vert_offset_overhead
+            + partial_height
+            + fragment_outer_bottom_overhead;
+        st.align_flow_to(st.current_height.max(fragment_end));
         if terminal_cut_consumed {
             let terminal_successor_gap = is_continuation
                 .then(|| st.table_flow_successor(para_idx, input.source.paragraphs_all))
@@ -2802,6 +2811,7 @@ impl TypesetEngine {
         if st.prefilled_line_prefixes.contains_key(&index) {
             return;
         }
+        self.restore_consumed_cell_prefix_axis(st, input);
         if std::env::var_os("RHWP_DIAG_SCAN").is_some() {
             eprintln!(
                 "DIAG_SCAN TERMINAL_SOURCE_OWNER pi={} next={} text_len={} controls={} lines={} source_lines={:?} first_line={:?} current={:.3} margin={} hwp5={} hwpx={}",

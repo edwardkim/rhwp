@@ -1,0 +1,1 @@
+[RustTestSuite] 오류: PR base에 없는 신규 integration source는 tests/cases/ 아래에 두어야 합니다: tests/issue_2279_layout_oracles.rs

@@ -2,8 +2,8 @@
 
 mod cell_line_frame;
 mod grown_table_heights;
-mod hft_outline_fonts;
 mod initial_fields;
+mod legacy_font_outlines;
 mod metafile_fonts;
 mod nested_row_page_starts;
 mod reflowed_table_frames;
@@ -173,6 +173,20 @@ impl DocumentCore {
         Self::from_bytes_inner(data, None)
     }
 
+    /// 구형 rhwp에서 저장한 HWPX의 무표지 채움 투명도 1을 완전 투명으로 복원한다.
+    /// 일반 HWPX는 같은 숫자를 1/255로 쓰므로 사용자가 출처를 확인한 경우에만 호출한다.
+    pub fn from_legacy_rhwp_hwpx(data: &[u8], password: Option<&[u8]>) -> Result<Self, HwpError> {
+        let format = crate::parser::FileFormat::Hwpx;
+        if crate::parser::detect_format(data) != format {
+            return Err(HwpError::InvalidFile(
+                "구버전 투명도 복원에는 HWPX 입력이 필요합니다".into(),
+            ));
+        }
+        let parsed = crate::parser::parse_document_for_core(data, password, true)
+            .map_err(|e| HwpError::InvalidFile(e.to_string()))?;
+        Self::from_parsed_document(parsed, format)
+    }
+
     /// 문서를 열어 현재 Core를 원자적으로 교체한다.
     ///
     /// 성공 결과에는 문서·암호·metadata를 싣지 않는다. 암호의 보관 수명은
@@ -229,7 +243,7 @@ impl DocumentCore {
                 .map_err(|e| HwpError::InvalidFile(format!("PDF 오류: {e}")))?;
             return Self::from_pdf_bytes(data, &options);
         }
-        let parsed = crate::parser::parse_document_for_core(data, password)
+        let parsed = crate::parser::parse_document_for_core(data, password, false)
             .map_err(|e| HwpError::InvalidFile(e.to_string()))?;
         Self::from_parsed_document(parsed, source_format)
     }
@@ -323,7 +337,7 @@ impl DocumentCore {
         // [#7051] 계보 신호가 없는 저장본은 저장 줄 사다리로 HFT ASCII 반각 조판을 판정한다.
         // 편집 중 판정이 흔들리지 않도록 로드 시 한 번만 내린다.
         if !styles.hft_ascii_halfwidth {
-            let witnesses = crate::renderer::hft_ascii_evidence::count_hft_ascii_witnesses(
+            let witnesses = crate::renderer::legacy_ascii_evidence::count_hft_ascii_witnesses(
                 &document,
                 &styles,
                 DEFAULT_DPI,
@@ -349,14 +363,18 @@ impl DocumentCore {
         // [#8310] 한컴 HWPX 에서 만든 HWP(`/RhwpHwpxOrigin` = 2)는 원본 HWPX 의 저장 줄
         // 계약을 지닌다 — 원본 좌표와 "저장 줄 없음". 같은 문서가 같은 조판 입력이 되도록
         // HWPX 와 같은 XML import 규칙으로 연다.
-        let use_xml_import_semantics =
-            (matches!(
+        // [#9039] `/RhwpHwpxOrigin` = 1 계약을 옮겨 실은 HWPX 는 원래의 HWP 처럼 저장 줄을
+        // HWP 규칙으로 읽는다. XML 파서가 비워 두는 문단 필드 정규화는 그대로 한다.
+        let hwpx_with_hwp_line_rules = matches!(source_format, crate::parser::FileFormat::Hwpx)
+            && document.hwpx_origin_hwp_line_rules().is_some();
+        let use_xml_import_semantics = !hwpx_with_hwp_line_rules
+            && (matches!(
                 source_format,
                 crate::parser::FileFormat::Hwpx | crate::parser::FileFormat::Hml
             ) || (matches!(source_format, crate::parser::FileFormat::Hwp)
                 && document.hwpx_origin_keeps_source_lines()))
-                && !hwp5_origin_hwpx
-                && !document.layout_profile().hwp3_native_layout();
+            && !hwp5_origin_hwpx
+            && !document.layout_profile().hwp3_native_layout();
 
         // 비표준 lineseg 감지 — reflow 이전 시점에 IR을 그대로 검증.
         // 경고는 사용자에게 고지되며, 자동 reflow 는 `needs_line_seg_reflow` 조건에만 한정.
@@ -364,6 +382,7 @@ impl DocumentCore {
         // LinesegTextRunReflow는 HWPX textRun 전용 패턴. HWP3/HWP5/HML에는 확대 적용하지 않는다.
         let check_textrun_reflow = matches!(source_format, crate::parser::FileFormat::Hwpx)
             && !hwp5_origin_hwpx
+            && !hwpx_with_hwp_line_rules
             && !document.layout_profile().hwp3_native_layout();
         let validation_report = Self::validate_linesegs(&document, check_textrun_reflow);
 
@@ -417,7 +436,7 @@ impl DocumentCore {
         // XML 파서가 채우지 않는 paragraph 필드를 HWP 직렬화/파싱 라운드트립 결과와 일치시킨다.
         // 1) char_shapes 빈 paragraph 에 default [(0,0)] 추가 (HWP 스펙상 최소 1개 요구)
         // 2) control_mask 를 controls 기반으로 재계산
-        if use_xml_import_semantics {
+        if use_xml_import_semantics || hwpx_with_hwp_line_rules {
             Self::normalize_xml_import_paragraphs(&mut document);
         }
 
@@ -432,7 +451,7 @@ impl DocumentCore {
             pagination: Vec::new(),
             styles,
             canvas_metrics: None,
-            hft_outline_fonts: Default::default(),
+            legacy_font_outlines: Default::default(),
             metafile_fonts: Default::default(),
             font_environment: None,
             host_font_environment: None,
@@ -458,6 +477,7 @@ impl DocumentCore {
             respect_vpos_reset: false,
             hangul2024_compat: false,
             print_png_rgb555: false,
+            print_bmp_full_color: false,
             print_job_context: None,
             measured_tables: Vec::new(),
             dirty_sections: storage

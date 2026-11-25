@@ -72,6 +72,8 @@ mod inline_table_geometry;
 pub(crate) use inline_table_geometry::InlineTableParagraphGeometry;
 mod inline_text_advance;
 mod stored_textbox_frame;
+mod stored_wrap_frame;
+use stored_wrap_frame::full_width_line_box as stored_full_width_line_box;
 mod tab_frame;
 /// 분배 정렬도 다음 글자가 없는 마지막 글리프의 실제 점유 끝을 기준으로 한다.
 /// 마지막 개체 앞 공백과 표시/중첩/주석 제어가 소유한 폭은 일반 글자의 자간으로
@@ -3342,33 +3344,6 @@ mod endnote_prefix;
 pub(crate) use endnote_prefix::leading_endnote_prefix_geometry;
 mod inline_picture_alignment;
 
-/// [#7548] 문단의 전폭 저장 줄(가장 넓은 원본 줄)의 시작 cs 와 끝(cs+sw).
-/// 모든 줄이 같은 폭이면(좁혀진 줄이 없으면) None — 기준으로 쓸 대비가 없다.
-fn stored_full_width_line_box(para: &Paragraph) -> Option<(i32, i32)> {
-    // 같은 vpos 를 공유하는 세그먼트(개체 양옆으로 갈린 한 줄)는 전폭 기준이 될 수 없다.
-    let original: Vec<_> = para
-        .line_segs
-        .iter()
-        .filter(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0 && seg.segment_width > 0)
-        .filter(|seg| {
-            para.line_segs
-                .iter()
-                .filter(|other| other.vertical_pos == seg.vertical_pos)
-                .count()
-                == 1
-        })
-        .collect();
-    let widest = original.iter().map(|seg| seg.segment_width).max()?;
-    if original.iter().all(|seg| seg.segment_width == widest) {
-        return None;
-    }
-    let full = original
-        .iter()
-        .filter(|seg| seg.segment_width == widest)
-        .min_by_key(|seg| seg.column_start)?;
-    Some((full.column_start, full.column_start + full.segment_width))
-}
-
 impl LayoutEngine {
     /// [#8653] TAC 표만 담은 문단의 한 저장 줄을 소유한 다른 표(저장 밴드 = 그 표의 바깥
     /// 상자)의 본체 높이와 위 바깥여백(px). 소유 판정은 단일 저장 줄에서만 성립한다
@@ -6325,8 +6300,20 @@ impl LayoutEngine {
         // typeset.rs::format_paragraph 측 동일 제거 — solo_zone_pad (zone 전환 패딩) 만 유지.
         let tab_width =
             styles.default_tab_width(para_style.map(|s| s.default_tab_width).unwrap_or(0.0));
-        let tab_stops = para_style.map(|s| s.tab_stops.clone()).unwrap_or_default();
+        let mut tab_stops = para_style.map(|s| s.tab_stops.clone()).unwrap_or_default();
         let auto_tab_right = para_style.map(|s| s.auto_tab_right).unwrap_or(false);
+        let bounded_textbox_leader = cell_ctx
+            .as_ref()
+            .filter(|context| context.in_textbox)
+            .and_then(|_| {
+                tab_frame::bounded_textbox_leader(
+                    composed,
+                    para?,
+                    &mut tab_stops,
+                    col_area.width - margin_right,
+                )
+            });
+        let composed = bounded_textbox_leader.as_ref().unwrap_or(composed);
 
         // [Task #489] 비-TAC Picture/Shape with wrap=Square 보유 여부.
         // 한컴은 어울림 그림이 있는 paragraph 의 LINE_SEG.cs/sw 를 그림 너비만큼 좁혀
@@ -7227,14 +7214,10 @@ impl LayoutEngine {
                             matches!(p.controls.get(*ci), Some(Control::Table(t)) if t.common.treat_as_char)
                         })
                 });
-            // 문단 세로 정렬이 가운데이면 저장 BL은 TH/2의 정렬점이다(HWP5 표 44).
-            // 수식과 글자가 같은 줄에서 이 점을 곧바로 문자 기준선으로 쓰면
-            // 큰 수식 줄의 글자가 올라간다. 온전한 저장 줄과 같은 소유 구간인
-            // 수식 전용 TAC 줄만 해석하고, 재구성·다른 개체의 프레임은 유지한다.
-            let stored_equation_center = (!runs_all_whitespace
-                && !has_tac_shape
-                && !source_metrics_reflowed
-                && max_fs > 0.0
+            // 가운데 정렬 저장 줄의 BL은 상자 중심이다(HWP5 표 44).
+            // 같은 줄에 속한 도형·수식은 저장 정렬점을 쓰고 문자는 자기 상자
+            // 위에서 0.85em의 기준선을 갖는다. 그림·표가 섞인 줄은 기존 계약을 쓴다.
+            let stored_object_center = (!source_metrics_reflowed
                 && para_style.is_some_and(|style| style.vertical_alignment == 2)
                 && !line_tac_offsets_for_width.is_empty()
                 && para.is_some_and(|p| {
@@ -7245,13 +7228,32 @@ impl LayoutEngine {
                                 && source.line_height == comp_line.line_height
                                 && source.baseline_distance == comp_line.baseline_distance
                         })
-                        && line_tac_offsets_for_width.iter().all(|(_, _, ci)| {
-                            matches!(p.controls.get(*ci), Some(Control::Equation(e)) if e.common.treat_as_char)
-                        })
                 }))
             .then_some(hwpunit_to_px(comp_line.baseline_distance, self.dpi));
-            let baseline = if let Some(center) = stored_equation_center {
-                // 최소 글꼴 기준선으로 clamp한 값이 아닌 원래 정렬점을 소비한다.
+            let stored_equation_center = stored_object_center.filter(|_| {
+                !runs_all_whitespace
+                    && !has_tac_shape
+                    && max_fs > 0.0
+                    && para.is_some_and(|p| {
+                        line_tac_offsets_for_width.iter().all(|(_, _, ci)| {
+                            matches!(p.controls.get(*ci), Some(Control::Equation(e))
+                                if e.common.treat_as_char)
+                        })
+                    })
+            });
+            let stored_shape_center = stored_object_center.filter(|_| {
+                has_tac_shape && para.is_some_and(|p| {
+                    line_tac_offsets_for_width.iter().all(|(_, _, ci)| {
+                        matches!(p.controls.get(*ci), Some(Control::Shape(shape))
+                            if shape.common().treat_as_char
+                              && !matches!(shape.as_ref(), crate::model::shape::ShapeObject::Picture(_)))
+                    })
+                })
+            });
+            let object_baseline = stored_shape_center.unwrap_or(object_baseline);
+            let text_center = stored_equation_center
+                .or(stored_shape_center.filter(|_| !runs_all_whitespace && max_fs > 0.0));
+            let baseline = if let Some(center) = text_center {
                 center + max_fs * (0.85 - 0.5)
             } else if centered_inline_table_baseline {
                 baseline + max_fs * (0.85 - 0.5)
@@ -7477,6 +7479,20 @@ impl LayoutEngine {
             // 정확히 설명하면 일반 문단 상자를 쓴다. 그림의 존재만으로 cs를 단 원점에
             // 더하면 문단 여백을 다시 적용해 본문·글머리표·탭이 함께 오른쪽으로 밀린다.
             // 실제 배제 lane은 아래의 세로 band/저장 조각 근거로 계속 보존한다.
+            let stored_row_is_full_paragraph_frame = cell_ctx.is_none()
+                && para.is_some_and(|source| {
+                    stored_wrap_frame::is_full_paragraph_row(
+                        source,
+                        line_idx,
+                        comp_line.column_start,
+                        comp_line.segment_width,
+                        &crate::renderer::composer::ParagraphBox::body_for_style(
+                            col_area.width,
+                            para_style,
+                            self.dpi,
+                        ),
+                    )
+                });
             let stored_row_is_own_margin_to_column_end = cell_ctx.is_none()
                 && comp_line.column_start.abs_diff(own_margin_hu) <= 1
                 && stored_line_reaches_column_end(
@@ -7489,7 +7505,8 @@ impl LayoutEngine {
                 || synthetic_band_carved_row
                 || (stored_geometry_source
                     && ((has_picture_shape_square_wrap
-                        && !stored_row_is_own_margin_to_column_end)
+                        && !stored_row_is_own_margin_to_column_end
+                        && !stored_row_is_full_paragraph_frame)
                         || (line_has_inline_tac_table && !inline_tac_segment_is_paragraph_width)
                         || precomputed_body_wrap_line
                         || empty_stored_wrap_line
@@ -7555,11 +7572,32 @@ impl LayoutEngine {
                 && cell_ctx.is_none()
                 && cs_is_own_margin
                 && (stored_tac_assignment.is_some() || line_has_inline_tac_table);
+            let stored_wrap_column_frame = uses_stored_segment_geometry
+                && cell_ctx.is_none()
+                && self.is_body_flow_col_area(col_area)
+                && wrap_anchor.is_none()
+                // 배제 개체는 앞 문단이 소유할 수도 있다. 현재 줄의 배제 증거와
+                // 원본 전폭 줄의 좌표계 인증을 함께 쓰며 소유 문단을 추측하지 않는다.
+                && (has_picture_shape_square_wrap
+                    || precomputed_body_wrap_line
+                    || body_square_wrap_stored_line)
+                && para.is_some_and(|source| {
+                    stored_wrap_frame::owns_column_row(
+                        source,
+                        comp_line.column_start,
+                        comp_line.segment_width,
+                        &crate::renderer::composer::ParagraphBox::body_for_style(
+                            col_area.width,
+                            para_style,
+                            self.dpi,
+                        ),
+                    )
+                });
             let (effective_margin_left, effective_margin_right) = if physical_frame_rows {
                 // 프레임 구간에는 문단 여백·배제가 이미 들어 있지만, 채움이
                 // 별도로 차감한 들여쓰기는 글자 원점과 가용 폭에도 한 번 적용한다.
                 (line_indent, 0.0)
-            } else if stored_inline_own_margin || stored_textbox_line {
+            } else if stored_inline_own_margin || stored_textbox_line || stored_wrap_column_frame {
                 // 유효한 저장 줄의 시작·폭은 완성된 프레임이다. 문단 여백을
                 // 다시 적용하지 않고 별도 줄 들여쓰기만 소비한다.
                 (line_indent, 0.0)
@@ -12285,6 +12323,11 @@ impl LayoutEngine {
                         // 셀의 그림·표는 기존 소유 경로가 출력한다. 앞 도형의 가로
                         // 줄 소속만 공유하고, 다른 개체를 여기서 중복 출력하지 않는다.
                         if !empty_line_tac_allowed {
+                            if let Control::Picture(picture) = ctrl {
+                                let (left, _, _, _) =
+                                    tac_picture_outer_margins_px(picture, self.dpi);
+                                tree.defer_picture_left(line_node, tac_ci, img_x + left);
+                            }
                             img_x += tac_w;
                             empty_line_mark_x = img_x;
                             empty_line_logical_end += 1;

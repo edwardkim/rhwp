@@ -427,7 +427,11 @@ impl Renderer for CanvasRenderer {
         self.commands.push(CanvasCommand::DrawLine(x1, y1, x2, y2));
     }
 
-    fn draw_ellipse(&mut self, cx: f64, cy: f64, rx: f64, ry: f64, _style: &ShapeStyle) {
+    fn draw_ellipse(&mut self, cx: f64, cy: f64, rx: f64, ry: f64, style: &ShapeStyle) {
+        if let Some(commands) = super::ellipse::patterned_outline(cx, cy, rx, ry, style) {
+            self.draw_path(&commands, style);
+            return;
+        }
         self.commands
             .push(CanvasCommand::DrawEllipse(cx, cy, rx, ry));
     }

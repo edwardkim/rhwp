@@ -1,0 +1,2201 @@
+{
+  "pages": 313,
+  "minimum": "98.15",
+  "under_98": [],
+  "declines_from_previous": [],
+  "declines_from_original": [],
+  "declines_over_2pp_from_devel": [],
+  "rows": [
+    {
+      "page": 1,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 2,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "98.90",
+      "devel": "98.90"
+    },
+    {
+      "page": 3,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 4,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 5,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 6,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 7,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 8,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 9,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 10,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 11,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 12,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 13,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 14,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 15,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 16,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 17,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 18,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 19,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 20,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 21,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 22,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 23,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 24,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 25,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 26,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 27,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 28,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 29,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "88.29",
+      "devel": "100.00"
+    },
+    {
+      "page": 30,
+      "previous": "99.84",
+      "candidate": "99.84",
+      "original": "99.84",
+      "devel": "99.84"
+    },
+    {
+      "page": 31,
+      "previous": "99.98",
+      "candidate": "99.98",
+      "original": "99.98",
+      "devel": "99.98"
+    },
+    {
+      "page": 32,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 33,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 34,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 35,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 36,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 37,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 38,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 39,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 40,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 41,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 42,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 43,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 44,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 45,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 46,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 47,
+      "previous": "98.39",
+      "candidate": "99.97",
+      "original": "51.80",
+      "devel": "51.80"
+    },
+    {
+      "page": 48,
+      "previous": "97.64",
+      "candidate": "100.00",
+      "original": "46.69",
+      "devel": "46.69"
+    },
+    {
+      "page": 49,
+      "previous": "98.72",
+      "candidate": "100.00",
+      "original": "42.97",
+      "devel": "42.97"
+    },
+    {
+      "page": 50,
+      "previous": "97.57",
+      "candidate": "100.00",
+      "original": "48.26",
+      "devel": "48.26"
+    },
+    {
+      "page": 51,
+      "previous": "99.04",
+      "candidate": "99.04",
+      "original": "56.05",
+      "devel": "56.05"
+    },
+    {
+      "page": 52,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 53,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 54,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 55,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 56,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 57,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 58,
+      "previous": "99.70",
+      "candidate": "99.70",
+      "original": "99.70",
+      "devel": "99.70"
+    },
+    {
+      "page": 59,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 60,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "92.12",
+      "devel": "92.12"
+    },
+    {
+      "page": 61,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "92.95",
+      "devel": "92.95"
+    },
+    {
+      "page": 62,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 63,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "83.25",
+      "devel": "83.25"
+    },
+    {
+      "page": 64,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 65,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 66,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 67,
+      "previous": "99.95",
+      "candidate": "99.95",
+      "original": "82.10",
+      "devel": "82.10"
+    },
+    {
+      "page": 68,
+      "previous": "99.93",
+      "candidate": "99.93",
+      "original": "99.93",
+      "devel": "99.93"
+    },
+    {
+      "page": 69,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 70,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 71,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 72,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 73,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 74,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 75,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 76,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 77,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "94.85",
+      "devel": "100.00"
+    },
+    {
+      "page": 78,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 79,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "94.91",
+      "devel": "100.00"
+    },
+    {
+      "page": 80,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 81,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "94.50",
+      "devel": "100.00"
+    },
+    {
+      "page": 82,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "94.77",
+      "devel": "100.00"
+    },
+    {
+      "page": 83,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "94.92",
+      "devel": "100.00"
+    },
+    {
+      "page": 84,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 85,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "95.24",
+      "devel": "100.00"
+    },
+    {
+      "page": 86,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 87,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "95.06",
+      "devel": "100.00"
+    },
+    {
+      "page": 88,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 89,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 90,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 91,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 92,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 93,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 94,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 95,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 96,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 97,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 98,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 99,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 100,
+      "previous": "99.91",
+      "candidate": "99.91",
+      "original": "99.91",
+      "devel": "99.91"
+    },
+    {
+      "page": 101,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 102,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 103,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "82.06",
+      "devel": "82.06"
+    },
+    {
+      "page": 104,
+      "previous": "99.84",
+      "candidate": "99.84",
+      "original": "99.84",
+      "devel": "99.84"
+    },
+    {
+      "page": 105,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 106,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "97.87",
+      "devel": "97.87"
+    },
+    {
+      "page": 107,
+      "previous": "99.98",
+      "candidate": "99.98",
+      "original": "99.98",
+      "devel": "99.98"
+    },
+    {
+      "page": 108,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 109,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 110,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "87.11",
+      "devel": "87.11"
+    },
+    {
+      "page": 111,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 112,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 113,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 114,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 115,
+      "previous": "99.76",
+      "candidate": "99.76",
+      "original": "99.76",
+      "devel": "99.76"
+    },
+    {
+      "page": 116,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 117,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 118,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 119,
+      "previous": "99.59",
+      "candidate": "99.59",
+      "original": "99.59",
+      "devel": "99.59"
+    },
+    {
+      "page": 120,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 121,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 122,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 123,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 124,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 125,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 126,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 127,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 128,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 129,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 130,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 131,
+      "previous": "99.99",
+      "candidate": "99.99",
+      "original": "99.99",
+      "devel": "99.99"
+    },
+    {
+      "page": 132,
+      "previous": "99.99",
+      "candidate": "99.99",
+      "original": "99.99",
+      "devel": "99.99"
+    },
+    {
+      "page": 133,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 134,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 135,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 136,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 137,
+      "previous": "99.99",
+      "candidate": "99.99",
+      "original": "99.99",
+      "devel": "99.99"
+    },
+    {
+      "page": 138,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "90.34",
+      "devel": "90.34"
+    },
+    {
+      "page": 139,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 140,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 141,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 142,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "98.38",
+      "devel": "98.38"
+    },
+    {
+      "page": 143,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 144,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 145,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 146,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 147,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 148,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 149,
+      "previous": "99.99",
+      "candidate": "99.99",
+      "original": "99.99",
+      "devel": "99.99"
+    },
+    {
+      "page": 150,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 151,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 152,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 153,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 154,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 155,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 156,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 157,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 158,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 159,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 160,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 161,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 162,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 163,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 164,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 165,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 166,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 167,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 168,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 169,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 170,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 171,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 172,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 173,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 174,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 175,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 176,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 177,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 178,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 179,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 180,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 181,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 182,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 183,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 184,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 185,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 186,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 187,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 188,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 189,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 190,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 191,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 192,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 193,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 194,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 195,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 196,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 197,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 198,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 199,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 200,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 201,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 202,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 203,
+      "previous": "99.86",
+      "candidate": "99.86",
+      "original": "99.86",
+      "devel": "99.86"
+    },
+    {
+      "page": 204,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 205,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 206,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 207,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 208,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 209,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 210,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 211,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 212,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 213,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 214,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 215,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 216,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 217,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 218,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 219,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 220,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 221,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 222,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 223,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 224,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 225,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 226,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 227,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 228,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 229,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 230,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 231,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 232,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 233,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 234,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 235,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 236,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 237,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 238,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 239,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 240,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 241,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 242,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 243,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 244,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 245,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 246,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 247,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 248,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 249,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 250,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 251,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 252,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 253,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 254,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 255,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 256,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 257,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 258,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 259,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 260,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 261,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 262,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 263,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 264,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 265,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 266,
+      "previous": "99.97",
+      "candidate": "99.97",
+      "original": "99.97",
+      "devel": "99.97"
+    },
+    {
+      "page": 267,
+      "previous": "99.97",
+      "candidate": "99.97",
+      "original": "99.97",
+      "devel": "99.97"
+    },
+    {
+      "page": 268,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 269,
+      "previous": "99.84",
+      "candidate": "99.84",
+      "original": "99.84",
+      "devel": "99.84"
+    },
+    {
+      "page": 270,
+      "previous": "99.82",
+      "candidate": "99.82",
+      "original": "99.82",
+      "devel": "99.82"
+    },
+    {
+      "page": 271,
+      "previous": "99.79",
+      "candidate": "99.79",
+      "original": "99.79",
+      "devel": "99.79"
+    },
+    {
+      "page": 272,
+      "previous": "99.92",
+      "candidate": "99.92",
+      "original": "99.92",
+      "devel": "99.92"
+    },
+    {
+      "page": 273,
+      "previous": "99.88",
+      "candidate": "99.88",
+      "original": "99.88",
+      "devel": "99.88"
+    },
+    {
+      "page": 274,
+      "previous": "99.82",
+      "candidate": "99.82",
+      "original": "99.82",
+      "devel": "99.82"
+    },
+    {
+      "page": 275,
+      "previous": "99.82",
+      "candidate": "99.82",
+      "original": "99.82",
+      "devel": "99.82"
+    },
+    {
+      "page": 276,
+      "previous": "99.82",
+      "candidate": "99.82",
+      "original": "99.82",
+      "devel": "99.82"
+    },
+    {
+      "page": 277,
+      "previous": "99.83",
+      "candidate": "99.83",
+      "original": "99.83",
+      "devel": "99.83"
+    },
+    {
+      "page": 278,
+      "previous": "99.83",
+      "candidate": "99.83",
+      "original": "99.83",
+      "devel": "99.83"
+    },
+    {
+      "page": 279,
+      "previous": "99.81",
+      "candidate": "99.81",
+      "original": "99.81",
+      "devel": "99.81"
+    },
+    {
+      "page": 280,
+      "previous": "99.76",
+      "candidate": "99.76",
+      "original": "99.76",
+      "devel": "99.76"
+    },
+    {
+      "page": 281,
+      "previous": "99.79",
+      "candidate": "99.79",
+      "original": "99.79",
+      "devel": "99.79"
+    },
+    {
+      "page": 282,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 283,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 284,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 285,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 286,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 287,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 288,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "96.62",
+      "devel": "96.62"
+    },
+    {
+      "page": 289,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 290,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "99.26",
+      "devel": "99.26"
+    },
+    {
+      "page": 291,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 292,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "99.75",
+      "devel": "99.75"
+    },
+    {
+      "page": 293,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 294,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 295,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 296,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "94.73",
+      "devel": "94.73"
+    },
+    {
+      "page": 297,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "99.76",
+      "devel": "99.76"
+    },
+    {
+      "page": 298,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 299,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 300,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 301,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 302,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 303,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 304,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 305,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 306,
+      "previous": "98.15",
+      "candidate": "98.15",
+      "original": "98.15",
+      "devel": "98.15"
+    },
+    {
+      "page": 307,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 308,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 309,
+      "previous": "99.21",
+      "candidate": "99.21",
+      "original": "94.15",
+      "devel": "94.15"
+    },
+    {
+      "page": 310,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 311,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 312,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    },
+    {
+      "page": 313,
+      "previous": "100.00",
+      "candidate": "100.00",
+      "original": "100.00",
+      "devel": "100.00"
+    }
+  ]
+}

@@ -1,3 +1,10 @@
+//! 관계형·고정형 회귀 — #7776 채용 공고 원본과 변환본이 독립 Print의 쪽수를 보존하는지 확인.
+//! 주석 갱신 2026-11-23 KST. 직전 파일 변경 2026-10-04T19:03:36+09:00
+//! `731de9e1b4bb946d76f35108ed7e186ebe4ebecb`.
+//! 2026-11-23 한컴 2020 Print, 96 DPI 2px raw 실루엣. 35쪽 Native/fresh WASM 최저 98.38/98.51%.
+//! 3쪽 99.70/99.69%, 5쪽 99.99/100.00%, 7쪽 99.54/99.53%, 8쪽 98.98/98.98%.
+//! 근거는 `mydocs/pr/assets/issue7776/`의 전쪽 TSV와 확대 비교다.
+//!
 //! #1868 `export-hwpx` CLI 의 코어 경로 검증 — HWP→HWPX 변환 후 산출물이
 //! 유효한 HWPX(ZIP) 이고 재파싱 시 페이지 수가 보존되는지.
 //!
@@ -38,4 +45,13 @@ fn hwpx_reserialize_preserves_pages() {
     // HWPX 입력 → HWPX 재직렬화(re-serialize)도 허용 — roundtrip 디버깅 경로.
     let (src, round) = convert_and_verify("samples/hwpx/pr-1674.hwpx");
     assert_eq!(src, round, "HWPX 재직렬화 후 페이지 수가 보존돼야 한다");
+}
+
+#[test]
+fn hwp5_to_hwpx_preserves_pages() {
+    assert_eq!(
+        convert_and_verify("samples/pr-1674.hwp"),
+        (35, 35),
+        "HWP5 원본과 HWPX 변환본은 독립 Print와 같은 쪽수를 유지한다"
+    );
 }

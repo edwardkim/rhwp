@@ -1,3 +1,9 @@
+//! 관계형 회귀 — 화학제품 표시 조사보고서 83쪽에서 표와 다음 제목의 순서를 보호한다.
+//! 주석 갱신 2026-11-23 KST. 직전 파일 변경 2026-10-04T19:03:36+09:00
+//! `731de9e1b4bb946d76f35108ed7e186ebe4ebecb`.
+//! 2026-11-23 한컴 Print, 96 DPI 보정 전 2px 실루엣. 103쪽 최저 양쪽 99.53%.
+//! Native/fresh WASM 83쪽 각각 100.00%. 독립 근거는 `mydocs/pr/assets/issue7769/chemical-product-labeling/`.
+//!
 //! #6761의 큰 문단 앞 간격이 흐름을 보존하는 기존 반례 검사.
 //! 원본83쪽의 절대 픽셀 간격 검사는 Native64.92223%와 실제 표·본문 침범을
 //! 확인한 뒤 사용자 지시로 #7445에 이관했다. 원본·PDF와 이 통과 검사는 보존한다.
@@ -134,5 +140,48 @@ fn spacing_before_larger_than_band_remainder_keeps_flow_position() {
         top >= host_line_end + BIG_SPACING_BEFORE_PX - 0.5,
         "앞 간격 {BIG_SPACING_BEFORE_PX}px 인 pi={EMPTY_PARA} 첫 줄이 {top:.1}px — 흐름({host_line_end:.1}) \
          + 앞 간격 아래여야 한다. 흡수가 줄을 밴드 하단({bottom:.1}) 쪽으로 당기면 안 된다"
+    );
+}
+
+#[test]
+fn original_research_table_owns_its_outer_margin_before_the_next_paragraph() {
+    use rhwp::model::control::Control;
+
+    let core = open();
+    let page = host_page(&core);
+    assert_eq!(page + 1, 83, "독립 인쇄의 후보안 표와 후속 조사 제목");
+    let tree = core.build_page_render_tree(page).expect("후보안 표의 쪽");
+    let nodes = column_nodes(&tree.root);
+    let grid = nodes
+        .iter()
+        .copied()
+        .find(|node| {
+            matches!(&node.node_type,
+        RenderNodeType::Table(table) if table.para_index == Some(HOST_PARA))
+        })
+        .expect("후보안 원본 표");
+    let title = nodes
+        .iter()
+        .copied()
+        .find(|node| {
+            matches!(&node.node_type,
+        RenderNodeType::TextLine(line) if line.para_index == Some(HOST_PARA))
+        })
+        .expect("표 위의 후보안 제목");
+    let host = &core.document().sections[SECTION].paragraphs[HOST_PARA];
+    let Some(Control::Table(original)) = host.controls.first() else {
+        panic!("후보안 원본 표 제어")
+    };
+    let margin = f64::from(original.outer_margin_bottom) / 75.0;
+    let bottom = grid.bbox.y + grid.bbox.height;
+    let empty = line_top(&nodes, EMPTY_PARA);
+    assert!(title.bbox.y + title.bbox.height < grid.bbox.y);
+    assert!(
+        (empty - bottom - margin).abs() <= 1.0,
+        "표 바로 아래 빈 줄이 원본 표 바깥여백에 이어진다"
+    );
+    assert!(
+        empty < line_top(&nodes, NEXT_PARA),
+        "빈 줄 뒤에 일반인 조사 제목을 그린다"
     );
 }

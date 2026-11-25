@@ -544,44 +544,23 @@ impl DocumentCore {
         let ctrl = para.controls.get(control_idx).ok_or_else(|| {
             HwpError::RenderError(format!("컨트롤 인덱스 {} 범위 초과", control_idx))
         })?;
-        match ctrl {
-            Control::Footnote(f) => {
-                let para_count = f.paragraphs.len();
-                let texts: Vec<String> = f
-                    .paragraphs
-                    .iter()
-                    .map(|p| p.text.replace('\\', "\\\\").replace('"', "\\\""))
-                    .collect();
-                let total_len: usize = f.paragraphs.iter().map(|p| p.text.chars().count()).sum();
-                Ok(format!(
-                    "{{\"ok\":true,\"paraCount\":{},\"totalTextLen\":{},\"number\":{},\"texts\":[{}]}}",
-                    para_count,
-                    total_len,
-                    f.number,
-                    texts.iter().map(|t| format!("\"{}\"", t)).collect::<Vec<_>>().join(","),
-                ))
-            }
-            Control::Endnote(e) => {
-                let para_count = e.paragraphs.len();
-                let texts: Vec<String> = e
-                    .paragraphs
-                    .iter()
-                    .map(|p| p.text.replace('\\', "\\\\").replace('"', "\\\""))
-                    .collect();
-                let total_len: usize = e.paragraphs.iter().map(|p| p.text.chars().count()).sum();
-                Ok(format!(
-                    "{{\"ok\":true,\"paraCount\":{},\"totalTextLen\":{},\"number\":{},\"texts\":[{}]}}",
-                    para_count,
-                    total_len,
-                    e.number,
-                    texts.iter().map(|t| format!("\"{}\"", t)).collect::<Vec<_>>().join(","),
-                ))
-            }
-            _ => Err(HwpError::RenderError(format!(
-                "컨트롤 {}은 각주/미주가 아닙니다",
-                control_idx
-            ))),
-        }
+        note_info_json(ctrl, control_idx)
+    }
+
+    /// 셀 경로(`...ByPath` API 꼴, 마지막 단계 문단이 주석 번호가 든 문단)로 각주·미주 정보를 준다.
+    /// 표 셀·글상자(중첩 포함) 안 주석도 본문 `get_footnote_info_native`와 같은 꼴로 읽는다.
+    pub fn get_footnote_info_by_path_native(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        control_idx: usize,
+    ) -> Result<String, HwpError> {
+        let para = self.resolve_paragraph_by_path(section_idx, parent_para_idx, path)?;
+        let ctrl = para.controls.get(control_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("컨트롤 인덱스 {} 범위 초과", control_idx))
+        })?;
+        note_info_json(ctrl, control_idx)
     }
 
     /// 각주 내 텍스트 삽입
@@ -595,9 +574,15 @@ impl DocumentCore {
         text: &str,
     ) -> Result<String, HwpError> {
         let new_chars_count = text.chars().count();
+        let active = super::text_editing::active_field_control(
+            self.active_field.as_ref(),
+            section_idx,
+            para_idx,
+            Some(&[(control_idx, 0, fn_para_idx)]),
+        );
         let fn_para =
             self.get_footnote_paragraph_mut(section_idx, para_idx, control_idx, fn_para_idx)?;
-        fn_para.insert_text_at(char_offset, text);
+        let inserted_at = super::text_editing::insert_area_text(fn_para, char_offset, text, active);
 
         self.reflow_footnote_paragraph(section_idx, para_idx, control_idx, fn_para_idx);
 
@@ -605,11 +590,11 @@ impl DocumentCore {
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
 
-        let new_offset = char_offset + new_chars_count;
+        let new_offset = inserted_at + new_chars_count;
         self.event_log.push(DocumentEvent::TextInserted {
             section: section_idx,
             para: para_idx,
-            offset: char_offset,
+            offset: inserted_at,
             len: new_chars_count,
         });
         Ok(super::super::helpers::json_ok_with(&format!(
@@ -813,6 +798,32 @@ impl DocumentCore {
             prev_idx, merge_offset, removed_meta
         )))
     }
+}
+
+/// 각주·미주 컨트롤의 정보 JSON(`getFootnoteInfo`·`getFootnoteInfoByPath` 공용).
+pub(crate) fn note_info_json(ctrl: &Control, control_idx: usize) -> Result<String, HwpError> {
+    let (paragraphs, number) = match ctrl {
+        Control::Footnote(f) => (&f.paragraphs, f.number),
+        Control::Endnote(e) => (&e.paragraphs, e.number),
+        _ => {
+            return Err(HwpError::RenderError(format!(
+                "컨트롤 {}은 각주/미주가 아닙니다",
+                control_idx
+            )))
+        }
+    };
+    let texts: Vec<String> = paragraphs
+        .iter()
+        .map(|p| format!("\"{}\"", p.text.replace('\\', "\\\\").replace('"', "\\\"")))
+        .collect();
+    let total_len: usize = paragraphs.iter().map(|p| p.text.chars().count()).sum();
+    Ok(format!(
+        "{{\"ok\":true,\"paraCount\":{},\"totalTextLen\":{},\"number\":{},\"texts\":[{}]}}",
+        paragraphs.len(),
+        total_len,
+        number,
+        texts.join(","),
+    ))
 }
 
 #[cfg(test)]

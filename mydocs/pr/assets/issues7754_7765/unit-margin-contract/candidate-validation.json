@@ -1,0 +1,103 @@
+{
+  "started": "2026-11-21T12:16:47.755567+00:00",
+  "parent": "a21e590a7e76e7c6d4be6205001d29f4a96c3e9c",
+  "results": [
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "log": "source8-fmt.log",
+      "exit_code": 0,
+      "seconds": 78.3875721078366
+    },
+    {
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp"
+      ],
+      "log": "source8-native-build.log",
+      "exit_code": 0,
+      "seconds": 629.6489124810323
+    },
+    {
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--hwp",
+        "samples/issue1891/86712_regulatory_analysis.hwpx",
+        "--pdf",
+        "pdf/issue7765/regulatory-86712-hwpx-original-print-2024.pdf",
+        "--key",
+        "issue7765-hwpx",
+        "--pages",
+        "27,28,29,52,53,64",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source8",
+        "--compat",
+        "2024",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "2",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source8-native-focused"
+      ],
+      "log": "source8-native-focused-regulatory.log",
+      "exit_code": 1,
+      "seconds": 74.50287480093539
+    }
+  ],
+  "source_files": {
+    "src/model/style.rs": "b7306d5f472b8dc982299f1cd1ed9ecc9adfebbd52bf3166dd2fd0df0e75dfab",
+    "src/parser/doc_info.rs": "1e057a016429264bb17c3ea549e27ae20548d92d4a23bc679be10e03d2bc47e3",
+    "src/parser/hwpx/header.rs": "bc335d54f25482343cfb043842be63000ae72f92577d2ab4e270f4c324a4a9aa",
+    "src/renderer/composer/stored_margin_context.rs": "539d289f5af5b419813fc4f3c861524fa63315094d93fd95474610931b8cac3a",
+    "src/serializer/doc_info/tests.rs": "4aa76d65934938a88c8400a77abb77995890d809b228055fb33e6543c1ae0971"
+  },
+  "native_build_exit_code": 0,
+  "binary_sha256": "4d4f05cb9aff2cbcd235653553078f16a398060d7ff45842550dd4980a83880c",
+  "metrics": [
+    {
+      "page": "27",
+      "raw": "46.10"
+    },
+    {
+      "page": "28",
+      "raw": "34.10"
+    },
+    {
+      "page": "29",
+      "raw": "9.18"
+    },
+    {
+      "page": "52",
+      "raw": "19.45"
+    },
+    {
+      "page": "53",
+      "raw": "20.26"
+    },
+    {
+      "page": "64",
+      "raw": "29.01"
+    }
+  ],
+  "focused_scope_98_passed": false,
+  "diagnostic_complete": true,
+  "ended": "2026-11-21T12:29:51.125708+00:00",
+  "native_page_count": 65,
+  "independent_pdf_page_count": 64,
+  "qualification": "failed; local analysis checkpoint only; no new regression registered"
+}

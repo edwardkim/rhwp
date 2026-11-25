@@ -1,0 +1,42 @@
+{
+  "base": "2c0c1d205a54b8d5bd262241bac1391cffe0d801",
+  "candidate": "953b43187325496645683fcc15ca989a815b0596",
+  "backend": "native",
+  "input_sha256": "e0cb2372922ec5c89cc028e583b78a1e1d264385569f23cd0f2daf29a91f410b",
+  "reference_sha256": "e68b80c8b1306536c857327496ae626be1bfc2b931900cfa6832482ab9e446e7",
+  "pages": 46,
+  "unchanged_pages": 44,
+  "changes": [
+    {
+      "page": 7,
+      "base_png_sha256": "8d6a4baaef5bbbe73e6d514480a511a8d417aea39b21788869547634c9fc32cd",
+      "candidate_png_sha256": "4a13b047c61cfa1bf18e038a2e505fcee57ea727ea297c3f1cc111035b5d90fc",
+      "raw_before": "99.92",
+      "raw_after": "100.00",
+      "middle_dot_width_px": [
+        6.6,
+        10.2
+      ],
+      "same_tree_as_previous_candidate": true,
+      "same_tsv_as_previous_candidate": true,
+      "comparison_png_sha256": "65d70afc7f380ed48f6607ba31373a50cb3f0cb29ac25ac6c015b37cd9f9933e",
+      "reviewed_against_independent_print": true
+    },
+    {
+      "page": 43,
+      "base_png_sha256": "347ccaba180deffc8f30b3df4c708f1771aaf552b5174447a7fac6ce4004360c",
+      "candidate_png_sha256": "41f057f1178d3405b93d4565333b16dfded316e50644e987464d210e7df2b50a",
+      "raw_before": "98.17",
+      "raw_after": "98.38",
+      "middle_dot_width_px": [
+        6.6,
+        10.2
+      ],
+      "same_tree_as_previous_candidate": true,
+      "same_tsv_as_previous_candidate": true,
+      "comparison_png_sha256": "923e3081eaef8c12a04905edf83b561a2d04e36b0b872134a8aa7578336db3c1",
+      "reviewed_against_independent_print": true
+    }
+  ],
+  "previous_review_reused_after_same_base_and_candidate_png_hashes": true
+}

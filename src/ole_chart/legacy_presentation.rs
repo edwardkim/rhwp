@@ -24,6 +24,7 @@ pub(super) struct Series {
     pub index: usize,
     pub selectors: Vec<i16>,
     pub legend: Option<Text>,
+    pub point_label: Option<Rc<PointLabel>>,
 }
 
 /// 저장 글꼴 크기는 포인트 단위이며 차트의 캐시 사각형 크기와 구별한다.
@@ -41,6 +42,18 @@ pub(super) struct Text {
     pub value: String,
     pub font: Font,
     pub metrics: TextMetrics,
+}
+
+#[derive(Clone, Debug)]
+pub(super) struct PointLabel {
+    pub text: Text,
+    pub position: u16,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub(super) struct PieLayout {
+    pub clockwise: bool,
+    pub start_degrees: f64,
 }
 
 pub(super) struct Presentation {
@@ -61,6 +74,7 @@ pub(super) struct Presentation {
     pub plot_section: Section,
     pub axis_styles: [AxisStyle; 4],
     pub labels: [Option<Text>; 4],
+    pub pie: Option<PieLayout>,
 }
 
 /// 소유 텍스트의 저장 점유 정보. 글꼴 크기와 같은 값으로 추정하지 않는다.
@@ -107,6 +121,7 @@ pub(super) struct AxisStyle {
     pub minor_grid: Pen,
     pub tick_length: f64,
     pub tick_style: u16,
+    pub percent_basis: u16,
 }
 fn pen(bytes: &[u8]) -> Result<Pen> {
     if bytes.len() != 22 || bytes[..2] != [1, 0] || bytes[8..10] != [1, 0] {
@@ -133,25 +148,28 @@ fn axis_label(node: &Node) -> Option<Text> {
     }
 }
 
+struct StoredPlot {
+    axes: [Option<Axis>; 4],
+    fonts: [Option<Font>; 4],
+    section: Section,
+    gaps: [f64; 2],
+    axis_styles: [AxisStyle; 4],
+    labels: [Option<Text>; 4],
+    pie: Option<PieLayout>,
+}
+
 enum Node {
     Empty,
     Count(usize),
     Array(Vec<Rc<Node>>),
     Axis(Option<Axis>, Option<Font>, AxisStyle, Option<Text>),
     Series(Series),
+    SeriesPoint(Option<Rc<PointLabel>>),
+    PointLabelPosition(u16),
     Section(Section),
     Backdrop(Backdrop),
     Fill(i16, u32),
-    Plot(
-        Box<(
-            [Option<Axis>; 4],
-            [Option<Font>; 4],
-            Section,
-            [f64; 2],
-            [AxisStyle; 4],
-            [Option<Text>; 4],
-        )>,
-    ),
+    Plot(Box<StoredPlot>),
     String(String),
     Font(Font),
     Text(Text),
@@ -542,11 +560,33 @@ impl<'a> Reader<'a> {
                 return self.base("VtTextBlock");
             }
             "VtSeriesPoint" => {
+                let label = self.object()?;
+                self.skip(12)?;
                 self.object()?;
+                let properties = self.object()?;
+                self.base("VtObject")?;
+                let point = match (label.as_ref(), properties.as_ref()) {
+                    (Node::Text(text), Node::PointLabelPosition(position)) => {
+                        Some(Rc::new(PointLabel {
+                            text: text.clone(),
+                            position: *position,
+                        }))
+                    }
+                    _ => None,
+                };
+                return Ok(Node::SeriesPoint(point));
+            }
+            "VtSeriesPointLabel" => {
                 self.skip(12)?;
                 self.object()?;
                 self.object()?;
+                self.skip(10)?;
+                self.object()?;
+                self.object()?;
+                let position = self.u16()?;
+                self.skip(2)?;
                 self.base("VtObject")?;
+                return Ok(Node::PointLabelPosition(position));
             }
             "VtTextFormat" => {
                 self.base("VtObject")?;
@@ -580,6 +620,7 @@ impl<'a> Reader<'a> {
                 let mut style = AxisStyle {
                     labels_visible,
                     tick_style: 0,
+                    percent_basis: 0,
                     pen: pen(&props[..22])?,
                     major_grid: pen(&props[22..44])?,
                     minor_grid: pen(&props[44..66])?,
@@ -613,6 +654,7 @@ impl<'a> Reader<'a> {
                 };
                 let tail = self.bytes(16)?;
                 // WriteOn에서 percent basis/unit 뒤에 저장하는 TickStyle.
+                style.percent_basis = u16::from_le_bytes(tail[2..4].try_into().map_err(|_| ())?);
                 style.tick_style = u16::from_le_bytes(tail[4..6].try_into().map_err(|_| ())?);
                 self.base("VtObject")?;
                 return Ok(Node::Axis(
@@ -665,20 +707,30 @@ impl<'a> Reader<'a> {
                     axis_styles[index] = *style;
                     labels[index] = label.clone();
                 }
-                self.skip(30)?;
+                // VtChartPlot의 방향 플래그와 시작 각도. 90도는 위쪽이다.
+                let clockwise = self.u16()?;
+                let start_degrees = f32::from_le_bytes(self.bytes(4)?.try_into().map_err(|_| ())?);
+                let pie = (clockwise <= 1 && (0.0..=360.0).contains(&start_degrees)).then_some(
+                    PieLayout {
+                        clockwise: clockwise != 0,
+                        start_degrees: f64::from(start_degrees),
+                    },
+                );
+                self.skip(24)?;
                 self.object()?;
                 self.skip(16)?;
                 let Node::Section(section) = self.base("VtChartSection")? else {
                     return Err(());
                 };
-                return Ok(Node::Plot(Box::new((
+                return Ok(Node::Plot(Box::new(StoredPlot {
                     axes,
                     fonts,
                     section,
                     gaps,
                     axis_styles,
                     labels,
-                ))));
+                    pie,
+                })));
             }
             "VtSeries" => return self.series(),
             "VtWindow" => {
@@ -705,7 +757,14 @@ impl<'a> Reader<'a> {
             return Err(());
         }
         self.object()?;
-        self.object()?;
+        let points = self.object()?;
+        let point_label = match points.as_ref() {
+            Node::Array(items) if items.len() == 1 => match items[0].as_ref() {
+                Node::SeriesPoint(label) => label.clone(),
+                _ => None,
+            },
+            _ => None,
+        };
         // Guides, outline pen, point options, label offsets and the v2 name.
         self.skip(12 + 22 + 16 + 16)?;
         self.object()?;
@@ -751,6 +810,7 @@ impl<'a> Reader<'a> {
             index,
             selectors,
             legend,
+            point_label,
         }))
     }
 }
@@ -797,13 +857,21 @@ fn parse_inner(data: &[u8]) -> Result<Presentation> {
     let chart_type = reader.i16()?;
     reader.skip(4)?;
     reader.base("VtWindow")?;
-    if !matches!(chart_type, 1 | 9) || reader.at != data.len() {
+    if !matches!(chart_type, 1 | 9 | 11 | 14) || reader.at != data.len() {
         return Err(());
     }
     let Node::Plot(plot) = plot.as_ref() else {
         return Err(());
     };
-    let (axes, label_fonts, plot_section, gaps, axis_styles, labels) = plot.as_ref();
+    let StoredPlot {
+        axes,
+        fonts: label_fonts,
+        section: plot_section,
+        gaps,
+        axis_styles,
+        labels,
+        pie,
+    } = plot.as_ref();
     let (title, title_section) = match title.as_ref() {
         Node::Title(text, section) => (text.clone(), Some(section.clone())),
         Node::Empty => (None, None),
@@ -826,9 +894,15 @@ fn parse_inner(data: &[u8]) -> Result<Presentation> {
             return Err(());
         };
         // 저장 차트 종류에 대응하는 painter를 사용한다.
-        // 막대형(1)은 column만, 혼합형(9)은 column/line만 지원한다.
         let painter = style.selectors[chart_type as usize];
-        if style.index != index || !(painter == 1 || chart_type == 9 && painter == 6) {
+        let supported = match chart_type {
+            1 => painter == 1,
+            9 => matches!(painter, 1 | 6),
+            11 => painter == 3 && axis_styles[1].percent_basis == 4,
+            14 => painter == 24 && pie.is_some(),
+            _ => false,
+        };
+        if style.index != index || !supported {
             return Err(());
         }
         styles.push(style.clone());
@@ -844,16 +918,35 @@ fn parse_inner(data: &[u8]) -> Result<Presentation> {
             return Err(());
         }
     }
-    Ok(Presentation {
-        chart_type: chart_type as usize,
-        axes: [
-            axes[1].ok_or(())?,
-            if styles.iter().any(|series| series.secondary) {
+    let axes = match chart_type {
+        // 원형 차트에는 수치 축이 없어 범주·조각 레이블만 그린다.
+        14 => {
+            [Axis {
+                min: 0.0,
+                max: 1.0,
+                divisions: 1,
+            }; 2]
+        }
+        11 => {
+            [Axis {
+                min: 0.0,
+                max: 1.0,
+                divisions: 10,
+            }; 2]
+        }
+        _ => {
+            let primary = axes[1].ok_or(())?;
+            let secondary = if styles.iter().any(|series| series.secondary) {
                 axes[2].ok_or(())?
             } else {
-                axes[1].ok_or(())?
-            },
-        ],
+                primary
+            };
+            [primary, secondary]
+        }
+    };
+    Ok(Presentation {
+        chart_type: chart_type as usize,
+        axes,
         series: styles,
         extent,
         plot: plot_section.rect,
@@ -868,5 +961,6 @@ fn parse_inner(data: &[u8]) -> Result<Presentation> {
         plot_section: plot_section.clone(),
         axis_styles: *axis_styles,
         labels: labels.clone(),
+        pie: *pie,
     })
 }

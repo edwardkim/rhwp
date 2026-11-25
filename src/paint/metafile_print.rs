@@ -1,6 +1,9 @@
 //! 2020 Print의 source 계약을 공통 장치 재생 자료로 내린다.
 
 mod catalog;
+mod device_brush;
+mod device_coverage;
+mod device_stroke;
 mod frame;
 mod images;
 mod masks;
@@ -9,6 +12,8 @@ mod metrics;
 mod replay;
 mod text;
 mod xml;
+pub(super) use device_brush::place_monochrome_tiles;
+pub(super) use device_stroke::place_device_strokes;
 
 pub(crate) use catalog::{Catalogue, SourceUse};
 #[cfg(any(feature = "native-skia", target_arch = "wasm32"))]
@@ -42,6 +47,10 @@ pub(super) fn payload(
         return None;
     }
     let source = catalogue.source(image.data.as_deref()?)?;
+    let tile = device_brush::MONOCHROME_TILE.as_bytes();
+    if source.embedded_wmf_fallback && source.svg.windows(tile.len()).any(|w| w == tile) {
+        return None;
+    }
     let viewport = crate::renderer::metafile_geometry::svg_viewport(&source.svg)?;
     let document = roxmltree::Document::parse(std::str::from_utf8(&source.svg).ok()?).ok()?;
     let window = xml::numbers::<8>(document.root_element().attribute("data-rhwp-wmf-window")?)?;
@@ -78,6 +87,11 @@ pub(super) fn payload(
             masks::flatten_bitmap_masks(&source.svg).unwrap_or_else(|| source.svg.as_ref().clone());
         let pictures = images::prepare(&pictures, frame, viewport, catalogue)?;
         let outlines = text::prepare(&pictures, frame, source.preceding_polygon?, fonts)?;
+        let outlines = if source.embedded_wmf_fallback {
+            device_coverage::prepare(&outlines, frame, viewport)?
+        } else {
+            outlines
+        };
         let source = std::str::from_utf8(&outlines).ok()?;
         let document = roxmltree::Document::parse(source).ok()?;
         let data = xml::apply(

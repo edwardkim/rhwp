@@ -519,8 +519,11 @@ impl TypesetEngine {
                                 let next = paragraphs.get(para_idx + 1)?;
                                 let host_style = styles.para_styles.get(para.para_shape_id as usize)?;
                                 let next_style = styles.para_styles.get(next.para_shape_id as usize)?;
+                                let previous_spacing_after = styles.para_styles
+                                    .get(previous.para_shape_id as usize)
+                                    .map_or(0.0, |style| style.spacing_after);
                                 crate::renderer::float_placement::stored_picture_before_host_placement(
-                                    previous, para, next, host_style.spacing_after,
+                                    previous, para, next, previous_spacing_after, host_style.spacing_after,
                                     next_style.spacing_before, st.vpos_page_base.unwrap_or(0),
                                     picture_host_origin.2, self.dpi,
                                 ).or_else(|| crate::renderer::float_placement::stored_picture_empty_host_placement(
@@ -697,17 +700,14 @@ impl TypesetEngine {
                                 let hr = hl + hwpunit_to_px(pic.common.width as i32, self.dpi);
                                 // [#7470] 그림 띠에 흡수된 빈 host 줄은 이미 흐름에 더한 문단
                                 // 높이에서 돌려준다(배치 `layout_shape_item` #683 과 같은 판별).
-                                let absorbed_host_line = if pic.caption.is_none() {
+                                let absorbed_host_line =
                                     crate::renderer::absorbed_host_line_return_px(
                                         para,
                                         &pic.common,
                                         host_spacing_before,
                                         host_spacing_after,
                                         self.dpi,
-                                    )
-                                } else {
-                                    0.0
-                                };
+                                    );
                                 let host_line = hwpunit_to_px(
                                     crate::renderer::hwp3_caption_host::line_advance_hwp(
                                         para,

@@ -1,0 +1,568 @@
+{
+  "roundtrips": [
+    {
+      "filename": "inline-shape.hwp",
+      "sha256": "e3973572bbba332b27f15fc4fb070fb45a40bd9003a1938fd3f89054aee1104b",
+      "hancom_pdf": "63fcf18400da46c00a79faf38b3a9311cb4c92ffa7be1dd108020afb4b5df94c"
+    },
+    {
+      "filename": "inline-shape.hwpx",
+      "sha256": "14eb8f6751eaea99328ea625ad511138e7a969666d23f403c5075cd669e46c19",
+      "hancom_pdf": "0d4c384f6381841cd873b78816c1fc89554ccbb1168931080f7b93469066f094"
+    },
+    {
+      "filename": "nested-table.hwp",
+      "sha256": "6f03e58a3d34cbb62beb50e7bf44573c06bb5fe6d7df8ad251157ff874bdcdb8",
+      "hancom_pdf": "aa29d1ab74f23bf23732662b114678846e56b7ea139502661df00d96bcffe7ba"
+    },
+    {
+      "filename": "nested-table.hwpx",
+      "sha256": "1d6175cc8545d6733717dbff6932f896b3e794357504b67ddffa3609fed1564d",
+      "hancom_pdf": "541b38cdfac14eec56abc2a9e3eb3a0dff3de4d7291a625145309c2b82aba941"
+    },
+    {
+      "filename": "single-row-resize.hwp",
+      "sha256": "d861cc865b907da4211821430aa8564bd97569056129cf25256a693e178745ff",
+      "hancom_pdf": "63a1e889effcc4dd9bbaa8e6e042019384d159b19b19f96a70e94858760aedb8"
+    },
+    {
+      "filename": "single-row-resize.hwpx",
+      "sha256": "08ddb04f51829975d8cb07d5c383c28d05f753810cb418628e5105d0c02dc8fe",
+      "hancom_pdf": "fd9ed811cc30e86a9cf8dbb1f948da189d8bf0394658ab3cc50c525a7a93376f"
+    },
+    {
+      "filename": "table-cell-notes.hwp",
+      "sha256": "07e278a29ad1fde6df7ae37b6fc79463335a7455d24452c5ac1e3e72c14f9454",
+      "hancom_pdf": "33471d9d3c4881fd5a59692f957ad5bd6e6fb76d52a6dcedda16c9a334eaee01"
+    },
+    {
+      "filename": "table-cell-notes.hwpx",
+      "sha256": "e29e01b145e5be2f301b3d6ca5129af0b6f4cd0e65b0393eaca712f3eb593aac",
+      "hancom_pdf": "76d3f3cfb467c31baa109c2d15992c13fb183c54364376c5244939de35c8de31"
+    },
+    {
+      "filename": "merged-grid-column.hwp",
+      "sha256": "53e15b001f3961635b15c5a89b215ac6204f05042a3101040d800e45f2b12234",
+      "hancom_pdf": "375b481a4f4c2928884604f5014e5119c957384bd0cf5e8b4663af90f1f17fad"
+    },
+    {
+      "filename": "merged-grid-column.hwpx",
+      "sha256": "4e811a22711e2e958effecc71386e0ed10591f92ac6cc463fbc72a1adb41cddc",
+      "hancom_pdf": "f1e1c8b10e31f9eb32d080d5692d766afd914c4c2e72c783cea46b076f095a04"
+    },
+    {
+      "filename": "merged-grid-row.hwp",
+      "sha256": "369ad1f91b975232af745fc0c496de8006a22f652e96a9927d88b612e911ac0c",
+      "hancom_pdf": "3106f212e4774f547518bb753aaccfc7c0a754191e979369077f059b48617b04"
+    },
+    {
+      "filename": "merged-grid-row.hwpx",
+      "sha256": "ec04449c0a519902196fddcac944b7e5dda6b814e6f732edc54ed4678cd6020e",
+      "hancom_pdf": "aa0e9a3bae38ef51f2f62b14aa4e2dd5194192615edf076abe82b9beffcb4be9"
+    },
+    {
+      "filename": "merged-grid-source.hwp",
+      "sha256": "f8407cd2e58603c9000120186d43972e7619aed7d46be82f94d38deb4e678d1f",
+      "hancom_pdf": "dae4abd52dd4177762044c64c65596fe6aff9ee7fe465532cfc677a8390eb6b9"
+    },
+    {
+      "filename": "merged-grid-source.hwpx",
+      "sha256": "acf2b68349a08c26a7608e0a96b71a2676326e957d1af558c56f4add16d7ba5c",
+      "hancom_pdf": "67785d67620611ea79540b713527b71df771130b0a73e7da91ed799f7192e1e7"
+    },
+    {
+      "filename": "textbox-notes.hwp",
+      "sha256": "a3c69265ea9e0de7ed6c0641d84bc1795cf9e5bf7e03c5f330dcea2f2c2fbeb8",
+      "hancom_pdf": "7edce1b8481d74c64b9ba633aaf1d89ab9390231773049a8efcfa7a0bb282664"
+    },
+    {
+      "filename": "textbox-notes.hwpx",
+      "sha256": "8e3e16ec7b51247e3da7f0c22bdee11107a3f324cc267532e2a2fbe0175e6afd",
+      "hancom_pdf": "fdb880173815470fd27a3a0491368898327d05a1fb1e93e2d6970aeb9cb8e425"
+    }
+  ],
+  "devel_inline_lines": [
+    {
+      "text": "앞 글",
+      "heights_hu": [
+        1000
+      ]
+    },
+    {
+      "text": "다음 문단",
+      "heights_hu": [
+        1000
+      ]
+    }
+  ],
+  "candidate_inline_lines": [
+    {
+      "text": "앞 글",
+      "heights_hu": [
+        6000
+      ]
+    },
+    {
+      "text": "다음 문단",
+      "heights_hu": [
+        1000
+      ]
+    }
+  ],
+  "table_and_notes": [
+    {
+      "name": "notes",
+      "ok": true,
+      "result": {
+        "opened": [
+          1,
+          2,
+          [
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              1
+            ]
+          ]
+        ],
+        "hwp": [
+          1,
+          2,
+          [
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              1
+            ]
+          ]
+        ],
+        "hwpx": [
+          1,
+          2,
+          [
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              1
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "name": "resized-grid",
+      "ok": true,
+      "result": {
+        "opened": [
+          3,
+          4,
+          [
+            [
+              13984,
+              1
+            ],
+            [
+              13984,
+              2
+            ],
+            [
+              13984,
+              1
+            ],
+            [
+              16984,
+              2
+            ],
+            [
+              10984,
+              1
+            ],
+            [
+              13984,
+              1
+            ],
+            [
+              13984,
+              1
+            ],
+            [
+              13984,
+              2
+            ],
+            [
+              13984,
+              1
+            ]
+          ]
+        ],
+        "hwp": [
+          3,
+          4,
+          [
+            [
+              13984,
+              1
+            ],
+            [
+              13984,
+              2
+            ],
+            [
+              13984,
+              1
+            ],
+            [
+              16984,
+              2
+            ],
+            [
+              10984,
+              1
+            ],
+            [
+              13984,
+              1
+            ],
+            [
+              13984,
+              1
+            ],
+            [
+              13984,
+              2
+            ],
+            [
+              13984,
+              1
+            ]
+          ]
+        ],
+        "hwpx": [
+          3,
+          4,
+          [
+            [
+              13984,
+              1
+            ],
+            [
+              13984,
+              2
+            ],
+            [
+              13984,
+              1
+            ],
+            [
+              16984,
+              2
+            ],
+            [
+              10984,
+              1
+            ],
+            [
+              13984,
+              1
+            ],
+            [
+              13984,
+              1
+            ],
+            [
+              13984,
+              2
+            ],
+            [
+              13984,
+              1
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "name": "nested-table",
+      "ok": true,
+      "result": {
+        "opened": [
+          [
+            3,
+            3
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "hwp": [
+          [
+            3,
+            3
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "hwpx": [
+          [
+            3,
+            3
+          ],
+          [
+            2,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "inline-shape",
+      "ok": true,
+      "result": {
+        "opened": [
+          true,
+          12000,
+          6000,
+          1
+        ],
+        "hwp": [
+          true,
+          12000,
+          6000,
+          1
+        ],
+        "hwpx": [
+          true,
+          12000,
+          6000,
+          1
+        ]
+      }
+    }
+  ],
+  "merged_columns": {
+    "before": [
+      [
+        [
+          0,
+          1,
+          15495
+        ],
+        [
+          1,
+          2,
+          15495
+        ],
+        [
+          3,
+          1,
+          15495
+        ]
+      ],
+      [
+        [
+          0,
+          2,
+          24764
+        ],
+        [
+          2,
+          2,
+          21721
+        ]
+      ]
+    ],
+    "row": [
+      [
+        [
+          0,
+          1,
+          15495
+        ],
+        [
+          1,
+          2,
+          15495
+        ],
+        [
+          3,
+          1,
+          15495
+        ]
+      ],
+      [
+        [
+          0,
+          1,
+          15495
+        ],
+        [
+          1,
+          1,
+          9269
+        ],
+        [
+          2,
+          1,
+          6226
+        ],
+        [
+          3,
+          1,
+          15495
+        ]
+      ],
+      [
+        [
+          0,
+          2,
+          24764
+        ],
+        [
+          2,
+          2,
+          21721
+        ]
+      ]
+    ],
+    "column": [
+      [
+        [
+          0,
+          1,
+          15495
+        ],
+        [
+          1,
+          3,
+          24764
+        ],
+        [
+          4,
+          1,
+          15495
+        ]
+      ],
+      [
+        [
+          0,
+          2,
+          24764
+        ],
+        [
+          2,
+          1,
+          9269
+        ],
+        [
+          3,
+          2,
+          21721
+        ]
+      ]
+    ]
+  },
+  "textbox_note": {
+    "source": {
+      "number": 2,
+      "sources": [
+        {
+          "ok": true,
+          "sectionIdx": 0,
+          "paraIdx": 0,
+          "notePath": [],
+          "noteControlIdx": 2,
+          "noteParaIdx": 0
+        },
+        {
+          "ok": true,
+          "sectionIdx": 0,
+          "paraIdx": 1,
+          "notePath": [
+            {
+              "controlIndex": 0,
+              "cellIndex": 0,
+              "cellParaIndex": 0
+            }
+          ],
+          "noteControlIdx": 0,
+          "noteParaIdx": 0
+        }
+      ],
+      "renderedPages": [
+        1
+      ]
+    },
+    "hwp": {
+      "number": 2,
+      "sources": [
+        {
+          "ok": true,
+          "sectionIdx": 0,
+          "paraIdx": 0,
+          "notePath": [],
+          "noteControlIdx": 2,
+          "noteParaIdx": 0
+        },
+        {
+          "ok": true,
+          "sectionIdx": 0,
+          "paraIdx": 1,
+          "notePath": [
+            {
+              "controlIndex": 0,
+              "cellIndex": 0,
+              "cellParaIndex": 0
+            }
+          ],
+          "noteControlIdx": 0,
+          "noteParaIdx": 0
+        }
+      ],
+      "renderedPages": [
+        1
+      ]
+    },
+    "hwpx": {
+      "number": 2,
+      "sources": [
+        {
+          "ok": true,
+          "sectionIdx": 0,
+          "paraIdx": 0,
+          "notePath": [],
+          "noteControlIdx": 2,
+          "noteParaIdx": 0
+        },
+        {
+          "ok": true,
+          "sectionIdx": 0,
+          "paraIdx": 1,
+          "notePath": [
+            {
+              "controlIndex": 0,
+              "cellIndex": 0,
+              "cellParaIndex": 0
+            }
+          ],
+          "noteControlIdx": 0,
+          "noteParaIdx": 0
+        }
+      ],
+      "renderedPages": [
+        1
+      ]
+    }
+  }
+}

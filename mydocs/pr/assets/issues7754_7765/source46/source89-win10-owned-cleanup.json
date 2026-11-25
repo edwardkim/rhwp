@@ -1,0 +1,29 @@
+{
+  "removed": true,
+  "files": [
+    {
+      "sha256": "958DA82AA3F82EFCBC3DBEE5008E7BEEE02032C5EB89F3D347111E05A2B36D56",
+      "name": "candidate.bundle",
+      "size": 21968035
+    },
+    {
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "name": "controller-stderr.txt",
+      "size": 0
+    },
+    {
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "name": "controller-stdout.txt",
+      "size": 0
+    },
+    {
+      "sha256": "461A681A33037B5DFDFC0466C6F034860A718C2350D39531153D9E5FD7C09CC0",
+      "name": "controller.py",
+      "size": 4176
+    }
+  ],
+  "original_head": "197ce19e99438c2cba452c654ae1af504dab85ec",
+  "original_status": {},
+  "active": [],
+  "reason": "User excluded Windows direct PDF validation before any worktree/build was created"
+}

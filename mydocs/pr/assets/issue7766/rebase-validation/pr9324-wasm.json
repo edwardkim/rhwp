@@ -1,0 +1,41 @@
+{
+  "inputSha256": "fbe318ac2fb20e42612571fe384567259b4785bc0375766c122cbc31cad828ca",
+  "programSha256": "0c4659cab1c3ff33db326fad3a8e4411dd1b7b736000df058607e9474f5b8c84",
+  "wrapperSha256": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+  "pageCount": 1,
+  "originalTextSha256": "658cf2cd7348cc7c4ed201bf0a3a475c83d0d1dd47be3e7949bdc45595fe6e47",
+  "originalLayoutSha256": "4ee39ac08fef6d81bd8ecff0dfaaa583cc6679a83677c105770930c0b5cefeec",
+  "negativeInputs": {
+    "value-two.hwpx": {
+      "inputSha256": "14b302405bd87051a56927af0d4a83bb06ca2b3cbe907b180248ff0518d23025",
+      "textSha256": "7c7a6d5099ebd3f16eead007630612194533d8d0013e6fd4c7960a694709486e"
+    },
+    "hancom.hwpx": {
+      "inputSha256": "9e25f528bfb6a2801e50437360d7f9cf76f5ae0d69ff9ad1919985d107586a8b",
+      "textSha256": "4ac8fe1b7ae9965292c42d6b12181254fdd782867dd6495e7185634c865f2225"
+    }
+  },
+  "stablePageTextAndLayout": true,
+  "insertedTextPersisted": true,
+  "artifacts": {
+    "first.hwpx": "18aa2260f0387a6eabc64541f90df66c06b67b8a9afd86ed7d3b87195bc1c8e2",
+    "second.hwpx": "18aa2260f0387a6eabc64541f90df66c06b67b8a9afd86ed7d3b87195bc1c8e2",
+    "restored.hwp": "cb7d6397baa1bd53db9ef5a23bc4a9bf5956980aaffbc69cdf8a7d3217bc1aef",
+    "edited.hwpx": "0fe5e1b50bda28c9d78218a76a12e119b2a8fd9016b3165c1aaffcae4234919a",
+    "edited.hwp": "581082e0f8a3291503348ae675fae8d0c7bb723693f9dd0ebb1b8f9aeb975745",
+    "value-two.hwpx": "579ef8bba53cca4382ce54830b491344304f7db088de28dbd7ce8903e3403284",
+    "hancom.hwpx": "db5c5d881567e14216d29880d03523d040355da5dd25df53c40fd4f41cf563b5"
+  },
+  "source_sha": "953b43187325496645683fcc15ca989a815b0596",
+  "role": "candidate",
+  "stored_markers": {
+    "first.hwpx": 1,
+    "second.hwpx": 1,
+    "edited.hwpx": 1,
+    "restored.hwp": 1,
+    "edited.hwp": 1,
+    "value-two.hwpx": null,
+    "hancom.hwpx": null
+  },
+  "matches_base": true
+}

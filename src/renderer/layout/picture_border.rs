@@ -124,6 +124,7 @@ impl LayoutEngine {
             stroke_width: border_w,
             stroke_dash,
             opacity: 1.0,
+            stroke_alpha: 0,
             shadow: None,
         };
         let border_id = tree.next_id();

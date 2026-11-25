@@ -61,7 +61,7 @@ impl WebCanvasRenderer {
         // 합성 굵기 run의 Canvas descriptor는 보통 굵기다(CanvasTextFont).
         // 기울임 선택은 `prepare_italic_font`와 같으며, 실제 기울임 face는 기존 경로로 둔다.
         let Some(outline) = self
-            .hft_outline_fonts
+            .legacy_font_outlines
             .as_ref()
             .and_then(|fonts| fonts.faux_bold_glyph(style, character, self.hft_outline_enabled))
         else {

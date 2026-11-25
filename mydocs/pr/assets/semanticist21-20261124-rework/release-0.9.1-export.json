@@ -1,0 +1,44 @@
+{
+  "release": "v0.9.1",
+  "archive_sha256": "9283dd9ecd3182ddb50eeba9a2f26d2d23b5386e39defb081e52a3706916e65d",
+  "binary_sha256": "1d14cecee1680a9bdc58a0f006e8e56195c18a2f7dd0da0a3a9f82c5a5dc54fc",
+  "source_sha256": "b26e28699e098a74635df71a852f710d67ecf1759633c33cfab0eec47f053eb1",
+  "held": {
+    "file": "0106516be2183eb65cc2e3afe06812e2abd8a59870a232fc1bcb2219d51722bb",
+    "section": "5701aee0ce9d6d3a7a109e2397f01f87f13b216d0cbadd6bf7fd066199fe5290",
+    "markers": [],
+    "alpha": [
+      [
+        "lineShape",
+        "0"
+      ],
+      [
+        "winBrush",
+        "1"
+      ],
+      [
+        "shadow",
+        "0"
+      ]
+    ]
+  },
+  "fresh_export": {
+    "file": "0106516be2183eb65cc2e3afe06812e2abd8a59870a232fc1bcb2219d51722bb",
+    "section": "5701aee0ce9d6d3a7a109e2397f01f87f13b216d0cbadd6bf7fd066199fe5290",
+    "markers": [],
+    "alpha": [
+      [
+        "lineShape",
+        "0"
+      ],
+      [
+        "winBrush",
+        "1"
+      ],
+      [
+        "shadow",
+        "0"
+      ]
+    ]
+  }
+}

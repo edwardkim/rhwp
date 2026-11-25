@@ -345,7 +345,16 @@ pub(crate) fn parse_ole_shape(
     let _property = r.read_u32().unwrap_or(0);
     ole.extent_x = r.read_i32().unwrap_or(0);
     ole.extent_y = r.read_i32().unwrap_or(0);
-    ole.bin_data_id = r.read_u32().unwrap_or(0);
+    if tag_data.len() == 26 {
+        // HWP5의 26바이트 OLE 레코드는 4바이트 속성 뒤에 extent와
+        // 2바이트 BinData ID, 테두리 색·폭·선 속성을 저장한다.
+        ole.bin_data_id = u32::from(r.read_u16().unwrap_or(0));
+        ole.drawing.border_line.color = r.read_u32().unwrap_or(0);
+        ole.drawing.border_line.width = r.read_i32().unwrap_or(0);
+        ole.drawing.border_line.attr = r.read_u32().unwrap_or(0);
+    } else {
+        ole.bin_data_id = r.read_u32().unwrap_or(0);
+    }
     // 뒤에 flags/aspect 필드가 있을 수 있으나 스펙 불확실 — 기본값 유지
     ole.flags = 0;
     ole.drawing_aspect = OleDrawingAspect::Content;
@@ -634,15 +643,15 @@ fn parse_shape_component_full(data: &[u8]) -> ShapeComponentParsed {
         (0, 0, 0, 0)
     };
 
-    // 인스턴스 ID (4바이트) + 예약 (1바이트) + 그림자 투명도 (1바이트) = 6바이트
+    // 인스턴스 ID (4바이트) + 선 투명도 (1바이트) + 그림자 투명도 (1바이트) = 6바이트
     let inst_id = if r.remaining() >= 4 {
         r.read_u32().unwrap_or(0)
     } else {
         0
     };
     if r.remaining() >= 1 {
-        let _ = r.read_u8();
-    } // 예약 (skip)
+        border.alpha = r.read_u8().unwrap_or(0);
+    }
     let shadow_alpha = if r.remaining() >= 1 {
         r.read_u8().unwrap_or(0)
     } else {
@@ -940,6 +949,7 @@ fn parse_picture(common: CommonObjAttr, shape_attr: ShapeComponentAttr, data: &[
         width: pic.border_width,
         attr: border_attr_raw,
         outline_style: 0,
+        alpha: 0,
     };
 
     // 꼭짓점 좌표 (4개씩)

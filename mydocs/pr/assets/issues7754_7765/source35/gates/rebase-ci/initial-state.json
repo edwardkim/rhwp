@@ -1,0 +1,70 @@
+{
+  "started": 1795297055.2394426,
+  "results": [
+    {
+      "role": "base",
+      "cwd": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source35-rebase-ci/base",
+      "label": "python-render-report",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/tests",
+        "-p",
+        "test_render_diff_workflow.py"
+      ],
+      "exit_code": 1,
+      "seconds": 0.5669140890240669,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source35-rebase-ci/base-python-render-report.log"
+    },
+    {
+      "role": "base",
+      "cwd": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source35-rebase-ci/base",
+      "label": "node-ci-summary",
+      "command": [
+        "/usr/local/bin/node",
+        "--test",
+        "scripts/tests/pr-ci-summary.test.cjs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.4664572519250214,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source35-rebase-ci/base-node-ci-summary.log"
+    },
+    {
+      "role": "candidate",
+      "cwd": "/home/tsjang/rhwp",
+      "label": "python-render-report",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/tests",
+        "-p",
+        "test_render_diff_workflow.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.41582077997736633,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source35-rebase-ci/candidate-python-render-report.log"
+    },
+    {
+      "role": "candidate",
+      "cwd": "/home/tsjang/rhwp",
+      "label": "node-ci-summary",
+      "command": [
+        "/usr/local/bin/node",
+        "--test",
+        "scripts/tests/pr-ci-summary.test.cjs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.36633370886556804,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source35-rebase-ci/candidate-node-ci-summary.log"
+    }
+  ],
+  "ended": 1795297057.0570776,
+  "complete": true,
+  "passed": false
+}

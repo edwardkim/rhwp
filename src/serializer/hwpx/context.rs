@@ -108,6 +108,8 @@ pub struct ChartPartEntry {
 /// 1-pass 스캔으로 구축되는 직렬화 컨텍스트.
 #[derive(Debug)]
 pub struct SerializeContext {
+    /// HWP5 before 5.0.1.6 uses measured legacy BMP codes in paragraph text.
+    pub(super) legacy_body_symbols: bool,
     pub char_shape_ids: IdPool<u32>,
     pub para_shape_ids: IdPool<u16>,
     pub border_fill_ids: IdPool<u16>,
@@ -175,6 +177,8 @@ pub struct SerializeContext {
     pub line_segs_on_hwpx_axis: bool,
     /// 새 HWP5 계보 산출물은 실제 방출된 문단의 제어 슬롯을 함께 센다.
     pub line_segs_on_paragraph_axis: bool,
+    /// 지금 쓰는 구역 본문의 줄 위치 좌표계. `write_section` 이 구역마다 새로 둔다.
+    pub(crate) body_uses_source_frames: bool,
     /// 이번 HWPX 산출물에서 발생한 사용자 내용 손실 (#4430).
     ///
     /// ID 풀과 마찬가지로 한 번의 직렬화 생명주기에만 속하며, 완료 시 바이트와 함께
@@ -187,9 +191,11 @@ pub struct SerializeContext {
 impl Default for SerializeContext {
     fn default() -> Self {
         Self {
+            legacy_body_symbols: false,
             char_shape_ids: IdPool::default(),
             line_segs_on_hwpx_axis: false,
             line_segs_on_paragraph_axis: false,
+            body_uses_source_frames: false,
             para_shape_ids: IdPool::default(),
             border_fill_ids: IdPool::default(),
             tab_pr_ids: IdPool::default(),
@@ -234,7 +240,10 @@ impl SerializeContext {
     where
         S::Error: std::fmt::Display,
     {
-        let mut ctx = Self::default();
+        let mut ctx = Self {
+            legacy_body_symbols: doc.uses_legacy_body_symbols(),
+            ..Self::default()
+        };
         ctx.char_shape_ids.reservation = reservation.clone();
         ctx.para_shape_ids.reservation = reservation.clone();
         ctx.border_fill_ids.reservation = reservation.clone();

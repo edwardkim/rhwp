@@ -750,6 +750,7 @@ impl TypesetState {
     pub(super) fn empty_float_page(
         &self,
         paragraphs: &[crate::model::paragraph::Paragraph],
+        para_index: usize,
     ) -> EmptyFloatPage<'_> {
         EmptyFloatPage {
             layout: &self.data.layout,
@@ -758,6 +759,9 @@ impl TypesetState {
             current_height: self.data.current_height,
             current_items: &self.data.current_items,
             visible_float_exclusions: &self.data.visible_float_exclusions,
+            source_prefix_origin_hu: super::stored_reset_ownership::accepted_source_prefix_origin(
+                self, paragraphs, para_index,
+            ),
             // 원본 0 줄이 실제 첫 완전한 본문 항목으로 수용된 단만 원점을
             // 증명한다. 이어받기 조각·첫 표·추가 zone의 raw vpos는 다른 축이다.
             original_column_origin: self.data.current_zone_y_offset == 0.0

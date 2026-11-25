@@ -341,6 +341,7 @@ pub(crate) fn extract_shape_transform(
         horz_flip: sa.horz_flip,
         vert_flip: sa.vert_flip,
         image_frame_ratio: None,
+        skew: None,
     }
 }
 
@@ -440,11 +441,7 @@ pub(crate) fn drawing_to_shape_style(
     let stroke_dash = crate::renderer::line_style::hwp_shape_line_type(shape_line_type as u8).0;
 
     // 채우기 투명도: 한컴 호환 — alpha=0은 불투명, alpha=255은 완전 투명
-    let opacity = if drawing.fill.alpha > 0 {
-        1.0 - (drawing.fill.alpha as f64 / 255.0)
-    } else {
-        1.0
-    };
+    let opacity = crate::renderer::alpha_to_opacity(drawing.fill.alpha);
     // 패턴 채우기: 무늬(0~5)가 있을 때만 패턴 정보 생성
     let pattern = drawing.fill.solid.and_then(|s| {
         s.hatch().map(|hatch| super::super::PatternFillInfo {
@@ -475,6 +472,7 @@ pub(crate) fn drawing_to_shape_style(
         stroke_width,
         stroke_dash,
         opacity,
+        stroke_alpha: border.alpha,
         shadow,
     };
     (style, gradient)
@@ -540,6 +538,7 @@ pub(crate) fn drawing_to_line_style(drawing: &crate::model::shape::DrawingObjAtt
         start_arrow_size,
         end_arrow_size,
         shadow,
+        alpha: border.alpha,
     }
 }
 

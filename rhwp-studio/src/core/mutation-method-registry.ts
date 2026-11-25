@@ -47,7 +47,7 @@ export const MUTATING_METHODS: readonly string[] = [
   'deleteCellShapeControlByPath',
   'createShapeControl', 'setShapeProperties', 'deleteShapeControl', 'changeShapeZOrder',
   'applyShapeZOrderPairs', // [#5769 후속] z 절대 대입 — SetZOrderCommand 의 undo/redo 경로
-  'groupShapes', 'ungroupShape', 'moveLineEndpoint', 'updateConnectorsInSection',
+  'groupShapes', 'ungroupShape', 'moveLineEndpoint', 'moveConnectorMidpoint', 'updateConnectorsInSection',
   'insertEquation', 'promoteOleEquation', 'setEquationProperties', 'setNoteEquationProperties', 'deleteEquationControl',
   // 차트 데이터 (#4694) — bin_data_content 슬롯 바이트 변이 (IR 무변경이지만 직렬화 결과가 바뀐다)
   'setChartData', 'setChartDataByIndex',
@@ -75,6 +75,7 @@ export const MUTATING_METHODS: readonly string[] = [
   'applyCharFormatInHeaderFooter', 'applyParaFormatInHf', 'insertFieldInHf', 'applyHfTemplate',
   // 필드/양식/찾아바꾸기/책갈피
   'insertHyperlink', 'updateHyperlink', 'replaceHyperlinkText', 'removeHyperlink',
+  'insertMemo', 'updateMemo', 'removeMemo',
   'setFieldValue', 'setFieldValueByName', 'removeFieldAt', 'insertClickHereField',
   'updateClickHereProps', 'setFormValue', 'setFormValueInCell', 'applyFormActionUpdates',
   'replaceText', 'replaceOne', 'replaceAll',
@@ -93,7 +94,7 @@ export const EXCLUDED_NON_DOCUMENT: readonly string[] = [
   'setShowParagraphMarks', 'setShowControlCodes', 'setShowTransparentBorders', // 표시 토글
   'setClipEnabled', // 렌더 클립 옵션
   'setFontEnvironment', // 문서 IR·저장 줄·편집 히스토리를 바꾸지 않는 렌더 글꼴 환경
-  'setActiveField', 'clearActiveField', // 편집 세션 상태 (직렬화 비대상)
+  'setActiveField', 'setActiveFieldAt', 'clearActiveField', // 편집 세션 상태 (직렬화 비대상)
   'moveVertical', 'moveVerticalByPath', // 캐럿 세로 탐색 (조회)
   'ensureParagraphStableIds', // 런타임 추적 id 부여
   // [#5769] 삭제 조각(fragment) API — capture·discard 는 IR 비변경(캡처·저장소 정리).

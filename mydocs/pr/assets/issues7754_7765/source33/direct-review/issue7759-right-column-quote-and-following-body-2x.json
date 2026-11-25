@@ -1,0 +1,55 @@
+{
+  "key": "issue7759",
+  "page": 1,
+  "dpi": 96,
+  "crop_box": [
+    390,
+    452,
+    733,
+    855
+  ],
+  "scale": 2,
+  "method": "nearest-neighbor",
+  "inputs": [
+    {
+      "label": "Independent Hancom Print",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/candidate/issue7759/pdf_png/pdf-001.png",
+      "sha256": "d32c8c1e3c78dbb4b205ebe57b07887c028f6a1da3d0562b898c8cadbf8d7ab2"
+    },
+    {
+      "label": "devel Native",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7759/rhwp_png/rhwp_001.png",
+      "sha256": "1c67b078e5ee7f5d154ec328140717c80549756ab74a8e8f2505a4a058e37f9b"
+    },
+    {
+      "label": "candidate Native",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/candidate/issue7759/rhwp_png/rhwp_001.png",
+      "sha256": "1c67b078e5ee7f5d154ec328140717c80549756ab74a8e8f2505a4a058e37f9b"
+    },
+    {
+      "label": "devel WASM",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-wasm/base/issue7759/rhwp_png/rhwp_001.png",
+      "sha256": "289c28af0d86fd10bd940d2cad4c89ae42baa2d8b327d86d70c3c642220554b7"
+    },
+    {
+      "label": "candidate WASM",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-wasm/candidate/issue7759/rhwp_png/rhwp_001.png",
+      "sha256": "289c28af0d86fd10bd940d2cad4c89ae42baa2d8b327d86d70c3c642220554b7"
+    }
+  ],
+  "panel": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-direct-review/issue7759-right-column-quote-and-following-body-2x.png",
+  "panel_sha256": "dd87f9a41916214391580d37f30fe7f638034bd0247f456d21bb17051a6e903b",
+  "created": 1795291448.8180077,
+  "direct_reading_status": "reviewed",
+  "reviewed_at": "2026-11-21T20:05:05.189454+00:00",
+  "review_notes": "오른쪽 단의 앞 문단 106·25·49·41, 제목과 괄호, 따옴표 안 Public Finance·Time·Problem, 9%·20%, 뒤 기자명과 링크의 내용·줄바꿈·순서를 직접 대조했다. Native 99.93/WASM 99.94%이며 래스터의 미세 차이를 100%로 확대하지 않는다.",
+  "source": "samples/143E433F503322BD33.hwp",
+  "input_sha256": "1bcdc7a2de38680cdb715556f40c8477f8242131d28de949b09e945022bf35fa",
+  "independent_pdf": "pdf/143E433F503322BD33-hwp-2020.pdf",
+  "pdf_sha256": "41451dd4d1b6a43b78cc532500a54a310314da84fc1b2963e49485443d0b4d0d",
+  "production_source": "adaa1963674e1a69c4369b80160ac6eb873bec1b",
+  "page_metrics": {
+    "native": "99.93",
+    "wasm": "99.94"
+  }
+}

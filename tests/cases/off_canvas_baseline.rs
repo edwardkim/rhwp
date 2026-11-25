@@ -1,4 +1,17 @@
+//! 관계형·고정형: 기존 계약을 유지하고 #7754~#7765의 수용한 원본 범위를 복원한다.
+//! 주석 갱신 2026-11-23T21:31:42+09:00, 직전 파일 변경 2026-11-23T20:42:26+09:00 6661623f5e39e3651ad18eb1d1878a02683b5cbb.
+//! 복원 원본 측정: 2026-11-22 KST,96DPI·Print·PDFium·보정 전2px raw, 각 독립 Print와 같은 전체 쪽수.
+//! Native/fresh WASM 전쪽 최저: 7754 평문24쪽98.29/98.22%,7755 315쪽98.40/98.40%,
+//! 7756 1쪽99.00/98.99%,7757 3쪽99.78/99.80%,7759 1쪽99.94/99.94%,7760 19쪽99.18/99.18%,
+//! 7761 HWP46쪽99.98/99.98%,7762 HWPX46쪽99.98/99.98%,7765 HWP64쪽98.08/98.11%·HWPX64쪽98.69/98.69%.
+//! 근거: mydocs/pr/assets/issues7754_7765/source32/README.md; 시장구조조사의 선행 전쪽 교차 증거는 같은 상위 market-source7/README.md.
+//! 이번 복원 범위 밖 입력의 기존 계약·근거는 아래 기록을 유지한다. 시스템 글꼴을 요구하지 않는다.
 //! 용지 밖 그리기(`layout-anomaly` off-canvas) 원장 게이트 — samples 전수 래칫.
+//!
+//! `samples/hwpspec.hwp`는 2026-11-23 독립 한컴 2024 1-up Print의 전178쪽을
+//! 96 DPI 2px raw 실루엣으로 대조했다. Native 최저 98.14%, fresh WASM 최저 98.16%.
+//! 20쪽은 두 경로 모두 100.00%, 21쪽은 두 경로 모두 99.99%였다.
+//! `mydocs/pr/assets/issue7772/README.md`에서 전쪽 증거와 용지 이탈 0건의 근거를 확인한다.
 //!
 //! # 왜 필요한가
 //!
@@ -85,8 +98,6 @@ const DEDICATED_SLOW_FIXTURES: &[&str] = &["issue2063_huge_cellbreak_table.hwp"]
 /// #7445의 README에 연결한 입력별 증적에서 실패와 시각 근거를 확인한다.
 /// 원문은 samples에 남기고 다른 원장과 정상 검사는 유지한다.
 const DEFERRED_OFF_CANVAS_FIXTURES: &[&str] = &[
-    // #7445: upstream 74f9b71b1, 확인 6쪽 최저29.76551%. 실패한 이 원장만 이관.
-    "hwpspec.hwp",
     // 사용자 요청: 아래 세 HWPX의 조판 보정은 다른 브랜치에서 진행한다.
     "table_giant_cell_overfill.hwpx",
     "issue5792/2700727_animal_facility_standards.hwpx",
@@ -94,15 +105,6 @@ const DEFERRED_OFF_CANVAS_FIXTURES: &[&str] = &[
     "issue6035/cgmp_evaluation_table.hwpx",
     // #7445: PDF49쪽/Native47쪽, 공통47쪽 최저0.22%로 렌더링 회귀 보류.
     "issue5699/37787_regulatory_impact.hwp",
-    // #7445: 전52쪽 최저39.97%, 렌더링 회귀는 전체 피델리티 개선 후 복원.
-    "issue1853_caption_precedes_body_split.hwpx",
-    // #7445: pr-1674 HWP 전35쪽 최저54.09%, 렌더링 회귀 보류.
-    "pr-1674.hwp",
-    // #7445: 전11쪽 최저36.70%, 전체 피델리티 개선 전 렌더링 회귀 보류.
-    "hwpx/156160455-social-pig-farm-income.hwpx",
-    // #7445: 86712 두 형식의 전체 피델리티 개선은 별도 처리한다.
-    "86712_regulatory_analysis.hwp",
-    "issue1891/86712_regulatory_analysis.hwpx",
 ];
 
 fn collect_samples() -> Vec<(PathBuf, String)> {

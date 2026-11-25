@@ -1,0 +1,55 @@
+{
+  "candidate": "24ec51a6f9186d509d3f3285faa6f9f6e067af5e",
+  "documents": [
+    {
+      "document": "jeju",
+      "input": {
+        "path": "samples/issue8759/6500000-201700118_jeju_tourism_education_plan.hwp",
+        "sha256": "fa87e135c3d609324457adb37230e220be9406ba99a94d26a813ba7132244ac9",
+        "format": "hwp5",
+        "version": "5.0.3.4",
+        "last_saved_with": {
+          "confidence": "metadata",
+          "product": "hancom-office-2010",
+          "version": "8.5.8.1382"
+        }
+      },
+      "reference_print": {
+        "path": "pdf/issue8759/6500000-201700118_jeju_tourism_education_plan-2024.pdf",
+        "sha256": "4c7292f010ceecc9b8f4656f77e25b570e24534324b04574851bb5e34187604e",
+        "creator": "Hwp 2024 13.0.0.3901",
+        "producer": "Hancom PDF 1.3.0.550",
+        "size_bytes": 7599306,
+        "origin": "사용자가 win10-ted에서 산출한 한컴 2024 Hancom PDF Print 제공",
+        "added_commit": "5ce9d5f0bb91b626fbe162e91f7666b3fe130946"
+      },
+      "pages": 313,
+      "layout_generation": "2024"
+    },
+    {
+      "document": "food",
+      "input": {
+        "path": "mydocs/pr/assets/planet6897_clean20_20261113/counterexamples/1543000-202100035-food-security-report.hwp",
+        "sha256": "8cc9b219a5c54fdc2324f63da32b224a1ac23877c6c92976c407e6c42475317c",
+        "format": "hwp5",
+        "version": "5.1.0.1",
+        "last_saved_with": {
+          "confidence": "metadata",
+          "product": "hancom-office-2018",
+          "version": "10.0.0.10990"
+        }
+      },
+      "reference_print": {
+        "path": "pdf/issue8997/1543000-202100035-food-security-report-2020.pdf",
+        "sha256": "4c2d909332e5fe3be5044a76cc9d5448e29e98087b4688907fdf1ce093dccc04",
+        "creator": "Hwp 2020 0.0.0.0",
+        "producer": "Hancom PDF 1.3.0.550",
+        "size_bytes": 1894417,
+        "origin": "저장소의 기존 한컴 2020 Hancom PDF Print 재사용",
+        "added_commit": "dd2fffd683f6efd20da0e1e75f1bb8b3e3ce9802"
+      },
+      "pages": 141,
+      "layout_generation": "2022"
+    }
+  ]
+}

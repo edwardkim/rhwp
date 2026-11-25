@@ -1,0 +1,32 @@
+{
+  "started": 1795329803.7005792,
+  "original_failure": {
+    "role": "candidate",
+    "label": "ruler-document-switch",
+    "source_head": "68b4f6bdfda465aaafd0634c587cd6a17252fed6",
+    "wasm_sha256": "76f7c64d27fe8fbbd7bd5baa2fdb3d30af9c8014fd16fb6b83afc498907ba7e3",
+    "command": [
+      "/usr/local/bin/node",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_studio_with_frozen_pkg.mjs",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37",
+      "/usr/local/bin/node",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/ruler_document_switch_with_font_choice.mjs",
+      "--mode=headless"
+    ],
+    "exit_code": 1,
+    "seconds": 190.74582702410407,
+    "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source37-candidate-studio-ruler-document-switch.log"
+  },
+  "command": [
+    "/usr/local/bin/node",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_studio_with_frozen_pkg.mjs",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37",
+    "/usr/local/bin/node",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/ruler_document_switch_with_font_choice.mjs",
+    "--mode=headless"
+  ],
+  "exit_code": 0,
+  "passed": true,
+  "ended": 1795329832.37479,
+  "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source48-ruler-font-choice-retry.txt"
+}

@@ -1,0 +1,643 @@
+{
+  "started": 1795325661.5579278,
+  "ended": 1795325671.363104,
+  "host": "win10-ted",
+  "shell": "PowerShell -NoProfile -EncodedCommand through SSH",
+  "roots": [
+    "C:\\Windows\\Fonts",
+    "C:\\Program Files (x86)\\Hnc\\Office 2020\\HOffice110\\Shared\\TTF",
+    "C:\\Program Files (x86)\\Hnc\\Office 2022\\HOffice120\\Shared\\TTF",
+    "C:\\Program Files (x86)\\Hnc\\Office 2024\\HOffice130\\Shared\\TTF",
+    "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts"
+  ],
+  "requested_names": [
+    "ARIALN.TTF",
+    "ARIALNB.TTF",
+    "ARIALNBI.TTF",
+    "ARIALNI.TTF",
+    "ENMJ.otf",
+    "ENSMJ.otf",
+    "ENSMJI.otf",
+    "FLMJ.otf",
+    "FLSMJ.otf",
+    "H2GTRE.TTF",
+    "H2GTRM.TTF",
+    "H2HDRM.TTF",
+    "HANBatang.ttf",
+    "HANBatangB.ttf",
+    "HANDotum.ttf",
+    "HANDotumB.ttf",
+    "HBATANG.TTF",
+    "HDOTUM.TTF",
+    "HGMJ.otf",
+    "HGSMJ.otf",
+    "HJMJ.otf",
+    "HJSMJ.otf",
+    "HMEPO.otf",
+    "HMFMMUEX.TTC",
+    "HMKMG.TTF",
+    "HMKMG.otf",
+    "HMKMM.TTF",
+    "HMKSM.otf",
+    "HYGTRE.TTF",
+    "HanSantteutDotum-Bold.ttf",
+    "HanSantteutDotum-Regular.ttf",
+    "JPMJ.otf",
+    "JPSMJ.otf",
+    "RHWPIndependentHFTSourceSymbols-Bold.otf",
+    "RHWPIndependentHFTSourceSymbols-Regular.otf",
+    "RHWPOldHangul-Regular.woff2",
+    "SPMJ.otf",
+    "SPSMJ.otf",
+    "USER.otf",
+    "arial.ttf",
+    "arialbd.ttf",
+    "arialbi.ttf",
+    "ariali.ttf",
+    "ariblk.ttf",
+    "batang.ttc",
+    "gulim.ttc",
+    "malgun.ttf",
+    "malgunbd.ttf",
+    "malgunsl.ttf",
+    "times.ttf",
+    "timesbd.ttf",
+    "timesbi.ttf",
+    "timesi.ttf",
+    "wingding.ttf"
+  ],
+  "files": [
+    {
+      "path": "C:\\Windows\\Fonts\\arial.ttf",
+      "bytes": 1036584,
+      "sha256": "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\arialbd.ttf",
+      "bytes": 980756,
+      "sha256": "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\arialbi.ttf",
+      "bytes": 721144,
+      "sha256": "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\ariali.ttf",
+      "bytes": 717428,
+      "sha256": "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\ARIALN.TTF",
+      "bytes": 175956,
+      "sha256": "cad552553cf2a75afca01955751aaa115e2a64fd6c6eea42e1fbd236630b7e0a"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\ARIALNB.TTF",
+      "bytes": 180740,
+      "sha256": "6c4a4b643461def5411e0217b74a625dcf2fb681252ef5da1db0af4eae80aa7e"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\ARIALNBI.TTF",
+      "bytes": 180084,
+      "sha256": "161b859efd20c69ddebb23012a49f4f2030d56a0c1b9bcfd4df753217ce3e358"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\ARIALNI.TTF",
+      "bytes": 181124,
+      "sha256": "faf73aa7ce40b77ad19c09507a2263fe3f3ce9fa5642e8a1cd54fb3c9f52d599"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\ariblk.ttf",
+      "bytes": 167592,
+      "sha256": "10df702864b1f89cb29ba0d6b97c04228338d16807e13e8d8c74b91aba5e5f23"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\batang.ttc",
+      "bytes": 16271112,
+      "sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\gulim.ttc",
+      "bytes": 13531200,
+      "sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\H2GTRE.TTF",
+      "bytes": 3485364,
+      "sha256": "820d3212f688b546a327ea43a7202e3379cdbbd767ebac9753997e3f3d285171"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\H2GTRM.TTF",
+      "bytes": 3274536,
+      "sha256": "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\H2HDRM.TTF",
+      "bytes": 1169072,
+      "sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\HANBatang.ttf",
+      "bytes": 28412796,
+      "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\HANBatangB.ttf",
+      "bytes": 30691556,
+      "sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\HANDotum.ttf",
+      "bytes": 22249768,
+      "sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\HANDotumB.ttf",
+      "bytes": 31085224,
+      "sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\HanSantteutDotum-Bold.ttf",
+      "bytes": 12513472,
+      "sha256": "b7c90dadfc6459cba605d8556ac281bc205141c5e58c51b6d9fa9e8c5f78c5bc"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\HanSantteutDotum-Regular.ttf",
+      "bytes": 12180024,
+      "sha256": "423874746eb96c13b5255599135447312ed50c624d252eea1c6f3c67a83b681d"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\HBATANG.TTF",
+      "bytes": 32361044,
+      "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\HDOTUM.TTF",
+      "bytes": 23878424,
+      "sha256": "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\HMFMMUEX.TTC",
+      "bytes": 2978176,
+      "sha256": "be52401ea71e34d7c52bffacf25f95e3cc0bfdadc8a2a1f377d458f22484f7b7"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\HMKMG.TTF",
+      "bytes": 1336108,
+      "sha256": "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\HMKMM.TTF",
+      "bytes": 1820732,
+      "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\HYGTRE.TTF",
+      "bytes": 2937892,
+      "sha256": "82f70d5e221412b10df0431f353f095885888823f5d026694691237c9a3004e8"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\malgun.ttf",
+      "bytes": 13457164,
+      "sha256": "0086c19e81d293a542e7d75564c645fb58070cc850aefebf8fa1c397858e510c"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\malgunbd.ttf",
+      "bytes": 12598360,
+      "sha256": "a541834fb9cdde9bd6d2c3ff1565cb0bb5ccf7a15e4e9daf2cb58d9b1cf282aa"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\malgunsl.ttf",
+      "bytes": 5083156,
+      "sha256": "a7217a2e590c86141bddadc74a2bcdff2efe210db48469a77a749e0446d91ea9"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\times.ttf",
+      "bytes": 1195688,
+      "sha256": "2cff2a03d8034801979dd6d16f09b9a825c3d710fcf068f2ebfbf0e1425c87cf"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\timesbd.ttf",
+      "bytes": 1175904,
+      "sha256": "621b4a765fef5d255d19530f4bf936104c6519f2e232a0eef1923474e5b9cf22"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\timesbi.ttf",
+      "bytes": 881860,
+      "sha256": "2852329a38acf9252504669d9c23d5e88366cf77e8209d508f5e7198639648ea"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\timesi.ttf",
+      "bytes": 940288,
+      "sha256": "3a1c2bc8528bfa432e0414d4ec69bf5813563c474e16a9ad0f57ca262f8d24a2"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\wingding.ttf",
+      "bytes": 82180,
+      "sha256": "9bcd6064e3b52fa30a347edd6e82506e2ec8b1602930b423c629a82c10468a5b"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2020\\HOffice110\\Shared\\TTF\\All\\H2HDRM.TTF",
+      "bytes": 911040,
+      "sha256": "a3f57b4cb4292977479c1511b52997daadaf04c37f180ff05ab152c4d12ccaf5"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2020\\HOffice110\\Shared\\TTF\\All\\HBATANG.TTF",
+      "bytes": 32361044,
+      "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2020\\HOffice110\\Shared\\TTF\\All\\HDOTUM.TTF",
+      "bytes": 23878424,
+      "sha256": "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2020\\HOffice110\\Shared\\TTF\\Hwp\\HMKMG.TTF",
+      "bytes": 1336108,
+      "sha256": "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2020\\HOffice110\\Shared\\TTF\\Hwp\\HMKMM.TTF",
+      "bytes": 1820732,
+      "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2020\\HOffice110\\Shared\\TTF\\Hwp\\HYGTRE.TTF",
+      "bytes": 2937892,
+      "sha256": "82f70d5e221412b10df0431f353f095885888823f5d026694691237c9a3004e8"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2022\\HOffice120\\Shared\\TTF\\All\\H2HDRM.TTF",
+      "bytes": 911040,
+      "sha256": "a3f57b4cb4292977479c1511b52997daadaf04c37f180ff05ab152c4d12ccaf5"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2022\\HOffice120\\Shared\\TTF\\All\\HBATANG.TTF",
+      "bytes": 32361044,
+      "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2022\\HOffice120\\Shared\\TTF\\All\\HDOTUM.TTF",
+      "bytes": 23878424,
+      "sha256": "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2022\\HOffice120\\Shared\\TTF\\Hwp\\HMKMG.TTF",
+      "bytes": 1336108,
+      "sha256": "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2022\\HOffice120\\Shared\\TTF\\Hwp\\HMKMM.TTF",
+      "bytes": 1820732,
+      "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2022\\HOffice120\\Shared\\TTF\\Hwp\\HYGTRE.TTF",
+      "bytes": 2937892,
+      "sha256": "82f70d5e221412b10df0431f353f095885888823f5d026694691237c9a3004e8"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2024\\HOffice130\\Shared\\TTF\\All\\H2HDRM.TTF",
+      "bytes": 911040,
+      "sha256": "a3f57b4cb4292977479c1511b52997daadaf04c37f180ff05ab152c4d12ccaf5"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2024\\HOffice130\\Shared\\TTF\\All\\HBATANG.TTF",
+      "bytes": 32361044,
+      "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2024\\HOffice130\\Shared\\TTF\\All\\HDOTUM.TTF",
+      "bytes": 23878424,
+      "sha256": "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2024\\HOffice130\\Shared\\TTF\\Hwp\\HMKMG.TTF",
+      "bytes": 1336108,
+      "sha256": "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2024\\HOffice130\\Shared\\TTF\\Hwp\\HMKMM.TTF",
+      "bytes": 1820732,
+      "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2024\\HOffice130\\Shared\\TTF\\Hwp\\HYGTRE.TTF",
+      "bytes": 2937892,
+      "sha256": "82f70d5e221412b10df0431f353f095885888823f5d026694691237c9a3004e8"
+    },
+    {
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\hft-cmap-v2\\ENSMJI.otf",
+      "bytes": 13024,
+      "sha256": "041189e4229906de9abd93a04af68444f813bbb3eddcc671c7a2042c9657e139"
+    },
+    {
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\hft-cmap-v2\\FLMJ.otf",
+      "bytes": 521800,
+      "sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e"
+    },
+    {
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\hft-cmap-v2\\FLSMJ.otf",
+      "bytes": 37128,
+      "sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b"
+    },
+    {
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\hft-cmap-v2\\HGMJ.otf",
+      "bytes": 27636200,
+      "sha256": "1996dcc4e6985fd608a99cb4510c715fe45102b35016511d6b42e8829a859b05"
+    },
+    {
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\hft-cmap-v2\\HGSMJ.otf",
+      "bytes": 1725720,
+      "sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0"
+    },
+    {
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\hft-cmap-v2\\HJMJ.otf",
+      "bytes": 8032436,
+      "sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba"
+    },
+    {
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\hft-cmap-v2\\HJSMJ.otf",
+      "bytes": 11878240,
+      "sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9"
+    },
+    {
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\hft-cmap-v2\\HMEPO.otf",
+      "bytes": 13680,
+      "sha256": "049e15f3c5ec7b3ffbcdeed8fed73bd8cbf5aa9820015f2621ed5ad785e68078"
+    },
+    {
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\hft-cmap-v2\\HMKMG.otf",
+      "bytes": 3671920,
+      "sha256": "26ce296898d2aaeb1c75376285baa11eaed78b8e03d2584c14f6dcc5d5b9658c"
+    },
+    {
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\hft-cmap-v2\\HMKSM.otf",
+      "bytes": 7188580,
+      "sha256": "6070c3bee1f213cee8eaf6f5c50e8ed899989b4a2f848d77bfe4dca572eb5af1"
+    },
+    {
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\hft-cmap-v2\\JPMJ.otf",
+      "bytes": 140980,
+      "sha256": "34ab4bda16bac20882c8acc730b7e7ba255ce305aefa228a99619665656b6859"
+    },
+    {
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\hft-cmap-v2\\SPMJ.otf",
+      "bytes": 352100,
+      "sha256": "87c4cd1acd713cca565bd34694b2df5aa3240d6ef8c8d178b6b36782cd46edd2"
+    },
+    {
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\hft-cmap-v2\\SPSMJ.otf",
+      "bytes": 159464,
+      "sha256": "c9825ad4daaea9809b50dfeb0f1145a2ddccbbccbdd076e491d0570ea38d5ce3"
+    },
+    {
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\hft-cmap-v2\\USER.otf",
+      "bytes": 988,
+      "sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece"
+    },
+    {
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\rhwp-pr9237\\ENMJ.otf",
+      "bytes": 201572,
+      "sha256": "6055db675c538c216942788d7b83c8812c955d5bef37c2d6903a5cdb00c2930b"
+    },
+    {
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\rhwp-pr9237\\ENSMJ.otf",
+      "bytes": 111272,
+      "sha256": "97cf924058802123f52b26e365f5d9bfe35d379cb4ccab688285179e8e39b3f2"
+    },
+    {
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\rhwp-pr9237\\gulim.ttc",
+      "bytes": 13531200,
+      "sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226"
+    },
+    {
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\rhwp-pr9237\\HMKMG.TTF",
+      "bytes": 1336108,
+      "sha256": "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280"
+    },
+    {
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\rhwp-pr9237\\JPSMJ.otf",
+      "bytes": 82356,
+      "sha256": "94b15b07d917a63c028672ed345c28bd4a701a55ac05ed5dcb7401605d49c573"
+    }
+  ],
+  "exact_canonical_matches": [
+    {
+      "path": "C:\\Windows\\Fonts\\ARIALN.TTF",
+      "bytes": 175956,
+      "sha256": "cad552553cf2a75afca01955751aaa115e2a64fd6c6eea42e1fbd236630b7e0a"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\ARIALNB.TTF",
+      "bytes": 180740,
+      "sha256": "6c4a4b643461def5411e0217b74a625dcf2fb681252ef5da1db0af4eae80aa7e"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\ARIALNBI.TTF",
+      "bytes": 180084,
+      "sha256": "161b859efd20c69ddebb23012a49f4f2030d56a0c1b9bcfd4df753217ce3e358"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\ARIALNI.TTF",
+      "bytes": 181124,
+      "sha256": "faf73aa7ce40b77ad19c09507a2263fe3f3ce9fa5642e8a1cd54fb3c9f52d599"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\ariblk.ttf",
+      "bytes": 167592,
+      "sha256": "10df702864b1f89cb29ba0d6b97c04228338d16807e13e8d8c74b91aba5e5f23"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\H2GTRE.TTF",
+      "bytes": 3485364,
+      "sha256": "820d3212f688b546a327ea43a7202e3379cdbbd767ebac9753997e3f3d285171"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\H2GTRM.TTF",
+      "bytes": 3274536,
+      "sha256": "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\H2HDRM.TTF",
+      "bytes": 1169072,
+      "sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\HANBatang.ttf",
+      "bytes": 28412796,
+      "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\HANBatangB.ttf",
+      "bytes": 30691556,
+      "sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\HANDotum.ttf",
+      "bytes": 22249768,
+      "sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\HANDotumB.ttf",
+      "bytes": 31085224,
+      "sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\HanSantteutDotum-Bold.ttf",
+      "bytes": 12513472,
+      "sha256": "b7c90dadfc6459cba605d8556ac281bc205141c5e58c51b6d9fa9e8c5f78c5bc"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\HanSantteutDotum-Regular.ttf",
+      "bytes": 12180024,
+      "sha256": "423874746eb96c13b5255599135447312ed50c624d252eea1c6f3c67a83b681d"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\HBATANG.TTF",
+      "bytes": 32361044,
+      "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\HDOTUM.TTF",
+      "bytes": 23878424,
+      "sha256": "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\HMFMMUEX.TTC",
+      "bytes": 2978176,
+      "sha256": "be52401ea71e34d7c52bffacf25f95e3cc0bfdadc8a2a1f377d458f22484f7b7"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\HMKMG.TTF",
+      "bytes": 1336108,
+      "sha256": "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\HMKMM.TTF",
+      "bytes": 1820732,
+      "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\HYGTRE.TTF",
+      "bytes": 2937892,
+      "sha256": "82f70d5e221412b10df0431f353f095885888823f5d026694691237c9a3004e8"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\wingding.ttf",
+      "bytes": 82180,
+      "sha256": "9bcd6064e3b52fa30a347edd6e82506e2ec8b1602930b423c629a82c10468a5b"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2020\\HOffice110\\Shared\\TTF\\All\\HBATANG.TTF",
+      "bytes": 32361044,
+      "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2020\\HOffice110\\Shared\\TTF\\All\\HDOTUM.TTF",
+      "bytes": 23878424,
+      "sha256": "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2020\\HOffice110\\Shared\\TTF\\Hwp\\HMKMG.TTF",
+      "bytes": 1336108,
+      "sha256": "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2020\\HOffice110\\Shared\\TTF\\Hwp\\HMKMM.TTF",
+      "bytes": 1820732,
+      "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2020\\HOffice110\\Shared\\TTF\\Hwp\\HYGTRE.TTF",
+      "bytes": 2937892,
+      "sha256": "82f70d5e221412b10df0431f353f095885888823f5d026694691237c9a3004e8"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2022\\HOffice120\\Shared\\TTF\\All\\HBATANG.TTF",
+      "bytes": 32361044,
+      "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2022\\HOffice120\\Shared\\TTF\\All\\HDOTUM.TTF",
+      "bytes": 23878424,
+      "sha256": "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2022\\HOffice120\\Shared\\TTF\\Hwp\\HMKMG.TTF",
+      "bytes": 1336108,
+      "sha256": "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2022\\HOffice120\\Shared\\TTF\\Hwp\\HMKMM.TTF",
+      "bytes": 1820732,
+      "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2022\\HOffice120\\Shared\\TTF\\Hwp\\HYGTRE.TTF",
+      "bytes": 2937892,
+      "sha256": "82f70d5e221412b10df0431f353f095885888823f5d026694691237c9a3004e8"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2024\\HOffice130\\Shared\\TTF\\All\\HBATANG.TTF",
+      "bytes": 32361044,
+      "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2024\\HOffice130\\Shared\\TTF\\All\\HDOTUM.TTF",
+      "bytes": 23878424,
+      "sha256": "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2024\\HOffice130\\Shared\\TTF\\Hwp\\HMKMG.TTF",
+      "bytes": 1336108,
+      "sha256": "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2024\\HOffice130\\Shared\\TTF\\Hwp\\HMKMM.TTF",
+      "bytes": 1820732,
+      "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+    },
+    {
+      "path": "C:\\Program Files (x86)\\Hnc\\Office 2024\\HOffice130\\Shared\\TTF\\Hwp\\HYGTRE.TTF",
+      "bytes": 2937892,
+      "sha256": "82f70d5e221412b10df0431f353f095885888823f5d026694691237c9a3004e8"
+    },
+    {
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\hft-cmap-v2\\FLMJ.otf",
+      "bytes": 521800,
+      "sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e"
+    },
+    {
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\hft-cmap-v2\\FLSMJ.otf",
+      "bytes": 37128,
+      "sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b"
+    },
+    {
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\hft-cmap-v2\\HGSMJ.otf",
+      "bytes": 1725720,
+      "sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0"
+    },
+    {
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\hft-cmap-v2\\HJMJ.otf",
+      "bytes": 8032436,
+      "sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba"
+    },
+    {
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\hft-cmap-v2\\HJSMJ.otf",
+      "bytes": 11878240,
+      "sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9"
+    },
+    {
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\hft-cmap-v2\\USER.otf",
+      "bytes": 988,
+      "sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece"
+    },
+    {
+      "path": "C:\\Users\\admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\rhwp-pr9237\\HMKMG.TTF",
+      "bytes": 1336108,
+      "sha256": "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280"
+    }
+  ]
+}

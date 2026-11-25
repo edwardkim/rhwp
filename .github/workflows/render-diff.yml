@@ -745,6 +745,7 @@ jobs:
     env:
       RHWP_CHROMIUM_BUILD_ID: '1660786'
       RHWP_WASM_BUILD_MANIFEST: ${{ github.workspace }}/output/render-diff-build/build.json
+      RHWP_RENDER_DIFF_RHWP_BIN: ${{ github.workspace }}/target/debug/rhwp
 
     steps:
       - name: "Render Diff identity PR #${{ github.event.pull_request.number }} base ${{ github.event.pull_request.base.sha }}"
@@ -861,6 +862,16 @@ jobs:
         if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         run: cargo build --features native-skia --bin rhwp
 
+      - name: Record native CLI build evidence
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
+        continue-on-error: true
+        run: |
+          native_sha=$(git rev-parse HEAD)
+          native_digest=$(sha256sum "${RHWP_RENDER_DIFF_RHWP_BIN#"$GITHUB_WORKSPACE"/}")
+          mkdir -p output/render-diff-build
+          printf 'source_sha %s\nsha256 %s\n' "$native_sha" "$native_digest" \
+            > output/render-diff-build/native-build.txt
+
       - name: Save cargo registry & build cache
         if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' && github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') && steps.render_diff_cargo_cache_restore.outputs.cache-hit != 'true' }}
         uses: actions/cache/save@v6
@@ -930,7 +941,6 @@ jobs:
           RHWP_RENDER_DIFF_DIRECT_PDF_GATE: '1'
           RHWP_RENDER_DIFF_DIRECT_PDF_MAX_RATIO: '0.02'
           RHWP_RENDER_DIFF_DIRECT_PDF_RASTER_DPI: '144'
-          RHWP_RENDER_DIFF_RHWP_BIN: ../target/debug/rhwp
         run: npm run e2e:render-diff:ci
 
       - name: Run selected CanvasKit readiness gate
@@ -942,23 +952,23 @@ jobs:
           --readiness-only
           --output output/renderer-baseline/canvaskit-readiness
 
-      - name: Add render diff summary
+      - name: Index existing visual comparison evidence
         if: ${{ always() && steps.pdf-raster-runtime.outputs.available == 'true' }}
-        working-directory: rhwp-studio
+        continue-on-error: true
+        env:
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PR_EVENT_BASE: ${{ github.event.pull_request.base.sha }}
         run: |
-          for summary in \
-            e2e/screenshots/render-diff/summary.md \
-            e2e/screenshots/render-diff/pdf-summary.md \
-            ../output/renderer-baseline/canvaskit-readiness/baseline-report.md \
-            ../output/render-diff-build/summary.md
-          do
-            if [ -f "$summary" ]; then
-              cat "$summary" >> "$GITHUB_STEP_SUMMARY"
-              printf '\n\n' >> "$GITHUB_STEP_SUMMARY"
-            fi
-          done
+          mkdir -p output/render-diff-build
+          run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT"
+          index=$(mktemp)
+          trap 'rm -f "$index"' EXIT
+          python3 scripts/render_diff_evidence.py . --run-url "$run_url" --pr-head "$PR_HEAD" \
+            --pr-event-base "$PR_EVENT_BASE" --checkout . --json-output output/render-diff-build/evidence.json > "$index"
+          mv "$index" output/render-diff-build/evidence.md
 
       - name: Upload render diff artifacts
+        id: render-artifacts
         if: ${{ always() && steps.pdf-raster-runtime.outputs.available == 'true' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -971,3 +981,45 @@ jobs:
             target/rhwp-studio-vite.log
           if-no-files-found: ignore
           retention-days: 14
+
+      - name: Upload render diff index
+        if: ${{ always() && steps.pdf-raster-runtime.outputs.available == 'true' }}
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: render-diff-index-${{ github.run_id }}-${{ github.run_attempt }}
+          path: output/render-diff-build/evidence.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Add render diff summary
+        if: ${{ always() && steps.pdf-raster-runtime.outputs.available == 'true' }}
+        env:
+          ARTIFACT_URL: ${{ steps.render-artifacts.outputs.artifact-url }}
+        run: |
+          if [ -n "$ARTIFACT_URL" ]; then
+            printf '[Download Render Diff evidence](%s)\n\n' "$ARTIFACT_URL" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [ -f output/render-diff-build/evidence.md ]; then
+            cat output/render-diff-build/evidence.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+          cd rhwp-studio
+          details_open=false
+          for summary in \
+            e2e/screenshots/render-diff/summary.md \
+            e2e/screenshots/render-diff/pdf-summary.md \
+            ../output/renderer-baseline/canvaskit-readiness/baseline-report.md \
+            ../output/render-diff-build/summary.md
+          do
+            if [ -f "$summary" ]; then
+              if [ "$details_open" = false ]; then
+                printf '\n<details><summary>페이지별 결과 및 진단</summary>\n\n' >> "$GITHUB_STEP_SUMMARY"
+                details_open=true
+              fi
+              cat "$summary" >> "$GITHUB_STEP_SUMMARY"
+              printf '\n\n' >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done
+          if [ "$details_open" = true ]; then
+            printf '</details>\n' >> "$GITHUB_STEP_SUMMARY"
+          fi

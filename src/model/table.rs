@@ -1474,6 +1474,77 @@ impl Table {
         self.common.height = total_height;
     }
 
+    /// 저장한 행·병합 셀 높이와 내용 맞춤 행의 측정값으로 편집 시점의 행 점유 합을 구한다.
+    ///
+    /// `update_ctrl_dimensions`는 병합하지 않은 셀만 보고 높이를 정하지 않은 행(0)을 400HU로 센다.
+    /// - 병합 셀은 걸친 행의 합보다 크면 마지막 행을 모자란 만큼 키운다(조판의 `solve_rowspan_row_heights`).
+    ///   보지 않으면 병합 셀을 키워도 표 높이가 그대로라 글자처럼 취급한 표 뒤 문단이 옛 자리에 남는다.
+    /// - 병합 셀이 걸치지 않은 높이 0 행은 내용으로 높이가 정해지므로 그린 높이(`drawn_rows`, HU)로 센다.
+    ///   400HU로 세면 표 높이가 실제 행보다 작아져 글자처럼 취급한 표가 다른 행을 눌러 그린다.
+    pub(crate) fn edited_row_height_sum(&self, drawn_rows: &[HwpUnit]) -> HwpUnit {
+        let drawn_rows = if drawn_rows.len() == usize::from(self.row_count) {
+            drawn_rows
+        } else {
+            &[]
+        };
+        let row_count = usize::from(self.row_count);
+        let spanned = self.rows_touched_by_rowspans(row_count);
+        let mut rows: Vec<u64> = self
+            .get_raw_row_heights()
+            .iter()
+            .enumerate()
+            .map(|(row, &height)| {
+                let drawn = drawn_rows.get(row).copied().filter(|&h| h > 0);
+                u64::from(match (height, drawn) {
+                    (0, Some(drawn)) if !spanned.get(row).copied().unwrap_or(false) => drawn,
+                    (0, _) => 400,
+                    _ => height,
+                })
+            })
+            .collect();
+        let mut spans: Vec<(usize, usize, u64)> = self
+            .cells
+            .iter()
+            .filter(|cell| cell.row_span > 1 && cell.height < 0x8000_0000)
+            .map(|cell| {
+                let span = usize::from(cell.row_span);
+                let inner = self.inner_cell_spacing_hu(span).max(0) as u64;
+                (
+                    usize::from(cell.row),
+                    span,
+                    u64::from(cell.height).saturating_sub(inner),
+                )
+            })
+            .filter(|&(row, span, _)| row + span <= rows.len())
+            .collect();
+        spans.sort_by_key(|&(row, span, _)| (row + span, span));
+        for (row, span, height) in spans {
+            let sum: u64 = rows[row..row + span].iter().sum();
+            if height > sum {
+                rows[row + span - 1] += height - sum;
+            }
+        }
+        let total: u64 = rows.iter().sum();
+        total.min(u64::from(HwpUnit::MAX)) as HwpUnit
+    }
+
+    /// 여러 행의 저장 외곽 높이가 행 점유 합보다 크면 그 여유분을 편집 후에도 보존한다.
+    pub(crate) fn row_height_surplus(&self, drawn_rows: &[HwpUnit]) -> HwpUnit {
+        if self.row_count <= 1 {
+            return 0;
+        }
+        self.common
+            .height
+            .saturating_sub(self.edited_row_height_sum(drawn_rows))
+    }
+
+    pub(crate) fn sync_ctrl_height_from_rows(&mut self, drawn_rows: &[HwpUnit], surplus: HwpUnit) {
+        self.sync_ctrl_height(
+            self.edited_row_height_sum(drawn_rows)
+                .saturating_add(surplus),
+        );
+    }
+
     pub(crate) fn sync_ctrl_height(&mut self, height: HwpUnit) {
         self.common.height = height;
         if self.raw_ctrl_data.len() >= common_obj_offsets::HEIGHT.end {
@@ -1572,6 +1643,9 @@ impl Table {
                     }
                 }
             }
+            if widths.contains(&0) {
+                self.solve_merged_only_columns(&mut widths);
+            }
             // 폭이 0인 열은 기본값 1800 HWPUNIT (약 6.35mm)
             for w in &mut widths {
                 if *w == 0 {
@@ -1580,6 +1654,45 @@ impl Table {
             }
             widths
         })
+    }
+
+    /// 홀로 선(`col_span == 1`) 셀이 없고 가로 병합 셀로만 덮인 열의 폭을 병합 셀 폭에서 푼다.
+    ///
+    /// 머리 줄 `A | B+C | D`, 맨 아래 줄 `A+B | C+D`처럼 병합된 서식 표는 B·C 열을 홀로 선
+    /// 셀로 알 수 없다. 기본값으로 떨어뜨리면 줄·칸을 넣을 때 새 셀이 좁아지고 표 전체
+    /// 폭(개체 폭)이 줄어든다. 레이아웃 `resolve_column_widths` 2단계처럼 모르는 열이
+    /// 하나뿐인 병합 셀에서 아는 열 폭을 빼 채운다. 셀 폭만으로 정해지지 않는 열은 고르게
+    /// 나누지 않고 그대로 둔다: 추측한 폭은 테두리 그림 소유 증명(`grid`)을 거짓으로 통과시킨다.
+    fn solve_merged_only_columns(&self, widths: &mut [HwpUnit]) {
+        let spacing = HwpUnit::try_from(self.cell_spacing).unwrap_or(0);
+        let len = widths.len();
+        let merged = |cell: &Cell| {
+            let start = cell.col as usize;
+            let end = start + cell.col_span as usize;
+            (cell.col_span > 1 && end <= len).then(|| {
+                let gaps = spacing.saturating_mul(HwpUnit::from(cell.col_span - 1));
+                (start..end, cell.width.saturating_sub(gaps))
+            })
+        };
+        let sum = |widths: &[HwpUnit]| widths.iter().fold(0, |a: HwpUnit, w| a.saturating_add(*w));
+        // 한 바퀴마다 0인 열이 하나 이상 채워질 때만 다시 도므로 열 수만큼 돌면 끝난다.
+        let mut progress = true;
+        while progress {
+            progress = false;
+            for cell in &self.cells {
+                let Some((span, total)) = merged(cell) else {
+                    continue;
+                };
+                let mut unknown = span.clone().filter(|&c| widths[c] == 0);
+                if let (Some(col), None) = (unknown.next(), unknown.next()) {
+                    let rest = total.saturating_sub(sum(&widths[span]));
+                    if rest > 0 {
+                        widths[col] = rest;
+                        progress = true;
+                    }
+                }
+            }
+        }
     }
 
     /// Base grid column widths.

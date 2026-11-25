@@ -1,0 +1,217 @@
+{
+  "recorded_at": 1795344833.2281327,
+  "reason": "User requested #9318 CI monitoring, then rebase after actual merge. #9318 merged at 2026-11-22T10:52:33Z as 622af208ee12c4cb16357d465e4802e7fd4726bc. Stop old-head controllers before changing shared root inputs/scripts; preserve completed results. No test result inferred for interrupted cases.",
+  "source_head": "8f9fd0414ffcfb720fa4a601c79c4590480de0e8",
+  "roots": [
+    1948809,
+    1949203,
+    1979530,
+    1941039,
+    1972341,
+    1974480
+  ],
+  "processes": [
+    {
+      "pid": 1941039,
+      "ppid": 1,
+      "pgid": 1941039,
+      "session": 1941039,
+      "state": "S",
+      "start_ticks": 172573195,
+      "comm": "python3",
+      "command_sha256": "94b4f08bee8fa9905dd4fda5a1f34d947931c4957168cf72cf49b09074729cb5"
+    },
+    {
+      "pid": 1948809,
+      "ppid": 1,
+      "pgid": 1948809,
+      "session": 1948809,
+      "state": "S",
+      "start_ticks": 172648726,
+      "comm": "python3",
+      "command_sha256": "c5e3bfd718f2b66ba26eb016aaedac53c375b23ebcbd1d5aa8067e7f42eea006"
+    },
+    {
+      "pid": 1949203,
+      "ppid": 1,
+      "pgid": 1949203,
+      "session": 1949203,
+      "state": "S",
+      "start_ticks": 172655745,
+      "comm": "python3",
+      "command_sha256": "490e0f7abacc1262eb06a14be5f2b85bd751cc69e4ad3bba4f5b8eb49ad81c77"
+    },
+    {
+      "pid": 1972341,
+      "ppid": 1,
+      "pgid": 1972341,
+      "session": 1972341,
+      "state": "S",
+      "start_ticks": 172910544,
+      "comm": "python3",
+      "command_sha256": "5f416a0febeb57ecc8567f77809ad780f6cd237b58b0a3950173d8fa3c48aeb9"
+    },
+    {
+      "pid": 1974480,
+      "ppid": 1,
+      "pgid": 1974480,
+      "session": 1974480,
+      "state": "S",
+      "start_ticks": 172927804,
+      "comm": "python3",
+      "command_sha256": "2f1ae642ec82dd30a46fb2e753ede3eba7511ed850af6a2038083afadb6bc738"
+    },
+    {
+      "pid": 1979530,
+      "ppid": 1,
+      "pgid": 1979530,
+      "session": 1979530,
+      "state": "S",
+      "start_ticks": 172982909,
+      "comm": "python3",
+      "command_sha256": "a62ae98d2d26cd68c9d6115c52dc33d21a6a3b3fc555bf1b364e9771eddf095d"
+    },
+    {
+      "pid": 2015758,
+      "ppid": 1949203,
+      "pgid": 1949203,
+      "session": 1949203,
+      "state": "S",
+      "start_ticks": 173316747,
+      "comm": "bwrap",
+      "command_sha256": "d209c87f8533f69f6fa75e28e837bcdf5f0625981181ac65dd1761a2b63bc9b2"
+    },
+    {
+      "pid": 2015759,
+      "ppid": 2015758,
+      "pgid": 1949203,
+      "session": 1949203,
+      "state": "R",
+      "start_ticks": 173316749,
+      "comm": "python",
+      "command_sha256": "fa18bf0d5a2107bbe60063c2c0d89279ed90633a3c19cf3c93cdab6c7e7a3cb6"
+    },
+    {
+      "pid": 2015940,
+      "ppid": 1979530,
+      "pgid": 1979530,
+      "session": 1979530,
+      "state": "S",
+      "start_ticks": 173317999,
+      "comm": "bwrap",
+      "command_sha256": "cd638cca909b64fa56661e3d91f38d2952f53fe15b8c41ac33da0a0c7403b4f6"
+    },
+    {
+      "pid": 2015941,
+      "ppid": 2015940,
+      "pgid": 1979530,
+      "session": 1979530,
+      "state": "R",
+      "start_ticks": 173317999,
+      "comm": "python",
+      "command_sha256": "2773b42f83dfec855255ac6c4d9c8ee4e30d07604f7650b110f3f9ea59bafcef"
+    },
+    {
+      "pid": 2016063,
+      "ppid": 1941039,
+      "pgid": 1941039,
+      "session": 1941039,
+      "state": "S",
+      "start_ticks": 173320769,
+      "comm": "bwrap",
+      "command_sha256": "292fbe704daeada56f0118b0be8bddf087b3b49c8d346a6b4edc5b6457d34c88"
+    },
+    {
+      "pid": 2016064,
+      "ppid": 2016063,
+      "pgid": 1941039,
+      "session": 1941039,
+      "state": "S",
+      "start_ticks": 173320769,
+      "comm": "python",
+      "command_sha256": "25550dcb9604248c50ffb16135891b895a13b26c1ff9a19f038d272096b3edfa"
+    },
+    {
+      "pid": 2016126,
+      "ppid": 2016064,
+      "pgid": 1941039,
+      "session": 1941039,
+      "state": "R",
+      "start_ticks": 173322603,
+      "comm": "rhwp-source88-b",
+      "command_sha256": "4ef6162330332e9129514330d98fe1c6690d1a1495ea11990ed3dd758112f16e"
+    },
+    {
+      "pid": 2016249,
+      "ppid": 1948809,
+      "pgid": 1948809,
+      "session": 1948809,
+      "state": "S",
+      "start_ticks": 173322725,
+      "comm": "bwrap",
+      "command_sha256": "84b91ada95c6db818c369545f255d180e1d4fcbd7b8df2f0abf26328f3c47375"
+    },
+    {
+      "pid": 2016250,
+      "ppid": 2016249,
+      "pgid": 1948809,
+      "session": 1948809,
+      "state": "S",
+      "start_ticks": 173322725,
+      "comm": "MainThread",
+      "command_sha256": "ee33d4df8a3a3c1ecc50309732dbea29afa4bc653ab5f448027bcd282ed8985b"
+    },
+    {
+      "pid": 2016263,
+      "ppid": 2016250,
+      "pgid": 1948809,
+      "session": 1948809,
+      "state": "S",
+      "start_ticks": 173322845,
+      "comm": "cargo-nextest",
+      "command_sha256": "a317ff1a647dec955f3c074c96b360fa05bd17e36c8d3b2e8953a1db4e9c4676"
+    },
+    {
+      "pid": 2016327,
+      "ppid": 2016263,
+      "pgid": 1948809,
+      "session": 1948809,
+      "state": "S",
+      "start_ticks": 173322972,
+      "comm": "cargo",
+      "command_sha256": "e13bb698a2c07159f99e1c95c428d84a4d02dd07fedeb5a8063f673b921d402a"
+    },
+    {
+      "pid": 2016331,
+      "ppid": 2016327,
+      "pgid": 1948809,
+      "session": 1948809,
+      "state": "S",
+      "start_ticks": 173323017,
+      "comm": "rustc",
+      "command_sha256": "1ec820dc3bfd8dc837d951643125d9c398f006b5b1bcf9f8d22a465956c4c3e8"
+    }
+  ],
+  "snapshots": [
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source148-old-head-state-snapshots/source106-rust-gates-state.json",
+      "sha256": "a775d341fc9b98ccdc3c15c9ee6a5f9efee44f6aa35376302d784333c2013ab0"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source148-old-head-state-snapshots/source98-wasm-base-state.json",
+      "sha256": "90f0f6335bf81f66f32c27680252878551d35d64e75c9be4ce6accd01bcb6443"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source148-old-head-state-snapshots/source109-protected-wasm-state.json",
+      "sha256": "fcdf91186291f382d714d3e8521acb1e8ffe0bb03bffa56b18adeb281a6e33c3"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source148-old-head-state-snapshots/source128-wasm-candidate-state.json",
+      "sha256": "cde99b899d17be14d2ef5ca7a9f5f01fe8b95118102000d09c33d7cd3512b9b2"
+    }
+  ],
+  "remaining_owned_live": [],
+  "terminated_processes": 18,
+  "ended": 1795344834.3273406,
+  "completed": true
+}
