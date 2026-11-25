@@ -61,3 +61,30 @@ Print의 44쪽 검증에서 24쪽은 Native 97.05→100.00%, fresh WASM 97.10→
 - fresh WASM 21쪽 [review](../assets/planet6897_20261125/kaf-table/maintainer/wasm/review_021.png) · [overlay](../assets/planet6897_20261125/kaf-table/maintainer/wasm/overlay_021.png)
 
 [원 PR·통합 SHA 및 빌드 출처](../assets/planet6897_20261125/review-provenance.json) · [입력·기준 PDF 출처](../assets/planet6897_20261125/print-provenance.json)
+
+## Merge 후 contributor PR comment 계획
+
+[Visual Sweep 게시 기준](../../manual/verification/visual_sweep_guide.md#github-merge-comment)
+
+아래 12쪽을 대조했다. 90% 하한에 걸린 쪽은 0쪽이다.
+raw는 2px 이웃 실루엣 판정값이며, 픽셀·내용 픽셀 일치율은 자동 보조값이다.
+페이지별 상세 근거의 배치·획·그림 판독을 함께 사용한다.
+
+| 문서·기준·출력 | 쪽 | raw | 픽셀 일치 | 내용 픽셀 일치 | 증적 |
+| --- | ---: | ---: | ---: | ---: | --- |
+| kaf-table · Hancom PDF 2020 (최초) · Native | 33 | 100.00% | 95.24161% | 46.10788% | [review](../assets/planet6897_20261125/final-claim-pages/kaf-table/review_033.png) · [overlay](../assets/planet6897_20261125/final-claim-pages/kaf-table/overlay_033.png) |
+| kaf-table · Hancom PDF 2020 (최초) · Native | 34 | 99.97% | 94.80305% | 19.50414% | [review](../assets/planet6897_20261125/final-claim-pages/kaf-table/review_034.png) · [overlay](../assets/planet6897_20261125/final-claim-pages/kaf-table/overlay_034.png) |
+| kaf-table · Hancom PDF 2020 (최초) · Native | 35 | 99.18% | 97.27928% | 19.83198% | [review](../assets/planet6897_20261125/final-claim-pages/kaf-table/review_035.png) · [overlay](../assets/planet6897_20261125/final-claim-pages/kaf-table/overlay_035.png) |
+| kaf-table · Hancom PDF 2020 (최초) · Native | 36 | 98.44% | 97.30252% | 18.87996% | [review](../assets/planet6897_20261125/final-claim-pages/kaf-table/review_036.png) · [overlay](../assets/planet6897_20261125/final-claim-pages/kaf-table/overlay_036.png) |
+| kaf-table · Hancom PDF 2020 (최초) · Native | 37 | 99.97% | 97.55216% | 19.67364% | [review](../assets/planet6897_20261125/final-claim-pages/kaf-table/review_037.png) · [overlay](../assets/planet6897_20261125/final-claim-pages/kaf-table/overlay_037.png) |
+| kaf-table · Hancom PDF 2020 (최초) · Native | 38 | 99.02% | 97.35786% | 19.04107% | [review](../assets/planet6897_20261125/final-claim-pages/kaf-table/review_038.png) · [overlay](../assets/planet6897_20261125/final-claim-pages/kaf-table/overlay_038.png) |
+| kaf-table · Hancom PDF 2020 (최초) · Native | 39 | 99.98% | 97.33552% | 20.74193% | [review](../assets/planet6897_20261125/final-claim-pages/kaf-table/review_039.png) · [overlay](../assets/planet6897_20261125/final-claim-pages/kaf-table/overlay_039.png) |
+| kaf-table · Hancom PDF 2020 (최초) · Native | 40 | 100.00% | 97.44912% | 19.11372% | [review](../assets/planet6897_20261125/final-claim-pages/kaf-table/review_040.png) · [overlay](../assets/planet6897_20261125/final-claim-pages/kaf-table/overlay_040.png) |
+| kaf-table · Hancom PDF 2020 (최초) · Native | 41 | 99.96% | 96.87866% | 19.50266% | [review](../assets/planet6897_20261125/final-claim-pages/kaf-table/review_041.png) · [overlay](../assets/planet6897_20261125/final-claim-pages/kaf-table/overlay_041.png) |
+| kaf-table · Hancom PDF 2020 (최초) · Native | 42 | 99.99% | 97.00730% | 18.70407% | [review](../assets/planet6897_20261125/final-claim-pages/kaf-table/review_042.png) · [overlay](../assets/planet6897_20261125/final-claim-pages/kaf-table/overlay_042.png) |
+| kaf-table · Hancom PDF 2020 (최초) · Native | 43 | 100.00% | 97.95626% | 14.69734% | [review](../assets/planet6897_20261125/final-claim-pages/kaf-table/review_043.png) · [overlay](../assets/planet6897_20261125/final-claim-pages/kaf-table/overlay_043.png) |
+| kaf-table · Hancom PDF 2020 (최초) · Native | 44 | 100.00% | 98.95843% | 24.03602% | [review](../assets/planet6897_20261125/final-claim-pages/kaf-table/review_044.png) · [overlay](../assets/planet6897_20261125/final-claim-pages/kaf-table/overlay_044.png) |
+
+병합 SHA를 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/`에 넣고
+위 링크의 저장소 경로를 이어 review와 overlay를 이미지로 표시한다. devel 반영, raw PNG 형식·해시를
+확인한 뒤 `--body-file`로 게시하고 GitHub API에서 본문과 이미지 URL을 대조한다.

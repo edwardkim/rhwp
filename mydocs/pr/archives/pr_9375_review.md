@@ -21,3 +21,23 @@
 기존 비교는 `0fbee2c04e`와 통합 후보 `53b15ed46f`의 결과다. #9298 반영 뒤 다시 잰 식량안보 보고서 Native 141쪽의 rhwp PNG·PDF PNG·렌더 트리는 이전 후보와 각각 바이트 단위로 같았다. 전쪽 점수와 92쪽의 직접 판독 이미지를 재사용했다. [Native 재측정 기록](../assets/planet6897_20261125/native-rebase-verification.json)
 
 [원 PR·통합 SHA 및 빌드 출처](../assets/planet6897_20261125/review-provenance.json) · [입력·기준 PDF 출처](../assets/planet6897_20261125/print-provenance.json)
+
+## Merge 후 contributor PR comment 계획
+
+[Visual Sweep 게시 기준](../../manual/verification/visual_sweep_guide.md#github-merge-comment)
+
+아래 5쪽을 대조했다. 90% 하한에 걸린 쪽은 0쪽이다.
+raw는 2px 이웃 실루엣 판정값이며, 픽셀·내용 픽셀 일치율은 자동 보조값이다.
+페이지별 상세 근거의 배치·획·그림 판독을 함께 사용한다.
+
+| 문서·기준·출력 | 쪽 | raw | 픽셀 일치 | 내용 픽셀 일치 | 증적 |
+| --- | ---: | ---: | ---: | ---: | --- |
+| food · Hancom PDF 2020 · Native | 90 | 100.00% | 96.84319% | 64.56498% | [review](../assets/planet6897_20261125/final-claim-pages/food/review_090.png) · [overlay](../assets/planet6897_20261125/final-claim-pages/food/overlay_090.png) |
+| food · Hancom PDF 2020 · Native | 91 | 100.00% | 96.65955% | 55.15183% | [review](../assets/planet6897_20261125/final-claim-pages/food/review_091.png) · [overlay](../assets/planet6897_20261125/final-claim-pages/food/overlay_091.png) |
+| food · Hancom PDF 2020 · Native | 92 | 99.86% | 94.78598% | 43.88199% | [review](../assets/planet6897_20261125/final-claim-pages/food/review_092.png) · [overlay](../assets/planet6897_20261125/final-claim-pages/food/overlay_092.png) |
+| food · Hancom PDF 2020 · Native | 93 | 100.00% | 99.07371% | 37.01725% | [review](../assets/planet6897_20261125/final-claim-pages/food/review_093.png) · [overlay](../assets/planet6897_20261125/final-claim-pages/food/overlay_093.png) |
+| jeju-2024 · Hancom PDF 2024 · Native | 48 | 100.00% | 96.98788% | 70.87724% | [review](../assets/planet6897_20261125/final-claim-pages/jeju-2024/review_048.png) · [overlay](../assets/planet6897_20261125/final-claim-pages/jeju-2024/overlay_048.png) |
+
+병합 SHA를 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/`에 넣고
+위 링크의 저장소 경로를 이어 review와 overlay를 이미지로 표시한다. devel 반영, raw PNG 형식·해시를
+확인한 뒤 `--body-file`로 게시하고 GitHub API에서 본문과 이미지 URL을 대조한다.

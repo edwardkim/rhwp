@@ -85,3 +85,24 @@ KAF 회의자료의 33~44쪽 표를 제거한 54쪽 파생본에 두 계약을 �
 - fresh WASM 38쪽 [review](../assets/planet6897_20261125/kaf-appendix/maintainer/wasm/review_038.png) · [overlay](../assets/planet6897_20261125/kaf-appendix/maintainer/wasm/overlay_038.png)
 
 [원 PR·통합 SHA 및 빌드 출처](../assets/planet6897_20261125/review-provenance.json) · [입력·기준 PDF 출처](../assets/planet6897_20261125/print-provenance.json)
+
+## Merge 후 contributor PR comment 계획
+
+[Visual Sweep 게시 기준](../../manual/verification/visual_sweep_guide.md#github-merge-comment)
+
+아래 6쪽을 대조했다. 90% 하한에 걸린 쪽은 0쪽이다.
+raw는 2px 이웃 실루엣 판정값이며, 픽셀·내용 픽셀 일치율은 자동 보조값이다.
+페이지별 상세 근거의 배치·획·그림 판독을 함께 사용한다.
+
+| 문서·기준·출력 | 쪽 | raw | 픽셀 일치 | 내용 픽셀 일치 | 증적 |
+| --- | ---: | ---: | ---: | ---: | --- |
+| kaf-appendix · Hancom PDF 2020 (MCP 재출력) · fresh WASM | 36 | 100.00% | 97.50446% | 43.45592% | [review](../assets/planet6897_20261125/final-claim-pages/kaf-appendix/review_036.png) · [overlay](../assets/planet6897_20261125/final-claim-pages/kaf-appendix/overlay_036.png) |
+| kaf-appendix · Hancom PDF 2020 (MCP 재출력) · fresh WASM | 38 | 99.93% | 99.74474% | 96.42672% | [review](../assets/planet6897_20261125/final-claim-pages/kaf-appendix/review_038.png) · [overlay](../assets/planet6897_20261125/final-claim-pages/kaf-appendix/overlay_038.png) |
+| kaf-appendix · Hancom PDF 2020 (MCP 재출력) · fresh WASM | 39 | 99.97% | 99.55538% | 85.41605% | [review](../assets/planet6897_20261125/final-claim-pages/kaf-appendix/review_039.png) · [overlay](../assets/planet6897_20261125/final-claim-pages/kaf-appendix/overlay_039.png) |
+| kaf-appendix · Hancom PDF 2020 (MCP 재출력) · fresh WASM | 40 | 100.00% | 96.18900% | 24.07246% | [review](../assets/planet6897_20261125/final-claim-pages/kaf-appendix/review_040.png) · [overlay](../assets/planet6897_20261125/final-claim-pages/kaf-appendix/overlay_040.png) |
+| kaf-appendix · Hancom PDF 2020 (MCP 재출력) · fresh WASM | 42 | 100.00% | 97.21463% | 38.62478% | [review](../assets/planet6897_20261125/final-claim-pages/kaf-appendix/review_042.png) · [overlay](../assets/planet6897_20261125/final-claim-pages/kaf-appendix/overlay_042.png) |
+| kaf-appendix · Hancom PDF 2020 (MCP 재출력) · fresh WASM | 52 | 100.00% | 98.51897% | 84.67044% | [review](../assets/planet6897_20261125/final-claim-pages/kaf-appendix/review_052.png) · [overlay](../assets/planet6897_20261125/final-claim-pages/kaf-appendix/overlay_052.png) |
+
+병합 SHA를 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/`에 넣고
+위 링크의 저장소 경로를 이어 review와 overlay를 이미지로 표시한다. devel 반영, raw PNG 형식·해시를
+확인한 뒤 `--body-file`로 게시하고 GitHub API에서 본문과 이미지 URL을 대조한다.
