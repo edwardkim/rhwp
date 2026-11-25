@@ -4797,10 +4797,21 @@ let body_height=match nested_body_heights
                     // 줄어들고 마지막 행에 여유가 몰린다 (#7333 p37/p38 아이콘 표).
                     // 일반 표·텍스트 셀·나란히 놓인 단일 그림은 기존 max 규칙을
                     // 유지한다.
+                    //
+                    // 저장 줄이 없는 칸에는 한컴이 보존한 줄 순서가 없다. 웹한글기안기는 그런
+                    // 칸의 그림 둘 이상을 가로 겹침대로 놓는다 — 가로로 나란한 그림은 한 띠,
+                    // 겹치는 그림만 세로로 쌓인다(위 `ordinary_non_inline_h` 의 띠 규칙). 그리고
+                    // 빈 앵커 줄은 그 띠 **아래**에 한 줄을 차지한다(그림이 하나뿐인 칸은 줄을
+                    // 그림 자리로 흡수한다). 그림 띠 하나 + 앵커 줄 + 안 여백이 행 높이다.
+                    let unstored_multi_flow_picture_cell =
+                        crate::renderer::float_placement::unstored_multi_flow_picture_cell(
+                            table, cell,
+                        );
                     let stacked_stored_picture_h = if table.common.treat_as_char
                         && matches!(table.layout_page_break(), TablePageBreak::RowBreak)
                         && cell.paragraphs.len() == 1
                         && cell.paragraphs[0].text.trim().is_empty()
+                        && !unstored_multi_flow_picture_cell
                     {
                         let picture_heights: Vec<f64> =
                             storage.collect(cell.paragraphs[0].controls.iter().filter_map(
@@ -4897,6 +4908,7 @@ let body_height=match nested_body_heights
                         .enumerate()
                         .filter(|(pi, _)| {
                             pi + 1 == cell.paragraphs.len()
+                                && !unstored_multi_flow_picture_cell
                                 && (non_inline_h > declared_cell_h
                                     || (declared_cell_h.is_finite()
                                         && cell_declared_row_covers_stored_content[cell_index]))
@@ -4972,7 +4984,19 @@ let body_height=match nested_body_heights
                                     .sum::<f64>()
                         })
                         .sum();
-                    let additive = (text_height - empty_para_line_height).max(0.0) + non_inline_h;
+                    // 띠 아래 앵커 줄은 400HU 자리 줄이 아니라 그 문단 글자 크기의 줄이다
+                    // (웹한글기안기: 10pt 문단의 나란한 사진 칸 = 그림 띠 + 13.3px + 안 여백).
+                    let anchor_text_height = if unstored_multi_flow_picture_cell {
+                        crate::renderer::float_placement::unstored_anchor_line_px(
+                            &cell.paragraphs[0],
+                            styles,
+                        )
+                        .unwrap_or(text_height)
+                    } else {
+                        text_height
+                    };
+                    let additive =
+                        (anchor_text_height - empty_para_line_height).max(0.0) + non_inline_h;
                     // trust 는 "저장 ladder 가 개체 밀림을 이미 반영한" 셀에만 —
                     // 증거: 텍스트-빈 문단의 첫 seg vpos > 0 (줄이 개체 아래로 밀림).
                     // 반례 캘리브: KTX TOC(개체 없음 — additive 가 한컴 쪽),
