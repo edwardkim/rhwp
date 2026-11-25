@@ -1278,6 +1278,9 @@ impl LayoutEngine {
         if let Some(required) = shape.restricted_textbox_table_height_hu() {
             shape_h = shape_h.max(hwpunit_to_px(required, self.dpi));
         }
+        if let Some(saved_height) = overlay_textbox::saved_line_box_height(shape, self.dpi) {
+            shape_h = shape_h.max(saved_height);
+        }
 
         if shape
             .drawing()
@@ -2071,6 +2074,7 @@ impl LayoutEngine {
                 // 본문에서 바로 배치하는 도형도 같은 글줄 높이를 소비한다.
                 let render_h = if !matrix_positioned && !transform.has_transform() {
                     overlay_textbox::refreshed_line_box_height(shape, self.dpi)
+                        .or_else(|| overlay_textbox::saved_line_box_height(shape, self.dpi))
                         .map_or(render_h, |height| render_h.max(height))
                 } else {
                     render_h
