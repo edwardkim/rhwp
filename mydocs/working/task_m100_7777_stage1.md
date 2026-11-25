@@ -672,3 +672,23 @@ Native 종료 뒤 fresh WASM 빌드가 실행된다. 두 경로의 96 DPI 비교
 9쪽을 같은 기준 빌드와 대조한다. Native 결과가 수치 및 소유 기준을 통과하면 같은 트리의 fresh
 WASM을 빌드해 같은 원본과 대조군을 실행한다. 현재 예약과 증거의 위치는
 `merged-cbebdbeeca/7777-candidate/`다.
+
+### 최신 devel의 #7786 KTX와 #7787 Overlay Top
+
+고정 devel `cbebdbeeca060efe670cb8702355e4d79cb7e70e`에서 직접 만든 Native Skia SHA-256은
+`30c6a32e8a2db439f46a6922198985fa0de3c43d717007f57fe9379666079bb9`다. #7786의 한컴
+2020·2022 Print 모두 27쪽을 확인했고 각각 Native 최저는 1쪽 99.98792%다. 앞서 확인한 같은
+소스 WASM은 두 기준 모두 8쪽 99.87075%다. 2·26쪽의 표시값은 네 비교 모두 100.00%다.
+독립 PDF의 17개 번호와 양쪽 render tree의 번호 순서·셀 소속이 일치한다. 오른쪽 끝 편차는
+0.10px, Print 좌표와의 최대 차이는 0.058px다. 결과는 `merged-cbebdbeeca/{native,wasm}/7786*/`의
+전쪽 TSV와 `toc-geometry-audit.json`에 있다.
+
+[#8191의 이관 기록](../pr/assets/issue7445/ktx-toc27/README.md)은 이 27쪽 KTX를 당시 완료
+범위에서 제외했다. 복원 후보를 새 devel 위의 `task/7786-ktx-toc-page-numbers-9417`
+`84c222ef7338872038fd89e83b7a0eccecb26288`에 적용했다. 생성 suite를 준비한 뒤 workspace
+서식과 테스트 manifest를 통과했다. 선택 suite의 Rust 파일 95개를 확인하고 희소 작업 트리에
+없던 추적 입력 네 개를 같은 head에서 확보했다. 최소 글꼴 집중 nextest는 #7777 후보의 공유
+Cargo 작업 종료 뒤 실행되며 `merged-cbebdbeeca/7786-rebased/`에 결과를 기록한다.
+
+#7787 Overlay Top의 새 devel Native는 전 1쪽 89.66243%였다. 이전 기준의 미달을 재현했으며
+TSV와 실행 로그를 `merged-cbebdbeeca/native/7787/`에 남겼다.
