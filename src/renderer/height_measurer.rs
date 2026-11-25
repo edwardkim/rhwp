@@ -650,6 +650,10 @@ fn empty_paragraph_fallback_line_metrics(
     let ls_type = para_style
         .map(|s| s.line_spacing_type)
         .unwrap_or(crate::model::style::LineSpacingType::Percent);
+    // [#8582] 워드 호환 문서의 빈 문단은 끝 표지(영문 슬롯 글꼴)의 배율로 잰 크기다.
+    let font_size =
+        crate::renderer::composer::word_compat_empty_paragraph_font_size(para, styles, ls_type)
+            .map_or(font_size, |scaled| font_size.max(scaled));
     Some(crate::renderer::corrected_line_metrics(
         0.0, 0.0, font_size, ls_type, ls_val,
     ))
@@ -811,6 +815,22 @@ fn tac_host_font_trailing_spacing_px(
     let ps = styles.para_styles.get(p.para_shape_id as usize)?;
     if fs <= 0.0 {
         return None;
+    }
+    // [#8582] 워드 호환 문서는 개체 아래끝이 기준선이고, 그 아래에 끝 표지의 아래쪽(한 줄
+    // 높이의 1/4)이 붙는다(데스크톱 한컴 인쇄: 함초롬바탕 11pt 문단의 표 아래 465 HU).
+    if let Some(mark) = crate::renderer::composer::word_compat_empty_paragraph_font_size(
+        p,
+        styles,
+        ps.line_spacing_type,
+    ) {
+        let (_, spacing) = crate::renderer::corrected_line_metrics(
+            0.0,
+            0.0,
+            mark,
+            ps.line_spacing_type,
+            ps.line_spacing,
+        );
+        return Some(mark * 0.25 + spacing);
     }
     let line = crate::renderer::corrected_line_height(
         hwpunit_to_px(400, dpi),

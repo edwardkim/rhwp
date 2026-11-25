@@ -362,7 +362,8 @@ mod picture_anchor_projection;
 pub(crate) use line_breaking::{
     can_break_after_text_token, control_is_square_float_object, control_is_width_neutral_marker,
     frame_metrics_for_line, is_footnote_text_host, paragraph_end_font_size_px, text_word_ranges,
-    text_word_ranges_with_storage,
+    text_word_ranges_with_storage, word_compat_empty_paragraph_font_size,
+    word_compat_line_font_size,
 };
 pub mod lineseg_compare;
 
