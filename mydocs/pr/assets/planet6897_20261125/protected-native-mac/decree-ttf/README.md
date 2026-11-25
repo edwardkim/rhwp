@@ -17,8 +17,9 @@
 ## 한컴 2024 재인쇄
 
 같은 HWPX를 한컴 2024 `13.0.0.4225`의 Hancom PDF로 인쇄해 74쪽을 확인했다.
-같은 Native PNG를 다시 비교하니 9·32·50·66쪽은 각각 99.98%였고, 16쪽은 53.09%로
-가장 낮았다. 2020 재인쇄와 2024 재인쇄의 PDFium PNG는 74쪽 중 73쪽이 같았다.
+Native와 최적화 fresh WASM의 PNG를 각각 비교하니 9·32·50·66쪽은 모두 99.98%였고,
+16쪽이 각각 53.09%·53.35%로 가장 낮았다. 2020 재인쇄와 2024 재인쇄의 PDFium PNG는
+74쪽 중 73쪽이 같았다.
 
 16쪽의 기존 보호 PDF에는 Palatino Linotype과 한양신명조(`H2mjsM`)가 포함된다.
 새 한컴 2020·2024 인쇄본은 이 쪽에 굴림을 포함하며, `학계·법조계·산업계`가 끊기는
@@ -27,5 +28,6 @@
 보호값 판정은 정본 manifest에 고정된 PDF와 공급 파일로 수행했다.
 
 [한컴 2024 인쇄 영수증](mcp-2024-reprint-receipt.json) · [Native 74쪽 TSV](mcp-2024-native.tsv) ·
-[인쇄본 대조](mcp-2024-native-comparison.json) ·
+[fresh WASM 74쪽 TSV](mcp-2024-wasm.tsv) ·
+[Native 인쇄본 대조](mcp-2024-native-comparison.json) · [fresh WASM 인쇄본 대조](mcp-2024-wasm-comparison.json) ·
 [16쪽 review](mcp-2024-review_016.png) · [overlay](mcp-2024-overlay_016.png)
