@@ -2937,7 +2937,7 @@ impl HeightMeasurer {
                 if let Some(height) =
                     crate::renderer::float_placement::unstored_cell_topbottom_stack_height(
                         para,
-                        reference_width as f64 * self.dpi / 7200.0,
+                        reference_width as f64 * self.dpi / crate::renderer::HWPUNIT_PER_INCH,
                         self.dpi,
                         storage,
                     )?

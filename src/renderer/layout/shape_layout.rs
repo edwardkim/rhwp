@@ -155,6 +155,12 @@ fn textbox_contains_non_tac_picture(text_box: &TextBox) -> bool {
     })
 }
 
+/// 종이를 세로 기준으로 쓰는 자식 도형은 글상자 밖에서 그린다.
+/// 글상자 안의 텍스트를 정렬할 때도 같은 좌표계 소유를 사용한다.
+fn textbox_child_uses_paper_origin(common: &CommonObjAttr) -> bool {
+    !common.treat_as_char && common.vert_rel_to == VertRelTo::Paper
+}
+
 fn textbox_vpos_origin_hu(common: &CommonObjAttr, matrix_positioned: bool) -> Option<i32> {
     if matrix_positioned || common.treat_as_char {
         return None;
@@ -4141,8 +4147,11 @@ impl LayoutEngine {
                                 Control::Picture(pic) if !pic.common.treat_as_char => {
                                     Some(&pic.common)
                                 }
-                                Control::Shape(shape) if !shape.as_ref().common().treat_as_char => {
-                                    Some(shape.as_ref().common())
+                                Control::Shape(shape)
+                                    if !shape.common().treat_as_char
+                                        && !textbox_child_uses_paper_origin(shape.common()) =>
+                                {
+                                    Some(shape.common())
                                 }
                                 _ => None,
                             };
@@ -4761,11 +4770,7 @@ impl LayoutEngine {
 
                         // 웹한글기안기는 글상자 안 종이 기준 사각형(세로 597px)을 글상자 위끝이
                         // 아니라 종이 위끝에서 잰 자리에 그린다.
-                        let paper_anchored = !child_common.treat_as_char
-                            && matches!(
-                                child_common.vert_rel_to,
-                                crate::model::shape::VertRelTo::Paper
-                            );
+                        let paper_anchored = textbox_child_uses_paper_origin(child_common);
                         let (child_x, child_y) = if child_common.treat_as_char {
                             // 인라인 도형: 텍스트 내 삽입 위치까지의 advance를 반영하여 배치
                             advance_to_control(&mut inline_x);

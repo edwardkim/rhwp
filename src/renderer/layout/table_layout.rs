@@ -20300,7 +20300,7 @@ impl LayoutEngine {
         }
         self.preserve_source_page_frame_extents(cell, table, styles, &mut units);
         self.preserve_stored_blank_opening_frame(cell, table, styles, &mut units);
-        self.append_overlay_table_reach_units(cell, table, styles, &mut units);
+        self.append_overlay_table_reach_units(cell, styles, &mut units);
         units
     }
 
@@ -20313,7 +20313,6 @@ impl LayoutEngine {
     fn append_overlay_table_reach_units(
         &self,
         cell: &crate::model::table::Cell,
-        table: &crate::model::table::Table,
         styles: &ResolvedStyleSet,
         units: &mut Vec<CellUnit>,
     ) {
@@ -20355,7 +20354,8 @@ impl LayoutEngine {
                         {
                             // 행 안에 실제 컷이 있을 때만 재귀 컷을 넘긴다. 온전한 행은
                             // 행 범위 자체가 소유하며 부모 칸의 남은 띠를 더하지 않는다.
-                            let splits_row = fragments.iter().any(|fragment| !fragment.cut.terminal);
+                            let splits_row =
+                                fragments.iter().any(|fragment| !fragment.cut.terminal);
                             fragments
                                 .into_iter()
                                 .map(|fragment| {
