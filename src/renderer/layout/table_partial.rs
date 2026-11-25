@@ -2038,11 +2038,26 @@ impl LayoutEngine {
                     && whole_cell_cut
                     && unstored_shape_paragraph(&cell.paragraphs[pi])
             };
+            // 칸보다 긴 글 앞/뒤 중첩 표의 이어지는 행 유닛을 가진 조각은 빈 호스트 줄이
+            // 없어도 그 문단을 소유해, 중첩 표를 그 행부터 이어 그린다.
+            let overlay_rows_continue = |pi: usize| {
+                let para = &cell.paragraphs[pi];
+                !para.controls.is_empty()
+                    && para.controls.iter().all(|control| {
+                        matches!(control, Control::Table(child)
+                            if self.nested_table_takes_no_flow(para, child))
+                    })
+                    && cut_units.is_some_and(|(su, eu)| {
+                        self.nested_row_range_from_cut_units(cell, table, styles, su, eu, pi)
+                            .is_some()
+                    })
+            };
             let owns_empty_paragraph = |pi: usize| {
                 empty_paragraphs[pi]
                     && (empty_owners.as_ref().is_none_or(|owners| owners[pi])
                         || control_owned_empty_paragraph(pi)
-                        || whole_cell_shape_paragraph(pi))
+                        || whole_cell_shape_paragraph(pi)
+                        || overlay_rows_continue(pi))
             };
             // 개체로 소유한 빈 문단의 정렬 높이는 빈 줄과 개체 띠 중 큰 쪽이다.
             // 개체는 문단 원점에 오프셋으로 놓이고 빈 줄과 같은 띠를 차지한다.
@@ -2226,7 +2241,9 @@ impl LayoutEngine {
                     .iter()
                     .any(|p| p.controls.iter().any(|c| matches!(c, Control::Table(_))));
                 if has_nested {
-                    let unit_content_h = self.cell_units_content_height(cell, table, styles);
+                    let unit_content_h = self
+                        .cell_units_content_height(cell, table, styles)
+                        .max(self.cell_overlay_table_reach(cell, table, styles));
                     let last_seg_end: i32 = cell
                         .paragraphs
                         .iter()
@@ -3150,6 +3167,7 @@ impl LayoutEngine {
                     && !visible_non_inline_controls
                     && !uncut_control_only_nested_table
                     && !owns_empty_paragraph(cp_idx)
+                    && !overlay_rows_continue(cp_idx)
                 {
                     continue;
                 }
@@ -5849,7 +5867,9 @@ impl LayoutEngine {
                                                 )
                                                 ..flow_end,
                                         );
-                                    } else {
+                                    } else if !self.nested_table_takes_no_flow(para, nested_table) {
+                                        // 저장 줄 없는 문단의 글 앞/뒤 표는 흐름을 전진시키지 않는다
+                                        // (온전한 칸의 `nested_table_flow_advance` 와 같다).
                                         para_y = flow_end;
                                     }
                                     has_preceding_text = true;

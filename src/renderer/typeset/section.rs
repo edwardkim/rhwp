@@ -479,7 +479,21 @@ impl TypesetEngine {
         );
         st.finish_next_column_stored_frames_with_storage(storage)?;
         st.finish_deferred_column_shapes_with_storage(storage)?;
-        if st.has_column_content() {
+        // 본문 높이보다 긴 글 앞/뒤 표가 흐름을 밀지 않고 나뉘었으면(장식 배치 + 잔여 행
+        // 이월), 뒤 본문이 앞 쪽에서 끝나도 잔여 행은 다음 쪽에 그린다. 본문 높이 안의
+        // 장식 표가 쪽 하단을 넘는 #4568 이월은 종전대로 둔다.
+        let base_available = st.base_available_height();
+        let oversized_overlay_remains = st.pending_overlay_continuations.iter().any(|cont| {
+            measured_tables.iter().any(|mt| {
+                mt.para_index == cont.para_index
+                    && mt.control_index == cont.control_index
+                    && mt.total_height > base_available
+            })
+        });
+        if oversized_overlay_remains {
+            st.force_new_page_with_storage(storage)?;
+            st.flush_column_always_with_storage(storage)?;
+        } else if st.has_column_content() {
             st.flush_column_always_with_storage(storage)?;
         }
         // 마지막 본문 뒤의 저장 각주 suffix도 버리지 않는다. 실제 다음 쪽을

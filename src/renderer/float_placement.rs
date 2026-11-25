@@ -9145,8 +9145,22 @@ pub(crate) fn nested_overlay_outer_frame(
     {
         return None;
     }
-    let top = paragraph_origin + hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi);
+    let top = paragraph_origin + hwpunit_to_px(nested_overlay_vertical_offset_hu(table), dpi);
     Some(top..top + outer_height)
+}
+
+/// 칸 안 문단 기준 글 앞/뒤 표의 세로 오프셋. '쪽 영역 안으로 제한'(`flow_with_text`)이
+/// 켜진 표의 음수 오프셋은 문단 원점 위로 올라가지 않는다 — 칸 안 어울림 개체의
+/// [`cell_wrap_vertical_offset_hu`] 와 같은 규칙이다. 웹한글기안기 인쇄에서 칸 첫 문단의
+/// 표(-10385 HU)는 칸 위끝에, 열한째 문단의 표(-6000 HU)는 그 문단 줄 위끝에 놓인다.
+/// 제한이 꺼진 표는 저장 오프셋 그대로다.
+pub(crate) fn nested_overlay_vertical_offset_hu(table: &Table) -> i32 {
+    let offset = signed_hwpunit(table.common.vertical_offset);
+    if table.common.flow_with_text {
+        offset.max(0)
+    } else {
+        offset
+    }
 }
 
 /// Original stored cell positions describe the first line, after leading space.
@@ -10393,6 +10407,33 @@ pub(crate) fn empty_offset_float_deferred_text_ladder_hu(
 /// (`2700727_animal_facility_standards.hwpx` pi=9)만 연다: 원본 HWPX,
 /// 비-TAC, IN_FRONT_OF_TEXT, vert=문단, horz=문단, 40행 이상 6열 이상.
 /// #5918 의 4×5·31×7 글앞으로 표는 데코레이션으로 남긴다.
+/// 한/글이 저장한 글 앞/뒤 표의 바깥 높이(크기 + 위·아래 바깥 여백)가 남은 본문에 들고,
+/// rhwp 측정 높이가 그 값과 3% 안에서 맞으면 한/글도 표를 그 쪽에 통째로 둔 것이다.
+/// 측정 오차 몇 px 때문에 마지막 행을 다음 쪽으로 넘기거나 본문 분할로 바꾸지 않는다.
+/// 저장 높이가 측정과 크게 다르면(나뉜 표의 쪽 높이, 갱신 안 된 크기) 판정에 쓰지 않는다.
+pub(crate) fn saved_overlay_table_fits(
+    table: &Table,
+    measured_height: f64,
+    room: f64,
+    dpi: f64,
+) -> bool {
+    if table.common.treat_as_char
+        || table.common.height == 0
+        || table.common.height > i32::MAX as u32
+        || !measured_height.is_finite()
+        || !room.is_finite()
+    {
+        return false;
+    }
+    let saved = hwpunit_to_px(
+        table.common.height as i32
+            + i32::from(table.outer_margin_top)
+            + i32::from(table.outer_margin_bottom),
+        dpi,
+    );
+    saved <= room + 0.5 && measured_height <= saved * 1.03
+}
+
 pub(crate) fn original_hwpx_infront_para_flow_paginates(
     original_hwpx: bool,
     table: &Table,
