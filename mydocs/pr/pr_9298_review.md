@@ -62,6 +62,16 @@ semanticist21 님이 수정한 규제영향분석서 8쪽의 행사 안내판 �
 
 최소 글꼴 전체 회귀 14,115개, Native Skia 4,227개, Studio 2,835개, JPEG 집중 검사 8개가 통과했다. 포맷·lint·workspace와 Studio 배포 빌드도 통과했다. [검사 원장](assets/pr9298/devel-0fbee2c04e/validation-gates.tsv)
 
-## 현재 판정
+## JPEG 방향만 보완한 시점의 판정
 
 JPEG 방향은 메인테이너 보완으로 해결했다. 원본 8쪽을 확대하면 오른쪽 사진이 여전히 안내판의 글씨를 가린다. 이 증상은 PR 등록 전 화면과 최신 `devel`에서도 확인되며, 두 장을 분리한 ‘어울림’ 대조군은 78.88%다. 현 후보의 병합은 보류한다. 두 사진의 줄 배치와 겹칠 때의 앞뒤 순서를 추가 보완할지, 문서 전체를 추적하는 #7778에 기존 겹침을 남기고 JPEG 범위만 수용할지가 남은 결정이다. [실제 원본 8쪽 대조](assets/pr9298/devel-0fbee2c04e/studio-source-comparison.png) · [두 배치 설정의 판독](assets/pr9298/cell-wrap-controls.png)
+
+## 셀 안 두 사진의 메인테이너 보완 결과
+
+기여자의 JPEG 방향 수정을 보존하고, 일반 표와 이어지는 표에서 둘째 사진을 소유 글줄의 실제 인라인 위치에 놓았다. 셀 안에서 의도적으로 사진을 겹치면 문서에 저장된 앞뒤 순서를 적용한다. 표의 괘선은 해당 그림을 포함한 셀 내용 위에서 이어진다. 소스는 `ad48653ab3`, 정식 회귀는 `0d5795f135`다.
+
+원본 8쪽의 Native·fresh WASM 일치율은 한컴 2022 인쇄에서 99.98%·99.99%, 한컴 2024에서 모두 98.58%가 됐다. 전체 37쪽에서 나머지 36쪽은 각 기준의 devel PNG와 같다. 어울림·겹침 순서는 실제 한컴 저장본으로 검사했고 회귀 3개는 같은 프로그램으로 최신 devel에서 모두 실패, 보완본에서 모두 통과했다. 보호 문서 4,046쌍의 PNG도 devel과 모두 같았다. [실제 Studio 전후 사진](assets/pr9298/cell-pictures/source-page8-studio.png) · [인쇄·편집·저장 검증 원장](assets/pr9298/cell-pictures/README.md)
+
+원본의 기존 90% 미달 8쪽, 보호 문서의 기존 WASM 하한 미달 14쪽, 중첩 표 Native의 글꼴 해시 5쌍을 수용 판단 대상으로 기록한다. 37쪽 원본의 나머지 조판은 기존 이슈에서 추적한다. [#7778](https://github.com/edwardkim/rhwp/issues/7778)
+
+최종 검증에서 집중 20개, 전체 회귀 14,118개, Native Skia 4,227개, Studio 2,835개와 필수 lint·배포 빌드가 통과했다. #9393의 152쪽 인쇄 결과도 모두 보존했다. 최신 원격 devel `0fbee2c04e` 및 원 기여 `a588481833`를 포함한다. [검사 원장](assets/pr9298/cell-pictures/validation-gates.tsv) · [#9393 보존 검증](assets/pr9298/cell-pictures/incoming-9393.tsv)
