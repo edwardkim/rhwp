@@ -732,3 +732,16 @@ render tree는 `merged-cbebdbeeca/7787-overlay-host/`에 있다.
 `dca6f38d0f8091366e54b621295c8c5592ed7cf5fc37d774aafd7bf04a9ae10a`이다. Rust 서식과
 인덱스 검사를 통과했다. #7778 검증 뒤 수정하지 않은 Top·Center·Bottom HWPX 및 한컴 재저장
 HWP를 본다. 사본의 raw는 제품 후보의 시각 판정을 대신하지 않는다.
+
+### #7779·#7784와 #7785 후보의 실행 순서
+
+#7779·#7784 공통 후보와 #7785 후보도 새 devel 기준으로 별도 작업 트리에 적용했다. Git 트리 ID는
+각각 `a5d411297166881fb3e508b698ae70240431beb0`, `053664ba205200f043fbef907101268ef92f56aa`다.
+변경 파일의 Rust 서식과 인덱스를 확인했다. #7787의 Native 작업이 끝나면 #7779·#7784의 원본별
+82쪽과 #7779의 명시 글꼴 대조, #7784의 표 이어받기 소속을 검사한다. 이어서 #7785의 원본 HML과
+재저장 HWP·HWPX를 각 한컴 Print에 대조한다. 각 실행기는 앞 실행의 종료를 확인한 뒤 공유
+Cargo target을 사용한다.
+
+같은 새 devel Native에서 #7785의 원본 HML은 7.70%, 한컴 재저장 HWP와 HWPX는 각각
+23.29%, 76.85%였다. 저장 형식마다 1쪽의 미달을 재현했으며 입력·Print 해시와 TSV는
+`merged-cbebdbeeca/7785-saved-exact-native/`에 있다.
