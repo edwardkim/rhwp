@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**표 조각과 경계 글의 쪽 소속 개선을 재현했다.** 원 PR의 제출 TSV보다 낮은 3개 출력 항목은 동일 조건에서 원 PR head와 최종 후보를 다시 비교하기 위해 통합을 보류한다.
+**표 조각과 경계 글의 쪽 소속 개선을 재현했다.** 원 PR head와 통합 후보를 같은 Mac에서 재출력한 결과 Native와 fresh WASM 모두 44쪽 중 하락한 쪽은 0쪽이다.
 
 [원 PR #9386](https://github.com/edwardkim/rhwp/pull/9386) · [이슈 #9000](https://github.com/edwardkim/rhwp/issues/9000)
 
@@ -22,5 +22,14 @@ KAF 회의자료에서 표 구간을 남긴 44쪽 파생본이다. 코드는 칸
 기존 비교는 `0fbee2c04e`와 통합 후보 `53b15ed46f`의 결과다. #9298 반영 뒤 첨부 PDF에 다시 대조한 Native 44쪽에서 점수가 하락한 쪽은 없었다. 바뀐 31쪽은 표 칸 인라인 그림의 x 위치가 253.1px에서 265.1px로 옮겨가며 일치율이 올랐다. 나머지 43쪽은 PNG와 렌더 트리가 이전 후보와 각각 바이트 단위로 같다. [Native 재측정 기록](../assets/planet6897_20261125/native-rebase-verification.json)
 
 원본과 PDF가 사용하는 휴먼명조 TrueType을 공급한 뒤 Native와 fresh WASM 전체 44쪽을 다시 비교했다. 26쪽 Native는 92.76%에서 99.93%로 회복했다. 전쪽 최저는 24쪽에서 Native 96.88%, WASM 96.93%다. 33~44쪽은 두 출력 모두 98% 이상이다. 원 PR 제출값 대비 남은 차이는 Native 35쪽 99.19→99.18%, WASM 21쪽 99.34→99.23%와 36쪽 98.42→98.38%다. 같은 글꼴을 공급한 리베이스 전후 후보의 Native 35쪽과 WASM 21쪽 PNG는 바이트 단위로 같고, WASM 36쪽은 렌더 트리와 점수가 같았다. [글꼴 공급 및 페이지별 결과](../assets/planet6897_20261125/kaf-font-recheck.json)
+
+## 원 PR head와 같은 조건으로 재측정
+
+원 PR head `f3edd5acaea4`와 통합 후보 `049fd5ed2fa1`를 같은 macOS에서 빌드했다. 같은 원본·한컴 Print PDF·공급 글꼴 순서와 96 DPI, compat 2022로 각각 44쪽을 비교했다. 두 출력 경로 모두 43쪽의 PNG가 바이트 단위로 같다. 31쪽은 Native 97.27→98.84%, fresh WASM 97.28→98.84%로 개선됐다.
+
+제출 TSV보다 낮았던 Native 35쪽 99.18%, fresh WASM 21쪽 99.23%와 36쪽 98.38%는 동일 조건의 원 PR head에서도 같은 표시값과 PNG를 재현했다. 맑은 고딕의 PDF 글리프 윤곽과 일치하는 `MALGUN.TTF`를 앞에 공급해도 Native 35쪽과 fresh WASM 36쪽은 같은 점수였다.
+
+- 같은 조건 전쪽 비교 [Native TSV](../assets/planet6897_20261125/kaf-table/maintainer/native/same-environment-head-comparison.tsv) · [fresh WASM TSV](../assets/planet6897_20261125/kaf-table/maintainer/wasm/same-environment-head-comparison.tsv)
+- fresh WASM 21쪽 [review](../assets/planet6897_20261125/kaf-table/maintainer/wasm/review_021.png) · [overlay](../assets/planet6897_20261125/kaf-table/maintainer/wasm/overlay_021.png)
 
 [원 PR·통합 SHA 및 빌드 출처](../assets/planet6897_20261125/review-provenance.json) · [입력·기준 PDF 출처](../assets/planet6897_20261125/print-provenance.json)
