@@ -33218,6 +33218,24 @@ impl CellSquareStackTextFloor {
         ledger_h - slot + line_height + line_spacing
     }
 
+    /// 같은 어울림 밴드의 앞 그림 host 가 기록한 원점에 밴드 줄 사다리의 세로 거리를 더한 y.
+    /// 이 문단과 host 사이 문단이 모두 밴드 줄을 가질 때만 쓴다.
+    fn float_band_successor_top(
+        &self,
+        dpi: f64,
+        paragraphs: &[Paragraph],
+        pidx: usize,
+    ) -> Option<f64> {
+        let host = self.hosts.last().filter(|host| host.pidx < pidx)?;
+        let band = paragraphs.get(host.pidx..=pidx)?;
+        if !band.iter().all(|para| para.layout_float_band) {
+            return None;
+        }
+        let host_vpos = band.first()?.line_segs.first()?.vertical_pos;
+        let vpos = band.last()?.line_segs.first()?.vertical_pos;
+        (vpos >= host_vpos).then(|| host.origin + hwpunit_to_px(vpos - host_vpos, dpi))
+    }
+
     /// 칸 첫 문단의 시작 y. 아직 문단을 놓지 않았으면 `None`.
     pub(crate) fn content_top(&self) -> Option<f64> {
         self.content_top
@@ -33239,6 +33257,11 @@ impl CellSquareStackTextFloor {
     ) -> f64 {
         if self.content_top.is_none() {
             self.content_top = Some(y);
+        }
+        // 어울림 밴드 소유자가 그림 옆 줄까지 깎아 낸 뒤 문단은 그 줄 사다리가 자리를 정한다.
+        // 그림 host 의 빈 줄도 밴드 안의 한 줄이라, 뒤 문단은 그 줄 아래(그림 옆)에서 시작한다.
+        if let Some(top) = self.float_band_successor_top(dpi, paragraphs, pidx) {
+            return top.max(y);
         }
         let inner_w = |c: &ComposedParagraph| {
             c.lines

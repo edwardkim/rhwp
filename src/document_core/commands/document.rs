@@ -1867,6 +1867,95 @@ impl DocumentCore {
             })
     }
 
+    /// 저장 줄이 하나도 없는 칸에서 문단 기준 어울림(Square) 그림 한 장을 든 host 와 뒤 글.
+    ///
+    /// 한/글은 그림 옆에 남은 폭(최소 줄 폭 이상)으로 뒤 문단 글을 글자 단위로 흘려 쓴다.
+    /// 저장 줄이 없으면 이 줄을 만들 소유자가 밴드 프레임뿐이다. 저장 줄이 있는 칸은 그 줄이
+    /// 권위이므로 기존 소유자에 둔다.
+    fn unstored_local_square_picture_band(paragraphs: &[Paragraph], host: usize) -> bool {
+        use crate::model::shape::{HorzRelTo, TextWrap, VertRelTo};
+        let Some(p) = paragraphs.get(host) else {
+            return false;
+        };
+        let mut band = p.controls.iter().filter(|c| control_owns_body_band(c));
+        let single_square_picture = matches!(
+            (band.next(), band.next()),
+            (Some(Control::Picture(picture)), None)
+                if picture.common.text_wrap == TextWrap::Square
+                    && picture.common.horz_rel_to == HorzRelTo::Para
+                    && picture.common.vert_rel_to == VertRelTo::Para
+        );
+        // 다른 문단의 어울림 개체와 쌓이는 칸(겹침 허용 안 함 쌓기)은 그림 원점이 밴드 밖에서
+        // 정해지므로 기존 소유자에 둔다.
+        single_square_picture
+            && paragraphs
+                .iter()
+                .filter(|paragraph| paragraph.controls.iter().any(control_owns_body_band))
+                .count()
+                == 1
+            && paragraphs
+                .iter()
+                .all(crate::renderer::para_has_no_stored_line_segs)
+            && paragraphs[host + 1..]
+                .iter()
+                .any(|paragraph| paragraph.text.chars().any(|ch| !ch.is_whitespace()))
+    }
+
+    /// 그림 밴드가 실제로 그림 옆에 글을 흘리는가.
+    ///
+    /// host 빈 줄이 그림 옆(밴드 원점)에 남고, 뒤 문단의 글줄 하나 이상이 그림 옆 좁은 폭으로
+    /// 깎여야 한다. 그림이 칸 폭을 거의 덮어 옆에 최소 줄 폭이 없으면 밴드는 host 빈 줄을 그림
+    /// 아래로 내리는데, 한/글은 그 빈 줄로 칸을 키우지 않는다. 그런 칸은 기존 소유자
+    /// (`CellSquareStackTextFloor`)가 뒤 글을 그림 아래에 놓는다.
+    fn picture_band_flows_text_beside(
+        band_paragraphs: &[Paragraph],
+        rows: &[Vec<crate::model::paragraph::LineSeg>],
+        width: f64,
+        styles: &ResolvedStyleSet,
+        dpi: f64,
+    ) -> bool {
+        let host_stays_at_origin = rows
+            .first()
+            .and_then(|host_rows| host_rows.first())
+            .is_some_and(|row| row.vertical_pos == 0);
+        // 그림 양옆에 줄 조각이 함께 놓이는 물리 줄(한 줄에 조각 둘)은 칸 배치가 조각마다 줄로
+        // 세어 칸을 키운다. 그림 한쪽에만 글이 흐르는 줄만 이 밴드가 소유한다.
+        let single_lane = rows.iter().all(|paragraph_rows| {
+            paragraph_rows
+                .windows(2)
+                .all(|pair| pair[0].vertical_pos < pair[1].vertical_pos)
+        });
+        // host 와 글 사이의 빈 문단은 기존 소유자가 자리 줄(400HU)로 세는 계약이 따로 있다.
+        // 밴드가 그 빈 줄을 다시 세면 칸 높이가 바뀌므로 뒤 문단이 모두 글일 때만 소유한다.
+        let successors_have_text = band_paragraphs
+            .iter()
+            .skip(1)
+            .all(|paragraph| paragraph.text.chars().any(|ch| !ch.is_whitespace()));
+        host_stays_at_origin
+            && single_lane
+            && successors_have_text
+            && band_paragraphs
+                .iter()
+                .zip(rows)
+                .skip(1)
+                .any(|(paragraph, paragraph_rows)| {
+                    let paragraph_box = crate::renderer::composer::ParagraphBox::body_for_style(
+                        width,
+                        styles.para_styles.get(paragraph.para_shape_id as usize),
+                        dpi,
+                    )
+                    .effective();
+                    paragraph.text.chars().any(|ch| !ch.is_whitespace())
+                        && paragraph_rows.iter().any(|row| {
+                            crate::renderer::composer::row_is_carved_from_box(
+                                row.column_start,
+                                row.segment_width,
+                                &paragraph_box,
+                            )
+                        })
+                })
+    }
+
     /// 셀·글상자·머리말/꼬리말의 문단 기준 어울림 개체는 본문과 같은 밴드 프레임을 쓴다.
     /// 실제 배제 영역을 함께 가진 프레임에서 원본 저장 줄을 수용하고, 맞지 않는 줄만
     /// 다시 발행한다. 쪽/용지 기준 개체와 저장 좌표를 보존하는 형식은 기존 소유자에 둔다.
@@ -1892,7 +1981,9 @@ impl DocumentCore {
                         if shape.common().horz_rel_to == HorzRelTo::Para
                             && shape.common().vert_rel_to == VertRelTo::Para)
                         });
-                if !local_shapes
+                let picture_band =
+                    !local_shapes && Self::unstored_local_square_picture_band(paragraphs, host);
+                if !(local_shapes || picture_band)
                     || !p.controls.iter().any(control_owns_body_band)
                     || (!admit_stored && !crate::renderer::para_has_no_stored_line_segs(p))
                 {
@@ -1908,7 +1999,16 @@ impl DocumentCore {
                     admit_stored,
                 ) {
                     let range = band.paragraph_range.clone();
-                    if range.start == host {
+                    if range.start == host
+                        && (!picture_band
+                            || Self::picture_band_flows_text_beside(
+                                &paragraphs[range.clone()],
+                                &band.line_segs,
+                                width,
+                                styles,
+                                dpi,
+                            ))
+                    {
                         for ((paragraph, (rows, spaces)), preserved) in paragraphs[range.clone()]
                             .iter_mut()
                             .zip(band.line_segs.into_iter().zip(band.space_metrics))
