@@ -2,7 +2,9 @@
 
 ## 최종 판정
 
-**메인터너 보정 후 수용 가능.** 원 기여 `950d846040769a7180532de1e5132f902b2ed7a4`의 기능에 떠 있는 중첩 표의 행 소속, 바깥 칸의 물리 높이와 마지막 행 뒤 이어받기을 보완한 제품 소스는 `b12b85ad6ec037fff9ce41ac6fc34b8865d93920`이다. 대조 기준은 `50324d194d1cd7c46d168f07a58515086530f03b`이다. 원 기여에서 남았던 증상과 보정본의 측정·배치 경로를 아래에 기록했다. 통합에는 중첩 표 한 문서의 글꼴 해시 등록과 1,033pt 추가 인쇄 대조군의 판정, 원격 처리 승인과 제출 커밋의 필수 CI·셀프 리뷰가 남는다. [세 PR의 최종 검토](hyunmyungjanelee_20261125_review.md) · [원 기여와 보정 후 쪽별 측정](assets/hyunmyungjanelee-20261125/maintainer/original-pr-comparison.tsv)
+**메인터너 보정 후 수용 가능.** 원 기여 `950d846040769a7180532de1e5132f902b2ed7a4`의 기능에 떠 있는 중첩 표의 행 소속, 바깥 칸의 물리 높이와 마지막 행 뒤 이어받기를 보완한 제품 소스는 `b12b85ad6ec037fff9ce41ac6fc34b8865d93920`이다. 대조 기준은 `50324d194d1cd7c46d168f07a58515086530f03b`이다. 원 기여에서 남았던 증상과 보정본의 측정·배치 경로를 아래에 기록했다. 작업지시자가 문서별 글꼴과 추가 인쇄 대조군 한 쪽의 수용 조건을 승인했다. 제출 커밋의 CI와 셀프 리뷰를 거쳐 통합한다. [세 PR의 최종 검토](hyunmyungjanelee_20261125_review.md) · [원 기여와 보정 후 쪽별 측정](assets/hyunmyungjanelee-20261125/maintainer/original-pr-comparison.tsv)
+
+#9411을 병합한 제품 소스 `8d1403eb14bbefb35690a50b6734b0c2ef9ba5cb`에서 이 기여의 입력·인쇄본과 전체 보호 문서를 다시 검증했다. [최신 기준에서의 검증 결과](assets/hyunmyungjanelee-20261125/maintainer/current-develop/README.md)
 
 원 기여자는 hyunmyungJaneLee이고 원 head는 `950d846040769a7180532de1e5132f902b2ed7a4`이다. 부모 #9352에 이어 #9406의 쪽수, 행의 소속, 중첩 표의 다음 쪽 내용, 바깥 괘선과 후속 문단을 검토한다. [원 PR](https://github.com/edwardkim/rhwp/pull/9407) · [연결 이슈](https://github.com/edwardkim/rhwp/issues/9406)
 

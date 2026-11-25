@@ -2,11 +2,13 @@
 
 ## 최종 판정
 
-**메인터너 보정 후 수용 가능.** 원 기여 `c3c76e6c2d2b07389714dbafbb40505747b47ec6`의 기능에 칸 사진의 실제 가로 범위와 정렬·오프셋에 따른 겹침 판정을 보완한 제품 소스는 `b12b85ad6ec037fff9ce41ac6fc34b8865d93920`이다. 대조 기준은 `50324d194d1cd7c46d168f07a58515086530f03b`이다. 원 기여에서 남았던 증상과 보정본의 측정·배치 경로를 아래에 기록했다. 통합에는 중첩 표 한 문서의 글꼴 해시 등록과 1,033pt 추가 인쇄 대조군의 판정, 원격 처리 승인과 제출 커밋의 필수 CI·셀프 리뷰가 남는다. [세 PR의 최종 검토](hyunmyungjanelee_20261125_review.md) · [원 기여와 보정 후 쪽별 측정](assets/hyunmyungjanelee-20261125/maintainer/original-pr-comparison.tsv)
+**메인터너 보정 후 수용 가능.** 원 기여 `c3c76e6c2d2b07389714dbafbb40505747b47ec6`의 기능에 칸 사진의 실제 가로 범위와 정렬·오프셋에 따른 겹침 판정을 보완한 제품 소스는 `b12b85ad6ec037fff9ce41ac6fc34b8865d93920`이다. 대조 기준은 `50324d194d1cd7c46d168f07a58515086530f03b`이다. 원 기여에서 남았던 증상과 보정본의 측정·배치 경로를 아래에 기록했다. 작업지시자가 문서별 글꼴과 추가 인쇄 대조군 한 쪽의 수용 조건을 승인했다. 제출 커밋의 CI와 셀프 리뷰를 거쳐 통합한다. [세 PR의 최종 검토](hyunmyungjanelee_20261125_review.md) · [원 기여와 보정 후 쪽별 측정](assets/hyunmyungjanelee-20261125/maintainer/original-pr-comparison.tsv)
+
+#9411을 병합한 제품 소스 `8d1403eb14bbefb35690a50b6734b0c2ef9ba5cb`에서 이 기여의 입력·인쇄본과 전체 보호 문서를 다시 검증했다. [최신 기준에서의 검증 결과](assets/hyunmyungjanelee-20261125/maintainer/current-develop/README.md)
 
 원 기여자는 hyunmyungJaneLee이고 원 head는 `c3c76e6c2d2b07389714dbafbb40505747b47ec6`이다. #9383의 가로 나란한 사진, 단일 사진, 가로로 겹쳐 세로로 쌓이는 사진을 검토한다. 선행 #9352를 포함하며 #9407과는 병렬이다. [원 PR](https://github.com/edwardkim/rhwp/pull/9384) · [연결 이슈](https://github.com/edwardkim/rhwp/issues/9383)
 
-최신 devel `50324d194d`에 #9352와 이 원 head를 반영한 로컬 커밋은 `c9b3a8ed9d`이다. 세 원 PR의 누적 검토 소스는 `f11b8624fd`이다. 한컴 2020 원본 인쇄 영수증은 제출된 HWP 및 PDF와 일치한다. [기여자의 인쇄 기록](assets/side_by_side_photo_cell/hancom-print-provenance.json)
+접수 당시 devel `50324d194d`에 #9352와 이 원 head를 반영한 로컬 커밋은 `c9b3a8ed9d`이다. 세 원 PR의 누적 검토 소스는 `f11b8624fd`이다. 한컴 2020 원본 인쇄 영수증은 제출된 HWP 및 PDF와 일치한다. [기여자의 인쇄 기록](assets/side_by_side_photo_cell/hancom-print-provenance.json)
 
 창에서 좌우 기준을 바꿔 같은 위치를 입력하는 편집을 재현하기 위해 마지막 사진 한 장의 가로 정렬과 오프셋만 바꿨다. 한컴 2020에서 원본(왼쪽, 4,000 HU)과 대조본(오른쪽, 5,718 HU)의 96 DPI 전쪽 색상 픽셀이 동일했다. 두 문서 모두 마지막 사진을 그 앞 사진 바로 아래에 배치했다. 용지 높이만 줄인 대조본은 한컴에서 같은 쪽 아래에서 일부 사진이 잘리므로 분할 행 쌓기의 정답으로 삼기 어렵다. [이번 검토 계획](hyunmyungjanelee_20261125_review_plan.md)
 

@@ -2,11 +2,13 @@
 
 ## 최종 판정
 
-**메인터너 보정 후 수용 가능.** 원 기여 `04d560696bedf76ee589fd538deb7705bcca281d`의 기능에 종이를 기준으로 놓은 흰 도형의 앞뒤 그리기와 중첩 글상자 안쪽의 세로 정렬을 보완한 제품 소스는 `b12b85ad6ec037fff9ce41ac6fc34b8865d93920`이다. 대조 기준은 `50324d194d1cd7c46d168f07a58515086530f03b`이다. 원 기여에서 남았던 증상과 보정본의 측정·배치 경로를 아래에 기록했다. 통합에는 중첩 표 한 문서의 글꼴 해시 등록과 1,033pt 추가 인쇄 대조군의 판정, 원격 처리 승인과 제출 커밋의 필수 CI·셀프 리뷰가 남는다. [세 PR의 최종 검토](hyunmyungjanelee_20261125_review.md) · [원 기여와 보정 후 쪽별 측정](assets/hyunmyungjanelee-20261125/maintainer/original-pr-comparison.tsv)
+**메인터너 보정 후 수용 가능.** 원 기여 `04d560696bedf76ee589fd538deb7705bcca281d`의 기능에 종이를 기준으로 놓은 흰 도형의 앞뒤 그리기와 중첩 글상자 안쪽의 세로 정렬을 보완한 제품 소스는 `b12b85ad6ec037fff9ce41ac6fc34b8865d93920`이다. 대조 기준은 `50324d194d1cd7c46d168f07a58515086530f03b`이다. 원 기여에서 남았던 증상과 보정본의 측정·배치 경로를 아래에 기록했다. 작업지시자가 문서별 글꼴과 추가 인쇄 대조군 한 쪽의 수용 조건을 승인했다. 제출 커밋의 CI와 셀프 리뷰를 거쳐 통합한다. [세 PR의 최종 검토](hyunmyungjanelee_20261125_review.md) · [원 기여와 보정 후 쪽별 측정](assets/hyunmyungjanelee-20261125/maintainer/original-pr-comparison.tsv)
+
+#9411을 병합한 제품 소스 `8d1403eb14bbefb35690a50b6734b0c2ef9ba5cb`에서 이 기여의 입력·인쇄본과 전체 보호 문서를 다시 검증했다. [최신 기준에서의 검증 결과](assets/hyunmyungjanelee-20261125/maintainer/current-develop/README.md)
 
 원 기여자는 hyunmyungJaneLee이고 원 head는 `04d560696bedf76ee589fd538deb7705bcca281d`이다. #9349의 빈 칸이 커지고 도형이 잘리는 증상, 글상자 안의 도형, 쪽을 넘는 행의 첫 조각을 검토한다. [원 PR](https://github.com/edwardkim/rhwp/pull/9352) · [연결 이슈](https://github.com/edwardkim/rhwp/issues/9349)
 
-최신 devel `50324d194d`에 원 head를 적용한 로컬 커밋은 `c16783823f`이다. 후속 #9384·#9407과의 누적 검토 소스는 `f11b8624fd`이다. 원 head의 CodeQL 요약은 devel에 있는 세 분석 구성을 찾지 못해 NEUTRAL이다. [검토 계획](hyunmyungjanelee_20261125_review_plan.md)
+접수 당시 devel `50324d194d`에 원 head를 적용한 로컬 커밋은 `c16783823f`이다. 후속 #9384·#9407과의 누적 검토 소스는 `f11b8624fd`이다. 원 head의 CodeQL 요약은 devel에 있는 세 분석 구성을 찾지 못해 NEUTRAL이다. [검토 계획](hyunmyungjanelee_20261125_review_plan.md)
 
 한컴 2020 PDF 네 개의 기록은 각각 HWPX를 입력으로 명시하며, 제출된 PDF의 SHA-256과 일치한다. 같은 이름의 HWP는 별도 입력이다. 한컴 2020에서 제출된 `paper_square_split.hwp`를 직접 인쇄할 때 문서 열기 경고로 변환이 중단됐다. HWPX의 인쇄 결과와 한컴으로 다시 저장한 HWP의 결과를 구분해 대조한다. [기여자가 기록한 입력·PDF](assets/pk40991_cell_paper_shape/hancom-print-provenance.json)
 

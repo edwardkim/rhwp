@@ -1,5 +1,7 @@
 # 정본 보호 23종 전쪽 검증
 
+#9411 병합 뒤 `8d1403eb14bb`에서 측정한 4,046행도 모두 쪽별 하한을 충족했다. [최신 보호 검증과 글꼴 공급 조건](../current-develop/README.md)
+
 `devel`의 `50324d194d`와 보정 소스 `b12b85ad6e`를 각각 Native Skia와 새로 빌드한 WASM Canvas2D로 출력했다. 원본·한컴 Print PDF·호환 모드·DPI·글꼴 공급 순서를 각 문서와 출력 경로에서 맞췄다. 입력, PDF, 글꼴 순서, 렌더러의 출처와 전쪽 TSV를 실행별로 기록했다. [92개 실행 기록](runs.tsv) · [쪽별 기준값과 두 출력의 SHA-256](base-candidate.tsv)
 
 | 출력 경로 | 문서 | 쪽 | 공식 하한 미달 | 최소 일치율 | devel과 같은 PNG |
