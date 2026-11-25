@@ -3,11 +3,11 @@
   "baseline": {
     "manifest": {
       "path": "mydocs/pr/assets/visual-protected-baseline/manifest.json",
-      "sha256": "e62f2516f4bf5be8f262ee3ff3b29c3b5d32f59c8db0a2971d0177877d1a467f"
+      "sha256": "f9ee208625ff8e632cd858ce00fe0877e9a9cd7fc8df4c4e84baf421bf543beb"
     },
     "table": {
       "path": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
-      "sha256": "be050f801ed2f2152017357249f4b7c1068dc83c50347266d16599d61a1f4a5c"
+      "sha256": "14797cff63f004876863ea8945032cfd7d6fcacd181d7932ad7ba22ee3aa4177"
     }
   },
   "accepted_sha256_pairs": {
@@ -16460,8 +16460,8 @@
             "sha256": "8730fc96a15984bd784334225eaf01b9ea38731b1dd96fbd0717c628eb7d9708"
           },
           "accepted_condition_evidence": {
-            "path": "mydocs/verification/protected-font-supply/records/chemical-spec13-protected-validation.json",
-            "sha256": "96f0acd6b6345f20f5667d0515eab42b21baa79774eeee5760c9644127d56f81"
+            "path": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/protected/runs.tsv",
+            "sha256": "e8d781a70ecea2320661ded0249ecae3e8288bcfc80b539586f96cc3f46939bf"
           },
           "previous_pr": {
             "number": 9318,
@@ -16483,12 +16483,8 @@
           },
           "supply_mode": "explicit_files",
           "reproduction_validation": {
-            "path": "mydocs/verification/protected-font-supply/records/chemical-wasm-original-programs-validation.json",
-            "sha256": "2ff2355a93744b075874a32a1201b61b11d4cf8741e758454574b8b26284a747",
-            "selector": {
-              "key": "chemical",
-              "backend": "wasm"
-            }
+            "path": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/protected/runs.tsv",
+            "sha256": "e8d781a70ecea2320661ded0249ecae3e8288bcfc80b539586f96cc3f46939bf"
           },
           "qualified_program_evidence": {
             "path": "mydocs/verification/protected-font-supply/records/used-ttc-glyph-identity.json",
