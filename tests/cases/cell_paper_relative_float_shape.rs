@@ -1,3 +1,10 @@
+//! 관계형·고정형 검사. 쪽별 개체의 소속과 칸의 포함 관계, 표 괘선과 도형의 그리기 순서를 검사한다.
+//! 2026-11-25 21:12 KST 갱신. 직전 변경은 2026-11-23 16:19:02 +0900, 47bcc944e8.
+//! 96 DPI, 독립 한컴 PDF 대비 2px raw. 바깥 괘선과 겹치는 square/front/behind HWPX는
+//! 각 2쪽 전부 Native·fresh WASM 100.00%다. 한컴 직접 인쇄와 측정 TSV는
+//! `pdf/pr9349-cell-floats/`, `mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/`에 둔다.
+//! 영문 글꼴 표가 비어 있는 분할 HWP의 Native 최저 95.98%·WASM 96.56%는 별도 검토 중이다.
+//!
 //! 표 칸 안 문단에 매였지만 세로 기준이 종이인 떠 있는 사각형(어울림·글 앞으로)은 칸의 흐름에
 //! 들지 않는다. 사각형은 종이 좌표에 그려지고, 칸 높이는 저장 높이 그대로다.
 //!
@@ -18,9 +25,8 @@
 //! 그대로이고 사각형은 종이 위끝에서 533px 에 표 행들 위로 겹친다. `paper_square_nested` 도
 //! 1쪽이고, 안쪽 사각형은 바깥 사각형 아래 종이 위끝에서 800px 에 놓이며 바깥 사각형은 선언
 //! 높이 그대로다. `paper_square_split` 2쪽,
-//! 1쪽은 `MID LINE 42` 까지, 2쪽에 `MID LINE 43` 부터 `TAIL ROW`·`END`. 웹한글기안기는 이
-//! 사각형을 1쪽에 그리고 rhwp 는 앵커 문단이 있는 2쪽에 그린다. 그 차이는 이 시험 밖이며, 여기서는
-//! 칸 조각이 이어지고 사각형이 한 번, 칸 clip 밖에 그려지는지만 본다.
+//! 1쪽은 `MID LINE 42` 까지, 2쪽에 `MID LINE 43` 부터 `TAIL ROW`·`END`. 데스크톱 한컴 2020 HWPX와 2024 HWP 직접 인쇄에서
+//! 사각형은 1쪽이며 흰 채움과 표의 세로 괘선은 감싸기 속성이 정한 순서로 그려진다.
 //!
 //! 수정 전 rhwp 는 사각형 높이를 칸 문단 원점부터 세어 둘째 행을 185px 로 키웠고(사각형은 칸
 //! clip 안에 그려 칸 밖 몫이 잘렸다), `paper_square`·`paper_front` 가 2쪽이 되었다. 글상자 안
@@ -285,4 +291,60 @@ fn cell_paper_square_split_keeps_fragments_hwpx() {
 #[test]
 fn cell_paper_square_split_keeps_fragments_hwp5() {
     check_split("paper_square_split.hwp");
+}
+
+/// 같은 부모가 그리는 괘선과 도형의 실제 순서를 확인한다. 위아래로 사각형을
+/// 가로지르는 세로 괘선만 고르므로 단순히 선이 존재하는지만 검사하지 않는다.
+fn rule_and_rectangle_order(parent: &RenderNode) -> Option<(usize, usize)> {
+    if let Some((shape_index, shape)) = parent.children.iter().enumerate().find(|(_, child)| {
+        matches!(child.node_type, RenderNodeType::Rectangle(_)) && has_text(child, "PAPER RECT")
+    }) {
+        let rule = parent.children.iter().position(|line| {
+            matches!(line.node_type, RenderNodeType::Line(_))
+                && line.bbox.height > line.bbox.width
+                && line.bbox.intersects(&shape.bbox)
+                && line.bbox.y < shape.bbox.y
+                && line.bbox.y + line.bbox.height > shape.bbox.y + shape.bbox.height
+        })?;
+        return Some((rule, shape_index));
+    }
+    parent.children.iter().find_map(rule_and_rectangle_order)
+}
+
+#[test]
+fn overlapping_cell_rule_respects_foreground_and_background_shape_wrap() {
+    for (name, foreground) in [
+        ("paper_square_split.hwpx", true),
+        ("paper-split-front.hwpx", true),
+        ("paper-split-behind.hwpx", false),
+    ] {
+        let core = load(name);
+        let first = core.build_page_render_tree(0).unwrap();
+        let second = core.build_page_render_tree(1).unwrap();
+        let (rule, shape) =
+            rule_and_rectangle_order(&first.root).expect("1쪽의 도형을 가로지르는 괘선");
+        assert_eq!(shape > rule, foreground, "{name}");
+        assert!(
+            !has_text(&second.root, "PAPER RECT"),
+            "{name}: 이월한 칸에 도형 중복"
+        );
+    }
+}
+
+#[test]
+fn paper_anchored_child_preserves_parent_text_vertical_alignment() {
+    for ext in ["hwpx", "hwp"] {
+        let plain = load(&format!("paper_square.{ext}"));
+        let nested = load(&format!("paper_square_nested.{ext}"));
+        let before = plain.build_page_render_tree(0).unwrap();
+        let after = nested.build_page_render_tree(0).unwrap();
+        let plain_line = text_line_box(&before.root, "PAPER RECT").unwrap();
+        let nested_line = text_line_box(&after.root, "PAPER RECT").unwrap();
+        assert_eq!(
+            plain_line, nested_line,
+            "{ext}: 종이 기준 자식은 부모의 글줄을 밀지 않는다"
+        );
+        let child = text_line_y(&after.root, "NESTED RECT").unwrap();
+        assert!(child > nested_line.0 + nested_line.1);
+    }
 }

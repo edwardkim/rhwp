@@ -1,0 +1,29 @@
+PR	case	source	page	nested_rows	tail_row	body_end
+9407	overlay_nested_grow_split-hwpx	Hancom Print	1	00,01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26	False	True
+9407	overlay_nested_grow_split-hwpx	candidate native	1	00,01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26	False	True
+9407	overlay_nested_grow_split-hwpx	final native	1	00,01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26	False	True
+9407	overlay_nested_grow_split-hwpx	final wasm	1	00,01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26	False	True
+9407	overlay_nested_grow_split-hwpx	Hancom Print	2	27,28,29,30,31,32,33,34,35	True	False
+9407	overlay_nested_grow_split-hwpx	candidate native	2	27,28,29,30,31,32,33,34,35	True	False
+9407	overlay_nested_grow_split-hwpx	final native	2	27,28,29,30,31,32,33,34,35	True	False
+9407	overlay_nested_grow_split-hwpx	final wasm	2	27,28,29,30,31,32,33,34,35	True	False
+9407	grow-bottom-margin10mm	Hancom Print	1	00,01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25	False	True
+9407	grow-bottom-margin10mm	candidate native	1	00,01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26	False	True
+9407	grow-bottom-margin10mm	final native	1	00,01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25	False	True
+9407	grow-bottom-margin10mm	final wasm	1	00,01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25	False	True
+9407	grow-bottom-margin10mm	Hancom Print	2	26,27,28,29,30,31,32,33,34,35	True	False
+9407	grow-bottom-margin10mm	candidate native	2	27,28,29,30,31,32,33,34,35	True	False
+9407	grow-bottom-margin10mm	final native	2	26,27,28,29,30,31,32,33,34,35	True	False
+9407	grow-bottom-margin10mm	final wasm	2	26,27,28,29,30,31,32,33,34,35	True	False
+9407	paper-100300	Hancom Print	1	00,01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33	False	True
+9407	paper-100300	final native	1	00,01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33	False	True
+9407	paper-100300	final wasm	1	00,01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33	False	True
+9407	paper-100300	Hancom Print	2	34,35	True	False
+9407	paper-100300	final native	2	34,35	True	False
+9407	paper-100300	final wasm	2	34,35	True	False
+9407	paper-105400	Hancom Print	1	00,01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35	False	True
+9407	paper-105400	final native	1	00,01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35	False	True
+9407	paper-105400	final wasm	1	00,01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35	False	True
+9407	paper-105400	Hancom Print	2		True	False
+9407	paper-105400	final native	2		True	False
+9407	paper-105400	final wasm	2		True	False

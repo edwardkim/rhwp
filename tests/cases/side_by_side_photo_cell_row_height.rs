@@ -1,3 +1,9 @@
+//! 관계형·고정형 검사. 사진끼리의 겹침과 칸 내부 배치, 독립 인쇄의 한 쪽 구성을 검사한다.
+//! 2026-11-25 21:12 KST 갱신. 직전 변경은 2026-11-24 13:10:46 +0900, 8fa154f009.
+//! 96 DPI, 2px raw. 원본·오른쪽·가운데·가로로 맞닿은 대조 HWP 각 1쪽 전부 Native와 fresh WASM
+//! 100.00%. 독립 한컴 2020 PDF는 `pdf/pr9349-cell-floats/`, TSV는
+//! `mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/`에 보존한다.
+//!
 //! 저장 줄 없는 사진 칸에 나란히 놓인 자리차지 그림 두 장의 행 높이.
 //!
 //! 글자처럼 취급한 쪽 나눔(RowBreak) 표에서 글자 없는 문단 하나가 문단 기준 자리차지
@@ -42,7 +48,11 @@ const OVERLAP_ROW: u16 = 7;
 const TOL_PX: f64 = 0.5;
 
 fn load() -> DocumentCore {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(FIXTURE);
+    load_path(FIXTURE)
+}
+
+fn load_path(fixture: &str) -> DocumentCore {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(fixture);
     let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
     DocumentCore::from_bytes(&bytes).expect("문서 로드")
 }
@@ -213,4 +223,42 @@ fn overlapping_no_overlap_pictures_stack_vertically() {
         (x1 - (x0 + OVERLAP_X_PX)).abs() <= TOL_PX,
         "둘째 그림 x {x1:.2} 는 첫 그림 x {x0:.2} + 오프셋 {OVERLAP_X_PX:.2} 그대로여야 한다"
     );
+}
+
+#[test]
+fn picture_boxes_use_physical_overlap_across_alignment_origins() {
+    let original = first_page_photo_cells(&load());
+    for name in [
+        "photo-right-overlap",
+        "photo-center-overlap",
+        "photo-left-touch",
+    ] {
+        let path = format!("samples/side_by_side_photo_cell/{name}.hwp");
+        let core = load_path(&path);
+        assert_eq!(core.page_count(), 1);
+        let cells = first_page_photo_cells(&core);
+        let (_, boxes) = &cells[&OVERLAP_ROW];
+        let [(x0, y0), (x1, y1)] = boxes.as_slice() else {
+            panic!("{name}: 사진 두 장")
+        };
+        if name == "photo-left-touch" {
+            assert!(
+                x1 > x0 && (y1 - y0).abs() <= TOL_PX,
+                "{name}: 경계에서 맞닿은 사진"
+            );
+        } else {
+            let (_, expected) = &original[&OVERLAP_ROW];
+            for (actual, reference) in boxes.iter().zip(expected) {
+                assert!(
+                    (actual.0 - reference.0).abs() <= TOL_PX
+                        && (actual.1 - reference.1).abs() <= TOL_PX,
+                    "{name}: 같은 실물 위치를 표현하는 정렬에서 사진 배치 보존"
+                );
+            }
+            assert!(
+                (y1 - y0 - PIC_PX).abs() <= TOL_PX,
+                "{name}: 뒤 사진이 앞 사진 아래에 놓인다"
+            );
+        }
+    }
 }

@@ -1,3 +1,11 @@
+//! 관계형·고정형 검사. 칸 조각의 포함 관계와 독립 인쇄에서 확인한 쪽별 행 소속을 검사한다.
+//! 2026-11-25 21:00 KST 갱신. 직전 변경은 2026-11-24 15:30:01 +0900, 02e2796772.
+//! 96 DPI, 한컴 2020 HWPX·2024 재저장 HWP 직접 인쇄 대비 2px raw. 원본과 아래 여백
+//! 10mm 대조본은 각각 2쪽, Native·fresh WASM 전쪽 최저 100.00%였다. 두 인쇄본에서
+//! 2쪽의 첫 중첩 행은 각각 27·26이다. 긴 용지 두 대조군도 각각 2쪽이며 두 경로 전쪽
+//! 최저 100.00%다. 한컴 2020 인쇄에서 이월된 중첩 행은 각각 2개·0개다. 쪽별 결과는
+//! `mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/`에 보존한다.
+//!
 //! 저장 줄 없는 칸 문단의 글 앞으로(InFrontOfText) 중첩 표가 칸 선언 높이보다 훨씬 길면, 칸은
 //! 표 끝까지 이어진다. 그 칸이 쪽에서 나뉘면 남은 몫이 다음 쪽 조각으로 간다.
 //!
@@ -41,6 +49,7 @@ fn load(name: &str) -> DocumentCore {
 struct Found {
     row1_cell: Option<BoundingBox>,
     tail_line: Option<BoundingBox>,
+    tail_cell: Option<BoundingBox>,
     end_line: Option<BoundingBox>,
     nested_table: Option<BoundingBox>,
     nested_rows: Vec<String>,
@@ -71,6 +80,9 @@ fn collect(node: &RenderNode, depth: usize, found: &mut Found) {
         {
             found.row1_cell = Some(node.bbox.clone());
         }
+        RenderNodeType::TableCell(cell) if depth == 1 && cell.row == 2 => {
+            found.tail_cell.get_or_insert_with(|| node.bbox.clone());
+        }
         RenderNodeType::TextLine(_) if run_text(node).contains("TAIL") => {
             found.tail_line.get_or_insert_with(|| node.bbox.clone());
         }
@@ -94,79 +106,84 @@ fn page(core: &DocumentCore, index: u32) -> Found {
     found
 }
 
-fn check(name: &str) {
+fn check(name: &str, continued_row: usize) {
     let core = load(name);
-    assert_eq!(core.page_count(), 2, "{name}: 쪽 수");
+    assert_eq!(core.page_count(), 2, "{name}");
     let first = page(&core, 0);
-    let found = page(&core, 1);
-    // 중첩 표 남은 행이 2쪽에 이어 그려지고, 1쪽에 그린 행을 다시 그리지 않는다.
-    assert!(
-        found.nested_rows.iter().any(|row| row == "NESTED 35"),
-        "{name}: 2쪽 중첩 행 {:?}",
-        found.nested_rows
+    let last = page(&core, 1);
+    let expected: Vec<_> = (0..36).map(|row| format!("NESTED {row:02}")).collect();
+    assert_eq!(
+        first.nested_rows,
+        expected[..continued_row],
+        "{name}: 첫 조각"
+    );
+    assert_eq!(
+        last.nested_rows,
+        expected[continued_row..],
+        "{name}: 다음 조각"
     );
     assert!(
-        first.nested_rows.iter().any(|row| row == "NESTED 00"),
-        "{name}: 1쪽 중첩 행 {:?}",
-        first.nested_rows
+        first.tail_line.is_none() && last.end_line.is_none(),
+        "{name}"
     );
-    let repeated: Vec<_> = found
-        .nested_rows
-        .iter()
-        .filter(|row| first.nested_rows.contains(row))
-        .collect();
+    let end = first.end_line.expect("첫 쪽에 남은 본문 END");
+    let first_cell = first.row1_cell.expect("첫 쪽의 가운데 칸");
     assert!(
-        repeated.is_empty(),
-        "{name}: 두 쪽에 겹친 중첩 행 {repeated:?}"
+        end.y >= first_cell.y && end.y + end.height < first_cell.y + first_cell.height,
+        "{name}: 떠 있는 표와 같은 쪽 본문 흐름에 END가 남는다"
     );
-    // 뒤 문단 END 는 표 끝을 기다리지 않고 1쪽 본문 흐름 자리에 남는다.
-    assert!(found.end_line.is_none(), "{name}: END 가 2쪽으로 밀림");
-    let end = first
-        .end_line
-        .unwrap_or_else(|| panic!("{name}: 1쪽에 END 줄이 있다"));
-    assert!(
-        (end.y - 201.2).abs() < 8.0,
-        "{name}: END 위끝 {:.1}px (한컴 약 201px)",
-        end.y
-    );
-    // 1쪽 칸 조각은 쪽 끝 가까이 채우고, 가운데 정렬 칸 안에서 잘린 중첩 표 상자를 위·아래
-    // 같은 여백으로 놓는다. 한컴: 칸 위끝 142.5 → 중첩 표 위끝 150.5(8px), 칸 아래끝 1021.5.
-    let first_cell = first.row1_cell.expect("1쪽 가운데 칸");
-    let first_nested = first.nested_table.expect("1쪽 중첩 표");
-    let top_gap = first_nested.y - first_cell.y;
-    assert!(
-        (6.5..=10.0).contains(&top_gap),
-        "{name}: 1쪽 중첩 표 위 여백 {top_gap:.1}px (한컴 약 8px)"
-    );
-    let first_cell_bottom = first_cell.y + first_cell.height;
-    assert!(
-        (1016.0..=1025.0).contains(&first_cell_bottom),
-        "{name}: 1쪽 칸 조각 아래끝 {first_cell_bottom:.1}px (한컴 약 1021.5px)"
-    );
-    let cell = found
-        .row1_cell
-        .unwrap_or_else(|| panic!("{name}: 2쪽에 가운데 칸이 이어진다"));
-    let tail = found.tail_line.expect("TAIL ROW 줄");
-    // 중첩 표 남은 몫(9행 안팎, 약 200px)이 2쪽 칸 조각 높이로 남는다.
-    assert!(
-        cell.height > 150.0,
-        "{name}: 2쪽 가운데 칸 조각 높이 {:.1}px",
-        cell.height
-    );
-    assert!(
-        tail.y >= cell.y + cell.height - 0.5,
-        "{name}: TAIL ROW 위끝 {:.1}px, 칸 조각 아래끝 {:.1}px",
-        tail.y,
-        cell.y + cell.height
-    );
+    let last_cell = last.row1_cell.expect("이어받은 가운데 칸");
+    let tail = last.tail_line.expect("마지막 중첩 행 뒤의 TAIL ROW");
+    assert!(tail.y >= last_cell.y + last_cell.height - 0.5, "{name}");
+    for (cell, table) in [
+        (first_cell, first.nested_table.expect("첫 조각의 중첩 표")),
+        (last_cell, last.nested_table.expect("다음 조각의 중첩 표")),
+    ] {
+        assert!(
+            table.y >= cell.y && table.y + table.height <= cell.y + cell.height + 0.5,
+            "{name}: 중첩 행은 이를 소유한 바깥 칸 조각 안에 있다"
+        );
+    }
 }
 
 #[test]
 fn overlay_nested_table_longer_than_cell_continues_on_next_page_hwpx() {
-    check("overlay_nested_grow_split.hwpx");
+    check("overlay_nested_grow_split.hwpx", 27);
 }
 
 #[test]
 fn overlay_nested_table_longer_than_cell_continues_on_next_page_hwp5() {
-    check("overlay_nested_grow_split.hwp");
+    check("overlay_nested_grow_split.hwp", 27);
+}
+
+#[test]
+fn overlay_nested_table_hancom_resave_preserves_all_rows_and_trailing_content() {
+    check("overlay_nested_grow_split-hancom.hwp", 27);
+}
+
+#[test]
+fn overlay_nested_table_bottom_margin_moves_one_row_to_continuation() {
+    check("grow-bottom-margin10mm.hwpx", 26);
+}
+
+#[test]
+fn overlay_nested_table_last_row_content_fits_before_nominal_row_end() {
+    check("grow-last-row-content-fit.hwpx", 34);
+}
+
+#[test]
+fn overlay_nested_table_tail_alone_continues_after_the_last_owned_row() {
+    let core = load("grow-tail-only-continuation.hwpx");
+    assert_eq!(core.page_count(), 2);
+    let first = page(&core, 0);
+    let second = page(&core, 1);
+    let expected: Vec<_> = (0..36).map(|row| format!("NESTED {row:02}")).collect();
+    assert_eq!(first.nested_rows, expected);
+    assert!(first.end_line.is_some() && first.tail_line.is_none());
+    assert!(second.nested_rows.is_empty() && second.end_line.is_none());
+    let tail = second.tail_line.expect("뒤 행의 글줄이 다음 쪽에 있다");
+    let cell = second
+        .tail_cell
+        .expect("뒤 행의 글줄과 같은 쪽에 소유 칸이 있다");
+    assert!(tail.y >= cell.y && tail.y + tail.height <= cell.y + cell.height);
 }

@@ -1,3 +1,9 @@
+//! 관계형·고정형 검사. 빈 줄, 중첩 행과 뒤 문단의 소속 및 두 쪽의 연속성을 검사한다.
+//! 2026-11-25 19:21 KST 갱신. 직전 변경은 2026-11-24 10:50:00 +0900, edc1ba957d.
+//! 독립 한컴 2020 원본 및 한컴 2024 재저장 HWP의 96 DPI raw 2px 비교에서 두 쪽 모두
+//! Native·fresh WASM 100.00%였다. 전쪽 TSV는
+//! `mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/`에 보존한다.
+//!
 //! 표 칸 안의 글 앞으로(InFrontOfText) 중첩 표는 칸의 글 흐름을 밀지 않는다. 그 칸이 쪽 끝에서
 //! 나뉠 때도 행 나눔 유닛에 중첩 표 높이를 더하지 않는다.
 //!
@@ -38,36 +44,41 @@ fn has_text(node: &RenderNode, text: &str) -> bool {
     node.children.iter().any(|child| has_text(child, text))
 }
 
-/// 바깥 표(깊이 1) 가운데 행(1행) 칸 높이의 쪽별 합.
-fn outer_row1_height(node: &RenderNode, depth: usize) -> f64 {
-    let depth = match node.node_type {
-        RenderNodeType::Table(_) => depth + 1,
-        _ => depth,
-    };
-    if depth == 1 {
-        if let RenderNodeType::TableCell(cell) = &node.node_type {
-            if cell.row == 1 {
-                return node.bbox.height;
-            }
+fn collect_row_text(node: &RenderNode, rows: &mut Vec<String>) {
+    if let RenderNodeType::TextRun(run) = &node.node_type {
+        if run.text.starts_with("NESTED ") {
+            rows.push(run.text.trim().to_owned());
         }
     }
-    node.children
-        .iter()
-        .map(|child| outer_row1_height(child, depth))
-        .sum()
+    for child in &node.children {
+        collect_row_text(child, rows);
+    }
 }
 
 fn check(name: &str) {
     let core = load(name);
-    assert_eq!(core.page_count(), 2, "{name}: 쪽 수");
+    assert_eq!(core.page_count(), 2, "{name}");
+    let first = core.build_page_render_tree(0).unwrap();
     let last = core.build_page_render_tree(1).unwrap();
     assert!(has_text(&last.root, "TAIL"), "{name}: 끝 행은 2쪽");
     assert!(has_text(&last.root, "END"), "{name}: 표 뒤 문단은 2쪽");
-    let row1: f64 = (0..core.page_count())
-        .map(|page| outer_row1_height(&core.build_page_render_tree(page).unwrap().root, 0))
-        .sum();
-    // 빈 문단 60개 줄 높이(약 1280px)에 칸 여백 정도. 중첩 표 높이(768px)를 더하지 않는다.
-    assert!(row1 < 1400.0, "{name}: 가운데 행 높이 {row1:.1}px");
+    assert!(
+        !has_text(&first.root, "TAIL") && !has_text(&first.root, "END"),
+        "{name}"
+    );
+    let mut first_rows = Vec::new();
+    let mut last_rows = Vec::new();
+    collect_row_text(&first.root, &mut first_rows);
+    collect_row_text(&last.root, &mut last_rows);
+    let expected: Vec<_> = (0..24).map(|row| format!("NESTED {row:02}")).collect();
+    assert_eq!(
+        first_rows, expected,
+        "{name}: 중첩 행이 원래 순서대로 한 번씩 그려진다"
+    );
+    assert!(
+        last_rows.is_empty(),
+        "{name}: 둘째 쪽은 본문을 계속하고 중첩 행을 반복하지 않는다"
+    );
 }
 
 #[test]
@@ -78,4 +89,9 @@ fn overlay_nested_table_does_not_grow_split_row_hwpx() {
 #[test]
 fn overlay_nested_table_does_not_grow_split_row_hwp5() {
     check("overlay_nested_split.hwp");
+}
+
+#[test]
+fn overlay_nested_table_saved_anchor_line_preserves_blank_paragraphs_across_pages() {
+    check("overlay_nested_split-hancom.hwp");
 }
