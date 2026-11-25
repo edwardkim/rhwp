@@ -14,6 +14,11 @@
 //!   수정 전 rhwp 는 원점을 1000 으로 읽어 뒤 문단이 13.3px 위였다(86.29).
 //! - 자리차지 표는 앞 조각 띠와 겹치지 않아 표 상자는 저장 첫 줄 위로 가지 않는다(10k 반례
 //!   19087555 4쪽 pi3: 앞 간격 500·오프셋 0, 표 윗변 = 저장 줄 + 바깥 위 여백, 한/글 Print 99.46).
+//! - 15쪽: 저장 gap 이 그림 상자를 담는 pi244(문단 기준 그림, 오프셋 250, 아래 캡션). 한컴 그림
+//!   윗변 = 앞 저장 줄 끝 35680 + 오프셋 250(PDF 611.34px)이고 상자 바닥은 host 저장 줄 52215 윗변에
+//!   닿는다. 수정 전 rhwp 는 오프셋을 두 번 더해 그림이 아래로 밀렸다(Native 90.68·WASM 89.49).
+//!   반례: 문단 시작이 저장 줄 − 문단 위 간격인 10k 1480000-200600042 221쪽(위 간격 1000)은 같은
+//!   규칙으로 93.44 → 99.99.
 //! - 관계형: 표 윗변 = 본문 위끝 + 저장 첫 줄 + max(오프셋 − 문단 위 간격, 0) + 바깥 위 여백,
 //!   뒤 문단 줄 간격 = 저장 vpos 차. 고정형: 같은 위치를 독립 저장값으로 ±2px 고정(세 쪽 모두
 //!   Native·fresh WASM 98 이상, 독립 PDF 확대 대조 완료).
@@ -21,7 +26,8 @@
 //! 측정: 2026-11-25, `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96`
 //! (`silhouette_raw_match_percent`, 색상 경계 보정 전 2px 내용 실루엣), 글꼴은 맑은 고딕·바탕 +
 //! `ttfs/opensource` 를 Native·WASM 두 경로에 공급. source MEASURE_SHA(devel `0fbee2c04e` 위).
-//! - 66쪽 Native N66·WASM W66, 134쪽 Native N134·WASM W134, 73쪽 Native N73·WASM W73.
+//! - 66쪽 Native N66·WASM W66, 134쪽 Native N134·WASM W134, 73쪽 Native N73·WASM W73,
+//!   15쪽 Native N15·WASM W15.
 //! - 전체 138쪽(기준 PDF 와 같음). 전쪽 최저 Native NMIN·WASM WMIN.
 //! - 증거: `mydocs/pr/assets/issue_8735/{native,wasm,base-native}/second_interim_report_silhouette.tsv`, 대표 review·overlay PNG.
 #![cfg(not(target_arch = "wasm32"))]
@@ -45,6 +51,7 @@ struct PageBoxes {
     body: Option<BoundingBox>,
     tables: Vec<(Option<usize>, BoundingBox)>,
     lines: Vec<(Option<usize>, BoundingBox)>,
+    images: Vec<(Option<usize>, BoundingBox)>,
 }
 
 fn collect(node: &RenderNode, out: &mut PageBoxes) {
@@ -59,6 +66,7 @@ fn collect(node: &RenderNode, out: &mut PageBoxes) {
         | RenderNodeType::MasterPage
         | RenderNodeType::FootnoteArea => return,
         RenderNodeType::TextLine(line) => out.lines.push((line.para_index, node.bbox)),
+        RenderNodeType::Image(image) => out.images.push((image.para_index, node.bbox)),
         _ => {}
     }
     for child in &node.children {
@@ -195,5 +203,50 @@ fn column_opening_table_host_stored_line_after_spacing_keeps_zero_origin_p73() {
         "문단 {} → {} 줄 간격 {gap:.2} 은 저장 vpos 차 {stored_gap:.2} 다",
         HOST + 1,
         HOST + 2
+    );
+}
+
+/// 15쪽: 저장 줄이 그림·캡션 아래로 밀린 빈 host(문단 기준 자리차지 그림, 오프셋 250)의 그림
+/// 윗변은 앞 저장 줄 끝 + 세로 오프셋이다. 저장 줄 = 앞 줄 끝 + 오프셋 + 그림 + 캡션이므로
+/// 상자 바닥이 저장 줄에 닿고, 오프셋을 한 번 더 더하지 않는다.
+#[test]
+fn picture_inside_stored_gap_starts_at_previous_end_plus_offset_p15() {
+    const PAGE: u32 = 14;
+    const HOST: usize = 244;
+    let core = core();
+    let para = &core.document().sections[0].paragraphs[HOST];
+    let picture = para
+        .controls
+        .iter()
+        .find_map(|c| match c {
+            Control::Picture(p) => Some(p.as_ref()),
+            _ => None,
+        })
+        .expect("전제: host 문단에 그림이 있다");
+    let offset = picture.common.vertical_offset as i32;
+    assert!(offset > 0, "전제: 그림에 세로 오프셋이 있다");
+    let prev = core.document().sections[0].paragraphs[HOST - 1]
+        .line_segs
+        .last()
+        .expect("앞 문단 저장 줄");
+    let prev_end = prev.vertical_pos + prev.line_height + prev.line_spacing;
+    let host_line = stored_vpos(&core, HOST);
+    assert!(
+        host_line - prev_end > offset + picture.common.height as i32,
+        "전제: 저장 줄이 그림 띠 아래로 밀려 있다"
+    );
+    let boxes = page_boxes(&core, PAGE);
+    let body = boxes.body.expect("본문 영역");
+    let image = find(&boxes.images, HOST, "그림");
+    let expected = body.y + f64::from(prev_end + offset) * PX_PER_HU;
+    assert!(
+        (image.y - expected).abs() <= 0.5,
+        "그림 윗변 {:.2} 은 앞 저장 줄 끝 + 세로 오프셋 {expected:.2} 이다",
+        image.y
+    );
+    let line = find(&boxes.lines, HOST, "줄");
+    assert!(
+        image.y + image.height < line.y,
+        "그림은 저장 host 줄 위에 있다"
     );
 }
