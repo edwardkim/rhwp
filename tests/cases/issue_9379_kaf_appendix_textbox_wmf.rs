@@ -115,6 +115,42 @@ fn font_line_height_text_box_lines_use_the_font_line_box() {
     }
 }
 
+fn find_textbox_with_line<'a>(
+    node: &'a RenderNode,
+    first_word: &str,
+) -> Option<(&'a RenderNode, &'a RenderNode)> {
+    if matches!(node.node_type, RenderNodeType::TextBox) {
+        let matching_line = node.children.iter().find(|line| {
+            matches!(line.node_type, RenderNodeType::TextLine(_))
+                && line.children.iter().any(|child| {
+                    matches!(&child.node_type, RenderNodeType::TextRun(run)
+                        if run.text.trim_start().starts_with(first_word))
+                })
+        });
+        if let Some(line) = matching_line {
+            return Some((node, line));
+        }
+    }
+    node.children
+        .iter()
+        .find_map(|child| find_textbox_with_line(child, first_word))
+}
+
+#[test]
+fn restored_font_line_height_keeps_the_last_line_inside_its_print_frame() {
+    let core = open();
+    let tree = core.build_page_render_tree(35).unwrap();
+    let (textbox, last_line) =
+        find_textbox_with_line(&tree.root, "Cadastre").expect("36쪽 글 상자의 마지막 줄");
+    let clip = textbox.print_clip_bbox.expect("글 상자 인쇄 경계");
+    let line_bottom = last_line.bbox.y + last_line.bbox.height;
+    let clip_bottom = clip.y + clip.height;
+    assert!(
+        line_bottom < clip_bottom,
+        "마지막 글줄 뒤에 아래 안 여백이 있어야 한다 ({line_bottom:.2} < {clip_bottom:.2})"
+    );
+}
+
 fn nested_crop_windows(svg: &str) -> usize {
     svg.matches("<svg x=").count()
 }

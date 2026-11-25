@@ -45,7 +45,8 @@ pub(super) fn refresh_stale_font_line_heights(document: &mut Document) {
 }
 
 /// `in_text_box`: 이 목록이 글 상자 안에 있다(한/글이 열 때 다시 짜는 범위).
-fn refresh_list(paragraphs: &mut [Paragraph], doc_info: &DocInfo, in_text_box: bool) {
+fn refresh_list(paragraphs: &mut [Paragraph], doc_info: &DocInfo, in_text_box: bool) -> bool {
+    let mut refreshed = false;
     let mut shift = 0i32;
     let mut previous_end: Option<i32> = None;
     for para in paragraphs {
@@ -70,9 +71,11 @@ fn refresh_list(paragraphs: &mut [Paragraph], doc_info: &DocInfo, in_text_box: b
             }
         }
         if let Some(grown) = refresh_paragraph(para, doc_info) {
+            refreshed = true;
             shift += grown;
         }
     }
+    refreshed
 }
 
 fn refresh_control(control: &mut Control, doc_info: &DocInfo, in_text_box: bool) {
@@ -83,10 +86,18 @@ fn refresh_control(control: &mut Control, doc_info: &DocInfo, in_text_box: bool)
             }
         }
         Control::Shape(shape) => refresh_shape(shape, doc_info),
-        Control::Header(header) => refresh_list(&mut header.paragraphs, doc_info, false),
-        Control::Footer(footer) => refresh_list(&mut footer.paragraphs, doc_info, false),
-        Control::Footnote(note) => refresh_list(&mut note.paragraphs, doc_info, false),
-        Control::Endnote(note) => refresh_list(&mut note.paragraphs, doc_info, false),
+        Control::Header(header) => {
+            refresh_list(&mut header.paragraphs, doc_info, false);
+        }
+        Control::Footer(footer) => {
+            refresh_list(&mut footer.paragraphs, doc_info, false);
+        }
+        Control::Footnote(note) => {
+            refresh_list(&mut note.paragraphs, doc_info, false);
+        }
+        Control::Endnote(note) => {
+            refresh_list(&mut note.paragraphs, doc_info, false);
+        }
         _ => {}
     }
 }
@@ -100,7 +111,8 @@ fn refresh_shape(shape: &mut ShapeObject, doc_info: &DocInfo) {
     }
     if let Some(drawing) = shape.drawing_mut() {
         if let Some(text_box) = drawing.text_box.as_mut() {
-            refresh_list(&mut text_box.paragraphs, doc_info, true);
+            text_box.font_line_heights_refreshed =
+                refresh_list(&mut text_box.paragraphs, doc_info, true);
         }
     }
 }

@@ -1,6 +1,7 @@
 //! 흐름을 밀지 않는 글상자의 현재 글줄과 두 안 여백이 소유하는 최소 상자.
 
-use crate::model::shape::{ShapeObject, TextWrap};
+use crate::model::shape::{ShapeObject, SizeCriterion, TextWrap, VertAlign, VertRelTo};
+use crate::model::table::VerticalAlign;
 use crate::renderer::composer::{
     compose_paragraph_in_context, paragraph_flow_end, recalculate_section_vpos, reflow_line_segs,
     ParagraphBox,
@@ -11,6 +12,54 @@ use crate::renderer::{hwpunit_to_px, px_to_hwpunit};
 pub(super) struct PreparedTextBox {
     pub(super) shape: ShapeObject,
     pub(super) height: f64,
+}
+
+/// 열린 문서에서 복원한 글줄이 차지하는 본체 높이. 원래 줄바꿈을 유지하며
+/// 글줄 끝과 아래 안 여백까지 사각형 테두리와 인쇄 클립을 함께 늘린다.
+pub(super) fn refreshed_line_box_height(shape: &ShapeObject, dpi: f64) -> Option<f64> {
+    let ShapeObject::Rectangle(rect) = shape else {
+        return None;
+    };
+    let common = shape.common();
+    let text_box = rect.drawing.text_box.as_ref()?;
+    let attr = &rect.drawing.shape_attr;
+    let [paragraph] = text_box.paragraphs.as_slice() else {
+        return None;
+    };
+    if !text_box.font_line_heights_refreshed
+        || common.treat_as_char
+        || common.size_protect
+        || common.height_criterion != SizeCriterion::Absolute
+        || common.vert_rel_to != VertRelTo::Para
+        || common.vert_align != VertAlign::Top
+        || common.text_wrap != TextWrap::InFrontOfText
+        || attr.render_b != 0.0
+        || attr.render_c != 0.0
+        || text_box.vertical_align != VerticalAlign::Top
+        || text_box.list_attr & 0x07 != 0
+        || text_box.paint_clip.is_some()
+        || !paragraph.controls.is_empty()
+        || paragraph.stored_text_partition_is_dirty()
+        || paragraph.cell_format_vpos_dirty
+    {
+        return None;
+    }
+    if paragraph.line_segs.first()?.vertical_pos != 0
+        || paragraph
+            .line_segs
+            .windows(2)
+            .any(|lines| lines[1].vertical_pos <= lines[0].vertical_pos)
+    {
+        return None;
+    }
+    let content_end = paragraph
+        .line_segs
+        .iter()
+        .map(|line| line.vertical_pos.saturating_add(line.line_height))
+        .max()?;
+    let height = content_end
+        .checked_add(i32::from(text_box.margin_top) + i32::from(text_box.margin_bottom))?;
+    Some(hwpunit_to_px(height, dpi))
 }
 
 /// 내용이 선언 상자를 넘으면 현재 문단 프레임으로 높이와 그릴 글줄을 함께 만든다.
@@ -45,6 +94,12 @@ pub(super) fn prepare(
     let inner_width = width - hwpunit_to_px(horizontal_margin, dpi);
     if !inner_width.is_finite() || inner_width <= 0.0 || !height.is_finite() {
         return None;
+    }
+    if let Some(required) = refreshed_line_box_height(shape, dpi) {
+        return (required > height).then(|| PreparedTextBox {
+            shape: shape.clone(),
+            height: required,
+        });
     }
     // 온전한 저장 글줄이 현재 글자 높이·안 여백과 함께 들어가면 높이
     // 확장의 이유가 없다. 가로 재조판의 추정 폭으로 새 줄을 만든 뒤 그

@@ -2062,6 +2062,13 @@ impl LayoutEngine {
 
         match shape {
             ShapeObject::Rectangle(rect) => {
+                // 본문에서 바로 배치하는 도형도 같은 글줄 높이를 소비한다.
+                let render_h = if !matrix_positioned && !transform.has_transform() {
+                    overlay_textbox::refreshed_line_box_height(shape, self.dpi)
+                        .map_or(render_h, |height| render_h.max(height))
+                } else {
+                    render_h
+                };
                 // 글상자의 텍스트·채우기와 선의 가시성은 별개다.
                 // 그룹 자식도 원본의 명시된 SOLID/NONE을 그대로 소비한다.
                 let (style, gradient) = drawing_to_shape_style(&rect.drawing, self.dpi);
