@@ -2134,8 +2134,13 @@ impl HeightMeasurer {
     ///
     /// `TopAndBottom` 은 여기서 제외한 채로 둔다. 그 개체는 줄을 실제로 밀어 한컴이
     /// 저장 vpos 에 흡수하므로(#1486 악보 셀), 여기서 다시 세면 이중 계상이 된다.
+    ///
+    /// 세로 기준이 종이·쪽인 개체는 칸이 아니라 쪽 좌표에 놓이므로 세지 않는다
+    /// ([`crate::renderer::float_placement::cell_object_detached_from_cell_flow`]).
     fn cell_wrap_object_visual_bottom(&self, common: &CommonObjAttr) -> f64 {
-        if common.treat_as_char {
+        if common.treat_as_char
+            || crate::renderer::float_placement::cell_object_detached_from_cell_flow(common)
+        {
             return 0.0;
         }
         if !matches!(

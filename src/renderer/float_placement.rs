@@ -2821,6 +2821,15 @@ fn detached_from_anchor_line(common: &crate::model::shape::CommonObjAttr) -> boo
     !common.treat_as_char && matches!(common.vert_rel_to, VertRelTo::Paper | VertRelTo::Page)
 }
 
+/// 칸 안 문단에 매였지만 세로 기준이 종이·쪽인 떠 있는 개체(어울림·글 앞·글 뒤)는 칸의
+/// 흐름에 들지 않는다. 개체는 쪽 좌표에 놓이고, 칸 높이·세로 정렬 높이·행 나눔 유닛은
+/// 이 개체를 세지 않는다. 웹한글기안기는 이런 사각형(종이 기준 237px, 높이 154px)을 쪽
+/// 좌표에 그리고 칸은 저장 높이(100px) 그대로 둔다. 자리차지(`TopAndBottom`)는 이 규칙
+/// 밖이다(칸 안 사례 없음, 종전 회계 유지).
+pub(crate) fn cell_object_detached_from_cell_flow(common: &CommonObjAttr) -> bool {
+    detached_from_anchor_line(common) && !matches!(common.text_wrap, TextWrap::TopAndBottom)
+}
+
 /// 자리차지하지 않는 표 하나만 든 폭0 저장 줄은 그 개체의 앵커다.
 /// 이 문단의 줄 간격을 개체의 캡션 간격으로 사용하지 않는다.
 pub(crate) fn object_only_saved_table_anchor(para: &Paragraph, table: &Table) -> bool {
@@ -9974,16 +9983,16 @@ pub(crate) fn computed_empty_table_host(para: &Paragraph, table: &Table) -> bool
 }
 
 /// 재조판한 빈 호스트에는 표 바깥 상자를 대신 소유하는 저장 줄이 없다.
-/// 새 행에서 시작한 조각은 바깥여백을 소유한다. 행 내부 컷은 그 행의 원래
-/// 상단이 아니므로 NO_LS만으로 같은 여백을 반복하지 않는다.
+/// 새 물리 조각은 바깥여백을 소유한다. 계산한 빈 호스트에는 저장된
+/// 조각 원점이 없으므로 행 내부 컷도 새 쪽의 바깥 상자를 다시 연다.
+/// 공개 `paper_square_split` HWPX/HWP의 첫/이어받기 Print PDF 괘선 차이가
+/// 정확히 283HU이며, 예산과 출력은 이 판정을 함께 사용한다.
 pub(crate) fn computed_rowbreak_owns_outer_frame(
     para: &Paragraph,
     table: &Table,
-    start_cut: &[usize],
+    _start_cut: &[usize],
 ) -> bool {
-    table.layout_page_break() == TablePageBreak::RowBreak
-        && start_cut.iter().all(|&cut| cut == 0)
-        && computed_empty_table_host(para, table)
+    table.layout_page_break() == TablePageBreak::RowBreak && computed_empty_table_host(para, table)
 }
 
 /// 선언이 실제 저장 행 점유의 비끝 prefix를 소유하면, 전체 표 높이가 아니다.

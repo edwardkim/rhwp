@@ -2995,6 +2995,48 @@ impl LayoutEngine {
                 ),
                 (None, None) => (0, cell.paragraphs.len()),
             };
+            // 종이 기준 개체는 뒤 문단이 다음 쪽으로 넘어가도 칸의 첫 조각 쪽에 속한다.
+            // 한컴 Print의 paper_square_split은 60번째 문단의 개체를 1쪽에 인쇄한다.
+            // 문단 컷을 순회하기 전에 배치해 첫 조각의 비가시 문단도 앵커를 보존한다.
+            let paper_owned_by_first_fragment = |common: &crate::model::shape::CommonObjAttr| {
+                cut_units.is_some()
+                    && crate::renderer::float_placement::cell_object_detached_from_cell_flow(common)
+                    && matches!(common.vert_rel_to, crate::model::shape::VertRelTo::Paper)
+            };
+            if cut_units.is_some_and(|(start, _)| start == 0) {
+                for (cp_idx, para) in cell.paragraphs.iter().enumerate() {
+                    for (ctrl_idx, control) in para.controls.iter().enumerate() {
+                        if let Control::Shape(shape) = control {
+                            if paper_owned_by_first_fragment(shape.common()) {
+                                let first_new_child = table_node.children.len();
+                                self.layout_cell_shape(
+                                    tree,
+                                    table_node,
+                                    shape,
+                                    &inner_area,
+                                    text_y_start,
+                                    Alignment::Left,
+                                    para.para_shape_id,
+                                    styles,
+                                    bin_data_content,
+                                    clamp_header_negative_para_offset,
+                                    Some((
+                                        section_index,
+                                        para_index,
+                                        control_index,
+                                        cell_idx,
+                                        cp_idx,
+                                        ctrl_idx,
+                                    )),
+                                );
+                                for child in &table_node.children[first_new_child..] {
+                                    tree.mark_cell_overlay_node(child.id);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             let reflow_block_flow = self.reflow_block_cell_flow_in_cell(cell, table, styles);
             let carried_child_host = cut_units.and_then(|(start, end)| {
                 self.stored_carried_child_host(table, cell, start, end, styles)
@@ -4580,17 +4622,23 @@ impl LayoutEngine {
                                 has_preceding_text = true;
                             }
                             Control::Shape(shape) => {
+                                if paper_owned_by_first_fragment(shape.common()) {
+                                    continue;
+                                }
                                 // TextBox를 포함한 Shape는 한 control이 여러 physical
                                 // fragment에 걸쳐 내부 문단을 이어 그릴 수 있다. Picture의
                                 // entry-only owner 규칙을 Shape에 적용하면 뒤 fragment의
                                 // 잔여 TextBox가 통째로 사라진다(rowbreak p17).
+                                // 종이·쪽 기준 개체도 흐름을 전진시키지 않는 겹침 개체다.
                                 let owns_overlay_anchor = start_line == 0
                                     && end_line > start_line
-                                    && matches!(
+                                    && (matches!(
                                         shape.common().text_wrap,
                                         crate::model::shape::TextWrap::InFrontOfText
                                             | crate::model::shape::TextWrap::BehindText
-                                    );
+                                    ) || crate::renderer::float_placement::cell_object_detached_from_cell_flow(
+                                        shape.common(),
+                                    ));
                                 // 흐름을 전진시키지 않는 겹침 개체는 첫 원본 줄에 속한다.
                                 // 존재하지 않는 높이 예약에 속한 것으로 처리하지 않는다.
                                 if !shape.common().treat_as_char
@@ -4684,9 +4732,19 @@ impl LayoutEngine {
                                             shape_for_layout.common_mut().vertical_offset = 0;
                                         }
                                     }
+                                    // 종이·쪽 기준 개체는 칸 clip 밖 표 노드에 싣는다(온전한 칸과 같다).
+                                    let detached = crate::renderer::float_placement::cell_object_detached_from_cell_flow(
+                                        shape.common(),
+                                    );
+                                    let shape_parent = if detached {
+                                        &mut *table_node
+                                    } else {
+                                        &mut cell_node
+                                    };
+                                    let first_new_child = shape_parent.children.len();
                                     self.layout_cell_shape(
                                         tree,
-                                        &mut cell_node,
+                                        shape_parent,
                                         &shape_for_layout,
                                         &inner_area,
                                         shape_anchor_y,
@@ -4697,6 +4755,11 @@ impl LayoutEngine {
                                         clamp_header_negative_para_offset,
                                         table_cell_ctx,
                                     );
+                                    if detached {
+                                        for child in &shape_parent.children[first_new_child..] {
+                                            tree.mark_cell_overlay_node(child.id);
+                                        }
+                                    }
                                     let is_top_and_bottom_shape = matches!(
                                         shape.common().text_wrap,
                                         crate::model::shape::TextWrap::TopAndBottom
@@ -8269,6 +8332,7 @@ impl LayoutEngine {
             fold_last_row,
             &mut fold_slack,
         );
+        tree.move_cell_overlay_nodes_last(&mut table_node);
 
         // [#6976] 접기 적용 — 자르는 양은 두 상한의 작은 쪽이다.
         //
