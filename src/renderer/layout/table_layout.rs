@@ -20353,21 +20353,25 @@ impl LayoutEngine {
                         let pieces: Vec<Piece> = if let Some(fragments) =
                             self.text_host_nested_row_fragments(child, styles)
                         {
+                            // 행 안에 실제 컷이 있을 때만 재귀 컷을 넘긴다. 온전한 행은
+                            // 행 범위 자체가 소유하며 부모 칸의 남은 띠를 더하지 않는다.
+                            let splits_row = fragments.iter().any(|fragment| !fragment.cut.terminal);
                             fragments
                                 .into_iter()
                                 .map(|fragment| {
                                     edge += fragment.height;
-                                    (edge, fragment.row, Some(fragment.cut))
+                                    (edge, fragment.row, splits_row.then_some(fragment.cut))
                                 })
                                 .collect()
                         } else {
                             let ncol = child.col_count as usize;
                             let nrow = child.row_count as usize;
+                            let gap = hwpunit_to_px(i32::from(child.cell_spacing), self.dpi);
                             self.resolve_row_heights(child, ncol, nrow, None, styles, true)
                                 .into_iter()
                                 .enumerate()
                                 .map(|(row, height)| {
-                                    edge += height;
+                                    edge += height + if row + 1 < nrow { gap } else { 0.0 };
                                     (edge, row, None)
                                 })
                                 .collect()
@@ -20393,20 +20397,9 @@ impl LayoutEngine {
             .map(|unit| unit.vis_end)
             .max()
             .unwrap_or(0);
-        let (_, _, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
-        let declared =
-            hwpunit_to_px(cell.height.min(i32::MAX as u32) as i32, self.dpi) - pad_top - pad_bottom;
-        // 저장 칸 높이는 한/글이 잰 표 끝을 담는다. rhwp 가 다시 잰 표 끝이 그보다 한 줄
-        // 규모 안에서 넘는 것은 측정 차이로 보고 저장 높이를 따른다(1388082 원아 칸 +12px,
-        // 웹한글기안기는 칸을 키우지 않음). 그보다 크게 넘으면 칸은 표 끝까지 자라 다음 쪽으로
-        // 이어진다(1282821 원아 칸 +207px, 웹한글기안기도 약 180px 이어짐).
-        const DECLARED_REACH_TOLERANCE_PX: f64 = 32.0;
-        let target = if end > declared + DECLARED_REACH_TOLERANCE_PX {
-            end
-        } else {
-            end.min(declared)
-        };
-        if target <= origin + 0.5 {
+        // 선언 칸 높이는 행의 최소 물리 높이다. 자식 표에서 확인한 실제
+        // 끝을 그 값으로 잘라 내면 이어받는 조각의 끝 행과 바깥 괘선이 어긋난다.
+        if end <= origin + 0.5 {
             return;
         }
         // 조각마다 유닛 하나. 흐름 끝보다 위에서 끝나는 조각은 높이 0(호스트 줄과 같은 조각에
@@ -20415,9 +20408,9 @@ impl LayoutEngine {
         let mut cursor = origin;
         for (index, (edge, row, cut)) in pieces.into_iter().enumerate() {
             let stop = if index + 1 == piece_count {
-                target
+                end
             } else {
-                edge.clamp(cursor, target)
+                edge.clamp(cursor, end)
             };
             units.push(CellUnit {
                 height: (stop - cursor).max(0.0),
