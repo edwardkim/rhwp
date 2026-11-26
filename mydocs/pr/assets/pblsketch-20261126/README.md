@@ -37,3 +37,13 @@ Native Skia는 CI의 `release-test` 프로필을 사용했다. 라이브러리�
 Rust 서식, Native·WASM32 Clippy와 워크스페이스 전체 타깃 Clippy(`-D warnings`), 워크스페이스 빌드 및 문서 테스트를 통과했다. 문서 테스트는 8건 통과, 기존 `ignored` 3건이었다.
 
 일반 Rust 회귀는 `cargo nextest run --locked --cargo-profile release-test --tests`로 14,204건을 실행해 모두 통과했다. 기존 45건은 건너뛰었다. 최초 실행에서는 중첩 칸 편집 위임의 등록 누락과 일반·Skia 빌드가 같은 CLI 경로를 사용한 영향으로 2건이 실패했다. 등록을 보완하고 Native Skia 검사가 끝난 뒤 일반 빌드로 전체를 다시 실행했다. 이때 사용한 nextest 0.9.137은 저장소 지정 최소 0.9.91 이상이다. 권장 버전은 0.9.140이다. 기본 프로필을 사용했으며, 별도의 CI 소요 시간 관찰 프로필에 있는 JUnit 설정은 경고로 표시됐다.
+
+## 11월 27일 제출 직전 devel 대조
+
+최초 전체 검증 뒤 중첩 표 재저장과 그림·쪽 번호 수정이 `devel`에 병합됐다. 최신 `devel` `e46501863d71706304aafdc3d3f6ca35c0b2b1f1`과 후보 `98a060eb9d6e17f76b91b02869ebf312b7bd73e0`의 병합 트리는 `ec464f73f291875a1ee6327303a01dc7c2ffb105`다. 각 소스에서 Native와 배포용 WASM을 새로 빌드했다. [선행 통합 PR #9434](https://github.com/edwardkim/rhwp/pull/9434) · [중첩 표 PR #9306](https://github.com/edwardkim/rhwp/pull/9306)
+
+- 최신 `devel`의 집중 회귀 15건을 양쪽에서 실행했다. 병합본에서는 이번 두 건의 회귀 8건을 더해 23건이 모두 통과했다. 공개 원본 4개의 편집 전 인쇄 픽셀도 두 버전의 Native·Canvas 8쌍에서 모두 일치했다. [입력별 해시](current-own-prints.tsv)
+- 직전에 병합된 문서 4종의 쪽수는 독립 한컴 Print PDF와 각각 138·7·11·54쪽으로 일치했다. Native RGB와 브라우저 Canvas RGBA는 같은 백엔드의 두 버전 사이에서 각각 전 210쪽이 같았다. 독일 법령은 물리적 11쪽에 표시 쪽 번호 1~5, 7~12가 남았다. [문서별 쪽수와 기준 PDF](new-base-pages.tsv) · [쪽별 픽셀 해시](new-base-page-hashes.tsv)
+- 중첩 표에 숫자 120자를 입력하고 HWP·HWPX 각각 두 차례 저장해 열었다. 편집 직후와 두 재열기에서 두 버전 모두 115쪽이었다. 102쪽에는 74자, 103쪽에는 46자가 남았다.
+- 병합본의 배포용 WASM에서 포인터 11곳, 글자 크기 대조 16곳, 저장 비교 32건, 실제 Studio 입력 8사례를 다시 확인했다. 383쪽 편람의 묶음 글상자, 중첩 표 포인터, 머리말·꼬리말 편집 이력 E2E도 통과했다. 본문 맨 앞 수식의 단독 선택 폭은 양쪽 모두 35.1px였다. [빌드 해시와 회귀·저장 결과](new-base-validation.json)
+- 원 PR의 두 공개 표본에서 중첩 문단을 합친 뒤 Backspace의 실행 취소를 확인했다. 첫째 글상자의 두 문단이 복원되고 둘째 글상자의 내용은 유지됐다. 글상자 안 표 칸도 `B`와 `OX` 두 문단으로 돌아왔다. [표 칸 안의 글상자](restored-group-left.png) · [글상자 안의 표 칸](restored-table-in-box.png)
