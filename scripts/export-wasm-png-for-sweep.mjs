@@ -542,7 +542,13 @@ async function main() {
           // 종료에 실패하면 활성 프로필을 지우지 않고 바깥 finally가 다시 닫게 둔다.
           await browser.close(); browsers.delete(browser);
         }
-        rmSync(userDataDir, {recursive: true, force: true, maxRetries: 5, retryDelay: 100});
+        try {
+          rmSync(userDataDir, {recursive: true, force: true, maxRetries: 5, retryDelay: 100});
+        } catch (error) {
+          if (process.platform !== 'win32' || error.code !== 'EPERM') throw error;
+          // Windows can keep the scratch profile locked after Chrome has closed.
+          console.warn(`Chrome profile cleanup deferred: ${userDataDir}`);
+        }
       }
     }
     await Promise.all(Array.from({length: workerCount}, (_, index) => worker(index)));

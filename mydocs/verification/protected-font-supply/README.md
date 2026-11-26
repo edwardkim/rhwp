@@ -3,9 +3,16 @@
 [manifest.json](manifest.json)은 Linux·Windows·macOS의 정본 보호 검증에서 사용하는
 문서별 Native·WASM 글꼴 공급 조건이다. 경로는 저장소 루트를 기준으로 해석한다.
 
+- `excluded_filename_suffixes`에 해당하는 `_MAC.otf`는 Native·fresh WASM 공급과 실제 선택에서
+  제외한다. 대소문자를 구분하지 않으며, 파일명 변경이나 링크로 우회하지 않는다. 파일명과 SHA-256을
+  `scripts/check_protected_font.py`로 공급 전에 검사하고, 실행 후 실제 선택 기록을 대조한다.
 - `documents[].backends`에서 문서 key와 backend를 선택한다.
 - `supply_mode`가 `explicit_files`이면 `font_set`의 파일명·SHA-256·배열 순서로
   `--font-path`를 지정한다. 자동 선택 조건에서는 `font_set`을 공급 환경 확인에 사용한다.
+- 편람 HWP·HWPX의 WASM은 기존 공급 목록 끝에 함초롬바탕 보통 `HANBatang.ttf`와 굵은
+  `HANBatangB.ttf`를 순서대로 공급한다. 세 OS에서 두 형식의 200쪽을 100.00%로 확인했다.
+  [공급 확인 근거](../../pr/assets/issue_7114/protected-mac-20261127/README.md) ·
+  [교차 OS 전쪽 실측](../../pr/assets/visual-protected-baseline/updates/cross-os-20261127/page-floors.tsv)
 - Arial 4종, 바탕 TTC, HY신명조는 `accepted_sha256_pairs`에 파일별로 등록한 두 SHA-256을 모두 허용한다.
   공급 목록이 쌍의 한 해시를 지정하면 같은 쌍의 다른 해시도 그 순서와 face에 공급할 수 있다.
   실제 파일을 해시하여 선택한 SHA-256을 기록하고, 같은 공급 조건에서 기준과 후보의 쪽별 하한을 검증한다.
@@ -61,6 +68,8 @@
 
 대체 해시 등록과 검증 산출물 보존에 관한 다음 절차는 정본 보호 문서에만 적용한다.
 대체 글꼴 해시를 허용할 때는 `manifest.json`의 해당 보호 문서 항목에 `accepted_sha256_pairs`를 등록한다.
+보호 글꼴의 허용 조건을 변경하는 PR은 macOS·Windows·Linux에서 등록 문서 전체의 Native·fresh WASM
+결과를 각각 대조해 보호 하한을 모두 충족한 뒤 제출한다.
 허용 여부를 판단하기 위한 상세 비교 JSON과 실행 로그는 `output/pr-review/<작업명>/`에만 보존한다.
 `records/`에는 해당 실행 산출물을 추가하지 않는다.
 

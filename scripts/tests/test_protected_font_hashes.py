@@ -1,6 +1,8 @@
+from pathlib import Path
+from tempfile import TemporaryDirectory
 import unittest
 
-from scripts.check_protected_font import accepted_hashes, supply_hashes
+from scripts.check_protected_font import accepted_hashes, excluded_font_path, supply_hashes
 
 
 class ProtectedFontHashesTest(unittest.TestCase):
@@ -18,6 +20,21 @@ class ProtectedFontHashesTest(unittest.TestCase):
         self.assertNotIn("regular-windows", allowed)
         self.assertNotIn("bold-third-version", allowed)
         self.assertEqual(accepted_hashes("dotumche-original", self.pairs), ["dotumche-original"])
+
+    def test_mac_otf_exclusion_ignores_case_and_checks_link_target(self):
+        suffixes = ["_MAC.otf"]
+        self.assertTrue(excluded_font_path(Path("Hmkmm_mac.OTF"), suffixes))
+        self.assertFalse(excluded_font_path(Path("HMKMM_MAC.TTF"), suffixes))
+        self.assertFalse(excluded_font_path(Path("HMKMM.otf"), suffixes))
+        with TemporaryDirectory() as directory:
+            target = Path(directory) / "Hmkmm_mac.OTF"
+            target.touch()
+            alias = target.with_name("Hmkmm.otf")
+            try:
+                alias.symlink_to(target)
+            except OSError as error:
+                self.skipTest(f"symlinks unavailable: {error}")
+            self.assertTrue(excluded_font_path(alias, suffixes))
 
     def test_document_pair_is_local_even_when_font_sets_are_shared(self):
         files = [{"sha256": "dotumche-original"}, {"sha256": "regular-original"}]

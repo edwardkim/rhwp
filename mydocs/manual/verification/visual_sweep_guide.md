@@ -415,6 +415,11 @@ PR을 재검토한다.** Native/WASM 교차 비교나 다른 backend 점수의 �
 문서 key와 backend로 `manifest.json`의 조건을 선택해 공급 방식과 환경 JSON을 적용한다.
 파일명·프로그램 SHA·face와 실제 선택 기록을 대조한다. 일반 기여자에게 비공개 글꼴 확보를 요구하지 않는다.
 
+Native·fresh WASM 모두 실제 경로의 파일명이 `_MAC.otf`로 끝나는 글꼴을 공급 및 선택에서
+제외한다. 대소문자를 구분하지 않으며, 파일명을 바꾸거나 링크를 만들어 사용할 수 없다.
+보호 글꼴의 허용 조건을 변경할 때는 macOS·Windows·Linux에서 각각 모든 등록 문서를 두
+backend로 출력하고, 실제 선택과 페이지별 보호 하한을 확인한 뒤 PR을 제출한다.
+
 manifest 최상위의 `accepted_sha256_pairs`는 공통 허용 쌍이고, 문서 항목의 같은 필드는 해당 문서에만 적용한다.
 문서별 허용 쌍은 `scripts/check_protected_font.py --document <문서 key>`로 확인한다.
 기준과 후보에는 같은 파일을 같은 순서로 공급하고, 실제 사용한 SHA-256을 기록한다.
@@ -808,6 +813,8 @@ cargo build --locked --target-dir /home/tsjang/rhwp/target/pr-review -j 8 --feat
 다른 host에서는 해당 host의 기본 rhwp 작업공간 아래 공용 `target/pr-review`로 바꾼다.
 Native PNG에는 Node·Chrome·SVG 임베딩 검사가 필요 없다. 한글 라벨의 cmap 확인에는
 Native·WASM 모두 Python `fonttools`가 필요하다(`python -m pip install fonttools`).
+WOFF2 글꼴을 공급하는 검증은 스윕과 같은 Python 환경에 `brotli`도 설치한다
+(`python -m pip install brotli`).
 WASM PNG에는 Node·Chrome과 외부 공급 글꼴 catalogue도 필요하다. SVG 진단의 필수 도구는 다음과 같다.
 
 스크립트는 실행 시작 시 다음 CLI와 Python 패키지가 있는지 확인한다.
