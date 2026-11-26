@@ -34,6 +34,12 @@
   로컬 소형 OTF의 해시, 로컬 원본 크기 OTF의 해시를 파일별로 등록했다. 지정 순서로 공급하고 같은
   공급본에서 기준과 후보를 비교한다. Native에서는 두 로컬 공급본을 각각 검증했다. 브라우저에서는
   단일 글꼴 32 MiB·등록 요청당 64 MiB 한도를 충족하는 소형 공급본으로 전쪽을 검증했다.
+- 개요 탐색 예제 두 문서(`outline-demo`, `outline-minimal`)는 함초롬바탕·함초롬돋움 TTF
+  4종과 `KHANB.otf`, `KHANENGB.otf`, `KHANENGL.otf`, `KHANENGM.otf`,
+  `KHANL.otf`, `KHANM.otf`를 매니페스트 순서로 공급한다.
+  공급 목록에서 `Konghan-HFT.otf`를 제외했다. 공한 OTF는 macOS 설치본 해시를 기본으로 지정하고 기존 배포본 해시도 허용한다.
+  두 해시의 파일을 각각 공급한 결과, 두 문서의 Native·fresh WASM 8행이 모두 100.00%였고
+  devel·통합 후보의 페이지별 PNG 해시도 일치했다.
 - 중첩 표(`nested`)의 Native·WASM은 21개 파일의 순서를 유지한다. 두 경로에서 17쪽을 확인한
   `H2MJRE.TTF`, `HBATANG.TTF`, `HDOTUM.TTF`, `gulim.TTC`, `pala.ttf`의 문서별 해시 쌍을 허용한다.
 - `font_environment`가 있으면 해당 JSON을 `--font-environment`로 지정한다.

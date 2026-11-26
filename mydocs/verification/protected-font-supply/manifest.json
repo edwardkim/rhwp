@@ -4819,6 +4819,60 @@
         }
       ]
     },
+    "96a7ab88a27a4c87": {
+      "files": [
+        {
+          "filename": "HANBatang.ttf",
+          "sha256": "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+          "file_order": 1
+        },
+        {
+          "filename": "HANBatangB.ttf",
+          "sha256": "0d355f9766ffd1c7ec7648260611ddea9e12ea3c610423e552d52b921fc0f29f",
+          "file_order": 2
+        },
+        {
+          "filename": "HANDotum.ttf",
+          "sha256": "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+          "file_order": 3
+        },
+        {
+          "filename": "HANDotumB.ttf",
+          "sha256": "5b0b9fa5f3ba2f7b2e3576c6c2e2f2a7a92f68c98f8270e10791ceb363ce1e51",
+          "file_order": 4
+        },
+        {
+          "filename": "KHANB.otf",
+          "sha256": "cd7f4726b6d5f77d3584d1482a7e8cc25a37d91bd1feed4ac2299169792faaed",
+          "file_order": 5
+        },
+        {
+          "filename": "KHANENGB.otf",
+          "sha256": "a3b08950292cfedd28a9493b96375525233bf57b26850bfecb55941877e38a15",
+          "file_order": 6
+        },
+        {
+          "filename": "KHANENGL.otf",
+          "sha256": "7709f8d44f44456fb840a0eb8461464270d6c71f6db1483aa1bf08d14c037398",
+          "file_order": 7
+        },
+        {
+          "filename": "KHANENGM.otf",
+          "sha256": "2121f3dafacbd4fcf2fd275e888916f8f576f04859af6665413574b4104726a8",
+          "file_order": 8
+        },
+        {
+          "filename": "KHANL.otf",
+          "sha256": "1ab6d871ea6b0b229617e92875a4897145ad750fcf9030452eebe56b1ac6c9ba",
+          "file_order": 9
+        },
+        {
+          "filename": "KHANM.otf",
+          "sha256": "85dcdc66755752eb835735a050b8cbafea930b7b7b5a022506a26e83e367a9d4",
+          "file_order": 10
+        }
+      ]
+    },
     "f7692b47c11b0b05": {
       "files": [
         {
@@ -7544,10 +7598,6 @@
         {
           "filename": "KoddiUDOnGothic-Regular.ttf",
           "sha256": "0a118cc91f54d888f2de80f69ccfeee4beb471604b5ee2f73376996308b28de5"
-        },
-        {
-          "filename": "Konghan-HFT.otf",
-          "sha256": "e19def2bac01355fb0f4b5cc732dbcbf983e890b017b38d9c9f8f1d65f352a80"
         },
         {
           "filename": "LH B.ttf",
@@ -17223,9 +17273,35 @@
       "page_count": 3,
       "compat": "2022",
       "dpi": 96,
+      "accepted_sha256_pairs": {
+        "KHANB.otf": [
+          "aedf5b7eb818afa7ec273f772517fc935be0c817b121edbe5428d6dc62f113ec",
+          "cd7f4726b6d5f77d3584d1482a7e8cc25a37d91bd1feed4ac2299169792faaed"
+        ],
+        "KHANENGB.otf": [
+          "8b0b3ce9e965c145df8ebfc17099ac3abf519611bd44a63a9c1184497a4aa4cd",
+          "a3b08950292cfedd28a9493b96375525233bf57b26850bfecb55941877e38a15"
+        ],
+        "KHANENGL.otf": [
+          "b41a67571cb5124d38b84d589ed6a4f4e6eefc5d0d7ff7c877c2108c66ad4af3",
+          "7709f8d44f44456fb840a0eb8461464270d6c71f6db1483aa1bf08d14c037398"
+        ],
+        "KHANENGM.otf": [
+          "fb01f484d8b00af51589a3fa757dce0eb6824081fca5c1cc770aa5ee44c7c146",
+          "2121f3dafacbd4fcf2fd275e888916f8f576f04859af6665413574b4104726a8"
+        ],
+        "KHANL.otf": [
+          "498d46408a5455ba9730aeef4f9e004d575d92c9570ee6f68485ebf7738926d7",
+          "1ab6d871ea6b0b229617e92875a4897145ad750fcf9030452eebe56b1ac6c9ba"
+        ],
+        "KHANM.otf": [
+          "8015b74a91596d8a4cb6adc6dd62b4a0d73204fc89364c6a2a6f1c22a2b47cb5",
+          "85dcdc66755752eb835735a050b8cbafea930b7b7b5a022506a26e83e367a9d4"
+        ]
+      },
       "backends": {
         "native": {
-          "font_set": "f7692b47c11b0b05",
+          "font_set": "96a7ab88a27a4c87",
           "inventory_kind": "recorded_supply",
           "inventory_source": {
             "path": "mydocs/verification/protected-font-supply/records/recorded-system-font-inventory.json",
@@ -17255,7 +17331,7 @@
           },
           "accepted_font_set": "f7692b47c11b0b05",
           "accepted_font_environment": null,
-          "supply_mode": "document_selected_files_from_recorded_environment",
+          "supply_mode": "explicit_files",
           "reproduction_validation": {
             "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
             "sha256": "c8b1b7dc98d3e0ccb0981c6650b1f2e53500f25bd9a08a01a0f4c431e61ca69c",
@@ -17266,7 +17342,7 @@
           }
         },
         "wasm": {
-          "font_set": "f7692b47c11b0b05",
+          "font_set": "96a7ab88a27a4c87",
           "inventory_kind": "recorded_supply",
           "inventory_source": {
             "path": "mydocs/verification/protected-font-supply/records/recorded-system-font-inventory.json",
@@ -17296,7 +17372,7 @@
           },
           "accepted_font_set": "f7692b47c11b0b05",
           "accepted_font_environment": null,
-          "supply_mode": "document_selected_files_from_recorded_environment",
+          "supply_mode": "explicit_files",
           "reproduction_validation": {
             "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
             "sha256": "c8b1b7dc98d3e0ccb0981c6650b1f2e53500f25bd9a08a01a0f4c431e61ca69c",
@@ -17445,9 +17521,35 @@
       "page_count": 1,
       "compat": "2022",
       "dpi": 96,
+      "accepted_sha256_pairs": {
+        "KHANB.otf": [
+          "aedf5b7eb818afa7ec273f772517fc935be0c817b121edbe5428d6dc62f113ec",
+          "cd7f4726b6d5f77d3584d1482a7e8cc25a37d91bd1feed4ac2299169792faaed"
+        ],
+        "KHANENGB.otf": [
+          "8b0b3ce9e965c145df8ebfc17099ac3abf519611bd44a63a9c1184497a4aa4cd",
+          "a3b08950292cfedd28a9493b96375525233bf57b26850bfecb55941877e38a15"
+        ],
+        "KHANENGL.otf": [
+          "b41a67571cb5124d38b84d589ed6a4f4e6eefc5d0d7ff7c877c2108c66ad4af3",
+          "7709f8d44f44456fb840a0eb8461464270d6c71f6db1483aa1bf08d14c037398"
+        ],
+        "KHANENGM.otf": [
+          "fb01f484d8b00af51589a3fa757dce0eb6824081fca5c1cc770aa5ee44c7c146",
+          "2121f3dafacbd4fcf2fd275e888916f8f576f04859af6665413574b4104726a8"
+        ],
+        "KHANL.otf": [
+          "498d46408a5455ba9730aeef4f9e004d575d92c9570ee6f68485ebf7738926d7",
+          "1ab6d871ea6b0b229617e92875a4897145ad750fcf9030452eebe56b1ac6c9ba"
+        ],
+        "KHANM.otf": [
+          "8015b74a91596d8a4cb6adc6dd62b4a0d73204fc89364c6a2a6f1c22a2b47cb5",
+          "85dcdc66755752eb835735a050b8cbafea930b7b7b5a022506a26e83e367a9d4"
+        ]
+      },
       "backends": {
         "native": {
-          "font_set": "f7692b47c11b0b05",
+          "font_set": "96a7ab88a27a4c87",
           "inventory_kind": "recorded_supply",
           "inventory_source": {
             "path": "mydocs/verification/protected-font-supply/records/recorded-system-font-inventory.json",
@@ -17477,7 +17579,7 @@
           },
           "accepted_font_set": "f7692b47c11b0b05",
           "accepted_font_environment": null,
-          "supply_mode": "document_selected_files_from_recorded_environment",
+          "supply_mode": "explicit_files",
           "reproduction_validation": {
             "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
             "sha256": "c8b1b7dc98d3e0ccb0981c6650b1f2e53500f25bd9a08a01a0f4c431e61ca69c",
@@ -17488,7 +17590,7 @@
           }
         },
         "wasm": {
-          "font_set": "f7692b47c11b0b05",
+          "font_set": "96a7ab88a27a4c87",
           "inventory_kind": "recorded_supply",
           "inventory_source": {
             "path": "mydocs/verification/protected-font-supply/records/recorded-system-font-inventory.json",
@@ -17518,7 +17620,7 @@
           },
           "accepted_font_set": "f7692b47c11b0b05",
           "accepted_font_environment": null,
-          "supply_mode": "document_selected_files_from_recorded_environment",
+          "supply_mode": "explicit_files",
           "reproduction_validation": {
             "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
             "sha256": "c8b1b7dc98d3e0ccb0981c6650b1f2e53500f25bd9a08a01a0f4c431e61ca69c",
