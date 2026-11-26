@@ -786,15 +786,15 @@ impl PagePaintContext {
         {
             return;
         }
-        // 선언 폭 0은 화면용 0.1mm 기본값이 아니라 인쇄 장치의 cosmetic pen이다.
-        let declared = if width_hu == 0 {
-            0.0
+        if width_hu == 0 {
+            // 한컴 Print는 폭 0을 600 DPI 장치 한 픽셀의 채움 띠로 출력한다.
+            // 양의 폭에서 사용하는 별도 외곽 pen을 적용하면 저해상도 출력에서 띠가 두꺼워진다.
+            rect.style.stroke_width = pixel;
         } else {
-            rect.style.stroke_width / pixel
-        };
-        let band = declared.round().max(1.0);
-        rect.print_picture_pen = Some([band * pixel, pixel]);
-        rect.style.stroke_width = (band + 1.0) * pixel;
+            let band = (rect.style.stroke_width / pixel).round().max(1.0);
+            rect.print_picture_pen = Some([band * pixel, pixel]);
+            rect.style.stroke_width = (band + 1.0) * pixel;
+        }
         // 빈 명시적 반복 구간은 실선이다. 재생기는 확정한 장치 선폭을 그대로 소비한다.
         rect.style.stroke_dash = crate::renderer::StrokeDash::Explicit([0.0; 6]);
     }
@@ -807,9 +807,11 @@ impl PagePaintContext {
         rect: &RectangleNode,
     ) -> Option<BoundingBox> {
         let paper = self.print_paper?;
+        let cosmetic_pen = rect.picture_border_width_hu == Some(0)
+            && rect.style.stroke_dash == crate::renderer::StrokeDash::Explicit([0.0; 6]);
         if !self.print
             || !self.axis_aligned_graphics
-            || rect.print_picture_pen.is_none()
+            || (rect.print_picture_pen.is_none() && !cosmetic_pen)
             || rect.transform.has_transform()
             || ![bounds.x, bounds.y, bounds.width, bounds.height]
                 .into_iter()
