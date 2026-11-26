@@ -1921,13 +1921,8 @@ impl DocumentCore {
             .first()
             .and_then(|host_rows| host_rows.first())
             .is_some_and(|row| row.vertical_pos == 0);
-        // 그림 양옆에 줄 조각이 함께 놓이는 물리 줄(한 줄에 조각 둘)은 칸 배치가 조각마다 줄로
-        // 세어 칸을 키운다. 그림 한쪽에만 글이 흐르는 줄만 이 밴드가 소유한다.
-        let single_lane = rows.iter().all(|paragraph_rows| {
-            paragraph_rows
-                .windows(2)
-                .all(|pair| pair[0].vertical_pos < pair[1].vertical_pos)
-        });
+        // 같은 높이에 놓인 두 조각은 LineSeg의 첫 조각·끝 조각 플래그를 유지한다.
+        // 칸 높이 측정과 실제 배치에서 두 조각이 같은 물리 줄을 차지한다.
         // host 와 글 사이의 빈 문단은 기존 소유자가 자리 줄(400HU)로 세는 계약이 따로 있다.
         // 밴드가 그 빈 줄을 다시 세면 칸 높이가 바뀌므로 뒤 문단이 모두 글일 때만 소유한다.
         let successors_have_text = band_paragraphs
@@ -1935,7 +1930,6 @@ impl DocumentCore {
             .skip(1)
             .all(|paragraph| paragraph.text.chars().any(|ch| !ch.is_whitespace()));
         host_stays_at_origin
-            && single_lane
             && successors_have_text
             && band_paragraphs
                 .iter()
