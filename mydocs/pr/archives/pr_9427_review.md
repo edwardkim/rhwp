@@ -2,22 +2,22 @@
 
 ## 최종 판정
 
-**머지 보류.** 원 PR의 변경 동작을 재현했다. 정본 보호 4,046행을 산출했다. 매니페스트 공급 조건 2,605행은 모두 정본값과 같았다. Mac 대체 글꼴 조건 1,441행 중 1,440행은 정본값과 같았다. 화학물질 표시 기준 WASM 26쪽은 devel·후보의 PNG가 같고, 두 출력 모두 정본 100.00% 대비 99.99%였다. 해당 쪽의 정본 조건 재현을 완료해야 한다.
+**리베이스 후 재검증 중.** 원 PR의 변경 동작을 재현했다. 하향 반영 정본을 적용한 리베이스 전 실행 증적의 재대조에서 4,046행이 모두 하한을 충족했다. 화학물질 표시 기준 19·20·21·91·92쪽의 Native·WASM 10행과 WASM 26쪽 99.99%를 적용했다.
 
 ## 접수 정보와 체리픽
 
 - 원 PR [#9427](https://github.com/edwardkim/rhwp/pull/9427), planet6897 → devel, MERGEABLE, reviewer jangster77
 - 원 head f38a68e1988fdffc2c0a2021261a2c1486212a7a
-- 통합 기준 3fdaa042588cce42006d17e958a7f34d7c205b2e
-- 검증한 통합 후보 1959e6160549cb4ae4df9bf8897ab8d848e39556
+- 리베이스 후 통합 기준 `48a678399072d0df11380e1ad6a3b6aa77dd677a`와 후보 `afb7b2513c9c821d747484cd85a9ce2bf7b8ae52`
+- 전쪽 실행의 리베이스 전 기준 `3fdaa042588cce42006d17e958a7f34d7c205b2e`와 검토 후보 `1959e6160549cb4ae4df9bf8897ab8d848e39556`
 - #9409·#9413·#9425·#9427 순으로 16개 커밋을 충돌 없이 적용했다.
 
 | 이 PR의 원본 SHA | 적용 SHA |
 | --- | --- |
-| f70f6fe602d065ba9bd8faceb2dd1a0d254dfafb | 4b27177e203e881c9260d68bd145a05ca90a21a2 |
-| c4fc3f0b2adc49f5d334aaaaee1bcea14b87ff65 | a088c2b1a487ebcb5ca1e5cedcf33dfc138e7a71 |
-| 4471dae889a670c2efeb0c9e65d487dbf4622ace | 1c826c4e39453833e60d6eabe5a290d43bfcbd95 |
-| f38a68e1988fdffc2c0a2021261a2c1486212a7a | 5c216e8e657309f9bb33928c6a6cd2747df77217 |
+| f70f6fe602d065ba9bd8faceb2dd1a0d254dfafb | 4619ac03ad6a8ff495e234dfc0f0002b13dbeb0c |
+| c4fc3f0b2adc49f5d334aaaaee1bcea14b87ff65 | 8c700432b924a051039a27160df10d6fa23d8e95 |
+| 4471dae889a670c2efeb0c9e65d487dbf4622ace | 22a6e7aa37e34d9ee4bff7c709070688fd9310a8 |
+| f38a68e1988fdffc2c0a2021261a2c1486212a7a | 90329bd861d9b7717ac35f4f0ad469d2e6233fa8 |
 
 ## 변경과 직접 검증
 
@@ -41,6 +41,12 @@
 ## 공통 로컬 검증
 
 시각 검증의 Native·WASM 빌드에 `5c216e8e657309f9bb33928c6a6cd2747df77217`의 소스를 사용했다. `1959e61605`까지의 추가 변경은 한컴 Print PDF 세 건이다. 호스트에서 새 WASM 패키지를 빌드·최적화한 뒤 Canvas에서 실행했다. 최소 글꼴 환경의 집중 nextest 12건과 전체 nextest 14,194건이 통과했고 전체 검사에서 45건이 건너뛰어졌다. format·Clippy·workspace build와 Native Skia 라이브러리 및 CI 통합 모듈 검사도 통과했다.
+
+## 하향 정본과 리베이스 확인
+
+정본 TSV의 SHA-256은 `5d5ef7ac531f3d038757636920cb4af0267796f3631a68d2b5fece77291a5e13`이다. 새 한컴 2020 Print PDF의 화학물질 전쪽 결과와 한컴바탕 1.21을 공급한 중첩 표 결과를 반영해 쪽별 하한을 다시 대조했다. 중첩 표 17쪽의 Native·WASM 34행은 하한을 모두 충족했다. [정본 TSV](../assets/visual-protected-baseline/final.tsv) · [Print 교체 영수증](../assets/visual-protected-baseline/updates/issue6782-mcp-print-20261126.json) · [WASM 26쪽 조정 영수증](../assets/visual-protected-baseline/updates/issue6782-wasm-p26-20261126.json) · [화학물질 쪽별 대조](../assets/issue_6782/mcp-print-20261126/page-comparison.tsv)
+
+최신 devel로 리베이스했고 23개 커밋의 적용 패치가 모두 일치했다. 리베이스 후 후보 `74f3fc1eca55612f8c3675ce0811bdde0dd32dbc`에서 Native 제출 샘플 210쪽은 최신 devel과 원 PR 대비 하락이 없었다. 화학물질 WASM 103쪽은 최신 devel·후보의 PNG 해시가 모두 같았고, 26쪽은 양쪽에서 99.99%였다. Chrome에서 #9424의 자동 줄바꿈 본문 2줄·표 셀 3줄, 본문 선두 수식과 뒤 글자의 선택 영역을 대조해 모두 같은 결과를 확인했다. [#9424 검토](pr_9424_review.md)
 
 ## 병합 후 기여자 안내
 
