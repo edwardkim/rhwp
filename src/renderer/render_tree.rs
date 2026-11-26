@@ -1960,6 +1960,9 @@ pub struct GroupNode {
     pub para_index: Option<usize>,
     /// 문단 내 컨트롤 인덱스
     pub control_index: Option<usize>,
+    /// 묶음을 소유한 셀 문단의 경로. Studio에서 묶음과 자식 글상자를 구분한다.
+    #[serde(skip)]
+    pub cell_context: Option<CellContext>,
 }
 
 /// 각주/미주 내부에 있는 컨트롤의 원본 위치.

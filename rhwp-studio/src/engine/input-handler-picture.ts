@@ -499,10 +499,10 @@ export function exitPictureObjectSelectionIfNeeded(this: any): void {
 /** 클릭 좌표가 글상자의 경계선 위인지 판정한다. */
 export function isShapeBorderClick(this: any,
   pageX: number, pageY: number,
-  shape: { sec: number; ppi: number; ci: number },
+  shape: { sec: number; ppi: number; ci: number; type?: 'shape' | 'group' },
 ): boolean {
   const THRESHOLD = 3; // px
-  const bbox = findPictureBbox.call(this, { ...shape, type: 'shape' as const });
+  const bbox = findPictureBbox.call(this, { ...shape, type: shape.type ?? 'shape' });
   if (!bbox) return false;
   const dx = Math.min(pageX - bbox.x, bbox.x + bbox.w - pageX);
   const dy = Math.min(pageY - bbox.y, bbox.y + bbox.h - pageY);

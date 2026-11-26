@@ -1,4 +1,5 @@
-//! #9399.
+//! 관계형 검사 — #9399 글상자 클릭 위치와 편집 소유 경로.
+//! 2026-11-26 21:13 KST 갱신. 직전 45a124f241 (2026-11-25 10:29:57 KST).
 //! 글상자 안에서 글자 밖(글 끝 뒤·줄 아래·안쪽 여백)을 누르면 그 글상자 글의 가장 가까운
 //! 줄과 글자에 커서를 둔다. 표 칸과 글상자가 함께 클릭을 품으면 더 깊은 쪽이 받는다.
 //!
@@ -75,6 +76,17 @@ fn click_after_text_in_grouped_text_box_inside_cell_stays_in_that_text_box() {
         ])
     };
 
+    let layout: Value = serde_json::from_str(&doc.get_page_control_layout(0).unwrap()).unwrap();
+    let group = layout["controls"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|control| control["type"] == "group")
+        .unwrap();
+    let owner = text_box(0);
+    assert_eq!(group["cellPath"], json!([owner[0]]));
+    assert_eq!(group["parentParaIdx"], 1);
+    assert_eq!(group["controlIdx"], owner[1]["controlIndex"]);
     for (child, len) in [(0usize, 4u32), (1, 5)] {
         let end = caret(&doc, 1, &text_box(child), len);
         for (dx, dy) in [(4.0, 0.5), (20.0, 0.5), (0.0, 1.2)] {

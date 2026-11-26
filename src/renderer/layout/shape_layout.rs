@@ -380,9 +380,8 @@ fn push_placeholder_render_node(
     parent.children.push(node);
 }
 
-/// [#4694] 셀/글상자 안 ole 의 컨테이너 문맥. 비어 있으면(본문 직속) None —
-/// 방출도 비어 selection ref 가 3좌표로 유지된다(회귀 0).
-fn ole_cell_context(
+/// OLE와 묶음의 편집 주소에 셀 경로를 포함한다. 본문 직속 개체에는 경로가 없다.
+fn control_cell_context(
     parent_cell_path: &[CellPathEntry],
     para_index: usize,
 ) -> Option<crate::renderer::layout::CellContext> {
@@ -415,7 +414,7 @@ fn push_ole_placeholder_render_node(
             section_index,
             para_index,
             control_index,
-            ole_cell_context(parent_cell_path, para_index),
+            control_cell_context(parent_cell_path, para_index),
         )),
         bbox,
     );
@@ -455,7 +454,7 @@ fn push_ole_raw_svg_render_node(
             section_index,
             para_index,
             control_index,
-            ole_cell_context(parent_cell_path, para_index),
+            control_cell_context(parent_cell_path, para_index),
         )),
         bbox,
     );
@@ -1003,7 +1002,7 @@ impl LayoutEngine {
                 section_index,
                 para_index,
                 control_index,
-                ole_cell_context(parent_cell_path, para_index),
+                control_cell_context(parent_cell_path, para_index),
             )),
             bbox,
         );
@@ -2816,6 +2815,7 @@ impl LayoutEngine {
                         section_index: Some(section_index),
                         para_index: Some(para_index),
                         control_index: Some(control_index),
+                        cell_context: control_cell_context(&textbox_parent_path, para_index),
                     }),
                     BoundingBox::new(base_x, base_y, w, h),
                 );
