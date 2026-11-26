@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**리베이스 후 재검증 중.** 원 PR의 변경 동작을 재현했다. 하향 반영 정본을 적용한 리베이스 전 실행 증적의 재대조에서 4,046행이 모두 하한을 충족했다. 화학물질 표시 기준 19·20·21·91·92쪽의 Native·WASM 10행과 WASM 26쪽 99.99%를 적용했다.
+**수용 가능.** 원 PR의 변경 동작을 재현했다. 리베이스한 통합 후보의 시각 비교에서 최신 devel과 원 PR보다 낮아진 쪽이 없었다. 하향 반영 정본 4,046행을 모두 충족했다. 화학물질 표시 기준 WASM 26쪽은 최신 devel과 후보 모두 99.99%였다.
 
 ## 접수 정보와 체리픽
 
@@ -47,6 +47,12 @@
 
 최신 devel로 리베이스했고 23개 커밋의 적용 패치가 모두 일치했다. 리베이스 후 후보 `74f3fc1eca55612f8c3675ce0811bdde0dd32dbc`에서 Native 제출 샘플 210쪽은 최신 devel과 원 PR 대비 하락이 없었다. 화학물질 WASM 103쪽은 최신 devel·후보의 PNG 해시가 모두 같았고, 26쪽은 양쪽에서 99.99%였다. Chrome에서 #9424의 자동 줄바꿈 본문 2줄·표 셀 3줄, 본문 선두 수식과 뒤 글자의 선택 영역을 대조해 모두 같은 결과를 확인했다. [#9424 검토](pr_9424_review.md)
 
+## 리베이스 후 최종 로컬 검증
+
+후보 `74f3fc1eca55612f8c3675ce0811bdde0dd32dbc`에서 Native·fresh WASM 각각 7쪽을 다시 출력했다. 최신 devel과 원 PR 대비 raw 실루엣 하락은 0쪽이다. 집중 nextest 19건, 전체 nextest 14,196건, Native Skia 4,225건과 Rustfmt·세 가지 Clippy 검사·workspace build를 통과했다. 공개 공통 보호 8행도 통과했다. [최종 검증](../assets/planet6897_20261125/integration-review/rebase-validation.json) · [정본 보호 4,046행](../assets/planet6897_20261125/integration-review/protected-page-comparison.tsv)
+
+이 PR의 한컴 2020 Print와 후보 PNG로 대표 판독 자료를 만들었다. [검증 PDF](../../../pdf/issue9396/mcp-11.0.0.9172/fire_inspection_manual_p71-75-2020.pdf) · [대표 review](../assets/planet6897_20261125/integration-review/9413/final-native/review_004.png) · [대표 overlay](../assets/planet6897_20261125/integration-review/9413/final-native/overlay_004.png) · [페이지별 픽셀 지표와 이미지 SHA-256](../assets/planet6897_20261125/integration-review/9413/final-native/evidence.json)
+
 ## 병합 후 기여자 안내
 
-병합 SHA와 CI를 확인한 뒤 원 PR에 동일 조건의 전쪽 비교와 변경 영역의 판독 결과를 한국어 존댓말로 안내한다. 대표 PNG는 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/issue_9396/native/review_p005.png` 형식으로 연결한다. 게시 시 `--body-file`을 사용하고 API로 본문을 재확인한다. [원 PR 제출 대표 PNG](../assets/issue_9396/native/review_p005.png) · [Visual Sweep 안내](../../manual/verification/visual_sweep_guide.md#github-merge-comment)
+병합 SHA와 CI를 확인한 뒤 원 PR에 동일 조건의 전쪽 비교와 변경 영역의 판독 결과를 한국어 존댓말로 안내한다. 작성자 참고 PNG의 원래 경로는 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/issue_9396/native/review_p005.png` 형식으로 연결한다. 게시 시 `--body-file`을 사용하고 API로 본문을 재확인한다. [원 PR 제출 대표 PNG](../assets/issue_9396/native/review_p005.png) · [Visual Sweep 안내](../../manual/verification/visual_sweep_guide.md#github-merge-comment) 게시할 review와 overlay는 위 리베이스 후 최종 로컬 검증의 동일 페이지 자료를 사용한다.

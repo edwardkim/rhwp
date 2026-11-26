@@ -1,0 +1,43 @@
+{
+  "source": "74f3fc1eca55612f8c3675ce0811bdde0dd32dbc",
+  "input_sha256": "a8342140eafc10194f9beef693f5da8658f3fc1d170111799aae4b23d8351cae",
+  "pdf_sha256": "9d6dedc626049e4ba04e71b6853ac53171c1d9470aa9bbeff8220f80f1e640bb",
+  "dpi": 96,
+  "renderer": "native-skia",
+  "pages": [
+    {
+      "page": 15,
+      "silhouette_raw_match_percent": 99.99858,
+      "pixel_match_percent": 96.75294,
+      "visual_accuracy_proxy_percent": 59.03968
+    },
+    {
+      "page": 66,
+      "silhouette_raw_match_percent": 99.98541,
+      "pixel_match_percent": 95.40673,
+      "visual_accuracy_proxy_percent": 50.26073
+    },
+    {
+      "page": 73,
+      "silhouette_raw_match_percent": 99.83368,
+      "pixel_match_percent": 96.0259,
+      "visual_accuracy_proxy_percent": 76.25582
+    },
+    {
+      "page": 134,
+      "silhouette_raw_match_percent": 99.99872,
+      "pixel_match_percent": 95.01509,
+      "visual_accuracy_proxy_percent": 43.16594
+    }
+  ],
+  "assets": {
+    "review_015.png": "42809ff96747f678f510680f2c1be516c123487d0767570884c60578105e8d98",
+    "review_066.png": "9f933425f354179cb660ccc9bb04294d249c9850d02d9d8bfdedb5e80096a66c",
+    "review_073.png": "a7f3206fd8b706b18a69c5a8247593845a3c56649b69bb95adddaac16e4d1c4c",
+    "review_134.png": "9ead21f5c36dbdc13ce14e3452067134b05a7bcca76b82276601e00452f9e0f6",
+    "overlay_015.png": "efb79bb850c363b613f5477a3ce2ee4fbbb826469ea3e1ca688e7ed0ae187b72",
+    "overlay_066.png": "feec7668c2740a0b76f8c3a4a581115673bd0240d1a10ea7dbf59c6e7bcb8615",
+    "overlay_073.png": "6b78fcd9dbd079aa7bb42ce931a0f447b8413bcf3e7b9971419963bed5a4ad3c",
+    "overlay_134.png": "4ae634636967966393559cfa6ab60b79b3507c3f3a44a7acdfe5b8bb350fcbec"
+  }
+}
