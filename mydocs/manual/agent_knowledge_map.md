@@ -29,7 +29,7 @@ Native/fresh WASM TSV를 같은 조건·페이지로 비교한다. **2%p 초과 
 | 측정일 | 2026-08-11 |
 | 자기서술 출처 | `rhwp capabilities` · `rhwp capabilities --mcp` · `mcp-serve` 의 `tools/list` |
 | 표면 규모 | CLI 명령 **98개**(그중 `--json` 계약 **65개**, batch 축 **9개**) · MCP 도구 **181개**(무상태 163 + 세션 전용 18) |
-| 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **325개** · §2 전수 사전 **334개**(자기서술 밖 실측·참조 필드 포함) |
+| 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **338개** · §2 전수 사전 **346개**(자기서술 밖 실측·참조 필드 포함) |
 | 표본 | `samples/` tracked 파일 **895개** 중 실측한 것만 §7 에 적었다 |
 
 **재확인하는 법** — 이 지도를 믿기 전에 손에 든 바이너리로 다시 찍어 본다.
@@ -326,10 +326,10 @@ Gym은 에이전트 능력 벤치마크다. 결과만으로 한컴 조판 동등
 `edit set-cell` 은 `oldText` 때문에 `untrustedContent:true`,
 `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 345개 필드
+### 2-2. 전수 사전 — 346개 필드
 
-`capabilities` 의 `recordFields` 고유 **334개**와 그 밖의 실측·참조 필드를 합친
-342개다. `등장 명령` 은 자기서술
+`capabilities` 의 `recordFields` 고유 **338개**와 그 밖의 실측·참조 필드를 합친
+346개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -766,6 +766,7 @@ Gym은 에이전트 능력 벤치마크다. 결과만으로 한컴 조판 동등
 | `comparisonProfile` | string | 출력 프로필(`screen`·`print`). 기본 screen, PDF 시각 비교는 print | `export-png` |
 | `layoutGeneration` | string | 적용한 한컴 호환 조판 세대(`2022`·`2024`) | `export-png` |
 | `printPngRgb555` | bool | `--print-png-rgb555`로 고색수 불투명 PNG에 인쇄 장치색 변환을 요청했는가 | `export-png` |
+| `printPngFullColor` | bool | `--print-png-full-color`로 Print JPEG 변환 전 불투명 PNG의 원본 RGB 유지를 요청했는가 | `export-png` |
 | `mime` | string | 썸네일 MIME. **`.png` 로 저장해도 원본이 GIF 면 `image/gif`** (실측) | `thumbnail` |
 | `doclangVersion` | string | DocLang 판본 | `export-doclang` |
 | `assetsDir` / `assetCount` | string / number | 이진 자원 폴더와 개수 | `export-doclang` |
