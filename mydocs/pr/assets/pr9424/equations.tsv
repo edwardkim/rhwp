@@ -1,0 +1,7 @@
+sample	selection_start	selection_end	devel_rects	pr_rects	corrected_rects	devel_css_px	pr_css_px	corrected_css_px
+eq-saved	0	1	1	1	1	38.391	38.391	38.391
+eq-saved	1	2	1	1	1	12.391	12.391	12.391
+eq-without-stored-lines	0	1	1	0	1	38.391	0	38.391
+eq-without-stored-lines	1	2	1	1	1	12.391	50.797	12.391
+core-export-inline-equation	0	1	1	0	1	35.094	0	35.094
+core-export-inline-equation	1	2	1	1	1	9.188	44.391	9.188
