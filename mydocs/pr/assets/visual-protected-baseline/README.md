@@ -12,7 +12,7 @@
 
 - [final.tsv](final.tsv): 입력·기준 PDF·backend·페이지별 공식 두 자리 raw 보호값.
 - [manifest.json](manifest.json): 입력/PDF SHA-256·크기·측정 조건·전쪽 수·출처 commit/TSV/열/해시와 중복 제거 내역.
-- TSV SHA-256: `56c0b80121c204e4f1c2f025b7a6720661773deb9aadbfa9fe8b4229601f51c1`.
+- TSV SHA-256: `bbbe4e76122840cd32ea40d1068d29e32700db2a3f9b6152dcebee02657c7193`.
 - 입력 23개, Native/fresh WASM 각 23개 데이터셋·2,023쪽, 총 46개 데이터셋·4,046행.
 - 최초 통합 당시 수용 자료 56개 데이터셋 중 중복 20개를 정리했다. 이전 자료보다 공식 표시값이 낮아진 페이지는 0쪽이다.
 
@@ -41,7 +41,7 @@ HWP와 HWPX는 같은 제목이어도 별도 입력이다. 아래 최저값은 �
 | [issue3307_outline_number.hwpx](<../../../../samples/task3307/issue3307_outline_number.hwpx>) | 9 | 100.00% | 100.00% |
 | [body-list-typed-hwp.hwp](<../../../../tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp>) | 1 | 100.00% | 100.00% |
 | [control-styles-hwp.hwp](<../../../../tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp>) | 1 | 100.00% | 100.00% |
-| [1480000-201900042-chemical-labeling-standards.hwp](<../../../../samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp>) | 103 | 99.99% | 100.00% |
+| [1480000-201900042-chemical-labeling-standards.hwp](<../../../../samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp>) | 103 | 99.65% | 99.65% |
 | [한글문서파일형식_5.0_revision1.3.hwp](<../../../../samples/한글문서파일형식_5.0_revision1.3.hwp>) | 71 | 99.92% | 99.92% |
 | [outline_navigation_panel_demo.hwpx](<../../../../samples/pr4093/outline_navigation_panel_demo.hwpx>) | 3 | 100.00% | 100.00% |
 | [78494-virtual-convergence-industry-decree.hwpx](<../../../../samples/issue6776/78494-virtual-convergence-industry-decree.hwpx>) | 74 | 99.98% | 99.98% |
@@ -199,3 +199,13 @@ Hancom PDF Print 기준을 사용하며 웹한글기안기 출력으로 대체�
 ## 2026-11-25 화학물질 표시 기준의 브라우저 출력
 
 보호 문서 23종의 Native·fresh WASM 4,046행에서 하락과 누락이 없었다. 화학물질 표시 기준의 브라우저 26쪽을 99.99%에서 100.00%로 상향했다. [최신 기준과 후보의 전쪽 대조](../hyunmyungjanelee-20261125/maintainer/current-9415/protection-pages.tsv) · [갱신 영수증](updates/pr9352-9384-9407-20261125.json)
+
+## 2026-11-26 화학물질 표시 기준의 한컴 Print 교체
+
+사용자 승인에 따라 화학물질 표시 기준의 PDF를 한컴 2020 11.0.0.9172의 한 쪽씩 인쇄본으로 교체했다.
+103쪽의 이전·새 인쇄본에서 픽셀이 달라진 19·20·21·91·92쪽의 Native·fresh WASM 보호값을
+각각 99.93·99.86·99.89·99.65·99.99%로 조정했다. 새 PDF를 기준으로 같은 Mac 글꼴 조건의
+devel과 후보 Native·WASM 출력은 206행 모두 픽셀이 같았다. 26쪽 WASM은 새 인쇄본과
+이전 인쇄본이 픽셀 단위로 같아 기존 100.00% 하한을 적용한다. 이번 Mac 측정값은 99.99%다.
+
+[새 한컴 Print](../../../../pdf/issue6782/mcp-11.0.0.9172/1480000-201900042-chemical-labeling-standards-2020.pdf) · [전쪽 비교](../issue_6782/mcp-print-20261126/page-comparison.tsv) · [갱신 영수증](updates/issue6782-mcp-print-20261126.json)

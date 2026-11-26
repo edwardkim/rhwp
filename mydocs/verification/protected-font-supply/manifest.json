@@ -3,11 +3,11 @@
   "baseline": {
     "manifest": {
       "path": "mydocs/pr/assets/visual-protected-baseline/manifest.json",
-      "sha256": "f3b29e20395d8b3e9fd3528d40371120a1c32bcbe88728c4f9e13f3eba920403"
+      "sha256": "fb70531415c76c9b732278fe8fd4e1bd8f5796c8f3cc1defbf7f09279ca0f8e9"
     },
     "table": {
       "path": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
-      "sha256": "56c0b80121c204e4f1c2f025b7a6720661773deb9aadbfa9fe8b4229601f51c1"
+      "sha256": "bbbe4e76122840cd32ea40d1068d29e32700db2a3f9b6152dcebee02657c7193"
     }
   },
   "accepted_sha256_pairs": {
@@ -17034,9 +17034,9 @@
         "bytes": 193536
       },
       "reference_pdf": {
-        "path": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
-        "sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
-        "bytes": 1245068
+        "path": "pdf/issue6782/mcp-11.0.0.9172/1480000-201900042-chemical-labeling-standards-2020.pdf",
+        "sha256": "26e40ca45d384a083750e6edeb6c36506c2079774a2735edd374c87acc7fbfdd",
+        "bytes": 1226700
       },
       "page_count": 103,
       "compat": "2022",
