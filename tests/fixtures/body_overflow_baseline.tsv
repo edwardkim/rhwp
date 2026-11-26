@@ -290,6 +290,9 @@ issue9239/senior-employment-policy-caption-float-table.hwp	3
 # 원본 1~32쪽을 그대로 가진 #9000 파생 표본(issue9000/kaf_table_section.hwp)의 같은 5건이다 — 한컴 PDF 도 23쪽 마지막 글줄을
 # 쪽 번호 줄 아래에 인쇄한다. 수정 전(devel 8a26c00869)과 수정 후의 쪽·경로·넘침 값이 같다.
 issue9379/kaf_appendix.hwp	5
+# #9419 같은 문서를 한/글 2020 으로 HWPX 로 다시 저장한 표본(54쪽, 한/글 2020 Print 54쪽): layout-anomaly 의 쪽·경로·넘침 값이
+# 위 issue9379/kaf_appendix.hwp 와 같은 5건이다(수정 후 기준; 수정 전에는 21·23쪽 표가 위 간격만큼 올라가 있었다).
+issue9419/kaf_appendix_2020.hwpx	5
 
 # #9384 용지 끝 사진 대조. 한컴 2020 인쇄에서 같은 위치에서 잘리는 의도적 입력이다.
 pr9349-cell-floats/photo-a5-height.hwp	1
