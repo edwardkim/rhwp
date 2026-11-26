@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { hyperlinkAtPointer, hoverHyperlink, rememberHyperlinkClick, followHyperlinkClick } from './input-handler-hyperlink';
+import type { CellPathLike, HitTestResult } from '@/core/types';
 import type { ContextMenuItem } from '@/ui/context-menu';
 import { chartTargetFromSelection, matchChartRef } from '@/core/chart-data-target';
 import * as _connector from './input-handler-connector';
@@ -9,7 +10,19 @@ import { MoveConnectorMidpointCommand, MoveLineEndpointCommand, SetZOrderCommand
 import { computeLineEndpointRecord } from './object-drag-record';
 import { emitHeaderFooterModeChanged } from './header-footer-mode';
 import { cacheTableCellBboxes, ensureTableCellBboxCache } from './table-bbox-cache';
+import { isNestedCellDescendantOfControl } from './picture-hit-policy';
 import { shouldStartPersistentTableResize } from './table-resize-updates';
+
+/** 묶음 안쪽 글상자로 적중한 경우에도 테두리는 개체 선택에 남긴다. */
+function isGroupTextHit(
+  self: any, group: { sec: number; ppi: number; ci: number; cellPath?: CellPathLike },
+  hit: HitTestResult, pageX: number, pageY: number,
+): boolean {
+  return isNestedCellDescendantOfControl(
+    { secIdx: group.sec, paraIdx: group.ppi, controlIdx: group.ci, cellPath: group.cellPath },
+    { secIdx: hit.sectionIndex, paraIdx: hit.parentParaIndex, cellPath: hit.cellPath },
+  ) && !self.isShapeBorderClick(pageX, pageY, group);
+}
 
 function protectedCellKey(hit: any): string | null {
   if (!hit || hit.isTextBox) return null;
@@ -706,7 +719,9 @@ export function onClick(this: any, e: MouseEvent): void {
                 py >= picBbox.y && py <= picBbox.y + picBbox.h) {
               try {
                 const props = this.getObjectProperties(ref);
-                if (!props.treatAsChar) {
+                const editGroupText = ref.type === 'group'
+                  && isGroupTextHit(this, ref, this.wasm.hitTest(pi, px, py), px, py);
+                if (!props.treatAsChar && !editGroupText) {
                   e.preventDefault();
                   this.isPictureMoveDragging = true;
                   this.pictureMoveState = {
@@ -1238,7 +1253,9 @@ export function onClick(this: any, e: MouseEvent): void {
     // 그림/글상자 클릭 감지
     {
       const picHit = this.findPictureAtClick(pageIdx, pageX, pageY);
-      if (picHit) {
+      const editGroupText = picHit?.type === 'group' && e.button === 0 && !e.shiftKey
+        && isGroupTextHit(this, picHit, hit, pageX, pageY);
+      if (picHit && !editGroupText) {
         // Shift+클릭: 다중 선택 + 맨 앞으로 이동
         if (e.shiftKey && this.cursor.isInPictureObjectSelection()) {
           bringShapeToFront.call(this, picHit);

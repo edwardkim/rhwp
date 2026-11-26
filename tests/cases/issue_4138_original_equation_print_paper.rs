@@ -444,6 +444,7 @@ fn svg_replay_keeps_explicit_group_affine_around_equation_children() {
             section_index: None,
             para_index: None,
             control_index: None,
+            cell_context: None,
         }),
     );
     let mut renderer = SvgLayerRenderer::new();

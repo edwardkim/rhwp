@@ -6686,7 +6686,7 @@ impl DocumentCore {
         })
     }
 
-    /// path 기반 셀 텍스트 삽입 (중첩 표 지원)
+    /// 경로 기반 문자 인덱스 삽입. 깊이 1은 기존 셀의 리플로우 경로를 쓴다.
     pub fn insert_text_in_cell_by_path(
         &mut self,
         section_idx: usize,
@@ -6695,24 +6695,95 @@ impl DocumentCore {
         char_offset: usize,
         text: &str,
     ) -> Result<String, HwpError> {
-        let normalized = normalize_text_newlines(text);
-        let text = normalized.as_ref();
-        // 깊이 1 표는 일반 셀 삽입 경로가 셀 폭 리플로우와 vpos 재계산을 이미 담당한다.
-        // IME가 cellPath를 항상 전달하더라도 같은 편집 계약을 사용해야 한다.
-        if path.len() == 1 {
-            let (control_idx, cell_idx, cell_para_idx) = path[0];
+        if let [(control, cell, para)] = path {
             return self.insert_text_in_cell_native(
                 section_idx,
                 parent_para_idx,
-                control_idx,
-                cell_idx,
-                cell_para_idx,
+                *control,
+                *cell,
+                *para,
                 char_offset,
                 text,
             );
         }
+        self.replace_text_in_cell_by_path(
+            section_idx,
+            parent_para_idx,
+            path,
+            char_offset,
+            0,
+            text,
+            false,
+        )
+    }
 
-        let new_chars_count = text.chars().count();
+    /// 경로 기반 문자 인덱스 삭제.
+    pub fn delete_text_in_cell_by_path(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        char_offset: usize,
+        count: usize,
+    ) -> Result<String, HwpError> {
+        if let [(control, cell, para)] = path {
+            return self.delete_text_in_cell_native(
+                section_idx,
+                parent_para_idx,
+                *control,
+                *cell,
+                *para,
+                char_offset,
+                count,
+            );
+        }
+        self.replace_text_in_cell_by_path(
+            section_idx,
+            parent_para_idx,
+            path,
+            char_offset,
+            count,
+            "",
+            false,
+        )
+    }
+
+    /// 커서로 선택한 글의 실제 범위. 중첩 칸의 읽기·입력·되돌리기가 같은 축을 쓴다.
+    pub(crate) fn cell_caret_text_range(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        offset: usize,
+        count: usize,
+    ) -> Result<(usize, usize, bool), HwpError> {
+        let para = self.resolve_paragraph_by_path(section_idx, parent_para_idx, path)?;
+        let (start, after_control) = logical_to_text_offset(para, offset);
+        let end = if count == 0 {
+            start
+        } else {
+            logical_to_text_offset(para, offset.saturating_add(count)).0
+        };
+        Ok((start, end.saturating_sub(start), after_control))
+    }
+
+    pub(crate) fn replace_text_in_cell_by_path(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        offset: usize,
+        count: usize,
+        text: &str,
+        at_caret: bool,
+    ) -> Result<String, HwpError> {
+        let normalized = normalize_text_newlines(text);
+        let text = normalized.as_ref();
+        let (start, count, after_control) = if at_caret {
+            self.cell_caret_text_range(section_idx, parent_para_idx, path, offset, count)?
+        } else {
+            (offset, count, false)
+        };
         let active = active_field_control(
             self.active_field.as_ref(),
             section_idx,
@@ -6720,7 +6791,7 @@ impl DocumentCore {
             Some(path),
         );
         let cell_para = self.get_cell_paragraph_mut_by_path(section_idx, parent_para_idx, path)?;
-        replace_paragraph_text(cell_para, char_offset, 0, text, active, false);
+        replace_paragraph_text(cell_para, start, count, text, active, after_control);
 
         let inner_cell_para_idx = path.last().map(|entry| entry.2).unwrap_or(0);
         self.reflow_cell_paragraph_by_path(section_idx, parent_para_idx, path, inner_cell_para_idx);
@@ -6741,7 +6812,6 @@ impl DocumentCore {
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
 
-        let new_offset = char_offset + new_chars_count;
         self.event_log.push(DocumentEvent::CellTextChanged {
             section: section_idx,
             para: parent_para_idx,
@@ -6750,69 +6820,7 @@ impl DocumentCore {
         });
         Ok(super::super::helpers::json_ok_with(&format!(
             "\"charOffset\":{}",
-            new_offset
-        )))
-    }
-
-    /// path 기반 셀 텍스트 삭제 (중첩 표 지원)
-    pub fn delete_text_in_cell_by_path(
-        &mut self,
-        section_idx: usize,
-        parent_para_idx: usize,
-        path: &[(usize, usize, usize)],
-        char_offset: usize,
-        count: usize,
-    ) -> Result<String, HwpError> {
-        // [#2755] 깊이 1 표/글상자/캡션은 flat 셀 삭제 경로가 셀 폭 리플로우와 vpos 재계산을
-        // 이미 담당한다. `insert_text_in_cell_by_path`(:3389)의 깊이 1 위임 가드와 동형이며,
-        // flat `delete_text_in_cell_native`(:955)는 모든 컨테이너 종류를 처리한다.
-        if path.len() == 1 {
-            let (control_idx, cell_idx, cell_para_idx) = path[0];
-            return self.delete_text_in_cell_native(
-                section_idx,
-                parent_para_idx,
-                control_idx,
-                cell_idx,
-                cell_para_idx,
-                char_offset,
-                count,
-            );
-        }
-
-        let cell_para = self.get_cell_paragraph_mut_by_path(section_idx, parent_para_idx, path)?;
-        crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
-            cell_para,
-            char_offset,
-            count,
-        );
-
-        // [#2755] 깊이 ≥ 2 중첩 셀도 flat `delete_text_in_cell_native` 처럼 최내곽 셀 폭으로
-        // 재래핑하고 vpos 를 재계산한다(깊이 1 은 위 위임 가드가 flat 경로로 처리).
-        let inner_cell_para_idx = path.last().map(|e| e.2).unwrap_or(0);
-        self.reflow_cell_paragraph_by_path(section_idx, parent_para_idx, path, inner_cell_para_idx);
-        self.recalculate_cell_paragraph_vpos_by_path(
-            section_idx,
-            parent_para_idx,
-            path,
-            inner_cell_para_idx,
-            None,
-        );
-
-        let outer_ctrl = path[0].0;
-        self.mark_cell_control_dirty(section_idx, parent_para_idx, outer_ctrl);
-        self.document.sections[section_idx].raw_stream = None;
-        self.mark_section_dirty(section_idx);
-        self.paginate_if_needed();
-
-        self.event_log.push(DocumentEvent::CellTextChanged {
-            section: section_idx,
-            para: parent_para_idx,
-            ctrl: outer_ctrl,
-            cell: path[0].1,
-        });
-        Ok(super::super::helpers::json_ok_with(&format!(
-            "\"charOffset\":{}",
-            char_offset
+            offset + text.chars().count()
         )))
     }
 
@@ -6899,8 +6907,21 @@ impl DocumentCore {
 
         // path를 따라 마지막 셀까지 진입
         for (i, &(ctrl_idx, cell_idx, _cpi)) in path.iter().enumerate() {
-            let table = match para.controls.get_mut(ctrl_idx) {
-                Some(Control::Table(t)) => t.as_mut(),
+            let paragraphs = match para.controls.get_mut(ctrl_idx) {
+                Some(Control::Table(t)) => t
+                    .cells
+                    .get_mut(cell_idx)
+                    .map(|cell| &mut cell.paragraphs)
+                    .ok_or_else(|| HwpError::RenderError("셀 범위 초과".to_string()))?,
+                // 글상자: 표 칸 안 글상자와 글상자 안 표 칸도 같은 경로로 내려간다.
+                // 커서·누르기가 그 글상자 글을 `[표 셀, 글상자]` 경로로 준다(#1138).
+                Some(Control::Shape(shape)) => {
+                    super::super::helpers::get_textbox_at_mut(shape, cell_idx)
+                        .map(|text_box| &mut text_box.paragraphs)
+                        .ok_or_else(|| {
+                            HwpError::RenderError("경로: 글상자가 아닙니다".to_string())
+                        })?
+                }
                 // 머리말·꼬리말 뿌리: 그 문단에 든 표로 내려간다(머리말 문단 자체는 머리말 API가 맡는다).
                 Some(ctrl @ (Control::Header(_) | Control::Footer(_)))
                     if i == 0 && cell_idx == 0 && path.len() > 1 =>
@@ -6913,30 +6934,29 @@ impl DocumentCore {
                         })?;
                     continue;
                 }
-                _ => return Err(HwpError::RenderError("경로: 표가 아닙니다".to_string())),
+                _ => {
+                    return Err(HwpError::RenderError(
+                        "경로: 표나 글상자가 아닙니다".to_string(),
+                    ))
+                }
             };
-            let cell = table
-                .cells
-                .get_mut(cell_idx)
-                .ok_or_else(|| HwpError::RenderError("셀 범위 초과".to_string()))?;
             if i == path.len() - 1 {
                 // 이 셀에서 문단 분할. 리플로우/shift/recalc 는 borrow 해제 후 루프 밖에서 한다.
-                if cell_para_idx >= cell.paragraphs.len() {
+                if cell_para_idx >= paragraphs.len() {
                     return Err(HwpError::RenderError("셀문단 범위 초과".to_string()));
                 }
-                split_origin_vpos = cell.paragraphs[cell_para_idx]
+                split_origin_vpos = paragraphs[cell_para_idx]
                     .line_segs
                     .first()
                     .map(|seg| seg.vertical_pos);
-                let mut new_para = cell.paragraphs[cell_para_idx].split_at(char_offset);
+                let mut new_para = paragraphs[cell_para_idx].split_at(char_offset);
                 if let Some(meta) = restore_meta {
                     restore_para_meta(&mut new_para, meta, &self.document.doc_info.para_shapes);
                 }
-                cell.paragraphs.insert(cell_para_idx + 1, new_para);
+                paragraphs.insert(cell_para_idx + 1, new_para);
                 break;
             }
-            para = cell
-                .paragraphs
+            para = paragraphs
                 .get_mut(_cpi)
                 .ok_or_else(|| HwpError::RenderError("셀문단 범위 초과".to_string()))?;
         }
@@ -7016,8 +7036,21 @@ impl DocumentCore {
         // 사라지는 문단의 스코프 메타 — undo(split)가 되돌릴 값이다 (Task #2342).
         let mut removed_meta: Option<ParaMeta> = None;
         for (i, &(ctrl_idx, cell_idx, _cpi)) in path.iter().enumerate() {
-            let table = match para.controls.get_mut(ctrl_idx) {
-                Some(Control::Table(t)) => t.as_mut(),
+            let paragraphs = match para.controls.get_mut(ctrl_idx) {
+                Some(Control::Table(t)) => t
+                    .cells
+                    .get_mut(cell_idx)
+                    .map(|cell| &mut cell.paragraphs)
+                    .ok_or_else(|| HwpError::RenderError("셀 범위 초과".to_string()))?,
+                // 글상자: 표 칸 안 글상자와 글상자 안 표 칸도 같은 경로로 내려간다.
+                // 커서·누르기가 그 글상자 글을 `[표 셀, 글상자]` 경로로 준다(#1138).
+                Some(Control::Shape(shape)) => {
+                    super::super::helpers::get_textbox_at_mut(shape, cell_idx)
+                        .map(|text_box| &mut text_box.paragraphs)
+                        .ok_or_else(|| {
+                            HwpError::RenderError("경로: 글상자가 아닙니다".to_string())
+                        })?
+                }
                 // 머리말·꼬리말 뿌리: 그 문단에 든 표로 내려간다(머리말 문단 자체는 머리말 API가 맡는다).
                 Some(ctrl @ (Control::Header(_) | Control::Footer(_)))
                     if i == 0 && cell_idx == 0 && path.len() > 1 =>
@@ -7030,29 +7063,28 @@ impl DocumentCore {
                         })?;
                     continue;
                 }
-                _ => return Err(HwpError::RenderError("경로: 표가 아닙니다".to_string())),
+                _ => {
+                    return Err(HwpError::RenderError(
+                        "경로: 표나 글상자가 아닙니다".to_string(),
+                    ))
+                }
             };
-            let cell = table
-                .cells
-                .get_mut(cell_idx)
-                .ok_or_else(|| HwpError::RenderError("셀 범위 초과".to_string()))?;
             if i == path.len() - 1 {
-                if cell_para_idx >= cell.paragraphs.len() {
+                if cell_para_idx >= paragraphs.len() {
                     return Err(HwpError::RenderError("셀문단 범위 초과".to_string()));
                 }
-                merge_origin_vpos = cell.paragraphs[prev_idx]
+                merge_origin_vpos = paragraphs[prev_idx]
                     .line_segs
                     .first()
                     .map(|seg| seg.vertical_pos);
-                let removed = cell.paragraphs.remove(cell_para_idx);
+                let removed = paragraphs.remove(cell_para_idx);
                 removed_meta = Some(removed.capture_meta());
-                let prev = &mut cell.paragraphs[prev_idx];
-                merge_point = prev.text.chars().count();
-                prev.merge_from(&removed);
+                let previous = &mut paragraphs[prev_idx];
+                merge_point = logical_paragraph_length(previous);
+                previous.merge_from(&removed);
                 break;
             }
-            para = cell
-                .paragraphs
+            para = paragraphs
                 .get_mut(_cpi)
                 .ok_or_else(|| HwpError::RenderError("셀문단 범위 초과".to_string()))?;
         }

@@ -149,6 +149,7 @@ pub(super) fn transformed(layer: LayerNode, matrix: [f64; 6]) -> LayerNode {
             section_index: None,
             para_index: None,
             control_index: None,
+            cell_context: None,
         }),
     )
     .with_layer(metadata);

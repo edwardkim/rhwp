@@ -408,6 +408,7 @@ impl LayerBuilder {
                     section_index: None,
                     para_index: None,
                     control_index: None,
+                    cell_context: None,
                 }),
             )
             .with_layer(node.layer);
@@ -460,6 +461,7 @@ impl LayerBuilder {
                         section_index: rect.section_index,
                         para_index: rect.para_index,
                         control_index: rect.control_index,
+                        cell_context: None,
                     }),
                 )
                 .with_layer(node.layer);

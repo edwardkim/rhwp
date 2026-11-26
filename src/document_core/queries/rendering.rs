@@ -4107,12 +4107,12 @@ impl DocumentCore {
         Ok(format!("{{\"runs\":[{}]}}", runs.join(",")))
     }
 
-    /// [#4694] 셀/글상자 안 ole 노드의 컨테이너 문맥 방출 — Image 방출(#1151/#1161)과
+    /// [#4694] 셀/글상자 안 OLE·묶음의 컨테이너 문맥 방출 — Image 방출(#1151/#1161)과
     /// 동형. 이것이 비면 studio 선택 ref 가 본문 직속과 구분 불가한 3좌표로 떨어져,
     /// 같은 문단에 앵커된 다른 차트를 조용히 여는 오매칭이 성립한다. 단일 레벨 스칼라
     /// (`cellIdx`/`cellParaIdx`/`outerTableControlIdx`)는 studio 의 by_path 폴백 조립과의
     /// 하위호환, `cellPath` 가 정본이다. 본문 직속(None)은 빈 문자열 — 기존 JSON 그대로.
-    fn ole_layout_context_json(ctx: Option<&crate::renderer::layout::CellContext>) -> String {
+    fn control_layout_context_json(ctx: Option<&crate::renderer::layout::CellContext>) -> String {
         let Some(ctx) = ctx else {
             return String::new();
         };
@@ -4143,7 +4143,7 @@ impl DocumentCore {
 
     /// [#7005] 칸 안 도형(사각형·직선·타원·path)의 칸 좌표 JSON.
     ///
-    /// `ole_layout_context_json` 과 같은 계약이다 — **`cellPath` 가 정본**이고 단일 레벨
+    /// `control_layout_context_json` 과 같은 계약이다 — **`cellPath` 가 정본**이고 단일 레벨
     /// 스칼라는 studio 하위호환이다. 도형 노드는 `CellContext` 대신 #1138 의 평평한 3필드를
     /// 들고 있으므로 그것으로 1단계 경로를 만든다. 셋은 같은 `table_cell_ref` 에서 함께
     /// 오므로 전부 있거나 전부 없다.
@@ -4500,7 +4500,7 @@ impl DocumentCore {
                             public_section(Some(control_ref.section_index)).unwrap_or(control_ref.section_index),
                             public_para(control_ref.para_index),
                             control_ref.control_index,
-                            DocumentCore::ole_layout_context_json(raw_node.cell_context.as_ref()),
+                            DocumentCore::control_layout_context_json(raw_node.cell_context.as_ref()),
                             layer_str
                         ));
                         return;
@@ -4521,7 +4521,7 @@ impl DocumentCore {
                             public_section(Some(control_ref.section_index)).unwrap_or(control_ref.section_index),
                             public_para(control_ref.para_index),
                             control_ref.control_index,
-                            DocumentCore::ole_layout_context_json(placeholder_node.cell_context.as_ref()),
+                            DocumentCore::control_layout_context_json(placeholder_node.cell_context.as_ref()),
                             layer_str
                         ));
                         return;
@@ -4587,9 +4587,10 @@ impl DocumentCore {
                         group_node.control_index,
                     ) {
                         controls.push(format!(
-                            "{{\"type\":\"group\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}}}",
+                            "{{\"type\":\"group\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}{}}}",
                             node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
-                            si, public_para(pi), ci, layer_str
+                            si, public_para(pi), ci,
+                            DocumentCore::control_layout_context_json(group_node.cell_context.as_ref()), layer_str
                         ));
                         return; // 자식 개별 수집하지 않음 — 묶음 전체가 하나의 컨트롤
                     }

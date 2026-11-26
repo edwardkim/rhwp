@@ -4559,7 +4559,7 @@ export class InputHandler {
   /** 클릭 좌표가 글상자의 경계선 위인지 판정한다 */
   private isShapeBorderClick(
     pageX: number, pageY: number,
-    shape: { sec: number; ppi: number; ci: number },
+    shape: { sec: number; ppi: number; ci: number; type?: 'shape' | 'group' },
   ): boolean {
     return _picture.isShapeBorderClick.call(this, pageX, pageY, shape);
   }

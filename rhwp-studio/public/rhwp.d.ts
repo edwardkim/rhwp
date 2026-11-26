@@ -1215,7 +1215,7 @@ export class HwpDocument {
      */
     getHeaderFooterPreviewPage(section_idx: number): string;
     /**
-     * 문서 내 지속 HFT 윤곽 등록의 소유 판정에 쓰이는 선언과 현재 환경.
+     * 인쇄용 글꼴 윤곽을 연결할 때 사용하는 원본 글꼴 선언과 현재 환경.
      */
     getHftOutlineFontContext(): string;
     /**
@@ -1726,6 +1726,7 @@ export class HwpDocument {
      * 반환: JSON `{cellSpacing, paddingLeft, paddingRight, paddingTop, paddingBottom, pageBreak, repeatHeader}`
      */
     getTableProperties(section_idx: number, parent_para_idx: number, control_idx: number): string;
+    getTextAtCellCaretByPath(section_idx: number, parent_para_idx: number, path_json: string, offset: number, count: number): string;
     /**
      * 문단에 텍스트박스가 있는 Shape 컨트롤이 있으면 해당 control_index를 반환한다.
      * 없으면 -1을 반환한다.
@@ -2416,7 +2417,7 @@ export class HwpDocument {
      */
     registerExactFontSource(char_shape_id: number, language_index: number, font_bytes: Uint8Array, face_index: number): string;
     /**
-     * 실제 FontFace의 원본 HFT 프로그램을 paint 전용으로 등록한다. 재조판하지 않는다.
+     * FontFace에 적재한 글꼴을 인쇄용 윤곽으로 등록한다. 쪽 배치는 그대로 유지한다.
      */
     registerHftOutlineFont(family: string, bytes: Uint8Array, face_index: number): boolean;
     /**
@@ -2581,6 +2582,10 @@ export class HwpDocument {
      * 텍스트 치환 (단일)
      */
     replaceText(sec: number, para: number, char_offset: number, length: number, new_text: string): string;
+    /**
+     * Studio의 커서 좌표는 인라인 개체도 한 자리로 센다. 문자 범위 API와 구별한다.
+     */
+    replaceTextAtCellCaretByPath(section_idx: number, parent_para_idx: number, path_json: string, offset: number, count: number, text: string): string;
     /**
      * 표 셀 내부의 짧은 IME 조합 문자열을 원자적으로 교체하고 전체 페이지네이션은 지연한다.
      */
@@ -2939,6 +2944,7 @@ export class HwpDocument {
      * 반환: JSON `{"ok":true}`
      */
     setPictureProperties(section_idx: number, parent_para_idx: number, control_idx: number, props_json: string): string;
+    setPrintBmpFullColor(enabled: boolean): void;
     /**
      * 인쇄 작업 문맥을 선택한다. 일반 화면과 원본 문서에는 반영하지 않는다.
      */
@@ -3629,6 +3635,7 @@ export interface InitOutput {
     readonly hwpdocument_getTableDimensions: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly hwpdocument_getTableDimensionsByPath: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
     readonly hwpdocument_getTableProperties: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+    readonly hwpdocument_getTextAtCellCaretByPath: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number, number, number];
     readonly hwpdocument_getTextBoxControlIndex: (a: number, b: number, c: number) => number;
     readonly hwpdocument_getTextFileText: (a: number) => [number, number];
     readonly hwpdocument_getTextFileUnicode: (a: number) => [number, number];
@@ -3783,6 +3790,7 @@ export interface InitOutput {
     readonly hwpdocument_replaceOne: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
     readonly hwpdocument_replaceRangeInHeaderFooter: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => [number, number, number, number];
     readonly hwpdocument_replaceText: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number, number, number];
+    readonly hwpdocument_replaceTextAtCellCaretByPath: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => [number, number, number, number];
     readonly hwpdocument_replaceTextInCellDeferredPagination: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => [number, number, number, number];
     readonly hwpdocument_resizeControlAt: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
     readonly hwpdocument_resizeTableCells: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
@@ -3852,6 +3860,7 @@ export interface InitOutput {
     readonly hwpdocument_setPageNumberPosition: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
     readonly hwpdocument_setParaShapeId: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly hwpdocument_setPictureProperties: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
+    readonly hwpdocument_setPrintBmpFullColor: (a: number, b: number) => void;
     readonly hwpdocument_setPrintJobContext: (a: number, b: number, c: number) => [number, number];
     readonly hwpdocument_setPrintPngRgb555: (a: number, b: number) => void;
     readonly hwpdocument_setSectionDef: (a: number, b: number, c: number, d: number) => [number, number, number, number];

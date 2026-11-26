@@ -1325,6 +1325,7 @@ impl LayoutEngine {
                         section_index: None,
                         para_index: None,
                         control_index: None,
+                        cell_context: None,
                     })
                 },
                 BoundingBox::new(cell_x, cell_y, cell_w, cell_h),
@@ -8117,6 +8118,7 @@ impl LayoutEngine {
                     section_index: None,
                     para_index: None,
                     control_index: None,
+                    cell_context: None,
                 })
             },
             BoundingBox::new(table_x, table_y, table_width, partial_table_height),
