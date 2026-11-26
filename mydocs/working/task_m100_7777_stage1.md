@@ -1520,6 +1520,10 @@ Native·WASM으로 검증한 버전과 바이트 단위로 일치한다. 매니�
 `a124c0b9af7f2f948dba0d82ad8e17a2ded2a77a3d73f428a923e48c3dfd5dd4`다.
 기여자 보호 문서 대조는 같은 후보의 Native·WASM으로 실행 중이다.
 
+이후 같은 최신 트리의 기여자 보호 문서 4건을 Native와 fresh WASM에서 모두 통과했다.
+8개 실행의 하락은 0건이다. `76076-refined-wasm/contributor/contributor-gate.json`의
+SHA-256은 `064c1b17739b930eb65c8419929ef7efc448e14b6e67c2a464f846553b0a0391`이다.
+
 ### #7779·#7784의 33쪽 줄바꿈과 부모 안여백 대조
 
 #7784와 같은 후보에서 부모 칸 아래 안여백만 없앤 사본을 렌더링했다. 33쪽 부모 칸 하단은
@@ -1662,7 +1666,7 @@ Native는 HCI Poppy를 사용하며, 앞선 브라우저 WASM의 글꼴 결정 �
 두 문단 모두 저장 LineSeg가 없다. 주석만 왼쪽 정렬로 바꾼 사본도 한컴의 첫 줄은
 `근로시간손`, Native의 첫 줄은 `근로시간손실,`에서 끝났다. 해당 한컴 2024 1-up PDF의
 SHA-256은 `b4284ac6255ee6ff2ce6e9c42512126d02fa2e4024c97ff40e631b6eb95565db`다.
-두 주석의 한양중고딕 HFT는 11pt, 장평 100%이며, 같은 자간 −15%인 글자 모양 158·159의
+두 주석의 한양중고딕은 11pt, 장평 100%이며, 같은 자간 −15%인 글자 모양 158·159의
 굵기 비트만 서로 바꿔 대조했다. 한컴 Print에서 두 쪽의 같은 한글 인접쌍은
 보통→굵게 각각 8쌍에서 약 **+0.640px**, 굵게→보통 각각 8쌍에서 약 **−0.640px**
 움직였다. 양쪽 Type3의 조사 대상 한글 `/Widths`는 1000으로 같고 Native에서는 같은
@@ -1693,6 +1697,28 @@ JSON의 SHA-256은 `60cff35f4b754aaad88b7c946950f112865865949f98025b75684d2b739e
 각각 일치했고 raw 값은 **95.87539%**, **90.78084%**로 유지됐다. 이 후보는 두 쪽의 차이를
 줄이지 못했다. 6→7쪽 컷 후보는 새 검토 작업공간을 준비할 때 여유가 409,480 KiB여서
 빌드 전에 멈췄다. `recursive-cut-trial/available-before-checkout.txt`에 확인값이 있다.
+
+이전에 검증을 끝낸 작업 트리의 소스와 Native 바이너리 SHA-256을 고정한 뒤, 같은 작업공간에
+6→7쪽 후보 트리 `4341471b40b960b0f23e7db7c354dbc0c0b6aae4`를 적용했다. 새 체크아웃 없이
+`recursive-cut-trial/resume-reused-worktree.sh`로 두 원본 6·7쪽의 Native 검사를 공유 Cargo
+순서에 다시 연결했다.
+
+자간 후보가 적용되지 않은 조건을 원본 바이트와 실제 공급 기록으로 확인했다. 글자 모양
+158·159가 참조하는 한글 슬롯 9의 저장 이름은 `한양중고딕`이며 `FACE_NAME` 속성은
+`0x81`이다. 현재 파서가 읽는 하위 두 비트는 1이어서 후보의 `alt_type==2` 조건이 성립하지
+않는다. 후보가 예외 조건에서 비교한 `HanyangJungGothic`은 폭 표의 별칭이다. 두 쪽의
+공급 기록은 `JPJGT.otf`의 원본 프로그램 SHA-256
+`51f74cd14a836a0de1d179c75fbe6a42f18a87944d08782bfa674c8ac8fa00e2`에서 파생한
+face 0 식별자와 일치한다. 이 프로그램은 OpenType CFF Regular다. 결과는
+`bold-tracking-trial/original-face-and-supply.json` SHA-256
+`38a170427dd24518c54300655e71f3a21692b16f25fec41c1d04d4765addddb7`에 있다.
+동일 대조 사본의 `FACE_NAME` 하위 두 비트만 1→2로 바꿔 한컴 2024에서 1-up Print를
+다시 실행했다. 96 DPI로 래스터화한 전 82쪽의 픽셀이 모두 일치했다. 동일 Native 바이너리와
+글꼴 공급으로 확인한 51·82쪽 PNG는 크기 794×1,122px가 같았고, RGB 픽셀 차이가 각각
+`(85, 84, 697, 396)`, `(227, 81, 696, 227)` 경계에 있었다. 한컴 Print 작업 ID는
+`61819bfb-951b-4093-90da-f08b2e733408`, `a95305ee-1448-4bcd-a6f3-741a9a42dd7b`다.
+전쪽 픽셀 대조는 `declared-face-bit-control/comparison.json`에 있으며 SHA-256은
+`0fd14335d7acbdc739bfe568222826424c5807f1836c5f606cc9c4a0ea903236`이다.
 
 두 76076 원본의 최소 글꼴 전 82쪽에서 고정 devel과 Native 후보의 `layout-anomaly` JSON은
 원본별로 바이트가 같다. text-overlap·off-canvas·stored-line-escape는 네 실행에서 모두 0이다.
@@ -1821,6 +1847,16 @@ PDF SHA-256과 소속은 `7778-v4-continuation-frame/p19-outer-margin-audit/`에
 `5c9759db-12c4-40a2-885f-18a257df015d`의 결과는
 `row49-content-fit/separate-line-components/comparison.json`에 있다. SHA-256은
 `eab774b4b5ef397968fbdb6dc0f26a30f132e3fbf40fe4054796e080893e1711`다.
+
+표 레코드의 `noAdjust` 비트만 추가해 속성값을 6→14로 바꿨다. 원래 여백에서 한컴 2024
+Print는 49번을 18쪽에 수용했고, 그 행의 물리 높이는 **1,403.96 HU**였다. 바깥 아래 여백
+0 HU 대조에서는 같은 행이 18쪽에 유지됐으며 마지막 괘선은 **95.99878 HU** 내려갔다.
+두 사본의 17쪽 9행과 18쪽에서 공통으로 수용한 9~48번의 위치는 유지됐다. Native의 18쪽은
+두 사본 모두 49번까지이며 원래 여백에서도 같은 컷이었다. `noAdjust`가 일반 격자 조각의
+수용 하단에도 약 100 HU 영향을 준다는 증거이며, 나머지 하단 여유의 출처는 열려 있다.
+Job `7f24be16-1f32-4ecd-807a-a5fa40d21816`, `6a73629f-1d94-4fad-b1ff-3957733dded5`와
+`no-adjust-boundary-controls/comparison.json`의 SHA-256
+`dae6be63e874305b3e628da331ffb1d5576ce76f5387a13c7baf59cb9bd7a2f5`를 보존했다.
 
 현재 Native의 용량 컷과 배치가 내용 전부를 소비한 짧은 마지막 행을 처리하는지 확인하려고,
 표의 아래 여백만 키운 진단 사본을 실행했다. 1,100·1,200 HU에서 `[1, 1, 1, 1]` 컷이
