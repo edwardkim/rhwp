@@ -62,6 +62,16 @@ pub(crate) fn measured_reflow_inline_table_with_storage<S: crate::storage::Stora
         .map(Some)
 }
 
+/// 글자(공백만이어도)가 있는 host 의 양수 세로 오프셋 TAC 표는 줄 상자 밖에 놓인다.
+///
+/// 조판(`place_table_with_text` 의 표 앞 글 경로, 같은 `!text.is_empty()` 와 부호 있는
+/// 세로 오프셋 판정)은 이 host 의 줄을 모두 표 앞 글로 쌓은 뒤 표 높이를 따로 전진한다. 이 표를 프레임 줄의 점유로 발행하면 표 높이가
+/// 줄 전진과 표 배치에 두 번 계상되어 표가 쪽 아래 경계 밖으로 밀린다(#8463).
+fn table_placed_below_host_lines(paragraph: &Paragraph, table: &Table) -> bool {
+    !paragraph.text.is_empty()
+        && crate::renderer::float_placement::captioned_table_flow_vertical_offset_hu(table) > 0
+}
+
 /// 저장 줄 없는 본문도 셀과 같은 표 실측을 현재 줄의 소유 정보로 발행한다.
 /// 캡션을 제외한 본체 높이는 앵커용이며, 줄의 전체 점유는 기존 조판기가 측정한다.
 pub(crate) fn reflow_inline_table_heights(
@@ -80,6 +90,9 @@ pub(crate) fn reflow_inline_table_heights(
             let Control::Table(table) = control else {
                 return None;
             };
+            if table_placed_below_host_lines(paragraph, table) {
+                return None;
+            }
             let measured = measured_reflow_inline_table(table, styles, dpi)?;
             let body = measured.total_height - measured.caption_height;
             let height = u32::try_from(crate::renderer::px_to_hwpunit(body, dpi)).ok()?;
@@ -102,7 +115,9 @@ pub(crate) fn reflow_inline_table_heights_with_storage<S: crate::storage::Storag
         let Control::Table(table) = control else {
             continue;
         };
-        if !inline_table_needs_reflow_measurement_with_storage(table, storage)? {
+        if table_placed_below_host_lines(paragraph, table)
+            || !inline_table_needs_reflow_measurement_with_storage(table, storage)?
+        {
             continue;
         }
         let measured = HeightMeasurer::new(dpi)
