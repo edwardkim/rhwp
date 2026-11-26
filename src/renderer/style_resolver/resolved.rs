@@ -349,6 +349,18 @@ impl ResolvedCharStyle {
             .unwrap_or(false)
     }
 
+    /// 실제 원본 TrueType의 합성 굵기 전진에 필요한 공급 후보.
+    pub(crate) fn requests_h2gtrm_bold_tracking(&self, lang: usize) -> bool {
+        self.bold
+            && matches!(
+                self.font_family_for_lang(lang)
+                    .split(',')
+                    .next()
+                    .map(str::trim),
+                Some("한양중고딕" | "HY중고딕" | "HYGothic" | "HYGothic-Medium")
+            )
+    }
+
     /// [#7391] 이 언어 슬롯의 폭을 잴 때 쓸 face. 되돌릴 게 없으면 `None`.
     pub fn metric_face_for_lang(&self, lang_index: usize) -> Option<&str> {
         let slot = if lang_index < self.font_families.len()

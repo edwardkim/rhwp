@@ -1019,6 +1019,19 @@ fn try_char_style_to_text_style<S: crate::renderer::style_resolver::storage::Sto
             fixed_glyph_advances: false,
             source_font_is_hft: cs.source_hft_for_lang(lang_index),
             source_font_is_ttf: cs.source_ttf_for_lang(lang_index),
+            // 원본 굵기 전진의 확인에는 공급 프로그램의 신원만 필요하다.
+            // 표시용 치환에 자연 폭을 허용하지 않은 슬롯도 전진 확인은 같은 프로그램을 쓴다.
+            h2gtrm_faux_bold_tracking: cs.requests_h2gtrm_bold_tracking(lang_index)
+                && !styles.has_exact_font_source(char_style_id, lang_index)
+                && styles
+                    .native_pua_fonts
+                    .get_otf_for_source(
+                        cs.font_family_for_lang(lang_index),
+                        cs.bold,
+                        cs.italic,
+                        true,
+                    )
+                    .is_some_and(|font| font.uses_h2gtrm_faux_bold()),
             selected_primary_font_program: cs
                 .font_families_primary_program
                 .get(lang_index)
@@ -2970,11 +2983,11 @@ fn measure_scalar_advance<'a>(
                 // 주 TrueType은 한글 음절 U+AC00..U+D7A3 전부를 직접 공급한다.
                 || (latin.is_none()
                     && ('가'..='힣').contains(&c)
-                    && matches!(
+                    && (style.h2gtrm_faux_bold_tracking || (matches!(
                         style.metric_font_family.as_deref(),
                         Some("한양중고딕" | "한양중고딕 (HFT)")
                     )
-                    && otf_metrics.is_some_and(|font| font.uses_h2gtrm_faux_bold()))
+                    && otf_metrics.is_some_and(|font| font.uses_h2gtrm_faux_bold()))))
                 || (style.source_font_is_hft && width_source == "heuristicFullwidth")
             {
                 font_size * 0.05
