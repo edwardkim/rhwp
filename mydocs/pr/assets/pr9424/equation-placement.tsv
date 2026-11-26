@@ -1,0 +1,11 @@
+equation_position	format	single_slot_ranges	pr_ranges_different_from_devel	corrected_ranges_different_from_devel
+front	hwp	5	2	0
+front	hwpx	5	2	0
+middle	hwp	5	0	0
+middle	hwpx	5	0	0
+end	hwp	5	0	0
+end	hwpx	5	0	0
+double-front	hwp	6	3	0
+double-front	hwpx	6	3	0
+alone	hwp	1	0	0
+alone	hwpx	1	0	0
