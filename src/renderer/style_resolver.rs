@@ -861,6 +861,7 @@ pub(crate) fn try_resolve_single_char_style<A: storage::Storage>(
     let mut font_families_glyph_fallback_advance_explicit = storage.vec(LANG_COUNT)?;
     let mut font_families_hft_hangul = storage.vec(LANG_COUNT)?;
     let mut font_families_source_hft = storage.vec(LANG_COUNT)?;
+    let mut font_families_source_hft_substitute = storage.vec(LANG_COUNT)?;
     let mut font_families_source_ttf = storage.vec(LANG_COUNT)?;
     let mut font_families_verified_hft_bold_tracking = storage.vec(LANG_COUNT)?;
     let mut font_families_hft_print_frame = storage.vec(LANG_COUNT)?;
@@ -882,6 +883,13 @@ pub(crate) fn try_resolve_single_char_style<A: storage::Storage>(
             .get(lang)
             .and_then(|faces| faces.get(font_id as usize));
         font_families_source_hft.push(source_font.is_some_and(|face| face.alt_type == 2));
+        font_families_source_hft_substitute.push(
+            source_font
+                .and_then(|face| face.subst_font.as_ref())
+                .is_some_and(|substitute| {
+                    substitute.font_type == 2 && !substitute.face.trim().is_empty()
+                }),
+        );
         font_families_source_ttf.push(source_font.is_some_and(|face| face.alt_type == 1));
         font_families_verified_hft_bold_tracking.push(source_font.is_some_and(
             crate::renderer::legacy_font_advances::has_verified_hft_bold_tracking_source,
@@ -1069,6 +1077,7 @@ pub(crate) fn try_resolve_single_char_style<A: storage::Storage>(
         font_families_glyph_fallback_advance_explicit,
         font_families_hft_hangul,
         font_families_source_hft,
+        font_families_source_hft_substitute,
         font_families_source_ttf,
         font_families_primary_program: vec![None; LANG_COUNT],
         font_families_verified_hft_bold_tracking,
