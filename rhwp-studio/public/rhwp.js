@@ -5648,7 +5648,7 @@ export class HwpDocument {
         }
     }
     /**
-     * 문서 내 지속 HFT 윤곽 등록의 소유 판정에 쓰이는 선언과 현재 환경.
+     * 인쇄용 글꼴 윤곽을 연결할 때 사용하는 원본 글꼴 선언과 현재 환경.
      * @returns {string}
      */
     getHftOutlineFontContext() {
@@ -11239,7 +11239,7 @@ export class HwpDocument {
         }
     }
     /**
-     * 실제 FontFace의 원본 HFT 프로그램을 paint 전용으로 등록한다. 재조판하지 않는다.
+     * FontFace에 적재한 글꼴을 인쇄용 윤곽으로 등록한다. 쪽 배치는 그대로 유지한다.
      * @param {string} family
      * @param {Uint8Array} bytes
      * @param {number} face_index
@@ -13882,6 +13882,12 @@ export class HwpDocument {
         } finally {
             wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
         }
+    }
+    /**
+     * @param {boolean} enabled
+     */
+    setPrintBmpFullColor(enabled) {
+        wasm.hwpdocument_setPrintBmpFullColor(this.__wbg_ptr, enabled);
     }
     /**
      * 인쇄 작업 문맥을 선택한다. 일반 화면과 원본 문서에는 반영하지 않는다.

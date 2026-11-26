@@ -544,6 +544,7 @@ export const hwpdocument_setPageHideOnPage: (a: number, b: number, c: number, d:
 export const hwpdocument_setPageNumberPosition: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
 export const hwpdocument_setParaShapeId: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const hwpdocument_setPictureProperties: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
+export const hwpdocument_setPrintBmpFullColor: (a: number, b: number) => void;
 export const hwpdocument_setPrintJobContext: (a: number, b: number, c: number) => [number, number];
 export const hwpdocument_setPrintPngRgb555: (a: number, b: number) => void;
 export const hwpdocument_setSectionDef: (a: number, b: number, c: number, d: number) => [number, number, number, number];

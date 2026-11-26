@@ -1215,7 +1215,7 @@ export class HwpDocument {
      */
     getHeaderFooterPreviewPage(section_idx: number): string;
     /**
-     * 문서 내 지속 HFT 윤곽 등록의 소유 판정에 쓰이는 선언과 현재 환경.
+     * 인쇄용 글꼴 윤곽을 연결할 때 사용하는 원본 글꼴 선언과 현재 환경.
      */
     getHftOutlineFontContext(): string;
     /**
@@ -2417,7 +2417,7 @@ export class HwpDocument {
      */
     registerExactFontSource(char_shape_id: number, language_index: number, font_bytes: Uint8Array, face_index: number): string;
     /**
-     * 실제 FontFace의 원본 HFT 프로그램을 paint 전용으로 등록한다. 재조판하지 않는다.
+     * FontFace에 적재한 글꼴을 인쇄용 윤곽으로 등록한다. 쪽 배치는 그대로 유지한다.
      */
     registerHftOutlineFont(family: string, bytes: Uint8Array, face_index: number): boolean;
     /**
@@ -2944,6 +2944,7 @@ export class HwpDocument {
      * 반환: JSON `{"ok":true}`
      */
     setPictureProperties(section_idx: number, parent_para_idx: number, control_idx: number, props_json: string): string;
+    setPrintBmpFullColor(enabled: boolean): void;
     /**
      * 인쇄 작업 문맥을 선택한다. 일반 화면과 원본 문서에는 반영하지 않는다.
      */
@@ -3859,6 +3860,7 @@ export interface InitOutput {
     readonly hwpdocument_setPageNumberPosition: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
     readonly hwpdocument_setParaShapeId: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly hwpdocument_setPictureProperties: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
+    readonly hwpdocument_setPrintBmpFullColor: (a: number, b: number) => void;
     readonly hwpdocument_setPrintJobContext: (a: number, b: number, c: number) => [number, number];
     readonly hwpdocument_setPrintPngRgb555: (a: number, b: number) => void;
     readonly hwpdocument_setSectionDef: (a: number, b: number, c: number, d: number) => [number, number, number, number];
