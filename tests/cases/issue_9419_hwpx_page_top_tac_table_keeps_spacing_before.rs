@@ -1,5 +1,5 @@
 //! 관계형·고정형 — [#9419] 한/글이 저장한 HWPX 의 쪽 첫 글자처럼 취급 표는 저장 첫 줄이 증언하는 문단 위 간격 아래에 그리며, 같은 문서의 HWP 와 같은 자리다.
-//! 주석 갱신: 2026-11-26 KST_TIME KST (처음 작성)
+//! 주석 갱신: 2026-11-26 15:08 KST (처음 작성)
 //!
 //! 입력:
 //! - `samples/issue9419/kaf_appendix_2020.hwpx` — `samples/issue9379/kaf_appendix.hwp` 를 한/글 2020(11.0.0.1623)으로
@@ -18,7 +18,13 @@
 //! - 반례: 위 간격이 저장 사다리에 없는(첫 줄 vpos 가 0 이거나 위 간격보다 큰) 생성기 문서는 증언 값이 0 이라
 //!   종전과 같다(10k 코퍼스 A/B, PR 본문).
 //!
-//! 측정: MEASURE_NOTE
+//! 측정(2026-11-26, head f70f6fe602 위 이 검사, `scripts/visual_sweep.py` silhouette_raw_match_percent, 96 DPI,
+//! 기준 `pdf/issue9419/kaf_appendix_2020-2020.pdf` 54쪽):
+//! - HWPX: 21쪽 Native 98.35 · fresh WASM 99.30, 23쪽 Native 98.67 · fresh WASM 99.91(수정 전 Native 61.63 · 62.25).
+//!   전체 54쪽 = PDF 54쪽. 전쪽 최저 Native 94.30 · fresh WASM 92.56(1쪽, 표지 글꼴 대체 NotoSansKRThin-Bold→H2hdrM,
+//!   HWP 와 같은 값). 98 미만은 1쪽·24쪽(글꼴 대체, Native 97.40)·36쪽(글상자, Native 95.96 · WASM 96.04, 별건 #9422).
+//! - HWP(대조군 `samples/issue9379/kaf_appendix.hwp`): 54쪽, Native 전쪽 값이 수정 전과 같다(21쪽 98.30 · 23쪽 98.57).
+//! - 증거: `mydocs/pr/assets/issue_9419/` 의 Native·fresh WASM·수정 전 Native TSV 와 21·23쪽 review·overlay PNG.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
