@@ -271,6 +271,13 @@ fn hwp_custom_paragraph_flags_survive_hwpx_and_hwp_without_becoming_word_default
         let body = &export.sections[0].paragraphs;
         let first = &body[1].line_segs[0];
         let next = &body[2].line_segs[0];
+        // 한컴이 같은 문단을 HWPX로 저장한 lineSeg의 textheight는 실제 글줄 높이와 같다.
+        assert_eq!(first.text_height, first.line_height, "{name}");
+        assert!(
+            (next.vertical_pos - first.vertical_pos - first.line_height - first.line_spacing).abs()
+                <= 1,
+            "{name}"
+        );
         assert!(
             first.line_height > 0 && first.baseline_distance > 0,
             "{name}"

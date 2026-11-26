@@ -1032,6 +1032,9 @@ pub struct TextLineNode {
     /// Optional source ownership; ordinary body lines keep their existing JSON.
     #[serde(rename = "captionOwner", skip_serializing_if = "Option::is_none")]
     pub caption_owner: Option<CaptionOwner>,
+    /// 실제로 배치한 본문 줄의 문자 시작과 후행 간격(px). 저장 줄 재구성에 쓴다.
+    #[serde(skip)]
+    pub(crate) source_flow: Option<(usize, f64)>,
     /// 줄 높이 (px)
     pub line_height: f64,
     /// 베이스라인 위치 (줄 상단으로부터, px)
@@ -1051,6 +1054,7 @@ impl TextLineNode {
     pub fn new(line_height: f64, baseline: f64) -> Self {
         Self {
             caption_owner: None,
+            source_flow: None,
             line_height,
             baseline,
             section_index: None,
@@ -1075,6 +1079,7 @@ impl TextLineNode {
             line_index: None,
             vpos: None,
             caption_owner: None,
+            source_flow: None,
         }
     }
 
@@ -1095,6 +1100,7 @@ impl TextLineNode {
             line_index: Some(line_index),
             vpos: Some(vpos),
             caption_owner: None,
+            source_flow: None,
         }
     }
 }

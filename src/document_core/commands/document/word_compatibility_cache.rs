@@ -5,7 +5,7 @@ use crate::model::document_compatibility::{CompatibilityTarget, DocumentCompatib
 use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::renderer::composer::composed_line_text_starts;
 use crate::renderer::px_to_hwpunit;
-use crate::renderer::render_tree::{BoundingBox, RenderNodeType};
+use crate::renderer::render_tree::RenderNodeType;
 use std::collections::BTreeMap;
 
 fn needs_saved_rows(para: &Paragraph) -> bool {
@@ -31,6 +31,7 @@ impl DocumentCore {
             return;
         }
 
+        let hu = |px| px_to_hwpunit(px, self.dpi);
         let mut frames = BTreeMap::new();
         for page in 0..self.page_count() {
             let Ok(tree) = self.build_page_tree_cached(page) else {
@@ -63,49 +64,53 @@ impl DocumentCore {
                             continue;
                         };
                         if needs_saved_rows(para) {
-                            let local = BoundingBox {
-                                x: node.bbox.x - column.bbox.x,
-                                y: node.bbox.y - column.bbox.y,
-                                width: node.bbox.width,
-                                height: line.line_height,
-                            };
-                            frames.entry((s, p)).or_insert_with(Vec::new).push((
-                                i as usize,
-                                local,
-                                line.baseline,
-                            ));
+                            let row = line.source_flow.map(|(char_start, spacing)| {
+                                let height = hu(line.line_height);
+                                let segment = LineSeg {
+                                    text_start: 0,
+                                    vertical_pos: hu(node.bbox.y - column.bbox.y),
+                                    line_height: height,
+                                    text_height: height,
+                                    baseline_distance: hu(line.baseline),
+                                    line_spacing: hu(spacing),
+                                    column_start: hu(node.bbox.x - column.bbox.x),
+                                    segment_width: hu(node.bbox.width),
+                                    tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                                };
+                                (char_start, segment)
+                            });
+                            frames
+                                .entry((s, p))
+                                .or_insert_with(Vec::new)
+                                .push((i as usize, row));
                         }
                     }
                 }
             }
         }
-        let hu = |px| px_to_hwpunit(px, self.dpi);
         for ((s, p), placed) in frames {
-            let Some(composed) = self.section_render_composed(s).get(p) else {
+            // 같은 줄이 반복되거나 줄의 원본 소유권을 모르면 불완전한 캐시를 쓰지 않는다.
+            let Some(rows): Option<Vec<_>> = placed
+                .into_iter()
+                .enumerate()
+                .map(|(expected, (index, row))| row.filter(|_| index == expected))
+                .collect()
+            else {
                 continue;
             };
-            if placed.len() != composed.lines.len()
-                || !placed.iter().enumerate().all(|(i, (row, _, _))| i == *row)
-            {
-                continue;
-            }
-
             let para = &mut document.sections[s].paragraphs[p];
-            let starts = composed_line_text_starts(para, &composed.lines, &self.styles, self.dpi);
-            let rows: Vec<_> = placed
+            let starts = composed_line_text_starts(
+                para,
+                rows.iter().map(|(start, _)| *start),
+                &self.styles,
+                self.dpi,
+            );
+            let rows: Vec<_> = rows
                 .into_iter()
-                .zip(&composed.lines)
                 .zip(starts)
-                .map(|(((_, bounds, baseline), line), text_start)| LineSeg {
-                    text_start,
-                    vertical_pos: hu(bounds.y),
-                    line_height: hu(bounds.height),
-                    text_height: line.line_height,
-                    baseline_distance: hu(baseline),
-                    line_spacing: line.line_spacing,
-                    column_start: hu(bounds.x),
-                    segment_width: hu(bounds.width),
-                    tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                .map(|((_, mut row), start)| {
+                    row.text_start = start;
+                    row
                 })
                 .collect();
             para.source_line_seg_vertical_pos =

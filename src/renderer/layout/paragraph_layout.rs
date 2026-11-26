@@ -8056,9 +8056,10 @@ impl LayoutEngine {
                 } else {
                     line_spacing_px
                 };
-            if equation_tac_extra_rows > 0 {
-                line_node.bbox.height = line_flow_height;
-                if let RenderNodeType::TextLine(ref mut text_line) = line_node.node_type {
+            if let RenderNodeType::TextLine(text_line) = &mut line_node.node_type {
+                text_line.source_flow = Some((comp_line.char_start, render_line_spacing_px));
+                if equation_tac_extra_rows > 0 {
+                    line_node.bbox.height = line_flow_height;
                     text_line.line_height = line_flow_height;
                 }
             }
