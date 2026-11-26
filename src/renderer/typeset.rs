@@ -5356,6 +5356,20 @@ impl TypesetEngine {
             0.0
         };
 
+        // [#8474·#9419] 단 맨 위 host 의 저장 첫 줄이 증언하는 쪽 위 간격(px).
+        // 단 원점 앵커와 host 간격 가산이 같은 값을 소비한다.
+        let stored_column_top_spacing =
+            if st.current_items.is_empty() && para_start_height < 1.0 && pre_height <= 0.5 {
+                crate::renderer::stored_line_ladder::stored_column_top_spacing(
+                    para,
+                    fmt.spacing_before,
+                    (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
+                        && !st.profile.session_edited(),
+                    self.dpi,
+                )
+            } else {
+                0.0
+            };
         // 표 배치
         // [#2243] 표가 컬럼 첫 항목이면 vpos 앵커 확립 — 표 경로는
         // vpos_snap_current_height 를 거치지 않아 page_base 가 미확립으로 남고,
@@ -5375,8 +5389,14 @@ impl TypesetEngine {
                         + table.outer_margin_top as i64
                         + table.outer_margin_bottom as i64;
                 if stored && covers {
+                    // [#9419] 저장 첫 줄이 쪽 위 간격을 증언하면(한/글 저장 사다리) 그 vpos 는
+                    // 위 간격 아래의 줄 윗변이다. 단 원점(위 간격 앞의 흐름)은 그만큼 위다.
+                    // 위 간격이 없는 생성기 사다리는 증언 값이 0 이라 종전과 같다.
                     st.record_vpos_column_anchor(st.current_height);
-                    st.record_vpos_page_origin(Some(s0.vertical_pos));
+                    st.record_vpos_page_origin(Some(
+                        s0.vertical_pos
+                            - crate::renderer::px_to_hwpunit(stored_column_top_spacing, self.dpi),
+                    ));
                     st.record_vpos_lazy_origin(None);
                     st.record_vpos_origin_provenance(true);
                     st.record_vpos_ladder_validity(false);
@@ -5910,7 +5930,15 @@ impl TypesetEngine {
             // [#2279 sec0] host 문단에 표 줄 외 추가 줄박스(트레일러 빈 줄)가
             // 이미 있으면 그 줄의 fmt 가 spacing 을 계상하므로 제외(36392557
             // sec0 표지: 표 892.5 + 트레일러 25.6 = 918.1 로 한글 1쪽).
-            Some(fmt.spacing_before + fmt.spacing_after)
+            // [#9419] sb+sa 가산은 간격이 빠진 생성기 사다리를 한/글처럼 다시 세우는
+            // 규칙이다. 단 맨 위 저장 첫 줄이 위 간격을 증언하면 사다리가 이미 한/글의
+            // 것이므로 표 줄 앞에는 그 위 간격만 둔다. 뒤 간격(줄간격+sa)은 아래
+            // 끝 복원(`total_height - height_for_fit`)이 한 번 소유한다.
+            Some(if stored_column_top_spacing > 0.0 {
+                stored_column_top_spacing
+            } else {
+                fmt.spacing_before + fmt.spacing_after
+            })
         } else {
             None
         } {
