@@ -1354,6 +1354,13 @@ Native 근거는 `7777-v2-candidate/native/`, 동일 후보의 fresh WASM과 보
 파생 파일은 stage하지 않았다. 명령과 최소 글꼴 목록, 라이브러리 SHA, 결과는
 `7777-v2-candidate/regression-preflight/`에 있다.
 
+고정 devel `cbebdbeeca`의 Native 재빌드를 완료했다. 같은 최소 글꼴 환경에서 정식 원본의
+Rust 검사 2건이 모두 47쪽을 반환해 예상대로 실패했다. 후보의 정식 nextest는 sparse
+checkout에 Cargo 워크스페이스 매니페스트가 빠져 컴파일 전에 종료 코드 102를 반환했다.
+필요한 경로를 추가한 뒤 Cargo 메타데이터와 후보 트리 `4a132134d2aa85042d7791b80d9bd557439e0951`를
+다시 확인했다. 실패 로그와 기준 결과를 보존했고, 같은 후보의 생성 suite만 공유 Cargo
+대기열에 다시 등록했다.
+
 같은 Native 후보는 등록 글꼴 환경의 행정업무운영 편람 HWPX 정본 전 383쪽을 통과했다.
 381쪽이 100.00%, 최저 99.97%다. 전쪽 TSV SHA-256
 `261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590`는 앞선 보호 통과
