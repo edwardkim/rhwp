@@ -1,3 +1,12 @@
+//! 관계형·고정형 회귀 검사. #8582 원본과 메인테이너 경계 사례.
+//! 주석 갱신 2026-11-26 11:26 KST. 직전 파일 변경 c929ec9de0 2026-11-25T23:45:58+09:00.
+//! 독립 한컴 Print와 96 DPI의 2px raw 실루엣. 전쪽 TSV · 확대 판독: `mydocs/pr/assets/hyunmyungjanelee-20261126/final/README.md`.
+//! `word_gulim_ko` 전 1쪽. Native 100.00%, fresh WASM 100.00% (쪽 순서).
+//! `word_gulim_en` 전 1쪽. Native 100.00%, fresh WASM 100.00% (쪽 순서).
+//! `word_space_controls` 전 1쪽. Native 100.00%, fresh WASM 100.00% (쪽 순서).
+//! `word_height_times` 전 1쪽. Native 100.00%, fresh WASM 100.00% (쪽 순서).
+//! `word_height_arial` 전 1쪽. Native 100.00%, fresh WASM 100.00% (쪽 순서).
+//!
 //! #8582: 호환 대상이 MS 워드인 문서의 저장 줄 없는 문단 줄 높이.
 //!
 //! 기준: 데스크톱 한컴 2024 인쇄 PDF(Hancom PDF 드라이버)의 글자 기준선 간격(600dpi, 12 HU 단위).
@@ -116,4 +125,164 @@ fn word_target_paragraph_mark_font_extends_last_line() {
         1903.0,
         10.0,
     );
+}
+
+#[test]
+fn word_gulim_localized_family_names_place_every_line_together() {
+    let (_, korean) = tops("word_gulim_ko");
+    let (_, english) = tops("word_gulim_en");
+    for (para, (ko, en)) in korean.iter().zip(english).enumerate() {
+        assert!(
+            (ko - en).abs() < 0.01,
+            "같은 TTC를 지정한 문단 {para}의 줄 위끝 {ko} / {en}"
+        );
+    }
+}
+
+#[test]
+fn word_western_faces_use_the_printed_script_fallback_line_height() {
+    let (_, serif) = tops("word_height_times");
+    let (_, sans) = tops("word_height_arial");
+    let step = |rows: &[f64], start: usize| (rows[start + 4] - rows[start]) / 4.0;
+    let western = step(&serif, 1);
+    assert!((western - step(&sans, 1)).abs() < 0.01);
+    let hangul_serif = step(&serif, 6);
+    let hangul_sans = step(&sans, 6);
+    assert!(western < hangul_serif && hangul_serif < hangul_sans);
+    assert!((step(&serif, 11) - hangul_serif).abs() < 0.01);
+    assert!((step(&sans, 11) - hangul_sans).abs() < 0.01);
+}
+
+#[test]
+fn word_compatibility_uses_the_xml_attribute_of_the_compatible_document() {
+    let mut core = load("word_hcr_p100");
+    let original = core.document().clone();
+    let pitch = |core: &DocumentCore| {
+        let page = core.build_page_render_tree(0).unwrap();
+        line_top(&page.root, 2).unwrap() - line_top(&page.root, 1).unwrap()
+    };
+    let word_pitch = pitch(&core);
+    let tail = original
+        .doc_info
+        .hwpx_head_tail
+        .as_deref()
+        .expect("호환 설정");
+    let attr = "targetProgram=\"MS_WORD\"";
+    assert!(tail.contains(attr));
+    let mut quoted = original.clone();
+    quoted.doc_info.hwpx_head_tail = Some(tail.replace(attr, "targetProgram='MS_WORD'"));
+    core.set_document(quoted);
+    let bytes = core.export_hwpx_native().unwrap();
+    core = DocumentCore::from_bytes(&bytes).unwrap();
+    assert!((pitch(&core) - word_pitch).abs() < 0.01);
+
+    let mut hangul = original.clone();
+    hangul.doc_info.hwpx_head_tail = Some(format!(
+        "<!-- {attr} -->{}",
+        tail.replace(attr, "targetProgram='HWP201X'")
+    ));
+    core.set_document(hangul);
+    let bytes = core.export_hwpx_native().unwrap();
+    core = DocumentCore::from_bytes(&bytes).unwrap();
+    assert!(pitch(&core) < word_pitch);
+}
+
+#[test]
+fn word_single_latin_space_differs_from_mixed_and_repeated_spaces() {
+    fn space_widths(node: &RenderNode, widths: &mut [Option<f64>; 4]) {
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            let slot = match (run.para_index, run.text.as_str()) {
+                (Some(1), " ") => Some(0),  // A A
+                (Some(2), " ") => Some(1),  // 가 가
+                (Some(3), " ") => Some(2),  // A 가
+                (Some(5), "  ") => Some(3), // A  A
+                _ => None,
+            };
+            if let Some(i) = slot {
+                assert!(widths[i].replace(node.bbox.width).is_none());
+            }
+        }
+        for child in &node.children {
+            space_widths(child, widths);
+        }
+    }
+    let core = load("word_space_controls");
+    let tree = core.build_page_render_tree(0).unwrap();
+    let mut widths = [None; 4];
+    space_widths(&tree.root, &mut widths);
+    let [latin, hangul, mixed, double] = widths.map(|w| w.expect("공백 run"));
+    assert!(latin < hangul);
+    assert!((mixed - hangul).abs() < 0.05);
+    assert!((double - 2.0 * hangul).abs() < 0.05);
+}
+
+fn word_record(core: &DocumentCore, tag: u16) -> Vec<u32> {
+    let mut matches = core
+        .document()
+        .doc_info
+        .extra_records
+        .iter()
+        .filter(|r| r.tag_id == tag);
+    let record = matches.next().expect("필요한 호환 레코드");
+    assert!(matches.next().is_none(), "레코드가 중복되지 않아야 한다");
+    record
+        .data
+        .chunks_exact(4)
+        .map(|bytes| u32::from_le_bytes(bytes.try_into().unwrap()))
+        .collect()
+}
+
+#[test]
+fn hancom_word_target_and_layout_survive_repeated_saves_in_both_directions() {
+    let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/issue8582");
+    // 한컴에서 같은 문서를 HWP로 저장해 표 55·56 레코드를 직접 읽은 값이다.
+    let preset = [0x09e3, 0x00cd_f8ff, 0x4f, 0x07ec, 0];
+    for (name, initial_hwpx) in [
+        ("word_gulim_ko.hwpx", true),
+        ("word_gulim_ko_hancom.hwp", false),
+    ] {
+        let mut core = DocumentCore::from_bytes(&std::fs::read(dir.join(name)).unwrap()).unwrap();
+        for cycle in 0..4 {
+            let save_hwp = (cycle % 2 == 0) == initial_hwpx;
+            let bytes = if save_hwp {
+                core.export_hwp_with_adapter().unwrap()
+            } else {
+                core.export_hwpx_native().unwrap()
+            };
+            core = DocumentCore::from_bytes(&bytes).unwrap();
+            assert_eq!(word_record(&core, 30), [2], "{name} 변환 {}", cycle + 1);
+            assert_eq!(word_record(&core, 31), preset, "{name} 변환 {}", cycle + 1);
+        }
+    }
+}
+
+#[test]
+fn hwp_custom_paragraph_flags_survive_hwpx_and_hwp_without_becoming_word_defaults() {
+    let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/issue8582");
+    for (name, bits) in [
+        ("word_hcr_p100_hwp5_lcp_b3.hwp", 8),
+        ("word_hcr_p100_hwp5_lcp_b4.hwp", 16),
+        ("word_hcr_p100_hwp5c.hwp", 0),
+    ] {
+        let source = DocumentCore::from_bytes(&std::fs::read(dir.join(name)).unwrap()).unwrap();
+        // 개별 설정에서 한컴이 발행하는 실제 단 좌표로 연속 본문을 복원한다.
+        let export = source.hwpx_export_expected_document();
+        let body = &export.sections[0].paragraphs;
+        let first = &body[1].line_segs[0];
+        let next = &body[2].line_segs[0];
+        assert!(
+            first.line_height > 0 && first.baseline_distance > 0,
+            "{name}"
+        );
+        assert!(
+            next.vertical_pos >= first.vertical_pos + first.line_height,
+            "{name}"
+        );
+        let package = source.export_hwpx_native().unwrap();
+        let xml = DocumentCore::from_bytes(&package).unwrap();
+        assert_eq!(word_record(&xml, 30), [2], "{name}");
+        assert_eq!(word_record(&xml, 31), [0, bits, 0, 0, 0], "{name}");
+        let binary = DocumentCore::from_bytes(&xml.export_hwp_with_adapter().unwrap()).unwrap();
+        assert_eq!(word_record(&binary, 31), [0, bits, 0, 0, 0], "{name}");
+    }
 }

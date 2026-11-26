@@ -1,3 +1,9 @@
+//! 관계형·고정형 회귀 검사. #8463 원본과 메인테이너 경계 사례.
+//! 주석 갱신 2026-11-26 11:26 KST. 직전 파일 변경 24c34515e8 2026-11-26T00:27:27+09:00.
+//! 독립 한컴 Print와 96 DPI의 2px raw 실루엣. 전쪽 TSV · 확대 판독: `mydocs/pr/assets/hyunmyungjanelee-20261126/final/README.md`.
+//! `tac_visible_prefix` 전 1쪽. Native 99.82%, fresh WASM 99.77% (쪽 순서).
+//! `tac_visible_suffix` 전 1쪽. Native 99.80%, fresh WASM 99.75% (쪽 순서).
+//!
 //! 관계형·고정형: [#8463] 저장 줄 없는 host 의 양수 세로 오프셋 TAC 표는 표 높이를 한 번만 계상한다.
 //!
 //! 입력: `samples/issue8463/tac-offset-text-host.hwp`. 한컴오피스 2020 저장 공개 샘플
@@ -102,4 +108,42 @@ fn tac_table_without_offset_stays_on_the_first_page() {
     let document = core.document().clone();
     core.set_document(document);
     assert_table_inside_first_page(&core, "오프셋 0");
+}
+
+#[test]
+fn visible_text_before_and_after_the_tac_table_keeps_its_printed_order() {
+    for (case, prefix) in [("tac_visible_prefix", true), ("tac_visible_suffix", false)] {
+        let path =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join(format!("samples/issue8463/{case}.hwp"));
+        let mut core = DocumentCore::from_bytes(&std::fs::read(path).unwrap()).unwrap();
+        for zero_offset in [false, true] {
+            if zero_offset {
+                let mut document = core.document().clone();
+                let Control::Table(table) = &mut document.sections[0].paragraphs[HOST].controls[0]
+                else {
+                    panic!("문단 2의 인라인 표");
+                };
+                table.common.vertical_offset = 0;
+                core.set_document(document);
+            }
+            assert_table_inside_first_page(&core, case);
+            let page = core.build_page_render_tree(0).unwrap();
+            let mark = find(&page.root, &|node| matches!(&node.node_type, RenderNodeType::TextRun(run)
+                if run.para_index == Some(HOST) && run.cell_context.is_none() && run.text.trim() == "X"))
+                .expect("본문의 X와 표가 같은 쪽에 있어야 한다");
+            let (body_top, body_bottom, table_top, table_bottom) = first_page_table(&core);
+            assert!(mark.bbox.y >= body_top && mark.bbox.y + mark.bbox.height <= body_bottom + 0.5);
+            if prefix {
+                assert!(
+                    mark.bbox.y + mark.bbox.height <= table_top + 0.5,
+                    "{case}: 선행 글자와 표가 겹친다"
+                );
+            } else {
+                assert!(
+                    mark.bbox.y >= table_bottom - 0.5,
+                    "{case}: 뒤 글자와 표가 겹친다"
+                );
+            }
+        }
+    }
 }
