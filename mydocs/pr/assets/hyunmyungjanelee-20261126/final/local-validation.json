@@ -1,0 +1,331 @@
+{
+  "source": "9e601ad6a862a30b019ad9563a1d597f6a33222b",
+  "base": "cbebdbeeca060efe670cb8702355e4d79cb7e70e",
+  "native_cli_sha256": "c429ac8aa4a1b1b7b7f9b9190c0e447ccaf0cc6f09406e60ac80e7d3418ad606",
+  "wasm_sha256": "0d60c978ea5c5b43a2ce9ad55c31feb7e486a3a4bce8359b3b0a3b26dd68c4f8",
+  "wasm_js_sha256": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+  "full": 14194,
+  "native": 4227,
+  "focused": 29,
+  "studio": 2835,
+  "fonts_for_regression": [
+    "ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+    "ttfs/opensource/NotoSansKR-Regular.ttf",
+    "ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+    "ttfs/opensource/RHWPOldHangul-Regular.otf",
+    "ttfs/opensource/RHWPPublicBatang-Regular.ttf"
+  ],
+  "passed_gates": [
+    {
+      "step": "manifest-prepare",
+      "completed": "2026-11-26T13:31:46+09:00",
+      "exit": 0,
+      "log_sha256": "a3cf90daf5ea39be46c5eb575aab6c42e842e96f349a6f5f3b097ae45ea7111b"
+    },
+    {
+      "step": "manifest",
+      "completed": "2026-11-26T13:31:47+09:00",
+      "exit": 0,
+      "log_sha256": "b0f1641709f02aaa8db7a909fac42490bea0691c067e8a30d3b0108332bbca99"
+    },
+    {
+      "step": "tiers",
+      "completed": "2026-11-26T13:32:00+09:00",
+      "exit": 0,
+      "log_sha256": "dee262356bb2ad3d464c331a7888262da2eb25f6799e90c8cc53dcdcdecce9fe"
+    },
+    {
+      "step": "fmt",
+      "completed": "2026-11-26T13:32:32+09:00",
+      "exit": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "diff",
+      "completed": "2026-11-26T13:32:33+09:00",
+      "exit": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "fonts",
+      "completed": "2026-11-26T13:32:33+09:00",
+      "exit": 0,
+      "log_sha256": "695db18511a96744ac55b691f64b335fdc16e202715c38eabb373cb92d60367a"
+    },
+    {
+      "step": "focused",
+      "completed": "2026-11-26T13:55:08+09:00",
+      "exit": 0,
+      "log_sha256": "a1a1bac52ef5117a65a00cb6bc0073b9fed5b8149123e6c700c806488a8b6641",
+      "passed": 29,
+      "skipped": 2117
+    },
+    {
+      "step": "full",
+      "completed": "2026-11-26T14:38:36+09:00",
+      "exit": 0,
+      "log_sha256": "b1c99fba2530f03c65b451c1b3dc91cf21469ef6f5331843f9855656cd14a6b7",
+      "passed": 14194,
+      "skipped": 45
+    },
+    {
+      "step": "native-library",
+      "completed": "2026-11-26T14:46:21+09:00",
+      "exit": 0,
+      "log_sha256": "479563ae5bc40dd18944972a6eddf1940686a235f5cfe3e37c2d0d24c19d8235",
+      "passed": 4033
+    },
+    {
+      "step": "native-cli_exit_codes_native",
+      "completed": "2026-11-26T14:53:46+09:00",
+      "exit": 0,
+      "log_sha256": "ffaf6611f3fc9ee4da7d58a2017010c6cf2f3041e2750009dc85723b94a7493d",
+      "passed": 2
+    },
+    {
+      "step": "isolated-node",
+      "completed": "2026-11-26T14:47:52+09:00",
+      "exit": 0,
+      "log_sha256": "c642a0de246dcdc6c51318fe449646fc5067b981a8d09e9ccdb8141a5756339a"
+    },
+    {
+      "step": "isolated-font-inventory",
+      "completed": "2026-11-26T14:47:52+09:00",
+      "exit": 0,
+      "log_sha256": "baea9277103a779f0fea39ff41f53262428cf66f69f2f17b8d663a3e0c5431c2"
+    },
+    {
+      "step": "native-issue_1144_native",
+      "completed": "2026-11-26T14:53:48+09:00",
+      "exit": 0,
+      "log_sha256": "8bf8515854f4fdd5951c2975a4094ecd3784ccba7104daa97e4424c530f14ec3",
+      "passed": 1
+    },
+    {
+      "step": "native-issue_2225_missing_picture_placeholder",
+      "completed": "2026-11-26T14:54:09+09:00",
+      "exit": 0,
+      "log_sha256": "dea0e798e36a4dd7b0b68517d44074f28297c2dc6c1f08490169ab0059e3ed2a",
+      "passed": 2
+    },
+    {
+      "step": "native-render_p37_direct_pdf_export",
+      "completed": "2026-11-26T14:54:37+09:00",
+      "exit": 0,
+      "log_sha256": "19be934daa8caf0d617bea70395a49ad2f8a2ad7117d97e0017df2cdb50eafad",
+      "passed": 37
+    },
+    {
+      "step": "native-issue_7950_pdf_paint",
+      "completed": "2026-11-26T14:54:57+09:00",
+      "exit": 0,
+      "log_sha256": "5dc3c997fb8caac3ed93fc9217280d4e72257c96a5e32ffd5ad7c734619f6daa",
+      "passed": 4
+    },
+    {
+      "step": "native-issue_2083_hide_fill_page_background",
+      "completed": "2026-11-26T14:55:16+09:00",
+      "exit": 0,
+      "log_sha256": "9ca2311902a72c257140f83df42f370ae09e591b88a57382e06f2228cb346e28",
+      "passed": 1
+    },
+    {
+      "step": "native-issue_2292_chart_png_clip",
+      "completed": "2026-11-26T14:55:37+09:00",
+      "exit": 0,
+      "log_sha256": "04d37d9083792d8dfb369ebecfcad8e47a5c881f3d62a2fcebffc58512412c1e",
+      "passed": 1
+    },
+    {
+      "step": "native-issue_2293_chart_png_text",
+      "completed": "2026-11-26T14:55:39+09:00",
+      "exit": 0,
+      "log_sha256": "d1c2c98a4d71f24a7ece14f3b3906b192a8d19678a9c88e90e2a240c5b952100",
+      "passed": 2
+    },
+    {
+      "step": "native-issue_7820_sixel_contract",
+      "completed": "2026-11-26T14:55:56+09:00",
+      "exit": 0,
+      "log_sha256": "050ab55b2da87f3f427e82c7744ff7ad9a96c4a03e22a505c9d6129be8e725da",
+      "passed": 7
+    },
+    {
+      "step": "native-issue_8150_kitty_contract",
+      "completed": "2026-11-26T14:56:15+09:00",
+      "exit": 0,
+      "log_sha256": "71f3276ded74188aa8314d166fb6de33388a86d72b1113b3eeef40004073f3d7",
+      "passed": 8
+    },
+    {
+      "step": "native-issue_4961_font_decision_trace",
+      "completed": "2026-11-26T14:56:17+09:00",
+      "exit": 0,
+      "log_sha256": "ab1e7a179f230863a82ee136312ab3be02cebae5ce50bed1ca570c041cd120e5",
+      "passed": 12
+    },
+    {
+      "step": "native-issue_7902_original_frame_and_content",
+      "completed": "2026-11-26T14:56:25+09:00",
+      "exit": 0,
+      "log_sha256": "4e22be05e0b07c553cc05e63883effe43e1589ba1e278777f7ff7ef58397240d",
+      "passed": 7
+    },
+    {
+      "step": "native-issue_8160_hwp2022_paragraph_relations",
+      "completed": "2026-11-26T14:56:48+09:00",
+      "exit": 0,
+      "log_sha256": "8ae996f0ae28273a924e54334dc7dd2283e9d7bff6f159088470041cb3d6ffba",
+      "passed": 3
+    },
+    {
+      "step": "native-native_fractional_glyph_origin",
+      "completed": "2026-11-26T14:57:06+09:00",
+      "exit": 0,
+      "log_sha256": "5bb50c2962e5038b834a998b5d27c0da52c00bd9d83b4bb58b169102bb4309a5",
+      "passed": 7
+    },
+    {
+      "step": "native-skia_native_glyph_replay",
+      "completed": "2026-11-26T14:57:07+09:00",
+      "exit": 0,
+      "log_sha256": "44eb4fb0fd9754fff286f8f7f4bcb18264789b65ae1a0482f8ec02ba197d891f",
+      "passed": 25
+    },
+    {
+      "step": "native-issue_8153_opaque_mixed_axis_image_sampling",
+      "completed": "2026-11-26T14:57:29+09:00",
+      "exit": 0,
+      "log_sha256": "54ae66645fc756473a0bd803c8b22500c25f80bac4807e329d51319f96059967",
+      "passed": 2
+    },
+    {
+      "step": "native-issue_8153_print_glyph_geometry",
+      "completed": "2026-11-26T14:57:46+09:00",
+      "exit": 0,
+      "log_sha256": "c5da919c342d42313cc8e2ff92cc259a7b6bdeef307b11fcfaff5c15b0e5a2aa",
+      "passed": 9
+    },
+    {
+      "step": "native-issue_8153_symbol_fallback",
+      "completed": "2026-11-26T14:58:01+09:00",
+      "exit": 0,
+      "log_sha256": "1cdd708cfb573563b054b2295a62d86462954ac52e505489a445c349644ec48c",
+      "passed": 2
+    },
+    {
+      "step": "native-issue_536_native_region_cache",
+      "completed": "2026-11-26T14:58:02+09:00",
+      "exit": 0,
+      "log_sha256": "6eda6f50ca28ef18d3d261daff862df0aaea30889448ea56ab03eac5ec46384a",
+      "passed": 39
+    },
+    {
+      "step": "native-skia_region_plan",
+      "completed": "2026-11-26T14:58:23+09:00",
+      "exit": 0,
+      "log_sha256": "f46d3669e9397e6358cbeb05fc0b18c6a195708b3123de183ea3b30613b87139",
+      "passed": 10
+    },
+    {
+      "step": "native-skia_host_surface",
+      "completed": "2026-11-26T14:58:23+09:00",
+      "exit": 0,
+      "log_sha256": "135bccdc2f6dd7a01fe16b5b6a056cf270c8545a1d688023b72bd9b5d3b2134e",
+      "passed": 13
+    },
+    {
+      "step": "clippy",
+      "completed": "2026-11-26T14:59:51+09:00",
+      "exit": 0,
+      "log_sha256": "f99969149ed1855caaea0a28797629e382f1de2f3e68be431fbea38d00e3b070"
+    },
+    {
+      "step": "wasm-clippy",
+      "completed": "2026-11-26T15:02:03+09:00",
+      "exit": 0,
+      "log_sha256": "632a7224caa44d0d317944578e6aec8c7d029b04e91022123254037aeceefa2a"
+    },
+    {
+      "step": "workspace",
+      "completed": "2026-11-26T15:04:56+09:00",
+      "exit": 0,
+      "log_sha256": "db33874d9957b826234efc7cf616f04a9871f437e6724624815fef75b538febe"
+    },
+    {
+      "step": "all-targets",
+      "completed": "2026-11-26T15:07:41+09:00",
+      "exit": 0,
+      "log_sha256": "ec124f07e4e631177be7056375c61a58aa0bddb48b47a7c3845a2b99730eeafd"
+    },
+    {
+      "step": "doctest",
+      "completed": "2026-11-26T15:10:28+09:00",
+      "exit": 0,
+      "log_sha256": "0b2cdd547bec7560328b0ad2ac1d2daad5c4218854f92e0f230ec10438156e0e",
+      "passed": 8
+    },
+    {
+      "step": "studio-types",
+      "completed": "2026-11-26T15:10:29+09:00",
+      "exit": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "studio",
+      "completed": "2026-11-26T15:10:50+09:00",
+      "exit": 0,
+      "log_sha256": "c7bfa3aaaa0a44dcc0b534108342babc569964b61abc2e465cf880992937171e",
+      "passed": 2835,
+      "skipped": 2
+    },
+    {
+      "step": "sample-security",
+      "completed": "2026-11-26T14:12:48+09:00",
+      "exit": 0,
+      "log_sha256": "2d03713d650d62822ed0098072645c823bf6e485460d44504f92b21d7169c59d",
+      "passed": 6,
+      "skipped": 14233
+    },
+    {
+      "step": "release-default",
+      "completed": "2026-11-26T15:17:56+09:00",
+      "exit": 0,
+      "log_sha256": "4f6ba5c248e8964fbd19f1da1159d6e83dfb3063dedffb9353357503a723425d"
+    },
+    {
+      "step": "release-library",
+      "completed": "2026-11-26T15:44:33+09:00",
+      "exit": 0,
+      "log_sha256": "e2690445ad1cc666ba01e16cfb76226697ec93a7ebe8d134c786451c7799fafa",
+      "passed": 3976
+    }
+  ],
+  "contributor_gate": {
+    "passed": 8,
+    "report_sha256": "20335c4eab818b5632e25e442608fc4bdf5ea7aceb547f28bfc76ffd041fd77c"
+  },
+  "studio_production_build": {
+    "build_log_sha256": "9fedbc4003a25e8cfa81929e01b29140b7e971773512d2c5614acd26849bf172",
+    "browser_report_sha256": "15560b9fdf6dfa2767d2c6ebcf1147f856f5737c45d0062da20a04562e2ba65f"
+  },
+  "local_runner_recovery": {
+    "interrupted_run": {
+      "passed_before_exit": 7143,
+      "exit": 143,
+      "log_sha256": "64ce2aea44d12e49fa3f61560d455e7eee860a4040ecddfb0444726b93f8b1ef"
+    },
+    "native_module_launcher": {
+      "first_error": "bwrap: execvp node: No such file or directory",
+      "log_sha256": "e593c94d29f7a39fd9e568d2436600616f867c609cfbf476dc4d47ff87e1043d",
+      "node": "v24.15.0",
+      "same_font_inventory": true
+    },
+    "release_library_output": {
+      "first_exit": 101,
+      "tests_requiring_writable_output": 12,
+      "first_log_sha256": "bc422b78de0869312458195d26596ffbe9a7dc86a4279f3e2cfc88e769706af9",
+      "correction": "Mounted the review worktree output directory read-write in the same minimum-font sandbox and reran the entire release library suite."
+    }
+  }
+}
