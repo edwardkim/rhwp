@@ -48,40 +48,6 @@ pub(crate) fn resolve_styles_for_document(document: &Document, dpi: f64) -> Reso
     }
 }
 
-/// 문서의 호환 대상이 MS 워드인가. HWP5 는 `HWPTAG_COMPATIBLE_DOCUMENT` 의 대상 프로그램 값
-/// (0 = 한/글 현재, 1 = 한/글 2007, 2 = MS 워드), HWPX 는 `hh:compatibleDocument` 의
-/// `targetProgram` 이다.
-fn doc_targets_ms_word(doc_info: &crate::model::document::DocInfo) -> bool {
-    let hwp5_word = doc_info.extra_records.iter().any(|record| {
-        record.tag_id == crate::parser::tags::HWPTAG_COMPATIBLE_DOCUMENT
-            && record.data.get(..4).is_some_and(|bytes| {
-                u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]) == 2
-            })
-    });
-    let hwpx_word = doc_info
-        .hwpx_head_tail
-        .as_deref()
-        .filter(|tail| tail.contains("MS_WORD"))
-        .is_some_and(|tail| {
-            use quick_xml::events::Event;
-            let mut reader = quick_xml::Reader::from_str(tail);
-            loop {
-                match reader.read_event() {
-                    Ok(Event::Start(node) | Event::Empty(node))
-                        if node.local_name().as_ref() == "compatibleDocument" =>
-                    {
-                        break node.attributes().flatten().any(|attr| {
-                            attr.key.as_ref() == "targetProgram" && attr.value.as_ref() == "MS_WORD"
-                        });
-                    }
-                    Ok(Event::Eof) | Err(_) => break false,
-                    _ => {}
-                }
-            }
-        });
-    hwp5_word || hwpx_word
-}
-
 pub(crate) fn try_resolve_styles_for_document<S: storage::Storage>(
     document: &Document,
     dpi: f64,
@@ -92,12 +58,13 @@ pub(crate) fn try_resolve_styles_for_document<S: storage::Storage>(
     let mut styles = try_resolve_styles_with_variant(&lookup, dpi, profile.hwp3_layout(), storage)?;
     styles.source_hwp3_native = profile.hwp3_native_layout();
     styles.legacy_body_symbols = document.uses_legacy_body_symbols();
-    styles.word_compat_target = doc_targets_ms_word(&document.doc_info);
-    styles.word_spacing = word_compat::WordSpacing::for_document(
-        document,
-        styles.word_compat_target,
-        profile.hangul2024_layout(),
+    let compatibility = crate::model::document_compatibility::DocumentCompatibility::from_records(
+        &document.doc_info,
     );
+    styles.word_compat_target =
+        compatibility.target == crate::model::document_compatibility::CompatibilityTarget::MsWord;
+    styles.word_spacing =
+        word_compat::WordSpacing::for_document(compatibility, profile.hangul2024_layout());
     if document.provenance.format == crate::model::provenance::SourceFormat::Hwp5
         && !document.provenance.hwpx_lineage
     {
@@ -112,7 +79,7 @@ pub(crate) fn try_resolve_styles_for_document<S: storage::Storage>(
     }
     // [#8582] 호환 대상이 MS 워드이고 워드 줄 높이를 쓰는 문서면 글꼴별 줄 높이 배율을 둔다
     // (원본 face 이름 기준).
-    if styles.word_compat_target && word_compat::uses_word_line_height(document) {
+    if styles.word_compat_target && compatibility.flags[1] & 0x10 != 0 {
         styles.word_line_factors = Some(std::sync::Arc::new(word_compat::line_factors(
             &document.doc_info,
         )));
@@ -206,8 +173,9 @@ pub(crate) fn resolve_styles_with_environment(
         environment.is_some_and(|env| env.explicitly_replaces_source_metrics());
     styles.script_metrics = super::script_metrics::ScriptMetricsContract::for_profile(profile);
     styles.word_spacing = word_compat::WordSpacing::for_document(
-        document,
-        styles.word_compat_target,
+        crate::model::document_compatibility::DocumentCompatibility::from_records(
+            &document.doc_info,
+        ),
         profile.hangul2024_layout(),
     );
     // 독립 동일 입력의 2020은 HCRDotum을 강제하고, 2024는 원 face/대체 face의

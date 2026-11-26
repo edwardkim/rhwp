@@ -9,6 +9,7 @@ mod metafile_fonts;
 mod nested_row_page_starts;
 mod reflowed_table_frames;
 mod section_activation;
+mod word_compatibility_cache;
 
 use crate::document_core::validation::{
     CellPath, ValidationReport, ValidationWarning, WarningKind,
@@ -3586,6 +3587,7 @@ impl DocumentCore {
             if hwp3_origin {
                 Self::push_hwp3_origin_marker(&mut doc);
             }
+            self.write_word_compatibility_rows(&mut doc);
             Self::materialize_hwp5_missing_linesegs_for_hwpx_export(&mut doc);
             lower_markers(&mut doc);
             consume(&doc)

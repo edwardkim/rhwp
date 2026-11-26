@@ -16,6 +16,7 @@ use std::io::Write;
 use quick_xml::Writer;
 
 use crate::model::document::{DocInfo, DocProperties, Document};
+use crate::model::document_compatibility::DocumentCompatibility;
 use crate::model::style::{
     border_width_mm_str, para_line_wrap_str, Alignment, BorderFill, BorderLine, BorderLineType,
     CenterLine, CharShape, DiagonalLine, FillType, Font, HeadType, LineSpacingType, Numbering,
@@ -134,7 +135,7 @@ where
     end_tag(&mut w, "hh:refList", storage)?;
 
     // 문서 설정 tail: 원본 HWPX 가 있으면 그대로 splice(compatibleDocument/
-    // docOption/trackchageConfig 무손실 보존), 없으면 하드코딩 폴백.
+    // docOption/trackchageConfig 무손실 보존), HWP 원본이면 DocInfo에서 생성한다.
     match &doc.doc_info.hwpx_head_tail {
         Some(tail) => {
             w.get_mut()
@@ -142,7 +143,11 @@ where
                 .map_err(|e| SerializeError::XmlError(format!("head tail splice: {e}")))?;
         }
         None => {
-            write_compatible_document(&mut w, storage)?;
+            write_compatible_document(
+                &mut w,
+                DocumentCompatibility::from_records(&doc.doc_info),
+                storage,
+            )?;
             write_doc_option(&mut w, storage)?;
             write_track_change_config(&mut w, doc.doc_info.track_change_flags(), storage)?;
         }
@@ -1621,6 +1626,7 @@ where
 // =====================================================================
 fn write_compatible_document<W: Write, S: crate::storage::Storage>(
     w: &mut Writer<W>,
+    compat: DocumentCompatibility,
     storage: &S,
 ) -> Result<(), SerializeError>
 where
@@ -1629,15 +1635,19 @@ where
     start_tag_attrs(
         w,
         "hh:compatibleDocument",
-        &[("targetProgram", "HWP201X")],
+        &[("targetProgram", compat.target.xml_name())],
         storage,
     )?;
-    // 한컴 산출물(2014 저장 빈 문서 · samples/hwpx/ref/ref_empty.hwpx)과 같이 자기닫힘으로
-    // 쓴다. 종전의 <hh:char/><hh:paragraph/><hh:section/><hh:object/><hh:field/> 다섯은
-    // HWP5 LayoutCompatibility 레코드의 필드 묶음 이름이지 HWPX 요소가 아니며, 엄격한
-    // 소비자(한글 2014)는 이 다섯이 있으면 열기에서 종료한다. 원본 꼬리를 splice 하는
-    // 경로(`write_header_splices_doc_settings_tail_verbatim`)와 같은 꼴이 된다.
-    empty_tag(w, "hh:layoutCompatibility", &[], storage)?;
+    let mut flags = compat.xml_layout_flags().peekable();
+    if flags.peek().is_none() {
+        empty_tag(w, "hh:layoutCompatibility", &[], storage)?;
+    } else {
+        start_tag(w, "hh:layoutCompatibility", storage)?;
+        for name in flags {
+            empty_tag(w, name, &[], storage)?;
+        }
+        end_tag(w, "hh:layoutCompatibility", storage)?;
+    }
     end_tag(w, "hh:compatibleDocument", storage)?;
     Ok(())
 }

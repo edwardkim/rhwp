@@ -26,29 +26,8 @@
 //! 굴림·Gulim은 같은 TTC를 쓰며 11pt 비율 100%의 한 줄은 1430 HU다. 한컴바탕도 같은
 //! 높이다. Arial·Times New Roman은 2024 인쇄에서 라틴 글자 줄과 한글 대체 줄의 피치가 다르다.
 //! 라틴은 hhea의 줄 간격을 포함한 2355/2048 em이고 한글은 실제 대체 글꼴의 메트릭을 따른다.
-use crate::model::document::{DocInfo, Document};
-
-/// `LAYOUT_COMPATIBILITY` 문단 수준 플래그 중 워드 줄 높이를 켜는 비트.
-const PARAGRAPH_WORD_LINE_HEIGHT_FLAG: u32 = 0x10;
-
-/// 워드 줄 높이를 쓰는 문서인가(호환 대상이 MS 워드인 것은 호출자가 이미 확인한다).
-///
-/// HWPX 는 그대로 쓴다. HWP5 는 `LAYOUT_COMPATIBILITY` 의 문단 수준 플래그(둘째 UINT32)의
-/// 비트 4(0x10)가 켜져 있어야 한다. 사내 HWP5 중 호환 대상이 MS 워드인 302건은 모두 이 비트가
-/// 켜져 있고(문단 수준 0xcff8ff·0xf8ff), 꺼진 것은 rhwp 등이 만든 변환본뿐이다.
-pub(crate) fn uses_word_line_height(document: &Document) -> bool {
-    if document.provenance.format == crate::model::provenance::SourceFormat::Hwpx {
-        return true;
-    }
-    document.doc_info.extra_records.iter().any(|record| {
-        record.tag_id == crate::parser::tags::HWPTAG_LAYOUT_COMPATIBILITY
-            && record.data.get(4..8).is_some_and(|paragraph| {
-                u32::from_le_bytes([paragraph[0], paragraph[1], paragraph[2], paragraph[3]])
-                    & PARAGRAPH_WORD_LINE_HEIGHT_FLAG
-                    != 0
-            })
-    })
-}
+use crate::model::document::DocInfo;
+use crate::model::document_compatibility::{CompatibilityTarget, DocumentCompatibility};
 
 /// HWP 5 표 56의 글자 단위 서식. 한컴에서 저장한 Word 문서의 비트를
 /// 하나씩 바꿔 인쇄하면 bit 7은 서양 문자 사이 한 칸의 글꼴 전진을,
@@ -61,21 +40,11 @@ pub(crate) struct WordSpacing {
 crate::storage::clone_copy!(WordSpacing);
 
 impl WordSpacing {
-    pub(super) fn for_document(doc: &Document, word_target: bool, hangul_2024: bool) -> Self {
-        if !word_target {
+    pub(super) fn for_document(compat: DocumentCompatibility, hangul_2024: bool) -> Self {
+        if compat.target != CompatibilityTarget::MsWord {
             return Self::default();
         }
-        let flags = if doc.provenance.format == crate::model::provenance::SourceFormat::Hwpx {
-            // HWPX의 MS_WORD 대상은 빈 layoutCompatibility에서도 Word 기본값을 쓴다.
-            (1 << 7) | (1 << 11)
-        } else {
-            doc.doc_info
-                .extra_records
-                .iter()
-                .find(|r| r.tag_id == crate::parser::tags::HWPTAG_LAYOUT_COMPATIBILITY)
-                .and_then(|r| r.data.get(..4))
-                .map_or(0, |b| u32::from_le_bytes([b[0], b[1], b[2], b[3]]))
-        };
+        let flags = compat.flags[0];
         Self {
             latin_font_space: flags & (1 << 7) != 0,
             reduce_space: hangul_2024 && flags & (1 << 11) != 0,

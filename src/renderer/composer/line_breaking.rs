@@ -4595,6 +4595,27 @@ fn line_start_utf16_offset(
         .fold(end, u32::min)
 }
 
+/// 저장된 줄이 없는 문서를 다른 형식에 전달할 때 실제 조판 줄의 UTF-16 시작을 사용한다.
+pub(crate) fn composed_line_text_starts(
+    para: &Paragraph,
+    lines: &[super::ComposedLine],
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Vec<u32> {
+    let controls = flow_inline_controls_with_tac_tables(para, styles, dpi);
+    lines
+        .iter()
+        .enumerate()
+        .map(|(index, line)| {
+            if index == 0 {
+                0
+            } else {
+                line_start_utf16_offset(para, line.char_start, &controls)
+            }
+        })
+        .collect()
+}
+
 /// `baseline_distance` from a row's height — the one expression, so the frame
 /// and the edit path cannot publish different baselines for the same paragraph.
 ///
