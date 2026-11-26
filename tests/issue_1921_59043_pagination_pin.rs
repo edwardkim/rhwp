@@ -1,3 +1,19 @@
+//! 관계형(표·본문·제목의 쪽 소속과 배치 순서)·고정형(독립 Print의 전체 쪽수).
+//! 주석 갱신 2026-11-27 02:34:41 KST. 직전 변경 2026-10-04 19:03:36 KST, 731de9e1b4bb946d76f35108ed7e186ebe4ebecb.
+//!
+//! #7778의 35–37쪽 검사는 후보 55c221abd1의 한컴 Print PDF를 기준으로 복원했다.
+//! 2026-11-27, 96 DPI, 색상 경계 보정 전 2px 실루엣.
+//! 전 37쪽 최저 Native / fresh WASM은 한컴 2022에서 98.48% / 98.44%,
+//! 한컴 2024에서 98.16% / 98.16%였다. 36·37쪽은 두 쪽 모두 한컴 2022에서
+//! 100.00% / 99.99%, 한컴 2024에서 99.96% / 99.96%였다.
+//! 확대 대조에서 36쪽의 두 제목과 37쪽 본문 표의 순서를 확인했다.
+//! 원본은 samples/issue1921/59043_regulatory_analysis.hwp이다.
+//! 기준 PDF는 pdf/issue1921/59043_regulatory_analysis-2022.pdf와
+//! pdf/semanticist21-20261123/59043_regulatory_analysis-2024.pdf이다.
+//! 결과는 output/pr-review/issues7777-7787/rebase-3fdaa04258 아래에 있다.
+//! Native TSV는 7778-p15-isolation/integrated-55c221abd1, WASM TSV는 fresh-wasm-55c221abd1,
+//! 확대 비교는 7778-review-55c221abd1에서 확인할 수 있다.
+//!
 //! Issue #1921 — 59043 규제영향분석서 페이지네이션 드리프트 핀.
 //!
 //! `samples/issue1921/59043_regulatory_analysis.hwp` — 부동(자리차지) 표·rowspan
@@ -8,8 +24,6 @@
 //! (`pdf/issue1921/59043_regulatory_analysis-2022.pdf`, 편집기 PageCount=37 정합).
 //! 현재 페이지 수는 권위 정답지와 같은 37쪽이다. 과거 중간 도달값 39쪽을 고정하던
 //! provisional pin은 PDF 직접 대조 뒤 정답지 pin으로 승격했다.
-//! 전37쪽 Native 비교의19쪽이90% 미달하여 전체 피델리티 보정은 #7445로 이관했다.
-//! 실제 후속 제목 겹침을 검출한 p36 검사만 제외하고 정상4검사는 유지한다.
 
 use std::fs;
 use std::path::Path;
@@ -21,6 +35,10 @@ const SAMPLE: &str = "samples/issue1921/59043_regulatory_analysis.hwp";
 const PAGE_8: u32 = 7;
 const PAGE_11: u32 = 10;
 const PAGE_12: u32 = 11;
+const PAGE_35: u32 = 34;
+const PAGE_36: u32 = 35;
+const PAGE_37: u32 = 36;
+const TOLERANCE_PX: f64 = 0.75;
 
 fn page_count_of(rel: &str) -> u32 {
     let repo_root = env!("CARGO_MANIFEST_DIR");
@@ -67,6 +85,32 @@ fn collect_images<'a>(node: &'a RenderNode, images: &mut Vec<&'a RenderNode>) {
     for child in &node.children {
         collect_images(child, images);
     }
+}
+
+fn collect_visible_text(node: &RenderNode, clip_top: f64, clip_bottom: f64, text: &mut String) {
+    let (next_top, next_bottom) = if matches!(&node.node_type, RenderNodeType::TableCell(_)) {
+        (
+            clip_top.max(node.bbox.y),
+            clip_bottom.min(node.bbox.y + node.bbox.height),
+        )
+    } else {
+        (clip_top, clip_bottom)
+    };
+    if let RenderNodeType::TextRun(run) = &node.node_type {
+        let bottom = node.bbox.y + node.bbox.height;
+        if node.bbox.y >= next_top - TOLERANCE_PX && bottom <= next_bottom + TOLERANCE_PX {
+            text.push_str(&run.text);
+        }
+    }
+    for child in &node.children {
+        collect_visible_text(child, next_top, next_bottom, text);
+    }
+}
+
+fn compact_text(node: &RenderNode, page_bottom: f64) -> String {
+    let mut text = String::new();
+    collect_visible_text(node, 0.0, page_bottom, &mut text);
+    text.chars().filter(|ch| !ch.is_whitespace()).collect()
 }
 
 #[test]
@@ -181,5 +225,83 @@ fn regulatory_59043_page12_empty_tac_pictures_follow_distinct_line_slots() {
         "p12 row 4 TAC 사진은 각각의 LINE_SEG slot에 위·아래로 배치돼야 함: first={:?}, second={:?}",
         images[0].bbox,
         images[1].bbox
+    );
+}
+
+/// 한컴 2022·2024 Print에서 마지막 행의 안쪽 표는 35쪽 도입부와
+/// 36쪽 근거·소표·계산으로 나뉜다. 후속 제목 두 개는 36쪽 표 아래에
+/// 놓이고 37쪽은 새 본문 표로 시작한다.
+#[test]
+fn regulatory_59043_page36_keeps_nested_source_and_following_headings() {
+    for hangul2024 in [false, true] {
+        assert_terminal_table_and_headings(hangul2024);
+    }
+}
+
+fn assert_terminal_table_and_headings(hangul2024: bool) {
+    let mut doc = load_document();
+    doc.set_hangul2024_compat(hangul2024);
+    // 인쇄 경로와 같은 방식으로 글꼴 환경을 초기화해 현재 저장 조판을 사용한다.
+    let environment = rhwp::renderer::font_environment::FontEnvironment::from_json(
+        r#"{"id":"regulatory-59043-print","substitutions":{}}"#,
+    )
+    .unwrap();
+    assert!(doc.set_font_environment(Some(environment)).unwrap());
+    let p35 = doc
+        .build_page_render_tree(PAGE_35)
+        .unwrap_or_else(|e| panic!("render {SAMPLE} page 35: {e}"));
+    let p36 = doc
+        .build_page_render_tree(PAGE_36)
+        .unwrap_or_else(|e| panic!("render {SAMPLE} page 36: {e}"));
+    let p37 = doc.build_page_render_tree(PAGE_37).expect("37쪽 본문");
+    let p35_text = compact_text(&p35.root, p35.root.bbox.y + p35.root.bbox.height);
+    let p36_text = compact_text(&p36.root, p36.root.bbox.y + p36.root.bbox.height);
+
+    assert!(
+        p35_text.contains("담배판촉행위금지시흡연율약1%감소효과"),
+        "p35는 자식 표의 PDF 도입부를 소유해야 한다"
+    );
+    assert!(
+        !p35_text.contains("흡연율감소효과추정근거"),
+        "p36 source owner가 p35 Cell clip 안에 조기 노출됐다"
+    );
+    assert!(
+        p36_text.contains("흡연율감소효과추정근거")
+            && p36_text.contains("3,664백만갑")
+            && p36_text.contains("228억원"),
+        "p36은 PDF의 근거 본문·3×3 소표·계산 결과를 모두 보여야 한다"
+    );
+
+    let outer = find_table(&p36.root, 260, 0).expect("p36 6×2 RowBreak 표(pi=260, ci=0)");
+    let source_cell = find_cell(outer, 5, 1).expect("p36 마지막 행의 오른쪽 source cell");
+    let source_text = compact_text(source_cell, source_cell.bbox.y + source_cell.bbox.height);
+    assert!(
+        source_text.contains("흡연율감소효과추정근거"),
+        "p36 source가 마지막 행 오른쪽 cell의 가시 clip 안에 있어야 한다"
+    );
+
+    let p37_text = compact_text(&p37.root, p37.root.bbox.y + p37.root.bbox.height);
+    let next_table = find_table(&p37.root, 272, 0).expect("37쪽 본문 표(pi=272)");
+    assert!(
+        compact_text(next_table, next_table.bbox.y + next_table.bbox.height)
+            .contains("(정성)세분류"),
+        "37쪽 본문 표에 세분류 행이 남아야 한다"
+    );
+    assert!(
+        !p37_text.contains("피규제이외일반국민:") && !p37_text.contains("□편익"),
+        "36쪽의 두 제목을 37쪽에서 다시 그리지 않는다"
+    );
+
+    let general_public = find_table(&p36.root, 270, 0).expect("p36 일반국민 제목(pi=270)");
+    let benefit = find_table(&p36.root, 271, 0).expect("p36 편익 제목(pi=271)");
+    assert!(
+        outer.bbox.y + outer.bbox.height <= general_public.bbox.y + TOLERANCE_PX,
+        "36쪽 마지막 표 뒤에 첫 제목이 놓여야 한다"
+    );
+    assert!(
+        general_public.bbox.y + general_public.bbox.height <= benefit.bbox.y + TOLERANCE_PX,
+        "p36 후속 제목이 겹쳤다: 일반국민={:?}, 편익={:?}",
+        general_public.bbox,
+        benefit.bbox
     );
 }
