@@ -159,18 +159,32 @@ pub(super) fn metric_slot(
 
 pub(super) fn try_resolve_run_slots<S: crate::storage::Storage>(
     lines: &mut [ComposedLine],
+    text: &str,
     styles: &ResolvedStyleSet,
     regenerated: bool,
     storage: &S,
 ) -> Result<(), S::Error> {
+    // 공백 양옆의 문자 소속은 스타일·줄 분할 전 원문에서 판정한다.
+    let chars: Vec<char> = if styles.word_spacing.active() && text.contains(' ') {
+        storage.collect(text.chars())?
+    } else {
+        Vec::new()
+    };
     for line in lines {
+        let mut offset = line.char_start;
         let mut resolved = storage.vec(0)?;
         for run in std::mem::take(&mut line.runs) {
             let style = styles.char_styles.get(run.char_style_id as usize);
+            let start_index = offset;
+            let has_word_space = !chars.is_empty() && run.text.contains(' ');
+            if !chars.is_empty() {
+                offset += run.source_scalar_count();
+            }
             if run.char_overlap.is_some()
-                || !run.text.chars().any(|ch| {
-                    slot(ch, run.lang_index, regenerated, style, styles) != run.lang_index
-                })
+                || (!has_word_space
+                    && !run.text.chars().any(|ch| {
+                        slot(ch, run.lang_index, regenerated, style, styles) != run.lang_index
+                    }))
             {
                 storage.push(&mut resolved, run)?;
                 continue;
@@ -182,10 +196,19 @@ pub(super) fn try_resolve_run_slots<S: crate::storage::Storage>(
             let mut model_start = 0;
             let mut lang = run.lang_index;
             let mut origin = run.neutral_space_origin;
+            let mut metric = run.space_metric;
             for (scalar, (byte, ch)) in run.text.char_indices().enumerate() {
                 let next = slot(ch, run.lang_index, regenerated, style, styles);
                 let next_origin = space_origin(ch, run.lang_index, style);
-                if (next, next_origin) != (lang, origin) {
+                let next_metric = if has_word_space && ch == ' ' {
+                    styles
+                        .word_spacing
+                        .metric_at(&chars, start_index + scalar)
+                        .unwrap_or(run.space_metric)
+                } else {
+                    run.space_metric
+                };
+                if (next, next_origin, next_metric) != (lang, origin, metric) {
                     if byte > start {
                         storage.push(
                             &mut resolved,
@@ -198,6 +221,7 @@ pub(super) fn try_resolve_run_slots<S: crate::storage::Storage>(
                                 )?,
                                 lang_index: lang,
                                 neutral_space_origin: origin,
+                                space_metric: metric,
                                 ..run.try_clone(storage)?
                             },
                         )?;
@@ -206,6 +230,7 @@ pub(super) fn try_resolve_run_slots<S: crate::storage::Storage>(
                     model_start = scalar;
                     lang = next;
                     origin = next_origin;
+                    metric = next_metric;
                 }
             }
             if start < run.text.len() {
@@ -220,6 +245,7 @@ pub(super) fn try_resolve_run_slots<S: crate::storage::Storage>(
                         text: storage.string(&run.text[start..])?,
                         lang_index: lang,
                         neutral_space_origin: origin,
+                        space_metric: metric,
                         ..run
                     },
                 )?;

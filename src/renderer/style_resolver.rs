@@ -61,7 +61,24 @@ fn doc_targets_ms_word(doc_info: &crate::model::document::DocInfo) -> bool {
     let hwpx_word = doc_info
         .hwpx_head_tail
         .as_deref()
-        .is_some_and(|tail| tail.contains(r#"targetProgram="MS_WORD""#));
+        .filter(|tail| tail.contains("MS_WORD"))
+        .is_some_and(|tail| {
+            use quick_xml::events::Event;
+            let mut reader = quick_xml::Reader::from_str(tail);
+            loop {
+                match reader.read_event() {
+                    Ok(Event::Start(node) | Event::Empty(node))
+                        if node.local_name().as_ref() == "compatibleDocument" =>
+                    {
+                        break node.attributes().flatten().any(|attr| {
+                            attr.key.as_ref() == "targetProgram" && attr.value.as_ref() == "MS_WORD"
+                        });
+                    }
+                    Ok(Event::Eof) | Err(_) => break false,
+                    _ => {}
+                }
+            }
+        });
     hwp5_word || hwpx_word
 }
 
@@ -76,6 +93,11 @@ pub(crate) fn try_resolve_styles_for_document<S: storage::Storage>(
     styles.source_hwp3_native = profile.hwp3_native_layout();
     styles.legacy_body_symbols = document.uses_legacy_body_symbols();
     styles.word_compat_target = doc_targets_ms_word(&document.doc_info);
+    styles.word_spacing = word_compat::WordSpacing::for_document(
+        document,
+        styles.word_compat_target,
+        profile.hangul2024_layout(),
+    );
     if document.provenance.format == crate::model::provenance::SourceFormat::Hwp5
         && !document.provenance.hwpx_lineage
     {
@@ -183,6 +205,11 @@ pub(crate) fn resolve_styles_with_environment(
     styles.inferred_ttf_requires_selection =
         environment.is_some_and(|env| env.explicitly_replaces_source_metrics());
     styles.script_metrics = super::script_metrics::ScriptMetricsContract::for_profile(profile);
+    styles.word_spacing = word_compat::WordSpacing::for_document(
+        document,
+        styles.word_compat_target,
+        profile.hangul2024_layout(),
+    );
     // 독립 동일 입력의 2020은 HCRDotum을 강제하고, 2024는 원 face/대체 face의
     // 자모 전진을 유지한다. 세대는 기존 명시적 출력 profile에서만 받는다.
     styles.isolated_jamo_font = (!profile.hangul2024_layout()
@@ -628,6 +655,7 @@ fn try_resolve_styles_with_variant<S: storage::Storage>(
         source_hwp3_native: false,
         legacy_body_symbols: false,
         word_compat_target: false,
+        word_spacing: Default::default(),
         source_program_projection_slots: Default::default(),
         script_metrics: Default::default(),
         native_pua_fonts: Default::default(),

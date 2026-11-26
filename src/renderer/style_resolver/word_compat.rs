@@ -23,8 +23,9 @@
 //! 한/글 줄 높이로 인쇄된다. HWPX 는 `layoutCompatibility` 가 비어 있어도 워드 줄 높이를
 //! 쓴다(합성 HWPX 인쇄).
 //!
-//! 함초롬·맑은 고딕만 데스크톱 인쇄로 확인했다. 나머지 글꼴은 웹한글기안기 화면에서 잰 값에
-//! 위 두 글꼴에서 같게 나온 1.3 배를 곱한 값이다.
+//! 굴림·Gulim은 같은 TTC를 쓰며 11pt 비율 100%의 한 줄은 1430 HU다. 한컴바탕도 같은
+//! 높이다. Arial·Times New Roman은 2024 인쇄에서 라틴 글자 줄과 한글 대체 줄의 피치가 다르다.
+//! 라틴은 hhea의 줄 간격을 포함한 2355/2048 em이고 한글은 실제 대체 글꼴의 메트릭을 따른다.
 use crate::model::document::{DocInfo, Document};
 
 /// `LAYOUT_COMPATIBILITY` 문단 수준 플래그 중 워드 줄 높이를 켜는 비트.
@@ -49,15 +50,89 @@ pub(crate) fn uses_word_line_height(document: &Document) -> bool {
     })
 }
 
-/// 글꼴 이름의 한 줄 높이 배율 `H`(글자 크기 대비).
-pub(crate) fn line_height_factor_for_face(face: &str) -> f64 {
-    match face.trim() {
-        "함초롬바탕" | "함초롬돋움" | "HCR Batang" | "HCR Dotum" => 1.691,
-        "맑은 고딕" | "Malgun Gothic" => 1.3 * 2724.0 / 2048.0,
-        "Times New Roman" => 1.3 * 2355.0 / 2048.0,
-        "휴먼명조" | "굴림" | "굴림체" | "돋움" | "바탕" | "한컴바탕" => {
-            1.3 * 1.148
+/// HWP 5 표 56의 글자 단위 서식. 한컴에서 저장한 Word 문서의 비트를
+/// 하나씩 바꿔 인쇄하면 bit 7은 서양 문자 사이 한 칸의 글꼴 전진을,
+/// bit 11은 한컴 2024의 공백 자간 조정을 독립적으로 켠다.
+#[derive(Clone, Copy, Debug, Default)]
+pub(crate) struct WordSpacing {
+    latin_font_space: bool,
+    reduce_space: bool,
+}
+crate::storage::clone_copy!(WordSpacing);
+
+impl WordSpacing {
+    pub(super) fn for_document(doc: &Document, word_target: bool, hangul_2024: bool) -> Self {
+        if !word_target {
+            return Self::default();
         }
+        let flags = if doc.provenance.format == crate::model::provenance::SourceFormat::Hwpx {
+            // HWPX의 MS_WORD 대상은 빈 layoutCompatibility에서도 Word 기본값을 쓴다.
+            (1 << 7) | (1 << 11)
+        } else {
+            doc.doc_info
+                .extra_records
+                .iter()
+                .find(|r| r.tag_id == crate::parser::tags::HWPTAG_LAYOUT_COMPATIBILITY)
+                .and_then(|r| r.data.get(..4))
+                .map_or(0, |b| u32::from_le_bytes([b[0], b[1], b[2], b[3]]))
+        };
+        Self {
+            latin_font_space: flags & (1 << 7) != 0,
+            reduce_space: hangul_2024 && flags & (1 << 11) != 0,
+        }
+    }
+
+    pub(crate) fn active(self) -> bool {
+        self.latin_font_space || self.reduce_space
+    }
+
+    pub(crate) fn metric_at(
+        self,
+        text: &[char],
+        index: usize,
+    ) -> Option<crate::model::paragraph::SpaceMetric> {
+        if !self.active() || text.get(index) != Some(&' ') {
+            return None;
+        }
+        let western = |ch: &char| {
+            !ch.is_whitespace() && !ch.is_control() && super::detect_lang_category(*ch) == 1
+        };
+        let latin = self.latin_font_space
+            && index
+                .checked_sub(1)
+                .and_then(|i| text.get(i))
+                .is_some_and(western)
+            && text.get(index + 1).is_some_and(western);
+        (latin || self.reduce_space).then_some(crate::model::paragraph::SpaceMetric::Word {
+            latin,
+            reduced: self.reduce_space,
+        })
+    }
+}
+
+/// 글꼴 이름의 한 줄 높이 배율 `H`(글자 크기 대비).
+fn line_height_factor_for_face(face: &str, lang: usize) -> f64 {
+    let face = face.trim();
+    let family = crate::renderer::font_metrics_data::find_metric(face, false, false)
+        .map_or(face, |found| found.metric.name);
+    // Times New Roman과 Arial의 cmap에는 한글 음절이 없다. 실제 한컴 PDF의
+    // 한글 run에서 확인한 첫 대체 face는 paint의 세리프·고딕 선택과 같다.
+    let family = if lang == 0 && matches!(family, "Times New Roman" | "Arial") {
+        crate::renderer::generic_fallback(family)
+            .split(',')
+            .next()
+            .unwrap_or(family)
+            .trim_matches('\'')
+    } else {
+        family
+    };
+    match family {
+        "HCR Batang" | "HCR Dotum" => 1.691,
+        "Malgun Gothic" => 1.3 * 2724.0 / 2048.0,
+        "Times New Roman" | "Arial" => 2355.0 / 2048.0,
+        // gulim.ttc의 네 face는 hhea (879, -145), UPEM 1024를 공유한다.
+        "Gulim" | "GulimChe" | "Dotum" | "DotumChe" | "Haansoft Batang" => 1.3,
+        "휴먼명조" | "Batang" => 1.3 * 1.148,
         _ => 1.3,
     }
 }
@@ -75,7 +150,7 @@ pub(crate) fn line_factors(doc_info: &DocInfo) -> Vec<[f64; 7]> {
                     .get(lang)
                     .and_then(|faces| faces.get(shape.font_ids[lang] as usize))
                 {
-                    *factor = line_height_factor_for_face(&font.name);
+                    *factor = line_height_factor_for_face(&font.name, lang);
                 }
             }
             factors

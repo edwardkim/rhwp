@@ -441,6 +441,23 @@ impl SpaceMetric {
                     style.font_space_em = Some(em);
                 }
             }
+            Self::Word { latin, reduced } => {
+                let program_space = || {
+                    crate::renderer::style_resolver::declared_space_advance_em(
+                        &style.font_family,
+                        style.bold,
+                        style.italic,
+                    )
+                };
+                let em = style
+                    .font_space_em
+                    .or_else(|| latin.then(program_space).flatten())
+                    .or(style.layout_half_space_em)
+                    .unwrap_or(0.5);
+                // 같은 원문의 한컴 2020·2024 Print에서 네 글꼴의 반각과
+                // 글꼴 hmtx 전진을 대조하면 2024 조정은 양쪽 모두 원래 폭의 70%다.
+                style.font_space_em = Some(if reduced { em * 0.7 } else { em });
+            }
         }
     }
 

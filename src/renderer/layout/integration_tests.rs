@@ -84,6 +84,7 @@ mod tests {
             source_hwp3_native: false,
             legacy_body_symbols: false,
             word_compat_target: false,
+            word_spacing: Default::default(),
             source_program_projection_slots: Default::default(),
             unsubstituted_font_slots: Default::default(),
             isolated_jamo_font: None,
