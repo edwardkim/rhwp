@@ -5318,8 +5318,8 @@ impl LayoutEngine {
                                             offset_within_start: split.offset_within_start,
                                             content_offset: split.content_offset,
                                             force_source_start_cut: split.force_source_start_cut,
-                                            replay_terminal_boundary_unit: split
-                                                .replay_terminal_boundary_unit,
+                                            preserve_source_cut_origin: split
+                                                .preserve_source_cut_origin,
                                             terminal: split.terminal,
                                             recursive_cut: split.recursive_cut.clone(),
                                         })
@@ -5332,8 +5332,8 @@ impl LayoutEngine {
                                             offset_within_start: split.offset_within_start,
                                             content_offset: split.content_offset,
                                             force_source_start_cut: split.force_source_start_cut,
-                                            replay_terminal_boundary_unit: split
-                                                .replay_terminal_boundary_unit,
+                                            preserve_source_cut_origin: split
+                                                .preserve_source_cut_origin,
                                             terminal: split.terminal,
                                             recursive_cut: split.recursive_cut.clone(),
                                         })
@@ -5381,7 +5381,7 @@ impl LayoutEngine {
                                             flow_height: vis_h,
                                             content_offset: 0.0,
                                             force_source_start_cut: false,
-                                            replay_terminal_boundary_unit: false,
+                                            preserve_source_cut_origin: false,
                                             // 행 컷은 자식의 마지막 행을 소유하면 종료다.
                                             // 부모 셀의 end_unit 센티널과 구분한다.
                                             terminal: end_row == nrow,

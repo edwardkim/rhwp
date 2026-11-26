@@ -1977,6 +1977,13 @@ pub(super) struct CellUnit {
     carried_float_lead: f64,
 }
 
+fn mixed_nested_host_is_terminal(units: &[CellUnit], para_idx: usize, cut_end: usize) -> bool {
+    !units
+        .iter()
+        .skip(cut_end)
+        .any(|unit| unit.para_idx == para_idx && unit.mixed_nested_fragment)
+}
+
 #[derive(Debug, Clone, Copy)]
 struct OverlayChildRow {
     control_index: usize,
@@ -2265,10 +2272,9 @@ pub(crate) struct NestedTableSplit {
     /// source cut을 끈다; native short-parent-child와 p33→34류 terminal rowbreak
     /// source cursor를 함께 OR한 값이므로 두 형상 모두 unit 컷 자체는 켠다.
     pub force_source_start_cut: bool,
-    /// native short-parent-child(76076 p81→82)에서만 true. `force_source_start_cut`이
-    /// p33→34류 terminal rowbreak source cursor만으로 true인 경우에는 false를 유지해
-    /// 이미 소유가 끝난 마지막 unit을 다음 조각에서 중복 페인트하지 않는다.
-    pub replay_terminal_boundary_unit: bool,
+    /// 앞 조각이 소유한 경계 줄의 전진을 scalar 이어받기 원점에 반영한다.
+    /// 현재 조각의 내용 컷은 앞 조각에서 소비한 다음 줄부터 시작한다.
+    pub preserve_source_cut_origin: bool,
     /// [#3658] 이 조각이 해당 셀 콘텐츠의 **마지막** 조각인가 (컷이 마지막 유닛까지
     /// 포함 — end_cut 종료). true 면 이어받을 continuation 이 없으므로 셀 하단 초과
     /// 줄 드롭(다음 쪽 소속 줄 제외용)을 적용하지 않는다 — 꼬리 문단 유실 방지.
@@ -2343,7 +2349,7 @@ pub(crate) fn calc_nested_split_rows(
             offset_within_start: 0.0,
             content_offset: 0.0,
             force_source_start_cut: false,
-            replay_terminal_boundary_unit: false,
+            preserve_source_cut_origin: false,
             terminal: false,
             recursive_cut: None,
         };
@@ -2414,7 +2420,7 @@ pub(crate) fn calc_nested_split_rows(
         offset_within_start: 0.0,
         content_offset: offset.max(0.0),
         force_source_start_cut: false,
-        replay_terminal_boundary_unit: false,
+        preserve_source_cut_origin: false,
         terminal: false,
         recursive_cut: None,
     }
@@ -2476,8 +2482,8 @@ struct HorizontalCellVars {
     /// native short-parent child의 terminal continuation도 이미 소비한 source
     /// prefix를 건너뛰게 하는 명시 신호. 일반 terminal tail에는 false다.
     force_source_start_cut: bool,
-    /// true면 마지막 source unit을 다음 조각에서 재생한다 (76076 p81→82 형상만 해당).
-    replay_terminal_boundary_unit: bool,
+    /// 앞 조각이 소유한 경계 줄의 전진을 시작 위치에 반영한다.
+    preserve_source_cut_origin: bool,
     /// [#3658] 분할 렌더(row_filter)가 이 셀 콘텐츠의 마지막 조각인가.
     /// true 면 셀 하단 초과 줄 드롭(다음 쪽 소속 줄 제외)을 적용하지 않는다 —
     /// 이어받을 continuation 이 없어 드롭된 꼬리 줄은 영구 유실되기 때문.
@@ -4701,8 +4707,8 @@ impl LayoutEngine {
             .map(|split| split.content_offset);
         let scalar_force_source_start_cut = nested_split
             .is_some_and(|split| scalar_single_row_fragment && split.force_source_start_cut);
-        let scalar_replay_terminal_boundary_unit = nested_split
-            .is_some_and(|split| scalar_single_row_fragment && split.replay_terminal_boundary_unit);
+        let scalar_preserve_source_cut_origin = nested_split
+            .is_some_and(|split| scalar_single_row_fragment && split.preserve_source_cut_origin);
         let scalar_single_row_continuation = scalar_single_row_continuation_offset.is_some();
         let mut row_col_x = match build_row_col_x(
             table,
@@ -5124,7 +5130,7 @@ impl LayoutEngine {
             scalar_single_row_fragment,
             scalar_single_row_fragment_content_offset,
             scalar_force_source_start_cut,
-            scalar_replay_terminal_boundary_unit,
+            scalar_preserve_source_cut_origin,
             split_terminal,
             clamp_header_negative_para_offset,
             matches!(
@@ -7986,7 +7992,7 @@ impl LayoutEngine {
             single_row_fragment,
             single_row_fragment_content_offset,
             force_source_start_cut,
-            replay_terminal_boundary_unit,
+            preserve_source_cut_origin,
             split_terminal,
         } = v;
         let stored_empty_picture_frame = (row_filter.is_none() && !single_row_fragment)
@@ -8037,21 +8043,7 @@ impl LayoutEngine {
             // 페이지 상단에 이어져야 할 줄이 사라진다. 따라서 현재 페이지 **하단**
             // 까지만 정확히 자르고, 앞부분은 같은 논리 원점에서 배치시킨다.
             let start = if force_source_start_cut {
-                let units = self.cell_units_fitting_height(cell, table, styles, offset);
-                if replay_terminal_boundary_unit {
-                    // Native HWP5 short-parent child fragments can end the preceding
-                    // viewport inside the final source unit.  That unit is physically
-                    // clipped on the preceding page, so treating it as fully consumed
-                    // loses its first visible line on the terminal continuation
-                    // (76076 p81 -> p82).  Keep the outer fragment geometry intact and
-                    // replay exactly that boundary unit on the next page.
-                    units.saturating_sub(1)
-                } else {
-                    // terminal_rowbreak_source_cursor-only (76076 p33 -> p34) already
-                    // owns every unit through `units`; replaying one back here would
-                    // repaint its last source line again.
-                    units
-                }
+                self.cell_units_fitting_height(cell, table, styles, offset)
             } else {
                 0
             };
@@ -8108,7 +8100,18 @@ impl LayoutEngine {
                     .any(|(ci, _)| stored_square_picture_has_adjacent_text(cell, pi, ci))
             });
         // 셀 내 문단 + 컨트롤 통합 레이아웃
-        let mut para_y = text_y_start;
+        // 같은 내용 컷에서 닫은 경계 줄의 전진으로 원본 viewport의
+        // 좌표를 유지한다. 이 줄은 앞 조각에 속하므로 여기서는 다시 배치하지 않는다.
+        let source_cut_advance = fragment_cut_units
+            .filter(|_| preserve_source_cut_origin)
+            .and_then(|(start, _)| start.checked_sub(1))
+            .and_then(|index| {
+                self.cell_units(cell, table, styles)
+                    .get(index)
+                    .map(|unit| unit.height)
+            })
+            .unwrap_or(0.0);
+        let mut para_y = text_y_start + source_cut_advance;
         // [#8576 후속] 쌓인 그림 아래로 같은 칸 뒤 글줄을 내린다(높이 측정과 같은 규칙).
         let mut square_stack_floor = CellSquareStackTextFloor::default();
         let mut has_preceding_text = false;
@@ -11633,7 +11636,7 @@ impl LayoutEngine {
         single_row_fragment: bool,
         single_row_fragment_content_offset: Option<f64>,
         force_source_start_cut: bool,
-        replay_terminal_boundary_unit: bool,
+        preserve_source_cut_origin: bool,
         split_terminal: bool,
         clamp_header_negative_para_offset: bool,
         header_or_master_cell: bool,
@@ -12629,7 +12632,7 @@ impl LayoutEngine {
                         single_row_fragment,
                         single_row_fragment_content_offset,
                         force_source_start_cut,
-                        replay_terminal_boundary_unit,
+                        preserve_source_cut_origin,
                         split_terminal,
                     },
                 );
@@ -16225,6 +16228,14 @@ impl LayoutEngine {
             );
         }
         eligible
+    }
+
+    /// 앞 조각의 물리 높이에 포함됐던 자식의 위쪽 안여백을 이어받기 조각에도
+    /// 한 번 예약한다. 원래 유닛 선택에 쓰는 내용 컷과는 구분한다.
+    fn short_terminal_nested_continuation_inset(&self, child: &crate::model::table::Table) -> f64 {
+        child.cells.first().map_or(0.0, |cell| {
+            self.resolve_cell_padding_for_context(cell, child).2
+        })
     }
 
     /// Native HWP5 `RowBreak`의 마지막 행에서 이미 outer `CellUnit` cut으로
@@ -28915,10 +28926,7 @@ impl LayoutEngine {
         // by another paragraph/table in the same outer cell; treating it as
         // non-terminal drops its final reservation and shortens the current
         // frame (42065 p13→p15).
-        let terminal = !units
-            .iter()
-            .skip(hi)
-            .any(|unit| unit.para_idx == para_idx && unit.mixed_nested_fragment);
+        let terminal = mixed_nested_host_is_terminal(&units, para_idx, hi);
         let successor_trailing_reservation = trailing_reservation_after_final_source_owner(
             para_idx,
             units.get(hi).map(MixedNestedOwnerMarker::from),
@@ -29100,6 +29108,14 @@ impl LayoutEngine {
             offset
         };
         let is_offset_continuation = offset_within_start > 0.5;
+        let short_child_continuation_inset = nested
+            .filter(|_| {
+                terminal
+                    && native_short_terminal_child
+                    && recursive_cut.is_none()
+                    && is_offset_continuation
+            })
+            .map(|child| self.short_terminal_nested_continuation_inset(child));
         let has_later_host_source_owner = units
             .iter()
             .skip(hi)
@@ -29198,6 +29214,8 @@ impl LayoutEngine {
             physical
         } else if let Some(physical) = stored_block_frame {
             physical
+        } else if let Some(inset) = short_child_continuation_inset {
+            flow_visible + inset
         } else if terminal_table_before_host_successor {
             // 이 mixed stream은 끝났지만 같은 host cell에는 다음 source 문단이 있다.
             // 자식 표의 실제 마지막 unit까지만 frame을 닫고, host 문단의 후행
@@ -29306,6 +29324,8 @@ impl LayoutEngine {
                     )
             } else if let Some(physical) = stored_block_frame {
                 physical
+            } else if let Some(inset) = short_child_continuation_inset {
+                flow_visible + inset
             } else if terminal_table_before_host_successor {
                 flow_visible + terminal_host_line_spacing
             } else if recursive_cut.is_some() {
@@ -29400,7 +29420,7 @@ impl LayoutEngine {
                             offset_within_start: 0.0,
                             content_offset: offset,
                             force_source_start_cut: false,
-                            replay_terminal_boundary_unit: false,
+                            preserve_source_cut_origin: false,
                             terminal: true,
                             recursive_cut: Some(NestedTableCut {
                                 start_row: rows.start_row,
@@ -29448,7 +29468,11 @@ impl LayoutEngine {
             // 1행 표는 종전 규약 유지 — 행 경계가 없어 오프셋만으로 이어진다.
             _ => (0, 1, offset_within_start, visible_height),
         };
-        if terminal_table_before_host_successor {
+        if let Some(inset) = short_child_continuation_inset {
+            // 물리 시작점만 복원한다. content_offset은 부모 컷이 이미
+            // 소비한 자식 유닛의 원래 선택 위치를 보존한다.
+            row_offset_within_start = (row_offset_within_start - inset).max(0.0);
+        } else if terminal_table_before_host_successor {
             // continuation 첫 line box의 leading과 셀 top padding을 source offset에서
             // 되돌려 현재 fragment 안에 다시 보인다. paint만 아래로 옮기며 위에서
             // 계산한 flow_height에는 더하지 않아 다음 host 문단 위치는 유지한다.
@@ -29482,9 +29506,7 @@ impl LayoutEngine {
             },
             content_offset: offset,
             force_source_start_cut,
-            // p33→34류(terminal_rowbreak_source_cursor만 true)는 이미 소유가 끝난 마지막
-            // unit을 재생하면 안 되므로, native short-parent 형상에서만 켠다.
-            replay_terminal_boundary_unit: native_short_terminal_child,
+            preserve_source_cut_origin: native_short_terminal_child,
             terminal,
             recursive_cut,
         })
@@ -29671,7 +29693,7 @@ impl LayoutEngine {
             offset_within_start: 0.0,
             content_offset: 0.0,
             force_source_start_cut: false,
-            replay_terminal_boundary_unit: false,
+            preserve_source_cut_origin: false,
             terminal,
             recursive_cut: Some(cut),
         })
@@ -30316,38 +30338,26 @@ impl LayoutEngine {
                         matches!(control, Control::Table(nested) if nested.row_count == 1 && nested.col_count == 1)
                     })
                 });
-            let native_short_parent_child = cell
-                .paragraphs
-                .get(para_idx)
-                .and_then(|paragraph| {
-                    paragraph.controls.iter().find_map(|control| match control {
-                        Control::Table(child) => Some(child.as_ref()),
-                        _ => None,
-                    })
+            let nested_child = cell.paragraphs.get(para_idx).and_then(|paragraph| {
+                paragraph.controls.iter().find_map(|control| match control {
+                    Control::Table(child) => Some(child.as_ref()),
+                    _ => None,
                 })
-                .is_some_and(|child| {
-                    self.native_short_parent_child_fragment_eligible(
-                        table,
-                        cell,
-                        child,
-                        self.nested_table_mixed_fragment_heights(child, styles)
-                            .iter()
-                            .map(|fragment| fragment.height)
-                            .sum(),
-                    )
-                });
-            let native_terminal_rowbreak_child = cell
-                .paragraphs
-                .get(para_idx)
-                .and_then(|paragraph| {
-                    paragraph.controls.iter().find_map(|control| match control {
-                        Control::Table(child) => Some(child.as_ref()),
-                        _ => None,
-                    })
-                })
-                .is_some_and(|child| {
-                    self.native_terminal_rowbreak_child_source_cursor_eligible(table, cell, child)
-                });
+            });
+            let native_short_parent_child = nested_child.filter(|child| {
+                self.native_short_parent_child_fragment_eligible(
+                    table,
+                    cell,
+                    child,
+                    self.nested_table_mixed_fragment_heights(child, styles)
+                        .iter()
+                        .map(|fragment| fragment.height)
+                        .sum(),
+                )
+            });
+            let native_terminal_rowbreak_child = nested_child.is_some_and(|child| {
+                self.native_terminal_rowbreak_child_source_cursor_eligible(table, cell, child)
+            });
             // 재귀 유닛은 자식 내용만 투영한다. 실제 자식 RowCut 상자에는 안 여백도
             // 있으므로 같은 컷으로 측정한 물리 높이와 내용 합의 차이를 부모 예약에
             // 포함한다. 첫 가시 줄을 다시 더하는 scalar 보정과는 별개다.
@@ -30456,15 +30466,13 @@ impl LayoutEngine {
             // 뒤 sibling을 다음 쪽으로 민다(59043 p36의 27.7px 중복). legacy
             // mixed fallback의 42065 p17 terminal 보정과 HWPX 저장 viewport
             // 보정은 유지한다.
-            if offset_within_start > 0.5 && !authoritative_recursive_run {
-                if terminal && native_short_parent_child {
-                    // The native short-parent continuation replays its boundary
-                    // source unit in the current fragment.  The generic parent
-                    // extra would reserve that whole unit a second time and leave
-                    // an empty row tail (76076 p82); retain only the mixed-flow
-                    // clip guard.
-                    extra += 4.0;
-                } else if terminal && native_terminal_rowbreak_child {
+            let closing_short_child = native_short_parent_child.filter(|_| {
+                !authoritative_recursive_run && mixed_nested_host_is_terminal(&units, para_idx, hi)
+            });
+            if let Some(child) = closing_short_child {
+                extra += self.short_terminal_nested_continuation_inset(child);
+            } else if offset_within_start > 0.5 && !authoritative_recursive_run {
+                if terminal && native_terminal_rowbreak_child {
                     // The long native-HWP5 terminal child already carries the
                     // exact source cursor selected by the parent RowCut.  Its
                     // saved empty host Enter is not a visible successor, so the
