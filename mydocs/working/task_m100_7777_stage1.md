@@ -1407,9 +1407,12 @@ Native 전쪽 TSV와 구조 감사 결과는 각각 `7779-verified-native/`와 `
 
 같은 트리의 편람 Native 검증은 `required-handbook-8153-gate.json`에서 통과했다.
 383쪽 중 381쪽이 100.00%이며 최저 99.97%다. 전쪽 TSV의 SHA-256은
-`261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590`이다. 같은 트리의
-보호 문서 대조와 별도 화살표 폴백 폭 후보의 Native 빌드는 진행 중이다. 증거는
-`76076-verified-wasm/`에 있다.
+`261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590`이다.
+기여자 보호 문서 4건은 Native와 fresh WASM 검사 8개를 모두 통과했고 하락은 0건이다.
+두 경로의 최저는 각각 99.99756%이고 나머지 문서 3건은 양쪽 모두 100.00%다.
+종료 코드 0과 `contributor/contributor-gate.json`의 통과 판정을 확인했다. 이 JSON의
+SHA-256은 `d0935e06f82113d9fd7f6d5b2a5c0b009ccf203c3e63a10ba196f943eabb74fa`다.
+증거는 `76076-verified-wasm/`에 있다. 별도 화살표 폭·표 뒤 간격 후보는 Native 빌드 중이다.
 
 ### #7779·#7784의 33쪽 줄바꿈과 부모 안여백 대조
 
@@ -1523,6 +1526,20 @@ Native는 48번까지 수용했다. 한컴의 18쪽 마지막 괘선은 283 HU �
 17~19쪽 괘선 및 56개 행 소속이 원본과 같았고, Native의 49번 행도 여전히 18쪽에 있었다.
 사본 SHA-256은 `baebf272fce5037327541fb951ab12cb5a26772751c93746486a9efd1171c422`이고
 대조 결과는 `capacity-probe/last-row-controls/last-row-observation.json`에 있다.
+
+한컴 2022·2024 Print에서 첫 열의 배경 사각형으로 18쪽의 반복 머리행과 본문 40행을 다시
+측정했다. HWP의 쪽 높이 84,188 HU로 PDF 쪽 높이의 배율을 걷은 뒤 표 상단부터 각 행 하단까지의
+거리를 둘째 후보 Native와 비교했다. 두 Print에서 누적 차이의 절댓값은 모든 행에서 **0.14px
+이내**였고, 48번 행 하단 차이는 **+0.076px**였다. Native만 수용한 49번 행 높이는 **23.4px**다.
+두 출력이 함께 수용한 행의 누적 높이는 일치하므로, 49번 행의 수용 상한을 계속 추적한다.
+행별 좌표와 두 PDF 해시는 `p19-table-ownership/shared-row-height-comparison.json`에 있다.
+
+정상 대조로 #7902의 `table_scattered_header_rowbreak.hwp`를 같은 Native로 열었다. 2쪽은
+행 인덱스 `[23, 61)`을 사용하고, 3쪽은 61행에서 이어받아 후속 표를 그린다. 2쪽의
+스캔 본문 예산은 983.2px이고, 논리 컷 확정 뒤 인증된 물리 하단까지 빈 띠를 보존한다.
+이 결정은 59043의 18쪽처럼 별도 인증 하단이 없는 일반 행 스캔과 적용 조건이 다르다.
+독립 Print SHA와 원본·Native 식별자, 실제 컷과 배치 추적은
+`p19-table-ownership/normal-7902/`에 있다.
 
 ### #7785의 원본 세 형식과 HML 저장 왕복 Native 재검증
 
