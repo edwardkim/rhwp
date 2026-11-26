@@ -30,8 +30,10 @@
   함께 대체한 392쪽의 값이 모두 일치해 그 허용 쌍도 등록했다. 중첩 표의 휴먼고딕은
   `HMKMG.otf`를 유지한다.
 - 개요 번호(`outline`)와 종합부동산세법(`issue7905`)은 매니페스트에 기록한 OTF 글꼴을 사용한다.
-  개요 번호의 OTF 33종과 법령의 OTF 12종은 각 문서의 `accepted_sha256_pairs`에 지정한 소형 로컬 OTF도 사용할 수 있다.
-  같은 파일명의 설치본도 해시가 다를 수 있으므로 Native·WASM에서 파일 순서와 SHA-256을 확인한다.
+  개요 번호의 OTF 33종과 법령의 OTF 12종은 각 문서의 `accepted_sha256_pairs`에 원래 지정한 해시,
+  로컬 소형 OTF의 해시, 로컬 원본 크기 OTF의 해시를 파일별로 등록했다. 지정 순서로 공급하고 같은
+  공급본에서 기준과 후보를 비교한다. Native에서는 두 로컬 공급본을 각각 검증했다. 브라우저에서는
+  단일 글꼴 32 MiB·등록 요청당 64 MiB 한도를 충족하는 소형 공급본으로 전쪽을 검증했다.
 - 중첩 표(`nested`)의 Native·WASM은 21개 파일의 순서를 유지한다. 두 경로에서 17쪽을 확인한
   `H2MJRE.TTF`, `HBATANG.TTF`, `HDOTUM.TTF`, `gulim.TTC`, `pala.ttf`의 문서별 해시 쌍을 허용한다.
 - `font_environment`가 있으면 해당 JSON을 `--font-environment`로 지정한다.
