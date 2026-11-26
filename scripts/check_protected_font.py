@@ -1,4 +1,4 @@
-"""정본 공급 항목에 사용할 수 있는 로컬 글꼴의 SHA-256을 확인한다."""
+"""정본 공급 항목에 사용할 수 있는 로컬 글꼴의 파일명과 SHA-256을 확인한다."""
 
 import argparse
 import hashlib
@@ -28,6 +28,11 @@ def supply_hashes(manifest, required, document=None):
     return []
 
 
+def excluded_font_path(path, suffixes):
+    excluded = tuple(suffix.casefold() for suffix in suffixes)
+    return path.name.casefold().endswith(excluded) or path.resolve().name.casefold().endswith(excluded)
+
+
 def main():
     root = Path(__file__).resolve().parents[1]
     manifest_path = root / "mydocs/verification/protected-font-supply/manifest.json"
@@ -46,6 +51,8 @@ def main():
         parser.error(f"공급 목록에 없는 SHA-256: {required}")
     checksum = hashlib.sha256()
     try:
+        if excluded_font_path(args.file, manifest.get("excluded_filename_suffixes", [])):
+            parser.exit(1, f"정본 보호 공급에서 제외한 글꼴: {args.file}\n")
         with args.file.open("rb") as stream:
             for block in iter(lambda: stream.read(1024 * 1024), b""):
                 checksum.update(block)

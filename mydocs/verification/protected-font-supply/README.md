@@ -3,6 +3,9 @@
 [manifest.json](manifest.json)은 Linux·Windows·macOS의 정본 보호 검증에서 사용하는
 문서별 Native·WASM 글꼴 공급 조건이다. 경로는 저장소 루트를 기준으로 해석한다.
 
+- `excluded_filename_suffixes`에 해당하는 `_MAC.otf`는 Native·fresh WASM 공급과 실제 선택에서
+  제외한다. 대소문자를 구분하지 않으며, 파일명 변경이나 링크로 우회하지 않는다. 파일명과 SHA-256을
+  `scripts/check_protected_font.py`로 공급 전에 검사하고, 실행 후 실제 선택 기록을 대조한다.
 - `documents[].backends`에서 문서 key와 backend를 선택한다.
 - `supply_mode`가 `explicit_files`이면 `font_set`의 파일명·SHA-256·배열 순서로
   `--font-path`를 지정한다. 자동 선택 조건에서는 `font_set`을 공급 환경 확인에 사용한다.
@@ -61,6 +64,8 @@
 
 대체 해시 등록과 검증 산출물 보존에 관한 다음 절차는 정본 보호 문서에만 적용한다.
 대체 글꼴 해시를 허용할 때는 `manifest.json`의 해당 보호 문서 항목에 `accepted_sha256_pairs`를 등록한다.
+보호 글꼴의 허용 조건을 변경하는 PR은 macOS·Windows·Linux에서 등록 문서 전체의 Native·fresh WASM
+결과를 각각 대조해 보호 하한을 모두 충족한 뒤 제출한다.
 허용 여부를 판단하기 위한 상세 비교 JSON과 실행 로그는 `output/pr-review/<작업명>/`에만 보존한다.
 `records/`에는 해당 실행 산출물을 추가하지 않는다.
 

@@ -1,5 +1,8 @@
 {
   "schema_version": 1,
+  "excluded_filename_suffixes": [
+    "_MAC.otf"
+  ],
   "baseline": {
     "manifest": {
       "path": "mydocs/pr/assets/visual-protected-baseline/manifest.json",
