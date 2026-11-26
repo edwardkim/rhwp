@@ -40,6 +40,7 @@ mod stored_nested_frame_row_end;
 mod stored_nested_host_flow;
 mod stored_nested_outer_frame;
 mod stored_nested_padding;
+mod stored_nested_page_band;
 mod stored_nested_source_cut;
 mod stored_nested_text_frames;
 mod stored_ordinary_row_frame;
@@ -30955,6 +30956,20 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
         purpose: row_physical_band::CutHeight,
     ) -> f64 {
+        self.row_cut_height_in_source_band(table, row, start_cut, end_cut, styles, purpose, false)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn row_cut_height_in_source_band(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start_cut: &[usize],
+        end_cut: &[usize],
+        styles: &ResolvedStyleSet,
+        purpose: row_physical_band::CutHeight,
+        page_closing_line_box: bool,
+    ) -> f64 {
         if row == 0 {
             if let Some(frame) =
                 self.reflow_external_cut_frame(table, start_cut, end_cut, styles, purpose)
@@ -31059,6 +31074,16 @@ impl LayoutEngine {
                         self.physical_cut_trailing_trim(table, cell, &units, su, eu, styles)
                     }
                 }
+            };
+            let trailing_trim = if page_closing_line_box && !end_cut.is_empty() && su < eu {
+                let last = &units[eu - 1];
+                if self.stored_reset_span_owns_closing_slot(table, cell, &units, eu) {
+                    trailing_trim
+                } else {
+                    trailing_trim.max(self.stored_span_line_tail_spacing(last))
+                }
+            } else {
+                trailing_trim
             };
             // [#7870] 여백을 다시 세면 물리 밴드 재맞춤이 그 몫만큼 예산을 줄여 용량 컷이
             // 방금 앉힌 atom 을 다음 쪽으로 밀어낸다.
@@ -31185,8 +31210,12 @@ impl LayoutEngine {
                 max_h = h;
             }
         }
-        self.row_cut_first_source_frame_height(table, row, start_cut, end_cut, styles)
-            .map_or(max_h, |height| max_h.max(height))
+        if !page_closing_line_box {
+            self.row_cut_first_source_frame_height(table, row, start_cut, end_cut, styles)
+                .map_or(max_h, |height| max_h.max(height))
+        } else {
+            max_h
+        }
     }
 
     /// RowBreak 분할 예산에서 실제 남은 가시 내용이 있는 셀의 패딩만 예약한다.

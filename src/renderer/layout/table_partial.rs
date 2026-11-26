@@ -128,6 +128,7 @@ struct PartialTableHostContext<'a> {
     end_row_owns_stored_frame: bool,
     /// 현재 호스트의 확정된 줄·표 계획에서 온 물리 조각 상자다.
     computed_fragment_frame: bool,
+    remaining_child_row: Option<(usize, f64)>,
 }
 
 /// 투명하고 비어 있는 1×1 감싸기 표 안의 내용 표를 반환한다.
@@ -1128,6 +1129,7 @@ impl LayoutEngine {
         align_saved_opening_frame: bool,
         end_row_owns_stored_frame: bool,
         computed_fragment_frame: bool,
+        remaining_child_row: Option<(usize, f64)>,
         external_frame: Option<super::table_layout::ReflowExternalCutFrame>,
         // 원본 쪽 재시작과 전달된 물리 높이를 함께 확인한 시작/끝 행.
         original_restart_alignment_rows: [Option<usize>; 2],
@@ -5678,6 +5680,21 @@ impl LayoutEngine {
                                                 )
                                             })
                                             .flatten();
+                                        let stored_page_band = (enclosing_cell_ctx.is_none()
+                                            && !is_block_split
+                                            && !start_cut_is_block)
+                                            .then(|| {
+                                                self.stored_nested_page_band_at_height(
+                                                    table,
+                                                    usize::from(cell.row),
+                                                    start_cut,
+                                                    end_cut,
+                                                    cell_h,
+                                                    remaining_child_row,
+                                                    styles,
+                                                )
+                                            })
+                                            .flatten();
                                         let rendered_bottom = self.layout_partial_table_resolved(
                                             tree,
                                             nested_parent,
@@ -5700,6 +5717,7 @@ impl LayoutEngine {
                                                     }),
                                                 end_row_owns_stored_frame: false,
                                                 computed_fragment_frame: false,
+                                                remaining_child_row: None,
                                                 // 같은 원본 프레임의 바깥여백은 부모 흐름에 예약했다.
                                                 // 실제 표 원점에서는 위 여백만 한 번 소비한다.
                                                 resolved_table_top: resolved_nested_table_top,
@@ -5723,8 +5741,10 @@ impl LayoutEngine {
                                             // 투영)이다. 투명 래퍼 벗기기는 별개 좌표계
                                             // 판정(#4326)이라 여기서는 항상 false.
                                             false,
-                                            source_frame_height
-                                                .filter(|_| !recursive_cut.end_cut.is_empty())
+                                            stored_page_band
+                                                .map(|band| band.last_row_height)
+                                                .or(source_frame_height
+                                                    .filter(|_| !recursive_cut.end_cut.is_empty()))
                                                 .or(joint_opening_height)
                                                 .or(plain_source_height)
                                                 .or_else(|| {
@@ -5732,8 +5752,16 @@ impl LayoutEngine {
                                                         .as_ref()
                                                         .map(|band| band.last_row_height)
                                                 }),
-                                            source_frame_height
-                                                .filter(|_| !recursive_cut.start_cut.is_empty()),
+                                            remaining_child_row
+                                                .filter(|(row, _)| {
+                                                    *row == recursive_cut.start_row
+                                                        && !recursive_cut.start_cut.is_empty()
+                                                        && !recursive_cut.start_cut_is_block
+                                                })
+                                                .map(|(_, height)| height)
+                                                .or(source_frame_height.filter(|_| {
+                                                    !recursive_cut.start_cut.is_empty()
+                                                })),
                                             &[],
                                             &[],
                                             para_margin_left,
@@ -6574,6 +6602,7 @@ impl LayoutEngine {
         computed_fragment_frame: bool,
         end_row_height_override: Option<f64>,
         start_row_height_override: Option<f64>,
+        remaining_child_row: Option<(usize, f64)>,
         straddle_row_relief: &[(usize, f64)],
         straddle_page_bands: &[crate::renderer::pagination::StraddleCellCarry],
         host_margin_left: f64,
@@ -6653,6 +6682,7 @@ impl LayoutEngine {
                 predecessor_flow_bottom,
                 end_row_owns_stored_frame,
                 computed_fragment_frame,
+                remaining_child_row,
             },
             section_index,
             styles,
@@ -6732,6 +6762,7 @@ impl LayoutEngine {
             predecessor_flow_bottom,
             end_row_owns_stored_frame,
             computed_fragment_frame,
+            remaining_child_row,
         } = host;
         let _host_scope = self.reflow_block_host_scope(
             enclosing_cell_ctx.is_none(),
@@ -8517,6 +8548,7 @@ impl LayoutEngine {
             align_saved_opening_frame,
             end_row_owns_stored_frame,
             computed_fragment_frame,
+            remaining_child_row,
             external_frame,
             original_restart_alignment_rows,
             empty_opening_continuation.and_then(|frame| frame.deferred_picture_band_height),

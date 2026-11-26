@@ -1362,6 +1362,7 @@ impl TypesetEngine {
                     end_row_height_override,
                     start_row_height_override,
                     straddle_row_relief: straddle_row_relief.clone(),
+                    remaining_child_row: input.start.remaining_child_row,
                     straddle_page_bands: straddle_page_bands.clone(),
                     fragment_row_heights: fragment_rows.clone(),
                     fragment_block_frames: fragment_block_frames.clone(),
@@ -2031,6 +2032,21 @@ impl TypesetEngine {
             && (partial_height - hwpunit_to_px(table.common.height as i32, self.dpi)).abs()
                 <= hwpunit_to_px(1, self.dpi)
                     + f64::EPSILON * partial_height.abs().max(1.0) * (row_count + 1) as f64;
+        let remaining_child_row = input.start.remaining_child_row;
+        let next_child_row = end_row_height_override
+            .filter(|_| !row_cursor_is_nested && !start_cut_is_block && split_block_start.is_none())
+            .and_then(|height| {
+                layout_engine.stored_nested_page_band_at_height(
+                    row_geometry_table,
+                    cursor_row,
+                    start_cut,
+                    &split_end_cut,
+                    height - ledger_end_row_trim,
+                    remaining_child_row,
+                    styles,
+                )
+            })
+            .map(|band| band.remaining_child_row);
         st.append_item(PageItem::PartialTable {
             para_index: para_idx,
             control_index: ctrl_idx,
@@ -2049,6 +2065,7 @@ impl TypesetEngine {
                 .map(|height| height - ledger_end_row_trim),
             start_row_height_override,
             straddle_row_relief: straddle_row_relief.clone(),
+            remaining_child_row,
             straddle_page_bands: accepted_straddle_cells.clone(),
             fragment_row_heights: fragment_rows.clone(),
             fragment_block_frames: fragment_block_frames.clone(),
@@ -2821,7 +2838,18 @@ impl TypesetEngine {
             next_source_cut,
             has_intra_row_tail,
         );
-        continuation.start_row_height_override = next_start_row_height_override;
+        continuation.remaining_child_row = has_intra_row_tail.then_some(next_child_row).flatten();
+        let child_floor = layout_engine.stored_nested_page_parent_floor(
+            row_geometry_table,
+            &continuation.start_cut,
+            continuation.remaining_child_row,
+            styles,
+        );
+        continuation.start_row_height_override = match (next_start_row_height_override, child_floor)
+        {
+            (Some(a), Some(b)) => Some(a.max(b)),
+            (ordinary, child) => ordinary.or(child),
+        };
         continuation.stored_reset_band_row_box = span_band_row_box;
         if let Some(((_, row, cut, height), _)) = stored_rowspan_frame {
             continuation.row = row;

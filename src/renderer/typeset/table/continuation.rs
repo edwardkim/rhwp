@@ -22,6 +22,7 @@ pub(in crate::renderer::typeset) struct TableContinuationCursor {
     /// 않을 수 있고, 빈 꼬리 조각은 내용을 전부 소비한 뒤에도 공간을 남긴다.
     /// 내용 소유는 `start_cut`, 행 상자의 점유는 이 값으로 각각 보존한다.
     pub(in crate::renderer::typeset) start_row_height_override: Option<f64>,
+    pub(in crate::renderer::typeset) remaining_child_row: Option<(usize, f64)>,
     pub(in crate::renderer::typeset) is_continuation: bool,
     pub(in crate::renderer::typeset) fragments_emitted: usize,
     /// fragment queue에서 이미 page에 등록한 표 각주 수.

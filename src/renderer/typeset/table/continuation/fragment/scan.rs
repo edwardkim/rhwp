@@ -285,6 +285,7 @@ impl TypesetEngine {
             source_first_fragment_row_end,
             start_cut_is_block: input.start.start_cut_is_block,
             start_row_height_override,
+            remaining_child_row: input.start.remaining_child_row,
             deferred_opening_row_height: input
                 .prepared
                 .empty_opening_row_frame

@@ -249,6 +249,7 @@ fn fragment(
         straddle_page_bands: Vec::new(),
         fragment_row_heights: None,
         fragment_block_frames: Vec::new(),
+        remaining_child_row: None,
         end_row_owns_stored_frame: false,
     }];
     LayoutEngine::new(96.0).build_render_tree(

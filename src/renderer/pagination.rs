@@ -1369,6 +1369,8 @@ pub enum PageItem {
         /// 직전 조각에서 내용이 모두 소비된 시작 행의 남은 빈 물리 밴드 높이(px).
         /// `start_cut`은 해당 셀 내용을 숨기고 이 값은 테두리/셀 기하만 보존한다.
         start_row_height_override: Option<f64>,
+        /// 앞 조각이 예약한 자식 행의 미소비 물리 높이. 부모 행 컷과 독립적이다.
+        remaining_child_row: Option<(usize, f64)>,
         /// 앞 조각의 실제 병합 점유를 반영해 예약에서 확정한 행 높이.
         /// 비어 있으면 기존 측정 경로이며 paint는 확정값을 다시 분배하지 않는다.
         /// [#7531] 쪽을 넘어온 걸침 칸의 끝 행에서 앞 쪽 빈 띠만큼 덜 높이 `(행, px)`.
@@ -1445,6 +1447,7 @@ impl crate::storage::CloneWithStorage for PageItem {
                 row_cursor_is_nested,
                 end_row_height_override,
                 start_row_height_override,
+                remaining_child_row,
                 straddle_row_relief,
                 straddle_page_bands,
                 fragment_row_heights,
@@ -1469,6 +1472,7 @@ impl crate::storage::CloneWithStorage for PageItem {
                     start_row_height_override,
                     storage,
                 )?,
+                remaining_child_row: *remaining_child_row,
                 straddle_row_relief: crate::storage::try_clone(straddle_row_relief, storage)?,
                 straddle_page_bands: crate::storage::try_clone(straddle_page_bands, storage)?,
                 fragment_row_heights: crate::storage::try_clone(fragment_row_heights, storage)?,
@@ -1716,6 +1720,7 @@ impl PageItem {
                 row_cursor_is_nested,
                 end_row_height_override,
                 start_row_height_override,
+                remaining_child_row,
                 straddle_row_relief,
                 straddle_page_bands,
                 fragment_row_heights,
@@ -1734,6 +1739,7 @@ impl PageItem {
                 row_cursor_is_nested: *row_cursor_is_nested,
                 end_row_height_override: *end_row_height_override,
                 start_row_height_override: *start_row_height_override,
+                remaining_child_row: *remaining_child_row,
                 straddle_row_relief: straddle_row_relief.clone(),
                 straddle_page_bands: straddle_page_bands.clone(),
                 fragment_row_heights: fragment_row_heights.clone(),
