@@ -759,6 +759,7 @@ fn test_layout_with_composed_styles() {
         bullets: Vec::new(),
         kerning_measurement_context: None,
         horizontal_shaping_context: None,
+        word_line_factors: None,
         supplemental_metrics: None,
     };
 
@@ -921,6 +922,7 @@ fn test_layout_multi_run_x_position() {
         bullets: Vec::new(),
         kerning_measurement_context: None,
         horizontal_shaping_context: None,
+        word_line_factors: None,
         supplemental_metrics: None,
     };
 
@@ -1038,6 +1040,7 @@ fn test_resolved_to_text_style() {
         bullets: Vec::new(),
         kerning_measurement_context: None,
         horizontal_shaping_context: None,
+        word_line_factors: None,
         supplemental_metrics: None,
     };
 
@@ -1088,6 +1091,7 @@ fn test_resolved_to_text_style_with_ratio() {
         bullets: Vec::new(),
         kerning_measurement_context: None,
         horizontal_shaping_context: None,
+        word_line_factors: None,
         supplemental_metrics: None,
     };
 

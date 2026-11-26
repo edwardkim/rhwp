@@ -27,6 +27,7 @@ mod page_number;
 mod source_program_rows;
 pub(crate) use source_program_rows::SourceProgramRowOwner;
 mod resolved;
+pub(crate) mod word_compat;
 pub(crate) use crate::storage;
 pub use resolved::{
     ResolvedBorderStyle, ResolvedCharStyle, ResolvedImageFill, ResolvedParaStyle, ResolvedStyleSet,
@@ -86,6 +87,13 @@ pub(crate) fn try_resolve_styles_for_document<S: storage::Storage>(
             style.font_families_source_ttf.fill(false);
             style.font_families_print_text_device_frame.fill(false);
         }
+    }
+    // [#8582] 호환 대상이 MS 워드이고 워드 줄 높이를 쓰는 문서면 글꼴별 줄 높이 배율을 둔다
+    // (원본 face 이름 기준).
+    if styles.word_compat_target && word_compat::uses_word_line_height(document) {
+        styles.word_line_factors = Some(std::sync::Arc::new(word_compat::line_factors(
+            &document.doc_info,
+        )));
     }
     if missing_fonts::missing_char_table(document) {
         styles.page_number_char_style_id = Some(0);
@@ -667,6 +675,7 @@ fn try_resolve_styles_with_variant<S: storage::Storage>(
         kerning_measurement_context: None,
         horizontal_shaping_context: None,
         supplemental_metrics: None,
+        word_line_factors: None,
     };
     original_font_slots::refresh(doc_info, &mut styles, storage)?;
     source_program_rows::refresh_with_storage(doc_info, &mut styles, false, None, storage)?;

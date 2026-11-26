@@ -119,6 +119,7 @@ mod tests {
             bullets: Vec::new(),
             kerning_measurement_context: None,
             horizontal_shaping_context: None,
+            word_line_factors: None,
             supplemental_metrics: None,
         };
 
