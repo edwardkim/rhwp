@@ -1726,6 +1726,7 @@ export class HwpDocument {
      * 반환: JSON `{cellSpacing, paddingLeft, paddingRight, paddingTop, paddingBottom, pageBreak, repeatHeader}`
      */
     getTableProperties(section_idx: number, parent_para_idx: number, control_idx: number): string;
+    getTextAtCellCaretByPath(section_idx: number, parent_para_idx: number, path_json: string, offset: number, count: number): string;
     /**
      * 문단에 텍스트박스가 있는 Shape 컨트롤이 있으면 해당 control_index를 반환한다.
      * 없으면 -1을 반환한다.
@@ -2581,6 +2582,10 @@ export class HwpDocument {
      * 텍스트 치환 (단일)
      */
     replaceText(sec: number, para: number, char_offset: number, length: number, new_text: string): string;
+    /**
+     * Studio의 커서 좌표는 인라인 개체도 한 자리로 센다. 문자 범위 API와 구별한다.
+     */
+    replaceTextAtCellCaretByPath(section_idx: number, parent_para_idx: number, path_json: string, offset: number, count: number, text: string): string;
     /**
      * 표 셀 내부의 짧은 IME 조합 문자열을 원자적으로 교체하고 전체 페이지네이션은 지연한다.
      */
@@ -3629,6 +3634,7 @@ export interface InitOutput {
     readonly hwpdocument_getTableDimensions: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly hwpdocument_getTableDimensionsByPath: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
     readonly hwpdocument_getTableProperties: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+    readonly hwpdocument_getTextAtCellCaretByPath: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number, number, number];
     readonly hwpdocument_getTextBoxControlIndex: (a: number, b: number, c: number) => number;
     readonly hwpdocument_getTextFileText: (a: number) => [number, number];
     readonly hwpdocument_getTextFileUnicode: (a: number) => [number, number];
@@ -3783,6 +3789,7 @@ export interface InitOutput {
     readonly hwpdocument_replaceOne: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
     readonly hwpdocument_replaceRangeInHeaderFooter: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => [number, number, number, number];
     readonly hwpdocument_replaceText: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number, number, number];
+    readonly hwpdocument_replaceTextAtCellCaretByPath: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => [number, number, number, number];
     readonly hwpdocument_replaceTextInCellDeferredPagination: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => [number, number, number, number];
     readonly hwpdocument_resizeControlAt: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
     readonly hwpdocument_resizeTableCells: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];

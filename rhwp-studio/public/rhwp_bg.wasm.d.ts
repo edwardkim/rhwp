@@ -319,6 +319,7 @@ export const hwpdocument_getTableCellBboxesByPath: (a: number, b: number, c: num
 export const hwpdocument_getTableDimensions: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const hwpdocument_getTableDimensionsByPath: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
 export const hwpdocument_getTableProperties: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+export const hwpdocument_getTextAtCellCaretByPath: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number, number, number];
 export const hwpdocument_getTextBoxControlIndex: (a: number, b: number, c: number) => number;
 export const hwpdocument_getTextFileText: (a: number) => [number, number];
 export const hwpdocument_getTextFileUnicode: (a: number) => [number, number];
@@ -473,6 +474,7 @@ export const hwpdocument_replaceBodyTextLocal: (a: number, b: number, c: number,
 export const hwpdocument_replaceOne: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
 export const hwpdocument_replaceRangeInHeaderFooter: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => [number, number, number, number];
 export const hwpdocument_replaceText: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number, number, number];
+export const hwpdocument_replaceTextAtCellCaretByPath: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => [number, number, number, number];
 export const hwpdocument_replaceTextInCellDeferredPagination: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => [number, number, number, number];
 export const hwpdocument_resizeControlAt: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
 export const hwpdocument_resizeTableCells: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
