@@ -12,7 +12,7 @@
 
 - [final.tsv](final.tsv): 입력·기준 PDF·backend·페이지별 공식 두 자리 raw 보호값.
 - [manifest.json](manifest.json): 입력/PDF SHA-256·크기·측정 조건·전쪽 수·출처 commit/TSV/열/해시와 중복 제거 내역.
-- TSV SHA-256: `5d5ef7ac531f3d038757636920cb4af0267796f3631a68d2b5fece77291a5e13`.
+- TSV SHA-256: `8141acb297ce2f39148f9014e463986431d266120629e8f368665e5917138f9d`.
 - 입력 23개, Native/fresh WASM 각 23개 데이터셋·2,023쪽, 총 46개 데이터셋·4,046행.
 - 최초 통합 당시 수용 자료 56개 데이터셋 중 중복 20개를 정리했다. 이전 자료보다 공식 표시값이 낮아진 페이지는 0쪽이다.
 
@@ -28,23 +28,23 @@ HWP와 HWPX는 같은 제목이어도 별도 입력이다. 아래 최저값은 �
 | [2025 행정업무운영 편람(최종).hwp](<../../../../samples/2025 행정업무운영 편람(최종).hwp>) | 383 | 99.97% | 99.96% |
 | [2025 행정업무운영 편람(최종).hwpx](<../../../../samples/2025 행정업무운영 편람(최종).hwpx>) | 383 | 99.97% | 99.96% |
 | [issue2007_nested_cell_pagination_42065.hwp](<../../../../samples/basic/issue2007_nested_cell_pagination_42065.hwp>) | 17 | 99.64% | 100.00% |
-| [hwp3-sample10.hwp](<../../../../samples/hwp3-sample10.hwp>) | 763 | 99.57% | 99.57% |
-| [hwp3-sample16-hwp5-2022.hwp](<../../../../samples/hwp3-sample16-hwp5-2022.hwp>) | 64 | 100.00% | 100.00% |
-| [hwp3-sample16-hwp5-2024.hwp](<../../../../samples/hwp3-sample16-hwp5-2024.hwp>) | 64 | 99.99% | 99.99% |
-| [hwp3-sample16-hwp5.hwpx](<../../../../samples/hwp3-sample16-hwp5.hwpx>) | 64 | 99.99% | 99.99% |
-| [20099369_yeongwol_forms.hwp](<../../../../samples/issue5699/20099369_yeongwol_forms.hwp>) | 4 | 100.00% | 100.00% |
+| [hwp3-sample10.hwp](<../../../../samples/hwp3-sample10.hwp>) | 763 | 99.56% | 99.57% |
+| [hwp3-sample16-hwp5-2022.hwp](<../../../../samples/hwp3-sample16-hwp5-2022.hwp>) | 64 | 99.44% | 99.97% |
+| [hwp3-sample16-hwp5-2024.hwp](<../../../../samples/hwp3-sample16-hwp5-2024.hwp>) | 64 | 99.43% | 99.97% |
+| [hwp3-sample16-hwp5.hwpx](<../../../../samples/hwp3-sample16-hwp5.hwpx>) | 64 | 99.43% | 99.97% |
+| [20099369_yeongwol_forms.hwp](<../../../../samples/issue5699/20099369_yeongwol_forms.hwp>) | 4 | 99.98% | 99.95% |
 | [pic-crop-01.hwp](<../../../../samples/pic-crop-01.hwp>) | 1 | 100.00% | 100.00% |
-| [exam-social-insert-delete.hwp](<../../../../samples/pr8040/exam-social-insert-delete.hwp>) | 4 | 99.99% | 99.99% |
-| [exam-social-insert.hwp](<../../../../samples/pr8040/exam-social-insert.hwp>) | 4 | 99.99% | 99.99% |
+| [exam-social-insert-delete.hwp](<../../../../samples/pr8040/exam-social-insert-delete.hwp>) | 4 | 99.77% | 99.99% |
+| [exam-social-insert.hwp](<../../../../samples/pr8040/exam-social-insert.hwp>) | 4 | 99.77% | 99.99% |
 | [re-03-latin-only-hancom.hwp](<../../../../samples/re-03-latin-only-hancom.hwp>) | 1 | 100.00% | 100.00% |
 | [shape-group-02.hwp](<../../../../samples/shape-group-02.hwp>) | 1 | 100.00% | 100.00% |
 | [issue3307_outline_number.hwpx](<../../../../samples/task3307/issue3307_outline_number.hwpx>) | 9 | 100.00% | 100.00% |
 | [body-list-typed-hwp.hwp](<../../../../tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp>) | 1 | 100.00% | 100.00% |
 | [control-styles-hwp.hwp](<../../../../tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp>) | 1 | 100.00% | 100.00% |
-| [1480000-201900042-chemical-labeling-standards.hwp](<../../../../samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp>) | 103 | 99.65% | 99.65% |
-| [한글문서파일형식_5.0_revision1.3.hwp](<../../../../samples/한글문서파일형식_5.0_revision1.3.hwp>) | 71 | 99.92% | 99.92% |
+| [1480000-201900042-chemical-labeling-standards.hwp](<../../../../samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp>) | 103 | 99.06% | 99.65% |
+| [한글문서파일형식_5.0_revision1.3.hwp](<../../../../samples/한글문서파일형식_5.0_revision1.3.hwp>) | 71 | 99.92% | 99.91% |
 | [outline_navigation_panel_demo.hwpx](<../../../../samples/pr4093/outline_navigation_panel_demo.hwpx>) | 3 | 100.00% | 100.00% |
-| [78494-virtual-convergence-industry-decree.hwpx](<../../../../samples/issue6776/78494-virtual-convergence-industry-decree.hwpx>) | 74 | 99.98% | 99.98% |
+| [78494-virtual-convergence-industry-decree.hwpx](<../../../../samples/issue6776/78494-virtual-convergence-industry-decree.hwpx>) | 74 | 97.20% | 99.41% |
 | [outline_navigation_table_cell_number.hwpx](<../../../../samples/pr4093/outline_navigation_table_cell_number.hwpx>) | 1 | 100.00% | 100.00% |
 
 `exam-social-insert.hwp`와 `exam-social-insert-delete.hwp`는 캡처 전에
@@ -221,3 +221,7 @@ PNG 해시가 모두 일치했다.
 사용자 승인에 따라 sample16 HWP 2022·HWP 2024·HWPX의 Native·fresh WASM 6쪽만 한컴 설치본 HYHWPEQ.TTF 1.13의 실측 표시값으로 조정했다. 같은 원본과 독립 한컴 Print를 사용한 devel·#9306 병합 후보의 384쪽은 PNG 해시가 모두 같았다. HWP 2022 Native는 99.96%, 나머지 다섯 행은 각각 99.97%를 적용한다.
 
 [전쪽 비교와 공급 조건](../issue_7114/sample16-mac-protection-20261127/README.md) · [갱신 영수증](updates/issue7114-sample16-mac-20261127.json)
+
+## 2026-11-27 교차 OS 보호값
+
+macOS, Windows, Linux 대표 환경에서 같은 입력과 독립 한컴 Print PDF의 Native 및 fresh WASM 전체 페이지를 비교했다. 각 환경의 4,046행을 합쳐 12,138개 실측을 확인했다. 사용자 승인에 따라 기존 하한보다 낮게 측정된 193행에 세 환경의 두 자리 실측 최저값을 적용했다. 96 DPI와 2px raw 측정 조건을 유지했다. 편람 HWP·HWPX의 WASM에는 함초롬바탕 TTF 두 파일을 같은 해시로 추가 공급했다. [페이지별 실측](updates/cross-os-20261127/page-floors.tsv) · [실행 조건과 소스 신원](updates/cross-os-20261127/conditions.json)

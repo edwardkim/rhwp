@@ -9,6 +9,10 @@
 - `documents[].backends`에서 문서 key와 backend를 선택한다.
 - `supply_mode`가 `explicit_files`이면 `font_set`의 파일명·SHA-256·배열 순서로
   `--font-path`를 지정한다. 자동 선택 조건에서는 `font_set`을 공급 환경 확인에 사용한다.
+- 편람 HWP·HWPX의 WASM은 기존 공급 목록 끝에 함초롬바탕 보통 `HANBatang.ttf`와 굵은
+  `HANBatangB.ttf`를 순서대로 공급한다. 세 OS에서 두 형식의 200쪽을 100.00%로 확인했다.
+  [공급 확인 근거](../../pr/assets/issue_7114/protected-mac-20261127/README.md) ·
+  [교차 OS 전쪽 실측](../../pr/assets/visual-protected-baseline/updates/cross-os-20261127/page-floors.tsv)
 - Arial 4종, 바탕 TTC, HY신명조는 `accepted_sha256_pairs`에 파일별로 등록한 두 SHA-256을 모두 허용한다.
   공급 목록이 쌍의 한 해시를 지정하면 같은 쌍의 다른 해시도 그 순서와 face에 공급할 수 있다.
   실제 파일을 해시하여 선택한 SHA-256을 기록하고, 같은 공급 조건에서 기준과 후보의 쪽별 하한을 검증한다.
