@@ -215,3 +215,9 @@ devel과 후보 Native·WASM 출력은 206행 모두 픽셀이 같았다. 26쪽 
 PNG 해시가 모두 일치했다.
 
 [승인 하한 103쪽](../issue_6782/mcp-print-20261126/wasm-floor-mac-approved.tsv) · [26쪽 갱신 영수증](updates/issue6782-wasm-p26-20261126.json)
+
+## 2026-11-27 sample16 수식 6쪽 보호값 개별 조정
+
+사용자 승인에 따라 sample16 HWP 2022·HWP 2024·HWPX의 Native·fresh WASM 6쪽만 한컴 설치본 HYHWPEQ.TTF 1.13의 실측 표시값으로 조정했다. 같은 원본과 독립 한컴 Print를 사용한 devel·#9306 병합 후보의 384쪽은 PNG 해시가 모두 같았다. HWP 2022 Native는 99.96%, 나머지 다섯 행은 각각 99.97%를 적용한다.
+
+[전쪽 비교와 공급 조건](../issue_7114/sample16-mac-protection-20261127/README.md) · [갱신 영수증](updates/issue7114-sample16-mac-20261127.json)
