@@ -3,7 +3,7 @@
   "created_at": "2026-11-08T22:37:56.286882+09:00",
   "baseline_kind": "수용된 전쪽 검증과 개별 승인 조정을 반영한 보호 하한. CI·병합 상태는 별도 기록한다.",
   "table": "final.tsv",
-  "table_sha256": "bbbe4e76122840cd32ea40d1068d29e32700db2a3f9b6152dcebee02657c7193",
+  "table_sha256": "5d5ef7ac531f3d038757636920cb4af0267796f3631a68d2b5fece77291a5e13",
   "row_count": 4046,
   "document_count": 23,
   "dataset_count": 46,
@@ -4102,19 +4102,19 @@
         "radius_px": 2
       },
       "page_count": 103,
-      "accepted_at": "2026-11-26T21:08:27+09:00",
+      "accepted_at": "2026-11-26T21:45:42+09:00",
       "source": {
         "pr": null,
-        "evidence_commit": "d1a51d27c37db47d06190506990171b54d021620",
+        "evidence_commit": "41d9768d126e694c26d67830538682bbed04a3d6",
         "code_commit": "5c216e8e657309f9bb33928c6a6cd2747df77217",
-        "path": "mydocs/pr/assets/issue_6782/mcp-print-20261126/wasm-floor.tsv",
-        "sha256": "105e77fc891b9d4d9b1f83d13c49f4a63874526b324a9bb825fe65155809b272",
+        "path": "mydocs/pr/assets/issue_6782/mcp-print-20261126/wasm-floor-mac-approved.tsv",
+        "sha256": "bf705fa2b36d8338bffe974ca0c193a9802286781a94b332526bfffea1c59f1d",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_6782/mcp-print-20261126/validation.json",
         "condition_evidence_sha256": "99d03c3a995de7d6e8126c3f452ac2a9e858f5bc133f5a035ca94aaf4fefe610",
-        "precision": "새 한컴 Print의 픽셀이 달라진 쪽에서 사용자가 승인한 두 자리 표시값과 나머지 쪽의 기존 보호 하한"
+        "precision": "같은 Mac 글꼴 조건의 devel·후보 전쪽이 일치한 결과에서 승인한 소수 둘째 자리 표시값"
       },
       "minimum_display": "99.65",
       "source_history": [
@@ -4183,20 +4183,33 @@
           "condition_evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/current-9415/runs.tsv",
           "condition_evidence_sha256": "ca3607ec633db47dc2500306fecd603487c50bcec0a972bff94464a3c737b333",
           "precision": "최종 전쪽 TSV의 공식 소수 둘째 자리 표시값"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "d1a51d27c37db47d06190506990171b54d021620",
+          "code_commit": "5c216e8e657309f9bb33928c6a6cd2747df77217",
+          "path": "mydocs/pr/assets/issue_6782/mcp-print-20261126/wasm-floor.tsv",
+          "sha256": "105e77fc891b9d4d9b1f83d13c49f4a63874526b324a9bb825fe65155809b272",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_6782/mcp-print-20261126/validation.json",
+          "condition_evidence_sha256": "99d03c3a995de7d6e8126c3f452ac2a9e858f5bc133f5a035ca94aaf4fefe610",
+          "precision": "새 한컴 Print의 픽셀이 달라진 쪽에서 사용자가 승인한 두 자리 표시값과 나머지 쪽의 기존 보호 하한"
         }
       ],
       "previous_source": {
-        "pr": 9412,
-        "evidence_commit": "d388231783ed697fefdb1b6cbc5d79a5f72e2518",
-        "code_commit": "f3d137d9cbe36cae93f859baac3a29ae4a543f75",
-        "path": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/current-9415/chemical-wasm.tsv",
-        "sha256": "2b4dc472b3c8267e03c34e0a4a62fe65c3987f7caab39ce1cde6c6d744bcd573",
+        "pr": null,
+        "evidence_commit": "d1a51d27c37db47d06190506990171b54d021620",
+        "code_commit": "5c216e8e657309f9bb33928c6a6cd2747df77217",
+        "path": "mydocs/pr/assets/issue_6782/mcp-print-20261126/wasm-floor.tsv",
+        "sha256": "105e77fc891b9d4d9b1f83d13c49f4a63874526b324a9bb825fe65155809b272",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/current-9415/runs.tsv",
-        "condition_evidence_sha256": "ca3607ec633db47dc2500306fecd603487c50bcec0a972bff94464a3c737b333",
-        "precision": "최종 전쪽 TSV의 공식 소수 둘째 자리 표시값"
+        "condition_evidence": "mydocs/pr/assets/issue_6782/mcp-print-20261126/validation.json",
+        "condition_evidence_sha256": "99d03c3a995de7d6e8126c3f452ac2a9e858f5bc133f5a035ca94aaf4fefe610",
+        "precision": "새 한컴 Print의 픽셀이 달라진 쪽에서 사용자가 승인한 두 자리 표시값과 나머지 쪽의 기존 보호 하한"
       }
     },
     {

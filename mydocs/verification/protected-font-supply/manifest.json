@@ -3,11 +3,11 @@
   "baseline": {
     "manifest": {
       "path": "mydocs/pr/assets/visual-protected-baseline/manifest.json",
-      "sha256": "fb70531415c76c9b732278fe8fd4e1bd8f5796c8f3cc1defbf7f09279ca0f8e9"
+      "sha256": "1079abdeb8972df94f7216dc7944ad22cf0ead764f84beac36a2c1d238d09a7d"
     },
     "table": {
       "path": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
-      "sha256": "bbbe4e76122840cd32ea40d1068d29e32700db2a3f9b6152dcebee02657c7193"
+      "sha256": "5d5ef7ac531f3d038757636920cb4af0267796f3631a68d2b5fece77291a5e13"
     }
   },
   "accepted_sha256_pairs": {

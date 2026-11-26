@@ -12,7 +12,7 @@
 
 - [final.tsv](final.tsv): 입력·기준 PDF·backend·페이지별 공식 두 자리 raw 보호값.
 - [manifest.json](manifest.json): 입력/PDF SHA-256·크기·측정 조건·전쪽 수·출처 commit/TSV/열/해시와 중복 제거 내역.
-- TSV SHA-256: `bbbe4e76122840cd32ea40d1068d29e32700db2a3f9b6152dcebee02657c7193`.
+- TSV SHA-256: `5d5ef7ac531f3d038757636920cb4af0267796f3631a68d2b5fece77291a5e13`.
 - 입력 23개, Native/fresh WASM 각 23개 데이터셋·2,023쪽, 총 46개 데이터셋·4,046행.
 - 최초 통합 당시 수용 자료 56개 데이터셋 중 중복 20개를 정리했다. 이전 자료보다 공식 표시값이 낮아진 페이지는 0쪽이다.
 
@@ -206,6 +206,12 @@ Hancom PDF Print 기준을 사용하며 웹한글기안기 출력으로 대체�
 103쪽의 이전·새 인쇄본에서 픽셀이 달라진 19·20·21·91·92쪽의 Native·fresh WASM 보호값을
 각각 99.93·99.86·99.89·99.65·99.99%로 조정했다. 새 PDF를 기준으로 같은 Mac 글꼴 조건의
 devel과 후보 Native·WASM 출력은 206행 모두 픽셀이 같았다. 26쪽 WASM은 새 인쇄본과
-이전 인쇄본이 픽셀 단위로 같아 기존 100.00% 하한을 적용한다. 이번 Mac 측정값은 99.99%다.
+이전 인쇄본이 픽셀 단위로 같았고, Mac에서는 두 버전이 모두 99.99%였다.
 
 [새 한컴 Print](../../../../pdf/issue6782/mcp-11.0.0.9172/1480000-201900042-chemical-labeling-standards-2020.pdf) · [전쪽 비교](../issue_6782/mcp-print-20261126/page-comparison.tsv) · [갱신 영수증](updates/issue6782-mcp-print-20261126.json)
+
+사용자 승인에 따라 같은 PDF와 Mac 글꼴로 대조한 WASM 26쪽 한 행의 하한을
+100.00%에서 99.99%로 조정했다. 기준 devel과 통합 후보는 WASM 103쪽의 점수와
+PNG 해시가 모두 일치했다.
+
+[승인 하한 103쪽](../issue_6782/mcp-print-20261126/wasm-floor-mac-approved.tsv) · [26쪽 갱신 영수증](updates/issue6782-wasm-p26-20261126.json)
