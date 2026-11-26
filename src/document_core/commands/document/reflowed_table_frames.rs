@@ -10,10 +10,64 @@ pub(super) struct CellFrameWriteback {
     pub(super) para_idx: usize,
     pub(super) control_idx: usize,
     pub(super) cell_idx: usize,
+    pub(super) keep_source_before: usize,
+    pub(super) nested_frames: Vec<crate::renderer::layout::table_layout::ReflowedNestedSourceFrame>,
     pub(super) resets: Vec<(usize, usize)>,
     pub(super) uncharged_hosts: BTreeSet<usize>,
     pub(super) generated_host_lines: Vec<(usize, usize)>,
     pub(super) preserved_frames: Vec<((usize, usize), (usize, usize))>,
+}
+
+pub(super) fn write_reflowed_nested_source_frames(
+    outer: &mut Cell,
+    frames: &[crate::renderer::layout::table_layout::ReflowedNestedSourceFrame],
+) {
+    for frame in frames {
+        let [Control::Table(child)] = outer.paragraphs[frame.paragraph].controls.as_mut_slice()
+        else {
+            continue;
+        };
+        child.sync_ctrl_height(frame.height);
+        for (ci, cell) in child.cells.iter_mut().enumerate() {
+            if !frame
+                .starts
+                .iter()
+                .chain(&frame.former_starts)
+                .any(|&(idx, _)| idx == ci)
+            {
+                continue;
+            }
+            let mut previous: Option<(i32, i32, i32)> = None;
+            for (pi, paragraph) in cell.paragraphs.iter_mut().enumerate() {
+                paragraph.source_line_seg_vertical_pos = None;
+                for (li, segment) in paragraph.line_segs.iter_mut().enumerate() {
+                    let source = segment.vertical_pos;
+                    let old = frame.former_starts.contains(&(ci, (pi, li)));
+                    let current = frame.starts.contains(&(ci, (pi, li)));
+                    if old {
+                        segment.tag &=
+                            !(LineSeg::TAG_FIRST_LINE_OF_PAGE | LineSeg::TAG_FIRST_LINE_OF_COLUMN);
+                    }
+                    if current {
+                        segment.vertical_pos = 0;
+                        segment.tag |= LineSeg::TAG_FIRST_LINE_OF_PAGE;
+                    } else if let Some((previous_source, origin, advance)) = previous {
+                        let gap = if old {
+                            advance
+                        } else {
+                            source.saturating_sub(previous_source)
+                        };
+                        segment.vertical_pos = origin.saturating_add(gap);
+                    }
+                    previous = Some((
+                        source,
+                        segment.vertical_pos,
+                        segment.line_height.saturating_add(segment.line_spacing),
+                    ));
+                }
+            }
+        }
+    }
 }
 
 /// 여러 물리 유닛이 공유하는 빈 블록 표 호스트 줄은 부모 LINE_SEG 한 개로

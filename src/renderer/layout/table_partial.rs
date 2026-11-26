@@ -3550,16 +3550,29 @@ impl LayoutEngine {
                     );
                 }
                 let para_y_before_lines = para_y;
+                let projected_table_anchor = cut_units.and_then(|_| {
+                    self.host_lines_following_projected_nested_table(
+                        cell,
+                        table,
+                        styles,
+                        cp_idx,
+                        composed.lines.len(),
+                    )
+                });
+                let first_end_line =
+                    projected_table_anchor.map_or(end_line, |anchor| end_line.min(anchor));
                 // 표 컨트롤이 없는 문단: 텍스트 먼저, 컨트롤 나중 (기존 동작)
                 // 표 컨트롤이 있는 문단: 문단 앞 간격 적용 → 표 먼저 배치 → 텍스트(엔터 등) 나중
                 if let Some(advance) = stored_empty_line_advances[cp_idx] {
                     para_y += advance;
-                } else if !has_table_ctrl
-                    || composed
-                        .lines
-                        .iter()
-                        .any(|line| line.runs.iter().any(|run| !run.text.trim().is_empty()))
+                } else if (projected_table_anchor.is_none() || start_line < first_end_line)
+                    && (!has_table_ctrl
+                        || composed
+                            .lines
+                            .iter()
+                            .any(|line| line.runs.iter().any(|run| !run.text.trim().is_empty())))
                 {
+                    let end_line = first_end_line;
                     let is_last_para = cp_idx == last_rendered_para_idx;
                     let numbered_comp = if start_line == 0 {
                         self.apply_paragraph_numbering(
@@ -4932,7 +4945,10 @@ impl LayoutEngine {
                             Control::Table(nested_table) => {
                                 // 현재 컷이 글줄에서 끝나면 자식 표는 다음 조각이 배치한다.
                                 // 셀 clip은 아직 선택되지 않은 자식의 쪽 소속을 정하지 않는다.
-                                if carried_child_host == Some(cp_idx) {
+                                if carried_child_host == Some(cp_idx)
+                                    || (projected_table_anchor.is_some()
+                                        && nested_cursor_split.is_none())
+                                {
                                     continue;
                                 }
                                 let frame_owner = composed
@@ -5873,7 +5889,8 @@ impl LayoutEngine {
                                     // table_top에서 다시 더하지 않는다.
                                     let flow_end = stored_float_frame
                                         .filter(|_| {
-                                            split_info.as_ref().is_none_or(|split| {
+                                            projected_table_anchor.is_none()
+                                                && split_info.as_ref().is_none_or(|split| {
                                                 split.start_row == 0
                                                     && split.end_row
                                                         == usize::from(nested_table.row_count)
@@ -6037,9 +6054,10 @@ impl LayoutEngine {
                     // [#6122] 폭 초과로 내린 개체는 composed 줄 높이에 없다 — 그 아래로
                     // 흐름을 밀지 않으면 다음 문단(캡션)이 그림 위에 겹쳐 그려진다.
                     if let Some(bottom) = wrapped_tac_flow_bottom {
-                        let stored_advance = (!self.profile.get().session_edited()
-                            && !self.render_normalization.borrow().cell_frame_reflowed(table, cell)
-                            && next_para_in_fragment)
+                        // The signed overlap between these two source lines is local
+                        // to the picture. A prior edit can move both to another page
+                        // without changing their relative advance.
+                        let stored_advance = next_para_in_fragment
                             .then(|| cell.paragraphs.get(cp_idx + 1).and_then(|next|
                                 crate::renderer::float_placement::stored_inline_picture_successor_advance(
                                     para, next, styles, self.dpi,
@@ -6052,6 +6070,32 @@ impl LayoutEngine {
                     }
                 }
 
+                if let Some(anchor) = projected_table_anchor {
+                    let first_after_table = start_line.max(anchor);
+                    if first_after_table < end_line {
+                        para_y = self.layout_composed_paragraph(
+                            tree,
+                            &mut cell_node,
+                            composed,
+                            styles,
+                            &inner_area,
+                            para_y,
+                            first_after_table,
+                            end_line,
+                            section_index,
+                            cp_idx,
+                            Some(cell_context.clone()),
+                            true,
+                            cp_idx == last_rendered_para_idx,
+                            0.0,
+                            None,
+                            Some(para),
+                            Some(bin_data_content),
+                            None,
+                        );
+                        has_preceding_text = true;
+                    }
+                }
                 let stored_empty_advance = (!self.profile.get().session_edited()
                     && !cell.dirty_flag
                     && !self

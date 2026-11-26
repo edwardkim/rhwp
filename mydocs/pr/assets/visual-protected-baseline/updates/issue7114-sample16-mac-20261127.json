@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "user_approved": true,
+  "accepted_at": "2026-11-27T01:38:48+09:00",
+  "previous_table_sha256": "5d5ef7ac531f3d038757636920cb4af0267796f3631a68d2b5fece77291a5e13",
+  "table_sha256": "5eadaea8bca4b2bdb0ed5795933e203d12cdaa83e0436e29bd9e0e65954db57d",
+  "previous_manifest_sha256": "1079abdeb8972df94f7216dc7944ad22cf0ead764f84beac36a2c1d238d09a7d",
+  "manifest_sha256": "c3cba042036e3de2e3fb4595c506e3c08bc928db23adb42549b3bdc106fe1298",
+  "evidence_commit": "ffd25475b61f59928403d8f4e8ef0ebdba32c587",
+  "code_commit": "a782a31267e70ad5f3c0188e7a997de0c0dfb676",
+  "measured_sources": {
+    "devel": "ba4f9b8d502472de71068711276d039a425892b0",
+    "candidate_tree": "1e4da02329399a0fb3d55af6c404ab465a206cf0"
+  },
+  "paired_pages": 384,
+  "devel_candidate_png_pairs_equal": 384,
+  "comparison": {
+    "path": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/paired-pages.tsv",
+    "sha256": "bd029dffc8524d87fcf4fa042dff0f56f1b768ff664c0d30576aef881db6af86"
+  },
+  "decreased_rows": [
+    {
+      "document_id": "4bac5a5d1702df5f",
+      "key": "sample16-hwp2022",
+      "backend": "native",
+      "page": 6,
+      "previous": "100.00",
+      "accepted": "99.96"
+    },
+    {
+      "document_id": "4bac5a5d1702df5f",
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": 6,
+      "previous": "100.00",
+      "accepted": "99.97"
+    },
+    {
+      "document_id": "7df4af8174abd82a",
+      "key": "sample16-hwp2024",
+      "backend": "native",
+      "page": 6,
+      "previous": "100.00",
+      "accepted": "99.97"
+    },
+    {
+      "document_id": "7df4af8174abd82a",
+      "key": "sample16-hwp2024",
+      "backend": "wasm",
+      "page": 6,
+      "previous": "100.00",
+      "accepted": "99.97"
+    },
+    {
+      "document_id": "43c0a207f6daa0bb",
+      "key": "sample16-hwpx",
+      "backend": "native",
+      "page": 6,
+      "previous": "100.00",
+      "accepted": "99.97"
+    },
+    {
+      "document_id": "43c0a207f6daa0bb",
+      "key": "sample16-hwpx",
+      "backend": "wasm",
+      "page": 6,
+      "previous": "100.00",
+      "accepted": "99.97"
+    }
+  ],
+  "sources": {
+    "sample16-hwpx/native": {
+      "pr": 9306,
+      "evidence_commit": "ffd25475b61f59928403d8f4e8ef0ebdba32c587",
+      "code_commit": "a782a31267e70ad5f3c0188e7a997de0c0dfb676",
+      "path": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/sample16-hwpx-native-floor.tsv",
+      "sha256": "eed6745a765410df0f7f11ca6d942802b29d493acdccb807dff8a32400ecfea4",
+      "metric_column": "silhouette_raw_match_percent",
+      "page_column": "page",
+      "document_filter": null,
+      "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
+      "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
+      "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
+    },
+    "sample16-hwpx/wasm": {
+      "pr": 9306,
+      "evidence_commit": "ffd25475b61f59928403d8f4e8ef0ebdba32c587",
+      "code_commit": "a782a31267e70ad5f3c0188e7a997de0c0dfb676",
+      "path": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/sample16-hwpx-wasm-floor.tsv",
+      "sha256": "eed6745a765410df0f7f11ca6d942802b29d493acdccb807dff8a32400ecfea4",
+      "metric_column": "silhouette_raw_match_percent",
+      "page_column": "page",
+      "document_filter": null,
+      "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
+      "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
+      "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
+    },
+    "sample16-hwp2022/native": {
+      "pr": 9306,
+      "evidence_commit": "ffd25475b61f59928403d8f4e8ef0ebdba32c587",
+      "code_commit": "a782a31267e70ad5f3c0188e7a997de0c0dfb676",
+      "path": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/sample16-hwp2022-native-floor.tsv",
+      "sha256": "19fe25c667fc9bbb44a3338cad7ff1e1e9e028a32a319982e5c58ca45d0a6513",
+      "metric_column": "silhouette_raw_match_percent",
+      "page_column": "page",
+      "document_filter": null,
+      "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
+      "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
+      "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
+    },
+    "sample16-hwp2022/wasm": {
+      "pr": 9306,
+      "evidence_commit": "ffd25475b61f59928403d8f4e8ef0ebdba32c587",
+      "code_commit": "a782a31267e70ad5f3c0188e7a997de0c0dfb676",
+      "path": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/sample16-hwp2022-wasm-floor.tsv",
+      "sha256": "a98bfe0b8341d29847527beb1d2e8a432662813d16822a35a1d6965a56c541f4",
+      "metric_column": "silhouette_raw_match_percent",
+      "page_column": "page",
+      "document_filter": null,
+      "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
+      "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
+      "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
+    },
+    "sample16-hwp2024/native": {
+      "pr": 9306,
+      "evidence_commit": "ffd25475b61f59928403d8f4e8ef0ebdba32c587",
+      "code_commit": "a782a31267e70ad5f3c0188e7a997de0c0dfb676",
+      "path": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/sample16-hwp2024-native-floor.tsv",
+      "sha256": "eed6745a765410df0f7f11ca6d942802b29d493acdccb807dff8a32400ecfea4",
+      "metric_column": "silhouette_raw_match_percent",
+      "page_column": "page",
+      "document_filter": null,
+      "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
+      "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
+      "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
+    },
+    "sample16-hwp2024/wasm": {
+      "pr": 9306,
+      "evidence_commit": "ffd25475b61f59928403d8f4e8ef0ebdba32c587",
+      "code_commit": "a782a31267e70ad5f3c0188e7a997de0c0dfb676",
+      "path": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/sample16-hwp2024-wasm-floor.tsv",
+      "sha256": "eed6745a765410df0f7f11ca6d942802b29d493acdccb807dff8a32400ecfea4",
+      "metric_column": "silhouette_raw_match_percent",
+      "page_column": "page",
+      "document_filter": null,
+      "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
+      "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
+      "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
+    }
+  }
+}

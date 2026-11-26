@@ -6846,7 +6846,14 @@ impl DocumentCore {
                     {
                         continue;
                     }
+                    let direct_cell_text = self
+                        .render_normalization
+                        .text_reflowed_tables
+                        .owns_cell_text_reflow(&key);
                     overlay.register_text_reflowed_table_with_storage(table, storage)?;
+                    if direct_cell_text {
+                        overlay.register_cell_text_reflow_start(table, table, storage)?;
+                    }
                     if let Some(Control::Table(normalized)) = self
                         .render_normalization
                         .sections
@@ -6856,6 +6863,9 @@ impl DocumentCore {
                         .and_then(|paragraph| paragraph.controls.get(control_index))
                     {
                         overlay.register_text_reflowed_table_with_storage(normalized, storage)?;
+                        if direct_cell_text {
+                            overlay.register_cell_text_reflow_start(table, normalized, storage)?;
+                        }
                     }
                 }
             }

@@ -3000,9 +3000,11 @@ impl DocumentCore {
     /// 공간이 아닌 조각(rowspan 블록 분할·중첩 행 커서)은 이 매핑으로 줄 자리를 정할 수
     /// 없으므로 그 표의 사다리를 그대로 둔다 — 종전 동작이다.
     fn writeback_reflowed_table_frames(&self, snapshot: &mut Document) {
-        match self
-            .writeback_reflowed_table_frames_with_storage(snapshot, &crate::storage::Unbounded)
-        {
+        match self.writeback_reflowed_table_frames_with_storage(
+            snapshot,
+            true,
+            &crate::storage::Unbounded,
+        ) {
             Ok(v) => v,
             Err(never) => match never {},
         }
@@ -3011,13 +3013,15 @@ impl DocumentCore {
     pub(crate) fn writeback_reflowed_table_frames_with_storage<S: crate::storage::Storage>(
         &self,
         snapshot: &mut Document,
+        write_parent_frames: bool,
         storage: &S,
     ) -> Result<(), S::Error> {
         use self::reflowed_table_frames::{
-            generated_block_host_lines_with_storage, mark_generated_host_lines, CellFrameWriteback,
+            generated_block_host_lines_with_storage, mark_generated_host_lines,
+            write_reflowed_nested_source_frames, CellFrameWriteback,
         };
         use crate::model::control::Control;
-        use crate::renderer::layout::table_layout::CellUnitLineAnchor;
+        use crate::renderer::layout::{table_layout::CellUnitLineAnchor, LayoutEngine};
         use crate::renderer::pagination::PageItem;
         use std::collections::{BTreeMap, BTreeSet};
 
@@ -3032,6 +3036,9 @@ impl DocumentCore {
             let Some(pagination) = self.pagination.get(section_idx) else {
                 continue;
             };
+            let _tabs = self
+                .styles
+                .section_tab_scope(section.section_def.default_tab_spacing, self.dpi);
             for (para_idx, paragraph) in section.paragraphs.iter().enumerate() {
                 for (control_idx, control) in paragraph.controls.iter().enumerate() {
                     let Control::Table(table) = control else {
@@ -3042,6 +3049,8 @@ impl DocumentCore {
                     }
                     let mut per_cell: BTreeMap<usize, BTreeSet<usize>> = BTreeMap::new();
                     let mut unmappable = false;
+                    let mut opening_layout = None;
+                    let mut cut_engine = None;
                     for page in &pagination.pages {
                         for column in &page.column_contents {
                             for item in &column.items {
@@ -3060,6 +3069,9 @@ impl DocumentCore {
                                 if *para_index != para_idx || *control_index != control_idx {
                                     continue;
                                 }
+                                let layout = *opening_layout.get_or_insert(
+                                    column.zone_layout.as_ref().unwrap_or(&page.layout),
+                                );
                                 if start_cut.is_empty() {
                                     continue;
                                 }
@@ -3067,16 +3079,32 @@ impl DocumentCore {
                                     unmappable = true;
                                     continue;
                                 }
-                                let row_cells =
-                                    crate::renderer::layout::LayoutEngine::row_cut_cell_order_with_storage(table, *start_row,storage)?;
+                                let row_cells = LayoutEngine::row_cut_cell_order_with_storage(
+                                    table, *start_row, storage,
+                                )?;
                                 if row_cells.len() != start_cut.len() {
                                     unmappable = true;
                                     continue;
                                 }
                                 // 소스 소유 컷은 연속으로 남겨 두고, 실제 배치와 같은
                                 // 물리 시작점에 저장 사다리의 프레임 재시작을 기록한다.
-                                let physical_start_cut = self
-                                    .layout_engine
+                                // The cut ordinals belong to the active profile and the
+                                // opening layout used by the table scanner. The paint
+                                // engine may have never rendered a page, or may hold a
+                                // different section's geometry and cached units.
+                                let engine = cut_engine.get_or_insert_with(|| {
+                                    let engine = LayoutEngine::new(self.dpi);
+                                    engine.set_layout_profile(self.effective_layout_profile());
+                                    engine.set_section_column_spacing_hu(i32::from(
+                                        section.section_def.column_spacing,
+                                    ));
+                                    engine.prime_column_layout_env(layout);
+                                    engine.set_render_normalization_overlay(std::sync::Arc::clone(
+                                        &self.render_normalization.overlay,
+                                    ));
+                                    engine
+                                });
+                                let physical_start_cut = engine
                                     .skip_leading_free_spacers_in_row_cut_with_storage(
                                         table,
                                         *start_row,
@@ -3099,14 +3127,17 @@ impl DocumentCore {
                             }
                         }
                     }
-                    if unmappable || per_cell.is_empty() {
+                    if unmappable {
                         continue;
                     }
+                    let Some(cut_engine) = cut_engine else {
+                        continue;
+                    };
                     for (cell_idx, units) in per_cell {
                         let Some(cell) = table.cells.get(cell_idx) else {
                             continue;
                         };
-                        let anchors = self.layout_engine.cell_unit_line_anchors_with_storage(
+                        let anchors = cut_engine.cell_unit_line_anchors_with_storage(
                             cell,
                             table,
                             &self.styles,
@@ -3126,8 +3157,8 @@ impl DocumentCore {
                                 });
                             if let Some(t) = normalized_table {
                                 if let Some(normalized_cell) = t.cells.get(cell_idx) {
-                                    let normalized_anchors =
-                                        self.layout_engine.cell_unit_line_anchors_with_storage(
+                                    let normalized_anchors = cut_engine
+                                        .cell_unit_line_anchors_with_storage(
                                             normalized_cell,
                                             t,
                                             &self.styles,
@@ -3142,6 +3173,19 @@ impl DocumentCore {
                                 }
                             }
                         }
+                        let keep_source_before = self
+                            .render_normalization
+                            .overlay
+                            .cell_text_reflow_start(table, cell)
+                            .unwrap_or(0);
+                        let nested_frames = cut_engine.reflowed_nested_source_frames_with_storage(
+                            cell,
+                            table,
+                            &self.styles,
+                            keep_source_before,
+                            &units,
+                            storage,
+                        )?;
                         let mut preserved_frames = Vec::new();
                         let generated_host_lines =
                             generated_block_host_lines_with_storage(cell, &anchors, storage)?;
@@ -3196,7 +3240,7 @@ impl DocumentCore {
                         }
                         storage.extend(
                             &mut preserved_frames,
-                            self.layout_engine
+                            cut_engine
                                 .cell_deferred_picture_source_frames_with_storage(
                                     cell,
                                     table,
@@ -3207,25 +3251,24 @@ impl DocumentCore {
                                 .map(|(start, end)| ((start, 0), (end, 0))),
                         )?;
                         resets.retain(|line| {
-                            !preserved_frames
-                                .iter()
-                                .any(|(start, end)| start <= line && line <= end)
+                            line.0 >= keep_source_before
+                                && !preserved_frames
+                                    .iter()
+                                    .any(|(start, end)| start <= line && line <= end)
                         });
                         resets.sort_unstable();
                         resets.dedup();
-                        if resets.is_empty() {
+                        if resets.is_empty() && nested_frames.is_empty() {
                             continue;
                         }
                         // 줄간격을 계상하지 않은 중첩 표 host — 뒤의 되감김을 없앨 때
                         // 사다리 등식(`lh + ls`)을 새로 만들지 않도록 채울 간격을 줄인다.
-                        let uncharged_hosts = self
-                            .layout_engine
-                            .cell_uncharged_nested_hosts_with_storage(
-                                cell,
-                                table,
-                                &self.styles,
-                                storage,
-                            )?;
+                        let uncharged_hosts = cut_engine.cell_uncharged_nested_hosts_with_storage(
+                            cell,
+                            table,
+                            &self.styles,
+                            storage,
+                        )?;
                         storage.push(
                             &mut plans,
                             CellFrameWriteback {
@@ -3233,6 +3276,8 @@ impl DocumentCore {
                                 para_idx,
                                 control_idx,
                                 cell_idx,
+                                keep_source_before,
+                                nested_frames,
                                 resets,
                                 uncharged_hosts,
                                 generated_host_lines,
@@ -3255,6 +3300,8 @@ impl DocumentCore {
             para_idx,
             control_idx,
             cell_idx,
+            keep_source_before,
+            nested_frames,
             resets,
             uncharged_hosts,
             generated_host_lines,
@@ -3272,6 +3319,10 @@ impl DocumentCore {
             let Some(cell) = table.cells.get_mut(cell_idx) else {
                 continue;
             };
+            write_reflowed_nested_source_frames(cell, &nested_frames);
+            if !write_parent_frames || resets.is_empty() {
+                continue;
+            }
             let resets: BTreeSet<(usize, usize)> = storage.set_from(resets)?;
             let mut previous: Option<(i32, i32, i32)> = None; // (원래 vpos, 새 vpos, 줄 점유 높이)
             for (cell_para_idx, cell_para) in cell.paragraphs.iter_mut().enumerate() {
@@ -3286,6 +3337,10 @@ impl DocumentCore {
                     } else {
                         seg.line_height.saturating_add(seg.line_spacing)
                     };
+                    if cell_para_idx < keep_source_before {
+                        previous = Some((stored, stored, occupied));
+                        continue;
+                    }
                     let next = match previous {
                         None => stored,
                         Some((previous_stored, previous_new, previous_occupied)) => {
@@ -3359,7 +3414,7 @@ impl DocumentCore {
             &mut snapshot,
             &self.nested_row_page_starts_with_storage(storage)?,
         );
-        self.writeback_reflowed_table_frames_with_storage(&mut snapshot, storage)?;
+        self.writeback_reflowed_table_frames_with_storage(&mut snapshot, true, storage)?;
         let _report = try_convert_if_hwpx_source(&mut snapshot, self.source_format, storage)?;
         super::header_footer_ops::lower_header_footer_field_markers(
             &mut snapshot,
@@ -3571,6 +3626,11 @@ impl DocumentCore {
             grown_table_heights::apply_grown_table_heights(&mut doc, &grown_tables);
             self.write_page_starts(&mut doc, &page_starts);
             Self::write_nested_row_page_starts(&mut doc, &nested_starts);
+            let Ok(()) = self.writeback_reflowed_table_frames_with_storage(
+                &mut doc,
+                false,
+                &crate::storage::Unbounded,
+            );
             if let Some((_, value)) = doc
                 .hwpx_aux_entries
                 .iter_mut()
@@ -3603,6 +3663,11 @@ impl DocumentCore {
             grown_table_heights::apply_grown_table_heights(&mut doc, &grown_tables);
             self.write_page_starts(&mut doc, &page_starts);
             Self::write_nested_row_page_starts(&mut doc, &nested_starts);
+            let Ok(()) = self.writeback_reflowed_table_frames_with_storage(
+                &mut doc,
+                false,
+                &crate::storage::Unbounded,
+            );
             if let Some((_, value)) = doc
                 .hwpx_aux_entries
                 .iter_mut()
@@ -3619,12 +3684,18 @@ impl DocumentCore {
             || !page_starts.is_empty()
             || !nested_starts.is_empty()
             || !cache_updates.is_empty()
+            || !self.render_normalization.text_reflowed_tables.is_empty()
         {
             let mut doc = self.document.clone();
             Self::apply_managed_line_cache_updates(&mut doc, cache_updates);
             grown_table_heights::apply_grown_table_heights(&mut doc, &grown_tables);
             self.write_page_starts(&mut doc, &page_starts);
             Self::write_nested_row_page_starts(&mut doc, &nested_starts);
+            let Ok(()) = self.writeback_reflowed_table_frames_with_storage(
+                &mut doc,
+                false,
+                &crate::storage::Unbounded,
+            );
             consume(&doc)
         } else {
             consume(&self.document)
