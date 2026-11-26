@@ -738,7 +738,7 @@ test('flat와 중첩 셀 입력 Undo는 본문 길이를 묻지 않고 기존 �
     command.execute(wasm);
     assert.deepEqual(command.undo(wasm), position);
     assert.deepEqual(wasm.calls.at(-1), position.cellPath.length > 1
-      ? { name: 'delete-path', args: [0, 5, JSON.stringify(position.cellPath), 7, 1] }
+      ? { name: 'delete-path', args: [0, 5, JSON.stringify(position.cellPath), 7, 1, true] }
       : { name: 'delete-cell', args: [0, 5, 2, 3, 0, 7, 1] });
   }
 });

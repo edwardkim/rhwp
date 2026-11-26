@@ -37,7 +37,13 @@ for (const kind of ['body', 'cell', 'nested']) {
       getParagraphLength: () => [...value].length,
       insertText: insert, deleteText: remove,
       insertTextInCell: insert, deleteTextInCell: remove,
-      insertTextInCellByPath: insert, deleteTextInCellByPath: remove,
+      insertTextInCellByPath: (_sec, _parent, _path, offset, text, atCaret) => {
+        assert.equal(atCaret, true);
+        insert(offset, text);
+      }, deleteTextInCellByPath: (_sec, _parent, _path, offset, count, atCaret) => {
+        assert.equal(atCaret, true);
+        remove(offset, count);
+      },
     };
     const position = { sectionIndex: 0, paragraphIndex: 0, charOffset: 1 };
     if (kind !== 'body') Object.assign(position, {
