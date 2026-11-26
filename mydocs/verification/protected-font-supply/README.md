@@ -47,6 +47,13 @@
   공급한 devel·통합 후보의 페이지별 PNG 해시도 일치했다.
 - 중첩 표의 Native·WASM은 21개 파일을 매니페스트 순서로 공급한다.
   `H2MJRE.TTF`, `HDOTUM.TTF`, `gulim.TTC`, `pala.ttf`에는 문서별 해시 쌍을 허용한다.
+- macOS의 Arial·Arial Black·Courier New·Times New Roman 대체 해시는 실제 공급한 문서에만 등록한다.
+  Helvetica 대조, sample16 저장본 세 종, 종합부동산세법, sample10 Native, 화학물질 표시 기준을
+  최신 devel과 통합 후보에서 같은 순서로 공급해 전쪽을 비교했다.
+  시행령 WASM의 `palabi.ttf`와 `palai.ttf`에는 macOS `Palatino.ttc`의 Bold Italic·Italic face를
+  별도 TTF로 꺼내 공급한 해시도 허용한다. 74쪽의 실제 Palatino 선택은 Regular였다.
+  이들 14개 글꼴 공급 조건의 1,441쪽은 devel과 후보에서 PNG 해시가 같았고 정본 하한을 모두 충족했다.
+  글꼴 파일은 로컬 검증에 사용했다.
 - `font_environment`가 있으면 해당 JSON을 `--font-environment`로 지정한다.
 - 선택 우선순위는 manifest의 `selection_order`를 따른다.
 - `accepted_font_set`, `accepted_font_environment`와 `records/`는 수용 당시의 비교 근거이며, 현재 전쪽 재검증 상태는

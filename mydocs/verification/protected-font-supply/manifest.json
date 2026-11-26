@@ -14209,6 +14209,28 @@
     },
     {
       "key": "seo-helvetica-styles",
+      "accepted_sha256_pairs": {
+        "arial.ttf": [
+          "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1",
+          "edfbd22a3d088fc2f5d7c79b8c9c732df6dc878a60f0a80be0f92a3c7a634404",
+          "525979822591a3447cfc49d943d6f7683508e25543407871c0ed8fed05fd2bd9"
+        ],
+        "arialbd.ttf": [
+          "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69",
+          "4d59199834e7439c67ea4949407639961060b21b173833f566eb60ac6fd8f5af",
+          "d72db21f9242aedd6b917d8549ad5921766b24d5f8d0becfda2ff4c620b3c2e0"
+        ],
+        "arialbi.ttf": [
+          "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994",
+          "d68bdf8ebfe67a72e6db02b104e8062de5e75c358ba9bb7ef5d0e5c70272a1c5",
+          "374b0190a9844343110d8f8ed1818117a4591803d022bbb2bd189d63a681e731"
+        ],
+        "ariali.ttf": [
+          "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62",
+          "4487a06c1b8de98deb0cab2c04a876cbc8f31b7e397dc1f2b2021c0746321d7c",
+          "ce1d2f1ab89db45f9796100eee960f5702a40e84c225c2b48c3ec3e81d153f98"
+        ]
+      },
       "input": {
         "path": "tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp",
         "sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da",
@@ -14369,6 +14391,26 @@
         "HMKMG.otf": [
           "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9",
           "1ad2053ba5c5268420e252f0d9343f155fb3c749c0bbb179ba95dabd35e088f8"
+        ],
+        "arial.ttf": [
+          "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1",
+          "edfbd22a3d088fc2f5d7c79b8c9c732df6dc878a60f0a80be0f92a3c7a634404",
+          "525979822591a3447cfc49d943d6f7683508e25543407871c0ed8fed05fd2bd9"
+        ],
+        "arialbd.ttf": [
+          "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69",
+          "4d59199834e7439c67ea4949407639961060b21b173833f566eb60ac6fd8f5af",
+          "d72db21f9242aedd6b917d8549ad5921766b24d5f8d0becfda2ff4c620b3c2e0"
+        ],
+        "arialbi.ttf": [
+          "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994",
+          "d68bdf8ebfe67a72e6db02b104e8062de5e75c358ba9bb7ef5d0e5c70272a1c5",
+          "374b0190a9844343110d8f8ed1818117a4591803d022bbb2bd189d63a681e731"
+        ],
+        "ariali.ttf": [
+          "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62",
+          "4487a06c1b8de98deb0cab2c04a876cbc8f31b7e397dc1f2b2021c0746321d7c",
+          "ce1d2f1ab89db45f9796100eee960f5702a40e84c225c2b48c3ec3e81d153f98"
         ]
       },
       "backends": {
@@ -14591,6 +14633,26 @@
         "HMKMG.otf": [
           "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9",
           "1ad2053ba5c5268420e252f0d9343f155fb3c749c0bbb179ba95dabd35e088f8"
+        ],
+        "arial.ttf": [
+          "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1",
+          "edfbd22a3d088fc2f5d7c79b8c9c732df6dc878a60f0a80be0f92a3c7a634404",
+          "525979822591a3447cfc49d943d6f7683508e25543407871c0ed8fed05fd2bd9"
+        ],
+        "arialbd.ttf": [
+          "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69",
+          "4d59199834e7439c67ea4949407639961060b21b173833f566eb60ac6fd8f5af",
+          "d72db21f9242aedd6b917d8549ad5921766b24d5f8d0becfda2ff4c620b3c2e0"
+        ],
+        "arialbi.ttf": [
+          "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994",
+          "d68bdf8ebfe67a72e6db02b104e8062de5e75c358ba9bb7ef5d0e5c70272a1c5",
+          "374b0190a9844343110d8f8ed1818117a4591803d022bbb2bd189d63a681e731"
+        ],
+        "ariali.ttf": [
+          "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62",
+          "4487a06c1b8de98deb0cab2c04a876cbc8f31b7e397dc1f2b2021c0746321d7c",
+          "ce1d2f1ab89db45f9796100eee960f5702a40e84c225c2b48c3ec3e81d153f98"
         ]
       },
       "backends": {
@@ -15767,6 +15829,26 @@
         "HMKMG.otf": [
           "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9",
           "1ad2053ba5c5268420e252f0d9343f155fb3c749c0bbb179ba95dabd35e088f8"
+        ],
+        "arial.ttf": [
+          "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1",
+          "edfbd22a3d088fc2f5d7c79b8c9c732df6dc878a60f0a80be0f92a3c7a634404",
+          "525979822591a3447cfc49d943d6f7683508e25543407871c0ed8fed05fd2bd9"
+        ],
+        "arialbd.ttf": [
+          "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69",
+          "4d59199834e7439c67ea4949407639961060b21b173833f566eb60ac6fd8f5af",
+          "d72db21f9242aedd6b917d8549ad5921766b24d5f8d0becfda2ff4c620b3c2e0"
+        ],
+        "arialbi.ttf": [
+          "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994",
+          "d68bdf8ebfe67a72e6db02b104e8062de5e75c358ba9bb7ef5d0e5c70272a1c5",
+          "374b0190a9844343110d8f8ed1818117a4591803d022bbb2bd189d63a681e731"
+        ],
+        "ariali.ttf": [
+          "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62",
+          "4487a06c1b8de98deb0cab2c04a876cbc8f31b7e397dc1f2b2021c0746321d7c",
+          "ce1d2f1ab89db45f9796100eee960f5702a40e84c225c2b48c3ec3e81d153f98"
         ]
       },
       "backends": {
@@ -16163,19 +16245,23 @@
       "accepted_sha256_pairs": {
         "cour.ttf": [
           "6aab1f79264ccda1e7129dba62dbe3750b10eaa27408a327dadb808724e62c84",
-          "93c3ff526c19d03496c01c6a1bfd1031f97af021a13e859a89dfc717a0b6b6ec"
+          "93c3ff526c19d03496c01c6a1bfd1031f97af021a13e859a89dfc717a0b6b6ec",
+          "c886ca3172d8ce9189976992d145ec090500a4ff516ecb9d4df56b1a78336247"
         ],
         "courbd.ttf": [
           "e376f24c9f27eb7370b25aa366d78da731834a1aea651858801c9a14e8906943",
-          "716c08d704f154870bd9fb78b185d0b644912301dfa9c9e6daf45bdb4832a299"
+          "716c08d704f154870bd9fb78b185d0b644912301dfa9c9e6daf45bdb4832a299",
+          "500df4e46b554ae7d646e8727952fd8c7e60e94423481f6b82325cfddba2ee6a"
         ],
         "courbi.ttf": [
           "ac3b362cf998eb33475655e12ab7cb2f6a35d1f2eff6f76af00ebb6f81c53ee7",
-          "8fdb188252a2db0f020c89831bddb61cadfe290c3616fe534479b4d3b10d09c1"
+          "8fdb188252a2db0f020c89831bddb61cadfe290c3616fe534479b4d3b10d09c1",
+          "60e4c514200985d3f8405af039ffb89cd24b45fef5005b019825a4937b96135d"
         ],
         "couri.ttf": [
           "546406ddbb3e3f6b876a5e8a5dee62ac090d1448662e98d8844b22393813dd13",
-          "5861588608d3a3775d921a7e4acb8362b21630c6b63718bc68adb7137ce53beb"
+          "5861588608d3a3775d921a7e4acb8362b21630c6b63718bc68adb7137ce53beb",
+          "b5c6d453f16fb1693652671fa2e11d8c8ad1cd0046c3f38ae2608d165838ecf1"
         ],
         "gulim.ttc": [
           "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12",
@@ -16183,35 +16269,43 @@
         ],
         "times.ttf": [
           "fbb57cdb0079137adc0e478913ca134dfee02aa2ef443738ec5e839bf97a1f7f",
-          "2cff2a03d8034801979dd6d16f09b9a825c3d710fcf068f2ebfbf0e1425c87cf"
+          "2cff2a03d8034801979dd6d16f09b9a825c3d710fcf068f2ebfbf0e1425c87cf",
+          "f3b4ffff71c2a0c7227d37497683b2498fb2d0a4e8beae26f022e3ccfcaabfa3"
         ],
         "timesbd.ttf": [
           "e94ff9111656f17bd81e9f822f1e234edcd370bcbacfdebf998b8938f525ac77",
-          "621b4a765fef5d255d19530f4bf936104c6519f2e232a0eef1923474e5b9cf22"
+          "621b4a765fef5d255d19530f4bf936104c6519f2e232a0eef1923474e5b9cf22",
+          "50f5b1f27b7d34621090e437e8b1dd4510a22d2823fc876b3286bed327b64bbb"
         ],
         "timesbi.ttf": [
           "8d2c8d8d25d9fc529d08558c42effa771617914a455603881e212a26e2f2ddcd",
-          "2852329a38acf9252504669d9c23d5e88366cf77e8209d508f5e7198639648ea"
+          "2852329a38acf9252504669d9c23d5e88366cf77e8209d508f5e7198639648ea",
+          "906157e8294fdf168d83002eaabde01c2d30fc3f44977be89e33fa22f262002a"
         ],
         "timesi.ttf": [
           "c2c134968be4259aaa78845d3aca5e91c4a0bd10d98e4d2e48ac3c12f3c63b89",
-          "3a1c2bc8528bfa432e0414d4ec69bf5813563c474e16a9ad0f57ca262f8d24a2"
+          "3a1c2bc8528bfa432e0414d4ec69bf5813563c474e16a9ad0f57ca262f8d24a2",
+          "7bb99c3a67697fbce15ab66d806d9a2151432ce1dab2eaba4156e1251da486c0"
         ],
         "arial.ttf": [
           "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1",
-          "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1"
+          "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1",
+          "525979822591a3447cfc49d943d6f7683508e25543407871c0ed8fed05fd2bd9"
         ],
         "arialbd.ttf": [
           "3680a1bbffab914f36b27d5fd97b193de5bccfab882c41b41b5f8f99457b4820",
-          "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69"
+          "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69",
+          "d72db21f9242aedd6b917d8549ad5921766b24d5f8d0becfda2ff4c620b3c2e0"
         ],
         "arialbi.ttf": [
           "77a0b63c5f73eb85923f10359e68b8fc768487ae88ad902a1ea21276954e205b",
-          "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994"
+          "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994",
+          "374b0190a9844343110d8f8ed1818117a4591803d022bbb2bd189d63a681e731"
         ],
         "ariali.ttf": [
           "c30c71d614e143c0d4e42aaf04d9a1f50f90b365a2654eb3f2c6598e5655af08",
-          "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62"
+          "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62",
+          "ce1d2f1ab89db45f9796100eee960f5702a40e84c225c2b48c3ec3e81d153f98"
         ],
         "ENGGT.otf": [
           "284ffd74746eda1da10eddd7249e585db01a93109c6b6c79b4d42eee90491c68",
@@ -16379,19 +16473,23 @@
         "accepted_sha256_pairs": {
           "cour.ttf": [
             "6aab1f79264ccda1e7129dba62dbe3750b10eaa27408a327dadb808724e62c84",
-            "93c3ff526c19d03496c01c6a1bfd1031f97af021a13e859a89dfc717a0b6b6ec"
+            "93c3ff526c19d03496c01c6a1bfd1031f97af021a13e859a89dfc717a0b6b6ec",
+            "c886ca3172d8ce9189976992d145ec090500a4ff516ecb9d4df56b1a78336247"
           ],
           "courbd.ttf": [
             "e376f24c9f27eb7370b25aa366d78da731834a1aea651858801c9a14e8906943",
-            "716c08d704f154870bd9fb78b185d0b644912301dfa9c9e6daf45bdb4832a299"
+            "716c08d704f154870bd9fb78b185d0b644912301dfa9c9e6daf45bdb4832a299",
+            "500df4e46b554ae7d646e8727952fd8c7e60e94423481f6b82325cfddba2ee6a"
           ],
           "courbi.ttf": [
             "ac3b362cf998eb33475655e12ab7cb2f6a35d1f2eff6f76af00ebb6f81c53ee7",
-            "8fdb188252a2db0f020c89831bddb61cadfe290c3616fe534479b4d3b10d09c1"
+            "8fdb188252a2db0f020c89831bddb61cadfe290c3616fe534479b4d3b10d09c1",
+            "60e4c514200985d3f8405af039ffb89cd24b45fef5005b019825a4937b96135d"
           ],
           "couri.ttf": [
             "546406ddbb3e3f6b876a5e8a5dee62ac090d1448662e98d8844b22393813dd13",
-            "5861588608d3a3775d921a7e4acb8362b21630c6b63718bc68adb7137ce53beb"
+            "5861588608d3a3775d921a7e4acb8362b21630c6b63718bc68adb7137ce53beb",
+            "b5c6d453f16fb1693652671fa2e11d8c8ad1cd0046c3f38ae2608d165838ecf1"
           ],
           "gulim.ttc": [
             "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12",
@@ -16399,35 +16497,43 @@
           ],
           "times.ttf": [
             "fbb57cdb0079137adc0e478913ca134dfee02aa2ef443738ec5e839bf97a1f7f",
-            "2cff2a03d8034801979dd6d16f09b9a825c3d710fcf068f2ebfbf0e1425c87cf"
+            "2cff2a03d8034801979dd6d16f09b9a825c3d710fcf068f2ebfbf0e1425c87cf",
+            "f3b4ffff71c2a0c7227d37497683b2498fb2d0a4e8beae26f022e3ccfcaabfa3"
           ],
           "timesbd.ttf": [
             "e94ff9111656f17bd81e9f822f1e234edcd370bcbacfdebf998b8938f525ac77",
-            "621b4a765fef5d255d19530f4bf936104c6519f2e232a0eef1923474e5b9cf22"
+            "621b4a765fef5d255d19530f4bf936104c6519f2e232a0eef1923474e5b9cf22",
+            "50f5b1f27b7d34621090e437e8b1dd4510a22d2823fc876b3286bed327b64bbb"
           ],
           "timesbi.ttf": [
             "8d2c8d8d25d9fc529d08558c42effa771617914a455603881e212a26e2f2ddcd",
-            "2852329a38acf9252504669d9c23d5e88366cf77e8209d508f5e7198639648ea"
+            "2852329a38acf9252504669d9c23d5e88366cf77e8209d508f5e7198639648ea",
+            "906157e8294fdf168d83002eaabde01c2d30fc3f44977be89e33fa22f262002a"
           ],
           "timesi.ttf": [
             "c2c134968be4259aaa78845d3aca5e91c4a0bd10d98e4d2e48ac3c12f3c63b89",
-            "3a1c2bc8528bfa432e0414d4ec69bf5813563c474e16a9ad0f57ca262f8d24a2"
+            "3a1c2bc8528bfa432e0414d4ec69bf5813563c474e16a9ad0f57ca262f8d24a2",
+            "7bb99c3a67697fbce15ab66d806d9a2151432ce1dab2eaba4156e1251da486c0"
           ],
           "arial.ttf": [
             "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1",
-            "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1"
+            "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1",
+            "525979822591a3447cfc49d943d6f7683508e25543407871c0ed8fed05fd2bd9"
           ],
           "arialbd.ttf": [
             "3680a1bbffab914f36b27d5fd97b193de5bccfab882c41b41b5f8f99457b4820",
-            "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69"
+            "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69",
+            "d72db21f9242aedd6b917d8549ad5921766b24d5f8d0becfda2ff4c620b3c2e0"
           ],
           "arialbi.ttf": [
             "77a0b63c5f73eb85923f10359e68b8fc768487ae88ad902a1ea21276954e205b",
-            "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994"
+            "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994",
+            "374b0190a9844343110d8f8ed1818117a4591803d022bbb2bd189d63a681e731"
           ],
           "ariali.ttf": [
             "c30c71d614e143c0d4e42aaf04d9a1f50f90b365a2654eb3f2c6598e5655af08",
-            "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62"
+            "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62",
+            "ce1d2f1ab89db45f9796100eee960f5702a40e84c225c2b48c3ec3e81d153f98"
           ]
         },
       "input": {
@@ -17018,6 +17124,30 @@
         "HMKMG.TTF": [
           "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280",
           "1ad2053ba5c5268420e252f0d9343f155fb3c749c0bbb179ba95dabd35e088f8"
+        ],
+        "arial.ttf": [
+          "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1",
+          "edfbd22a3d088fc2f5d7c79b8c9c732df6dc878a60f0a80be0f92a3c7a634404",
+          "525979822591a3447cfc49d943d6f7683508e25543407871c0ed8fed05fd2bd9"
+        ],
+        "arialbd.ttf": [
+          "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69",
+          "4d59199834e7439c67ea4949407639961060b21b173833f566eb60ac6fd8f5af",
+          "d72db21f9242aedd6b917d8549ad5921766b24d5f8d0becfda2ff4c620b3c2e0"
+        ],
+        "arialbi.ttf": [
+          "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994",
+          "d68bdf8ebfe67a72e6db02b104e8062de5e75c358ba9bb7ef5d0e5c70272a1c5",
+          "374b0190a9844343110d8f8ed1818117a4591803d022bbb2bd189d63a681e731"
+        ],
+        "ariali.ttf": [
+          "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62",
+          "4487a06c1b8de98deb0cab2c04a876cbc8f31b7e397dc1f2b2021c0746321d7c",
+          "ce1d2f1ab89db45f9796100eee960f5702a40e84c225c2b48c3ec3e81d153f98"
+        ],
+        "ariblk.ttf": [
+          "10df702864b1f89cb29ba0d6b97c04228338d16807e13e8d8c74b91aba5e5f23",
+          "7d7db3ad96a31373c1437c6ab14266f6605495544c8e663558b047521174c42e"
         ]
       },
       "input": {
@@ -17495,6 +17625,14 @@
         "HMKMG.TTF": [
           "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280",
           "1ad2053ba5c5268420e252f0d9343f155fb3c749c0bbb179ba95dabd35e088f8"
+        ],
+        "palabi.ttf": [
+          "d0e722b91ffd5391cc2e7d6e976f274d5aee9fe0b8d0fedfffe093763e695cde",
+          "fc2cd009d78f4aafcd510a7ac344b7745ab12c02516d1a6dc9c168a4e6e4f0a6"
+        ],
+        "palai.ttf": [
+          "99f0af2d1941707fecda23da38bafbed5144a73a3720d773c05b9d4c445920ed",
+          "31f5492475ae40dcc705dc204fa96364c5c6ab3b060bffa43c1cefbe22284c44"
         ]
       }
     },
