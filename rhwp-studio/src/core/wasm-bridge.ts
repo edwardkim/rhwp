@@ -2029,13 +2029,15 @@ export class WasmBridge {
 
   // ─── 중첩 표 path 기반 편집 API ──────────────────────────
 
-  insertTextInCellByPath(sec: number, parentPara: number, pathJson: string, charOffset: number, text: string): string {
+  insertTextInCellByPath(sec: number, parentPara: number, pathJson: string, charOffset: number, text: string, atCaret = false): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    if (atCaret) return (this.doc as any).replaceTextAtCellCaretByPath(sec, parentPara, pathJson, charOffset, 0, text);
     return (this.doc as any).insertTextInCellByPath(sec, parentPara, pathJson, charOffset, text);
   }
 
-  deleteTextInCellByPath(sec: number, parentPara: number, pathJson: string, charOffset: number, count: number): string {
+  deleteTextInCellByPath(sec: number, parentPara: number, pathJson: string, charOffset: number, count: number, atCaret = false): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    if (atCaret) return (this.doc as any).replaceTextAtCellCaretByPath(sec, parentPara, pathJson, charOffset, count, '');
     return (this.doc as any).deleteTextInCellByPath(sec, parentPara, pathJson, charOffset, count);
   }
 
@@ -2060,8 +2062,9 @@ export class WasmBridge {
     return this.doc.getTextInCell(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset, count);
   }
 
-  getTextInCellByPath(sec: number, parentPara: number, pathJson: string, charOffset: number, count: number): string {
+  getTextInCellByPath(sec: number, parentPara: number, pathJson: string, charOffset: number, count: number, atCaret = false): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    if (atCaret) return (this.doc as any).getTextAtCellCaretByPath(sec, parentPara, pathJson, charOffset, count);
     return (this.doc as any).getTextInCellByPath(sec, parentPara, pathJson, charOffset, count);
   }
 

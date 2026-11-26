@@ -2349,6 +2349,57 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// Studio의 커서 좌표는 인라인 개체도 한 자리로 센다. 문자 범위 API와 구별한다.
+    #[wasm_bindgen(js_name = replaceTextAtCellCaretByPath)]
+    pub fn replace_text_at_cell_caret_by_path(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        path_json: &str,
+        offset: u32,
+        count: u32,
+        text: &str,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.replace_text_in_cell_by_path(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &path,
+            offset as usize,
+            count as usize,
+            text,
+            true,
+        )
+        .map_err(Into::into)
+    }
+
+    #[wasm_bindgen(js_name = getTextAtCellCaretByPath)]
+    pub fn get_text_at_cell_caret_by_path(
+        &self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        path_json: &str,
+        offset: u32,
+        count: u32,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        let (start, length, _) = self.cell_caret_text_range(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &path,
+            offset as usize,
+            count as usize,
+        )?;
+        self.get_text_in_cell_by_path(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &path,
+            start,
+            length,
+        )
+        .map_err(Into::into)
+    }
+
     #[wasm_bindgen(js_name = deleteTextInCellByPath)]
     pub fn delete_text_in_cell_by_path_api(
         &mut self,

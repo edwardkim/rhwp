@@ -1,4 +1,5 @@
-//! #9398.
+//! 관계형 검사 — #9398 중첩 글상자 문단의 편집 순서와 커서 위치.
+//! 2026-11-26 21:13 KST 갱신. 직전 eb826cfc23 (2026-11-25 10:18:07 KST).
 //! 표 칸 안 글상자의 문단도 경로 호출(`split_paragraph_in_cell_by_path`,
 //! `merge_paragraph_in_cell_by_path`)로 나누고 합친다.
 //!
@@ -241,6 +242,62 @@ fn split_and_merge_paragraph_in_table_cell_inside_text_box() {
             cell_paragraphs(&reopen(label, &second)),
             ["BOX"],
             "{label} 재저장"
+        );
+    }
+}
+
+#[test]
+fn undo_cell_merge_keeps_the_inline_equation_before_the_same_text() {
+    let input = include_bytes!("../fixtures/group_textbox_cell/table-inline-equation.hwpx");
+    let source = HwpDocument::from_bytes(input).unwrap();
+    for bytes in [
+        source.export_hwp_native().unwrap(),
+        source.export_hwpx_native().unwrap(),
+    ] {
+        let mut doc = HwpDocument::from_bytes(&bytes).unwrap();
+        let first = [(2, 0, 0), (0, 0, 0)];
+        let second = [(2, 0, 0), (0, 0, 1)];
+        let text = |doc: &HwpDocument, path: &Path| {
+            doc.get_text_in_cell_by_path(0, 0, path, 0, 100).unwrap()
+        };
+        assert_eq!(text(&doc, &first), "BOX");
+        // 수식 한 자리와 B 한 글자 다음에 Enter.
+        doc.split_paragraph_in_cell_by_path(0, 0, &first, 2, None)
+            .unwrap();
+        assert_eq!(
+            (text(&doc, &first), text(&doc, &second)),
+            ("B".into(), "OX".into())
+        );
+        let merge: serde_json::Value =
+            serde_json::from_str(&doc.merge_paragraph_in_cell_by_path(0, 0, &second).unwrap())
+                .unwrap();
+        let boundary = merge["charOffset"].as_u64().unwrap() as usize;
+        assert_eq!(boundary, 2);
+        assert_eq!(text(&doc, &first), "BOX");
+        let address = r#"[{"controlIndex":2,"cellIndex":0,"cellParaIndex":0},{"controlIndex":0,"cellIndex":0,"cellParaIndex":0}]"#;
+        assert_eq!(
+            doc.get_text_at_cell_caret_by_path(0, 0, address, 2, 1)
+                .unwrap(),
+            "O"
+        );
+        doc.replace_text_at_cell_caret_by_path(0, 0, address, 2, 0, "K")
+            .unwrap();
+        assert_eq!(text(&doc, &first), "BKOX");
+        doc.replace_text_at_cell_caret_by_path(0, 0, address, 2, 1, "")
+            .unwrap();
+        assert_eq!(text(&doc, &first), "BOX");
+        doc.split_paragraph_in_cell_by_path(0, 0, &first, boundary, None)
+            .unwrap();
+        assert_eq!(
+            (text(&doc, &first), text(&doc, &second)),
+            ("B".into(), "OX".into())
+        );
+        assert_eq!(
+            doc.get_page_render_tree(0)
+                .unwrap()
+                .matches("\"Equation\"")
+                .count(),
+            1
         );
     }
 }

@@ -4,7 +4,7 @@
 
 ## #9401에서 Backspace를 실행 취소하면 문단 경계가 달라진다
 
-1. [수식이 든 HWPX](assets/pblsketch-20261126/table-inline-equation.hwpx)를 열면 글상자 속 표 칸에서 수식 `x+1` 다음에 `BOX`가 보인다. 입력은 공개 표 문서와 #9424의 공개 수식으로 구성했고 rhwp로 HWPX에 저장·재열기했다. 수식과 `B`가 앞 문단에 남는 위치에 커서를 놓는다.
+1. [수식이 든 HWPX](../../tests/fixtures/group_textbox_cell/table-inline-equation.hwpx)를 열면 글상자 속 표 칸에서 수식 `x+1` 다음에 `BOX`가 보인다. 입력은 공개 표 문서와 #9424의 공개 수식으로 구성했고 rhwp로 HWPX에 저장·재열기했다. 수식과 `B`가 앞 문단에 남는 위치에 커서를 놓는다.
 2. Enter를 누르면 앞 문단은 수식과 `B`, 뒤 문단은 `OX`가 된다. 뒤 문단 맨 앞에서 Backspace로 합친 뒤 Ctrl+Z를 누르면 앞 문단에는 수식만 남고 뒤 문단이 `BOX`가 된다. 수식이 없는 대조본은 같은 조작에서 `B`와 `OX`가 복원된다.
 3. Native는 원 입력과 HWP·HWPX로 재저장한 두 입력 모두에서 나눈 위치 2에 대해 병합 위치 1을 반환했다. Studio는 앞 문단의 글자 수 1을 따로 읽은 뒤 실행 취소에 쓴다. [Native 여섯 대조](assets/pblsketch-20261126/native-undo.tsv) · [브라우저 조작별 결과](assets/pblsketch-20261126/studio-reproduction.tsv)
 
