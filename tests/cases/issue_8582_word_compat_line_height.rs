@@ -206,7 +206,8 @@ fn word_single_latin_space_differs_from_mixed_and_repeated_spaces() {
             space_widths(child, widths);
         }
     }
-    let core = load("word_space_controls");
+    let mut core = load("word_space_controls");
+    core.set_hangul2024_compat(true);
     let tree = core.build_page_render_tree(0).unwrap();
     let mut widths = [None; 4];
     space_widths(&tree.root, &mut widths);
