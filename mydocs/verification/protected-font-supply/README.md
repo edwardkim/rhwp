@@ -40,8 +40,13 @@
   공급 목록에서 `Konghan-HFT.otf`를 제외했다. 공한 OTF는 macOS 설치본 해시를 기본으로 지정하고 기존 배포본 해시도 허용한다.
   두 해시의 파일을 각각 공급한 결과, 두 문서의 Native·fresh WASM 8행이 모두 100.00%였고
   devel·통합 후보의 페이지별 PNG 해시도 일치했다.
-- 중첩 표(`nested`)의 Native·WASM은 21개 파일의 순서를 유지한다. 두 경로에서 17쪽을 확인한
-  `H2MJRE.TTF`, `HBATANG.TTF`, `HDOTUM.TTF`, `gulim.TTC`, `pala.ttf`의 문서별 해시 쌍을 허용한다.
+- 정본 보호에서 `HBATANG.TTF`는 한컴오피스 2020의 한컴바탕 1.21
+  (SHA-256 `35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05`)을 공급한다.
+  이 파일로 바꾼 중첩 표(`nested`) Native·WASM 34행은 기존 공급본과 소수 둘째 자리
+  실루엣 일치율이 모두 같았다. 최저값은 Native 99.64%, WASM 100.00%이며, 같은 글꼴을
+  공급한 devel·통합 후보의 페이지별 PNG 해시도 일치했다.
+- 중첩 표의 Native·WASM은 21개 파일을 매니페스트 순서로 공급한다.
+  `H2MJRE.TTF`, `HDOTUM.TTF`, `gulim.TTC`, `pala.ttf`에는 문서별 해시 쌍을 허용한다.
 - `font_environment`가 있으면 해당 JSON을 `--font-environment`로 지정한다.
 - 선택 우선순위는 manifest의 `selection_order`를 따른다.
 - `accepted_font_set`, `accepted_font_environment`와 `records/`는 수용 당시의 비교 근거이며, 현재 전쪽 재검증 상태는

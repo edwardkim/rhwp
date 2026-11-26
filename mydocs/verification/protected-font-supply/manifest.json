@@ -5708,10 +5708,6 @@
           "sha256": "ed3fbb8f3af1866a7fe31478e4f62ef409f74f65d0db1bf60538f4649e564e4d"
         },
         {
-          "filename": "HBATANG.TTF",
-          "sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068"
-        },
-        {
           "filename": "HCENBIG.otf",
           "sha256": "3a9b58aaca7981cf7e937bc377d31d4e48240beee832452e4c4197893a7156fa"
         },
@@ -13333,7 +13329,7 @@
         },
         {
           "filename": "HBATANG.TTF",
-          "sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068"
+          "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
         },
         {
           "filename": "HDOTUM.TTF",
@@ -13421,7 +13417,7 @@
         },
         {
           "filename": "HBATANG.TTF",
-          "sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068"
+          "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
         },
         {
           "filename": "HDOTUM.TTF",
@@ -15729,10 +15725,6 @@
         "H2MJRE.TTF": [
           "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002",
           "2fda1cc69297fe605ee8804984d26666c2543b0ec22b8f50031123a18d81924e"
-        ],
-        "HBATANG.TTF": [
-          "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
-          "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
         ],
         "HDOTUM.TTF": [
           "4e7f536a6715270e06c6cc3b5474456007c193a7754131335195286d889f6757",
