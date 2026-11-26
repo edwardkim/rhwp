@@ -1,8 +1,15 @@
-//! [#2308] 중첩 표의 파생 폭·내용 상자 소유 회귀.
-//!
-//! `issue_2308_saved_nested_width_keeps_fragment_geometry`의 33·34쪽 고정 픽셀 기대는
-//! 정확한 입력의 한컴2024 재출력과 전82쪽 비교 후 #7445로 분리했다.
-//! 다른 정상 파생 폭·내용 소유 검사는 유지하며 원본 문서와 PDF도 보존한다.
+//! 관계형: #2308 · #7784의 저장 중첩 표 폭과 33·34쪽 이어받기 소속을 검사한다.
+//! 주석 갱신: 2026-11-27 08:52:59 KST.
+//! 직전 파일 변경: 2026-10-11T22:38:27+09:00 376e044028796a1c65d8f2b8923576b58bd7df60.
+//! 측정: 2026-11-27, 한컴 2024 Print PDFium 96 DPI, 색상 경계 보정 전 2px raw.
+//! 33·34쪽은 Native 99.99%·99.93%, fresh WASM 99.99%·99.93%였다.
+//! 전 82쪽 최저값은 Native 98.91%, fresh WASM 98.94%였다.
+//! 원본은 samples/76076_regulatory_analysis.hwp, 독립 PDF는
+//! pdf/issue1891/76076-original-hwp-exact-2024-20261005.pdf다.
+//! 전쪽 TSV SHA-256: Native 554c7d16163bb57b4a671b2bf89d9db23d8d028932eac84c71e5c0b865fe0c18,
+//! fresh WASM de078bee1e8068e55c703ec1b2330c9be9fed5a6e946f1329aa2976325196c7f.
+//! 확대 판독·쪽 소속 결과는 output/pr-review/issues7777-7787/rebase-3fdaa04258/
+//! rebase-preview-28541762d2/76076-owned-line-audit의 7784 33·34쪽 비교 JSON에 있다.
 
 use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
@@ -173,6 +180,82 @@ fn text_run_is_partially_painted(node: &RenderNode, needle: &str, clip: Option<C
     node.children
         .iter()
         .any(|child| text_run_is_partially_painted(child, needle, clip))
+}
+
+#[test]
+fn issue_2308_saved_nested_width_keeps_fragment_geometry() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/76076_regulatory_analysis.hwp");
+    let bytes = fs::read(path).expect("76076 HWP 원본 읽기");
+    let source = rhwp::parser::parse_hwp(&bytes).expect("저장 표 폭과 안여백 읽기");
+    let outer = source.sections[0].paragraphs[325]
+        .controls
+        .iter()
+        .find_map(|control| match control {
+            rhwp::model::control::Control::Table(table) => Some(table),
+            _ => None,
+        })
+        .expect("직접비용 표");
+    let source_owner = outer
+        .cells
+        .iter()
+        .find(|cell| cell.row == 6 && cell.col == 1)
+        .expect("근거설명 셀");
+    let source_nested = source_owner.paragraphs[0]
+        .controls
+        .iter()
+        .find_map(|control| match control {
+            rhwp::model::control::Control::Table(table) => Some(table),
+            _ => None,
+        })
+        .expect("저장 중첩 표");
+    let saved_width = f64::from(source_nested.common.width) / 75.0;
+    let left_padding = f64::from(source_owner.effective_padding(&outer.padding).left) / 75.0;
+
+    let mut core = DocumentCore::from_bytes(&bytes).expect("76076 HWP 원본 열기");
+    core.set_hangul2024_compat(true);
+    for page in [33, 34] {
+        let tree = core
+            .build_page_render_tree(page - 1)
+            .expect("직접비용 표 조각");
+        let outer = find_table_with_owner_para(&tree.root, 325).expect("직접비용 표 소속");
+        let owner = outer.children.iter().find(|child| matches!(
+            &child.node_type, RenderNodeType::TableCell(cell) if cell.row == 6 && cell.col == 1
+        )).expect("근거설명 셀 조각");
+        let nested = find_nested_single_cell_table(owner).expect("근거설명 중첩 표 조각");
+        assert!(
+            (nested.bbox.width - saved_width).abs() <= 0.2,
+            "{page}쪽 저장 폭"
+        );
+        assert!(
+            (nested.bbox.x - owner.bbox.x - left_padding).abs() <= 0.2,
+            "{page}쪽 안여백"
+        );
+
+        if page == 33 {
+            assert!(
+                line_contains_text(nested, "개소 중 근로")
+                    && line_contains_text(nested, "자 수 5인 이상 제조업은 전수조사"),
+                "한컴 Print 33쪽과 같은 줄에 근로가 남고 다음 줄이 자 수로 시작해야 함"
+            );
+            assert_eq!(
+                source_owner.vertical_align,
+                rhwp::model::table::VerticalAlign::Center
+            );
+            let owner_center = owner.bbox.y + owner.bbox.height / 2.0;
+            let nested_center = nested.bbox.y + nested.bbox.height / 2.0;
+            assert!(
+                (nested_center - owner_center).abs() <= 0.2,
+                "33쪽 저장 가운데 정렬"
+            );
+        } else {
+            let direct_benefit = find_table_with_owner_para(&tree.root, 336)
+                .expect("직접편익 표는 이어받기 조각 뒤에 있음");
+            assert!(
+                outer.bbox.y + outer.bbox.height <= direct_benefit.bbox.y,
+                "직접편익 표가 직접비용 이어받기 조각과 겹치지 않아야 함"
+            );
+        }
+    }
 }
 
 /// 한컴 PDF p33의 마지막 "현황 추이(p.270)" 줄은 p33의 셀 안에 온전히 남고,
