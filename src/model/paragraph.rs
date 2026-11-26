@@ -1077,6 +1077,61 @@ impl Paragraph {
         // 읽은 줄에만 붙던 보정폭을 그대로 두면 다음 투영에서 이중으로 더해진다.
         self.hwpx_axis_shift = 0;
         self.stored_text_partition_dirty = false;
+        // [#9426] 새 줄의 tag 는 원래 첫 줄 등의 견본에서 복사된다. 줄 끝 하이픈 표지만은
+        // 이 줄 나눔의 사실이므로 새 경계에서 다시 정한다.
+        self.sync_auto_hyphenation_tags();
+    }
+
+    /// [#9426] 저장 줄 tag 의 bit 19(auto-hyphenation 수행)를 줄 나눔 사실과 맞춘다.
+    ///
+    /// 한/글은 제어 표기 소프트 하이픈(HWP5 코드 24) 자리에서 줄을 나눈 세그먼트에만
+    /// 이 비트를 세우고, 그 비트가 선 줄의 끝에서만 하이픈을 그린다. 한/글 2024 가 HWP3
+    /// 원본(독일의 법령체계, 264쪽)을 HWP5 로 저장한 본은 8,186줄 중 비트가 선 111줄과
+    /// 끝 글자가 코드 24 인 줄이 정확히 같다. 비트 없이 같은 자리에서 끝나는 줄은
+    /// 한/글 2020·2024 Print 모두 하이픈을 그리지 않는다.
+    pub(crate) fn sync_auto_hyphenation_tags(&mut self) {
+        let control_soft_hyphen =
+            self.control_mask & (1u32 << 0x0018) != 0 && self.text.contains('\u{00AD}');
+        let ends: Vec<bool> = (0..self.line_segs.len())
+            .map(|index| control_soft_hyphen && self.line_seg_ends_at_soft_hyphen(index))
+            .collect();
+        for (line, hyphenated) in self.line_segs.iter_mut().zip(ends) {
+            if hyphenated {
+                line.tag |= LineSeg::TAG_AUTO_HYPHENATION;
+            } else {
+                line.tag &= !LineSeg::TAG_AUTO_HYPHENATION;
+            }
+        }
+    }
+
+    /// 저장 줄 `index` 의 마지막 글자가 소프트 하이픈이고 다음 세그먼트가 바로 뒤에서
+    /// 시작하는가. 문단 마지막 세그먼트는 줄 나눔이 아니므로 거짓이다.
+    fn line_seg_ends_at_soft_hyphen(&self, index: usize) -> bool {
+        let (Some(line), Some(next)) = (self.line_segs.get(index), self.line_segs.get(index + 1))
+        else {
+            return false;
+        };
+        let last = self
+            .char_offsets
+            .partition_point(|&offset| offset < next.text_start);
+        let Some(last) = last.checked_sub(1) else {
+            return false;
+        };
+        self.char_offsets[last] >= line.text_start
+            && self.text.chars().nth(last) == Some('\u{00AD}')
+    }
+
+    /// [#9426] `char_index` 의 제어 표기 소프트 하이픈 바로 뒤에서 저장 세그먼트가
+    /// 나뉘면, 그 앞 세그먼트가 auto-hyphenation 을 표시했는지 돌려준다. 저장 줄
+    /// 경계가 아니면(현재 조판이 새로 나눈 줄) `None`.
+    pub(crate) fn stored_line_end_hyphenation(&self, char_index: usize) -> Option<bool> {
+        let offset = *self.char_offsets.get(char_index)?;
+        let following = self.char_offsets.get(char_index + 1).copied();
+        let next = self.line_segs.iter().position(|line| {
+            line.text_start > offset && following.is_none_or(|start| line.text_start <= start)
+        })?;
+        let line = self.line_segs.get(next.checked_sub(1)?)?;
+        Some(line.tag & LineSeg::TAG_AUTO_HYPHENATION != 0)
     }
 
     /// 같은 줄 구성 결과에서 생성한 경계와 공백 규칙을 함께 발행한다.
