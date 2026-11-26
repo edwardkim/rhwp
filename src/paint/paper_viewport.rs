@@ -769,7 +769,12 @@ impl PagePaintContext {
 
     /// 독립 Print의 실선 그림 테두리는 채운 띠와 장치 한 픽셀의 외곽 pen을 갖는다.
     /// 원본 HU·논리 프레임은 유지하고 양쪽 backend가 소비할 인쇄 선폭만 만든다.
-    pub(crate) fn picture_border_pen(self, rect: &mut RectangleNode, pixel: Option<f64>) {
+    pub(crate) fn picture_border_pen(
+        self,
+        rect: &mut RectangleNode,
+        pixel: Option<f64>,
+        in_shape_group: bool,
+    ) {
         let (Some(width_hu), Some(pixel)) = (
             rect.picture_border_width_hu,
             pixel.filter(|p| p.is_finite() && *p > 0.0),
@@ -786,9 +791,9 @@ impl PagePaintContext {
         {
             return;
         }
-        if width_hu == 0 {
-            // 한컴 Print는 폭 0을 600 DPI 장치 한 픽셀의 채움 띠로 출력한다.
-            // 양의 폭에서 사용하는 별도 외곽 pen을 적용하면 저해상도 출력에서 띠가 두꺼워진다.
+        if width_hu == 0 && !in_shape_group {
+            // 독립 그림의 폭 0은 600 DPI 한 픽셀의 채움 띠다. 묶음 그림은
+            // 편람 Print 94·163쪽에서 이 띠에 별도 0.120pt 외곽선을 더한다.
             rect.style.stroke_width = pixel;
         } else {
             let band = (rect.style.stroke_width / pixel).round().max(1.0);

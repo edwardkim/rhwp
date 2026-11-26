@@ -549,6 +549,7 @@ impl LayerBuilder {
                     context.picture_border_pen(
                         &mut rect,
                         Some(self.layout_dpi / crate::renderer::print_picture_pen::DEVICE_DPI),
+                        self.shape_group_depth > 0,
                     );
                 }
                 let image_frame = rect
