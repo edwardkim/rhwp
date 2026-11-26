@@ -649,7 +649,23 @@ impl DocumentCore {
         // ColumnDef(다단)·margin_gutter·가로 용지·양면 짝수쪽 여백 교환·손상
         // PageDef 의 A4 폴백을 모두 놓친다 — 그리고 그 결과가 디스크로 나간다.
         // 대화형 편집의 관문과 같은 한 곳을 쓴다.
+        // [#8927] 높아진 수식 줄만큼 뒤 문단의 저장 세로 위치도 다시 잇는다. 글자 입력·
+        // 수식 속성 편집과 같은 순서다. 잇지 않으면 저장본을 다시 연 rhwp가 뒤 문단을
+        // 옛 위치에 그려 수식 줄과 겹친다(한글은 열 때 다시 계산해 드러나지 않는다).
+        let stored_end = crate::renderer::composer::paragraph_flow_end(
+            &self.document.sections[section_idx].paragraphs[para_idx],
+        );
         self.reflow_paragraph(section_idx, para_idx);
+        let hwp3_layout = self.document.layout_profile().hwp3_layout();
+        crate::renderer::composer::recalculate_section_vpos(
+            &mut self.document.sections[section_idx].paragraphs,
+            para_idx,
+            None,
+            stored_end,
+            &self.styles,
+            self.dpi,
+            hwp3_layout,
+        );
 
         self.recompose_section(section_idx);
         self.paginate_if_needed();
