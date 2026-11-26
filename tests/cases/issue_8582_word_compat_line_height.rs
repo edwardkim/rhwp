@@ -286,3 +286,49 @@ fn hwp_custom_paragraph_flags_survive_hwpx_and_hwp_without_becoming_word_default
         assert_eq!(word_record(&binary, 31), [0, bits, 0, 0, 0], "{name}");
     }
 }
+
+#[test]
+fn edited_hwpx_header_or_truncated_compatibility_data_uses_the_public_word_settings() {
+    use std::io::{Cursor, Read, Write};
+
+    let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/issue8582/word_hcr_p100_hwp5_lcp_b3.hwp");
+    let core = DocumentCore::from_bytes(&std::fs::read(path).unwrap()).unwrap();
+    let custom = core.export_hwpx_native().unwrap();
+    let original = DocumentCore::from_bytes(&custom).unwrap();
+    assert_eq!(word_record(&original, 31), [0, 8, 0, 0, 0]);
+
+    for changed in ["Contents/header.xml", "META-INF/rhwp-layout-compatibility"] {
+        let mut source = zip::ZipArchive::new(Cursor::new(&custom)).unwrap();
+        let mut output = zip::ZipWriter::new(Cursor::new(Vec::new()));
+        for index in 0..source.len() {
+            let mut entry = source.by_index(index).unwrap();
+            if entry.name().unwrap() != changed {
+                output.raw_copy_file(entry).unwrap();
+                continue;
+            }
+            let mut bytes = Vec::new();
+            entry.read_to_end(&mut bytes).unwrap();
+            if changed == "Contents/header.xml" {
+                assert!(std::str::from_utf8(&bytes)
+                    .unwrap()
+                    .contains("hh:baseCharUnitOfIndentOnFirstChar"));
+                bytes.extend_from_slice(b"<!-- updated header -->");
+            } else {
+                bytes.truncate(35);
+            }
+            let options =
+                zip::write::SimpleFileOptions::default().compression_method(entry.compression());
+            output.start_file(changed, options).unwrap();
+            output.write_all(&bytes).unwrap();
+        }
+        let changed_package = output.finish().unwrap().into_inner();
+        let reopened = DocumentCore::from_bytes(&changed_package).unwrap();
+        assert_eq!(word_record(&reopened, 30), [2]);
+        assert_eq!(
+            word_record(&reopened, 31),
+            [0x09e3, 0x00cd_f8ff, 0x4f, 0x07ec, 0],
+            "{changed}"
+        );
+    }
+}

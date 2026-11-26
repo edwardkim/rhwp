@@ -204,33 +204,3 @@ impl DocumentCompatibility {
         info.extra_records.splice(before..before, [target, layout]);
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn a_header_edit_or_truncated_entry_invalidates_the_custom_binary_settings() {
-        let header = b"<head/>";
-        let mut settings = CompatibilityTarget::MsWord.preset();
-        assert!(settings.nonpreset_bytes(header).is_none());
-        settings.flags = [1 << 7, 1 << 3, 0, 0, 0];
-        let data = settings.nonpreset_bytes(header).unwrap();
-        let mut info = DocInfo::default();
-        CompatibilityTarget::MsWord
-            .preset()
-            .insert_hwpx_records(&mut info, 0);
-        DocumentCompatibility::restore_nonpreset(&mut info, b"<edited/>", &data);
-        DocumentCompatibility::restore_nonpreset(&mut info, header, &data[..35]);
-        assert_eq!(
-            DocumentCompatibility::from_records(&info),
-            CompatibilityTarget::MsWord.preset()
-        );
-        DocumentCompatibility::restore_nonpreset(&mut info, header, &data);
-        assert_eq!(DocumentCompatibility::from_records(&info), settings);
-        assert_eq!(
-            settings.xml_layout_flags().collect::<Vec<_>>(),
-            ["hh:baseCharUnitOfIndentOnFirstChar"]
-        );
-    }
-}
