@@ -1,0 +1,30 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 9419,
+  "title": "한/글이 저장한 HWPX 의 쪽 첫 글자처럼 취급 표가 위 간격만큼 올라간다",
+  "entries": [
+    {
+      "path": "samples/issue9419/kaf_appendix_2020.hwpx",
+      "format": "hwpx",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/9419",
+      "derivedFrom": {
+        "path": "samples/issue9379/kaf_appendix.hwp",
+        "sha256": "f5f835cb60fdb1883f5857bcc0799c22dfe24e4c1b683dfc10e9382da30d77c2",
+        "pageCount": 54,
+        "procedure": "한/글 2020(11.0.0.1623) 으로 열어 HWPX 로 다른 이름 저장(hancom-com-saveas). 바이트 수정 없음."
+      },
+      "bytes": 2338882,
+      "sha256": "57f6d3a62073e6b026e7e81119551ef2737080c8ea21fbb5a0a38d1c4e562676",
+      "lastSavedWith": {
+        "product": "Hancom Office Hangul",
+        "version": "11.0.0.1623"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/issue9419/kaf_appendix_2020-2020.pdf",
+      "referencePdfSha256": "75530096fef8dfc9bf0e569e1189d3dd746367663aeb0d2605eb29b98e453c3d",
+      "referencePdfPageCount": 54,
+      "contract": "전체 54쪽으로 한/글 2020 Print 와 같다. 21·23쪽은 쪽 나누기 뒤 빈 문단(위 간격 600 HU)의 글자처럼 취급 표가 단의 첫 항목이다. 저장 첫 줄 vpos 600 이 그 위 간격을 증언하며, 표는 같은 문서의 HWP 와 같은 자리(단 위끝 + 위 간격 + 바깥 위 여백)에 그린다."
+    }
+  ]
+}
