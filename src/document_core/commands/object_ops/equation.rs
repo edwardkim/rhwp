@@ -280,6 +280,7 @@ impl DocumentCore {
         // 돌아 한컴이 저장한 상자 크기를 rhwp 계산값으로 바꿨다(corpus 수식 2257건 전부 해당).
         let script_before = eq.script.clone();
         let font_size_before = eq.font_size;
+        let font_name_before = eq.font_name.clone();
 
         if let Some(s) = json_str(props_json, "script") {
             eq.script = s;
@@ -306,14 +307,22 @@ impl DocumentCore {
         // 스크립트·글자크기 편집의 자동 크기 재계산은 종전대로 동작한다.
         let explicit_width = json_u32(props_json, "width").is_some();
         let explicit_height = json_u32(props_json, "height").is_some();
-        let size_driver_changed = eq.script != script_before || eq.font_size != font_size_before;
-        if size_driver_changed && (!explicit_width || !explicit_height) {
-            let (width, height) = crate::renderer::equation::edited_size_hwp(eq);
+        // [#8927] 글꼴 이름도 크기를 정한다. 두 원본 수식 face는 그리스 문자 등의 전진폭이
+        // 달라 같은 script의 폭이 다르다(10pt `alpha + beta LEQ gamma`: 4375/4300HU).
+        let size_driver_changed = eq.script != script_before
+            || eq.font_size != font_size_before
+            || eq.font_name != font_name_before;
+        let explicit_baseline = json_i32(props_json, "baseline").is_some();
+        if size_driver_changed && (!explicit_width || !explicit_height || !explicit_baseline) {
+            let frame = crate::renderer::equation::produced_frame::produced_frame(eq);
             if !explicit_width {
-                eq.common.width = width;
+                eq.common.width = frame.width;
             }
             if !explicit_height {
-                eq.common.height = height;
+                eq.common.height = frame.height;
+            }
+            if let (false, Some(baseline)) = (explicit_baseline, frame.baseline) {
+                eq.baseline = baseline;
             }
         }
 
@@ -538,7 +547,17 @@ impl DocumentCore {
             )));
         }
 
-        let (width, height) = crate::renderer::equation::intrinsic_size_hwp(script, font_size);
+        // [#8927] 한컴은 저장된 수식 프레임을 그대로 연다. 그리는 쪽과 같은 원본 face
+        // 조판의 프레임과 기준선을 저장한다.
+        let frame = crate::renderer::equation::produced_frame::produced_frame(&Equation {
+            script: script.to_string(),
+            font_size,
+            baseline: 85,
+            version_info: "Equation Version 60".to_string(),
+            font_name: "HYhwpEQ".to_string(),
+            ..Default::default()
+        });
+        let (width, height) = (frame.width, frame.height);
         let equation_order = self.document.sections[section_idx]
             .paragraphs
             .iter()
@@ -591,7 +610,7 @@ impl DocumentCore {
             script: script.to_string(),
             font_size,
             color,
-            baseline: 85,
+            baseline: frame.baseline.unwrap_or(85),
             version_info: "Equation Version 60".to_string(),
             font_name: "HYhwpEQ".to_string(),
             ..Default::default()

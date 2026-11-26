@@ -191,6 +191,12 @@ pub(crate) fn semantic_fallback_glyph(family: &str, encoded: char) -> Option<(ch
         .copied()
 }
 
+/// 원본 수식 face의 논리 글자 크기(2px 짝수 격자)에서 1em 전진.
+/// SmallOperator·∴∵가 쓰는 격자와 같다. 출력 DPI와 무관한 물리 폭을 낸다.
+pub(super) fn logical_em_advance(fs: f64, dpi: f64) -> f64 {
+    (fs * 48.0 / dpi).round().max(1.0) * 2.0 * dpi / 96.0
+}
+
 pub(super) fn measure(
     text: &str,
     role: Role,

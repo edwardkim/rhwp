@@ -100,7 +100,7 @@ impl EqLayout {
             value.y += head;
             value
         });
-        LayoutBox {
+        let value = LayoutBox {
             font_size: fs,
             x: 0.0,
             y: 0.0,
@@ -129,7 +129,59 @@ impl EqLayout {
                 sub: sub_laid.map(Box::new),
                 sup: sup_laid.map(Box::new),
             },
+        };
+        self.with_hancom_limit_frame(value, max_w, fs)
+    }
+
+    /// 원본 수식 face의 합·곱 프레임(`hancom_frame::limit_operator`)을 측정과 표시에 쓴다.
+    /// 원본 face의 합은 뒤 피연산자를 바로 잇는다는 기존 계약을 곱에도 같이 적용해
+    /// trailing 여백을 두지 않는다. 연산자 글리프의 크기·폭과 본문 기준선에 대한
+    /// 위치는 바꾸지 않는다. 한 줄이 아닌 한계값(분수·첨자 겹침)은 이 프레임으로 접지 않는다.
+    fn with_hancom_limit_frame(&self, mut value: LayoutBox, max_w: f64, fs: f64) -> LayoutBox {
+        if !(self.hancom_math_face || self.hancom_eqn)
+            || self.legacy_math_face
+            || self.legacy_hft_metrics
+        {
+            return value;
         }
+        let LayoutKind::BigOp {
+            symbol,
+            op_baseline,
+            sub,
+            sup,
+            ..
+        } = &mut value.kind
+        else {
+            return value;
+        };
+        let line = |limit: &Option<Box<LayoutBox>>| {
+            limit.as_deref().is_none_or(|limit| {
+                super::super::logical_font_frame::font_line(limit, limit.font_size)
+            })
+        };
+        if !matches!(symbol.as_str(), "∑" | "∏") || !line(sub) || !line(sup) {
+            return value;
+        }
+        let (height, baseline, op_height, limit_height) =
+            super::super::hancom_frame::limit_operator(
+                fs,
+                self.script_font_size(fs),
+                self.dpi,
+                sup.is_some(),
+                sub.is_some(),
+            );
+        let sup_height = if sup.is_some() { limit_height } else { 0.0 };
+        *op_baseline += baseline - value.baseline;
+        if let Some(limit) = sup {
+            limit.y = (limit_height - limit.height) / 2.0;
+        }
+        if let Some(limit) = sub {
+            limit.y = sup_height + op_height + (limit_height - limit.height) / 2.0;
+        }
+        value.width = max_w;
+        value.height = height;
+        value.baseline = baseline;
+        value
     }
 
     /// 적분 기호 레이아웃: 큰 기호 + 오른쪽 위/아래 첨자 (nolimits 스타일)

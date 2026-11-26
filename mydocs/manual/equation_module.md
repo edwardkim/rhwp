@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/equation_module.md
-last_verified: 2026-10-02
+last_verified: 2026-11-26
 ---
 
 # 수식 모듈 매뉴얼
@@ -31,7 +31,14 @@ script
   → svg_render / canvas_render
 ```
 
-문서 컨트롤에서 크기가 필요할 때는 `equation::intrinsic_size_hwp(script, font_size)`.
+삽입과 속성 편집(script·글자 크기·글꼴 이름 변경)이 저장할 폭·높이·기준선은
+`equation::produced_frame::produced_frame(&equation)`이 정한다. 한글 2020과 한글 2022 최신
+빌드는 파일을 열 때 저장된 수식 프레임을 그대로 쓰므로(#8927), 원본 face 조판
+(`EqLayout::for_equation`)의 루트 프레임을 저장해 rhwp가 그리는 상자와 한글이 여는 상자를
+맞춘다. 루트가 한컴 대조로 확인한 구조 프레임(`hancom_frame::metrics`)이 아니거나 그 글자
+크기의 글줄 프레임이 측정돼 있지 않으면 기존 추정 크기(`intrinsic_size_hwp`)와 기존 기준선을
+유지한다. 공개 글꼴 추정 크기가 필요한 다른 경로(HML·OLE 변환)는
+`equation::intrinsic_size_hwp(script, font_size)`를 쓴다.
 
 ### 한글 수식의 대체 메트릭과 저장 줄
 
