@@ -721,15 +721,14 @@ impl LayerBuilder {
                         } else {
                             None
                         };
-                        let device_alpha = (transparent_png
-                            && self.shape_group_depth == 0
-                            && !soft_edge_prepared)
-                            .then(|| self.page_context?.alpha_device_frame(node, &image))
-                            .flatten()
-                            .and_then(|(device_frame, grid)| {
-                                let payload = grid.payload(&image, self.print_alpha_order)?;
-                                Some((device_frame, payload))
-                            });
+                        let device_alpha =
+                            (transparent_png && self.shape_group_depth == 0 && !soft_edge_prepared)
+                                .then(|| self.page_context?.alpha_device_frame(node, &image))
+                                .flatten()
+                                .and_then(|(device_frame, grid)| {
+                                    let payload = grid.payload(&image, self.print_alpha_order)?;
+                                    Some((device_frame, payload))
+                                });
                         let has_device_alpha = device_alpha.is_some();
                         let mut resolved = device_alpha
                             .map(|(device_frame, payload)| {

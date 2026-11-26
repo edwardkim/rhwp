@@ -5952,17 +5952,19 @@ impl LayoutEngine {
                                         stored_float_frame.filter(|_| {
                                             projected_table_anchor.is_none()
                                                 && split_info.as_ref().is_none_or(|split| {
-                                                split.start_row == 0
-                                                    && split.end_row
-                                                        == usize::from(nested_table.row_count)
-                                                    && split.offset_within_start == 0.0
-                                                    && split.content_offset == 0.0
-                                                    && split.recursive_cut.as_ref().is_none_or(
-                                                        |cut| {
-                                                            cut.start_cut.iter().all(|n| *n == 0)
-                                                                && cut.end_cut.is_empty()
-                                                        },
-                                                    )
+                                                    split.start_row == 0
+                                                        && split.end_row
+                                                            == usize::from(nested_table.row_count)
+                                                        && split.offset_within_start == 0.0
+                                                        && split.content_offset == 0.0
+                                                        && split.recursive_cut.as_ref().is_none_or(
+                                                            |cut| {
+                                                                cut.start_cut
+                                                                    .iter()
+                                                                    .all(|n| *n == 0)
+                                                                    && cut.end_cut.is_empty()
+                                                            },
+                                                        )
                                                 })
                                         });
                                     let flow_end = whole_stored_float_frame

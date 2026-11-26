@@ -677,7 +677,10 @@ impl PagePaintContext {
         self,
         node: &RenderNode,
         image: &ImageNode,
-    ) -> Option<(BoundingBox, crate::renderer::image_resolver::PrintAlphaDeviceGrid)> {
+    ) -> Option<(
+        BoundingBox,
+        crate::renderer::image_resolver::PrintAlphaDeviceGrid,
+    )> {
         if !self.axis_aligned_graphics {
             return None;
         }

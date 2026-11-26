@@ -1601,8 +1601,7 @@ impl DocumentCore {
             && page_num != 0
             && self.with_profile_page_tree(page_num, profile, |tree| {
                 Ok(LayerBuilder::page_print_alpha_count(tree).1)
-            })?
-        {
+            })? {
             self.print_alpha_order_before(page_num)?
         } else {
             0
@@ -8095,7 +8094,9 @@ impl DocumentCore {
     pub(crate) fn invalidate_page_tree_cache_from(&self, from_page: u32) {
         let mut cache = self.page_tree_cache.borrow_mut();
         let from = from_page as usize;
-        self.print_alpha_prefix.borrow_mut().truncate(from.saturating_add(1));
+        self.print_alpha_prefix
+            .borrow_mut()
+            .truncate(from.saturating_add(1));
         for i in from..cache.len() {
             cache[i] = None;
         }
@@ -8116,7 +8117,9 @@ impl DocumentCore {
     /// 한 페이지의 렌더 트리와 그 파생 표현을 함께 무효화한다.
     pub(crate) fn invalidate_page_tree_cache_page(&self, page_num: u32) {
         let idx = page_num as usize;
-        self.print_alpha_prefix.borrow_mut().truncate(idx.saturating_add(1));
+        self.print_alpha_prefix
+            .borrow_mut()
+            .truncate(idx.saturating_add(1));
         if let Some(slot) = self.page_tree_cache.borrow_mut().get_mut(idx) {
             *slot = None;
         }
