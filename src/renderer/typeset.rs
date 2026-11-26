@@ -5228,13 +5228,6 @@ impl TypesetEngine {
                             + i64::from(table.outer_margin_bottom)
                             - 10
                 });
-        // [#8463] 저장 줄 없는 host 에서 줄 머리의 TAC 표 뒤에 공백만 있으면 그 공백은 줄상자를
-        // 갖지 않고, 문단의 유일한 줄은 표 줄이다(`tac_table_host_line_metrics`, #8574). 그 줄을
-        // 표 앞 글로 쌓으면 표 높이가 줄 전진과 표 배치에 두 번 계상되어 표가 쪽 아래로 밀린다.
-        let unstored_host_line_is_table_line = table.common.treat_as_char
-            && total_lines == 1
-            && crate::renderer::para_has_no_stored_line_segs(para)
-            && crate::renderer::tac_table_host_text_is_line_tail(para);
         // 저장 줄이 없는 host 의 Square 표: 글자 띠는 표 기하로 도출한다(layout 과 같은
         // helper). 띠가 없으면(표가 단 폭을 채움) 글자는 옆으로 흐를 수 없어 표 **아래**로
         // 간다 — 양수 세로 오프셋이어도 표 앞 글자로 방출하지 않는다.
@@ -5275,11 +5268,15 @@ impl TypesetEngine {
             .and_then(|placement| placement.split_host_prefix());
         let pre_table_end_line = if let Some(prefix) = split_host_prefix {
             prefix
+        } else if let Some(line) =
+            tac_table_line_idx.filter(|_| crate::renderer::para_has_no_stored_line_segs(para))
+        {
+            // 재조판한 인라인 표 앞에는 제어 슬롯이 속한 줄보다 앞선 줄만 놓는다.
+            line
         } else if !is_visible_para_float
             && signed_vertical_offset > 0
             && !para.text.is_empty()
             && !whitespace_host_line_covers_table
-            && !unstored_host_line_is_table_line
             // 앞·뒤 저장 줄로 확정한 표 뒤 호스트는 pre-text가 아니다.
             // 같은 저장 원점에서 post-text로 한 번만 배치·전진한다.
             && !st
