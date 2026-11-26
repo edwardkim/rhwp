@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "user_approved": true,
+  "key": "chemical",
+  "candidate_source": "0dfcc4e7ebcf5844e9546b4da73d262b8f2050bf",
+  "candidate_build_source": "5c216e8e657309f9bb33928c6a6cd2747df77217",
+  "devel_source": "3fdaa042588cce42006d17e958a7f34d7c205b2e",
+  "evidence_commit": "d1a51d27c37db47d06190506990171b54d021620",
+  "condition_evidence": "mydocs/pr/assets/issue_6782/mcp-print-20261126/validation.json",
+  "condition_evidence_sha256": "99d03c3a995de7d6e8126c3f452ac2a9e858f5bc133f5a035ca94aaf4fefe610",
+  "old_document_id": "870eabd0a7d9534c",
+  "document_id": "b6541b8c57c46090",
+  "previous_reference_pdf": {
+    "path": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+    "sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+    "bytes": 1245068
+  },
+  "reference_pdf": {
+    "path": "pdf/issue6782/mcp-11.0.0.9172/1480000-201900042-chemical-labeling-standards-2020.pdf",
+    "sha256": "26e40ca45d384a083750e6edeb6c36506c2079774a2735edd374c87acc7fbfdd",
+    "bytes": 1226700
+  },
+  "previous_table_sha256": "56c0b80121c204e4f1c2f025b7a6720661773deb9aadbfa9fe8b4229601f51c1",
+  "table_sha256": "bbbe4e76122840cd32ea40d1068d29e32700db2a3f9b6152dcebee02657c7193",
+  "compared_rows": 206,
+  "decreased_rows": [
+    {
+      "document_id": "b6541b8c57c46090",
+      "key": "chemical",
+      "backend": "native",
+      "page": 19,
+      "previous": "100.00",
+      "accepted": "99.93"
+    },
+    {
+      "document_id": "b6541b8c57c46090",
+      "key": "chemical",
+      "backend": "native",
+      "page": 20,
+      "previous": "100.00",
+      "accepted": "99.86"
+    },
+    {
+      "document_id": "b6541b8c57c46090",
+      "key": "chemical",
+      "backend": "native",
+      "page": 21,
+      "previous": "100.00",
+      "accepted": "99.89"
+    },
+    {
+      "document_id": "b6541b8c57c46090",
+      "key": "chemical",
+      "backend": "native",
+      "page": 91,
+      "previous": "100.00",
+      "accepted": "99.65"
+    },
+    {
+      "document_id": "b6541b8c57c46090",
+      "key": "chemical",
+      "backend": "native",
+      "page": 92,
+      "previous": "100.00",
+      "accepted": "99.99"
+    },
+    {
+      "document_id": "b6541b8c57c46090",
+      "key": "chemical",
+      "backend": "wasm",
+      "page": 19,
+      "previous": "100.00",
+      "accepted": "99.93"
+    },
+    {
+      "document_id": "b6541b8c57c46090",
+      "key": "chemical",
+      "backend": "wasm",
+      "page": 20,
+      "previous": "100.00",
+      "accepted": "99.86"
+    },
+    {
+      "document_id": "b6541b8c57c46090",
+      "key": "chemical",
+      "backend": "wasm",
+      "page": 21,
+      "previous": "100.00",
+      "accepted": "99.89"
+    },
+    {
+      "document_id": "b6541b8c57c46090",
+      "key": "chemical",
+      "backend": "wasm",
+      "page": 91,
+      "previous": "100.00",
+      "accepted": "99.65"
+    },
+    {
+      "document_id": "b6541b8c57c46090",
+      "key": "chemical",
+      "backend": "wasm",
+      "page": 92,
+      "previous": "100.00",
+      "accepted": "99.99"
+    }
+  ],
+  "remaining_below_floor": [
+    [
+      "wasm",
+      26,
+      "100.00",
+      "99.99"
+    ]
+  ]
+}

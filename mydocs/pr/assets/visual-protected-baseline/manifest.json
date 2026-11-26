@@ -3,7 +3,7 @@
   "created_at": "2026-11-08T22:37:56.286882+09:00",
   "baseline_kind": "수용된 전쪽 검증과 개별 승인 조정을 반영한 보호 하한. CI·병합 상태는 별도 기록한다.",
   "table": "final.tsv",
-  "table_sha256": "56c0b80121c204e4f1c2f025b7a6720661773deb9aadbfa9fe8b4229601f51c1",
+  "table_sha256": "5d5ef7ac531f3d038757636920cb4af0267796f3631a68d2b5fece77291a5e13",
   "row_count": 4046,
   "document_count": 23,
   "dataset_count": 46,
@@ -3971,7 +3971,7 @@
       ]
     },
     {
-      "document_id": "870eabd0a7d9534c",
+      "document_id": "b6541b8c57c46090",
       "logical_key": "chemical",
       "backend": "native",
       "input": {
@@ -3980,13 +3980,13 @@
         "bytes": 193536
       },
       "reference_pdf": {
-        "path": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
-        "sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
-        "bytes": 1245068
+        "path": "pdf/issue6782/mcp-11.0.0.9172/1480000-201900042-chemical-labeling-standards-2020.pdf",
+        "sha256": "26e40ca45d384a083750e6edeb6c36506c2079774a2735edd374c87acc7fbfdd",
+        "bytes": 1226700
       },
       "identity": {
         "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
-        "reference_pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+        "reference_pdf_sha256": "26e40ca45d384a083750e6edeb6c36506c2079774a2735edd374c87acc7fbfdd",
         "compat": "2022",
         "dpi": 96,
         "profile": "print",
@@ -3994,21 +3994,21 @@
         "radius_px": 2
       },
       "page_count": 103,
-      "accepted_at": "2026-11-23T21:57:49.920882+09:00",
+      "accepted_at": "2026-11-26T21:08:27+09:00",
       "source": {
         "pr": null,
-        "evidence_commit": "dc5368b3932bd39293a3e0067d809ec90ce641b1",
-        "code_commit": "330af8608ac741b14041d3e372284a6111346b9c",
-        "condition_evidence": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected-validation.json",
-        "condition_evidence_sha256": "3fc96e934c4918ae75ea10331b901e6ffc1c70d076c4fde80fdc8a9365cfe04b",
-        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/chemical/native/silhouette.tsv",
-        "sha256": "d55cc0d20d9cf48ab7af6139c63f9c7ce9d90ff2cd4d0c668a810fccb2ae63f3",
+        "evidence_commit": "d1a51d27c37db47d06190506990171b54d021620",
+        "code_commit": "5c216e8e657309f9bb33928c6a6cd2747df77217",
+        "path": "mydocs/pr/assets/issue_6782/mcp-print-20261126/native-floor.tsv",
+        "sha256": "bf705fa2b36d8338bffe974ca0c193a9802286781a94b332526bfffea1c59f1d",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
+        "condition_evidence": "mydocs/pr/assets/issue_6782/mcp-print-20261126/validation.json",
+        "condition_evidence_sha256": "99d03c3a995de7d6e8126c3f452ac2a9e858f5bc133f5a035ca94aaf4fefe610",
+        "precision": "새 한컴 Print의 픽셀이 달라진 쪽에서 사용자가 승인한 두 자리 표시값과 나머지 쪽의 기존 보호 하한"
       },
-      "minimum_display": "99.99",
+      "minimum_display": "99.65",
       "source_history": [
         {
           "pr": null,
@@ -4049,16 +4049,29 @@
           "page_column": "page",
           "document_filter": null,
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "dc5368b3932bd39293a3e0067d809ec90ce641b1",
+          "code_commit": "330af8608ac741b14041d3e372284a6111346b9c",
+          "condition_evidence": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected-validation.json",
+          "condition_evidence_sha256": "3fc96e934c4918ae75ea10331b901e6ffc1c70d076c4fde80fdc8a9365cfe04b",
+          "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/chemical/native/silhouette.tsv",
+          "sha256": "d55cc0d20d9cf48ab7af6139c63f9c7ce9d90ff2cd4d0c668a810fccb2ae63f3",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ],
       "previous_source": {
         "pr": null,
-        "evidence_commit": "70fca853bee65aba00820c5dbe39d0f4aa899d86",
-        "code_commit": "521f69d19da9176e7947ceb318cf9838bec5ca75",
-        "condition_evidence": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json",
-        "condition_evidence_sha256": "96f0acd6b6345f20f5667d0515eab42b21baa79774eeee5760c9644127d56f81",
-        "path": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/chemical.tsv",
-        "sha256": "29b4f5e65e65a6955fe74cc9bb0d95f48d2e671d58e1206b73c5f0220df5bcb6",
+        "evidence_commit": "dc5368b3932bd39293a3e0067d809ec90ce641b1",
+        "code_commit": "330af8608ac741b14041d3e372284a6111346b9c",
+        "condition_evidence": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected-validation.json",
+        "condition_evidence_sha256": "3fc96e934c4918ae75ea10331b901e6ffc1c70d076c4fde80fdc8a9365cfe04b",
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/chemical/native/silhouette.tsv",
+        "sha256": "d55cc0d20d9cf48ab7af6139c63f9c7ce9d90ff2cd4d0c668a810fccb2ae63f3",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
@@ -4066,7 +4079,7 @@
       }
     },
     {
-      "document_id": "870eabd0a7d9534c",
+      "document_id": "b6541b8c57c46090",
       "logical_key": "chemical",
       "backend": "wasm",
       "input": {
@@ -4075,13 +4088,13 @@
         "bytes": 193536
       },
       "reference_pdf": {
-        "path": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
-        "sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
-        "bytes": 1245068
+        "path": "pdf/issue6782/mcp-11.0.0.9172/1480000-201900042-chemical-labeling-standards-2020.pdf",
+        "sha256": "26e40ca45d384a083750e6edeb6c36506c2079774a2735edd374c87acc7fbfdd",
+        "bytes": 1226700
       },
       "identity": {
         "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
-        "reference_pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+        "reference_pdf_sha256": "26e40ca45d384a083750e6edeb6c36506c2079774a2735edd374c87acc7fbfdd",
         "compat": "2022",
         "dpi": 96,
         "profile": "print",
@@ -4089,21 +4102,21 @@
         "radius_px": 2
       },
       "page_count": 103,
-      "accepted_at": "2026-11-26T04:01:25+09:00",
+      "accepted_at": "2026-11-26T21:45:42+09:00",
       "source": {
-        "pr": 9412,
-        "evidence_commit": "d388231783ed697fefdb1b6cbc5d79a5f72e2518",
-        "code_commit": "f3d137d9cbe36cae93f859baac3a29ae4a543f75",
-        "path": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/current-9415/chemical-wasm.tsv",
-        "sha256": "2b4dc472b3c8267e03c34e0a4a62fe65c3987f7caab39ce1cde6c6d744bcd573",
+        "pr": null,
+        "evidence_commit": "41d9768d126e694c26d67830538682bbed04a3d6",
+        "code_commit": "5c216e8e657309f9bb33928c6a6cd2747df77217",
+        "path": "mydocs/pr/assets/issue_6782/mcp-print-20261126/wasm-floor-mac-approved.tsv",
+        "sha256": "bf705fa2b36d8338bffe974ca0c193a9802286781a94b332526bfffea1c59f1d",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/current-9415/runs.tsv",
-        "condition_evidence_sha256": "ca3607ec633db47dc2500306fecd603487c50bcec0a972bff94464a3c737b333",
-        "precision": "최종 전쪽 TSV의 공식 소수 둘째 자리 표시값"
+        "condition_evidence": "mydocs/pr/assets/issue_6782/mcp-print-20261126/validation.json",
+        "condition_evidence_sha256": "99d03c3a995de7d6e8126c3f452ac2a9e858f5bc133f5a035ca94aaf4fefe610",
+        "precision": "같은 Mac 글꼴 조건의 devel·후보 전쪽이 일치한 결과에서 승인한 소수 둘째 자리 표시값"
       },
-      "minimum_display": "100.00",
+      "minimum_display": "99.65",
       "source_history": [
         {
           "pr": null,
@@ -4157,20 +4170,46 @@
           "page_column": "page",
           "document_filter": null,
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": 9412,
+          "evidence_commit": "d388231783ed697fefdb1b6cbc5d79a5f72e2518",
+          "code_commit": "f3d137d9cbe36cae93f859baac3a29ae4a543f75",
+          "path": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/current-9415/chemical-wasm.tsv",
+          "sha256": "2b4dc472b3c8267e03c34e0a4a62fe65c3987f7caab39ce1cde6c6d744bcd573",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/current-9415/runs.tsv",
+          "condition_evidence_sha256": "ca3607ec633db47dc2500306fecd603487c50bcec0a972bff94464a3c737b333",
+          "precision": "최종 전쪽 TSV의 공식 소수 둘째 자리 표시값"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "d1a51d27c37db47d06190506990171b54d021620",
+          "code_commit": "5c216e8e657309f9bb33928c6a6cd2747df77217",
+          "path": "mydocs/pr/assets/issue_6782/mcp-print-20261126/wasm-floor.tsv",
+          "sha256": "105e77fc891b9d4d9b1f83d13c49f4a63874526b324a9bb825fe65155809b272",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_6782/mcp-print-20261126/validation.json",
+          "condition_evidence_sha256": "99d03c3a995de7d6e8126c3f452ac2a9e858f5bc133f5a035ca94aaf4fefe610",
+          "precision": "새 한컴 Print의 픽셀이 달라진 쪽에서 사용자가 승인한 두 자리 표시값과 나머지 쪽의 기존 보호 하한"
         }
       ],
       "previous_source": {
         "pr": null,
-        "evidence_commit": "dc5368b3932bd39293a3e0067d809ec90ce641b1",
-        "code_commit": "330af8608ac741b14041d3e372284a6111346b9c",
-        "condition_evidence": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected-validation.json",
-        "condition_evidence_sha256": "3fc96e934c4918ae75ea10331b901e6ffc1c70d076c4fde80fdc8a9365cfe04b",
-        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/chemical/wasm/silhouette.tsv",
-        "sha256": "d55cc0d20d9cf48ab7af6139c63f9c7ce9d90ff2cd4d0c668a810fccb2ae63f3",
+        "evidence_commit": "d1a51d27c37db47d06190506990171b54d021620",
+        "code_commit": "5c216e8e657309f9bb33928c6a6cd2747df77217",
+        "path": "mydocs/pr/assets/issue_6782/mcp-print-20261126/wasm-floor.tsv",
+        "sha256": "105e77fc891b9d4d9b1f83d13c49f4a63874526b324a9bb825fe65155809b272",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
+        "condition_evidence": "mydocs/pr/assets/issue_6782/mcp-print-20261126/validation.json",
+        "condition_evidence_sha256": "99d03c3a995de7d6e8126c3f452ac2a9e858f5bc133f5a035ca94aaf4fefe610",
+        "precision": "새 한컴 Print의 픽셀이 달라진 쪽에서 사용자가 승인한 두 자리 표시값과 나머지 쪽의 기존 보호 하한"
       }
     },
     {
@@ -5485,9 +5524,21 @@
       "registration_receipt": "mydocs/pr/assets/visual-protected-baseline/updates/pr9352-9384-9407-20261125.json",
       "increased_row_count": 1,
       "evaluated_row_count": 4046
+    },
+    {
+      "pr": null,
+      "evidence_commit": "d1a51d27c37db47d06190506990171b54d021620",
+      "code_commit": "5c216e8e657309f9bb33928c6a6cd2747df77217",
+      "condition_evidence": "mydocs/pr/assets/issue_6782/mcp-print-20261126/validation.json",
+      "condition_evidence_sha256": "99d03c3a995de7d6e8126c3f452ac2a9e858f5bc133f5a035ca94aaf4fefe610",
+      "accepted_at": "2026-11-26T21:08:27+09:00",
+      "acceptance_basis": "사용자 승인으로 화학물질 표시 기준의 독립 한컴 Print PDF를 교체했다. 두 인쇄본의 픽셀이 달라진 19·20·21·91·92쪽만 새 실측값으로 조정했다.",
+      "registration_receipt": "mydocs/pr/assets/visual-protected-baseline/updates/issue6782-mcp-print-20261126.json",
+      "decreased_row_count": 10,
+      "evaluated_row_count": 206
     }
   ],
-  "updated_at": "2026-11-26T04:01:25+09:00",
-  "previous_table_sha256": "1f7ac7a52290acef829c03e15f2dd27e23c6a3450415266d4cc4067b70dfdcc8",
+  "updated_at": "2026-11-26T21:08:27+09:00",
+  "previous_table_sha256": "56c0b80121c204e4f1c2f025b7a6720661773deb9aadbfa9fe8b4229601f51c1",
   "deduplication_scope": "source_dataset_count·removed_duplicate_datasets·deduplicated_sources는 최초 통합의 이력이다. 현행 46개 데이터셋은 기존 18문서·36개 데이터셋의 수용 출처와 후속 상승 기록을 보존하고, 2026-11-18의 동일 최종 전쪽 실행에서 다섯 원본·10개 데이터셋을 추가한 결과다. 각 데이터셋의 source와 source_history를 따른다."
 }

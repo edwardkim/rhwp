@@ -967,6 +967,7 @@ impl TypesetState {
         &mut self,
         para_idx: usize,
         para: &Paragraph,
+        next: Option<&Paragraph>,
     ) {
         use crate::model::shape::{TextWrap, VertRelTo};
         if self.data.current_items.is_empty() || self.data.col_count > 1 {
@@ -1061,6 +1062,19 @@ impl TypesetState {
                     ctrl_idx,
                 )
                 .is_some()
+            {
+                continue;
+            }
+            // [#9396] 마지막 줄 앵커 개체가 다음 문단을 밀어낸 띠는 새 쪽의 저장 사다리
+            // 안에 있다. 한/글은 개체를 host 의 줄과 함께 새 쪽에 그린다.
+            if crate::renderer::layout::stored_band_after_last_anchor_line_offset_hu(
+                para,
+                next,
+                common,
+                i64::from(common.margin.top) + i64::from(common.margin.bottom),
+                ctrl_idx,
+            )
+            .is_some()
             {
                 continue;
             }

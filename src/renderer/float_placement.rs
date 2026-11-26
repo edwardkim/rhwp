@@ -5177,7 +5177,17 @@ pub(crate) fn stored_table_column_origin(
             .and_then(|placement| placement.stored_host_origin)
             .map(|origin| source.saturating_sub(super::px_to_hwpunit(origin, dpi)))
     } else {
-        Some(stored_textless_float_box_origin(para, next, source).unwrap_or(source))
+        // 저장 host 줄이 원점 + 문단 앞 간격에 있으면 그 줄은 표 위가 아니라 앞 간격 뒤의 자리다
+        // ([#8735] 2차 중간보고서 73쪽 pi887: 줄 1000 = 앞 간격 1000, 다음 줄 40580 =
+        // 0 + 141 + 40298 + 141).
+        let spacing_before_hu = styles
+            .para_styles
+            .get(para.para_shape_id as usize)
+            .map(|style| super::px_to_hwpunit(style.spacing_before.max(0.0), dpi));
+        Some(
+            stored_textless_float_box_origin(para, next, source, spacing_before_hu)
+                .unwrap_or(source),
+        )
     }
 }
 
@@ -5193,7 +5203,7 @@ pub(crate) fn stored_inline_host_line_top_below_float(
         .any(|control| matches!(control, Control::Table(t) if t.common.treat_as_char))
         .then_some(())?;
     let source = para.line_segs.first()?.vertical_pos;
-    let origin = stored_textless_float_box_origin(para, next, source)?;
+    let origin = stored_textless_float_box_origin(para, next, source, None)?;
     Some(source - origin)
 }
 
@@ -5207,6 +5217,7 @@ fn stored_textless_float_box_origin(
     para: &Paragraph,
     next: Option<&Paragraph>,
     source: i32,
+    spacing_before_hu: Option<i32>,
 ) -> Option<i32> {
     // 글자처럼 취급한 표는 host 줄 안의 내용이다. 줄 높이에 이미 들어 있어 표 상자 등식에 끼지 않는다.
     let mut floats = para.controls.iter().filter_map(|control| match control {
@@ -5246,7 +5257,9 @@ fn stored_textless_float_box_origin(
     // 정하므로 표 아래에 놓인 host 줄은 이 갈래의 증거가 아니다(issue7198 첫 쪽).
     if !line_owns_inline_table
         && (0..i64::from(source)).contains(&origin)
-        && i64::from(source) < origin + i64::from(table.outer_margin_top)
+        && (i64::from(source) < origin + i64::from(table.outer_margin_top)
+            || spacing_before_hu
+                .is_some_and(|before| i64::from(source) - origin == i64::from(before)))
     {
         return i32::try_from(origin).ok();
     }
@@ -9998,6 +10011,51 @@ pub(crate) fn is_para_topbottom_float(common: &CommonObjAttr) -> bool {
     !common.treat_as_char
         && matches!(common.text_wrap, TextWrap::TopAndBottom)
         && matches!(common.vert_rel_to, VertRelTo::Para)
+}
+
+/// 보이는 글자 없이 문단 기준 자리차지 표를 가진 문단. 이 문단의 흐름 원점은 그려지는
+/// 글줄이 아니라 표가 세로 오프셋을 재는 문단 상단이다.
+pub(crate) fn para_relative_float_table_host(para: &Paragraph) -> bool {
+    !para_has_non_whitespace_text(para)
+        && para.controls.iter().any(|control| {
+            matches!(control, Control::Table(table) if is_para_topbottom_float(&table.common))
+        })
+}
+
+/// 앞 문단 표의 이어지는 조각 바로 뒤에서 시작하는 [`para_relative_float_table_host`] 의
+/// 문단 상단을 흐름 위치에서 끌어올릴 거리(px).
+///
+/// 한/글은 그 문단의 저장 첫 줄을 조각 점유 끝에 두고(문단 위 간격은 조각 띠와 겹친다),
+/// 문단 기준 개체의 세로 오프셋은 문단 상단 = 저장 첫 줄 − 문단 위 간격에서 잰다. 다만
+/// 자리차지 표는 앞 조각 띠와 겹치지 않으므로 표 윗변은 저장 첫 줄보다 위로 가지 않는다.
+/// 그래서 끌어올림은 `min(문단 위 간격, 세로 오프셋)` 이다. 저장 첫 줄이 현재 흐름
+/// 위치(단 위끝 기준)와 같을 때만 그 등식이 증명된다([#8735] 2차 중간보고서 pi826: 조각 끝 =
+/// 저장 줄 17616, 한/글 표 윗변 = 17616 − 1000 + 오프셋 1089 + 바깥 위 여백 283,
+/// pi1826: 13048 − 1000 + 1668 + 283; 반례 19087555 pi3: 앞 간격 500 · 오프셋 0 이라 표
+/// 윗변 = 저장 줄 + 141).
+pub(crate) fn split_successor_float_host_origin_lift(
+    para: &Paragraph,
+    flow_from_column_top: f64,
+    spacing_before: f64,
+    dpi: f64,
+) -> Option<f64> {
+    let line = para.line_segs.first()?;
+    let offset = para.controls.iter().find_map(|control| match control {
+        Control::Table(table) if is_para_topbottom_float(&table.common) => Some(hwpunit_to_px(
+            signed_hwpunit(table.common.vertical_offset),
+            dpi,
+        )),
+        _ => None,
+    })?;
+    let lift = spacing_before.min(offset);
+    (para_relative_float_table_host(para)
+        && lift > 0.0
+        && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && !para.stored_text_partition_is_dirty()
+        && !para.cell_format_vpos_dirty
+        && (crate::renderer::px_to_hwpunit(flow_from_column_top, dpi) - line.vertical_pos).abs()
+            <= 1)
+        .then_some(lift)
 }
 
 /// 문단 기준 자리차지 표의 마지막 조각 뒤 흐름이 소유하는 바깥 아래 여백.
