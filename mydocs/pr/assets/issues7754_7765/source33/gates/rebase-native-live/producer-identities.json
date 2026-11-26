@@ -1,0 +1,25 @@
+[
+  {
+    "source_head": "5665e538292a0686a912f6a4d8950c55be89929a",
+    "producer_result": "c02d7932b79f712bb07e435445a8bd0f69998d6bcef1eea7226fbb26281e63e1",
+    "library_sha256": "921eb76f92541b4b88b4f2f4344ae0a85707397d8b6e4f3bfcbcc99fef40f333",
+    "bytes": 167749390,
+    "copied_after_native_build_before_next_native_build": true,
+    "role": "base",
+    "probe_binary_sha256": "bd2f190d93caadef6ee17a941eb513eec74b25dec867811b4d5c4df5745f5364",
+    "probe_source_sha256": "49d05b4af0a84643688a1da1cc5fec16cc0b0eae29168fd4882afa64f006c7d4",
+    "compile_output_rename": "The initial output base/candidate was renamed to base-runner/candidate-runner before retrying, leaving the data directories free."
+  },
+  {
+    "source_head": "adaa1963674e1a69c4369b80160ac6eb873bec1b",
+    "native_binary_sha256": "14d4ae261ee487dfa3603e13b928f16d38326462b31d828d56b0d7f4670bb6bb",
+    "library_sha256": "068e456f1a85f0213b12611eb215fdc24b83b60a19098470fc500d7dc1145515",
+    "bytes": 167630546,
+    "build_phase_at_copy": "candidate-wasm",
+    "time": 1795289253.8750606,
+    "role": "candidate",
+    "probe_binary_sha256": "cec007a5e037b5fbe923808d30c5db624302a6e41d202bc66300df11a0874afd",
+    "probe_source_sha256": "49d05b4af0a84643688a1da1cc5fec16cc0b0eae29168fd4882afa64f006c7d4",
+    "compile_output_rename": "The initial output base/candidate was renamed to base-runner/candidate-runner before retrying, leaving the data directories free."
+  }
+]

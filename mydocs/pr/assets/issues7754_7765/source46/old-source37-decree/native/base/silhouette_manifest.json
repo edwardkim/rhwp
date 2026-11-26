@@ -1,0 +1,1544 @@
+{
+  "key": "decree",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74
+  ],
+  "missing_pages": [],
+  "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/silhouette.tsv",
+  "tsv_sha256": "71762c0b40f0cb54b8b352b2c6865fbe64bc9c3a3d1f8e469f6e33541bdf2ed5",
+  "dpi": 96,
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "9aaa3d2cbd6dbc7ded2473791dd9a41da7d9ab3615370aff2584a17a9bb21486",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-001.png",
+      "pdf_sha256": "3103b3d4afc217d30f0ee9097fb1c071ff511680110fa395a27616eecc49c9f8"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "31ef6560023c5574212ab0f150e5d400e9f5daadaddca5d8c6295cf4bd670edd",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-002.png",
+      "pdf_sha256": "988edb7dbff25dc032aa3522110ad4ef24e052d84dff99abaaab62e3a776fed2"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "3afaa32a0f9186be9963ec6875e26c61ee6fc3d3837f6d4a6f00ad6fc6344f0d",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-003.png",
+      "pdf_sha256": "95e2ed719acc2bb4085d4deca28d46fab9a4f80d963db48a7e2a9faaf8835b72"
+    },
+    {
+      "page": 4,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_004.png",
+      "rhwp_sha256": "5a2d814a499ad9e7279b196a3cd9b1202e361188381f51222ef1f1b474c4ef27",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-004.png",
+      "pdf_sha256": "6fb0de143ecfcac26c9a88423071d449bdd83f275a3b97890696e7d01f25e66e"
+    },
+    {
+      "page": 5,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_005.png",
+      "rhwp_sha256": "0b3c9607d945f8bc2ca068f49021efc85227265807a8b31fd9f4ac0547b6d218",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-005.png",
+      "pdf_sha256": "e5f87d01414230dce7239b3f56a730673c071b35eadfa58d6d27d5e8a7738af9"
+    },
+    {
+      "page": 6,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_006.png",
+      "rhwp_sha256": "d9f1d1f39cf34951ce94b4a65aaff6926cc0beabe0249334d670f1412012cf36",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-006.png",
+      "pdf_sha256": "91234cf434704fbfbc4f62d16820fc150c019e8a840a4bbb36e84812231a611f"
+    },
+    {
+      "page": 7,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_007.png",
+      "rhwp_sha256": "2c807814ed5d866d0622e2f70ce978674ee109bcbd769644c76da0928073f8be",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-007.png",
+      "pdf_sha256": "fea8aaec2c25dde85d5491de8928f3f021ec5fe85a47eb67946751a132859271"
+    },
+    {
+      "page": 8,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_008.png",
+      "rhwp_sha256": "fdf69c7787fe551fb0662ebe20365e3d6de80e8c3a316cac71da36f2bec5190e",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-008.png",
+      "pdf_sha256": "892d11724c718b2ba2fdf1645fb6cb7b30dc84eb8b16cc087757455f7f3003fb"
+    },
+    {
+      "page": 9,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_009.png",
+      "rhwp_sha256": "9c1dac370875abbd8a3c85232cb6755ac8595c244872ac62decdd20cf32fa703",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-009.png",
+      "pdf_sha256": "df08b6f3a37f76ada2686054c03ddcefd3b9825a2f3f304675d0aafb797fb2be"
+    },
+    {
+      "page": 10,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_010.png",
+      "rhwp_sha256": "00f2e5a536f68b94403059432d139ce57ef23c4e7241a49bfccab1c592e31c95",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-010.png",
+      "pdf_sha256": "ac3c378c863f63eb58c330b13246face71e6da695df79f6a952a3c3f57ed218d"
+    },
+    {
+      "page": 11,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_011.png",
+      "rhwp_sha256": "541f59cfe5680717124eb8a1c990b01bbbc0e94e465b1aff1a8bab3bfcc792ff",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-011.png",
+      "pdf_sha256": "02abaad3d040e80495904cb598b37fb646040704d7002781217112a35864a86d"
+    },
+    {
+      "page": 12,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_012.png",
+      "rhwp_sha256": "dba522290d83c14de12b24df3b1dce77ac305d7caa3f82b967830d13226c550b",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-012.png",
+      "pdf_sha256": "f6ec5770c09ab1aa55cbfe9bc88f1e666529b4ac191cb6ad416f26b15184c469"
+    },
+    {
+      "page": 13,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_013.png",
+      "rhwp_sha256": "b5a7d4bb08c6d51fa1494df23c21d31117ee00b743e4a923fd1ec7f5241036a8",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-013.png",
+      "pdf_sha256": "7f0cb535bf95a4b2477fc4a0fa4ae1acaa33023877c69a139413edf920688c90"
+    },
+    {
+      "page": 14,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_014.png",
+      "rhwp_sha256": "234fda6e925acef8dbc13c11c30f5a5fcc50f001c0145db463ef6e3eaae6ee47",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-014.png",
+      "pdf_sha256": "6bc32290c28a1d4dabd6c787d0be790796e9911b13cbfc66a17ff2da79460f21"
+    },
+    {
+      "page": 15,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_015.png",
+      "rhwp_sha256": "3ace04cc7c53bf14ac26e85f8d0241b0e5abd569bf25ee07ca8e94348e22b6a3",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-015.png",
+      "pdf_sha256": "9c74ac55260aa371e0ffdcbb685624ee7c0341afbce3458aad8693a08d51bf87"
+    },
+    {
+      "page": 16,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_016.png",
+      "rhwp_sha256": "241d7aa919ad19bb2db278dcd4dae975074ddf1754a718b15d5d44ce4f7e6010",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-016.png",
+      "pdf_sha256": "a2428a50d6283f6a45682fcb6794eee3e9a1c710ce5ba8e1fc45e6f9ff1823b1"
+    },
+    {
+      "page": 17,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_017.png",
+      "rhwp_sha256": "3386d8b61afea14a4ab37459ce9b7ffd3313bcc66c9a85755dc4cf0f1713a736",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-017.png",
+      "pdf_sha256": "0475e3f441d61a2e1296a2dd7948da24ab0a60b823f9810358d7db73618934e8"
+    },
+    {
+      "page": 18,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_018.png",
+      "rhwp_sha256": "0a1dc444e6b25a00f7e9a5de071339c664c92538d5cc5263d6ed7a4e281a007f",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-018.png",
+      "pdf_sha256": "8f0bcfa6bf282f4f5157f2d8e5bd1866ee89508c0a95ba3e33a8ab3689cfc35f"
+    },
+    {
+      "page": 19,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_019.png",
+      "rhwp_sha256": "5b513cead45b5f73872dcbc0f73c8dbbc1b48f5be2259a7abde6cdf6e2b800a0",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-019.png",
+      "pdf_sha256": "04c86c7fcd67f6ad5527b8293aa4ea9c1fbf20964fd07e0f71f3602b2dc4908a"
+    },
+    {
+      "page": 20,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_020.png",
+      "rhwp_sha256": "81f3859be83403df61786f562df8ec8b3652861e45e87a0aeb154186c15eea66",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-020.png",
+      "pdf_sha256": "45e9fc5b5c255c8d5e8f3adc051368a5dea135cb31ea304739f92656d480be27"
+    },
+    {
+      "page": 21,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_021.png",
+      "rhwp_sha256": "91c568bee7f5102b715bf191489564165fbdff4fd4efde513a30b2e6bb63ba56",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-021.png",
+      "pdf_sha256": "f409c0aa5bd34c868b63024ca9b275e875c46dffef828a665cee3a7ba6291d64"
+    },
+    {
+      "page": 22,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_022.png",
+      "rhwp_sha256": "2700fe79055ea35a2a4f67bd3bd010d73ff5da68324cc013352f5e003df99715",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-022.png",
+      "pdf_sha256": "6af0285837c4c5fbde41129dfca00e6ab74d013a141065a2a077b98f0549e825"
+    },
+    {
+      "page": 23,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_023.png",
+      "rhwp_sha256": "8ac843a49ae75ab00843fcb12614eee49b8d0ad1d906de88b89152ca7390e048",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-023.png",
+      "pdf_sha256": "4eb95d0771fe6694c65a4a9cc4c15fb6b714d318c1bef1b7553e635c639050db"
+    },
+    {
+      "page": 24,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_024.png",
+      "rhwp_sha256": "4a8d28bc0cc5307f78599ac64ec3eda0ee42f92670996ed18fa91e5c62d2bf8a",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-024.png",
+      "pdf_sha256": "6ea267f646ceece264581b390ce7b2021b0b29f36a38bf8ff7a8808bc285366e"
+    },
+    {
+      "page": 25,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_025.png",
+      "rhwp_sha256": "a346588b5483dd69c3b9f8040f5e7067e1f1dc67a6db2f8117edf6c63bdf1500",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-025.png",
+      "pdf_sha256": "46d5de4c79f42a64296c7d238ff41319a774a15ccc9c7afa33aa5f0dfaea0dd3"
+    },
+    {
+      "page": 26,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_026.png",
+      "rhwp_sha256": "fbc8facc52f23e836f176838e25915c363541733be4bbf5118bbe63a783eeafb",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-026.png",
+      "pdf_sha256": "2ff20e376a7bfdf654363ee39b9be7f5ac1beff9636b730d39a0a9bba716b3d2"
+    },
+    {
+      "page": 27,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_027.png",
+      "rhwp_sha256": "779c43bb2a35d7c20a6ec2a4c865758b4ed739cdb83ee9155dcf60b091463016",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-027.png",
+      "pdf_sha256": "34583f7c7fd939ada3e5ef68ee80dac789ba63049a9ac34cd1a5c7db43cd4438"
+    },
+    {
+      "page": 28,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_028.png",
+      "rhwp_sha256": "5c14a3efd6210a44ffe596b9621e68fbc54e6ce4368165318bae3b81d6c11e95",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-028.png",
+      "pdf_sha256": "d8babc282f297e2c2f90d8b0305574f6f6a6cf647a2fe27ab272fe1b4ee904e9"
+    },
+    {
+      "page": 29,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_029.png",
+      "rhwp_sha256": "f7409130250b2e95f4c6c5f191fc44ba0a6e7925a5065ca7b04fcfad3c73cec9",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-029.png",
+      "pdf_sha256": "12e799612f4b3e14908b36af4cd979e90c1ff0d20bc505ce363ad36d51bf632b"
+    },
+    {
+      "page": 30,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_030.png",
+      "rhwp_sha256": "9390bc4f15370b175ca4c8bda2d36fb87a4a8634729b9649531f0915abed3855",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-030.png",
+      "pdf_sha256": "008ef1ef3f6e0951f864da79e12edc612c84e1e662f31c2846b446bce15768f1"
+    },
+    {
+      "page": 31,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_031.png",
+      "rhwp_sha256": "c11651af36242ed70ee4a4a5a9b230c729405d500d9dab260a883cfc010cf104",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-031.png",
+      "pdf_sha256": "e7737e6f22b0ece0757f3d0536a8e71a8ad3b7467fa450857f577acc2bfe8e65"
+    },
+    {
+      "page": 32,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_032.png",
+      "rhwp_sha256": "66c1120085546451d64445ec59a69e2044483f1fe3e2b8beec4a9969ebebae46",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-032.png",
+      "pdf_sha256": "cb96012f1d8e222e7eec5d8cfab031130bd9f67050ac455f41a88dab2d0f4e22"
+    },
+    {
+      "page": 33,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_033.png",
+      "rhwp_sha256": "d45f77159f1f8b7e2b258cd1439fe1042436aece34d22267ec0e7e0d44d65157",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-033.png",
+      "pdf_sha256": "726af9d6bbcf720acd2bb79dd080daa548f5a2c20ab971a438cb2ebd35d6aded"
+    },
+    {
+      "page": 34,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_034.png",
+      "rhwp_sha256": "c827ccc2eb9b7ae82fca9868a2f8ebfd3ca88ee62bf4ca77578c1f570b4adc21",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-034.png",
+      "pdf_sha256": "7996190dcff2a399727bce5623fa406fd9fc15b89604bf322aa90e1adeb987f2"
+    },
+    {
+      "page": 35,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_035.png",
+      "rhwp_sha256": "698e6b0c9d6ae0551a421b8d6a815578a51179111f39bce6d322c93e9d4605ad",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-035.png",
+      "pdf_sha256": "ab3fd4d87be660a958706298ad733fcfaf03940b2ed535f0d9f0d8b5f2385b64"
+    },
+    {
+      "page": 36,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_036.png",
+      "rhwp_sha256": "953177d649d0874212dba37edbfd61d0ab97f0eada592a87393c17550397afa1",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-036.png",
+      "pdf_sha256": "5ab93b602815ed057663cad0da1143f20f953c6d194fa2b2f88375a290c8b0d4"
+    },
+    {
+      "page": 37,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_037.png",
+      "rhwp_sha256": "a2af092f43326482ace4af4a8a83a5d3d24ee26b79d47a25af39472389c0c8cf",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-037.png",
+      "pdf_sha256": "0c543301a679dd18905ad784e8e2327386343ee6049398785286cc6c36d67cb4"
+    },
+    {
+      "page": 38,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_038.png",
+      "rhwp_sha256": "f2a981e586395e25386fac2135b8f819656fa4b7a4b36c7bc4c1208386db326d",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-038.png",
+      "pdf_sha256": "2bf92f7eee9a0f9f486a5630908050b28ae7358f4475a2f6589169d6bfad9871"
+    },
+    {
+      "page": 39,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_039.png",
+      "rhwp_sha256": "8067fdf5729422d69396ecd5449a05286efb4a1bacc697fec6681f841a851538",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-039.png",
+      "pdf_sha256": "1af77701b391590c0e26bb27a2fbcc5fbb4e3d7a04c91b26d80c36979f7ad779"
+    },
+    {
+      "page": 40,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_040.png",
+      "rhwp_sha256": "c77612d9494897756ec687d514d9f7b67b4f6fc6efbd1c5b7789aecc37652e46",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-040.png",
+      "pdf_sha256": "236c86a144c238d39a18efdadf6907e89107e10d94fbc5b543d36fc3a32ee086"
+    },
+    {
+      "page": 41,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_041.png",
+      "rhwp_sha256": "bbe089bf1aab87d649bbe629de48c8e0b27d7a4125cdb3bcfa9ef8f4a4d59f64",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-041.png",
+      "pdf_sha256": "bd04c4a018e7fc54f30bbf5210cc50dbc2067c8b6a9a1edd8584f7316e86766c"
+    },
+    {
+      "page": 42,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_042.png",
+      "rhwp_sha256": "49b1bd72b58bc00be63d01e2a345505429bd8a85cce1794ce02510eac02be2eb",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-042.png",
+      "pdf_sha256": "b9559be7f46b23815fc697a4a10d9a9133fb70a3582fffe85645e28480d3e119"
+    },
+    {
+      "page": 43,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_043.png",
+      "rhwp_sha256": "19bb0a857ae9ce513a906cccdfae1031eab20c392ee60348a3a11790f0c16220",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-043.png",
+      "pdf_sha256": "76d4d98ef40ff786a485466056cfe7de4db24c45833311da96d6ab7d1a72d6c2"
+    },
+    {
+      "page": 44,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_044.png",
+      "rhwp_sha256": "01d823d61102b81423caf74ddc8e92b8ba610b14f1c49aa1ee3ad2990e1959f6",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-044.png",
+      "pdf_sha256": "f56423019ec93acacefe052c978fe0c4763742a2dbbcad1c45508ea21b5c407c"
+    },
+    {
+      "page": 45,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_045.png",
+      "rhwp_sha256": "9127f76ccddac51fc4b6158d21f231145d48f5929603f2bc7170244b6446c9a2",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-045.png",
+      "pdf_sha256": "78a8086af41d8ab57f9cb884135e4386f3e807b48fdc577e9b7afa88b1a457ff"
+    },
+    {
+      "page": 46,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_046.png",
+      "rhwp_sha256": "b1eb7c7e2606f025767604447d38c9bbfb5b746847a1a28e2b628d8e30d65d9f",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-046.png",
+      "pdf_sha256": "0d3a2858442f15c2ed7d4800f76effe6273680256a76934a791acb3692e75e93"
+    },
+    {
+      "page": 47,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_047.png",
+      "rhwp_sha256": "9091e42d33489e91a642e0928be26bd9686f32848d9e851dbe02745e0fc8e3fd",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-047.png",
+      "pdf_sha256": "7a2e7e5c854ef8e564ea80b00ae20bb33f098056dcd8bff2be806109eaded05f"
+    },
+    {
+      "page": 48,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_048.png",
+      "rhwp_sha256": "a455859bd6ef3265c6e4c7842086e808bb5f96f1eeeb5951bad8229ba7b2247c",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-048.png",
+      "pdf_sha256": "822105dc76821426c9073bb7ea367ea786631f582e4a400dd034f6380834d3b4"
+    },
+    {
+      "page": 49,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_049.png",
+      "rhwp_sha256": "249401bc3ba06038b881c4101e9f836e3d3f3cfd2f5890a5436c9adc435249f9",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-049.png",
+      "pdf_sha256": "6c1bc5a7100d2234d6785d2392866b36d223bc4ac5062a6c19c16ed23f9e7397"
+    },
+    {
+      "page": 50,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_050.png",
+      "rhwp_sha256": "2d629556d4e0b2f46aca2dc19bc9080c2e55a28cf4c0a80ca7ada82a2b6ef722",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-050.png",
+      "pdf_sha256": "3c73b0467b043e579a3871efc377b90f05290202621ca1ee5b01970816325225"
+    },
+    {
+      "page": 51,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_051.png",
+      "rhwp_sha256": "8ce4c12b0d54b0c86a8fc8569d5f889bc28d30225c11040cd6d1a27188c7ee91",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-051.png",
+      "pdf_sha256": "ee54ab6e7264cf64d14a86f2c2d82df0ed183660bdd2c4bd6ab25f573125f214"
+    },
+    {
+      "page": 52,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_052.png",
+      "rhwp_sha256": "d6a16cc69aa087e3970167a6ca0a059847fa00238df369f72988b6c9b7400729",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-052.png",
+      "pdf_sha256": "a01a2b8d55925e3619a11e4120075c9ca9b92d2da1cd33d894ad5eab08975647"
+    },
+    {
+      "page": 53,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_053.png",
+      "rhwp_sha256": "c1cb05b926d705da585d4d6d82abef5937f64e78fb6fbe018feec603a9ffa9fc",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-053.png",
+      "pdf_sha256": "ffc1e0009986d1614bbc1b61ee6da832e557243cf3262921990b01ca986f5304"
+    },
+    {
+      "page": 54,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_054.png",
+      "rhwp_sha256": "1c18484a839cd5f64cf3491dcdb1b3bc59835378a683abf744ea99f548aed303",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-054.png",
+      "pdf_sha256": "5df65c776a560bb2ad8fa27986470ab78b4cd741af8a6be396c9c158945405d1"
+    },
+    {
+      "page": 55,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_055.png",
+      "rhwp_sha256": "0e23cea1c2b0932ce4ae24254cc381cf512ad06dd2eb4820da12fd71df9f46a7",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-055.png",
+      "pdf_sha256": "1876a3853dad4027a7f00b7cd698e2fd6da2adb4d0f818e6c376c56e2e3a03b8"
+    },
+    {
+      "page": 56,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_056.png",
+      "rhwp_sha256": "71ce070211822d8be05872aa204d07357bb134e88e742d054dd0bb89885b9dff",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-056.png",
+      "pdf_sha256": "3e84d27397b08ee3da06a6f1037a075dd6dc85d67acab42f5157fc8650dccb2e"
+    },
+    {
+      "page": 57,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_057.png",
+      "rhwp_sha256": "da4cc0926a9a1690a2e8cdfb8f0e4667b74f60f8da5ef189ed5f88add9cc5a26",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-057.png",
+      "pdf_sha256": "585be178876a1e95c8f0cd57158a31109db598f6489ab9e3cd400ea09c8aef22"
+    },
+    {
+      "page": 58,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_058.png",
+      "rhwp_sha256": "f9f8408c36608fcb34524310a0cd4c08398b8370851bb85471f4d29718b27274",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-058.png",
+      "pdf_sha256": "6904719800983655538d10652395a0cd98fff3037a0eea3232c8fceef4fb960c"
+    },
+    {
+      "page": 59,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_059.png",
+      "rhwp_sha256": "c628afbf1209b645066a0281dc06766e9e82306bfba9562f65711c7ceade724e",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-059.png",
+      "pdf_sha256": "c2c0a4995b92c68b69673f086c995310e818a4cbf1eff0d2a6593c0f7229ea3e"
+    },
+    {
+      "page": 60,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_060.png",
+      "rhwp_sha256": "8d7627f21f85b98c6b3583b77d7ba6c4bc2316e123c6509cbecdfb0d9d727b9e",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-060.png",
+      "pdf_sha256": "7296d838d41a82909ff7c8ff836132f4e3c8f29b4e6569c4b1657a54e635d0e5"
+    },
+    {
+      "page": 61,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_061.png",
+      "rhwp_sha256": "37d9cd7e1d62bc6a0666153faec1c95ad600c7c3384af156f4eeb89f7c2621da",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-061.png",
+      "pdf_sha256": "521455a134b560c30a07854766add994b58c118c77dd322f2af3952e5bc02056"
+    },
+    {
+      "page": 62,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_062.png",
+      "rhwp_sha256": "78608c8b7c130eb56ba1c6389d5f6c05cd71a185a708676548e826d7966cc8ef",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-062.png",
+      "pdf_sha256": "98219ea1780827186ef8672b316e7cecb19263c6aeb78db5a4a4eaeb50067f1b"
+    },
+    {
+      "page": 63,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_063.png",
+      "rhwp_sha256": "11a0d91a260bbbdfd5d0cfdfe6e329e7181128df0be186000a705d5289ff832d",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-063.png",
+      "pdf_sha256": "db82ae27b881f5b99f5a2e09323611b711d82c4fc0a034192fb270d641c1052b"
+    },
+    {
+      "page": 64,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_064.png",
+      "rhwp_sha256": "0e6c2cf03c9a73f254827444a993a036e72bfc08ae02b255536f382a0c24c224",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-064.png",
+      "pdf_sha256": "147997baa9ff46771ef98db6dd17a78e47833a4d4a4dcffff495e03ea9843a00"
+    },
+    {
+      "page": 65,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_065.png",
+      "rhwp_sha256": "46428df00e9089d4e7d3d4f94191fbef617c27a0287b0293252e740033da4545",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-065.png",
+      "pdf_sha256": "7a088ffcdc35feee91d6bcddfeb8971b0524ed1563e9663888f3a12ca78db959"
+    },
+    {
+      "page": 66,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_066.png",
+      "rhwp_sha256": "7f762b26abafeecb8e01b486068fd5d15ba48a8f298f51c0c1e0cf70c39d743d",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-066.png",
+      "pdf_sha256": "65705fd3d23021fa6b43ee2f1987af7d1024e756204af981e1e7a7a070ac331e"
+    },
+    {
+      "page": 67,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_067.png",
+      "rhwp_sha256": "27f921b25e83e020ce7caafd887eaa524db256a7697c50ad33973b0b998b7a70",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-067.png",
+      "pdf_sha256": "1141070c504a71b008727b8241334c14467d1437ca1150d16abb2b1b929bb6c5"
+    },
+    {
+      "page": 68,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_068.png",
+      "rhwp_sha256": "86e1af53a4f346f0b8f4f6ca2dad9de9c2249774b77d91089399150bd2155e08",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-068.png",
+      "pdf_sha256": "1f771272ad985052a0f581dd74f82cfe0c11a2a4d173d0cf973c5d0c1f05377a"
+    },
+    {
+      "page": 69,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_069.png",
+      "rhwp_sha256": "0d97ec317dceb6b2732f7b3c17c0b7e53dc12eccfc07af0a726c0aab0f09be6d",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-069.png",
+      "pdf_sha256": "5290a55f9213d9eb61989ba460da1398fb148ef4fd6ead86cc3b601cc0552fdc"
+    },
+    {
+      "page": 70,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_070.png",
+      "rhwp_sha256": "6616d50c4c15e1ac79ae16bcd64dca41e61a6b2b7043728b3e693ec160ea9b82",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-070.png",
+      "pdf_sha256": "503b84936ec7a8113726944c7d9ed4aa5353a0985ecb28c0d14228d001e5b67d"
+    },
+    {
+      "page": 71,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_071.png",
+      "rhwp_sha256": "49c881c9de8a318610fc9549ed11041c1d4293a283e039dc91114ebc9c0bc54c",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-071.png",
+      "pdf_sha256": "044843739ce2a7ab113fa908978aa98f2a7d79095314c3862bf51bffea6da7f9"
+    },
+    {
+      "page": 72,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_072.png",
+      "rhwp_sha256": "2d3affb2f63204645bd259e716d753712a4345c75bf04514570df3d8cd1e92da",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-072.png",
+      "pdf_sha256": "ce759ba14e1fa512ae958060865e6d0dd30bf8985384e3341b2b319c9207db3f"
+    },
+    {
+      "page": 73,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_073.png",
+      "rhwp_sha256": "1e7b28c11af6ac0c4185332cf30a6312bc225d959ba2f3309b66a0629e330c60",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-073.png",
+      "pdf_sha256": "6512e99c036adf648658a6d62514bd4bd3417e22a8ac6163186cfc0cf4ef06f0"
+    },
+    {
+      "page": 74,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/rhwp_png/rhwp_074.png",
+      "rhwp_sha256": "e804bba85bcee1483ced49dc652901656f204d7035c450e757251e0cfc4998f1",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/pdf_png/pdf-074.png",
+      "pdf_sha256": "f120a769bf8bceed29f3c2d00c9fe7639c7e5211806b37059ba033f708bde30e"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 49167,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 111363,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 101721,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 42393,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 5,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 115440,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 6,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 80331,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 7,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 46455,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 8,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 84158,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 9,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 27316,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 10,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 29923,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 11,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 31370,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 12,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 30374,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 13,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 79975,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 14,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 34536,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 15,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 46797,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 16,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 61666,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 17,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.98245,
+      "silhouette_raw_unmatched_pixels": 10,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 56988,
+      "tolerant_content_match_percent": 99.98245
+    },
+    {
+      "page": 18,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 60299,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 19,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 38024,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 20,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 86809,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 21,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 74272,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 22,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 110521,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 23,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 114895,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 24,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 49805,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 25,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 47155,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 26,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 51776,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 27,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 8890,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 28,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 110984,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 29,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 85969,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 30,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 63617,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 31,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 44155,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 32,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 25021,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 33,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 28829,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 34,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 22704,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 35,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 29714,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 36,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 74929,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 37,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 80474,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 38,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 64304,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 39,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 35176,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 40,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 67938,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 41,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.98219,
+      "silhouette_raw_unmatched_pixels": 10,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 56152,
+      "tolerant_content_match_percent": 99.98219
+    },
+    {
+      "page": 42,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 79734,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 43,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 109709,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 44,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 102472,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 45,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 41908,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 46,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 114919,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 47,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 81984,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 48,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 47943,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 49,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 67612,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 50,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 24939,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 51,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 29060,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 52,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 43028,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 53,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 29554,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 54,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 89000,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 55,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 36764,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 56,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 26832,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 57,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 66601,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 58,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.9811,
+      "silhouette_raw_unmatched_pixels": 10,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 52910,
+      "tolerant_content_match_percent": 99.9811
+    },
+    {
+      "page": 59,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 71222,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 60,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 113501,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 61,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 107206,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 62,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 41991,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 63,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 113170,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 64,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 116899,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 65,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 45247,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 66,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 25023,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 67,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 28819,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 68,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 22432,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 69,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 29717,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 70,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 49240,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 71,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 28607,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 72,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 42122,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 73,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.98013,
+      "silhouette_raw_unmatched_pixels": 10,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 50321,
+      "tolerant_content_match_percent": 99.98013
+    },
+    {
+      "page": 74,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 74259,
+      "tolerant_content_match_percent": 100.0
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+    "pillow_version": "12.3.0",
+    "pillow_core_sha256": "94310f4a073e9773a067df88513804649f50a974f78bd85a52c52d21170783f2",
+    "zlib_version": "1.3"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 74,
+      "pdf": 74
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617"
+    },
+    "pdf": {
+      "path": "pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+      "sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9"
+    },
+    "git_head": "914f408caafc3e6159e26880b8561ab8518aea7c",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "c3a60c2d34dea583ac6516417a55175b299d17ec8edf480abf4509cd82b252cb"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+      "pillow_version": "12.3.0",
+      "pillow_core_sha256": "94310f4a073e9773a067df88513804649f50a974f78bd85a52c52d21170783f2",
+      "zlib_version": "1.3"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-base1a27-optimized",
+      "path": "output/pr-review/issue7754-nine/bin/rhwp-base1a27-optimized",
+      "sha256": "97ae20cc86799d72e8d4388112f6e74c6c1b395f8f1c81bad088f2e6b3144a44"
+    },
+    "native_webfont_fallback": {
+      "registry_sha256": "35f3e1ac64348a6497b50cc98c7235a8adcb4c99bfa78fec6302bde6f525a299",
+      "mappings": {},
+      "document_glyph_fallbacks": [],
+      "unmapped_sources": [],
+      "local_document_substitutes": [],
+      "resources": [],
+      "module_sha256": "c6f7a75ee9ff965e004bf029a7c4211240e2e359dc01c2635efbe883222819d1"
+    },
+    "raster_backend": "native-skia",
+    "png_exporter_sha256": "c45e30335911d290b888a6d5b1bdae99caab701bd9949cf0d0698c7b36c8b1e9",
+    "layout_generation": "2022",
+    "print_png_rgb555": true,
+    "print_png_rgb555_reference_metadata": {
+      "creator": "Hwp 2022 0.0.0.0",
+      "producer": "Hancom PDF 1.3.0.550"
+    },
+    "font_environment": {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source63-decree-selected-programs/decree-native.json",
+      "sha256": "751a9c20401b9da40d711240848035806055b7dcd4830e9339d9801fb6031fcf"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "/opt/hnc/hoffice11/Shared/TTF/Hwp/HMKMM.TTF",
+          "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+        },
+        {
+          "path": "/home/tsjang/.local/share/fonts/rhwp-protected-reference/49dd1ef0caa6-H2MJSM.TTF",
+          "sha256": "49dd1ef0caa6989a7dd95b484fdd052cbc846f6514c0c08421ed03a6cb1669cc"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-canonical-fonts-20261122/820d3212f688-H2GTRE.TTF",
+          "sha256": "820d3212f688b546a327ea43a7202e3379cdbbd767ebac9753997e3f3d285171"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-canonical-fonts-20261122/e50c7200521c-H2HDRM.TTF",
+          "sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831"
+        }
+      ]
+    }
+  },
+  "checkpoint": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/silhouette-checkpoint.json"
+}

@@ -13,7 +13,15 @@ const settle = page => page.evaluate(() => new Promise(resolve =>
 runTest('#7442 중첩 표 실제 포인터 조작', async ({ page }) => {
   await loadApp(page, `/?url=${encodeURIComponent(`/samples/${fixture}`)}`);
   await page.waitForFunction(() => window.__wasm?.fileName?.includes('issue1994'));
-  await waitForCanvas(page);
+  const openPage = await page.waitForFunction(() =>
+    [...document.querySelectorAll('button')].find(button =>
+      ['대체 글꼴로 보기', 'View with substitute fonts'].includes(button.textContent?.trim()))
+    ?? document.querySelector('#scroll-container canvas'));
+  await openPage.evaluate(element => {
+    if (element instanceof HTMLButtonElement) element.click();
+  });
+  await openPage.dispose();
+  await waitForCanvas(page, 30000);
   await settle(page);
   assert.equal(await page.evaluate(() => !!window.__inputHandler.cachedCellBboxes), false, 'cold cache에서 시작');
 

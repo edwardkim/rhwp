@@ -1,0 +1,73 @@
+{
+  "reference_pdf": "pdf/HWP5-nopassword-123456-hwpx-2024.pdf",
+  "reference_sha256": "b20bd5c0b3716818113cc6bc2a18ba768325b338a3a16840e3680e124cfea01d",
+  "method": "PyMuPDF rawdict Type3 ToUnicode origins; no renderer-derived expected coordinates",
+  "page": 2,
+  "dpi": 96,
+  "coordinate_transform": "px=pt*96/72",
+  "records": [
+    {
+      "pdf_unicode": "U+F53A",
+      "source_cluster": "U+1112 U+119E U+11AB",
+      "origin_pt": [
+        172.9199981689453,
+        115.07999420166016
+      ],
+      "origin_px96": [
+        230.55999755859375,
+        153.43999226888022
+      ],
+      "next_character": "글",
+      "next_origin_pt": [
+        184.9199981689453,
+        115.07999420166016
+      ],
+      "next_origin_px96": [
+        246.55999755859375,
+        153.43999226888022
+      ]
+    },
+    {
+      "pdf_unicode": "U+F53A",
+      "source_cluster": "U+1112 U+119E U+11AB",
+      "origin_pt": [
+        127.91999816894531,
+        264.47998046875
+      ],
+      "origin_px96": [
+        170.55999755859375,
+        352.6399739583333
+      ],
+      "next_character": "글",
+      "next_origin_pt": [
+        139.9199981689453,
+        264.47998046875
+      ],
+      "next_origin_px96": [
+        186.55999755859375,
+        352.6399739583333
+      ]
+    },
+    {
+      "pdf_unicode": "U+F53A",
+      "source_cluster": "U+1112 U+119E U+11AB",
+      "origin_pt": [
+        127.91999816894531,
+        301.91998291015625
+      ],
+      "origin_px96": [
+        170.55999755859375,
+        402.5599772135417
+      ],
+      "next_character": "글",
+      "next_origin_pt": [
+        139.9199981689453,
+        301.91998291015625
+      ],
+      "next_origin_px96": [
+        186.55999755859375,
+        402.5599772135417
+      ]
+    }
+  ]
+}

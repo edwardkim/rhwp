@@ -1,5 +1,6 @@
 //! 관계형·고정형: re-03-latin-only-hancom의 PDF API와 합성 PaintOp의 이미지 픽셀·화살촉 vector/거부 계약.
-//! 주석 갱신: 2026-11-12T08:34:52+09:00; 직전 파일 커밋: 2026-11-06T18:07:13+09:00 (8829dd8f3947d2b9a3525ded8919370fa19dae94).
+//! 주석 갱신: 2026-11-24T07:08+09:00. 직전 파일 커밋은 2026-11-24T03:53:50+09:00 (fd888fbff2652310a229520d0ebdd55ac8177375).
+//! #9276은 저장소의 Noto Sans KR 원본으로 PDF 부분 임베딩, 사용 글리프의 윤곽·전진폭과 문자 추출을 검사한다.
 //! 실물 페이지의 조판 좌표를 고정하는 검사가 아니므로 이 assertion의 raw 시각 측정값은 비해당이다.
 //! 합성 알고리즘 계약과 별도의 Native/fresh WASM 실물 검증을 구분한다.
 //! 근거: mydocs/pr/assets/seo_rii_20261030/README.md.
@@ -1991,63 +1992,6 @@ mod metafile_font_snapshot {
         "/tests/fixtures/fonts/RHWPHostFixture-Regular.ttf"
     ));
 
-    // 이름만 고유하게 바꿔 시스템·다른 병렬 검사의 동일 family 설치와 격리한다.
-    // glyph·cmap·hmtx는 저장소 소유 합성 프로그램 그대로이며 정상 SFNT checksum을 유지한다.
-    fn isolated_program(family: &str) -> Vec<u8> {
-        assert_eq!(family.len(), SOURCE_FAMILY.len());
-        let mut bytes = FONT.to_vec();
-        for (from, to) in [
-            (
-                SOURCE_FAMILY.as_bytes().to_vec(),
-                family.as_bytes().to_vec(),
-            ),
-            (
-                SOURCE_FAMILY
-                    .encode_utf16()
-                    .flat_map(u16::to_be_bytes)
-                    .collect(),
-                family.encode_utf16().flat_map(u16::to_be_bytes).collect(),
-            ),
-        ] {
-            let positions: Vec<_> = bytes
-                .windows(from.len())
-                .enumerate()
-                .filter_map(|(index, data)| (data == from).then_some(index))
-                .collect();
-            for index in positions {
-                bytes[index..index + to.len()].copy_from_slice(&to);
-            }
-        }
-        fn checksum(data: &[u8]) -> u32 {
-            data.chunks(4).fold(0u32, |sum, part| {
-                let mut word = [0u8; 4];
-                word[..part.len()].copy_from_slice(part);
-                sum.wrapping_add(u32::from_be_bytes(word))
-            })
-        }
-        let tables = u16::from_be_bytes(bytes[4..6].try_into().unwrap()) as usize;
-        let mut head = None;
-        for index in 0..tables {
-            let record = 12 + index * 16;
-            let start =
-                u32::from_be_bytes(bytes[record + 8..record + 12].try_into().unwrap()) as usize;
-            let length =
-                u32::from_be_bytes(bytes[record + 12..record + 16].try_into().unwrap()) as usize;
-            if &bytes[record..record + 4] == b"head" {
-                head = Some(start);
-                bytes[start + 8..start + 12].fill(0);
-            }
-            if matches!(&bytes[record..record + 4], b"head" | b"name") {
-                let value = checksum(&bytes[start..start + length]);
-                bytes[record + 4..record + 8].copy_from_slice(&value.to_be_bytes());
-            }
-        }
-        let head = head.unwrap();
-        let adjustment = 0xB1B0_AFBAu32.wrapping_sub(checksum(&bytes));
-        bytes[head + 8..head + 12].copy_from_slice(&adjustment.to_be_bytes());
-        bytes
-    }
-
     fn record(function: u16, parameters: &[u8]) -> Vec<u8> {
         assert!(parameters.len().is_multiple_of(2));
         [
@@ -2153,18 +2097,13 @@ mod metafile_font_snapshot {
             }
         }
         let serial = NEXT.fetch_add(1, Ordering::Relaxed);
-        let family = format!(
-            "RHWPWMF{:010}",
-            u64::from(std::process::id()) * 1000 + serial
-        );
-        let font = isolated_program(&family);
         let dir = Directory(std::env::temp_dir().join(format!(
             "rhwp-wmf-snapshot-{}-{}",
             std::process::id(),
             serial
         )));
         std::fs::create_dir_all(&dir.0).unwrap();
-        std::fs::write(dir.0.join("fixture.ttf"), &font).unwrap();
+        std::fs::write(dir.0.join("fixture.ttf"), FONT).unwrap();
         let exporter = NativePngExporter::new(
             RenderProfile::Print,
             PngExportOptions {
@@ -2172,8 +2111,10 @@ mod metafile_font_snapshot {
                 ..Default::default()
             },
         );
-        let mut automatic = document(&family);
-        let mut explicit = document(&family);
+        let without_snapshot =
+            NativePngExporter::new(RenderProfile::Print, PngExportOptions::default());
+        let mut automatic = document(SOURCE_FAMILY);
+        let mut explicit = document(SOURCE_FAMILY);
         let source = rhwp::serializer::serialize_document(automatic.document()).unwrap();
         let requests: serde_json::Value =
             serde_json::from_str(&automatic.get_metafile_font_requests_native().unwrap()).unwrap();
@@ -2182,27 +2123,31 @@ mod metafile_font_snapshot {
                 .as_array()
                 .unwrap()
                 .iter()
-                .any(|name| name.as_str() == Some(family.as_str()))),
+                .any(|name| name.as_str() == Some(SOURCE_FAMILY))),
             "WMF에만 존재하는 가족을 실제로 요청한다"
         );
         explicit
-            .register_metafile_font_native(&family, &font, 0)
+            .register_metafile_font_native(SOURCE_FAMILY, FONT, 0)
             .unwrap();
-        let expected = exporter.render_page(&explicit, 0).unwrap();
-        let missing = exporter.render_page(&automatic, 0).unwrap();
-        assert_ne!(
-            missing, expected,
-            "원 프로그램 부재 대조군은 독립 합성 glyph와 다르다"
+        let expected = without_snapshot.render_page(&explicit, 0).unwrap();
+        let missing = without_snapshot.render_page(&automatic, 0).unwrap();
+        assert!(
+            missing != expected,
+            "원본 공급 파일이 없는 대조군은 기존 fixture 글리프 출력과 다르다"
         );
-        assert!(exporter.prepare_document(&mut automatic).unwrap());
         let supplied = exporter.render_page(&automatic, 0).unwrap();
-        assert_eq!(
-            supplied, expected,
-            "exporter의 공급이 명시적으로 등록한 같은 원 프로그램을 소비한다"
+        assert!(
+            supplied == expected,
+            "쪽별 공급이 명시적으로 등록한 같은 원본 글꼴을 소비한다"
+        );
+        exporter.prepare_document(&mut automatic).unwrap();
+        assert!(
+            exporter.render_page(&automatic, 0).unwrap() == expected,
+            "같은 snapshot으로 다시 출력해도 같은 글리프를 소비한다"
         );
         assert!(
-            !exporter.prepare_document(&mut automatic).unwrap(),
-            "같은 snapshot의 중복 등록은 paint를 다시 바꾸지 않는다"
+            without_snapshot.render_page(&automatic, 0).unwrap() == missing,
+            "쪽에 공급한 글꼴은 공급 경로가 없는 다음 출력에 남지 않는다"
         );
         assert_eq!(
             rhwp::serializer::serialize_document(automatic.document()).unwrap(),
@@ -2210,4 +2155,80 @@ mod metafile_font_snapshot {
             "paint 공급이 저장 IR과 원래 WMF 바이트를 바꾸지 않는다"
         );
     }
+}
+
+#[cfg(feature = "pdf-import")]
+#[test]
+fn direct_pdf_subsets_the_original_font_without_losing_text_or_metrics() {
+    use rhwp::paint::{LayerNode, PageLayerTree, PaintOp, RenderProfile};
+    use rhwp::renderer::pdf::layer_trees_to_pdf_with_options;
+    use rhwp::renderer::render_tree::{BoundingBox, TextRunNode};
+    use rhwp::renderer::TextStyle;
+    use ttf_parser::Face;
+
+    let source = include_bytes!("../ttfs/opensource/NotoSansKR-Regular.ttf");
+    let original = Face::parse(source, 0).unwrap();
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("ttfs/opensource/NotoSansKR-Regular.ttf");
+    assert!(std::fs::read(&path).unwrap() == source);
+    let text = "Aé한";
+    let run = TextRunNode {
+        text: text.into(),
+        style: TextStyle {
+            font_family: "Noto Sans KR".into(),
+            font_size: 20.0,
+            ..Default::default()
+        },
+        baseline: 20.0,
+        char_shape_id: None,
+        para_shape_id: None,
+        section_index: None,
+        para_index: None,
+        char_start: None,
+        cell_context: None,
+        is_para_end: true,
+        is_line_break_end: false,
+        rotation: 0.0,
+        is_vertical: false,
+        char_overlap: None,
+        border_fill_id: 0,
+        field_marker: Default::default(),
+        layout_positions: None,
+        display_text: None,
+    };
+    let bounds = BoundingBox::new(0.0, 0.0, 180.0, 48.0);
+    let page = PageLayerTree::with_profile(
+        bounds.width,
+        bounds.height,
+        LayerNode::leaf(bounds, None, vec![PaintOp::text_run(bounds, run)]),
+        RenderProfile::Print,
+    );
+    let mut options = DirectPdfExportOptions::default();
+    options.font_paths.push(path.clone());
+    let bytes = layer_trees_to_pdf_with_options(std::slice::from_ref(&page), &options).unwrap();
+    let pdf = pdf_oxide::PdfDocument::from_bytes_with_limits(bytes, Default::default()).unwrap();
+    let extracted: String = pdf.extract_text(0).unwrap().split_whitespace().collect();
+    assert_eq!(extracted, text);
+    let fonts = pdf.extract_embedded_fonts().unwrap();
+    assert_eq!(fonts.len(), 1, "the specified face supplies every glyph");
+    let embedded = &fonts[0].1;
+    assert!(
+        embedded.len() < source.len() / 4,
+        "unused outlines were embedded"
+    );
+    let face = Face::parse(embedded, 0).unwrap();
+    for ch in text.chars() {
+        let glyph = original.glyph_index(ch).unwrap();
+        assert_eq!(
+            face.glyph_bounding_box(glyph),
+            original.glyph_bounding_box(glyph)
+        );
+        assert_eq!(
+            face.glyph_hor_advance(glyph),
+            original.glyph_hor_advance(glyph)
+        );
+    }
+    assert!(
+        std::fs::read(path).unwrap() == source,
+        "the source font was changed"
+    );
 }

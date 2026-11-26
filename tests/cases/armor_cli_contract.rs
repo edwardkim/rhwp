@@ -1,3 +1,10 @@
+//! 관계형·고정형: 독립 Print의 수용 범위에서 원본·공개 API·내용 소유를 보호한다.
+//! 주석 갱신: 2026-11-22T02:35:34+09:00; 직전 파일 변경 커밋: 2026-10-26T00:04:48+09:00 df85dd5967fd1a7e6eefc928ad553837af0d5288.
+//! 측정: 2026-11-22 KST, Print profile, 96DPI, PDFium, 보정 전2px raw.
+//! 실제 암호 HWPX와 평문 대응본 전24쪽: Native 최저98.29%, fresh WASM 최저98.22%; 양쪽에서 암호/평문24쪽 PNG가 각각 동일.
+//! 근거: mydocs/pr/assets/issues7754_7765/source32/README.md와 문서별 Native/WASM 전쪽 TSV.
+//! 암호 문서의 쪽수는 독립 Print의24쪽이며 실제 API·CLI·MCP 경로에서 확인한다.
+//!
 //! [#5511 Stage 2] `armor` CLI handler 이동 전 보완 계약.
 //!
 //! 기존 `armor_contract`가 HWP3 기반 nonce·격벽·주입 탐지·JSON provenance를 보호한다.
@@ -176,8 +183,7 @@ fn real_hwp5_and_hwpx_emit_complete_read_only_envelopes() {
 fn encrypted_hwp3_and_hwpx_open_through_password_stdin() {
     for (rel, pages) in [
         ("samples/HWP3-password-123456.hwp", Some(24)),
-        // 쪽수 고정만 #7445로 이관하고 암호·응답 봉투 계약은 유지한다.
-        ("samples/HWP5-password-123456.hwpx", None),
+        ("samples/HWP5-password-123456.hwpx", Some(24)),
     ] {
         let path = repo(rel);
         let path = path.to_str().expect("암호 문서 경로");

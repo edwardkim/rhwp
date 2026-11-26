@@ -1,0 +1,65 @@
+{
+  "files": [
+    {
+      "source": "output/pr-review/issue7754-nine/source93-independent-junggothic-provenance.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source47/source93-independent-junggothic-provenance.json",
+      "sha256": "078da5bf27f3a474a14554414a0fa339f6984474f9eb50705f6ac8acb102c73a",
+      "bytes": 896483
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source95-default-chrome-focus-state.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source47/source95-default-chrome-focus-state.json",
+      "sha256": "dfd5a48822f5162b66755e32e3cdc98a2da47fd48a51d4ce3f81c3e0ea94a7f5",
+      "bytes": 145998
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source97-win10-outline-font-probe.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source47/source97-win10-outline-font-probe.json",
+      "sha256": "856ac46e5ad4104a8e991f6dabf016c2e0d2c78b1edf8a34830d05c63f5f32ca",
+      "bytes": 2411
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/build_source93_independent_junggothic.py",
+      "retained": "mydocs/pr/assets/issues7754_7765/source47/reproduction/build_source93_independent_junggothic.py.txt",
+      "sha256": "f7991b9cfee2435565ddd86482f6e01864d9090a9b45cc9eef70f1e935fcf763",
+      "bytes": 5005
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/run_source95_full_junggothic_focus.py",
+      "retained": "mydocs/pr/assets/issues7754_7765/source47/reproduction/run_source95_full_junggothic_focus.py.txt",
+      "sha256": "c46c8617255f5f736261d5016b3996286c121c50d37ee6418333f280a7f294da",
+      "bytes": 3848
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source95-default-chrome-focus/native/chemical/silhouette.tsv",
+      "retained": "mydocs/pr/assets/issues7754_7765/source47/historical-source37-font-qualification/native/silhouette.tsv",
+      "sha256": "ee251198d8a85b962b14ebfdd4bf6deac42bde95342c66af54e55b482da44439",
+      "bytes": 321
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source95-default-chrome-focus/native/chemical/silhouette_manifest.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source47/historical-source37-font-qualification/native/silhouette_manifest.json",
+      "sha256": "770af7d9f3e9dc7c5163f1edc1e5b89a0dbabe25cd63f4f2b96d4c7c0a5b844f",
+      "bytes": 25325
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source95-default-chrome-focus/wasm/chemical/silhouette.tsv",
+      "retained": "mydocs/pr/assets/issues7754_7765/source47/historical-source37-font-qualification/wasm/silhouette.tsv",
+      "sha256": "a1503d304d0a2eb2aa8ba7d1ee9f6c56896e750cdd6e891930f33b1768e90c89",
+      "bytes": 309
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source95-default-chrome-focus/wasm/chemical/silhouette_manifest.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source47/historical-source37-font-qualification/wasm/silhouette_manifest.json",
+      "sha256": "2ebe5db0738aefcba6972443ce6eb84362b18e17f9a941cacd01c45d6f4ad825",
+      "bytes": 25709
+    }
+  ],
+  "private_font": {
+    "path": "pdf/private-issue7754-independent-font-specimens-20261122/independent-junggothic-regular.otf",
+    "sha256": "91161f1cd99235e25d93d3b317961ea6b06811f72ca96ad7367c61f4d63ca405",
+    "bytes": 1836160,
+    "mode": "0o600",
+    "redistributed": false
+  }
+}

@@ -482,7 +482,9 @@ pub(super) fn place_split_paragraph_with_storage<S: crate::storage::Storage>(
         ) else {
             st.advance_column_or_new_page_with_storage(storage)?;
             if cursor_line == 0
-                && try_absorb_empty_page_start_with_storage(st, para_idx, para, storage)?
+                && try_absorb_empty_page_start_with_storage(
+                    st, para_idx, para, paragraphs, storage,
+                )?
             {
                 return Ok(());
             }
@@ -1195,7 +1197,7 @@ pub(super) fn place_after_failed_fit_with_storage<S: crate::storage::Storage>(
         } else {
             st.advance_column_or_new_page_with_storage(storage)?;
         }
-        if try_absorb_empty_page_start_with_storage(st, para_idx, para, storage)? {
+        if try_absorb_empty_page_start_with_storage(st, para_idx, para, paragraphs, storage)? {
             return Ok(());
         }
         // 새 쪽에서도 자기 쪽·종이 기준 자리차지 개체의 밴드가 첫 줄을 민다. 넘기기 전 판정은
@@ -1449,6 +1451,17 @@ pub(super) fn try_absorb_rowbreak_guide_with_storage<S: crate::storage::Storage>
     dpi: f64,
     storage: &S,
 ) -> Result<bool, S::Error> {
+    // 본문 시작을 공유하는 저장 축만 빈 줄의 원점과 비교한다. 재조판·다른
+    // zone/부분 단의 커서를 원본 쪽 좌표와 직접 비교하지 않는다.
+    let stored_frame_base = ((st.profile.hwp5_stored_pagination_layout()
+        || st.profile.hwpx_stored_layout())
+        && !st.profile.session_edited()
+        && st.vpos_page_base_stored
+        && !st.vpos_ladder_dirty
+        && st.current_start_height == 0.0
+        && st.current_zone_y_offset == 0.0)
+        .then_some(st.vpos_page_base)
+        .flatten();
     if empty::hide_rowbreak_guide(
         prev_is_partial_table,
         para,
@@ -1456,6 +1469,7 @@ pub(super) fn try_absorb_rowbreak_guide_with_storage<S: crate::storage::Storage>
         para_idx,
         st.current_height,
         dpi,
+        stored_frame_base,
     ) {
         st.hide_empty_paragraph_with_storage(para_idx, storage)?;
         return Ok(true);
@@ -1478,6 +1492,7 @@ pub(super) fn try_absorb_empty_paragraph(
     st: &mut TypesetState,
     para_idx: usize,
     para: &Paragraph,
+    paragraphs: &[Paragraph],
     fmt: &FormattedParagraph,
     is_last_in_section: bool,
     available: f64,
@@ -1487,6 +1502,7 @@ pub(super) fn try_absorb_empty_paragraph(
         st,
         para_idx,
         para,
+        paragraphs,
         fmt,
         is_last_in_section,
         available,
@@ -1502,6 +1518,7 @@ pub(super) fn try_absorb_empty_paragraph_with_storage<S: crate::storage::Storage
     st: &mut TypesetState,
     para_idx: usize,
     para: &Paragraph,
+    paragraphs: &[Paragraph],
     fmt: &FormattedParagraph,
     is_last_in_section: bool,
     available: f64,
@@ -1513,7 +1530,7 @@ pub(super) fn try_absorb_empty_paragraph_with_storage<S: crate::storage::Storage
     // Paginator (engine.rs:85-106) 와 동일 시멘틱.
     // (kps-ai p67~70 case: PartialTable 후속 빈 paragraphs 가 다수 발생, 한컴은 표시 안 함.)
     if st.hide_empty_line {
-        if try_absorb_empty_page_start_with_storage(st, para_idx, para, storage)? {
+        if try_absorb_empty_page_start_with_storage(st, para_idx, para, paragraphs, storage)? {
             return Ok(true);
         }
         if empty::hide_overflowing_empty(
@@ -1556,17 +1573,30 @@ fn try_absorb_empty_page_start_with_storage<S: crate::storage::Storage>(
     st: &mut TypesetState,
     para_idx: usize,
     para: &Paragraph,
+    paragraphs: &[Paragraph],
     storage: &S,
 ) -> Result<bool, S::Error> {
     if !st.hide_empty_line {
         return Ok(false);
     }
     st.begin_empty_paragraph_page();
+    // [#8997] 앞 쪽에서 넘어온 저장 상자(표·그림)가 이 쪽 맨 위를 차지하면 뒤 빈 문단은 쪽
+    // 첫 줄이 아니다. 한/글은 그 빈 줄을 감추지 않고 상자 아래에 둔다(1543000-202100035
+    // s2 pi896: 표 바깥 상자 아래끝 22586HU 에서 줄 하나 뒤 pi897 저장 vpos 24616).
     if st.hidden_empty_lines < 2
+        && st.page_start_stored_frames.is_empty()
         && crate::renderer::pagination::page_starts_with_hidden_empty_lines(
             para,
             &st.current_items,
             &st.hidden_empty_paras,
+            !st.profile.session_edited()
+                && (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
+                && crate::renderer::pagination::has_two_suppressed_before(
+                    paragraphs,
+                    para_idx,
+                    crate::renderer::px_to_hwpunit(st.layout.body_area.height, st.layout.dpi),
+                ),
+            st.stored_ladder_keeps_empty_line,
         )
     {
         st.commit_counted_hidden_paragraph_with_storage(para_idx, storage)?;

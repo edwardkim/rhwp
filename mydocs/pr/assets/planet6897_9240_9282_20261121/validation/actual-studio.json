@@ -1,0 +1,1095 @@
+{
+  "source_head": "cef9ff9acc08f92431e89450945462514fffa772",
+  "integration_test_head": "0d15538887cc44d11eb909975109c22acb197f47",
+  "browser": "Chrome/157.0.8103.80",
+  "sample_count": 9,
+  "profile": [
+    "screen",
+    "print"
+  ],
+  "capture_error": null,
+  "verified_initialization_responses": 54,
+  "wasm_sha256": "18b88fdf2ace019f31d29e00aeef74093860c4aa8f750b1d93b1c435cc2962de",
+  "actual_backend_counts": {
+    "canvas2d": 50,
+    "canvaskit-compat": 2,
+    "canvaskit-default": 2
+  },
+  "font_fallback_gate": null,
+  "cases": [
+    {
+      "sampleId": "kobe-page2",
+      "page": 1,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "ef8844fb3bd09022a0afeb4be7fd3eb8bee9942107d4db8b02c08ba471ebd921",
+        "sizeBytes": 92271,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "kobe-page2",
+      "page": 1,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "ef8844fb3bd09022a0afeb4be7fd3eb8bee9942107d4db8b02c08ba471ebd921",
+        "sizeBytes": 92271,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "kobe-page2",
+      "page": 1,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "ef8844fb3bd09022a0afeb4be7fd3eb8bee9942107d4db8b02c08ba471ebd921",
+        "sizeBytes": 92271,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "kobe-page2",
+      "page": 1,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "c20fd59a214881bedc32c44b586ff7100080eb590b4378fceaa06a7e34cae92b",
+        "sizeBytes": 94676,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "kobe-page2",
+      "page": 1,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "c20fd59a214881bedc32c44b586ff7100080eb590b4378fceaa06a7e34cae92b",
+        "sizeBytes": 94676,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "kobe-page2",
+      "page": 1,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "c20fd59a214881bedc32c44b586ff7100080eb590b4378fceaa06a7e34cae92b",
+        "sizeBytes": 94676,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "kobe-page8",
+      "page": 7,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "ee7a5ca6d3703728b0649da5317e3f62d2be7aa9f2b3edb39b651b35491f0785",
+        "sizeBytes": 118934,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "kobe-page8",
+      "page": 7,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "ee7a5ca6d3703728b0649da5317e3f62d2be7aa9f2b3edb39b651b35491f0785",
+        "sizeBytes": 118934,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "kobe-page8",
+      "page": 7,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "ee7a5ca6d3703728b0649da5317e3f62d2be7aa9f2b3edb39b651b35491f0785",
+        "sizeBytes": 118934,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "kobe-page8",
+      "page": 7,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "f9bdb1dc0c131f9470d2003d30aea3d340ed28c34d27f185f568c67774d1a948",
+        "sizeBytes": 121742,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "kobe-page8",
+      "page": 7,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "f9bdb1dc0c131f9470d2003d30aea3d340ed28c34d27f185f568c67774d1a948",
+        "sizeBytes": 121742,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "kobe-page8",
+      "page": 7,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "f9bdb1dc0c131f9470d2003d30aea3d340ed28c34d27f185f568c67774d1a948",
+        "sizeBytes": 121742,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "employment-page12",
+      "page": 11,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "92a42f0d9d47ae1948c7096d92e559e6af2a9b4823ee2323a8a42ba9b4e2bf8c",
+        "sizeBytes": 175570,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "employment-page12",
+      "page": 11,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조",
+          "휴먼둥근헤드라인",
+          "휴먼옛체",
+          "Arial"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "92a42f0d9d47ae1948c7096d92e559e6af2a9b4823ee2323a8a42ba9b4e2bf8c",
+        "sizeBytes": 175570,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "employment-page12",
+      "page": 11,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조",
+          "휴먼둥근헤드라인",
+          "휴먼옛체",
+          "Arial"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "92a42f0d9d47ae1948c7096d92e559e6af2a9b4823ee2323a8a42ba9b4e2bf8c",
+        "sizeBytes": 175570,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "employment-page12",
+      "page": 11,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "2f435ebc7d3525b2235f780999632219e3abe94ee7a4c2d4dda7aee428c6d198",
+        "sizeBytes": 178458,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "employment-page12",
+      "page": 11,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조",
+          "휴먼둥근헤드라인",
+          "휴먼옛체",
+          "Arial"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "2f435ebc7d3525b2235f780999632219e3abe94ee7a4c2d4dda7aee428c6d198",
+        "sizeBytes": 178458,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "employment-page12",
+      "page": 11,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조",
+          "휴먼둥근헤드라인",
+          "휴먼옛체",
+          "Arial"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "2f435ebc7d3525b2235f780999632219e3abe94ee7a4c2d4dda7aee428c6d198",
+        "sizeBytes": 178458,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "employment-page15",
+      "page": 14,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "38f3e0120d782e13a93a3807d2c7db62771850b5b1af45f3a090f812b59d9a58",
+        "sizeBytes": 167105,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "employment-page15",
+      "page": 14,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조",
+          "휴먼둥근헤드라인",
+          "휴먼옛체",
+          "Arial"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "38f3e0120d782e13a93a3807d2c7db62771850b5b1af45f3a090f812b59d9a58",
+        "sizeBytes": 167105,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "employment-page15",
+      "page": 14,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조",
+          "휴먼둥근헤드라인",
+          "휴먼옛체",
+          "Arial"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "38f3e0120d782e13a93a3807d2c7db62771850b5b1af45f3a090f812b59d9a58",
+        "sizeBytes": 167105,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "employment-page15",
+      "page": 14,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "2308d823e16ab3fa02e8e5ffc8a2b4cc5e8cbcf359282b78b02b20882441365f",
+        "sizeBytes": 168790,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "employment-page15",
+      "page": 14,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조",
+          "휴먼둥근헤드라인",
+          "휴먼옛체",
+          "Arial"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "2308d823e16ab3fa02e8e5ffc8a2b4cc5e8cbcf359282b78b02b20882441365f",
+        "sizeBytes": 168790,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "employment-page15",
+      "page": 14,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조",
+          "휴먼둥근헤드라인",
+          "휴먼옛체",
+          "Arial"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "2308d823e16ab3fa02e8e5ffc8a2b4cc5e8cbcf359282b78b02b20882441365f",
+        "sizeBytes": 168790,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "employment-page21",
+      "page": 20,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "1057d71f43ad4257e38826498ee5d586bbbcf5f71fd086b2066bf27e2b999c66",
+        "sizeBytes": 115442,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "employment-page21",
+      "page": 20,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조",
+          "휴먼둥근헤드라인",
+          "휴먼옛체",
+          "Arial"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "1057d71f43ad4257e38826498ee5d586bbbcf5f71fd086b2066bf27e2b999c66",
+        "sizeBytes": 115442,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "employment-page21",
+      "page": 20,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조",
+          "휴먼둥근헤드라인",
+          "휴먼옛체",
+          "Arial"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "1057d71f43ad4257e38826498ee5d586bbbcf5f71fd086b2066bf27e2b999c66",
+        "sizeBytes": 115442,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "employment-page21",
+      "page": 20,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "ab04f41bf3f7dc505c74f808687091d0c29af3869cca214a87ee6203bbed453c",
+        "sizeBytes": 115776,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "employment-page21",
+      "page": 20,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조",
+          "휴먼둥근헤드라인",
+          "휴먼옛체",
+          "Arial"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "ab04f41bf3f7dc505c74f808687091d0c29af3869cca214a87ee6203bbed453c",
+        "sizeBytes": 115776,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "employment-page21",
+      "page": 20,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조",
+          "휴먼둥근헤드라인",
+          "휴먼옛체",
+          "Arial"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "ab04f41bf3f7dc505c74f808687091d0c29af3869cca214a87ee6203bbed453c",
+        "sizeBytes": 115776,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "employment-page43",
+      "page": 42,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "ad543149295efb5044ee55f2ac3add5db63096f5f64ba0158c044204d96a69f8",
+        "sizeBytes": 166468,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "employment-page43",
+      "page": 42,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조",
+          "휴먼둥근헤드라인",
+          "휴먼옛체",
+          "Arial"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "ad543149295efb5044ee55f2ac3add5db63096f5f64ba0158c044204d96a69f8",
+        "sizeBytes": 166468,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "employment-page43",
+      "page": 42,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조",
+          "휴먼둥근헤드라인",
+          "휴먼옛체",
+          "Arial"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "ad543149295efb5044ee55f2ac3add5db63096f5f64ba0158c044204d96a69f8",
+        "sizeBytes": 166468,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "employment-page43",
+      "page": 42,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "c6e51d1b225f5f53435cacd038eee02adb00ae8c58ef726a57f55ddf97a3440f",
+        "sizeBytes": 162952,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "employment-page43",
+      "page": 42,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조",
+          "휴먼둥근헤드라인",
+          "휴먼옛체",
+          "Arial"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "c6e51d1b225f5f53435cacd038eee02adb00ae8c58ef726a57f55ddf97a3440f",
+        "sizeBytes": 162952,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "employment-page43",
+      "page": 42,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조",
+          "휴먼둥근헤드라인",
+          "휴먼옛체",
+          "Arial"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "c6e51d1b225f5f53435cacd038eee02adb00ae8c58ef726a57f55ddf97a3440f",
+        "sizeBytes": 162952,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "decree-page6",
+      "page": 5,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "4e8deae83389f76c53d6333d812887fda13779c9025bbc550009f2c01832c279",
+        "sizeBytes": 80313,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "decree-page6",
+      "page": 5,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "4e8deae83389f76c53d6333d812887fda13779c9025bbc550009f2c01832c279",
+        "sizeBytes": 80313,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "decree-page6",
+      "page": 5,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "4e8deae83389f76c53d6333d812887fda13779c9025bbc550009f2c01832c279",
+        "sizeBytes": 80313,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "decree-page6",
+      "page": 5,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "3ee64e8967159205510b598ac999db66f99ed851f002f7f001bc1413b3995670",
+        "sizeBytes": 80706,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "decree-page6",
+      "page": 5,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "3ee64e8967159205510b598ac999db66f99ed851f002f7f001bc1413b3995670",
+        "sizeBytes": 80706,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "decree-page6",
+      "page": 5,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "3ee64e8967159205510b598ac999db66f99ed851f002f7f001bc1413b3995670",
+        "sizeBytes": 80706,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "decree-page7",
+      "page": 6,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "8159251b307092599b099f4df96af47f2e917def3e3aeb8a1241c306d7764604",
+        "sizeBytes": 22548,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "decree-page7",
+      "page": 6,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "8159251b307092599b099f4df96af47f2e917def3e3aeb8a1241c306d7764604",
+        "sizeBytes": 22548,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "decree-page7",
+      "page": 6,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "8159251b307092599b099f4df96af47f2e917def3e3aeb8a1241c306d7764604",
+        "sizeBytes": 22548,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "decree-page7",
+      "page": 6,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "a8765562ef357f8a8d25c4c45182f02016981f0aaadf6a77e22465a3b9c13293",
+        "sizeBytes": 23681,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "decree-page7",
+      "page": 6,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "a8765562ef357f8a8d25c4c45182f02016981f0aaadf6a77e22465a3b9c13293",
+        "sizeBytes": 23681,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "decree-page7",
+      "page": 6,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "a8765562ef357f8a8d25c4c45182f02016981f0aaadf6a77e22465a3b9c13293",
+        "sizeBytes": 23681,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "forest-page2",
+      "page": 1,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "e5c7308efaedb19614d3ae4f2fb1ba401a4d62c3fff75f94f1e5bb180669475b",
+        "sizeBytes": 108219,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "forest-page2",
+      "page": 1,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "5822c04b65a78530ce1026754a38441a09ffe7b12c19807e87ee97722bad287e",
+        "sizeBytes": 100456,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "forest-page2",
+      "page": 1,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "bd70b01bd38b4eee2c08973d733a4e9a61f08e49aa6a5ea5957ea7fd0488807a",
+        "sizeBytes": 96496,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "forest-page2",
+      "page": 1,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "8d0e486390b5af898f8cfe7c1c819894bec11f3aea9701bf2dfb6bdade421202",
+        "sizeBytes": 106544,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "forest-page2",
+      "page": 1,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "1f7bf9e8dbeab27dcf8fb8b74fc6ec0f40d22fb01fdc56e3d781b553f2fc8135",
+        "sizeBytes": 98302,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "forest-page2",
+      "page": 1,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "1f7bf9e8dbeab27dcf8fb8b74fc6ec0f40d22fb01fdc56e3d781b553f2fc8135",
+        "sizeBytes": 98302,
+        "width": 794,
+        "height": 1122
+      }
+    }
+  ]
+}

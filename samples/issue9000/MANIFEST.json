@@ -1,0 +1,31 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 9000,
+  "title": "CELL 분할 중첩 표가 열마다 다른 저장 프레임 경계를 높이 축 하나로 잘라 경계 앞 줄을 다음 쪽으로 미룬다",
+  "entries": [
+    {
+      "path": "samples/issue9000/kaf_table_section.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/9000",
+      "originalFilename": "1311000-201100031_D0150014-2-001_한국주소포럼(KAF) 총회 회의자료(한글)110421.hwp",
+      "derivedFrom": {
+        "sha256": "8014ae9b6c3b07ed031640becfefdfb2b8272afe7878efe2fcca27b5c5f6c9e5",
+        "bytes": 2900992,
+        "pageCount": 66,
+        "procedure": "rhwp edit delete-paragraph 로 구역 1 문단 244 부터 33 까지 차례로 삭제(표 뒤 45~66쪽 내용). 구역 1 마지막 빈 문단은 편집기가 삭제를 거부해 남는다. 1~44쪽 dump-pages 조판 항목은 원본과 같다."
+      },
+      "bytes": 2758656,
+      "sha256": "b03eaad4854504f54eafe8a1aa10eafd56e9ad75db3e40ae2ed43a31dd666c0f",
+      "lastSavedWith": {
+        "product": "rhwp",
+        "version": "5.0.2.2"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/issue9000/kaf_table_section-2020.pdf",
+      "referencePdfSha256": "3c526bf9968c9ec90b5174963492762c57662ab16c2c09c62ca182b55d9ed899",
+      "referencePdfPageCount": 44,
+      "contract": "전체 44쪽으로 한/글 2020 Print 와 같다. 문단 1.32 의 11×6 RowBreak 표가 33~44쪽에 걸치고, 쪽 경계 근처 글은 한컴 PDF 와 같은 쪽에 있다. 다음 쪽으로 이어지는 행 조각(34~42쪽)의 표 아래 경계는 같은 쪽 물리 프레임 끝이고, 43쪽은 그보다 위 내용 끝에서 닫힌다."
+    }
+  ]
+}

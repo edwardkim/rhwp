@@ -302,6 +302,99 @@ pub(super) struct LayerDebugOverlayProjection {
 }
 
 impl SvgRenderer {
+    /// 선 투명도를 뺀 직선 그리기(`draw_line`이 투명도 묶음으로 감싼다).
+    fn draw_line_opaque(&mut self, x1: f64, y1: f64, x2: f64, y2: f64, style: &LineStyle) {
+        let color = color_to_svg(style.color);
+        let width = if style.width > 0.0 { style.width } else { 1.0 };
+
+        // 이중선/삼중선 처리: 여러 평행선으로 렌더링
+        match style.line_type {
+            super::LineRenderType::Double
+            | super::LineRenderType::ThinThickDouble
+            | super::LineRenderType::ThickThinDouble
+            | super::LineRenderType::ThinThickThinTriple => {
+                self.draw_multi_line(x1, y1, x2, y2, width, &color, &style.line_type);
+                self.draw_arrow_heads(&super::arrow::line_heads((x1, y1, x2, y2), style), style, 0);
+                return;
+            }
+            _ => {}
+        }
+
+        let dx = x2 - x1;
+        let dy = y2 - y1;
+        let line_len = (dx * dx + dy * dy).sqrt();
+
+        // Keep original endpoints, including when the head is longer than the shaft.
+        let lx1 = x1;
+        let ly1 = y1;
+        let lx2 = x2;
+        let ly2 = y2;
+        let mut marker_start_attr = String::new();
+        let mut marker_end_attr = String::new();
+
+        if line_len > 0.0 {
+            if style.start_arrow != super::ArrowStyle::None {
+                let marker_id = self.ensure_arrow_marker(
+                    &color,
+                    width,
+                    line_len,
+                    &style.start_arrow,
+                    style.start_arrow_size,
+                    true,
+                );
+                marker_start_attr = format!(" marker-start=\"url(#{})\"", marker_id);
+            }
+            if style.end_arrow != super::ArrowStyle::None {
+                let marker_id = self.ensure_arrow_marker(
+                    &color,
+                    width,
+                    line_len,
+                    &style.end_arrow,
+                    style.end_arrow_size,
+                    false,
+                );
+                marker_end_attr = format!(" marker-end=\"url(#{})\"", marker_id);
+            }
+        }
+
+        let mut attrs = format!(
+            "x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\" stroke=\"{}\" stroke-width=\"{}\"",
+            lx1, ly1, lx2, ly2, color, width,
+        );
+        if self.axis_stroke_hint_allowed
+            && !style.preserve_fractional_position
+            && style.dash_pattern.is_none()
+        {
+            let source = super::render_tree::LineNode::new(x1, y1, x2, y2, style.clone());
+            let raster = super::raster_stroke::raster_line_geometry(
+                &source,
+                [1.0, 0.0, 0.0, 1.0, 0.0, 0.0],
+                self.profile,
+                width,
+            );
+            if raster.4 > width {
+                // 원본 벡터 좌표·선폭은 그대로 두고 Print의 가는 직교선에만
+                // 브라우저의 장치 픽셀 coverage 처리를 요청한다.
+                attrs.push_str(" shape-rendering=\"crispEdges\"");
+            }
+        }
+        if let Some(intervals) = &style.dash_pattern {
+            attrs.push_str(&format!(
+                " stroke-dasharray=\"{}\"",
+                intervals
+                    .iter()
+                    .map(|v| v.to_string())
+                    .collect::<Vec<_>>()
+                    .join(" ")
+            ));
+        } else {
+            stroke_pattern::append_attrs(&mut attrs, style.dash, width);
+        }
+        attrs.push_str(&marker_start_attr);
+        attrs.push_str(&marker_end_attr);
+        self.output.push_str(&format!("<line {}/>\n", attrs));
+    }
+
     pub fn new() -> Self {
         Self {
             output: Default::default(),
@@ -1807,10 +1900,17 @@ impl SvgRenderer {
                 style.stroke_width
             ));
             stroke_pattern::append_attrs(&mut attrs, style.stroke_dash, style.stroke_width);
+            if style.stroke_alpha > 0 {
+                attrs.push_str(&format!(
+                    " stroke-opacity=\"{:.3}\"",
+                    super::alpha_to_opacity(style.stroke_alpha)
+                ));
+            }
         }
 
+        // 한컴처럼 채우기 투명도는 면에만, 선 투명도는 선에만 건다.
         if style.opacity < 1.0 {
-            attrs.push_str(&format!(" opacity=\"{:.3}\"", style.opacity));
+            attrs.push_str(&format!(" fill-opacity=\"{:.3}\"", style.opacity));
         }
 
         self.output.push_str(&format!("<rect {}/>\n", attrs));
@@ -1826,6 +1926,10 @@ impl SvgRenderer {
         style: &ShapeStyle,
         gradient: Option<&GradientFillInfo>,
     ) {
+        if let Some(commands) = super::ellipse::patterned_outline(cx, cy, rx, ry, style) {
+            self.draw_path_with_gradient(&commands, style, gradient);
+            return;
+        }
         let mut attrs = format!("cx=\"{}\" cy=\"{}\" rx=\"{}\" ry=\"{}\"", cx, cy, rx, ry);
 
         attrs.push_str(&self.build_fill_attr(
@@ -1840,10 +1944,18 @@ impl SvgRenderer {
                 color_to_svg(stroke),
                 style.stroke_width
             ));
+            stroke_pattern::append_attrs(&mut attrs, style.stroke_dash, style.stroke_width);
+            if style.stroke_alpha > 0 {
+                attrs.push_str(&format!(
+                    " stroke-opacity=\"{:.3}\"",
+                    super::alpha_to_opacity(style.stroke_alpha)
+                ));
+            }
         }
 
+        // 한컴처럼 채우기 투명도는 면에만, 선 투명도는 선에만 건다.
         if style.opacity < 1.0 {
-            attrs.push_str(&format!(" opacity=\"{:.3}\"", style.opacity));
+            attrs.push_str(&format!(" fill-opacity=\"{:.3}\"", style.opacity));
         }
 
         self.output.push_str(&format!("<ellipse {}/>\n", attrs));
@@ -1861,6 +1973,9 @@ impl SvgRenderer {
         let mut attrs = format!("d=\"{}\"", d.trim());
 
         attrs.push_str(&self.build_fill_attr(style, gradient, path_bbox(commands)));
+        if style.opacity < 1.0 {
+            attrs.push_str(&format!(" fill-opacity=\"{:.3}\"", style.opacity));
+        }
 
         if let Some(stroke) = style.stroke_color {
             attrs.push_str(&format!(
@@ -1869,6 +1984,12 @@ impl SvgRenderer {
                 style.stroke_width
             ));
             stroke_pattern::append_attrs(&mut attrs, style.stroke_dash, style.stroke_width);
+            if style.stroke_alpha > 0 {
+                attrs.push_str(&format!(
+                    " stroke-opacity=\"{:.3}\"",
+                    super::alpha_to_opacity(style.stroke_alpha)
+                ));
+            }
         }
 
         self.output.push_str(&format!("<path {}/>\n", attrs));
@@ -2012,7 +2133,10 @@ impl SvgRenderer {
         } else {
             render_mime
         };
-        let base64_data = base64::engine::general_purpose::STANDARD.encode(render_bytes);
+        // 브라우저가 JPEG EXIF 방향으로 돌려 그리지 않게 한/글처럼 바이트 그대로의 방향을 둔다.
+        let upright = crate::renderer::image_resolver::upright_jpeg(render_bytes);
+        let base64_data = base64::engine::general_purpose::STANDARD
+            .encode(upright.as_deref().unwrap_or(render_bytes));
         let data_uri = format!("data:{};base64,{}", render_mime, base64_data);
 
         let effect_filter_id = if preserve_color_watermark || adjustments_baked {
@@ -2188,7 +2312,7 @@ impl SvgRenderer {
             return;
         }
         // 공통 인쇄 계약: 그림 미지정과 미해결 연결 그림의 편집용 대체 표시는 생략.
-        if img.is_nonprinting_picture_placeholder() && !self.show_missing_picture_placeholder {
+        if img.is_nonprinting_picture() && !self.show_missing_picture_placeholder {
             return;
         }
         // [Task #741] 빈 binary 데이터 (외부 file path 그림 등) 도 placeholder 처리.
@@ -2340,7 +2464,10 @@ impl SvgRenderer {
                 .push_str(&format!("<g opacity=\"{}\">\n", opacity));
         }
 
-        let base64_data = base64::engine::general_purpose::STANDARD.encode(&*render_data);
+        // 브라우저가 JPEG EXIF 방향으로 돌려 그리지 않게 한/글처럼 바이트 그대로의 방향을 둔다.
+        let upright = crate::renderer::image_resolver::upright_jpeg(&render_data);
+        let base64_data = base64::engine::general_purpose::STANDARD
+            .encode(upright.as_deref().unwrap_or(&render_data));
         let data_uri = format!("data:{};base64,{}", render_mime, base64_data);
 
         let fill_mode = img.fill_mode.unwrap_or(ImageFillMode::FitToSize);
@@ -2352,7 +2479,7 @@ impl SvgRenderer {
                     .flatten()
             });
         let crop_reference = if mime_type == "image/x-wmf" {
-            super::metafile_geometry::wmf_crop_reference(img.original_size_hu)
+            super::metafile_geometry::wmf_crop_reference(img.original_size_hu, Some(data), img.crop)
         } else {
             img.original_size_hu
         };
@@ -3405,10 +3532,15 @@ impl SvgRenderer {
         let Some(style) = &path.line_style else {
             return;
         };
-        self.draw_arrow_heads(&super::arrow::connector_heads(path), style);
+        self.draw_arrow_heads(&super::arrow::connector_heads(path), style, style.alpha);
     }
 
-    fn draw_arrow_heads(&mut self, heads: &[super::arrow::ArrowHead], style: &LineStyle) {
+    fn draw_arrow_heads(
+        &mut self,
+        heads: &[super::arrow::ArrowHead],
+        style: &LineStyle,
+        alpha: u8,
+    ) {
         for head in heads {
             self.draw_path(
                 &head.commands,
@@ -3416,6 +3548,8 @@ impl SvgRenderer {
                     fill_color: Some(if head.filled { style.color } else { 0xFFFFFF }),
                     stroke_color: if head.filled { None } else { Some(style.color) },
                     stroke_width: (style.width * 0.3).max(0.5),
+                    opacity: super::alpha_to_opacity(alpha),
+                    stroke_alpha: alpha,
                     ..Default::default()
                 },
             );
@@ -4281,95 +4415,17 @@ impl Renderer for SvgRenderer {
     }
 
     fn draw_line(&mut self, x1: f64, y1: f64, x2: f64, y2: f64, style: &LineStyle) {
-        let color = color_to_svg(style.color);
-        let width = if style.width > 0.0 { style.width } else { 1.0 };
-
-        // 이중선/삼중선 처리: 여러 평행선으로 렌더링
-        match style.line_type {
-            super::LineRenderType::Double
-            | super::LineRenderType::ThinThickDouble
-            | super::LineRenderType::ThickThinDouble
-            | super::LineRenderType::ThinThickThinTriple => {
-                self.draw_multi_line(x1, y1, x2, y2, width, &color, &style.line_type);
-                self.draw_arrow_heads(&super::arrow::line_heads((x1, y1, x2, y2), style), style);
-                return;
-            }
-            _ => {}
-        }
-
-        let dx = x2 - x1;
-        let dy = y2 - y1;
-        let line_len = (dx * dx + dy * dy).sqrt();
-
-        // Keep original endpoints, including when the head is longer than the shaft.
-        let lx1 = x1;
-        let ly1 = y1;
-        let lx2 = x2;
-        let ly2 = y2;
-        let mut marker_start_attr = String::new();
-        let mut marker_end_attr = String::new();
-
-        if line_len > 0.0 {
-            if style.start_arrow != super::ArrowStyle::None {
-                let marker_id = self.ensure_arrow_marker(
-                    &color,
-                    width,
-                    line_len,
-                    &style.start_arrow,
-                    style.start_arrow_size,
-                    true,
-                );
-                marker_start_attr = format!(" marker-start=\"url(#{})\"", marker_id);
-            }
-            if style.end_arrow != super::ArrowStyle::None {
-                let marker_id = self.ensure_arrow_marker(
-                    &color,
-                    width,
-                    line_len,
-                    &style.end_arrow,
-                    style.end_arrow_size,
-                    false,
-                );
-                marker_end_attr = format!(" marker-end=\"url(#{})\"", marker_id);
-            }
-        }
-
-        let mut attrs = format!(
-            "x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\" stroke=\"{}\" stroke-width=\"{}\"",
-            lx1, ly1, lx2, ly2, color, width,
-        );
-        if self.axis_stroke_hint_allowed
-            && !style.preserve_fractional_position
-            && style.dash_pattern.is_none()
-        {
-            let source = super::render_tree::LineNode::new(x1, y1, x2, y2, style.clone());
-            let raster = super::raster_stroke::raster_line_geometry(
-                &source,
-                [1.0, 0.0, 0.0, 1.0, 0.0, 0.0],
-                self.profile,
-                width,
-            );
-            if raster.4 > width {
-                // 원본 벡터 좌표·선폭은 그대로 두고 Print의 가는 직교선에만
-                // 브라우저의 장치 픽셀 coverage 처리를 요청한다.
-                attrs.push_str(" shape-rendering=\"crispEdges\"");
-            }
-        }
-        if let Some(intervals) = &style.dash_pattern {
-            attrs.push_str(&format!(
-                " stroke-dasharray=\"{}\"",
-                intervals
-                    .iter()
-                    .map(|v| v.to_string())
-                    .collect::<Vec<_>>()
-                    .join(" ")
+        // 선 투명도는 선과 화살표를 함께 옅게 한다.
+        if style.alpha > 0 {
+            self.output.push_str(&format!(
+                "<g opacity=\"{:.3}\">\n",
+                super::alpha_to_opacity(style.alpha)
             ));
+            self.draw_line_opaque(x1, y1, x2, y2, style);
+            self.output.push_str("</g>\n");
         } else {
-            stroke_pattern::append_attrs(&mut attrs, style.dash, width);
+            self.draw_line_opaque(x1, y1, x2, y2, style);
         }
-        attrs.push_str(&marker_start_attr);
-        attrs.push_str(&marker_end_attr);
-        self.output.push_str(&format!("<line {}/>\n", attrs));
     }
 
     fn draw_ellipse(&mut self, cx: f64, cy: f64, rx: f64, ry: f64, style: &ShapeStyle) {
@@ -4412,7 +4468,10 @@ impl Renderer for SvgRenderer {
             } else {
                 (std::borrow::Cow::Borrowed(data), mime_type)
             };
-        let base64_data = base64::engine::general_purpose::STANDARD.encode(&*render_data);
+        // 브라우저가 JPEG EXIF 방향으로 돌려 그리지 않게 한/글처럼 바이트 그대로의 방향을 둔다.
+        let upright = crate::renderer::image_resolver::upright_jpeg(&render_data);
+        let base64_data = base64::engine::general_purpose::STANDARD
+            .encode(upright.as_deref().unwrap_or(&render_data));
         let data_uri = format!("data:{};base64,{}", render_mime, base64_data);
         self.output.push_str(&format!(
             "<image x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" preserveAspectRatio=\"none\" href=\"{}\"/>\n",

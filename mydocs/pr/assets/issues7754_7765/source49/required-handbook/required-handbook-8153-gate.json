@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+  "baseline_sha256": "b2ea68f97a242d111522132b6c733f15a65b29b56e227943fd9c15f9c8d35597",
+  "metric": "silhouette_raw_match_percent",
+  "backend": "native-skia",
+  "precision": "0.01 percentage points",
+  "pages": 383,
+  "regressions": [],
+  "webfont_fallback": [],
+  "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source108-required-handbook/required-handbook-8153-native/silhouette_manifest.json",
+  "elapsed_seconds": 783.528
+}

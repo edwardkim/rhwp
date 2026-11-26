@@ -1,0 +1,492 @@
+{
+  "base": "2c0c1d205a54b8d5bd262241bac1391cffe0d801",
+  "binary_source_head": "953b43187325496645683fcc15ca989a815b0596",
+  "verified_head": "953b43187325496645683fcc15ca989a815b0596",
+  "rust": {
+    "count": 14093,
+    "binaries": 55,
+    "skipped": 45,
+    "terminal_summary": "────────────\n     Summary [1657.669s] 14093 tests run: 14093 passed (39 slow), 45 skipped"
+  },
+  "targeted": {
+    "native": {
+      "cases": 15,
+      "pages": 2413,
+      "minimum": "98.14",
+      "same_png": 2374,
+      "independent_print": {
+        "1853": {
+          "pages": 52,
+          "minimum": "98.40",
+          "tsv_sha256": "85e39b5f3008fd7f51373a8053c2adeebf3dcdd38c6f365b1b4ee491f58d8095",
+          "input_sha256": "46bd0142f7fe2f68dffb9768e08d65488feeb19f5fd6916f9ad90ae5d72a96a9",
+          "reference_pdf_sha256": "c3befae95a2135761066c44435a331bb55d0d27bac2f97d8487358f1b9f2bd9b",
+          "published_tsv": "mydocs/pr/assets/issue7766/law-amendment-native.tsv"
+        },
+        "husbandry-2024-one-up": {
+          "pages": 12,
+          "minimum": "99.98",
+          "tsv_sha256": "909e0a9233fb51f6c18ec6a5c76ca34e8abbb3ee9b4baecef27111034cccb2d7",
+          "input_sha256": "309494bf58da7c092eca2c6fe55918063d2f538820cbc3fc6f8c8196fcd3586a",
+          "reference_pdf_sha256": "3c86ba0cb8d57587c8c4be95e8babde1b119bb9147dd617d83d7ce4081368896",
+          "published_tsv": "mydocs/pr/assets/issue7767/animal-welfare-native.tsv"
+        },
+        "synam": {
+          "pages": 35,
+          "minimum": "98.99",
+          "tsv_sha256": "3b82feced7250f5469b9ab2b2d5744ee8fa8223dff28e585aa8a658b461240dc",
+          "input_sha256": "1dce9356ec316407b6c684d5a11190a44bb26da643a7749626763e781ab0c13b",
+          "reference_pdf_sha256": "d199640be90cb39acfde965bbeb66c787d01d179b6759c5d797cf91043c7d09d",
+          "published_tsv": "mydocs/pr/assets/issue7769/synam/native.tsv"
+        },
+        "chemical": {
+          "pages": 103,
+          "minimum": "99.53",
+          "tsv_sha256": "2d40ed836fa5d1cc7981ce4c8239de58e8993bf4b458b2681e29fe633d724b05",
+          "input_sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860",
+          "reference_pdf_sha256": "f8e5c0408e221080ede9a9a67b153d02d792d22961c738e46749641f32a32e79",
+          "published_tsv": "mydocs/pr/assets/issue7769/chemical-product-labeling/native.tsv"
+        },
+        "ktx": {
+          "pages": 1,
+          "minimum": "99.99",
+          "tsv_sha256": "2a1e837bee6e72e6bbc680c8595b19ccf8e98255decb58ac67f4a55ba8c65f94",
+          "input_sha256": "619bc919de3f2b8113fb9af0fcc808c754dc601ed9e66e49226280fd3d1ae032",
+          "reference_pdf_sha256": "a0798bc093be8521908d9d0e5f2bf557013370f12de455fb9886d4f4d6419787",
+          "published_tsv": "mydocs/pr/assets/issue7769/ktx-003/native.tsv"
+        },
+        "2439": {
+          "pages": 10,
+          "minimum": "100.00",
+          "tsv_sha256": "cd69186771b706c9ee855490c9c46fc4471589a8658df8076b89a360b68ddd4e",
+          "input_sha256": "674eabe66ea0ba783ad2cd398519c9893ba94956a22d9cb94b084db00d4d2c3d",
+          "reference_pdf_sha256": "f36a747c5f848d90e755abe2e730d932429a324fad9b7e822964934cd8f8eca4",
+          "published_tsv": "mydocs/pr/assets/issue7769/2439-repeat-grid/native.tsv"
+        },
+        "pig-hwp": {
+          "pages": 11,
+          "minimum": "99.48",
+          "tsv_sha256": "09899aa53d0abadd1809dc286c66b1ee537d30026a2d5a7acbfa8fe96d50632e",
+          "input_sha256": "1b99b763aac36a14a9f463e35ee894a23eb1083780040eab5e0f02a481c694b8",
+          "reference_pdf_sha256": "4d5abf857476fca43befe528d10221b668a85bb2d7497a2165da34e46c11b002",
+          "published_tsv": "mydocs/pr/assets/issue7770/pig-farm-variants-native.tsv"
+        },
+        "center": {
+          "pages": 20,
+          "minimum": "99.05",
+          "tsv_sha256": "c7b018843601b53d49875c11a5ec5b49c90fee4df9331154ab49eb8eb7853aae",
+          "input_sha256": "cb36c862d3d41757d15fb322b1733f0e0ce27bf20142db0a25c57a624739e23b",
+          "reference_pdf_sha256": "71261bcb218eabc6f1b2af5ce81797a3505f417d1c2482ee5441dec11b6ba943",
+          "published_tsv": "mydocs/pr/assets/issue7771/idol-goods-native.tsv"
+        },
+        "hwpspec-2024-one-up": {
+          "pages": 178,
+          "minimum": "98.14",
+          "tsv_sha256": "2dc76f5c6be5257ebd2d63752840213bf06a6f5ab150277b3984f9a0e43c750e",
+          "input_sha256": "64df877f3c4accda0111ecf39d837da889741bb821b220cf61b6c126dc88364d",
+          "reference_pdf_sha256": "a4f52594ead9e292f6d124a362f91ed28d84fa29a3e23858232b1a95f7bedd39",
+          "published_tsv": "mydocs/pr/assets/issue7772/hwpspec-native.tsv"
+        },
+        "cbta-verified-2020": {
+          "pages": 204,
+          "minimum": "98.21",
+          "tsv_sha256": "1c6a657dac5a80f3a9e9673609746b38770c7a64f7385c75376d218cd599210d",
+          "input_sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7",
+          "reference_pdf_sha256": "0db1eb55eda0f1a4985eeaf187656c23499616b7dccddcbb7c874c0937e1b2e0",
+          "published_tsv": "mydocs/pr/assets/issue7772/cbta-native.tsv"
+        },
+        "policy-verified-2024": {
+          "pages": 215,
+          "minimum": "98.97",
+          "tsv_sha256": "5b7590e7985dfc90f52102b9818f70ed097e83d08e1f56f2a00150c7e293d3c1",
+          "input_sha256": "50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113",
+          "reference_pdf_sha256": "fed7aef74005a175baac87ad1415be126b881633390ec04b6b557447c164060d",
+          "published_tsv": "mydocs/pr/assets/issue7772/policy-native.tsv"
+        },
+        "sql-hwp5": {
+          "pages": 763,
+          "minimum": "99.57",
+          "tsv_sha256": "a34fd8e3c56caf235383f47bbcb8fc9bac908ba16516b282f89a633ccf7d095d",
+          "input_sha256": "a660a0d41898c8316479392c9687d81a15555431a581bdda988bf3598f6f0d51",
+          "reference_pdf_sha256": "e3e33b3bbe3370cb64f3775ea7f87d25ece53e1d4f4272ef2d713977e535e857",
+          "published_tsv": "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/sql-hwp5-native.tsv"
+        },
+        "sql-hwpx-2024-one-up": {
+          "pages": 763,
+          "minimum": "99.57",
+          "tsv_sha256": "3f2c9dee1427e8ca0db1c8e91793240359957ff01f0b4e222f6120d4d104f9e7",
+          "input_sha256": "3395e19bebea8b6689f383df1f4ea1ddb253dee91c4320392cc40e90e2e4f191",
+          "reference_pdf_sha256": "ad6c03db8a81c5a65ba064ef0933b8a37446f1b106fa4b09757bc8b4bb7f04a9",
+          "published_tsv": "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/sql-hwpx-native.tsv"
+        },
+        "pig-hwpx": {
+          "pages": 11,
+          "minimum": "99.48",
+          "tsv_sha256": "09899aa53d0abadd1809dc286c66b1ee537d30026a2d5a7acbfa8fe96d50632e",
+          "input_sha256": "3194188fb93047684c560f346d13015f31bf77a4d1ca02eed6ba3a19f0fa9f53",
+          "reference_pdf_sha256": "a3cd4b32d3539729650e3754407ffb2c876e1e1a75873d6e32454f24bff354f0",
+          "published_tsv": "mydocs/pr/assets/issue7770/pig-farm-variants-native.tsv"
+        },
+        "pr1674": {
+          "pages": 35,
+          "minimum": "98.38",
+          "tsv_sha256": "de0f1d6985aa7b00d0761176b6505f07d0b3b9b62cc22f714f65102ab1bc2449",
+          "input_sha256": "e8b4027cbb6cbec47ccaa70de4aa4111dbb39bcdcce6b8399386d5e28974524c",
+          "reference_pdf_sha256": "374d92ed8747d363601f3a76d5120d5afab705cbcfb103f8ed1283bf4260d69d",
+          "published_tsv": "mydocs/pr/assets/issue7776/native.tsv"
+        }
+      },
+      "comparison_sha256": "4089554a12c47825b80b38816599f0ba2c3186d0130640e18c257dff4c509369"
+    },
+    "wasm": {
+      "cases": 15,
+      "pages": 2413,
+      "minimum": "98.16",
+      "same_png": 2352,
+      "independent_print": {
+        "1853": {
+          "pages": 52,
+          "minimum": "98.40",
+          "tsv_sha256": "01e0daa10ea796b3025e26330585c46c871d966eab20c30e1226554dd439a071",
+          "input_sha256": "46bd0142f7fe2f68dffb9768e08d65488feeb19f5fd6916f9ad90ae5d72a96a9",
+          "reference_pdf_sha256": "c3befae95a2135761066c44435a331bb55d0d27bac2f97d8487358f1b9f2bd9b",
+          "published_tsv": "mydocs/pr/assets/issue7766/law-amendment-wasm.tsv"
+        },
+        "husbandry-2024-one-up": {
+          "pages": 12,
+          "minimum": "99.98",
+          "tsv_sha256": "3778f18e11b162be2d1f45839f18d4f0ee52654389fb891d3aee913e1a7a67ec",
+          "input_sha256": "309494bf58da7c092eca2c6fe55918063d2f538820cbc3fc6f8c8196fcd3586a",
+          "reference_pdf_sha256": "3c86ba0cb8d57587c8c4be95e8babde1b119bb9147dd617d83d7ce4081368896",
+          "published_tsv": "mydocs/pr/assets/issue7767/animal-welfare-wasm.tsv"
+        },
+        "synam": {
+          "pages": 35,
+          "minimum": "99.00",
+          "tsv_sha256": "2f2030d519ad6fc7ed0362259a3dced53f50ac964a3c8f997dbc3b4bf4651288",
+          "input_sha256": "1dce9356ec316407b6c684d5a11190a44bb26da643a7749626763e781ab0c13b",
+          "reference_pdf_sha256": "d199640be90cb39acfde965bbeb66c787d01d179b6759c5d797cf91043c7d09d",
+          "published_tsv": "mydocs/pr/assets/issue7769/synam/wasm.tsv"
+        },
+        "chemical": {
+          "pages": 103,
+          "minimum": "99.53",
+          "tsv_sha256": "c2da526baf421ee89ff73ef8b47c7049bad304b4b3c44feb6094bffd53525ceb",
+          "input_sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860",
+          "reference_pdf_sha256": "f8e5c0408e221080ede9a9a67b153d02d792d22961c738e46749641f32a32e79",
+          "published_tsv": "mydocs/pr/assets/issue7769/chemical-product-labeling/wasm.tsv"
+        },
+        "ktx": {
+          "pages": 1,
+          "minimum": "100.00",
+          "tsv_sha256": "d79edf41e634df158a44cba143a6e647830e86bf70eb52fcbc9e91055a14a7ab",
+          "input_sha256": "619bc919de3f2b8113fb9af0fcc808c754dc601ed9e66e49226280fd3d1ae032",
+          "reference_pdf_sha256": "a0798bc093be8521908d9d0e5f2bf557013370f12de455fb9886d4f4d6419787",
+          "published_tsv": "mydocs/pr/assets/issue7769/ktx-003/wasm.tsv"
+        },
+        "2439": {
+          "pages": 10,
+          "minimum": "100.00",
+          "tsv_sha256": "cd69186771b706c9ee855490c9c46fc4471589a8658df8076b89a360b68ddd4e",
+          "input_sha256": "674eabe66ea0ba783ad2cd398519c9893ba94956a22d9cb94b084db00d4d2c3d",
+          "reference_pdf_sha256": "f36a747c5f848d90e755abe2e730d932429a324fad9b7e822964934cd8f8eca4",
+          "published_tsv": "mydocs/pr/assets/issue7769/2439-repeat-grid/wasm.tsv"
+        },
+        "pig-hwp": {
+          "pages": 11,
+          "minimum": "99.49",
+          "tsv_sha256": "84c15941ac02faa6b720fc82c4387610eef60c7a067cb5e622356d8313eff629",
+          "input_sha256": "1b99b763aac36a14a9f463e35ee894a23eb1083780040eab5e0f02a481c694b8",
+          "reference_pdf_sha256": "4d5abf857476fca43befe528d10221b668a85bb2d7497a2165da34e46c11b002",
+          "published_tsv": "mydocs/pr/assets/issue7770/pig-farm-variants-wasm.tsv"
+        },
+        "center": {
+          "pages": 20,
+          "minimum": "99.04",
+          "tsv_sha256": "1a0c79ed5a1f5cfa2edb036fd9f67b47edf5c8fee8d35a846394453818f7c933",
+          "input_sha256": "cb36c862d3d41757d15fb322b1733f0e0ce27bf20142db0a25c57a624739e23b",
+          "reference_pdf_sha256": "71261bcb218eabc6f1b2af5ce81797a3505f417d1c2482ee5441dec11b6ba943",
+          "published_tsv": "mydocs/pr/assets/issue7771/idol-goods-wasm.tsv"
+        },
+        "hwpspec-2024-one-up": {
+          "pages": 178,
+          "minimum": "98.16",
+          "tsv_sha256": "0b1c1cb3fe554efa3d7b4e2023458095ffac078c9539cf043c9f6397312798d9",
+          "input_sha256": "64df877f3c4accda0111ecf39d837da889741bb821b220cf61b6c126dc88364d",
+          "reference_pdf_sha256": "a4f52594ead9e292f6d124a362f91ed28d84fa29a3e23858232b1a95f7bedd39",
+          "published_tsv": "mydocs/pr/assets/issue7772/hwpspec-wasm.tsv"
+        },
+        "cbta-verified-2020": {
+          "pages": 204,
+          "minimum": "98.22",
+          "tsv_sha256": "1fc305af1179b4c77c5d88c6174034ebe11fd01fe912936b55597d90abf72264",
+          "input_sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7",
+          "reference_pdf_sha256": "0db1eb55eda0f1a4985eeaf187656c23499616b7dccddcbb7c874c0937e1b2e0",
+          "published_tsv": "mydocs/pr/assets/issue7772/cbta-wasm.tsv"
+        },
+        "policy-verified-2024": {
+          "pages": 215,
+          "minimum": "98.86",
+          "tsv_sha256": "f3ff2e0016d150f8f7583fd7ee98e879b5462e7e6a2f3a2da330796066b6592b",
+          "input_sha256": "50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113",
+          "reference_pdf_sha256": "fed7aef74005a175baac87ad1415be126b881633390ec04b6b557447c164060d",
+          "published_tsv": "mydocs/pr/assets/issue7772/policy-wasm.tsv"
+        },
+        "sql-hwp5": {
+          "pages": 763,
+          "minimum": "99.34",
+          "tsv_sha256": "9bb22f6695039a784b7de09656d33fb94239f42bac6c80d69fd0033f57163462",
+          "input_sha256": "a660a0d41898c8316479392c9687d81a15555431a581bdda988bf3598f6f0d51",
+          "reference_pdf_sha256": "e3e33b3bbe3370cb64f3775ea7f87d25ece53e1d4f4272ef2d713977e535e857",
+          "published_tsv": "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/sql-hwp5-wasm.tsv"
+        },
+        "sql-hwpx-2024-one-up": {
+          "pages": 763,
+          "minimum": "99.34",
+          "tsv_sha256": "cfcac1a1d94fd117e3922054ccb24df3d14c69ff65db30f3447a5aeb3ddec36c",
+          "input_sha256": "3395e19bebea8b6689f383df1f4ea1ddb253dee91c4320392cc40e90e2e4f191",
+          "reference_pdf_sha256": "ad6c03db8a81c5a65ba064ef0933b8a37446f1b106fa4b09757bc8b4bb7f04a9",
+          "published_tsv": "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/sql-hwpx-wasm.tsv"
+        },
+        "pig-hwpx": {
+          "pages": 11,
+          "minimum": "99.49",
+          "tsv_sha256": "84c15941ac02faa6b720fc82c4387610eef60c7a067cb5e622356d8313eff629",
+          "input_sha256": "3194188fb93047684c560f346d13015f31bf77a4d1ca02eed6ba3a19f0fa9f53",
+          "reference_pdf_sha256": "a3cd4b32d3539729650e3754407ffb2c876e1e1a75873d6e32454f24bff354f0",
+          "published_tsv": "mydocs/pr/assets/issue7770/pig-farm-variants-wasm.tsv"
+        },
+        "pr1674": {
+          "pages": 35,
+          "minimum": "98.51",
+          "tsv_sha256": "306f0461083992b2faafe721fb0eeee4db086e61fba0d4954563f38d5e5abe90",
+          "input_sha256": "e8b4027cbb6cbec47ccaa70de4aa4111dbb39bcdcce6b8399386d5e28974524c",
+          "reference_pdf_sha256": "374d92ed8747d363601f3a76d5120d5afab705cbcfb103f8ed1283bf4260d69d",
+          "published_tsv": "mydocs/pr/assets/issue7776/wasm.tsv"
+        }
+      },
+      "comparison_sha256": "32cfd550a7e38a253cc3fd9e01fe1f100cbb8e3f14756b6b8455e41edd6bfa0e"
+    }
+  },
+  "protected": {
+    "native": {
+      "conditions": 23,
+      "pages": 2023,
+      "minimum": "98.86",
+      "handbook": {
+        "handbook-hwp": "99.97",
+        "handbook-hwpx": "99.97"
+      },
+      "changed_png": 16,
+      "base_below_official": [
+        {
+          "document": "nested",
+          "page": 6,
+          "official_raw": "100.00",
+          "base_raw": "99.89",
+          "candidate_raw": "100.00"
+        },
+        {
+          "document": "nested",
+          "page": 11,
+          "official_raw": "100.00",
+          "base_raw": "99.99",
+          "candidate_raw": "100.00"
+        },
+        {
+          "document": "nested",
+          "page": 12,
+          "official_raw": "100.00",
+          "base_raw": "99.99",
+          "candidate_raw": "100.00"
+        },
+        {
+          "document": "nested",
+          "page": 16,
+          "official_raw": "100.00",
+          "base_raw": "99.64",
+          "candidate_raw": "100.00"
+        }
+      ],
+      "comparison_sha256": "471125e87af7fd73218a7d1b2fff35ca565f24044998842df01f41f1a83c1662"
+    },
+    "wasm": {
+      "conditions": 23,
+      "pages": 2023,
+      "minimum": "98.86",
+      "handbook": {
+        "handbook-hwp": "99.96",
+        "handbook-hwpx": "99.96"
+      },
+      "changed_png": 11,
+      "base_below_official": [],
+      "comparison_sha256": "36c64256e56fc104c2e2c92f9ae6faf6ef5ce66d56b0b8837c371ee6e6424b32"
+    }
+  },
+  "earlier_prs": {
+    "native": {
+      "pages": 539,
+      "changed_pages": 2
+    },
+    "wasm": {
+      "pages": 539,
+      "changed_pages": 2
+    }
+  },
+  "sql_native_ownership": {
+    "hwp5": {
+      "base": "2c0c1d205a54b8d5bd262241bac1391cffe0d801",
+      "candidate": "953b43187325496645683fcc15ca989a815b0596",
+      "sql_page": 489,
+      "source_paragraph": 17686,
+      "ascii_width_px": "555.0",
+      "body_line_width_px": "566.9",
+      "page_489_tree_sha256": {
+        "candidate": "db2e55c092e2632f63d745c2795fa90ab07b766bbb3050130a2f8aa0dc25e0ff",
+        "base": "db2e55c092e2632f63d745c2795fa90ab07b766bbb3050130a2f8aa0dc25e0ff"
+      },
+      "footers": {
+        "125": {
+          "text": "- 119 -",
+          "body_to_footer_gap_px": "6.0",
+          "tree_sha256": {
+            "candidate": "e9c449ba09c5e55df8242a5a1f3019bf46feff2e4af23c82fcdc6b225cd78ed0",
+            "base": "e9c449ba09c5e55df8242a5a1f3019bf46feff2e4af23c82fcdc6b225cd78ed0"
+          }
+        },
+        "243": {
+          "text": "- 237 -",
+          "body_to_footer_gap_px": "14.4",
+          "tree_sha256": {
+            "candidate": "1698350484b5783dde883f4886fcf53835d97064a53b3fbac6b3b267bcef85e1",
+            "base": "1698350484b5783dde883f4886fcf53835d97064a53b3fbac6b3b267bcef85e1"
+          }
+        },
+        "339": {
+          "text": "- 333 -",
+          "body_to_footer_gap_px": "16.5",
+          "tree_sha256": {
+            "candidate": "61eb40f5445626927f6bc70d2d5fdc953b43ea91dfae07ca433483ae2477815b",
+            "base": "61eb40f5445626927f6bc70d2d5fdc953b43ea91dfae07ca433483ae2477815b"
+          }
+        },
+        "397": {
+          "text": "- 391 -",
+          "body_to_footer_gap_px": "16.5",
+          "tree_sha256": {
+            "candidate": "9fbc9ce9e6eb7fbf253ac0c17a3edb058fc7948ddb201ed0b5de5ac7fea4dade",
+            "base": "9fbc9ce9e6eb7fbf253ac0c17a3edb058fc7948ddb201ed0b5de5ac7fea4dade"
+          }
+        },
+        "554": {
+          "text": "- 548 -",
+          "body_to_footer_gap_px": "16.5",
+          "tree_sha256": {
+            "candidate": "cdf95d29d40c90de23dec1ff3bc0ed6809c67bd64a31fda61cb0d9879272995b",
+            "base": "cdf95d29d40c90de23dec1ff3bc0ed6809c67bd64a31fda61cb0d9879272995b"
+          }
+        },
+        "588": {
+          "text": "- 582 -",
+          "body_to_footer_gap_px": "18.7",
+          "tree_sha256": {
+            "candidate": "4a487c067efa80c7c387f762a992622340fc6cda332667558441eacf8ec8454e",
+            "base": "4a487c067efa80c7c387f762a992622340fc6cda332667558441eacf8ec8454e"
+          }
+        },
+        "744": {
+          "text": "- 738 -",
+          "body_to_footer_gap_px": "14.4",
+          "tree_sha256": {
+            "candidate": "3990c2b7ed8aa77037e8939e26056f00a45a33a42b6b751f3520a27dd4c74bd6",
+            "base": "3990c2b7ed8aa77037e8939e26056f00a45a33a42b6b751f3520a27dd4c74bd6"
+          }
+        }
+      }
+    },
+    "hwpx": {
+      "source_head": "953b43187325496645683fcc15ca989a815b0596",
+      "document": "sql-hwpx-2024-one-up",
+      "sql_page": 489,
+      "source_paragraph": 17686,
+      "ascii_width_px": "555.0",
+      "body_line_width_px": "566.9",
+      "render_tree_sha256": "db2e55c092e2632f63d745c2795fa90ab07b766bbb3050130a2f8aa0dc25e0ff",
+      "footers": {
+        "125": {
+          "text": "- 119 -",
+          "body_to_footer_gap_px": "6.0",
+          "tree_sha256": "e9c449ba09c5e55df8242a5a1f3019bf46feff2e4af23c82fcdc6b225cd78ed0"
+        },
+        "243": {
+          "text": "- 237 -",
+          "body_to_footer_gap_px": "14.4",
+          "tree_sha256": "1698350484b5783dde883f4886fcf53835d97064a53b3fbac6b3b267bcef85e1"
+        },
+        "339": {
+          "text": "- 333 -",
+          "body_to_footer_gap_px": "16.5",
+          "tree_sha256": "61eb40f5445626927f6bc70d2d5fdc953b43ea91dfae07ca433483ae2477815b"
+        },
+        "397": {
+          "text": "- 391 -",
+          "body_to_footer_gap_px": "16.5",
+          "tree_sha256": "9fbc9ce9e6eb7fbf253ac0c17a3edb058fc7948ddb201ed0b5de5ac7fea4dade"
+        },
+        "554": {
+          "text": "- 548 -",
+          "body_to_footer_gap_px": "16.5",
+          "tree_sha256": "cdf95d29d40c90de23dec1ff3bc0ed6809c67bd64a31fda61cb0d9879272995b"
+        },
+        "588": {
+          "text": "- 582 -",
+          "body_to_footer_gap_px": "18.7",
+          "tree_sha256": "4a487c067efa80c7c387f762a992622340fc6cda332667558441eacf8ec8454e"
+        },
+        "744": {
+          "text": "- 738 -",
+          "body_to_footer_gap_px": "14.4",
+          "tree_sha256": "3990c2b7ed8aa77037e8939e26056f00a45a33a42b6b751f3520a27dd4c74bd6"
+        }
+      }
+    }
+  },
+  "updated_representative": {
+    "verified_head": "953b43187325496645683fcc15ca989a815b0596",
+    "binaries_from": "953b43187325496645683fcc15ca989a815b0596",
+    "issue": 7775,
+    "page": 7,
+    "tracked_path": "mydocs/pr/assets/issue7770/pig-farm-hwpx-page-07.png",
+    "previous_sha256": "f60705fc93f75b1264504ccf6776d772db5e4020059eaac7e52a425ba45e9870",
+    "updated_sha256": "14289ac80bff27f8c664227990db5225deca158ab865c45fdba41c26c03e267a",
+    "panel_sha256": {
+      "hancom_print": "bb6fecb2fb75b1356e5e4c350c2f6335b4b8b1b2a4b83956e43ac954332ca093",
+      "native": "ff9b8ffca784daeef1674afe4f1f89fcce683f734be2cbfc32833f319ed49b74",
+      "wasm": "80c43d28e84cd8aeb3971b2b8642165664689bc4212b2a1b6f7af191884458cb"
+    },
+    "silhouette_raw_match_percent": {
+      "native": "100.00",
+      "wasm": "100.00"
+    }
+  },
+  "pr9380": {
+    "path": "pr9380-rebase-verification.json",
+    "sha256": "86cef45f33cf9351de3109cc4755ccea552d2a3a3454fb7dab01438132105674",
+    "f11_checks_per_source": 46
+  },
+  "official_protected_baseline_sha256": "ae4559e3d3d04f60da7887a11e889bfb4f6c5fa86df1e6c47745e9f6bb796a68",
+  "representative_pages": {
+    "pages": 24,
+    "path": "merge-review/metrics.json",
+    "sha256": "8161efa6e40afd877d69a15c09973d797a616a5289ad3afe9097ff4158623488"
+  },
+  "publication_rebase": {
+    "base": "4cd460efd53377f73c896295f4b1c07b624d5398",
+    "source_head": "5bbcc3ae97f5193b965a18297952103868e6eb5f",
+    "tree": "babe7387577bd450a2f5bbe3a1f66db00f1e67a7",
+    "input_equivalence": {
+      "path": "rebase-input-equivalence.json",
+      "sha256": "3ac2fc7d49738e202bc505a4daffbbfb2eefe932cb809d39e8109e4c243a60a9"
+    }
+  }
+}

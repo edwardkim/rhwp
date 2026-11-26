@@ -1,0 +1,215 @@
+{
+  "tested_product_commit": "c1504cb12199081c010188557ff2f1e14d36d5ef",
+  "tested_product_tree": "4f4e9c999113b092d33648e7eacf6b4d7223df6a",
+  "source_equivalent_merge_with_pr9359": "f6bc02a423eec920937d5339f3f4244802c288e5",
+  "minimal_fontconfig_files": [
+    "ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+    "ttfs/opensource/NotoSansKR-Regular.ttf",
+    "ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+    "ttfs/opensource/RHWPOldHangul-Regular.otf",
+    "ttfs/opensource/RHWPPublicBatang-Regular.ttf"
+  ],
+  "full_regression": [
+    "Summary [ 961.911s] 14017 tests run: 14017 passed (4 slow), 45 skipped"
+  ],
+  "focused_regression": [
+    "Summary [   0.352s] 25 tests run: 25 passed, 1767 skipped"
+  ],
+  "original_focused_regression": [
+    "Summary [   0.051s] 5 tests run: 2 passed, 3 failed, 357 skipped"
+  ],
+  "gates": [
+    {
+      "name": "native-lib",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib"
+      ],
+      "exit": 0,
+      "output_summary": [
+        "test result: ok. 3851 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 24.76s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ],
+      "log_sha256": "e4dceb3c853f6ba3adaa44e5e84f191591f41151cbf4d0613b0435af8870692f"
+    },
+    {
+      "name": "native-picture",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "${CARGO_TARGET_DIR}",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "output_summary": [
+        "Summary [   1.727s] 2 tests run: 2 passed, 346 skipped"
+      ],
+      "log_sha256": "1eb6a6ae8ed598143765c31e4e29b22290be2d690cd358ef5d7aed7a98f4af3a"
+    },
+    {
+      "name": "native-pdf",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "${CARGO_TARGET_DIR}",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "output_summary": [
+        "Summary [   1.948s] 37 tests run: 37 passed, 311 skipped"
+      ],
+      "log_sha256": "6497b6d623cf4b4668ddb73ce265741e1df4511798617664367c639e92bb188e"
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "output_summary": [],
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "output_summary": [
+        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 29s"
+      ],
+      "log_sha256": "01e327e22ac07dc46d58423139d9a031d54f73ab8008235253b989d2444a6a17"
+    },
+    {
+      "name": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "output_summary": [
+        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 14s"
+      ],
+      "log_sha256": "bd9b56d30b4ca84fa22e2d3b03aacf672600fa0bfe720577b308d6920a66c8f4"
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace"
+      ],
+      "exit": 0,
+      "output_summary": [
+        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 3m 20s"
+      ],
+      "log_sha256": "18b08c613e48bc84f7dbc88fc2fe7dd175362ab7ee1da457df8054853b611dee"
+    },
+    {
+      "name": "clippy-workspace",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "output_summary": [
+        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 51s"
+      ],
+      "log_sha256": "977cda681bda69b3908a8c656ac22d4afc7d6549f73e2284ac4f4806ad36b89b"
+    },
+    {
+      "name": "release-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--release"
+      ],
+      "exit": 0,
+      "output_summary": [
+        "Finished `release` profile [optimized] target(s) in 23m 50s"
+      ],
+      "log_sha256": "42649023b9eff4f2e35a96fc3b335974ec8af1e5fb52dfa6f2edae50946b17d2"
+    },
+    {
+      "name": "release-lib",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--release",
+        "--lib"
+      ],
+      "exit": 0,
+      "output_summary": [
+        "test result: ok. 3794 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 18.42s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ],
+      "log_sha256": "22fd878cb4e50d81ed4b6ec50ad667984d624d0e18910b32042cc95cf68b1ab7"
+    },
+    {
+      "name": "doctest",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--doc"
+      ],
+      "exit": 0,
+      "output_summary": [
+        "test result: ok. 8 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 2.82s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ],
+      "log_sha256": "7866c95c295f627d62a0b5ed3cc1bedfabe6aebbfed9f95b0b4e6e7303d32c85"
+    }
+  ]
+}

@@ -20,8 +20,8 @@ fn write_document_export(path: &std::path::Path, bytes: &[u8]) -> std::io::Resul
     Ok(output.metadata()?.len() as usize)
 }
 
-fn parse_conversion_verify_args(
-    args: &[String],
+fn parse_conversion_verify_args<'a>(
+    args: impl IntoIterator<Item = &'a String>,
     usage: &str,
     min_positionals: usize,
     max_positionals: usize,
@@ -430,9 +430,10 @@ pub(crate) fn convert_hwp(args: &[String]) -> i32 {
 /// `export_hwpx_native()` 로 HWPX(ZIP) 직렬화한다. `convert`(배포용 해제 → .hwp 출력)와
 /// 별개의 포맷 변환 명령. 출력 생략 시 입력과 같은 폴더에 `<stem>.hwpx`.
 pub(crate) fn export_hwpx(args: &[String]) -> i32 {
+    let recover_alpha = args.iter().any(|arg| arg == "--recover-legacy-alpha");
     let (positionals, verify_options) = match parse_conversion_verify_args(
-        args,
-        "rhwp export-hwpx <입력.hwp|입력.hwpx> [출력.hwpx] [--verify] [--verify-pages] [--json]",
+        args.iter().filter(|arg| arg.as_str() != "--recover-legacy-alpha"),
+        "rhwp export-hwpx <입력.hwp|입력.hwpx> [출력.hwpx] [--recover-legacy-alpha] [--verify] [--verify-pages] [--json]",
         1,
         2,
         true,
@@ -459,7 +460,7 @@ pub(crate) fn export_hwpx(args: &[String]) -> i32 {
             output_path.display()
         );
     }
-    if output_path == input_path {
+    if paths_refer_to_same_file(input_path, &output_path) {
         eprintln!("오류: 입력과 출력 경로가 같습니다. 원본을 덮어쓰지 않습니다.");
         return EXIT_USAGE;
     }
@@ -477,7 +478,19 @@ pub(crate) fn export_hwpx(args: &[String]) -> i32 {
     };
     let source_format = rhwp::parser::detect_format(&data);
 
-    let doc = match load_document(&data) {
+    let loaded = if recover_alpha {
+        if source_format != rhwp::parser::FileFormat::Hwpx {
+            eprintln!("--recover-legacy-alpha에는 구버전 rhwp가 저장한 HWPX 입력이 필요합니다.");
+            return EXIT_USAGE;
+        }
+        let password = crate::cli_password();
+        rhwp::DocumentCore::from_legacy_rhwp_hwpx(&data, password.as_deref().map(str::as_bytes))
+            .map(rhwp::wasm_api::HwpDocument::from)
+            .map_err(|error| crate::classify_hwp_error(&error.to_string()))
+    } else {
+        load_document(&data)
+    };
+    let doc = match loaded {
         Ok(d) => d,
         Err(e) => return e.report(),
     };

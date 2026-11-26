@@ -1,0 +1,30 @@
+{
+  "scope": "Original TTF, verified TTC faces with independent PDF glyph identity, then original ENJGT CFF. Supply actual bytes to both backend loaders; no installed fonts changed.",
+  "files": [
+    {
+      "path": "/usr/local/share/fonts/hancom-office-2020/Install/dotumche.ttf",
+      "sha256": "097a83c15227aa0b01bba1c446d2cf67ac04694052e60d41fef557ed5a0a8a62",
+      "bytes": 4596832,
+      "kind": "original-ttf"
+    },
+    {
+      "path": "/home/tsjang/.local/share/fonts/rhwp-pr9237/gulim.ttc",
+      "sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+      "bytes": 13531200,
+      "kind": "verified-ttc"
+    },
+    {
+      "path": "/home/tsjang/.local/share/fonts/rhwp-protected-reference/0ea38ac53e8d-batang.TTC",
+      "sha256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+      "bytes": 16258580,
+      "kind": "verified-ttc"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-canonical-otf-recovery/25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659.otf",
+      "sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+      "bytes": 71044,
+      "kind": "original-cff-latin",
+      "namespace_note": "Exact original CFF archive is supplied directly; Source114 had the same archive bytes mounted over its host path."
+    }
+  ]
+}

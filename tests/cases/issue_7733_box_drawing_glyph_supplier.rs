@@ -65,7 +65,7 @@ fn print_uses_the_same_program_that_supplied_the_measured_glyph() {
 }
 
 #[test]
-fn explicit_hft_and_existing_supplier_keep_their_own_programs() {
+fn explicit_legacy_and_existing_supplier_keep_their_own_programs() {
     let mut hft = style("BatangChe");
     hft.source_font_is_ttf = false;
     hft.source_font_is_hft = true;
@@ -98,7 +98,7 @@ fn directly_supplied_program_hit_precedes_the_reference_programs_missing_glyph()
 }
 
 #[test]
-fn original_hanyang_hft_right_bar_keeps_its_independent_full_em_advance() {
+fn original_hanyang_legacy_right_bar_keeps_its_independent_full_em_advance() {
     // 독립 한컴 2020 Print의 T11 /Widths=1000, FontMatrix=.001이다.
     // 표시용 프로그램의 결측 때문에 이 원본 폭을 반각으로 추정하면 잉크가 눌린다.
     let mut source = style("HY Sinmyeongjo");
@@ -117,7 +117,7 @@ fn original_hanyang_hft_right_bar_keeps_its_independent_full_em_advance() {
 }
 
 #[test]
-fn another_hft_source_does_not_inherit_the_hanyang_right_bar_contract() {
+fn another_legacy_source_does_not_inherit_the_hanyang_right_bar_contract() {
     let mut source = style("BatangChe");
     source.source_font_is_ttf = false;
     source.source_font_is_hft = true;

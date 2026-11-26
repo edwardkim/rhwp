@@ -1,0 +1,367 @@
+{
+  "base": "d7b5286cbf6401678a70eed3d66236a68dd2a72c",
+  "branch": "task/7754-nine-fidelity-issues",
+  "new_prints": [
+    {
+      "issue": "7756",
+      "key": "bokhak",
+      "path": "pdf/issue7756/bokhak-original-print-2024.pdf",
+      "bytes": 109791,
+      "sha256": "38ff94fabff9672417bef2d17986b3d9944e7818fe42e091294024f737e104f4",
+      "job_id": "c7469fc8-ead8-417e-9283-5f0ddedb8cae",
+      "print": {
+        "job_id": "c7469fc8-ead8-417e-9283-5f0ddedb8cae",
+        "status": "success",
+        "target": "pdf",
+        "input_filename": "복학원서.hwp",
+        "output_filename": "bokhak-original-print-2024.pdf",
+        "size": 109791,
+        "sha256": "38ff94fabff9672417bef2d17986b3d9944e7818fe42e091294024f737e104f4",
+        "mime_type": "application/pdf",
+        "engine": "2024",
+        "engine_profile": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "logical_page_count": null,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "elapsed_ms": 24959,
+        "worker_elapsed_ms": 23391,
+        "worker_bits": 32,
+        "input_preprocess": "scripts_disabled"
+      },
+      "pdfinfo": {
+        "Creator": "         Hancom PDF 1.3.0.550",
+        "Producer": "        Hancom PDF 1.3.0.550",
+        "Pages": "           1"
+      }
+    },
+    {
+      "issue": "7755",
+      "key": "market",
+      "path": "pdf/issue7755/market-2017-original-print-2024.pdf",
+      "bytes": 3539034,
+      "sha256": "dac4728352b4a67665a1c2760eed5d9fb4ab204763ae0d11035d51aeeca681aa",
+      "job_id": "0e944042-5864-47bf-853f-e99bf5c1314c",
+      "print": {
+        "job_id": "0e944042-5864-47bf-853f-e99bf5c1314c",
+        "status": "success",
+        "target": "pdf",
+        "input_filename": "1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp",
+        "output_filename": "market-2017-original-print-2024.pdf",
+        "size": 3539034,
+        "sha256": "dac4728352b4a67665a1c2760eed5d9fb4ab204763ae0d11035d51aeeca681aa",
+        "mime_type": "application/pdf",
+        "engine": "2024",
+        "engine_profile": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 315,
+        "logical_page_count": null,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "elapsed_ms": 143692,
+        "worker_elapsed_ms": 138933,
+        "worker_bits": 32,
+        "input_preprocess": "scripts_disabled"
+      },
+      "pdfinfo": {
+        "Creator": "         Hancom PDF 1.3.0.550",
+        "Producer": "        Hancom PDF 1.3.0.550",
+        "Pages": "           315"
+      },
+      "current_usage": "diagnostic only; observed 5/6 scaling; superseded by the user-supplied manual Print"
+    },
+    {
+      "issue": "7761",
+      "key": "onsaemiro",
+      "path": "pdf/issue7761/onsaemiro-hwp-original-print-2024.pdf",
+      "bytes": 720126,
+      "sha256": "8015d2d28ee20ba66579f9375a0e36dfdd8e8725228015dc807748110bc09219",
+      "job_id": "ee06a85e-dd98-4e92-8895-f7c41b856420",
+      "print": {
+        "job_id": "ee06a85e-dd98-4e92-8895-f7c41b856420",
+        "status": "success",
+        "target": "pdf",
+        "input_filename": "[2027] 온새미로 1 본교재.hwp",
+        "output_filename": "onsaemiro-hwp-original-print-2024.pdf",
+        "size": 720126,
+        "sha256": "8015d2d28ee20ba66579f9375a0e36dfdd8e8725228015dc807748110bc09219",
+        "mime_type": "application/pdf",
+        "engine": "2024",
+        "engine_profile": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 46,
+        "logical_page_count": null,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "elapsed_ms": 66438,
+        "worker_elapsed_ms": 64142,
+        "worker_bits": 32,
+        "input_preprocess": "scripts_disabled"
+      },
+      "pdfinfo": {
+        "Creator": "         Hancom PDF 1.3.0.550",
+        "Producer": "        Hancom PDF 1.3.0.550",
+        "Pages": "           46"
+      }
+    },
+    {
+      "issue": "7765",
+      "key": "regulatory-hwpx",
+      "path": "pdf/issue7765/regulatory-86712-hwpx-original-print-2024.pdf",
+      "bytes": 709670,
+      "sha256": "369cf882ad36c1aea27ff4f4ad6fa9d66720d7638a6e8793b0b9b79f75a443f8",
+      "job_id": "07f76c0f-d34a-4701-8415-1adf1268fc94",
+      "print": {
+        "job_id": "07f76c0f-d34a-4701-8415-1adf1268fc94",
+        "status": "success",
+        "target": "pdf",
+        "input_filename": "86712_regulatory_analysis.hwpx",
+        "output_filename": "regulatory-86712-hwpx-original-print-2024.pdf",
+        "size": 709670,
+        "sha256": "369cf882ad36c1aea27ff4f4ad6fa9d66720d7638a6e8793b0b9b79f75a443f8",
+        "mime_type": "application/pdf",
+        "engine": "2024",
+        "engine_profile": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 64,
+        "logical_page_count": null,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "elapsed_ms": 47710,
+        "worker_elapsed_ms": 45290,
+        "worker_bits": 32,
+        "input_preprocess": "none"
+      },
+      "pdfinfo": {
+        "Creator": "         Hancom PDF 1.3.0.550",
+        "Producer": "        Hancom PDF 1.3.0.550",
+        "Pages": "           64"
+      }
+    },
+    {
+      "issue": "7756",
+      "key": "bokhak-2020",
+      "path": "pdf/issue7756/bokhak-original-print-2020.pdf",
+      "bytes": 120390,
+      "sha256": "0f2c0d48ca88d75761cc9d42da4d1e7b9771e41c1f0eb25f47dffa49b57c9b63",
+      "job_id": "8f97d597-5928-41b9-9f1f-6875e0c17b7d",
+      "print": {
+        "job_id": "8f97d597-5928-41b9-9f1f-6875e0c17b7d",
+        "status": "success",
+        "target": "pdf",
+        "input_filename": "복학원서.hwp",
+        "output_filename": "bokhak-original-print-2020.pdf",
+        "size": 120390,
+        "sha256": "0f2c0d48ca88d75761cc9d42da4d1e7b9771e41c1f0eb25f47dffa49b57c9b63",
+        "mime_type": "application/pdf",
+        "engine": "2020",
+        "engine_profile": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "logical_page_count": null,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "elapsed_ms": 19617,
+        "worker_elapsed_ms": 17006,
+        "worker_bits": 32,
+        "input_preprocess": "scripts_disabled"
+      },
+      "pdfinfo": {
+        "Creator": "         Hwp 2020 0.0.0.0",
+        "Producer": "        Hancom PDF 1.3.0.550",
+        "Pages": "           1"
+      }
+    }
+  ],
+  "distribution_reference": {
+    "input": "samples/task1768/distribution_doc.hwpx",
+    "input_sha256": "f217c02af7bc2a6641b9544afd29765ddccdd15021507b7554521f68b9d560dc",
+    "input_container": "HWP5 CFB; original filename extension is hwpx",
+    "input_preprocess": "none",
+    "transport_alias": "distribution_doc.hwp; identical bytes and SHA-256; extension only",
+    "source_saved_with": {
+      "product": "hancom-office-2018",
+      "version": "10.90.0.1719"
+    },
+    "source_commit": "22eccc1f70063618a225f5aa71b8b4d17a6f40f5",
+    "pdf": "pdf/issue7642-failed-regression-print-20261015/distribution_doc-2020.pdf",
+    "pdf_sha256": "0299869bf040b01e07a19dde600852e44aec406257916b781eabdfbce6ed5aba",
+    "job_id": "3598f345-2242-42a2-b3c0-f1747d567ee1",
+    "engine": "2020",
+    "result": {
+      "hancom_version": "11.0.0.9136",
+      "backend": "hwp-managed-direct-dll-host",
+      "input_format": "hwp",
+      "format": "pdf",
+      "bytes": 124189,
+      "pdf_page_count": 3,
+      "input_preprocess": "none",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    }
+  },
+  "prior_changes": [
+    {
+      "issue": "7754",
+      "prior_change": "8603c88e0de10dd434952d18b629513a71860c23 2026-09-29T13:02:29+09:00 테스트: 암호 HWPX의 근거 없는 쪽수 고정을 후속 이관",
+      "ancestor_of_base": true
+    },
+    {
+      "issue": "7755",
+      "prior_change": "396662b1577974428aaf0c8560842d72633acf14 2026-09-29T13:28:36+09:00 테스트: 시장구조조사의 실제 차단 쪽수·표 소속 검사 이관",
+      "ancestor_of_base": true
+    },
+    {
+      "issue": "7756",
+      "prior_change": "9da4787def8d10a4b78bf0e8b05ff33544c1abcc 2026-09-29T13:41:39+09:00 테스트: 복학원서의 실제 차단 워터마크·SVG 검사를 후속 이관",
+      "ancestor_of_base": true
+    },
+    {
+      "issue": "7757",
+      "prior_change": "dda9cab1440e30ff2a0db04a6ee1054e0ebc5efe 2026-09-29T14:10:18+09:00 검사: 배포용 HWPX의 실제 차단 두 배치 함수를 후속 이관",
+      "ancestor_of_base": true
+    },
+    {
+      "issue": "7759",
+      "prior_change": "8b0a0777ca324f69e895dcb6880eed862114c015 2026-09-29T14:38:05+09:00 검사: 폰트 추적 공개 HWP의 실제 차단 렌더핀만 이관",
+      "ancestor_of_base": true
+    },
+    {
+      "issue": "7761",
+      "prior_change": "d586cff463a58da8e1ffb7fa42f4b7d3b699f204 2026-09-29T15:41:59+09:00 검사: 낮은 피델리티 온새미로 HWP의 실패 해시만 이관",
+      "ancestor_of_base": true
+    },
+    {
+      "issue": "7762",
+      "prior_change": "9e22208799b126344d2dd5bb4e78f495de2afacf 2026-09-29T15:47:47+09:00 검사: 낮은 피델리티 온새미로 HWPX의 실패 해시만 이관",
+      "ancestor_of_base": true
+    },
+    {
+      "issue": "7765",
+      "prior_change": "8c64e9466100cd797f9126a33c4027a6491491ea 2026-09-29T20:39:15+09:00 회귀: 86712 복잡 분할 표의 실제 차단 검사 한 건을 #7445로 이관",
+      "ancestor_of_base": true
+    },
+    {
+      "issue": "7760",
+      "prior_change": "a285e5f4be8a20d8d06933e63fdec9d24837db9a 2026-09-29T15:26:30+09:00 검사: 낮은 피델리티 수출입 문서의 실패 해시 핀만 이관",
+      "ancestor_of_base": true
+    }
+  ],
+  "native_binary": {
+    "sha256": "91dc23f0a85d17485765b6452b463908aecd43b27c771e0db689a80e8aa87052",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp"
+    ],
+    "exit_code": 0,
+    "role": "fixed upstream/devel baseline before this task",
+    "source_commit": "d7b5286cbf6401678a70eed3d66236a68dd2a72c"
+  },
+  "regression_registration_minimum": 98,
+  "preferred_match": 100,
+  "rust_implementation_changed": true,
+  "manual_prints": [
+    {
+      "issue": "7755",
+      "key": "market-manual",
+      "kind": "user-supplied-manual-print",
+      "path": "pdf/issue7755/market-2017-manual-print-2024.pdf",
+      "bytes": 3058228,
+      "sha256": "89e32b43af21bde3cf869e76b816d214fa0bc30e3f14512c4c3af184430cd616",
+      "source": "samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp",
+      "source_sha256": "84d297375c48e1e903247a389e9ec3907e3cdc57a4a7e29a819a01c2a1e3a341",
+      "remote_path": "win10-ted:C:/Users/admin/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2024.pdf",
+      "download_exit_code": 0,
+      "job_id": null,
+      "provenance": "User supplied this file in response to the request for manual Hancom Print at 100 percent, one page per sheet, original page settings and fonts. This is not an MCP runtime receipt.",
+      "observed_geometry": "315 A4 pages; full-size geometry matches original source, unlike the earlier automatic 5/6 output.",
+      "pdfinfo": {
+        "Creator": "Hwp 2024 13.0.0.3901",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "CreationDate": "Sat Nov 21 19:34:20 2026 KST",
+        "Pages": "315",
+        "Page size": "595 x 841 pts (A4)"
+      }
+    }
+  ],
+  "active_reference_overrides": {
+    "7755": "pdf/issue7755/market-2017-manual-print-2024.pdf",
+    "7756": "pdf/issue7756/bokhak-original-print-2024.pdf",
+    "7757": "pdf/issue7642-failed-regression-print-20261015/distribution_doc-2020.pdf",
+    "7761": "pdf/issue7761/onsaemiro-hwp-original-print-2024.pdf",
+    "7765-hwp": "pdf/issue7382-regression-review/86712_regulatory_analysis-font-supplied-2024.pdf",
+    "7765-hwpx": "pdf/issue7765/regulatory-86712-hwpx-original-print-2024.pdf"
+  },
+  "snapshot_initial_rust_implementation_changed": false,
+  "current_producer_evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+}

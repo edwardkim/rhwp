@@ -1,0 +1,24 @@
+{
+  "label": "candidate-wasm",
+  "source_head": "4230d331b3e715761224fd515b1fed7ce28ba318",
+  "source_tree": "cdd877322f37bf8e2a77761b5afabeab10331c9d",
+  "command": [
+    "scripts/wasm-pack-locked.sh",
+    "--target",
+    "web",
+    "--out-dir",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source34"
+  ],
+  "started": 1795295109.7802017,
+  "exit_code": 0,
+  "seconds": 868.1891745501198,
+  "ended": 1795295977.9752452,
+  "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source34-candidate-wasm-build.log",
+  "files": {
+    "rhwp.js": "f38b73899bde75b74e9eb4ed924627595dee12339706d4ed88eeaf5d7c9d81fe",
+    "rhwp_bg.wasm": "1d0f360831e743012d6cbf9526ea8556b9afdd2febdbc776045a373e0f8471f5",
+    "rhwp.d.ts": "7c3482357fb8699019f0e6fa50813690d319f9637539d96fe1d0aeb63b657e54",
+    "rhwp_bg.wasm.d.ts": "f09264308010ae8ea1c25a1531ec59f6d47d91d2d327c594655a295bc2bdb65d"
+  },
+  "optimized_wrapper_completed": true
+}

@@ -1,0 +1,28 @@
+{
+  "head": "cef9ff9acc08f92431e89450945462514fffa772",
+  "scope": "focused",
+  "steps": [
+    {
+      "name": "coordinate-focused-final",
+      "started": "2026-11-21T19:08:53.421017+09:00",
+      "exit": 0,
+      "finished": "2026-11-21T19:09:44.003000+09:00"
+    }
+  ],
+  "successful_test_names": [
+    "issue_9272_table_tail_empty_lines_keep_flow::rewound_table_after_the_empty_lines_starts_on_the_next_page",
+    "issue_9272_table_tail_empty_lines_keep_flow::empty_lines_right_below_the_table_tail_keep_their_line_boxes",
+    "issue_9279_tac_table_shape_tail_spacing::shape_line_after_tac_table_line_keeps_the_stored_line_advance",
+    "issue_886_cellzone_fill_and_display_alias::issue_886_textbox_toc_leader_keeps_the_print_page_number_origin",
+    "issue_9239_caption_float_table_whole_row_defer::unsplittable_single_row_float_table_moves_whole_to_the_stored_next_page",
+    "issue_9239_caption_float_table_whole_row_defer::printed_ole_charts_keep_their_declared_outer_frames",
+    "issue_9239_caption_float_table_whole_row_defer::caption_paragraph_float_table_is_drawn_once_above_its_owner_table",
+    "issue_886_cellzone_fill_and_display_alias::issue_886_partial_table_paints_cellzone_fill",
+    "issue_9239_caption_float_table_whole_row_defer::source_gulimche_square_keeps_half_em_in_the_body_cells",
+    "issue_886_cellzone_fill_and_display_alias::issue_886_native_supply_keeps_installed_display_alias_over_generic_noto"
+  ],
+  "run": 10,
+  "passed": 10,
+  "selected_out": 1446,
+  "font_isolation": "macOS 사용자·추가 설치 글꼴 차단. 저장소 공개 테스트 fixture만 읽기 허용."
+}

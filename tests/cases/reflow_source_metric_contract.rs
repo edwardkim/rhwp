@@ -12,7 +12,7 @@ fn test_compose_empty_paragraph() {
 }
 
 #[test]
-fn hft_ascii_advances_match_independent_print() {
+fn legacy_ascii_advances_match_independent_print() {
     // 원본115쪽 Print 8/9쪽 88개와 분할 Print 148쪽 31개의
     // Type3 glyph advance는 모두 0.244em이다. 1024 단위 표의 양자화만 허용한다.
     let found = rhwp::renderer::font_metrics_data::find_metric("한양신명조", false, false).unwrap();

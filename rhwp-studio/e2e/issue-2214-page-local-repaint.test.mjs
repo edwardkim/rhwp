@@ -8,7 +8,7 @@
  * production-WASM + Chrome integration gate for #3815 on top of #3937/#3822; CI only syntax-checks
  * this browser scenario, so its measured timings and page/revision assertions are local evidence.
  *
- * [#2430] 한양·휴먼 HFT ASCII 실측 교정으로 대상 셀의 줄 채움 임계가 44→56,
+ * [#2430] 한양·휴먼 원본 글꼴의 ASCII 전진폭을 고쳐 대상 셀의 줄 채움 임계가 44→56,
  * 관측 범위가 50→62 로 이동했다 (native 계약: tests/issue_2214_page_local_repaint.rs
  * 의 cell_flow_transition_baseline 이 0..62 전 구간에서 경계 56 단일 관측).
  *

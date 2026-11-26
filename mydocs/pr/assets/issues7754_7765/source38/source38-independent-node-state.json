@@ -1,0 +1,56 @@
+{
+  "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
+  "started": 1795320613.9303527,
+  "results": [
+    {
+      "label": "studio-unit",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "cwd": "/home/tsjang/rhwp/rhwp-studio",
+      "exit_code": 0,
+      "seconds": 62.726513027912006,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-studio-unit.log"
+    },
+    {
+      "label": "studio-types",
+      "command": [
+        "node_modules/.bin/tsc",
+        "--noEmit"
+      ],
+      "cwd": "/home/tsjang/rhwp/rhwp-studio",
+      "exit_code": 0,
+      "seconds": 1.8435708151664585,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-studio-types.log"
+    },
+    {
+      "label": "rust-suite-policy",
+      "command": [
+        "/usr/local/bin/node",
+        "--test",
+        "scripts/tests/rust-test-suite-manifest.test.mjs",
+        "scripts/tests/rust-unit-test-tiers.test.mjs"
+      ],
+      "cwd": "/home/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 15.619780545122921,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-suite-policy.log"
+    },
+    {
+      "label": "font-trace-contract",
+      "command": [
+        "/usr/local/bin/node",
+        "--test",
+        "scripts/tests/font_decision_trace_contract.test.mjs"
+      ],
+      "cwd": "/home/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 1.3784190060105175,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-font-trace-contract.log"
+    }
+  ],
+  "running": null,
+  "passed": true,
+  "ended": 1795320695.5009344
+}

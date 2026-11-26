@@ -1,13 +1,15 @@
 //! 문서 생성/로딩/저장/설정 관련 native 메서드
 
 mod cell_line_frame;
+mod font_line_height;
 mod grown_table_heights;
-mod hft_outline_fonts;
 mod initial_fields;
+mod legacy_font_outlines;
 mod metafile_fonts;
 mod nested_row_page_starts;
 mod reflowed_table_frames;
 mod section_activation;
+mod word_compatibility_cache;
 
 use crate::document_core::validation::{
     CellPath, ValidationReport, ValidationWarning, WarningKind,
@@ -173,6 +175,20 @@ impl DocumentCore {
         Self::from_bytes_inner(data, None)
     }
 
+    /// 구형 rhwp에서 저장한 HWPX의 무표지 채움 투명도 1을 완전 투명으로 복원한다.
+    /// 일반 HWPX는 같은 숫자를 1/255로 쓰므로 사용자가 출처를 확인한 경우에만 호출한다.
+    pub fn from_legacy_rhwp_hwpx(data: &[u8], password: Option<&[u8]>) -> Result<Self, HwpError> {
+        let format = crate::parser::FileFormat::Hwpx;
+        if crate::parser::detect_format(data) != format {
+            return Err(HwpError::InvalidFile(
+                "구버전 투명도 복원에는 HWPX 입력이 필요합니다".into(),
+            ));
+        }
+        let parsed = crate::parser::parse_document_for_core(data, password, true)
+            .map_err(|e| HwpError::InvalidFile(e.to_string()))?;
+        Self::from_parsed_document(parsed, format)
+    }
+
     /// 문서를 열어 현재 Core를 원자적으로 교체한다.
     ///
     /// 성공 결과에는 문서·암호·metadata를 싣지 않는다. 암호의 보관 수명은
@@ -229,7 +245,7 @@ impl DocumentCore {
                 .map_err(|e| HwpError::InvalidFile(format!("PDF 오류: {e}")))?;
             return Self::from_pdf_bytes(data, &options);
         }
-        let parsed = crate::parser::parse_document_for_core(data, password)
+        let parsed = crate::parser::parse_document_for_core(data, password, false)
             .map_err(|e| HwpError::InvalidFile(e.to_string()))?;
         Self::from_parsed_document(parsed, source_format)
     }
@@ -323,7 +339,7 @@ impl DocumentCore {
         // [#7051] 계보 신호가 없는 저장본은 저장 줄 사다리로 HFT ASCII 반각 조판을 판정한다.
         // 편집 중 판정이 흔들리지 않도록 로드 시 한 번만 내린다.
         if !styles.hft_ascii_halfwidth {
-            let witnesses = crate::renderer::hft_ascii_evidence::count_hft_ascii_witnesses(
+            let witnesses = crate::renderer::legacy_ascii_evidence::count_hft_ascii_witnesses(
                 &document,
                 &styles,
                 DEFAULT_DPI,
@@ -349,14 +365,18 @@ impl DocumentCore {
         // [#8310] 한컴 HWPX 에서 만든 HWP(`/RhwpHwpxOrigin` = 2)는 원본 HWPX 의 저장 줄
         // 계약을 지닌다 — 원본 좌표와 "저장 줄 없음". 같은 문서가 같은 조판 입력이 되도록
         // HWPX 와 같은 XML import 규칙으로 연다.
-        let use_xml_import_semantics =
-            (matches!(
+        // [#9039] `/RhwpHwpxOrigin` = 1 계약을 옮겨 실은 HWPX 는 원래의 HWP 처럼 저장 줄을
+        // HWP 규칙으로 읽는다. XML 파서가 비워 두는 문단 필드 정규화는 그대로 한다.
+        let hwpx_with_hwp_line_rules = matches!(source_format, crate::parser::FileFormat::Hwpx)
+            && document.hwpx_origin_hwp_line_rules().is_some();
+        let use_xml_import_semantics = !hwpx_with_hwp_line_rules
+            && (matches!(
                 source_format,
                 crate::parser::FileFormat::Hwpx | crate::parser::FileFormat::Hml
             ) || (matches!(source_format, crate::parser::FileFormat::Hwp)
                 && document.hwpx_origin_keeps_source_lines()))
-                && !hwp5_origin_hwpx
-                && !document.layout_profile().hwp3_native_layout();
+            && !hwp5_origin_hwpx
+            && !document.layout_profile().hwp3_native_layout();
 
         // 비표준 lineseg 감지 — reflow 이전 시점에 IR을 그대로 검증.
         // 경고는 사용자에게 고지되며, 자동 reflow 는 `needs_line_seg_reflow` 조건에만 한정.
@@ -364,6 +384,7 @@ impl DocumentCore {
         // LinesegTextRunReflow는 HWPX textRun 전용 패턴. HWP3/HWP5/HML에는 확대 적용하지 않는다.
         let check_textrun_reflow = matches!(source_format, crate::parser::FileFormat::Hwpx)
             && !hwp5_origin_hwpx
+            && !hwpx_with_hwp_line_rules
             && !document.layout_profile().hwp3_native_layout();
         let validation_report = Self::validate_linesegs(&document, check_textrun_reflow);
 
@@ -385,6 +406,8 @@ impl DocumentCore {
         // [#7436] 저장 줄 없는 번호 문단도 번호 폭을 뺀 상자로 줄을 나눈다 — 재조판 전에
         // 문서 순서로 번호 문자열을 정해 둔다.
         crate::renderer::layout::assign_numbering_markers(&mut document.sections, &styles);
+        // [#9379] 글꼴에 어울리는 줄 높이를 적용하지 않고 저장된 줄의 세로 치수를 먼저 고친다.
+        font_line_height::refresh_stale_font_line_heights(&mut document);
         Self::reflow_zero_height_paragraphs(
             &mut document,
             &styles,
@@ -417,7 +440,7 @@ impl DocumentCore {
         // XML 파서가 채우지 않는 paragraph 필드를 HWP 직렬화/파싱 라운드트립 결과와 일치시킨다.
         // 1) char_shapes 빈 paragraph 에 default [(0,0)] 추가 (HWP 스펙상 최소 1개 요구)
         // 2) control_mask 를 controls 기반으로 재계산
-        if use_xml_import_semantics {
+        if use_xml_import_semantics || hwpx_with_hwp_line_rules {
             Self::normalize_xml_import_paragraphs(&mut document);
         }
 
@@ -432,7 +455,7 @@ impl DocumentCore {
             pagination: Vec::new(),
             styles,
             canvas_metrics: None,
-            hft_outline_fonts: Default::default(),
+            legacy_font_outlines: Default::default(),
             metafile_fonts: Default::default(),
             font_environment: None,
             host_font_environment: None,
@@ -458,6 +481,7 @@ impl DocumentCore {
             respect_vpos_reset: false,
             hangul2024_compat: false,
             print_png_rgb555: false,
+            print_bmp_full_color: false,
             print_job_context: None,
             measured_tables: Vec::new(),
             dirty_sections: storage
@@ -1847,6 +1871,89 @@ impl DocumentCore {
             })
     }
 
+    /// 저장 줄이 하나도 없는 칸에서 문단 기준 어울림(Square) 그림 한 장을 든 host 와 뒤 글.
+    ///
+    /// 한/글은 그림 옆에 남은 폭(최소 줄 폭 이상)으로 뒤 문단 글을 글자 단위로 흘려 쓴다.
+    /// 저장 줄이 없으면 이 줄을 만들 소유자가 밴드 프레임뿐이다. 저장 줄이 있는 칸은 그 줄이
+    /// 권위이므로 기존 소유자에 둔다.
+    fn unstored_local_square_picture_band(paragraphs: &[Paragraph], host: usize) -> bool {
+        use crate::model::shape::{HorzRelTo, TextWrap, VertRelTo};
+        let Some(p) = paragraphs.get(host) else {
+            return false;
+        };
+        let mut band = p.controls.iter().filter(|c| control_owns_body_band(c));
+        let single_square_picture = matches!(
+            (band.next(), band.next()),
+            (Some(Control::Picture(picture)), None)
+                if picture.common.text_wrap == TextWrap::Square
+                    && picture.common.horz_rel_to == HorzRelTo::Para
+                    && picture.common.vert_rel_to == VertRelTo::Para
+        );
+        // 다른 문단의 어울림 개체와 쌓이는 칸(겹침 허용 안 함 쌓기)은 그림 원점이 밴드 밖에서
+        // 정해지므로 기존 소유자에 둔다.
+        single_square_picture
+            && paragraphs
+                .iter()
+                .filter(|paragraph| paragraph.controls.iter().any(control_owns_body_band))
+                .count()
+                == 1
+            && paragraphs
+                .iter()
+                .all(crate::renderer::para_has_no_stored_line_segs)
+            && paragraphs[host + 1..]
+                .iter()
+                .any(|paragraph| paragraph.text.chars().any(|ch| !ch.is_whitespace()))
+    }
+
+    /// 그림 밴드가 실제로 그림 옆에 글을 흘리는가.
+    ///
+    /// host 빈 줄이 그림 옆(밴드 원점)에 남고, 뒤 문단의 글줄 하나 이상이 그림 옆 좁은 폭으로
+    /// 깎여야 한다. 그림이 칸 폭을 거의 덮어 옆에 최소 줄 폭이 없으면 밴드는 host 빈 줄을 그림
+    /// 아래로 내리는데, 한/글은 그 빈 줄로 칸을 키우지 않는다. 그런 칸은 기존 소유자
+    /// (`CellSquareStackTextFloor`)가 뒤 글을 그림 아래에 놓는다.
+    fn picture_band_flows_text_beside(
+        band_paragraphs: &[Paragraph],
+        rows: &[Vec<crate::model::paragraph::LineSeg>],
+        width: f64,
+        styles: &ResolvedStyleSet,
+        dpi: f64,
+    ) -> bool {
+        let host_stays_at_origin = rows
+            .first()
+            .and_then(|host_rows| host_rows.first())
+            .is_some_and(|row| row.vertical_pos == 0);
+        // 같은 높이에 놓인 두 조각은 LineSeg의 첫 조각·끝 조각 플래그를 유지한다.
+        // 칸 높이 측정과 실제 배치에서 두 조각이 같은 물리 줄을 차지한다.
+        // host 와 글 사이의 빈 문단은 기존 소유자가 자리 줄(400HU)로 세는 계약이 따로 있다.
+        // 밴드가 그 빈 줄을 다시 세면 칸 높이가 바뀌므로 뒤 문단이 모두 글일 때만 소유한다.
+        let successors_have_text = band_paragraphs
+            .iter()
+            .skip(1)
+            .all(|paragraph| paragraph.text.chars().any(|ch| !ch.is_whitespace()));
+        host_stays_at_origin
+            && successors_have_text
+            && band_paragraphs
+                .iter()
+                .zip(rows)
+                .skip(1)
+                .any(|(paragraph, paragraph_rows)| {
+                    let paragraph_box = crate::renderer::composer::ParagraphBox::body_for_style(
+                        width,
+                        styles.para_styles.get(paragraph.para_shape_id as usize),
+                        dpi,
+                    )
+                    .effective();
+                    paragraph.text.chars().any(|ch| !ch.is_whitespace())
+                        && paragraph_rows.iter().any(|row| {
+                            crate::renderer::composer::row_is_carved_from_box(
+                                row.column_start,
+                                row.segment_width,
+                                &paragraph_box,
+                            )
+                        })
+                })
+    }
+
     /// 셀·글상자·머리말/꼬리말의 문단 기준 어울림 개체는 본문과 같은 밴드 프레임을 쓴다.
     /// 실제 배제 영역을 함께 가진 프레임에서 원본 저장 줄을 수용하고, 맞지 않는 줄만
     /// 다시 발행한다. 쪽/용지 기준 개체와 저장 좌표를 보존하는 형식은 기존 소유자에 둔다.
@@ -1872,7 +1979,9 @@ impl DocumentCore {
                         if shape.common().horz_rel_to == HorzRelTo::Para
                             && shape.common().vert_rel_to == VertRelTo::Para)
                         });
-                if !local_shapes
+                let picture_band =
+                    !local_shapes && Self::unstored_local_square_picture_band(paragraphs, host);
+                if !(local_shapes || picture_band)
                     || !p.controls.iter().any(control_owns_body_band)
                     || (!admit_stored && !crate::renderer::para_has_no_stored_line_segs(p))
                 {
@@ -1888,7 +1997,16 @@ impl DocumentCore {
                     admit_stored,
                 ) {
                     let range = band.paragraph_range.clone();
-                    if range.start == host {
+                    if range.start == host
+                        && (!picture_band
+                            || Self::picture_band_flows_text_beside(
+                                &paragraphs[range.clone()],
+                                &band.line_segs,
+                                width,
+                                styles,
+                                dpi,
+                            ))
+                    {
                         for ((paragraph, (rows, spaces)), preserved) in paragraphs[range.clone()]
                             .iter_mut()
                             .zip(band.line_segs.into_iter().zip(band.space_metrics))
@@ -3529,6 +3647,7 @@ impl DocumentCore {
             if hwp3_origin {
                 Self::push_hwp3_origin_marker(&mut doc);
             }
+            self.write_word_compatibility_rows(&mut doc);
             Self::materialize_hwp5_missing_linesegs_for_hwpx_export(&mut doc);
             lower_markers(&mut doc);
             consume(&doc)

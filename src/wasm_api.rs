@@ -247,7 +247,7 @@ fn render_page_to_canvas_filtered_with_profile_impl(
         canvas.set_height(scaled_canvas_extent(tree.page_height, scale));
 
         let mut renderer = WebCanvasRenderer::new(canvas)?;
-        renderer.set_hft_outline_fonts(&document.hft_outline_fonts);
+        renderer.set_hft_outline_fonts(&document.legacy_font_outlines);
         renderer.show_paragraph_marks = document.show_paragraph_marks;
         renderer.show_control_codes = document.show_control_codes;
         renderer.set_scale(scale);
@@ -314,7 +314,7 @@ fn render_page_patch_to_canvas_filtered_with_profile_impl(
     }
 
     let mut renderer = WebCanvasRenderer::new(canvas)?;
-    renderer.set_hft_outline_fonts(&document.hft_outline_fonts);
+    renderer.set_hft_outline_fonts(&document.legacy_font_outlines);
     renderer.show_paragraph_marks = document.show_paragraph_marks;
     renderer.show_control_codes = document.show_control_codes;
     renderer.set_scale(scale);
@@ -838,7 +838,27 @@ impl HwpDocument {
         .map_err(JsValue::from)
     }
 
-    /// 실제 FontFace의 원본 HFT 프로그램을 paint 전용으로 등록한다. 재조판하지 않는다.
+    /// 인쇄용 글꼴 윤곽을 연결할 때 사용하는 원본 글꼴 선언과 현재 환경.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = getHftOutlineFontContext)]
+    pub fn get_hft_outline_font_context(&self) -> Result<String, JsValue> {
+        let faces: Vec<Vec<_>> = self
+            .document()
+            .doc_info
+            .font_faces
+            .iter()
+            .map(|language| {
+                language
+                    .iter()
+                    .map(|face| (face.name.as_str(), face.alt_type == 2))
+                    .collect()
+            })
+            .collect();
+        serde_json::to_string(&(faces, self.resolved_font_environment()))
+            .map_err(|error| JsValue::from_str(&error.to_string()))
+    }
+
+    /// FontFace에 적재한 글꼴을 인쇄용 윤곽으로 등록한다. 쪽 배치는 그대로 유지한다.
     #[wasm_bindgen(js_name = registerHftOutlineFont)]
     pub fn register_hft_outline_font(
         &mut self,
@@ -890,7 +910,7 @@ impl HwpDocument {
     #[cfg(target_arch = "wasm32")]
     #[wasm_bindgen(js_name = clearTextFontOutline)]
     pub fn clear_text_font_outline_wasm(&mut self, family: &str) {
-        self.hft_outline_fonts.clear_outline_family(family);
+        self.legacy_font_outlines.clear_outline_family(family);
     }
 
     /// TTC 원본 신원을 보존한 paint 후보. FontFace용 정규화 사본과 구분한다.
@@ -1347,7 +1367,7 @@ impl HwpDocument {
             canvas.set_height(scaled_canvas_extent(tree.page_height, scale));
 
             let mut renderer = WebCanvasRenderer::new(canvas)?;
-            renderer.set_hft_outline_fonts(&self.hft_outline_fonts);
+            renderer.set_hft_outline_fonts(&self.legacy_font_outlines);
             renderer.show_paragraph_marks = self.show_paragraph_marks;
             renderer.show_control_codes = self.show_control_codes;
             renderer.dim_master_pages = self.dim_master_pages;
@@ -1411,7 +1431,7 @@ impl HwpDocument {
         canvas.set_height(scaled_canvas_extent(tree.root.bbox.height, scale));
 
         let mut renderer = WebCanvasRenderer::new(canvas)?;
-        renderer.set_hft_outline_fonts(&self.hft_outline_fonts);
+        renderer.set_hft_outline_fonts(&self.legacy_font_outlines);
         renderer.show_paragraph_marks = self.show_paragraph_marks;
         renderer.show_control_codes = self.show_control_codes;
         renderer.set_scale(scale);
@@ -1530,7 +1550,7 @@ impl HwpDocument {
         canvas.set_height(scaled_canvas_extent(tree.root.bbox.height, scale));
 
         let mut renderer = WebCanvasRenderer::new(canvas)?;
-        renderer.set_hft_outline_fonts(&self.hft_outline_fonts);
+        renderer.set_hft_outline_fonts(&self.legacy_font_outlines);
         renderer.show_paragraph_marks = self.show_paragraph_marks;
         renderer.show_control_codes = self.show_control_codes;
         renderer.set_scale(scale);
@@ -3320,6 +3340,58 @@ impl HwpDocument {
             para_idx as usize,
             char_offset as usize,
         )
+    }
+
+    /// 주소 문단(`getBookmarks`의 `place` 꼴 JSON)의 글자 자리에서 앞(`forward`면 뒤)으로 가장 가까운
+    /// 선택 가능 컨트롤을 찾는다. 표 셀·글상자·캡션·각주·미주·머리말·꼬리말 안이면 그 영역을 먼저 훑고
+    /// 그 영역을 가진 컨트롤로 나온다. 결과의 `place`는 그 컨트롤이 든 문단 주소이고, 필드면 그 범위를 준다.
+    /// `from_control`이 0 이상이면 글자 자리 대신 그 컨트롤 앞(뒤) 형제부터 찾는다.
+    #[wasm_bindgen(js_name = findNearestControlAt)]
+    pub fn find_nearest_control_at(
+        &self,
+        place_json: &str,
+        char_offset: u32,
+        from_control: i32,
+        forward: bool,
+    ) -> Result<String, JsValue> {
+        self.core
+            .find_nearest_control_at_native(
+                &crate::document_core::queries::parse_bookmark_place(place_json)?,
+                char_offset as usize,
+                usize::try_from(from_control).ok(),
+                forward,
+            )
+            .map_err(|e| e.into())
+    }
+
+    /// 지정한 누름틀이 글자 위치를 포함하면 해당 필드 정보와 현재 범위를 반환한다.
+    #[wasm_bindgen(js_name = getFieldInfoForControlAt)]
+    pub fn get_field_info_for_control_at(
+        &self,
+        place_json: &str,
+        control_idx: u32,
+        char_offset: u32,
+    ) -> Result<String, JsValue> {
+        let place = crate::document_core::queries::parse_bookmark_place(place_json)?;
+        Ok(self
+            .core
+            .field_info_for_control_at(&place, control_idx as usize, char_offset as usize))
+    }
+
+    /// 주소 문단(`place` 꼴 JSON)의 `control_idx` 누름틀을 활성 필드로 둔다. 같은 글자 자리의 여러 누름틀 가운데
+    /// 고른 것에 입력이 들게 한다. 바뀌었으면 true다.
+    #[wasm_bindgen(js_name = setActiveFieldAt)]
+    pub fn set_active_field_at(
+        &mut self,
+        place_json: &str,
+        control_idx: u32,
+    ) -> Result<bool, JsValue> {
+        self.core
+            .set_active_field_at(
+                &crate::document_core::queries::parse_bookmark_place(place_json)?,
+                control_idx as usize,
+            )
+            .map_err(|e| e.into())
     }
 
     /// 문단 내 컨트롤의 텍스트 위치 배열을 반환한다.
@@ -5633,6 +5705,44 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// 꺾인·곡선 연결선의 가운데 점(안쪽 제어점 둘)을 그 축으로 옮긴다 (HWPUNIT 거리).
+    /// 축은 `getShapeProperties`의 `connectorMidAxis`("x"·"y")이며, 그 축의 거리만 쓴다.
+    #[wasm_bindgen(js_name = moveConnectorMidpoint)]
+    pub fn move_connector_midpoint(
+        &mut self,
+        sec: u32,
+        para: u32,
+        ci: u32,
+        dx: i32,
+        dy: i32,
+    ) -> Result<String, JsValue> {
+        self.move_connector_midpoint_native(sec as usize, para as usize, ci as usize, dx, dy)
+            .map_err(|e| e.into())
+    }
+
+    /// 가운데 점 이동의 경로 변형: 표 셀·글상자·머리말/꼬리말 안 연결선.
+    /// `cell_path_json`은 `setCellShapePropertiesByPath`와 같은 경로다.
+    #[wasm_bindgen(js_name = moveConnectorMidpointByPath)]
+    pub fn move_connector_midpoint_by_path(
+        &mut self,
+        sec: u32,
+        parent_para: u32,
+        cell_path_json: &str,
+        ci: u32,
+        dx: i32,
+        dy: i32,
+    ) -> Result<String, JsValue> {
+        self.move_connector_midpoint_by_path_native(
+            sec as usize,
+            parent_para as usize,
+            cell_path_json,
+            ci as usize,
+            dx,
+            dy,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// 구역 내 모든 연결선의 좌표를 연결된 도형 위치에 맞게 갱신한다.
     #[wasm_bindgen(js_name = updateConnectorsInSection)]
     pub fn update_connectors_in_section_wasm(&mut self, section_idx: u32) {
@@ -5655,6 +5765,27 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// 표 셀·글상자(중첩 포함) 문단에 각주를 넣는다. `path_json`은 `...ByPath` API의 셀 경로이고
+    /// 마지막 단계 문단이 각주 번호를 둘 문단, `char_offset`은 그 문단의 글자 자리다.
+    /// 반환: `{"ok":true,"controlIdx":N,"footnoteNumber":N}`
+    #[wasm_bindgen(js_name = insertFootnoteByPath)]
+    pub fn insert_footnote_by_path(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        path_json: &str,
+        char_offset: u32,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.insert_footnote_by_path_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &path,
+            char_offset as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// 미주를 삽입한다.
     #[wasm_bindgen(js_name = insertEndnote)]
     pub fn insert_endnote(
@@ -5666,6 +5797,27 @@ impl HwpDocument {
         self.insert_endnote_native(
             section_idx as usize,
             para_idx as usize,
+            char_offset as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 표 셀·글상자(중첩 포함) 문단에 미주를 넣는다. `path_json`은 `...ByPath` API의 셀 경로이고
+    /// 마지막 단계 문단이 미주 번호를 둘 문단, `char_offset`은 그 문단의 글자 자리다.
+    /// 반환: `{"ok":true,"controlIdx":N,"endnoteNumber":N}`
+    #[wasm_bindgen(js_name = insertEndnoteByPath)]
+    pub fn insert_endnote_by_path(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        path_json: &str,
+        char_offset: u32,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.insert_endnote_by_path_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &path,
             char_offset as usize,
         )
         .map_err(|e| e.into())
@@ -5722,6 +5874,26 @@ impl HwpDocument {
         self.promote_ole_equation_native(
             section_idx as usize,
             para_idx as usize,
+            control_idx as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 셀 경로로 표 셀·글상자(중첩 포함) 안 각주·미주 정보를 조회한다. `path_json`의 마지막 단계
+    /// 문단이 주석 번호가 든 문단이고, `control_idx`는 그 문단의 주석 컨트롤이다.
+    #[wasm_bindgen(js_name = getFootnoteInfoByPath)]
+    pub fn get_footnote_info_by_path(
+        &self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        path_json: &str,
+        control_idx: u32,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.get_footnote_info_by_path_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &path,
             control_idx as usize,
         )
         .map_err(|e| e.into())
@@ -5947,6 +6119,42 @@ impl HwpDocument {
             char_offset as usize,
         )
         .map_err(|e| e.into())
+    }
+
+    /// 표 셀·글상자(중첩 포함) 안 미주 안의 커서 렉트. `path_json`은 미주 번호가 든 문단까지의
+    /// 셀 경로(`...ByPath` API 꼴), `control_idx`는 그 문단의 미주 컨트롤이다.
+    #[wasm_bindgen(js_name = getCursorRectInNoteByPath)]
+    pub fn get_cursor_rect_in_note_by_path(
+        &self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        path_json: &str,
+        control_idx: u32,
+        note_para_idx: u32,
+        char_offset: u32,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.get_cursor_rect_in_note_by_path_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &path,
+            control_idx as usize,
+            note_para_idx as usize,
+            char_offset as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 구역 끝·문서 끝에 모아 그린 미주 가상 문단(히트 테스트의 문단 번호)의 원본 미주 주소.
+    /// 반환: `{"ok":true,"sectionIdx","paraIdx","notePath","noteControlIdx","noteParaIdx"}`, 아니면 `{"ok":false}`.
+    #[wasm_bindgen(js_name = getEndnoteSourceAt)]
+    pub fn get_endnote_source_at(
+        &self,
+        section_idx: u32,
+        virtual_para_idx: u32,
+    ) -> Result<String, JsValue> {
+        self.get_endnote_source_at_native(section_idx as usize, virtual_para_idx as usize)
+            .map_err(|e| e.into())
     }
 
     /// 각주/미주 내부 문단 속성 조회

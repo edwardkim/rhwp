@@ -6468,6 +6468,19 @@ impl DocumentCore {
         control_idx: usize,
         note_para_idx: usize,
     ) -> Option<(u32, usize, usize, usize)> {
+        self.find_endnote_edit_target_in(section_idx, para_idx, control_idx, &[], note_para_idx)
+    }
+
+    /// `cell_path`는 표 셀·글상자 안 미주의 소유 경로(`EndnoteRef::cell_path` 규약, `control_idx`는
+    /// 최상위 표·도형)다. 본문 미주는 빈 경로다.
+    fn find_endnote_edit_target_in(
+        &self,
+        section_idx: usize,
+        para_idx: usize,
+        control_idx: usize,
+        cell_path: &[crate::renderer::pagination::TableFootnotePathEntry],
+        note_para_idx: usize,
+    ) -> Option<(u32, usize, usize, usize)> {
         // 미주는 원본 구역이 아니라 모아 찍는 구역(문서 끝이면 마지막 구역)의 페이지에
         // 그려진다. 그래서 모든 구역의 미주 출처에서 원본 위치를 찾고, 가상 문단 번호와
         // 페이지는 그 미주를 그린 구역 기준으로 계산한다.
@@ -6478,7 +6491,12 @@ impl DocumentCore {
                 .find_map(|(render_section_idx, pr)| {
                     let local_idx = pr.endnote_para_sources.iter().position(|src| {
                         src.section_index == section_idx
-                            && src.cell_path.is_empty()
+                            && src.cell_path.len() == cell_path.len()
+                            && src.cell_path.iter().zip(cell_path).all(|(a, b)| {
+                                a.cell_index == b.cell_index
+                                    && a.cell_para_index == b.cell_para_index
+                                    && a.control_index == b.control_index
+                            })
                             && src.para_index == para_idx
                             && src.control_index == control_idx
                             && src.note_para_index == note_para_idx
@@ -6615,6 +6633,103 @@ impl DocumentCore {
                 "지정된 컨트롤이 각주/미주가 아닙니다".to_string(),
             )),
         }
+    }
+
+    /// 표 셀·글상자(중첩 포함) 안 미주 안의 커서 렉트. `path`는 미주 번호가 든 문단까지의 셀 경로
+    /// (`...ByPath` API 꼴), `control_idx`는 그 문단의 미주 컨트롤이다. 미주는 모아 그린 자리에서 찾는다.
+    pub fn get_cursor_rect_in_note_by_path_native(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        control_idx: usize,
+        note_para_idx: usize,
+        char_offset: usize,
+    ) -> Result<String, HwpError> {
+        let para = self.resolve_paragraph_by_path(section_idx, parent_para_idx, path)?;
+        let Some(Control::Endnote(endnote)) = para.controls.get(control_idx) else {
+            return Err(HwpError::RenderError(
+                "지정된 컨트롤이 미주가 아닙니다".to_string(),
+            ));
+        };
+        // 셀 경로를 미주 소유 경로(앞 단계는 다음 표·도형, 마지막 단계는 미주 컨트롤)로 바꾼다.
+        let cell_path: Vec<_> = path
+            .iter()
+            .enumerate()
+            .map(|(i, &(_, cell_index, cell_para_index))| {
+                crate::renderer::pagination::TableFootnotePathEntry {
+                    cell_index,
+                    cell_para_index,
+                    control_index: path.get(i + 1).map_or(control_idx, |next| next.0),
+                }
+            })
+            .collect();
+        let top = path.first().map_or(control_idx, |step| step.0);
+        let (page_num, _, virtual_para_idx, render_section_idx) = self
+            .find_endnote_edit_target_in(
+                section_idx,
+                parent_para_idx,
+                top,
+                &cell_path,
+                note_para_idx,
+            )
+            .ok_or_else(|| {
+                HwpError::RenderError("미주 렌더 위치를 찾을 수 없습니다".to_string())
+            })?;
+        let render_char_offset = if note_para_idx == 0 {
+            crate::renderer::typeset::endnote_first_para_render_offset(endnote, char_offset)
+        } else {
+            char_offset
+        };
+        self.cursor_rect_for_render_paragraph(
+            page_num,
+            render_section_idx,
+            virtual_para_idx,
+            render_char_offset,
+        )?
+        .ok_or_else(|| HwpError::RenderError("미주 커서 위치를 찾을 수 없습니다".to_string()))
+    }
+
+    /// 구역 `section_idx` 끝(문서 끝이면 마지막 구역)에 모아 그린 미주 가상 문단 `virtual_para_idx`
+    /// (히트 테스트가 주는 문단 번호)의 원본 미주. 반환: `{"ok":true,"sectionIdx","paraIdx","notePath",
+    /// "noteControlIdx","noteParaIdx"}`. `notePath`는 미주 번호가 든 문단까지의 셀 경로(`...ByPath` API 꼴,
+    /// 본문 미주는 빈 배열)이고 `noteControlIdx`는 그 문단의 미주 컨트롤이다. 미주가 아니면 `{"ok":false}`.
+    pub fn get_endnote_source_at_native(
+        &self,
+        section_idx: usize,
+        virtual_para_idx: usize,
+    ) -> Result<String, HwpError> {
+        let src = self
+            .document
+            .sections
+            .get(section_idx)
+            .and_then(|section| virtual_para_idx.checked_sub(section.paragraphs.len()))
+            .and_then(|local| {
+                self.pagination
+                    .get(section_idx)?
+                    .endnote_para_sources
+                    .get(local)
+            });
+        let Some(src) = src else {
+            return Ok("{\"ok\":false}".to_string());
+        };
+        let mut steps = Vec::new();
+        let mut control = src.control_index;
+        for entry in &src.cell_path {
+            steps.push(format!(
+                "{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}",
+                control, entry.cell_index, entry.cell_para_index
+            ));
+            control = entry.control_index;
+        }
+        Ok(format!(
+            "{{\"ok\":true,\"sectionIdx\":{},\"paraIdx\":{},\"notePath\":[{}],\"noteControlIdx\":{},\"noteParaIdx\":{}}}",
+            src.section_index,
+            src.para_index,
+            steps.join(","),
+            control,
+            src.note_para_index
+        ))
     }
 
     /// 각주 내 커서 위치 (커서 렉트) 계산
@@ -6926,9 +7041,60 @@ impl DocumentCore {
             } => (*para_index, *shape_control_index, "shape"),
         };
 
+        // 각주 번호가 든 문단까지의 셀 경로(`...ByPath` API 꼴)와 그 문단의 각주 컨트롤 번호.
+        // 표 셀·글상자 안 각주도 이 경로에 각주 단계를 이어 편집한다. 본문 각주는 빈 경로다.
+        let step = |control: usize, cell: usize, para: usize| {
+            format!(
+                "{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}",
+                control, cell, para
+            )
+        };
+        let (steps, note_control_idx) = match &fn_ref.source {
+            FootnoteSource::Body { control_index, .. } => (Vec::new(), *control_index),
+            FootnoteSource::TableCell {
+                table_control_index,
+                cell_index,
+                cell_para_index,
+                cell_control_index,
+                ..
+            } => (
+                vec![step(*table_control_index, *cell_index, *cell_para_index)],
+                *cell_control_index,
+            ),
+            FootnoteSource::NestedTableCell {
+                table_control_index,
+                cell_path,
+                ..
+            } => {
+                // 첫 항목은 바깥 표의 셀이고, 다음 항목마다 앞 셀 문단의 표 컨트롤 번호를 단다.
+                // 마지막 항목의 컨트롤 번호가 각주다.
+                let mut steps = Vec::new();
+                let mut control = *table_control_index;
+                for entry in cell_path {
+                    steps.push(step(control, entry.cell_index, entry.cell_para_index));
+                    control = entry.control_index;
+                }
+                (steps, control)
+            }
+            FootnoteSource::ShapeTextBox {
+                shape_control_index,
+                tb_para_index,
+                tb_control_index,
+                ..
+            } => (
+                vec![step(*shape_control_index, 0, *tb_para_index)],
+                *tb_control_index,
+            ),
+        };
+
         Ok(format!(
-            "{{\"ok\":true,\"sectionIdx\":{},\"paraIdx\":{},\"controlIdx\":{},\"sourceType\":\"{}\"}}",
-            section_idx, para_idx, control_idx, source_type
+            "{{\"ok\":true,\"sectionIdx\":{},\"paraIdx\":{},\"controlIdx\":{},\"sourceType\":\"{}\",\"notePath\":[{}],\"noteControlIdx\":{}}}",
+            section_idx,
+            para_idx,
+            control_idx,
+            source_type,
+            steps.join(","),
+            note_control_idx
         ))
     }
 }

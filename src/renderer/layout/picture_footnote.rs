@@ -865,8 +865,10 @@ impl LayoutEngine {
         // [Task #1079] 파일 vpos 가 이미 그림 공간을 반영(그림 para 줄 앞 gap ≥ 그림 높이)하면
         // 그림을 그 gap 안(바닥이 그림 para 줄에 정렬)에 그리고 flow 를 그림 높이만큼 추가
         // 진행하지 않는다. 이중 계상(gap + draw-advance) 방지.
-        vpos_accounts_for_height: bool,
+        // 그 경우의 값은 상자 바닥이 닿는 host 저장 줄 윗변(px)이다.
+        stored_gap_line_y: Option<f64>,
     ) -> BodyPicturePlacement {
+        let vpos_accounts_for_height = stored_gap_line_y.is_some();
         // 그림 크기 (HWPUNIT → 픽셀)
         // [Issue #1230] 측면흐름 wrap 은 common(개체 틀) 프레임으로 그린다.
         let (pic_width_hu, pic_height_hu) = super::utils::picture_flow_frame_size_hu(picture);
@@ -936,12 +938,13 @@ impl LayoutEngine {
         let adjusted_pic_x = box_x + margin_left + caption_left_offset;
         // [Task #1079] already_accounted: 상자를 gap 안에 그림(상자 바닥이 base_y=그림 para
         // 줄에 정렬되도록 box_height 만큼 위로). flow 진행은 아래 return 에서 생략.
-        let vpos_shift = if vpos_accounts_for_height {
-            box_height
-        } else {
-            0.0
+        // 저장 줄 = 문단 원점 + 세로 오프셋 + 상자이므로 상자 바닥은 그 줄 윗변에 닿는다.
+        // 원점 계산이 더한 오프셋을 다시 더하지 않는다(1741000-202200045 15쪽 pi244: 앞 저장 줄
+        // 끝 35680 + 오프셋 250 = 한컴 그림 윗변, 저장 줄 52215 = 그 + 그림 + 캡션).
+        let content_top = match stored_gap_line_y {
+            Some(line_y) => line_y - box_height + margin_top,
+            None => base_y + margin_top,
         };
-        let content_top = base_y + margin_top - vpos_shift;
         let pic_y = content_top + caption_top_offset;
 
         // BinData에서 이미지 데이터 찾기 (bin_data_id는 1-indexed 순번)
@@ -1279,6 +1282,88 @@ impl LayoutEngine {
                 bin_data_content,
                 ctx.as_ref(),
                 styles,
+            );
+            self.layout_caption_floating_tables(
+                tree,
+                parent_node,
+                para,
+                &caption_area,
+                para_y_before_layout,
+                bin_data_content,
+                styles,
+            );
+        }
+    }
+
+    /// 캡션 문단에 걸린 떠 있는 표(글자처럼 취급 아님)를 그린다.
+    ///
+    /// 캡션 문단도 일반 문단이라 표 컨트롤을 가질 수 있다. 글자처럼 취급 표는 문단 조판이
+    /// 줄 안에 그리지만, 떠 있는 표는 줄 구성에 들어가지 않아 여기서 따로 놓는다(같은 자리의
+    /// 그림은 [`Self::layout_caption_topbottom_pictures`]). 표 위끝은 걸린 문단의 저장 줄
+    /// 위끝 + 문단 기준 세로 오프셋 + 바깥 위 여백이다.
+    ///
+    /// 글이 있는 문단에 걸린 표는 대상이 아니다. 자리차지 표는 그 문단의 글줄을 표 아래로
+    /// 밀어야 하는데 캡션 조판은 글줄을 표와 무관하게 놓으므로, 표만 그리면 글과 겹친다.
+    #[allow(clippy::too_many_arguments)]
+    fn layout_caption_floating_tables(
+        &self,
+        tree: &mut PageLayoutContext,
+        parent_node: &mut RenderNode,
+        para: &Paragraph,
+        caption_area: &LayoutRect,
+        para_y: f64,
+        bin_data_content: &[BinDataContent],
+        styles: &ResolvedStyleSet,
+    ) {
+        let anchor_y = para
+            .line_segs
+            .first()
+            .filter(|seg| seg.vertical_pos >= 0)
+            .map(|seg| caption_area.y + hwpunit_to_px(seg.vertical_pos, self.dpi))
+            .unwrap_or(para_y);
+        let host_align = styles
+            .para_styles
+            .get(para.para_shape_id as usize)
+            .map(|ps| ps.alignment)
+            .unwrap_or(Alignment::Left);
+        if para
+            .text
+            .chars()
+            .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace())
+        {
+            return;
+        }
+        for ctrl in &para.controls {
+            let Control::Table(table) = ctrl else {
+                continue;
+            };
+            // 자기 캡션을 가진 표는 캡션 띠만큼 격자가 내려가고 뒤 캡션 문단도 그 아래로
+            // 밀린다. 캡션 조판은 아직 그 흐름을 갖지 않으므로 여기서 그리지 않는다.
+            if table.common.treat_as_char || table.caption.is_some() {
+                continue;
+            }
+            let vertical_offset = if matches!(table.common.vert_rel_to, VertRelTo::Para) {
+                hwpunit_to_px(
+                    crate::renderer::float_placement::signed_hwpunit(table.common.vertical_offset),
+                    self.dpi,
+                )
+            } else {
+                0.0
+            };
+            let top = anchor_y
+                + vertical_offset
+                + hwpunit_to_px(i32::from(table.outer_margin_top), self.dpi);
+            self.layout_embedded_table(
+                tree,
+                parent_node,
+                table,
+                styles,
+                caption_area,
+                top,
+                None,
+                bin_data_content,
+                host_align,
+                None,
             );
         }
     }
@@ -1771,9 +1856,7 @@ impl LayoutEngine {
             paragraphs,
             styles,
             area_width,
-            hwpunit_to_px(shape.separator_above_margin_hu() as i32, self.dpi)
-                + border_width_to_px(shape.separator_line_width).max(0.5)
-                + hwpunit_to_px(shape.separator_below_margin_hu() as i32, self.dpi),
+            crate::renderer::pagination::footnote_separator_overhead_px(shape, self.dpi),
             hwpunit_to_px(shape.between_notes_margin_hu() as i32, self.dpi),
         )
     }
@@ -1942,7 +2025,8 @@ impl LayoutEngine {
             super::note_separator::append(
                 tree, fn_node, shape, fn_area.x, y, sep_length, line_width,
             );
-            y += line_width;
+            // 구분선 중심 아래는 굵기와 관계없이 같은 띠다(`footnote_separator_overhead_px`).
+            y += crate::renderer::pagination::footnote_separator_band_px(shape, self.dpi);
 
             // (3) 구분선 아래 여백
             y += hwpunit_to_px(shape.separator_below_margin_hu() as i32, self.dpi);

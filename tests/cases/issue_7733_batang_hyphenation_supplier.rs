@@ -53,7 +53,7 @@ fn paint_uses_the_same_supplier_as_measurement() {
     assert_eq!(family(&style("Batang")), "Haansoft Batang");
 }
 #[test]
-fn hft_source_does_not_borrow_the_ttf_programs_gap() {
+fn legacy_source_does_not_borrow_the_ttf_programs_gap() {
     let mut source = style("Batang");
     source.source_font_is_ttf = false;
     source.source_font_is_hft = true;

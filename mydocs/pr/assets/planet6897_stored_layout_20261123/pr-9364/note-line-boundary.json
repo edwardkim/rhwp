@@ -1,0 +1,49 @@
+{
+  "input": "samples/issue9353/uiwang_lane_min_length.hwp",
+  "reference": "pdf/issue9353/uiwang_lane_min_length-2024.pdf",
+  "page": 3,
+  "stored_line_starts_utf16": [
+    0,
+    46
+  ],
+  "stored_record_offset": 34542,
+  "pdf_lines": [
+    "3. 위 표 마목부터 사목까지의 주차 대수를 산정할 때에는 「주차장법 시행령」 별표",
+    "1의 설치기준에 따른다."
+  ],
+  "render_tree": [
+    {
+      "backend": "native",
+      "role": "base",
+      "lines": [
+        " 3. 위 표 마목부터 사목까지의 주차 대수를 산정할 때에는 「주차장법 시행령」 별",
+        "표 1의 설치기준에 따른다. "
+      ]
+    },
+    {
+      "backend": "native",
+      "role": "candidate",
+      "lines": [
+        " 3. 위 표 마목부터 사목까지의 주차 대수를 산정할 때에는 「주차장법 시행령」 별",
+        "표 1의 설치기준에 따른다. "
+      ]
+    },
+    {
+      "backend": "wasm",
+      "role": "base",
+      "lines": [
+        " 3. 위 표 마목부터 사목까지의 주차 대수를 산정할 때에는 「주차장법 시행령」 별",
+        "표 1의 설치기준에 따른다. "
+      ]
+    },
+    {
+      "backend": "wasm",
+      "role": "candidate",
+      "lines": [
+        " 3. 위 표 마목부터 사목까지의 주차 대수를 산정할 때에는 「주차장법 시행령」 별",
+        "표 1의 설치기준에 따른다. "
+      ]
+    }
+  ],
+  "finding": "원본에 저장된 줄 경계를 기준과 후보가 동일하게 재현한다. 독립 한컴 Print의 줄 경계는 한 글자 뒤에 있다."
+}

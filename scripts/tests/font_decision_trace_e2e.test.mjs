@@ -96,63 +96,97 @@ test('WASM 공개 런의 글꼴 계보와 실제 원문 주소 경계를 함께 
       `${document.id}: ${JSON.stringify(validateSchema.errors)}`);
     assert.deepEqual(validateTraceEnvelope(first), [], document.id);
     assert.equal(first.status, document.expectedStatus, document.id);
-    const deferredPins = new Set(document.renderPinsDeferredToIssue7445 ?? []);
-    if (!deferredPins.has('expectedCounts')) {
-      for (const [key, value] of Object.entries(document.expectedCounts)) {
-        assert.deepEqual(first.counts[key], value, `${document.id}: ${key}`);
-      }
-      if (document.validateRunOwnership) {
-        const sourceContract = SOURCE_BOUNDARIES.find(entry => entry.path === document.path);
-        if (sourceContract) {
-          assert.equal(createHash('sha256').update(fs.readFileSync(path.join(ROOT, document.path))).digest('hex'),
-            sourceContract.inputSha256, `${document.id}: 독립 원본 경계의 입력 SHA`);
-        }
-        const sourceBoundaries = sourceContract?.boundaries ?? [];
-        const observedBoundaries = new Set();
-        const core = new wasmModule.HwpDocument(new Uint8Array(fs.readFileSync(path.join(ROOT, document.path))));
-        let layout;
-        try { layout = JSON.parse(core.getPageTextLayout(document.page)); }
-        finally { core.free(); }
-        assert.equal(first.counts.runsSeen, layout.runs.length);
-        assert.equal(first.counts.charactersSeen, layout.runs.reduce((sum, run) => sum + Array.from(run.text).length, 0));
-        assert.equal(new Set(first.records.map(record => record.recordId)).size, first.records.length);
-        for (const record of first.records) {
-          const owner = layout.runs[record.source.runIndex];
-          const local = Number(record.recordId.split(':char:').at(-1));
-          assert.equal(record.source.character, Array.from(owner.text)[local]);
-          assert.equal(record.source.charShapeId, owner.charShapeId ?? null);
-          const paragraphIndex = (owner.cellPath == null ? owner.paraIdx : owner.parentParaIdx) ?? null;
-          const nestedPath = (owner.cellPath ?? []).flatMap(entry => (
-            [entry.controlIndex, entry.cellIndex, entry.cellParaIndex]
-          ));
-          assert.equal(record.source.sectionIndex, owner.secIdx ?? null);
-          assert.equal(record.source.paragraphIndex, paragraphIndex);
-          assert.deepEqual(record.source.nestedPath, nestedPath);
-          // 공개 런은 표시 문자열의 논리 위치다. 원본 tcps 이후의 추정 주소를
-          // 스칼라 원문 주소로 확정하지 않는 Native 계약과 함께 검증한다.
-          const boundary = sourceBoundaries.find(entry => (
-            entry.sectionIndex === owner.secIdx && entry.paragraphIndex === paragraphIndex
-            && JSON.stringify(entry.nestedPath) === JSON.stringify(nestedPath)
-            && owner.charStart != null && owner.charStart + local >= entry.logicalStart
-          ));
-          if (boundary) {
-            assert.equal(boundary.controlId, 'tcps');
-            observedBoundaries.add(boundary);
-          }
-          if (owner.charStart == null || boundary) {
-            assert.equal(record.source.charOffset, null);
-            assert.equal(record.source.status, 'unavailable');
-          } else {
-            assert.equal(record.source.status, 'complete', `${document.id}: 일반 본문 소유권`);
-            assert.equal(record.source.charOffset, owner.charStart + local);
-          }
-        }
-        assert.equal(observedBoundaries.size, sourceBoundaries.length,
-          `${document.id}: 선언한 원본 경계를 실제 출력에서 검사한다`);
-      }
+    for (const [key, value] of Object.entries(document.expectedCounts)) {
+      assert.deepEqual(first.counts[key], value, `${document.id}: ${key}`);
     }
-    if (!deferredPins.has('expectedLayoutHash')) {
-      assert.equal(first.layoutHash.value, document.expectedLayoutHash, document.id);
+    assert.equal(document.validateRunOwnership, true);
+    {
+      const sourceContract = SOURCE_BOUNDARIES.find(entry => entry.path === document.path);
+      if (sourceContract) {
+        assert.equal(createHash('sha256').update(fs.readFileSync(path.join(ROOT, document.path))).digest('hex'),
+          sourceContract.inputSha256, `${document.id}: 독립 원본 경계의 입력 SHA`);
+      }
+      const sourceBoundaries = sourceContract?.boundaries ?? [];
+      const observedBoundaries = new Set();
+      const observedUnavailableOwners = new Set();
+      const observedGeneratedOwners = new Set();
+      const core = new wasmModule.HwpDocument(new Uint8Array(fs.readFileSync(path.join(ROOT, document.path))));
+      let layout;
+      try { layout = JSON.parse(core.getPageTextLayout(document.page)); }
+      finally { core.free(); }
+      assert.equal(first.counts.runsSeen, layout.runs.length);
+      assert.equal(first.counts.charactersSeen, layout.runs.reduce((sum, run) => sum + Array.from(run.text).length, 0));
+      assert.equal(first.records.length, first.counts.charactersSeen);
+      assert.equal(first.counts.recordsEmitted, first.records.length);
+      assert.equal(first.counts.recordsOmitted, 0);
+      assert.equal(new Set(first.records.map(record => record.recordId)).size, first.records.length);
+      for (const record of first.records) {
+        const owner = layout.runs[record.source.runIndex];
+        const local = Number(record.recordId.split(':char:').at(-1));
+        assert.equal(record.source.character, Array.from(owner.text)[local]);
+        assert.equal(record.source.charShapeId, owner.charShapeId ?? null);
+        const paragraphIndex = (owner.cellPath == null ? owner.paraIdx : owner.parentParaIdx) ?? null;
+        const nestedPath = (owner.cellPath ?? []).flatMap(entry => (
+          [entry.controlIndex, entry.cellIndex, entry.cellParaIndex]
+        ));
+        assert.deepEqual(record.source.nestedPath, nestedPath);
+        // WASM의 usize::MAX 주변 값은 머리말·각주용 가상 소유자다.
+        // 이를 실제 본문 주소로 승격하지 않는 공개 trace 계약을 확인한다.
+        const virtualOwner = paragraphIndex != null && paragraphIndex >= 0xffff_ffff - 4096;
+        if (virtualOwner) {
+          assert.equal(record.source.paragraphIndex, null);
+          assert.equal(record.source.status, 'unavailable');
+          assert.equal(record.source.charOffset, null);
+          if (owner.secIdx != null) assert.equal(record.source.sectionIndex, owner.secIdx);
+          continue;
+        }
+        if (owner.charStart == null && paragraphIndex == null && record.source.paragraphIndex != null) {
+          const marker = (document.generatedRunOwners ?? []).find(entry => (
+            entry.sectionIndex === record.source.sectionIndex
+            && entry.paragraphIndex === record.source.paragraphIndex
+            && entry.text === owner.text
+          ));
+          assert.ok(marker, `${document.id}: 독립 Print와 원본 번호 스타일의 생성 문자 ${JSON.stringify({ source: record.source, text: owner.text })}`);
+          observedGeneratedOwners.add(marker);
+          assert.equal(record.source.charShapeId, null);
+          assert.equal(record.source.status, 'unavailable');
+          assert.equal(record.source.charOffset, null);
+          continue;
+        }
+        assert.equal(record.source.sectionIndex, owner.secIdx ?? null);
+        assert.equal(record.source.paragraphIndex, paragraphIndex);
+        // 공개 런은 표시 문자열의 논리 위치다. 원본 tcps 이후의 추정 주소를
+        // 스칼라 원문 주소로 확정하지 않는 Native 계약과 함께 검증한다.
+        const boundary = sourceBoundaries.find(entry => (
+          entry.sectionIndex === owner.secIdx && entry.paragraphIndex === paragraphIndex
+          && JSON.stringify(entry.nestedPath) === JSON.stringify(nestedPath)
+          && owner.charStart != null && owner.charStart + local >= entry.logicalStart
+        ));
+        if (boundary) {
+          assert.equal(boundary.controlId, 'tcps');
+          observedBoundaries.add(boundary);
+        }
+        const unavailableOwner = (document.unavailableRunOwners ?? []).find(entry => (
+          entry.sectionIndex === record.source.sectionIndex
+          && entry.paragraphIndex === record.source.paragraphIndex
+          && JSON.stringify(entry.nestedPath) === JSON.stringify(record.source.nestedPath)
+          && entry.text === owner.text
+        ));
+        if (unavailableOwner) observedUnavailableOwners.add(unavailableOwner);
+        if (owner.charStart == null || boundary || unavailableOwner) {
+          assert.equal(record.source.charOffset, null);
+          assert.equal(record.source.status, 'unavailable');
+        } else {
+          assert.equal(record.source.status, 'complete', `${document.id}: 일반 본문 소유권`);
+          assert.equal(record.source.charOffset, owner.charStart + local);
+        }
+      }
+      assert.equal(observedGeneratedOwners.size, (document.generatedRunOwners ?? []).length,
+        `${document.id}: 생성 번호·꼬리말도 실제 출력에서 확인한다`);
+      assert.equal(observedUnavailableOwners.size, (document.unavailableRunOwners ?? []).length,
+        `${document.id}: 원본 caption의 미지원 주소도 빠짐없이 검사한다`);
+      assert.equal(observedBoundaries.size, sourceBoundaries.length,
+        `${document.id}: 선언한 원본 경계를 실제 출력에서 검사한다`);
     }
     assert.equal(first.backendSummary.native.status, 'unsupported', document.id);
     assert.deepEqual(first.backendSummary.native.reasons, ['nativeSkiaFeatureUnavailable']);

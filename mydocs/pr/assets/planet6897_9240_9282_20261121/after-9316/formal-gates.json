@@ -1,0 +1,122 @@
+{
+  "handbook": {
+    "status": "passed",
+    "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+    "baseline_sha256": "b2ea68f97a242d111522132b6c733f15a65b29b56e227943fd9c15f9c8d35597",
+    "metric": "silhouette_raw_match_percent",
+    "backend": "native-skia",
+    "precision": "0.01 percentage points",
+    "pages": 383,
+    "regressions": [],
+    "webfont_fallback": [],
+    "elapsed_seconds": 259.727,
+    "tsv": "handbook-gate.tsv",
+    "tsv_sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590"
+  },
+  "contributor": [
+    {
+      "document_id": "52ee61fe7201e36b",
+      "input": "samples/re-03-latin-only-hancom.hwp",
+      "backend": "native",
+      "status": "passed",
+      "minimum": "100.0",
+      "regressions": [],
+      "tsv": "contributor/52ee61fe7201e36b/native/silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "page": 1,
+      "review": "contributor/52ee61fe7201e36b/native/review.png",
+      "overlay": "contributor/52ee61fe7201e36b/native/overlay.png"
+    },
+    {
+      "document_id": "52ee61fe7201e36b",
+      "input": "samples/re-03-latin-only-hancom.hwp",
+      "backend": "wasm",
+      "status": "passed",
+      "minimum": "100.0",
+      "regressions": [],
+      "tsv": "contributor/52ee61fe7201e36b/wasm/silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "page": 1,
+      "review": "contributor/52ee61fe7201e36b/wasm/review.png",
+      "overlay": "contributor/52ee61fe7201e36b/wasm/overlay.png"
+    },
+    {
+      "document_id": "59f6ab1155623bda",
+      "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "backend": "native",
+      "status": "passed",
+      "minimum": "100.0",
+      "regressions": [],
+      "tsv": "contributor/59f6ab1155623bda/native/silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "page": 1,
+      "review": "contributor/59f6ab1155623bda/native/review.png",
+      "overlay": "contributor/59f6ab1155623bda/native/overlay.png"
+    },
+    {
+      "document_id": "59f6ab1155623bda",
+      "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "backend": "wasm",
+      "status": "passed",
+      "minimum": "100.0",
+      "regressions": [],
+      "tsv": "contributor/59f6ab1155623bda/wasm/silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "page": 1,
+      "review": "contributor/59f6ab1155623bda/wasm/review.png",
+      "overlay": "contributor/59f6ab1155623bda/wasm/overlay.png"
+    },
+    {
+      "document_id": "cdacd874b6e6ac66",
+      "input": "samples/pic-crop-01.hwp",
+      "backend": "native",
+      "status": "passed",
+      "minimum": "99.99756",
+      "regressions": [],
+      "tsv": "contributor/cdacd874b6e6ac66/native/silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "page": 1,
+      "review": "contributor/cdacd874b6e6ac66/native/review.png",
+      "overlay": "contributor/cdacd874b6e6ac66/native/overlay.png"
+    },
+    {
+      "document_id": "cdacd874b6e6ac66",
+      "input": "samples/pic-crop-01.hwp",
+      "backend": "wasm",
+      "status": "passed",
+      "minimum": "99.99756",
+      "regressions": [],
+      "tsv": "contributor/cdacd874b6e6ac66/wasm/silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "page": 1,
+      "review": "contributor/cdacd874b6e6ac66/wasm/review.png",
+      "overlay": "contributor/cdacd874b6e6ac66/wasm/overlay.png"
+    },
+    {
+      "document_id": "d03a9dde3d5dc7ac",
+      "input": "samples/shape-group-02.hwp",
+      "backend": "native",
+      "status": "passed",
+      "minimum": "100.0",
+      "regressions": [],
+      "tsv": "contributor/d03a9dde3d5dc7ac/native/silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "page": 1,
+      "review": "contributor/d03a9dde3d5dc7ac/native/review.png",
+      "overlay": "contributor/d03a9dde3d5dc7ac/native/overlay.png"
+    },
+    {
+      "document_id": "d03a9dde3d5dc7ac",
+      "input": "samples/shape-group-02.hwp",
+      "backend": "wasm",
+      "status": "passed",
+      "minimum": "100.0",
+      "regressions": [],
+      "tsv": "contributor/d03a9dde3d5dc7ac/wasm/silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "page": 1,
+      "review": "contributor/d03a9dde3d5dc7ac/wasm/review.png",
+      "overlay": "contributor/d03a9dde3d5dc7ac/wasm/overlay.png"
+    }
+  ]
+}

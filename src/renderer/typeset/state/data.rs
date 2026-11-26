@@ -352,6 +352,9 @@ pub(in crate::renderer::typeset) struct StateView {
     /// [#4533 HWP3] 현재 문단 다음 문단의 첫 저장 lineseg vpos — 자리차지
     /// 밴드 비예약(사다리 증거) 판별용. 문단 루프 머리에서 세팅.
     pub(in crate::renderer::typeset) next_para_first_stored_vpos: Option<i32>,
+    /// 현재 빈 문단의 저장 줄 전진을 다음 문단의 저장 첫 줄이 이어받는가 — 쪽 첫 빈 줄
+    /// 감추기에서 한/글이 그 줄을 남겼다는 저장 증거. 문단 루프 머리에서 세팅.
+    pub(in crate::renderer::typeset) stored_ladder_keeps_empty_line: bool,
     /// [#7548] 다음 문단 저장 첫 줄의 차선 증거(어울림 표 옆 시작 판정).
     pub(in crate::renderer::typeset) next_para_lane_probe:
         Option<crate::renderer::float_placement::StoredLineLaneProbe>,

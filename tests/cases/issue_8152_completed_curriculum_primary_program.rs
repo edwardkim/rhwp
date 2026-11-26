@@ -109,7 +109,7 @@ fn selected_primary_program_keeps_completed_paragraph_origins() {
         let actual = first["bbox"]["x"].as_f64().unwrap();
         assert!(
             (actual - x).abs() <= 2.0,
-            "TTF 전진에 HFT 굵게 추적을 더해 문단을 이동하지 않는다: {prefix} {actual} vs{x}"
+            "TrueType 전진폭에 구형 글꼴의 굵기 보정을 더하지 않는다: {prefix} {actual} vs{x}"
         );
     }
 }

@@ -1,0 +1,25 @@
+from pathlib import Path
+import json,csv,hashlib,subprocess,time,traceback
+R=Path('/home/tsjang/rhwp');O=R/'output/pr-review/issue7754-nine';P=O/'source95-default-chrome-focus-state.json';sha=lambda p:hashlib.sha256(Path(p).read_bytes()).hexdigest();s={'started':time.time(),'scope':'Historical Source37 producer only, font supply diagnosis. Full independent Junggothic alphabet complements SPJGT missing Hangul; no target data or geometry fitting. Ten affected pages and Native controls; not new rebased head validation.','results':[]}
+def save():P.write_text(json.dumps(s,ensure_ascii=False,indent=2)+'\n')
+try:
+ font=O/'private-source43-spjgt/SPJGT.otf';assert sha(font)==json.load(open(O/'source43-spjgt-focus-state.json'))['copy_sha256'];pages=[8,17,25,32,44,71,86,89,92,96];d=next(x for x in json.load(open(R/'mydocs/pr/assets/visual-protected-baseline/manifest.json'))['datasets'] if x['logical_key']=='chemical' and x['backend']=='native');assert sha(R/d['input']['path'])==d['input']['sha256'] and sha(R/d['reference_pdf']['path'])==d['reference_pdf']['sha256'];cache=O/'source95-default-chrome-cache';cache.mkdir(exist_ok=True)
+ for backend in ['native','wasm']:
+  out=O/'source95-default-chrome-focus'/backend;prefix=['bwrap','--ro-bind','/','/','--dev','/dev','--proc','/proc','--bind',str(O),str(O),'--bind','/tmp','/tmp','--setenv','XDG_CACHE_HOME',str(cache)]
+  for name in ['font-catalog-cache','native-webfont-cache']:prefix+=['--bind',str(R/'output/pr-review'/name),str(R/'output/pr-review'/name)]
+  for f in json.load(open(O/'source36-canonical-font-archive-recovery.json'))['files']:
+   target=Path('/home/tsjang/.local/share/fonts/hft-cmap-v2')/Path(f['archive_entry']).name
+   if target.exists():prefix+=['--ro-bind',f['path'],str(target)]
+  if backend=='wasm':prefix+=['--setenv','VISUAL_SWEEP_CHROME',str(O/'chrome155-private-font-context.sh')]
+  c=[str(R/'venv/bin/python'),str(R/'scripts/visual_sweep.py'),'--silhouette-only','--hwp',d['input']['path'],'--pdf',d['reference_pdf']['path'],'--key','chemical','--rhwp-bin',str(O/'bin/rhwp-source37-optimized'),'--compat','2022','--dpi','96','--page-workers','1','--out',str(out),'--pages',','.join(map(str,pages)),'--font-path',str(font)]
+  c+=['--font-environment',str(O/'private-source93-independent-junggothic/environment.json'),'--font-path',str(O/'private-source57-independent-symbols/independent-symbols-regular.otf'),'--font-path',str(O/'private-source93-independent-junggothic/independent-junggothic-regular.otf')]
+  if backend=='wasm':c+=['--wasm-pkg',str(O/'pkg-source37')]
+  for f in json.load(open(O/'source40-win10-font-copy.json'))['files']:
+   if Path(f['local_path']).name.lower().startswith('arial'):c+=['--font-path',f['local_path']]
+  for f in json.load(open(O/'source42-qualified-protected-font-paths.json'))[backend+':chemical']['exact_files']:c+=['--font-path',f['path']]
+  command=[*prefix,'--',*c];s['running']={'backend':backend,'command':command};save();log=O/'logs'/f'source95-default-chrome-{backend}.txt';t=time.monotonic()
+  with log.open('w') as stream:r=subprocess.run(command,cwd=R,stdout=stream,stderr=subprocess.STDOUT,timeout=1800)
+  tsv=out/'chemical/silhouette.tsv';rows=list(csv.DictReader(tsv.open(),delimiter='\t'));assert [int(x['page']) for x in rows]==pages;mf=out/'chemical/silhouette_manifest.json';meta=json.load(open(mf));assert meta['pr_review_gate']['document_page_counts']=={'rhwp':103,'pdf':103};s['results'].append({'backend':backend,'exit_code':r.returncode,'seconds':time.monotonic()-t,'command':command,'tsv':str(tsv),'tsv_sha256':sha(tsv),'rows':rows,'manifest':str(mf),'log':str(log),'source_head':'68b4f6bdfda465aaafd0634c587cd6a17252fed6'});save()
+ s.update(complete_coverage=True,running=None)
+except BaseException as e:s['error']=str(e);s['traceback']=traceback.format_exc()
+finally:s['ended']=time.time();save()

@@ -1,0 +1,162 @@
+{
+  "rows": 4046,
+  "by_backend": {
+    "native": 2023,
+    "wasm": 2023
+  },
+  "below": 14,
+  "above": 1,
+  "below_by_doc": [
+    [
+      "decree",
+      "wasm"
+    ],
+    [
+      "nested",
+      "wasm"
+    ],
+    [
+      "sample10",
+      "wasm"
+    ],
+    [
+      "spec13",
+      "wasm"
+    ],
+    [
+      "yeongwol",
+      "wasm"
+    ]
+  ],
+  "live_differences": 0,
+  "missing": [],
+  "official_sha256": "be050f801ed2f2152017357249f4b7c1068dc83c50347266d16599d61a1f4a5c",
+  "below_vs_previous": [
+    {
+      "document": "nested",
+      "backend": "wasm",
+      "page": 17,
+      "previous_9394_png": "b768062b9a514d9ae3bc301a1de97abab18b96bcd2e5e96f9154ae11157dfb26",
+      "candidate_png": "b768062b9a514d9ae3bc301a1de97abab18b96bcd2e5e96f9154ae11157dfb26",
+      "previous_9394_raw": "99.98",
+      "raw": "99.98"
+    },
+    {
+      "document": "sample10",
+      "backend": "wasm",
+      "page": 81,
+      "previous_9394_png": "7804b31ef3e07036b514a81217dc07d6aa901dc8b271a4b0e9f28e41b0e40b92",
+      "candidate_png": "7804b31ef3e07036b514a81217dc07d6aa901dc8b271a4b0e9f28e41b0e40b92",
+      "previous_9394_raw": "99.99",
+      "raw": "99.99"
+    },
+    {
+      "document": "sample10",
+      "backend": "wasm",
+      "page": 351,
+      "previous_9394_png": "8c69b7ad3d9810ef867dc40d3173281fa59be3b3ae448b06e34daa7ae2026a2f",
+      "candidate_png": "8c69b7ad3d9810ef867dc40d3173281fa59be3b3ae448b06e34daa7ae2026a2f",
+      "previous_9394_raw": "99.99",
+      "raw": "99.99"
+    },
+    {
+      "document": "yeongwol",
+      "backend": "wasm",
+      "page": 3,
+      "previous_9394_png": "1238525ed567e516993457ed366940def97036f73840a0ec81f05d100b8ca523",
+      "candidate_png": "1238525ed567e516993457ed366940def97036f73840a0ec81f05d100b8ca523",
+      "previous_9394_raw": "99.99",
+      "raw": "99.99"
+    },
+    {
+      "document": "spec13",
+      "backend": "wasm",
+      "page": 16,
+      "previous_9394_png": "80a0be2434a185cd6d0752bccf48254aa76956dbb08bd88b996ce5e9566f477d",
+      "candidate_png": "80a0be2434a185cd6d0752bccf48254aa76956dbb08bd88b996ce5e9566f477d",
+      "previous_9394_raw": "99.97",
+      "raw": "99.97"
+    },
+    {
+      "document": "spec13",
+      "backend": "wasm",
+      "page": 17,
+      "previous_9394_png": "da86b6a0b7374c672b65de352c9c5f95561c37b388abd8293c348318e829d86e",
+      "candidate_png": "da86b6a0b7374c672b65de352c9c5f95561c37b388abd8293c348318e829d86e",
+      "previous_9394_raw": "99.99",
+      "raw": "99.99"
+    },
+    {
+      "document": "decree",
+      "backend": "wasm",
+      "page": 1,
+      "previous_9394_png": "676ee8b272c71ef31f0f76daecdd0d664bcccbc2cecb090ae7135c0e097a9749",
+      "candidate_png": "676ee8b272c71ef31f0f76daecdd0d664bcccbc2cecb090ae7135c0e097a9749",
+      "previous_9394_raw": "99.99",
+      "raw": "99.99"
+    },
+    {
+      "document": "decree",
+      "backend": "wasm",
+      "page": 8,
+      "previous_9394_png": "6c04df83d33ceac29863d0da058b023e7196492a7778aa2a004748e4f1327089",
+      "candidate_png": "6c04df83d33ceac29863d0da058b023e7196492a7778aa2a004748e4f1327089",
+      "previous_9394_raw": "99.98",
+      "raw": "99.98"
+    },
+    {
+      "document": "decree",
+      "backend": "wasm",
+      "page": 29,
+      "previous_9394_png": "93e4c9c8953478f5a99d338290cc4930cd2322a16fbe269ccdbc3136acb564dd",
+      "candidate_png": "93e4c9c8953478f5a99d338290cc4930cd2322a16fbe269ccdbc3136acb564dd",
+      "previous_9394_raw": "99.95",
+      "raw": "99.95"
+    },
+    {
+      "document": "decree",
+      "backend": "wasm",
+      "page": 39,
+      "previous_9394_png": "80a2e711cfa57b82e27111ab0fed5e478457d09a81b40af1c3447cd01f96fa41",
+      "candidate_png": "80a2e711cfa57b82e27111ab0fed5e478457d09a81b40af1c3447cd01f96fa41",
+      "previous_9394_raw": "99.98",
+      "raw": "99.98"
+    },
+    {
+      "document": "decree",
+      "backend": "wasm",
+      "page": 46,
+      "previous_9394_png": "cc8afe8a44db1b11b67df4ba9d808f3091e6a3365de7456ccca2ddabe04c9708",
+      "candidate_png": "cc8afe8a44db1b11b67df4ba9d808f3091e6a3365de7456ccca2ddabe04c9708",
+      "previous_9394_raw": "99.96",
+      "raw": "99.96"
+    },
+    {
+      "document": "decree",
+      "backend": "wasm",
+      "page": 54,
+      "previous_9394_png": "5de3b4933736fa7967a52cdb754f65f0f1d3e9a7c66441670349cffbe0414c12",
+      "candidate_png": "5de3b4933736fa7967a52cdb754f65f0f1d3e9a7c66441670349cffbe0414c12",
+      "previous_9394_raw": "99.87",
+      "raw": "99.87"
+    },
+    {
+      "document": "decree",
+      "backend": "wasm",
+      "page": 63,
+      "previous_9394_png": "1f277ec46b15580a52fc2a075201103a6cd7309e0374e88a669df241b6101f35",
+      "candidate_png": "1f277ec46b15580a52fc2a075201103a6cd7309e0374e88a669df241b6101f35",
+      "previous_9394_raw": "99.99",
+      "raw": "99.99"
+    },
+    {
+      "document": "decree",
+      "backend": "wasm",
+      "page": 64,
+      "previous_9394_png": "06a46b01f1e5eaaf522d98a1912323499f92de29477d941feee960a7a43d2290",
+      "candidate_png": "06a46b01f1e5eaaf522d98a1912323499f92de29477d941feee960a7a43d2290",
+      "previous_9394_raw": "99.99",
+      "raw": "99.99"
+    }
+  ]
+}

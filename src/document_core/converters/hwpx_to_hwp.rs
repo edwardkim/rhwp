@@ -2986,7 +2986,13 @@ pub(crate) fn try_convert_if_hwpx_source<S: crate::storage::Storage>(
     {
         // [#8310] 한컴 HWPX(rhwp 출처 표식 없음)는 원본 저장 줄 계약을 지닌 변환본으로
         // 표시한다. rhwp HWP3 출처 HWPX 는 HWP3 native 규칙으로 열리므로 종전 값을 둔다.
-        let marker: &[u8] = if doc
+        // [#9039] HWP 에서 온 HWPX 계보(`rhwp-hwpx-origin`)는 원래의 `/RhwpHwpxOrigin` 값을 되돌린다.
+        let carried = doc
+            .hwpx_aux_entry(crate::model::document::HWPX_ORIGIN_HWPX_MARKER_PATH)
+            .map(<[u8]>::to_vec);
+        let marker: &[u8] = if let Some(carried) = carried.as_deref() {
+            carried
+        } else if doc
             .hwpx_aux_entry(crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH)
             .is_some()
         {

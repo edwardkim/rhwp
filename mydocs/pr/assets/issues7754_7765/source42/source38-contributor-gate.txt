@@ -1,0 +1,9 @@
+52ee61fe7201e36b native: passed; 로그: /home/tsjang/rhwp/output/pr-review/issue7754-nine/source38-contributor-gate/52ee61fe7201e36b/native.log
+52ee61fe7201e36b wasm: passed; 로그: /home/tsjang/rhwp/output/pr-review/issue7754-nine/source38-contributor-gate/52ee61fe7201e36b/wasm.log
+59f6ab1155623bda native: passed; 로그: /home/tsjang/rhwp/output/pr-review/issue7754-nine/source38-contributor-gate/59f6ab1155623bda/native.log
+59f6ab1155623bda wasm: passed; 로그: /home/tsjang/rhwp/output/pr-review/issue7754-nine/source38-contributor-gate/59f6ab1155623bda/wasm.log
+cdacd874b6e6ac66 native: passed; 로그: /home/tsjang/rhwp/output/pr-review/issue7754-nine/source38-contributor-gate/cdacd874b6e6ac66/native.log
+cdacd874b6e6ac66 wasm: passed; 로그: /home/tsjang/rhwp/output/pr-review/issue7754-nine/source38-contributor-gate/cdacd874b6e6ac66/wasm.log
+d03a9dde3d5dc7ac native: passed; 로그: /home/tsjang/rhwp/output/pr-review/issue7754-nine/source38-contributor-gate/d03a9dde3d5dc7ac/native.log
+d03a9dde3d5dc7ac wasm: passed; 로그: /home/tsjang/rhwp/output/pr-review/issue7754-nine/source38-contributor-gate/d03a9dde3d5dc7ac/wasm.log
+기여자 공통 검사: /home/tsjang/rhwp/output/pr-review/issue7754-nine/source38-contributor-gate/contributor-gate.json (passed)

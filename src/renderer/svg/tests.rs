@@ -106,18 +106,18 @@ fn legacy_hanyang_faces_have_portable_local_aliases() {
     assert_eq!(
         known_font_filenames("한양신명조").first(),
         Some(&"HGSMJ.otf"),
-        "한양신명조 HFT 원본 파일을 찾는다"
+        "한양신명조에 해당하는 OTF를 먼저 찾는다"
     );
     // 한양 HFT 원본과 Windows의 별도 HY 계열 H2* TTF를 구분한다.
     assert_eq!(
         known_font_filenames("한양견고딕").first(),
         Some(&"HGGGT.otf"),
-        "한양견고딕 HFT 원본과 HY견고딕 파일을 구분한다"
+        "한양견고딕과 HY견고딕의 글꼴 파일을 구분한다"
     );
     assert_eq!(
         known_font_filenames("한양견명조").first(),
         Some(&"HGGMJ.otf"),
-        "한양견명조 HFT 원본과 HY견명조 파일을 구분한다"
+        "한양견명조와 HY견명조의 글꼴 파일을 구분한다"
     );
     assert_eq!(
         font_local_aliases("한양견고딕"),

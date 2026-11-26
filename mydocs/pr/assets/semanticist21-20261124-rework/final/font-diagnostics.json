@@ -1,0 +1,1134 @@
+{
+  "base": "28a6afc1ebe3e9873605f2d306ca094b422abf24",
+  "official_font_manifest_sha256": "ea38b1213009cce3a7d0a7bec45a1a4f86b09e3ed7c61b8b2ea6c6f9039a7369",
+  "missing_nested_wasm": [
+    {
+      "filename": "H2MJRE.TTF",
+      "sha256": "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002"
+    },
+    {
+      "filename": "HBATANG.TTF",
+      "sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068"
+    },
+    {
+      "filename": "HDOTUM.TTF",
+      "sha256": "4e7f536a6715270e06c6cc3b5474456007c193a7754131335195286d889f6757"
+    },
+    {
+      "filename": "gulim.TTC",
+      "sha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c"
+    },
+    {
+      "filename": "pala.ttf",
+      "sha256": "6f98bd91b902a1b8ef86c53b084d61d40282f1c1260fce08be7dd7034713f8ad"
+    }
+  ],
+  "additional_windows_installer_lookup": [
+    {
+      "filename": "HDOTUM.TTF",
+      "bytes": 23878424,
+      "sha256": "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0",
+      "matches_required": false,
+      "cab": "cab2.cab"
+    },
+    {
+      "filename": "HYMJRE.TTF",
+      "bytes": 4883924,
+      "sha256": "a101a7a219ffd57273374a423e734adfba1529e5eaf2e9a7476f7150708ea506",
+      "matches_required": false,
+      "cab": "cab8.cab"
+    },
+    {
+      "filename": "HBATANG.TTF",
+      "bytes": 32361044,
+      "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+      "matches_required": false,
+      "cab": "cab9.cab"
+    }
+  ],
+  "chrome_setting_comparison": [
+    {
+      "key": "spec13",
+      "page": 16,
+      "software_raw": "99.97",
+      "default_raw": "99.97",
+      "required": "100.00",
+      "same_png": true
+    },
+    {
+      "key": "decree",
+      "page": 1,
+      "software_raw": "99.99",
+      "default_raw": "99.99",
+      "required": "100.00",
+      "same_png": true
+    }
+  ],
+  "chrome_default": {
+    "version": "Chrome/156.0.8078.47",
+    "gpu": {
+      "2d_canvas": "unavailable_software",
+      "direct_rendering_display_compositor": "disabled_off_ok",
+      "gpu_compositing": "disabled_software",
+      "multiple_raster_threads": "enabled_on",
+      "opengl": "disabled_off",
+      "rasterization": "disabled_software",
+      "raw_draw": "disabled_off_ok",
+      "skia_graphite": "disabled_off",
+      "trees_in_viz": "disabled_off",
+      "video_decode": "disabled_software",
+      "video_encode": "disabled_software",
+      "vulkan": "disabled_off",
+      "webgl": "unavailable_software",
+      "webgpu": "unavailable_software",
+      "webgpu_on_vk_via_gl_interop": "disabled_off",
+      "webnn": "unavailable_software"
+    },
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver-5.0.0)"
+  },
+  "chrome_software": {
+    "version": "Chrome/156.0.8078.47",
+    "gpu": {
+      "2d_canvas": "unavailable_software",
+      "direct_rendering_display_compositor": "disabled_off_ok",
+      "gpu_compositing": "disabled_software",
+      "multiple_raster_threads": "enabled_on",
+      "opengl": "disabled_off",
+      "rasterization": "disabled_software",
+      "raw_draw": "disabled_off_ok",
+      "skia_graphite": "disabled_off",
+      "trees_in_viz": "disabled_off",
+      "video_decode": "disabled_software",
+      "video_encode": "disabled_software",
+      "vulkan": "disabled_off",
+      "webgl": "unavailable_software",
+      "webgpu": "unavailable_software",
+      "webgpu_on_vk_via_gl_interop": "disabled_off",
+      "webnn": "unavailable_software"
+    },
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver-5.0.0)"
+  },
+  "installed_windows_fontconfig": {
+    "Arial": {
+      "filename": "arial.ttf",
+      "sha256": "edfbd22a3d088fc2f5d7c79b8c9c732df6dc878a60f0a80be0f92a3c7a634404"
+    },
+    "Times New Roman": {
+      "filename": "times.ttf",
+      "sha256": "0bf1b21b27b370039b60eca23d532c3fe3fb308750d8f13816db70a6cb666804"
+    },
+    "Batang": {
+      "filename": "batang.ttc",
+      "sha256": "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8"
+    },
+    "Gulim": {
+      "filename": "gulim.ttc",
+      "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+    },
+    "Palatino Linotype": {
+      "filename": "pala.ttf",
+      "sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d"
+    }
+  },
+  "windows_comparison": [
+    {
+      "key": "spec13",
+      "page": 16,
+      "producer": "99.97",
+      "windows": "99.97",
+      "floor": "100.00",
+      "same": true
+    },
+    {
+      "key": "decree",
+      "page": 1,
+      "producer": "99.99",
+      "windows": "99.99",
+      "floor": "100.00",
+      "same": true
+    },
+    {
+      "key": "nested",
+      "page": 1,
+      "producer": "100.00",
+      "windows": "100.00",
+      "floor": "100.00",
+      "same": true
+    }
+  ],
+  "font_program_comparison": {
+    "spec13": {
+      "producer-host": {
+        "page": 16,
+        "score": "99.97",
+        "floor": "100.00",
+        "png": "80a0be2434a185cd6d0752bccf48254aa76956dbb08bd88b996ce5e9566f477d",
+        "tree": "2576115ea58dc2383323d11b6eb39f8c79a85ee8af022ec0c197fa0001e9f780",
+        "requested_during_paint": [
+          "함초롬돋움",
+          "hcr dotum",
+          "hcr batang",
+          "함초롬바탕",
+          "rhwp old hangul",
+          "haansoft batang",
+          "한컴돋움",
+          "haansoft dotum"
+        ],
+        "paint_loaded_source_programs": [
+          [
+            "HCR Batang",
+            "0d355f9766ffd1c7ec7648260611ddea9e12ea3c610423e552d52b921fc0f29f",
+            0
+          ],
+          [
+            "HCR Batang",
+            "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+            0
+          ],
+          [
+            "HCR Batang",
+            "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+            0
+          ],
+          [
+            "HCR Batang",
+            "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+            0
+          ],
+          [
+            "HCR Dotum",
+            "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+            0
+          ],
+          [
+            "HCR Dotum",
+            "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+            0
+          ],
+          [
+            "HCR Dotum",
+            "5b0b9fa5f3ba2f7b2e3576c6c2e2f2a7a92f68c98f8270e10791ceb363ce1e51",
+            0
+          ],
+          [
+            "HCR Dotum",
+            "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+            0
+          ],
+          [
+            "Haansoft Batang",
+            "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+            0
+          ],
+          [
+            "Haansoft Dotum",
+            "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0",
+            0
+          ],
+          [
+            "RHWP Old Hangul",
+            "1a45a61e9a320c1bc62ca1401f7b23ceffffe8133dc2a9650ad4e12524f8dcab",
+            0
+          ],
+          [
+            "한컴돋움",
+            "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0",
+            0
+          ],
+          [
+            "함초롬돋움",
+            "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+            0
+          ],
+          [
+            "함초롬돋움",
+            "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+            0
+          ],
+          [
+            "함초롬돋움",
+            "5b0b9fa5f3ba2f7b2e3576c6c2e2f2a7a92f68c98f8270e10791ceb363ce1e51",
+            0
+          ],
+          [
+            "함초롬돋움",
+            "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+            0
+          ],
+          [
+            "함초롬바탕",
+            "0d355f9766ffd1c7ec7648260611ddea9e12ea3c610423e552d52b921fc0f29f",
+            0
+          ],
+          [
+            "함초롬바탕",
+            "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+            0
+          ],
+          [
+            "함초롬바탕",
+            "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+            0
+          ],
+          [
+            "함초롬바탕",
+            "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+            0
+          ]
+        ]
+      },
+      "project-controls": {
+        "page": 16,
+        "score": "100.00",
+        "floor": "100.00",
+        "png": "59925e51d49750b376bff9245648ee9783b983400f56d50577cc5ef2514ce5a7",
+        "tree": "2576115ea58dc2383323d11b6eb39f8c79a85ee8af022ec0c197fa0001e9f780",
+        "requested_during_paint": [
+          "arial",
+          "times new roman",
+          "batang",
+          "바탕",
+          "함초롬돋움",
+          "hcr dotum",
+          "hcr batang",
+          "함초롬바탕",
+          "rhwp old hangul",
+          "haansoft batang",
+          "한컴돋움",
+          "haansoft dotum"
+        ],
+        "paint_loaded_source_programs": [
+          [
+            "Arial",
+            "edfbd22a3d088fc2f5d7c79b8c9c732df6dc878a60f0a80be0f92a3c7a634404",
+            0
+          ],
+          [
+            "Batang",
+            "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8",
+            0
+          ],
+          [
+            "HCR Batang",
+            "0d355f9766ffd1c7ec7648260611ddea9e12ea3c610423e552d52b921fc0f29f",
+            0
+          ],
+          [
+            "HCR Batang",
+            "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+            0
+          ],
+          [
+            "HCR Batang",
+            "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+            0
+          ],
+          [
+            "HCR Batang",
+            "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+            0
+          ],
+          [
+            "HCR Dotum",
+            "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+            0
+          ],
+          [
+            "HCR Dotum",
+            "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+            0
+          ],
+          [
+            "HCR Dotum",
+            "5b0b9fa5f3ba2f7b2e3576c6c2e2f2a7a92f68c98f8270e10791ceb363ce1e51",
+            0
+          ],
+          [
+            "HCR Dotum",
+            "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+            0
+          ],
+          [
+            "Haansoft Batang",
+            "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+            0
+          ],
+          [
+            "Haansoft Dotum",
+            "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0",
+            0
+          ],
+          [
+            "RHWP Old Hangul",
+            "1a45a61e9a320c1bc62ca1401f7b23ceffffe8133dc2a9650ad4e12524f8dcab",
+            0
+          ],
+          [
+            "Times New Roman",
+            "0bf1b21b27b370039b60eca23d532c3fe3fb308750d8f13816db70a6cb666804",
+            0
+          ],
+          [
+            "바탕",
+            "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8",
+            0
+          ],
+          [
+            "한컴돋움",
+            "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0",
+            0
+          ],
+          [
+            "함초롬돋움",
+            "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+            0
+          ],
+          [
+            "함초롬돋움",
+            "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+            0
+          ],
+          [
+            "함초롬돋움",
+            "5b0b9fa5f3ba2f7b2e3576c6c2e2f2a7a92f68c98f8270e10791ceb363ce1e51",
+            0
+          ],
+          [
+            "함초롬돋움",
+            "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+            0
+          ],
+          [
+            "함초롬바탕",
+            "0d355f9766ffd1c7ec7648260611ddea9e12ea3c610423e552d52b921fc0f29f",
+            0
+          ],
+          [
+            "함초롬바탕",
+            "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+            0
+          ],
+          [
+            "함초롬바탕",
+            "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+            0
+          ],
+          [
+            "함초롬바탕",
+            "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+            0
+          ]
+        ]
+      }
+    },
+    "decree": {
+      "producer-host": {
+        "page": 1,
+        "score": "99.99",
+        "floor": "100.00",
+        "png": "676ee8b272c71ef31f0f76daecdd0d664bcccbc2cecb090ae7135c0e097a9749",
+        "tree": "f141395bfe38dc5293e36d87c105f4ff1c6166f9d3395e395d55413f8caa04f4",
+        "requested_during_paint": [
+          "휴먼명조",
+          "palatino linotype"
+        ],
+        "paint_loaded_source_programs": [
+          [
+            "Palatino Linotype",
+            "8e14668bbae03f78ed668dbe3261218881960dcd9fb80ad6c1d1dfb4226a57c3",
+            0
+          ],
+          [
+            "Palatino Linotype",
+            "99f0af2d1941707fecda23da38bafbed5144a73a3720d773c05b9d4c445920ed",
+            0
+          ],
+          [
+            "Palatino Linotype",
+            "d0e722b91ffd5391cc2e7d6e976f274d5aee9fe0b8d0fedfffe093763e695cde",
+            0
+          ],
+          [
+            "Palatino Linotype",
+            "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+            0
+          ],
+          [
+            "휴먼명조",
+            "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+            0
+          ]
+        ]
+      },
+      "project-controls": {
+        "page": 1,
+        "score": "100.00",
+        "floor": "100.00",
+        "png": "a91ae0122b4897ea9f97cd56b946c1fd00cb15132f820841dbfe14d3788165b7",
+        "tree": "f141395bfe38dc5293e36d87c105f4ff1c6166f9d3395e395d55413f8caa04f4",
+        "requested_during_paint": [
+          "휴먼명조",
+          "haansoft batang",
+          "batang",
+          "바탕",
+          "hcr batang",
+          "함초롬바탕",
+          "맑은 고딕",
+          "malgun gothic",
+          "hcr dotum",
+          "함초롬돋움",
+          "굴림",
+          "gulim",
+          "palatino linotype",
+          "hy중고딕",
+          "hygothic-medium",
+          "한컴바탕"
+        ],
+        "paint_loaded_source_programs": [
+          [
+            "Batang",
+            "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8",
+            0
+          ],
+          [
+            "Gulim",
+            "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12",
+            0
+          ],
+          [
+            "HCR Batang",
+            "0d355f9766ffd1c7ec7648260611ddea9e12ea3c610423e552d52b921fc0f29f",
+            0
+          ],
+          [
+            "HCR Batang",
+            "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+            0
+          ],
+          [
+            "HCR Batang",
+            "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+            0
+          ],
+          [
+            "HCR Batang",
+            "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+            0
+          ],
+          [
+            "HCR Dotum",
+            "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+            0
+          ],
+          [
+            "HCR Dotum",
+            "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+            0
+          ],
+          [
+            "HCR Dotum",
+            "5b0b9fa5f3ba2f7b2e3576c6c2e2f2a7a92f68c98f8270e10791ceb363ce1e51",
+            0
+          ],
+          [
+            "HCR Dotum",
+            "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+            0
+          ],
+          [
+            "HYGothic-Medium",
+            "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5",
+            0
+          ],
+          [
+            "HY중고딕",
+            "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5",
+            0
+          ],
+          [
+            "Haansoft Batang",
+            "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+            0
+          ],
+          [
+            "Malgun Gothic",
+            "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+            0
+          ],
+          [
+            "Malgun Gothic",
+            "c0ca810a242c4482594182db40f0f9d35a3d51bb2eeac750e6e867b2110eb00e",
+            0
+          ],
+          [
+            "Malgun Gothic",
+            "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082",
+            0
+          ],
+          [
+            "Palatino Linotype",
+            "8e14668bbae03f78ed668dbe3261218881960dcd9fb80ad6c1d1dfb4226a57c3",
+            0
+          ],
+          [
+            "Palatino Linotype",
+            "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+            0
+          ],
+          [
+            "굴림",
+            "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12",
+            0
+          ],
+          [
+            "맑은 고딕",
+            "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+            0
+          ],
+          [
+            "맑은 고딕",
+            "c0ca810a242c4482594182db40f0f9d35a3d51bb2eeac750e6e867b2110eb00e",
+            0
+          ],
+          [
+            "맑은 고딕",
+            "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082",
+            0
+          ],
+          [
+            "바탕",
+            "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8",
+            0
+          ],
+          [
+            "한컴바탕",
+            "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+            0
+          ],
+          [
+            "함초롬돋움",
+            "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+            0
+          ],
+          [
+            "함초롬돋움",
+            "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+            0
+          ],
+          [
+            "함초롬돋움",
+            "5b0b9fa5f3ba2f7b2e3576c6c2e2f2a7a92f68c98f8270e10791ceb363ce1e51",
+            0
+          ],
+          [
+            "함초롬돋움",
+            "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+            0
+          ],
+          [
+            "함초롬바탕",
+            "0d355f9766ffd1c7ec7648260611ddea9e12ea3c610423e552d52b921fc0f29f",
+            0
+          ],
+          [
+            "함초롬바탕",
+            "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+            0
+          ],
+          [
+            "함초롬바탕",
+            "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+            0
+          ],
+          [
+            "함초롬바탕",
+            "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+            0
+          ],
+          [
+            "휴먼명조",
+            "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d",
+            0
+          ],
+          [
+            "휴먼명조",
+            "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+            0
+          ]
+        ]
+      }
+    },
+    "nested": {
+      "producer-host": {
+        "page": 1,
+        "score": "100.00",
+        "floor": "100.00",
+        "png": "0965355202fa44b84054d98e109c07fe193def0c696a34fdaee6a79090c1b37e",
+        "tree": "f954a92c77bcd7e8272e839b6dd3c4ebf76e8a9051eba029f8f3184dc8a986cf",
+        "requested_during_paint": [
+          "human gothic",
+          "malgun gothic",
+          "맑은 고딕",
+          "batang",
+          "바탕",
+          "hci poppy",
+          "hy sinmyeongjo",
+          "gulim",
+          "hysinmyeongjo-ensmj",
+          "myeongjo-spmj",
+          "myeongjo",
+          "hysinmyeongjo-spsmj",
+          "굴림"
+        ],
+        "paint_loaded_source_programs": [
+          [
+            "Batang",
+            "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8",
+            0
+          ],
+          [
+            "Gulim",
+            "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+            0
+          ],
+          [
+            "HCI Poppy",
+            "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+            0
+          ],
+          [
+            "HY Sinmyeongjo",
+            "97cf924058802123f52b26e365f5d9bfe35d379cb4ccab688285179e8e39b3f2",
+            0
+          ],
+          [
+            "HY Sinmyeongjo",
+            "c9825ad4daaea9809b50dfeb0f1145a2ddccbbccbdd076e491d0570ea38d5ce3",
+            0
+          ],
+          [
+            "HYSinmyeongjo-ENSMJ",
+            "97cf924058802123f52b26e365f5d9bfe35d379cb4ccab688285179e8e39b3f2",
+            0
+          ],
+          [
+            "HYSinmyeongjo-SPSMJ",
+            "c9825ad4daaea9809b50dfeb0f1145a2ddccbbccbdd076e491d0570ea38d5ce3",
+            0
+          ],
+          [
+            "Human Gothic",
+            "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9",
+            0
+          ],
+          [
+            "Malgun Gothic",
+            "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+            0
+          ],
+          [
+            "Myeongjo",
+            "6055db675c538c216942788d7b83c8812c955d5bef37c2d6903a5cdb00c2930b",
+            0
+          ],
+          [
+            "Myeongjo",
+            "87c4cd1acd713cca565bd34694b2df5aa3240d6ef8c8d178b6b36782cd46edd2",
+            0
+          ],
+          [
+            "Myeongjo-SPMJ",
+            "87c4cd1acd713cca565bd34694b2df5aa3240d6ef8c8d178b6b36782cd46edd2",
+            0
+          ],
+          [
+            "굴림",
+            "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+            0
+          ],
+          [
+            "맑은 고딕",
+            "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+            0
+          ],
+          [
+            "바탕",
+            "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8",
+            0
+          ]
+        ]
+      },
+      "project-controls": {
+        "page": 1,
+        "score": "100.00",
+        "floor": "100.00",
+        "png": "f7ee637e315b36dc2ff5a35aedf6b6c65f17db9f0c9bf2b705042d3c2a7fbbfe",
+        "tree": "f954a92c77bcd7e8272e839b6dd3c4ebf76e8a9051eba029f8f3184dc8a986cf",
+        "requested_during_paint": [
+          "human gothic",
+          "haansoft batang",
+          "malgun gothic",
+          "맑은 고딕",
+          "hcr dotum",
+          "함초롬돋움",
+          "hcr batang",
+          "함초롬바탕",
+          "batang",
+          "바탕",
+          "hci poppy",
+          "hy sinmyeongjo",
+          "gulim",
+          "myeongjo",
+          "굴림"
+        ],
+        "paint_loaded_source_programs": [
+          [
+            "Batang",
+            "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8",
+            0
+          ],
+          [
+            "Gulim",
+            "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12",
+            0
+          ],
+          [
+            "HCI Poppy",
+            "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+            0
+          ],
+          [
+            "HCR Batang",
+            "0d355f9766ffd1c7ec7648260611ddea9e12ea3c610423e552d52b921fc0f29f",
+            0
+          ],
+          [
+            "HCR Batang",
+            "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+            0
+          ],
+          [
+            "HCR Batang",
+            "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+            0
+          ],
+          [
+            "HCR Batang",
+            "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+            0
+          ],
+          [
+            "HCR Dotum",
+            "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+            0
+          ],
+          [
+            "HCR Dotum",
+            "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+            0
+          ],
+          [
+            "HCR Dotum",
+            "5b0b9fa5f3ba2f7b2e3576c6c2e2f2a7a92f68c98f8270e10791ceb363ce1e51",
+            0
+          ],
+          [
+            "HCR Dotum",
+            "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+            0
+          ],
+          [
+            "HY Sinmyeongjo",
+            "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+            0
+          ],
+          [
+            "HY Sinmyeongjo",
+            "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+            0
+          ],
+          [
+            "HY Sinmyeongjo",
+            "6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b",
+            0
+          ],
+          [
+            "HY Sinmyeongjo",
+            "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+            0
+          ],
+          [
+            "HY Sinmyeongjo",
+            "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0",
+            0
+          ],
+          [
+            "HY Sinmyeongjo",
+            "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+            0
+          ],
+          [
+            "HY Sinmyeongjo",
+            "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9",
+            0
+          ],
+          [
+            "Haansoft Batang",
+            "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+            0
+          ],
+          [
+            "Human Gothic",
+            "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9",
+            0
+          ],
+          [
+            "Malgun Gothic",
+            "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+            0
+          ],
+          [
+            "Malgun Gothic",
+            "c0ca810a242c4482594182db40f0f9d35a3d51bb2eeac750e6e867b2110eb00e",
+            0
+          ],
+          [
+            "Malgun Gothic",
+            "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082",
+            0
+          ],
+          [
+            "Myeongjo",
+            "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834",
+            0
+          ],
+          [
+            "Myeongjo",
+            "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287",
+            0
+          ],
+          [
+            "Myeongjo",
+            "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba",
+            0
+          ],
+          [
+            "Myeongjo",
+            "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece",
+            0
+          ],
+          [
+            "Myeongjo",
+            "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e",
+            0
+          ],
+          [
+            "Myeongjo",
+            "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+            0
+          ],
+          [
+            "Myeongjo",
+            "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c",
+            0
+          ],
+          [
+            "굴림",
+            "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12",
+            0
+          ],
+          [
+            "맑은 고딕",
+            "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+            0
+          ],
+          [
+            "맑은 고딕",
+            "c0ca810a242c4482594182db40f0f9d35a3d51bb2eeac750e6e867b2110eb00e",
+            0
+          ],
+          [
+            "맑은 고딕",
+            "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082",
+            0
+          ],
+          [
+            "바탕",
+            "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8",
+            0
+          ],
+          [
+            "함초롬돋움",
+            "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+            0
+          ],
+          [
+            "함초롬돋움",
+            "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+            0
+          ],
+          [
+            "함초롬돋움",
+            "5b0b9fa5f3ba2f7b2e3576c6c2e2f2a7a92f68c98f8270e10791ceb363ce1e51",
+            0
+          ],
+          [
+            "함초롬돋움",
+            "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+            0
+          ],
+          [
+            "함초롬바탕",
+            "0d355f9766ffd1c7ec7648260611ddea9e12ea3c610423e552d52b921fc0f29f",
+            0
+          ],
+          [
+            "함초롬바탕",
+            "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+            0
+          ],
+          [
+            "함초롬바탕",
+            "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+            0
+          ],
+          [
+            "함초롬바탕",
+            "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+            0
+          ]
+        ]
+      }
+    },
+    "yeongwol": {
+      "producer-host": {
+        "page": 1,
+        "score": "100.00",
+        "floor": "100.00",
+        "png": "7cc6c67250de53e95a3d7206738f1837aee1ca7010be7bb246d335c9a92d699a",
+        "tree": "652254476e3b71672f67c885c6fcb3a1f761236d22dad5f8a44a244116534daf",
+        "requested_during_paint": [
+          "haansoft batang",
+          "haansoft dotum",
+          "malgun gothic",
+          "맑은 고딕"
+        ],
+        "paint_loaded_source_programs": [
+          [
+            "Haansoft Batang",
+            "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+            0
+          ],
+          [
+            "Haansoft Dotum",
+            "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0",
+            0
+          ],
+          [
+            "Malgun Gothic",
+            "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+            0
+          ],
+          [
+            "Malgun Gothic",
+            "c0ca810a242c4482594182db40f0f9d35a3d51bb2eeac750e6e867b2110eb00e",
+            0
+          ],
+          [
+            "Malgun Gothic",
+            "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082",
+            0
+          ],
+          [
+            "맑은 고딕",
+            "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+            0
+          ],
+          [
+            "맑은 고딕",
+            "c0ca810a242c4482594182db40f0f9d35a3d51bb2eeac750e6e867b2110eb00e",
+            0
+          ],
+          [
+            "맑은 고딕",
+            "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082",
+            0
+          ]
+        ]
+      },
+      "project-controls": {
+        "page": 1,
+        "score": "100.00",
+        "floor": "100.00",
+        "png": "62b2d309fb7a8ab04cbe0cae6b1c2f2fe670a161f7bfd11137a380b72cfe61a1",
+        "tree": "652254476e3b71672f67c885c6fcb3a1f761236d22dad5f8a44a244116534daf",
+        "requested_during_paint": [
+          "batang",
+          "haansoft batang",
+          "바탕",
+          "gulim",
+          "haansoft dotum",
+          "malgun gothic",
+          "맑은 고딕"
+        ],
+        "paint_loaded_source_programs": [
+          [
+            "Batang",
+            "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8",
+            0
+          ],
+          [
+            "Gulim",
+            "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12",
+            0
+          ],
+          [
+            "Haansoft Batang",
+            "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+            0
+          ],
+          [
+            "Haansoft Dotum",
+            "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0",
+            0
+          ],
+          [
+            "Malgun Gothic",
+            "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+            0
+          ],
+          [
+            "Malgun Gothic",
+            "c0ca810a242c4482594182db40f0f9d35a3d51bb2eeac750e6e867b2110eb00e",
+            0
+          ],
+          [
+            "Malgun Gothic",
+            "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082",
+            0
+          ],
+          [
+            "맑은 고딕",
+            "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+            0
+          ],
+          [
+            "맑은 고딕",
+            "c0ca810a242c4482594182db40f0f9d35a3d51bb2eeac750e6e867b2110eb00e",
+            0
+          ],
+          [
+            "맑은 고딕",
+            "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082",
+            0
+          ],
+          [
+            "바탕",
+            "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8",
+            0
+          ]
+        ]
+      }
+    }
+  }
+}

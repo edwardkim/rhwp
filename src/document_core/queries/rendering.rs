@@ -342,26 +342,18 @@ fn load_bounded_embedded_font_bytes(
     bytes_by_id
 }
 
-/// 실제 필요한 문자 출처에 한해 같은 bounded 문단 순회를 사용한다.
-#[derive(Clone, Copy)]
-pub(crate) enum ExactFontSlotFilter {
-    All,
-    Pua,
-    LiteralFigureSpace,
-}
-
 fn collect_exact_font_slots_from_paragraphs(
     paragraphs: &[Paragraph],
     slots: &mut std::collections::HashSet<ExactFontSlot>,
     remaining_work_units: &mut usize,
     depth: usize,
 ) {
-    collect_exact_font_slots_from_paragraphs_filtered(
+    collect_exact_font_slots_from_paragraphs_selected(
         paragraphs,
         slots,
         remaining_work_units,
         depth,
-        ExactFontSlotFilter::All,
+        ExactFontSlotSelection::All,
     );
 }
 
@@ -369,7 +361,7 @@ fn collect_exact_font_slots_from_paragraphs(
 #[derive(Clone, Copy)]
 pub(crate) enum ExactFontSlotSelection<'a> {
     All,
-    NativePua,
+    NativePua(&'a crate::renderer::style_resolver::ResolvedStyleSet),
     LiteralFigureSpace,
     Tab(&'a crate::model::document::DocInfo),
     Shadow(
@@ -378,26 +370,6 @@ pub(crate) enum ExactFontSlotSelection<'a> {
             std::collections::HashMap<ExactFontSlot, std::collections::BTreeSet<char>>,
         >,
     ),
-}
-
-pub(crate) fn collect_exact_font_slots_from_paragraphs_filtered(
-    paragraphs: &[Paragraph],
-    slots: &mut std::collections::HashSet<ExactFontSlot>,
-    remaining_work_units: &mut usize,
-    depth: usize,
-    filter: ExactFontSlotFilter,
-) {
-    collect_exact_font_slots_from_paragraphs_selected(
-        paragraphs,
-        slots,
-        remaining_work_units,
-        depth,
-        match filter {
-            ExactFontSlotFilter::All => ExactFontSlotSelection::All,
-            ExactFontSlotFilter::Pua => ExactFontSlotSelection::NativePua,
-            ExactFontSlotFilter::LiteralFigureSpace => ExactFontSlotSelection::LiteralFigureSpace,
-        },
-    );
 }
 
 pub(crate) fn collect_exact_font_slots_from_paragraphs_selected(
@@ -437,7 +409,12 @@ pub(crate) fn collect_exact_font_slots_from_paragraphs_selected(
             _ => true,
         };
         if has_selected_runs {
-            let composed = compose_paragraph(paragraph);
+            let composed = match selection {
+                ExactFontSlotSelection::NativePua(styles) if styles.legacy_body_symbols => {
+                    crate::renderer::composer::compose_paragraph_in_context(paragraph, styles)
+                }
+                _ => compose_paragraph(paragraph),
+            };
             for run in composed.lines.iter().flat_map(|line| &line.runs) {
                 if *remaining_work_units == 0 {
                     return;
@@ -451,10 +428,9 @@ pub(crate) fn collect_exact_font_slots_from_paragraphs_selected(
                 if has_text
                     && match selection {
                         ExactFontSlotSelection::All => true,
-                        ExactFontSlotSelection::NativePua => run
-                            .text
-                            .chars()
-                            .any(crate::renderer::native_pua_fonts::is_supported_symbol),
+                        ExactFontSlotSelection::NativePua(_) => run.text.chars().any(|ch| {
+                            crate::renderer::native_pua_fonts::SUPPORTED_SYMBOLS.contains(&ch)
+                        }),
                         ExactFontSlotSelection::LiteralFigureSpace => run.literal_figure_space,
                         ExactFontSlotSelection::Tab(_) => run.text.contains('\t'),
                         ExactFontSlotSelection::Shadow(info, _) => info
@@ -1512,7 +1488,7 @@ impl DocumentCore {
             .map(|tree| tree.as_ref().clone())
     }
 
-    fn with_profile_page_tree<T>(
+    pub(in crate::document_core) fn with_profile_page_tree<T>(
         &self,
         page_num: u32,
         profile: RenderProfile,
@@ -1532,6 +1508,15 @@ impl DocumentCore {
         &self,
         page_num: u32,
         profile: RenderProfile,
+    ) -> Result<Arc<PageLayerTree>, HwpError> {
+        self.build_page_layer_tree_with_paint_fonts(page_num, profile, None)
+    }
+
+    pub(super) fn build_page_layer_tree_with_paint_fonts(
+        &self,
+        page_num: u32,
+        profile: RenderProfile,
+        supplied_fonts: Option<&crate::paint::metafile_fonts::MetafileFonts>,
     ) -> Result<Arc<PageLayerTree>, HwpError> {
         // Canvas 화면의 보충 폭은 인쇄 조판의 정본이 아니다. SVG·Native와
         // 마찬가지로 호출자가 전체 인쇄 쪽수 조회 전에 portable로 전환해야 한다.
@@ -1582,9 +1567,12 @@ impl DocumentCore {
         }
         let fingerprint = self
             .layer_output_options_fingerprint(profile, crate::paint::LayerJsonOptions::default());
-        if let Some(variants) = self.page_layer_tree_cache.borrow().get(idx) {
-            if let Some((_, tree)) = variants.iter().find(|(value, _)| *value == fingerprint) {
-                return Ok(Arc::clone(tree));
+        // Native가 빌린 쪽별 공급은 문서에 등록한 글꼴 세대와 다르다.
+        if supplied_fonts.is_none() {
+            if let Some(variants) = self.page_layer_tree_cache.borrow().get(idx) {
+                if let Some((_, tree)) = variants.iter().find(|(value, _)| *value == fingerprint) {
+                    return Ok(Arc::clone(tree));
+                }
             }
         }
         let show_editor_visuals = profile.shows_editor_visuals();
@@ -1756,6 +1744,7 @@ impl DocumentCore {
                         crate::renderer::DEFAULT_DPI
                     },
             );
+            let paint_fonts = supplied_fonts.unwrap_or(&self.metafile_fonts);
             let mut builder = LayerBuilder::new(profile)
                 .with_layout_dpi(self.dpi)
                 .with_metafile_fonts(&if profile == RenderProfile::Print
@@ -1763,9 +1752,9 @@ impl DocumentCore {
                         || crate::paint::text_shadow::needs_font_metrics(&tree.root)
                         || crate::paint::dot_leader::needs_font_program(&tree.root))
                 {
-                    metafile_fonts::with_document_fonts(&self.metafile_fonts, &self.document)
+                    metafile_fonts::with_document_fonts(paint_fonts, &self.document)
                 } else {
-                    self.metafile_fonts.clone()
+                    paint_fonts.clone()
                 })
                 .with_metafile_catalogue(
                     if !self.hangul2024_compat
@@ -1780,6 +1769,7 @@ impl DocumentCore {
                 .with_metafile_device_pixel_width(metafile_pixel)
                 .with_hancom2024_print_bitmap(self.hangul2024_compat)
                 .with_print_png_rgb555(self.print_png_rgb555)
+                .with_print_bmp_full_color(self.print_bmp_full_color)
                 .with_output_options(output_options)
                 .with_bin_data_epoch(self.bin_data_epoch)
                 .with_prior_print_solid_fill(prior_print_solid_fill)
@@ -1788,7 +1778,7 @@ impl DocumentCore {
             Ok(builder.build_with_print_footer(tree, &embedded_fonts, print_footer))
         })?;
         let layer_tree = Arc::new(layer_tree);
-        {
+        if supplied_fonts.is_none() {
             let mut cache = self.page_layer_tree_cache.borrow_mut();
             if cache.len() <= idx {
                 cache.resize_with(idx + 1, Vec::new);
@@ -1839,7 +1829,7 @@ impl DocumentCore {
         let tree = self.build_page_tree(page_num)?;
         let _overflows = self.layout_engine.take_overflows();
         let mut renderer = SvgRenderer::new();
-        renderer.source_font_coverage = self.hft_outline_fonts.pua_coverage.clone();
+        renderer.source_font_coverage = self.legacy_font_outlines.pua_coverage.clone();
         renderer.show_paragraph_marks = self.show_paragraph_marks;
         renderer.show_control_codes = self.show_control_codes;
         renderer.debug_overlay = self.debug_overlay;
@@ -1883,7 +1873,7 @@ impl DocumentCore {
         let profile = layer_tree.profile;
 
         let mut renderer = SvgLayerRenderer::new();
-        renderer.inner_mut().source_font_coverage = self.hft_outline_fonts.pua_coverage.clone();
+        renderer.inner_mut().source_font_coverage = self.legacy_font_outlines.pua_coverage.clone();
         let embedded_fonts = self.collect_embedded_font_bytes_by_name();
         for (family, bytes) in &embedded_fonts {
             let _ = renderer
@@ -2168,7 +2158,7 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         let tree = self.build_page_layer_tree_with_profile(page_num, profile)?;
         let mut renderer = SvgLayerRenderer::new();
-        renderer.inner_mut().source_font_coverage = self.hft_outline_fonts.pua_coverage.clone();
+        renderer.inner_mut().source_font_coverage = self.legacy_font_outlines.pua_coverage.clone();
         let embedded_fonts = self.collect_embedded_font_bytes_by_name();
         for (family, bytes) in &embedded_fonts {
             let _ = renderer
@@ -3517,7 +3507,8 @@ impl DocumentCore {
         set_bit(flags, 0x00080000, sd.hide_empty_line); // bit 19
                                                         // bit 20-21: 쪽 번호 종류
         *flags &= !0x00300000; // clear bits 20-21
-        *flags |= ((sd.page_num_type as u32) & 0x03) << 20;
+        *flags |=
+            (u32::from(crate::model::document::hwp_page_num_type(sd.page_num_type)) & 0x03) << 20;
 
         // paragraphs[0]의 Control::SectionDef에도 동기화
         let updated_sd = section.section_def.clone();
@@ -3572,11 +3563,26 @@ impl DocumentCore {
             .get(section_idx)
             .and_then(|section| section.section_def.cell_grid());
         self.apply_section_def_json(section_idx, json)?;
+        Self::renumber_objects_for_section_def(&mut self.document, json);
         // 구역 기본 탭은 composition/측정/배치가 현재 SectionDef에서 읽는다.
         // 공통 문단·글꼴 스타일을 다시 해소할 필요가 없다.
         self.refit_cell_grid(section_idx, grid_before);
         let page_count = self.recompose_and_paginate();
         Ok(format!("{{\"ok\":true,\"pageCount\":{}}}", page_count))
+    }
+
+    /// 구역의 그림·표·수식 시작 번호가 바뀌면 캡션 번호를 문서 순서로 다시 매긴다.
+    /// 한컴 12.30은 시작 번호를 준 구역의 첫 개체부터 그 번호로 매기고 뒤 개체는 잇는다.
+    fn renumber_objects_for_section_def(
+        document: &mut crate::model::document::Document,
+        json: &str,
+    ) {
+        if ["pictureNum", "tableNum", "equationNum"]
+            .iter()
+            .any(|key| super::super::helpers::json_u16(json, key).is_some())
+        {
+            crate::parser::assign_auto_numbers(document);
+        }
     }
 
     /// 원고지 격자가 바뀐 구역의 문단 줄을 새 칸 수로 다시 나누고 문단 세로 위치를 처음부터 잇는다.
@@ -3617,6 +3623,7 @@ impl DocumentCore {
         for idx in 0..count {
             self.apply_section_def_json(idx, json)?;
         }
+        Self::renumber_objects_for_section_def(&mut self.document, json);
         for (idx, grid_before) in grids_before.into_iter().enumerate() {
             self.refit_cell_grid(idx, grid_before);
         }
@@ -4277,11 +4284,39 @@ impl DocumentCore {
                         }
                     }
 
+                    // 칸·글상자 안 표는 문단·컨트롤 번호가 그 안쪽 문단 기준이라 본문 주소와 겹친다.
+                    // 표 노드의 경로는 마지막 마디가 표 자신(`nested_table_meta`)이므로 그 앞까지를
+                    // 그림·도형처럼 표가 든 칸의 경로(parentParaIdx·cellPath)로 낸다.
+                    let container = table_node
+                        .cell_context
+                        .as_ref()
+                        .filter(|ctx| {
+                            ctx.path.len() > 1
+                                && ctx.path.last().map(|e| e.control_index)
+                                    == table_node.control_index
+                        })
+                        .map(|ctx| {
+                            let path = ctx.path[..ctx.path.len() - 1]
+                                .iter()
+                                .map(|e| {
+                                    format!(
+                                        "{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}",
+                                        e.control_index, e.cell_index, e.cell_para_index
+                                    )
+                                })
+                                .collect::<Vec<_>>()
+                                .join(",");
+                            format!(
+                                ",\"parentParaIdx\":{},\"cellPath\":[{path}]",
+                                public_para(ctx.parent_para_index)
+                            )
+                        })
+                        .unwrap_or_default();
                     controls.push(format!(
-                        "{{\"type\":\"table\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"rowCount\":{},\"colCount\":{}{}{},\"cells\":[{}]}}",
+                        "{{\"type\":\"table\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"rowCount\":{},\"colCount\":{}{}{}{},\"cells\":[{}]}}",
                         node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
                         table_node.row_count, table_node.col_count,
-                        doc_coords, layer_str,
+                        doc_coords, container, layer_str,
                         cells.join(",")
                     ));
                     // Table 내부도 탐색 (셀 내 수식 등 수집)
@@ -5994,20 +6029,29 @@ impl DocumentCore {
             // `page_num > 0`)가 있으면 구역 첫 쪽을 그 번호로 매긴다. 없으면 NewNumber(Page)
             // 컨트롤이 없을 때 이전 구역에서 이어짐.
             let start_page_num = u32::from(section.section_def.page_num);
+            let has_new_number = {
+                use crate::model::control::{AutoNumberType, Control};
+                section.paragraphs.iter().any(|p|
+                    p.controls.iter().any(|c| matches!(c, Control::NewNumber(nn) if nn.number_type == AutoNumberType::Page))
+                )
+            };
             let page_number_offset = if start_page_num > 0 {
                 start_page_num - 1
-            } else if idx > 0 {
-                use crate::model::control::{AutoNumberType, Control};
-                let has_new_number = section.paragraphs.iter().any(|p|
-                    p.controls.iter().any(|c| matches!(c, Control::NewNumber(nn) if nn.number_type == AutoNumberType::Page))
-                );
-                if has_new_number {
-                    0
-                } else {
-                    carry_last_page_number
-                }
-            } else {
+            } else if has_new_number {
                 0
+            } else {
+                let carried = if idx > 0 { carry_last_page_number } else { 0 };
+                // 시작 쪽 번호 홀수(1)·짝수(2): 한컴 12.30은 빈 쪽을 넣지 않고, 이어 받을 번호가
+                // 그 홀짝이 아니면 번호를 하나 건너뛴다(첫 구역은 1에서 2로).
+                let wants_odd = match section.section_def.page_num_type {
+                    1 => Some(true),
+                    2 => Some(false),
+                    _ => None,
+                };
+                match wants_odd {
+                    Some(odd) if ((carried + 1) % 2 == 1) != odd => carried + 1,
+                    _ => carried,
+                }
             };
             if page_number_offset > 0 {
                 // [Issue #6206] 표 셀 안 `newNum` 은 위 최상위 스캔(`has_new_number`)에
@@ -6448,6 +6492,7 @@ impl DocumentCore {
                     self.dpi,
                     profile.hwpx_stored_layout() && !profile.hwp5_origin_hwpx(),
                     owned_hwp5_cells,
+                    profile.hwp5_stored_pagination_layout() && !profile.session_edited(),
                     storage,
                 )?
             } else {
@@ -8860,7 +8905,7 @@ impl DocumentCore {
                     // 모델에 제어문자 1자라 그대로 내보내면 값이 사라진다 (Task #3216).
                     // [#3385] 렌더가 폰트 정합을 위해 원문으로 흘리는 PUA 는 텍스트
                     // 표면에서만 읽을 수 있는 문자로 바꾼다 (렌더 결정은 불변).
-                    out.push_str(&crate::renderer::composer::pua_to_text_surface(
+                    out.push_str(&crate::renderer::composer::body_text_surface(
                         tr.display_or_text(),
                     ));
                     *has_token = true;

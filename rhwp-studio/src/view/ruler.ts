@@ -54,6 +54,8 @@ export class Ruler {
   private vCtx: CanvasRenderingContext2D | null;
   private scrollContent: HTMLElement | null;
   private rafId = 0;
+  private paintedScrollX: number | undefined;
+  private paintedScrollY: number | undefined;
   private unsubscribers: (() => void)[] = [];
 
   /** 현재 커서 문단의 왼쪽 여백 (px, zoom=1 기준). ▽ 핀의 기준점 — 눈금자로 바꾸지는 않는다
@@ -152,7 +154,15 @@ export class Ruler {
     this.vCanvas.addEventListener('pointermove', this.onVPinHoverBound);
 
     this.unsubscribers.push(
-      eventBus.on('viewport-scroll', () => this.scheduleUpdate()),
+      eventBus.on('viewport-scroll', () => {
+        // ViewportManager가 스크롤을 이미 프레임당 한 번 발행한다. 예약된 갱신은
+        // 여기서 함께 처리하고, 앞선 갱신이 이미 그린 좌표는 반복해서 그리지 않는다.
+        if (!this.rafId
+          && this.paintedScrollX === this.viewportManager.getScrollX()
+          && this.paintedScrollY === this.viewportManager.getScrollY()) return;
+        this.cancelScheduledUpdate();
+        this.update();
+      }),
       eventBus.on('zoom-changed', () => this.scheduleUpdate()),
       eventBus.on('viewport-resize', () => this.scheduleUpdate()),
       eventBus.on('document-changed', () => this.scheduleUpdate()),
@@ -232,12 +242,22 @@ export class Ruler {
     });
   }
 
+  private cancelScheduledUpdate(): void {
+    if (!this.rafId) return;
+    cancelAnimationFrame(this.rafId);
+    this.rafId = 0;
+  }
+
   /** 크기 변경과 두 축 paint 사이에 프레임을 넘기지 않는다 (#6187). */
   update(): void {
     const dpr = window.devicePixelRatio || 1;
+    const scrollX = this.viewportManager.getScrollX();
+    const scrollY = this.viewportManager.getScrollY();
     this.syncCanvasSize(dpr);
-    this.drawHorizontal(dpr);
-    this.drawVertical(dpr);
+    this.drawHorizontal(dpr, scrollX);
+    this.drawVertical(dpr, scrollY);
+    this.paintedScrollX = scrollX;
+    this.paintedScrollY = scrollY;
   }
 
   /**
@@ -555,7 +575,7 @@ export class Ruler {
   }
 
   /** 가로 눈금자 그리기 */
-  private drawHorizontal(dpr: number): void {
+  private drawHorizontal(dpr: number, scrollX: number): void {
     const ctx = this.hCtx;
     if (!ctx) return;
     const canvasW = this.hCanvas.width / dpr;
@@ -579,7 +599,6 @@ export class Ruler {
     }
 
     const zoom = this.viewportManager.getZoom();
-    const scrollX = this.viewportManager.getScrollX();
     const pageInfo = this.pageInfoOrNull(pageIdx);
     if (!pageInfo) {
       this.hPins = [];
@@ -752,7 +771,7 @@ export class Ruler {
   }
 
   /** 세로 눈금자 그리기 — 마지막 편집 focus 페이지의 눈금을 표시 */
-  private drawVertical(dpr: number): void {
+  private drawVertical(dpr: number, scrollY: number): void {
     const ctx = this.vCtx;
     if (!ctx) return;
     const canvasW = RULER_SIZE;
@@ -774,7 +793,6 @@ export class Ruler {
     }
 
     const zoom = this.viewportManager.getZoom();
-    const scrollY = this.viewportManager.getScrollY();
     const mmPx = PX_PER_MM * zoom;
     const scale = resolveRulerScale(zoom);
     const labelEvery = Math.max(1, Math.round(scale.labelStepMm / scale.tickStepMm));
@@ -883,10 +901,7 @@ export class Ruler {
   /** 리소스 정리 */
   dispose(): void {
     this.clearPinDrag();
-    if (this.rafId) {
-      cancelAnimationFrame(this.rafId);
-      this.rafId = 0;
-    }
+    this.cancelScheduledUpdate();
     for (const unsub of this.unsubscribers) {
       unsub();
     }

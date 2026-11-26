@@ -76,7 +76,7 @@ fn selected_cff_display_name_preserves_the_source_square_root_advance() {
             assert_eq!(
                 after["layoutMetric"]["baseAdvanceHwpunit"].as_f64(),
                 Some(expected),
-                "표시용 이름 변경이 원 HFT의 1em 전진을 반각 추정으로 바꾸지 않음"
+                "표시용 이름이 바뀌어도 원본 제곱근의 1em 전진폭을 보존한다"
             );
             assert_eq!(
                 after["layoutMetric"]["baseAdvanceHwpunit"],

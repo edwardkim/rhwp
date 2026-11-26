@@ -1,0 +1,26 @@
+frozen pkg /home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source105-candidate sha256 d02f8e1661a0eb51fbbe33212998755fb1f5c221ae1fac78b2083297461d9896 at http://127.0.0.1:37085
+  [browser] headless Chrome 실행
+  [wasm-artifact] matched d02f8e1661a0eb51fbbe33212998755fb1f5c221ae1fac78b2083297461d9896
+{"catalog":"none","duplicatePreparations":[],"counts":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],"trees":0,"perInput":[[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]],"treeMs":0,"prepares":20,"reads":0,"medianMs":36.35000002384186,"text":"A가가가가가가가가가가가가가가가가가가가가가","cursor":22,"pages":3,"warmupRegistrations":{"registerTextFontGlyphCoverage":{"calls":0,"bytes":0},"registerHftOutlineFont":{"calls":0,"bytes":0}},"registrations":{"registerTextFontGlyphCoverage":{"calls":0,"bytes":0},"registerHftOutlineFont":{"calls":0,"bytes":0}},"composed":"A가가가가가가가가가가가가가가가가가가가가가한","pasted":"A가가가가가가가가가가가가가가가가가가가가가한Z","undone":"A가가가가가가가가가가가가가가가가가가가가가한","redone":"A가가가가가가가가가가가가가가가가가가가가가한Z","finalPages":3,"finalCursor":25,"finalPage":0,"layoutHash":"2a5f7535dd4010e4c45f34885ba7c9d598ac612353c8ddf05bfe154f7f6d29e6","paintHash":"7be7d4e8832becdac57335fe76735d674d9b584dada2cc4ea73ee6f28d40e682","faceReads":[]}
+  [wasm-artifact] matched d02f8e1661a0eb51fbbe33212998755fb1f5c221ae1fac78b2083297461d9896
+{"catalog":"empty","duplicatePreparations":[],"counts":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],"trees":0,"perInput":[[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]],"treeMs":0,"prepares":20,"reads":0,"medianMs":33.40000009536743,"text":"A가가가가가가가가가가가가가가가가가가가가가","cursor":22,"pages":3,"warmupRegistrations":{"registerTextFontGlyphCoverage":{"calls":0,"bytes":0},"registerHftOutlineFont":{"calls":0,"bytes":0}},"registrations":{"registerTextFontGlyphCoverage":{"calls":0,"bytes":0},"registerHftOutlineFont":{"calls":0,"bytes":0}},"composed":"A가가가가가가가가가가가가가가가가가가가가가한","pasted":"A가가가가가가가가가가가가가가가가가가가가가한Z","undone":"A가가가가가가가가가가가가가가가가가가가가가한","redone":"A가가가가가가가가가가가가가가가가가가가가가한Z","finalPages":3,"finalCursor":25,"finalPage":0,"layoutHash":"2a5f7535dd4010e4c45f34885ba7c9d598ac612353c8ddf05bfe154f7f6d29e6","paintHash":"7be7d4e8832becdac57335fe76735d674d9b584dada2cc4ea73ee6f28d40e682","faceReads":[]}
+  [wasm-artifact] matched d02f8e1661a0eb51fbbe33212998755fb1f5c221ae1fac78b2083297461d9896
+{"catalog":"populated","duplicatePreparations":[{"input":0,"editedPage":null,"stack":"Error\n    at w.prepareCanvasMetrics (pptr:evaluate;file%3A%2F%2F%2Fhome%2Ftsjang%2Frhwp%2Foutput%2Fpr-review%2Fissue7754-nine%2Fsource134_host_font_sparse_trace.mjs%3A13%3A31:65:188)\n    at CanvasView.prepareRendererRevision (http://127.0.0.1:37085/src/view/canvas-view.ts:393:37)\n    at async CanvasView.refreshPagesForMutation (http://127.0.0.1:37085/src/view/canvas-view.ts:307:20)"},{"input":1,"editedPage":null,"stack":"Error\n    at w.prepareCanvasMetrics (pptr:evaluate;file%3A%2F%2F%2Fhome%2Ftsjang%2Frhwp%2Foutput%2Fpr-review%2Fissue7754-nine%2Fsource134_host_font_sparse_trace.mjs%3A13%3A31:65:188)\n    at CanvasView.prepareRendererRevision (http://127.0.0.1:37085/src/view/canvas-view.ts:393:37)\n    at async CanvasView.refreshPagesForMutation (http://127.0.0.1:37085/src/view/canvas-view.ts:307:20)"},{"input":2,"editedPage":null,"stack":"Error\n    at w.prepareCanvasMetrics (pptr:evaluate;file%3A%2F%2F%2Fhome%2Ftsjang%2Frhwp%2Foutput%2Fpr-review%2Fissue7754-nine%2Fsource134_host_font_sparse_trace.mjs%3A13%3A31:65:188)\n    at CanvasView.prepareRendererRevision (http://127.0.0.1:37085/src/view/canvas-view.ts:393:37)\n    at async CanvasView.refreshPagesForMutation (http://127.0.0.1:37085/src/view/canvas-view.ts:307:20)"}],"counts":[2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],"trees":37,"perInput":[[0,1,2,0,1,2],[0,1,2,0,1,2],[0,1,2,0,1,2],[0,1,2],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]],"treeMs":572.299998998642,"prepares":23,"reads":2,"medianMs":35.700000047683716,"text":"A가가가가가가가가가가가가가가가가가가가가가","cursor":22,"pages":3,"warmupRegistrations":{"registerTextFontGlyphCoverage":{"calls":0,"bytes":0},"registerHftOutlineFont":{"calls":0,"bytes":0}},"registrations":{"registerTextFontGlyphCoverage":{"calls":0,"bytes":0},"registerHftOutlineFont":{"calls":0,"bytes":0}},"composed":"A가가가가가가가가가가가가가가가가가가가가가한","pasted":"A가가가가가가가가가가가가가가가가가가가가가한Z","undone":"A가가가가가가가가가가가가가가가가가가가가가한","redone":"A가가가가가가가가가가가가가가가가가가가가가한Z","finalPages":3,"finalCursor":25,"finalPage":0,"layoutHash":"61f5785eb6d8721b8e92b9e416d93f03d05370b3fbe5516478c0295265aa0964","paintHash":"82d233b4a114f4ae305e26bc71eb3e8c0846aeb6dce3484ea72671871bfe566e","faceReads":["fixture","fixture","alternate","alternate","fixture"]}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+23 !== 20
+
+    at file:///home/tsjang/rhwp/output/pr-review/issue7754-nine/source134_host_font_sparse_trace.mjs:154:14 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 23,
+  expected: 20,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.15.0

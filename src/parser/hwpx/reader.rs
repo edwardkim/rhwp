@@ -322,6 +322,10 @@ impl HwpxReader {
         Ok(size)
     }
 
+    pub(super) fn contains_entry(&self, path: &str) -> bool {
+        self.file_index(path).is_ok()
+    }
+
     fn file_index(&self, path: &str) -> Result<usize, HwpxError> {
         // zip 9의 이름 조회는 raw bytes를 비교한다. UTF-8 경로는 기존 빠른
         // 조회를 쓰고, CP437 등 디코딩된 경로는 같은 디렉터리 순서의 인덱스로 읽는다.

@@ -1,0 +1,53 @@
+{
+  "fixture": "samples/issue9285/child-product-safety-plan-wmf-mask-dib.hwpx",
+  "embedded_member": "BinData/image7.wmf",
+  "wmf_sha256": "2d7cd57c61eb6f348345a00e551a8c89ccfe1862a8ec329ccf696cdb4fc9cc19",
+  "operations": [
+    "00ee0086",
+    "008800c6",
+    "00ee0086",
+    "008800c6",
+    "00ee0086",
+    "008800c6",
+    "00ee0086",
+    "008800c6"
+  ],
+  "masks": [
+    {
+      "record_bytes": 32834,
+      "width": 512,
+      "height": 512,
+      "bit_count": 1,
+      "dib_header_bytes": 40,
+      "dib_pixel_bytes": 32768,
+      "dib_remaining_color_table_bytes": 0
+    },
+    {
+      "record_bytes": 32834,
+      "width": 512,
+      "height": 512,
+      "bit_count": 1,
+      "dib_header_bytes": 40,
+      "dib_pixel_bytes": 32768,
+      "dib_remaining_color_table_bytes": 0
+    },
+    {
+      "record_bytes": 32834,
+      "width": 512,
+      "height": 512,
+      "bit_count": 1,
+      "dib_header_bytes": 40,
+      "dib_pixel_bytes": 32768,
+      "dib_remaining_color_table_bytes": 0
+    },
+    {
+      "record_bytes": 32834,
+      "width": 512,
+      "height": 512,
+      "bit_count": 1,
+      "dib_header_bytes": 40,
+      "dib_pixel_bytes": 32768,
+      "dib_remaining_color_table_bytes": 0
+    }
+  ]
+}

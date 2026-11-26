@@ -1,0 +1,11 @@
+== p0001-0002 ==
++ /home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source37-optimized dump-note-shape /home/tsjang/rhwp/tests/fixtures/footnote_columns/overflow-r3u.hwp
++ node /home/tsjang/rhwp/scripts/export-wasm-png-for-sweep.mjs --pkg /home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37 --input /home/tsjang/rhwp/tests/fixtures/footnote_columns/overflow-r3u.hwp --out /home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-overflow-r3u/silhouette-parts/p0001-0002 --fonts /home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-overflow-r3u/silhouette-parts/p0001-0002/font-catalog.json --options /home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-overflow-r3u/silhouette-parts/p0001-0002/canvas-options.json
+PNG export pages: 2
++ /home/tsjang/rhwp/venv/bin/python /home/tsjang/rhwp/scripts/visual_sweep_pdf.py --pdf /home/tsjang/rhwp/pdf/pr9234-footnote-columns/overflow-r3u-2020.pdf --dpi 96 --prefix /home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-overflow-r3u/silhouette-parts/p0001-0002/pdf_png/pdf --pages 1
++ /home/tsjang/rhwp/venv/bin/python /home/tsjang/rhwp/scripts/visual_sweep_pdf.py --pdf /home/tsjang/rhwp/pdf/pr9234-footnote-columns/overflow-r3u-2020.pdf --dpi 96 --prefix /home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-overflow-r3u/silhouette-parts/p0001-0002/pdf_png/pdf --pages 2
+실루엣 보조값 2쪽: /home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-overflow-r3u/silhouette-parts/p0001-0002/silhouette.tsv
+{"key": "p0001-0002", "pages": 2, "minimum": "100.00", "exact100": 2}
+실루엣 보조값 2쪽: /home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-overflow-r3u/silhouette.tsv
+{"key": "footnotes-overflow-r3u", "pages": 2, "minimum": "100.00", "exact100": 2}
+summary: /home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/summary.json

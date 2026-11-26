@@ -1,0 +1,17 @@
+{
+  "state": "complete",
+  "scope": "nativeTextTypefaceSelection",
+  "records": [
+    {
+      "requested": "HY Junggothic",
+      "resolved": "Malgun Gothic",
+      "source": "custom",
+      "bold": false,
+      "italic": false
+    }
+  ],
+  "missingRequests": [],
+  "droppedObservations": 0,
+  "recordLimit": 256,
+  "nameByteLimit": 65536
+}

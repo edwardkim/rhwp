@@ -1,0 +1,80 @@
+[
+  [
+    "open",
+    "꠆ C",
+    "◌꠆ C",
+    120.053
+  ],
+  [
+    "insert base",
+    "ꠇ꠆ C",
+    "ꠇ꠆ C",
+    130.56
+  ],
+  [
+    "second mark",
+    "ꠇ꠆꠆ C",
+    "ꠇ꠆◌꠆ C",
+    130.56
+  ],
+  [
+    "reopen HWP",
+    "ꠇ꠆꠆ C",
+    "ꠇ꠆◌꠆ C",
+    130.56
+  ],
+  [
+    "HWP -> HWP second reopen",
+    "ꠇ꠆꠆ C",
+    "ꠇ꠆◌꠆ C",
+    130.56
+  ],
+  [
+    "HWP -> HWPX second reopen",
+    "ꠇ꠆꠆ C",
+    "ꠇ꠆◌꠆ C",
+    130.56
+  ],
+  [
+    "reopen HWPX",
+    "ꠇ꠆꠆ C",
+    "ꠇ꠆◌꠆ C",
+    130.56
+  ],
+  [
+    "HWPX -> HWP second reopen",
+    "ꠇ꠆꠆ C",
+    "ꠇ꠆◌꠆ C",
+    130.56
+  ],
+  [
+    "HWPX -> HWPX second reopen",
+    "ꠇ꠆꠆ C",
+    "ꠇ꠆◌꠆ C",
+    130.56
+  ],
+  [
+    "restore attached",
+    "ꠇ꠆ C",
+    "ꠇ꠆ C",
+    130.56
+  ],
+  [
+    "remove base",
+    "꠆ C",
+    "◌꠆ C",
+    120.053
+  ],
+  [
+    "insert explicit circle",
+    "◌꠆ C",
+    "◌꠆ C",
+    133.387
+  ],
+  [
+    "restore original",
+    "꠆ C",
+    "◌꠆ C",
+    120.053
+  ]
+]

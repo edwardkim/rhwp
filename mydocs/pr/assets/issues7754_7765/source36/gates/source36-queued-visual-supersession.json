@@ -1,0 +1,14 @@
+{
+  "recorded": 1795316114.3957233,
+  "pid": 1702367,
+  "argv": [
+    "python3",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_source36_remaining_visual_gates.py",
+    ""
+  ],
+  "children": [],
+  "action": "terminated idle task-owned queue controller only",
+  "current_native_renderers": "unchanged",
+  "cargo_tests": "already terminal; no signal",
+  "scope": "Only unstarted superseded-candidate validation prevented; no gate is counted as passed."
+}

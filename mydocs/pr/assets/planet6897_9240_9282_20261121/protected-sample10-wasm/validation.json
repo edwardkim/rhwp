@@ -1,0 +1,180 @@
+{
+  "product_source": "65b6fe383c3bd8cbcf83de7909c7a6c24eb32c35",
+  "fixed_base_source": "d7b5286cbf6401678a70eed3d66236a68dd2a72c",
+  "capture_scope": "latest_candidate_only",
+  "wasm_build": "macOS locked wrapper web --no-opt",
+  "producer_sha256": {
+    "rhwp.js": "23130c8002fe1aa4e6545910d92ef5716ccb92097747662d2b64ef129ff27b08",
+    "rhwp_bg.wasm": "b7daba5a67af717138d37638f8a1a477dd0990f034b234e985a534c5d6ef228f"
+  },
+  "input": {
+    "path": "samples/hwp3-sample10.hwp",
+    "sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+    "bytes": 945360
+  },
+  "reference_pdf": {
+    "path": "pdf/issue8371/hwp3-sample10-2020.pdf",
+    "sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+    "bytes": 96185197
+  },
+  "reference_print": {
+    "creator": "Hwp 2020 11.0.0.9136",
+    "producer": "Hancom PDF 1.3.0.550"
+  },
+  "comparison": {
+    "dpi": 96,
+    "compat": "2022",
+    "profile": "print",
+    "radius_px": 2
+  },
+  "protected_source": {
+    "pr": null,
+    "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+    "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+    "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/sample10.tsv",
+    "sha256": "f0ff5f22ed2dfb65f1063f73a3b80fad44ba4f331d714a4acc16657628498de5",
+    "metric_column": "silhouette_raw_match_percent",
+    "page_column": "page",
+    "document_filter": null,
+    "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+    "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+    "precision": "공식 소수 둘째 자리 전쪽 원문"
+  },
+  "protected_table_sha256": "7f558bd4a1c8b901001492a977476efe1b1df3165dd3fef220f43ca1f87f55e3",
+  "candidate_tsv_sha256": "f0ff5f22ed2dfb65f1063f73a3b80fad44ba4f331d714a4acc16657628498de5",
+  "whole_tsv_byte_equal_to_protected_source": true,
+  "pages": 763,
+  "minimum": "99.57",
+  "displayed_100": 745,
+  "declines": [],
+  "gains": [],
+  "inspected_pages": [
+    {
+      "page": 474,
+      "candidate": "100.00",
+      "protected": "100.00"
+    },
+    {
+      "page": 757,
+      "candidate": "99.57",
+      "protected": "99.57"
+    }
+  ],
+  "historical_font_programs": {
+    "matched": 66,
+    "recorded": 80,
+    "unavailable": [
+      {
+        "file": "batang.ttc",
+        "sha256": "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8"
+      },
+      {
+        "file": "cour.ttf",
+        "sha256": "6aab1f79264ccda1e7129dba62dbe3750b10eaa27408a327dadb808724e62c84"
+      },
+      {
+        "file": "courbd.ttf",
+        "sha256": "e376f24c9f27eb7370b25aa366d78da731834a1aea651858801c9a14e8906943"
+      },
+      {
+        "file": "courbi.ttf",
+        "sha256": "ac3b362cf998eb33475655e12ab7cb2f6a35d1f2eff6f76af00ebb6f81c53ee7"
+      },
+      {
+        "file": "couri.ttf",
+        "sha256": "546406ddbb3e3f6b876a5e8a5dee62ac090d1448662e98d8844b22393813dd13"
+      },
+      {
+        "file": "gulim.ttc",
+        "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+      },
+      {
+        "file": "times.ttf",
+        "sha256": "fbb57cdb0079137adc0e478913ca134dfee02aa2ef443738ec5e839bf97a1f7f"
+      },
+      {
+        "file": "timesbd.ttf",
+        "sha256": "e94ff9111656f17bd81e9f822f1e234edcd370bcbacfdebf998b8938f525ac77"
+      },
+      {
+        "file": "timesbi.ttf",
+        "sha256": "8d2c8d8d25d9fc529d08558c42effa771617914a455603881e212a26e2f2ddcd"
+      },
+      {
+        "file": "timesi.ttf",
+        "sha256": "c2c134968be4259aaa78845d3aca5e91c4a0bd10d98e4d2e48ac3c12f3c63b89"
+      },
+      {
+        "file": "arial.ttf",
+        "sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1"
+      },
+      {
+        "file": "arialbd.ttf",
+        "sha256": "3680a1bbffab914f36b27d5fd97b193de5bccfab882c41b41b5f8f99457b4820"
+      },
+      {
+        "file": "arialbi.ttf",
+        "sha256": "77a0b63c5f73eb85923f10359e68b8fc768487ae88ad902a1ea21276954e205b"
+      },
+      {
+        "file": "ariali.ttf",
+        "sha256": "c30c71d614e143c0d4e42aaf04d9a1f50f90b365a2654eb3f2c6598e5655af08"
+      }
+    ],
+    "current_nonoverlap_supplied": 1152
+  },
+  "linked_images": [
+    {
+      "name": "oracle.gif",
+      "sha256": "464e863dd2c1650fc6997b03a5d96c9413e61bbabaf7337c783db27203cc2761"
+    },
+    {
+      "name": "rdb02.gif",
+      "sha256": "bfadf4cdbbeeb5f3d8632cb54c8c3696977f405204b651f99a7a24c8f39532cf"
+    },
+    {
+      "name": "s1.jpg",
+      "sha256": "77dea18ce7f8f93b0931e133dec222aec642eef0ed87b8f2031b94dcbea5c514"
+    }
+  ],
+  "evidence_sha256": {
+    "overlay-474.png": "5da6cc068f0f940f2a9e9e16e7b5fbff2b0ed93ec5b097fd68d6ccc1657db20d",
+    "overlay-757.png": "bdd6de1f75325729a5865662f95b96f86bf07b32765b9dcdf54ff9339793e137",
+    "review-474.png": "66b5c2be3094d3fb5e8bfa7a2ce20d01934e0ec0ea8babbb0a35ef9300322def",
+    "review-757.png": "50637cbb7c4369250c1e546114ad7e07f15f255f519712af4d0e5182c0fb4958"
+  },
+  "fixed_base_comparison": {
+    "base_source": "d7b5286cbf6401678a70eed3d66236a68dd2a72c",
+    "candidate_source": "65b6fe383c3bd8cbcf83de7909c7a6c24eb32c35",
+    "pages": 763,
+    "paired_conditions_equal": true,
+    "fixed_base_producer_hashes": {
+      "rhwp_binary": "ce06101fc8271df1e456c4aab8da1882cf4d48f58d22729fb8453d193dd2c519",
+      "rhwp.js": "23130c8002fe1aa4e6545910d92ef5716ccb92097747662d2b64ef129ff27b08",
+      "rhwp_bg.wasm": "c32305fcccd7a18bef0f67305cc4674c51b9e4b052d15097038b31c7be7e26cd"
+    },
+    "fixed_base_tsv_sha256": "72e9dd8ac17a7ac33e52e4106bb48fdba83627cc31b47e8ab15c40b9a801598c",
+    "candidate_tsv_sha256": "f0ff5f22ed2dfb65f1063f73a3b80fad44ba4f331d714a4acc16657628498de5",
+    "fixed_base_capture_manifest_sha256": "0b948c7d81c0b9005c986eccf9cfde4a9e2c283eafc1126f9b5d03fb66acf97d",
+    "candidate_capture_manifest_sha256": "6477be8ec141d0a33e545bf36d6333ad5a33be9c295e8d26e69c0edc9f7ce5be",
+    "fixed_base_below_protected": [
+      {
+        "page": 474,
+        "protected": "100.00",
+        "actual": "99.96"
+      }
+    ],
+    "candidate_below_protected": [],
+    "page_score_differences": [
+      {
+        "page": 474,
+        "fixed_base": "99.96",
+        "candidate": "100.00"
+      }
+    ],
+    "review_and_overlay_sha256": {
+      "fixed-base-review-474.png": "16accb76e235e37a2b3e26ed1d7ad0042c9f59bd7515bbdc82767155a6d4e3b8",
+      "fixed-base-overlay-474.png": "8884da2d8775094a7a4dbc7bb636c404abea8d3e3db426c0c418da9ef5d33867"
+    }
+  }
+}

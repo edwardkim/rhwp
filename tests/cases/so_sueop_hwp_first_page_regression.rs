@@ -148,14 +148,14 @@ fn school_glyph_advances(name: &str) -> Vec<f64> {
 }
 
 #[test]
-fn so_sueop_hwp_first_page_preserves_independent_hft_advances() {
+fn so_sueop_hwp_first_page_preserves_independent_legacy_advances() {
     // 독립 Print의 30/32/52pt HFT 굵은 한글은 장평 적용 em 대비1.037~1.041.
     // 힌팅 반올림만 포함한 비율 구간이며
     // 실물의 절대 픽셀 좌표나 구현 helper의 계산값을 기대값으로 재사용하지 않는다.
     let hwp = school_glyph_advances("SO-SUEOP.hwp");
     assert!(
         hwp.iter().all(|a| (1.035..=1.045).contains(a)),
-        "HFT 독립 전진: {hwp:?}"
+        "원본 글꼴의 독립 Print 전진폭: {hwp:?}"
     );
 }
 

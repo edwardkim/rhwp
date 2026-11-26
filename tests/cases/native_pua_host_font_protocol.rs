@@ -232,7 +232,7 @@ fn missing_source_glyph_does_not_inherit_the_paint_fallback_advance() {
 }
 
 #[test]
-fn same_family_hft_and_truetype_requests_keep_distinct_source_programs() {
+fn same_family_legacy_and_truetype_requests_keep_distinct_source_programs() {
     let mut core = DocumentCore::new_empty();
     core.create_blank_document_native().unwrap();
     core.insert_text_native(0, 0, 0, "A가").unwrap();
@@ -260,7 +260,7 @@ fn same_family_hft_and_truetype_requests_keep_distinct_source_programs() {
     );
     assert!(
         requests.iter().any(|request| !request.source_ttf),
-        "HFT 요청이 없음: {requests:?}"
+        "표시용 글꼴 요청이 없다: {requests:?}"
     );
     let ttf = include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf");
     let cff = include_bytes!("../fixtures/fonts/RHWPHftOutline.otf");
@@ -410,70 +410,6 @@ fn source_pointer_requests_its_program_without_reclassifying_unicode_pointer() {
     }
 }
 
-/// 저장소가 직접 만든 MIT 합성 윤곽의 cmap만 메모리에서 바꾼다.
-/// 외부 글꼴·새 배포 파일 없이 원 glyph가 실제로 있는 공급 프로그램을 만든다.
-fn synthetic_symbol_program(symbol: char) -> Vec<u8> {
-    let source = include_bytes!("../fixtures/fonts/RHWPHostFixture-Regular.ttf");
-    let face = ttf_parser::Face::parse(source, 0).unwrap();
-    let glyph = face.glyph_index('A').unwrap();
-    assert_eq!(face.units_per_em(), 1000);
-    assert_eq!(face.glyph_hor_advance(glyph), Some(900));
-    let mut bytes = source.to_vec();
-    let table_count = u16::from_be_bytes([bytes[4], bytes[5]]) as usize;
-    let record = |tag: &[u8; 4]| {
-        (0..table_count)
-            .map(|index| 12 + index * 16)
-            .find(|&offset| &source[offset..offset + 4] == tag)
-            .unwrap()
-    };
-    let cmap_record = record(b"cmap");
-    let head_record = record(b"head");
-    let head_offset = u32::from_be_bytes(
-        source[head_record + 8..head_record + 12]
-            .try_into()
-            .unwrap(),
-    ) as usize;
-    let mut cmap = Vec::new();
-    for value in [0u16, 1, 3, 10] {
-        cmap.extend(value.to_be_bytes());
-    }
-    cmap.extend(12u32.to_be_bytes());
-    cmap.extend(12u16.to_be_bytes());
-    cmap.extend(0u16.to_be_bytes());
-    for value in [
-        28u32,
-        0,
-        1,
-        symbol as u32,
-        symbol as u32,
-        u32::from(glyph.0),
-    ] {
-        cmap.extend(value.to_be_bytes());
-    }
-    let checksum = |data: &[u8]| {
-        data.chunks(4).fold(0u32, |sum, chunk| {
-            let mut word = [0; 4];
-            word[..chunk.len()].copy_from_slice(chunk);
-            sum.wrapping_add(u32::from_be_bytes(word))
-        })
-    };
-    let offset = bytes.len().next_multiple_of(4);
-    bytes.resize(offset, 0);
-    bytes.extend(&cmap);
-    bytes[cmap_record + 4..cmap_record + 8].copy_from_slice(&checksum(&cmap).to_be_bytes());
-    bytes[cmap_record + 8..cmap_record + 12].copy_from_slice(&(offset as u32).to_be_bytes());
-    bytes[cmap_record + 12..cmap_record + 16].copy_from_slice(&(cmap.len() as u32).to_be_bytes());
-    bytes[head_offset + 8..head_offset + 12].fill(0);
-    let adjustment = 0xB1B0AFBAu32.wrapping_sub(checksum(&bytes));
-    bytes[head_offset + 8..head_offset + 12].copy_from_slice(&adjustment.to_be_bytes());
-    assert_eq!(checksum(&bytes), 0xB1B0AFBA);
-    let mapped = ttf_parser::Face::parse(&bytes, 0).unwrap();
-    assert_eq!(mapped.glyph_index(symbol), Some(glyph));
-    assert!(mapped.glyph_index('►').is_none());
-    bytes
-}
-
-// 기존 테스트의 합성 글꼴 공급 전·후 및 해제 후에 호출한다.
 fn assert_layer_display(core: &DocumentCore, symbol: char, expected: &str) {
     fn collect<'a>(
         value: &'a serde_json::Value,
@@ -553,7 +489,7 @@ fn assert_prepared_source_symbol(symbol: char, fallback: &str) {
     let mut document = core.document().clone();
     for language in &mut document.doc_info.font_faces {
         for font in language {
-            font.name = "RHWP Host Fixture".into();
+            font.name = "Last Resort High-Efficiency".into();
         }
     }
     core.set_document(document);
@@ -561,11 +497,19 @@ fn assert_prepared_source_symbol(symbol: char, fallback: &str) {
     let before = core.build_page_render_tree(0).unwrap();
     assert_eq!(displayed_pointer(&before.root, symbol), Some(fallback));
     assert_layer_display(&core, symbol, fallback);
-    let program = synthetic_symbol_program(symbol);
+    // Unicode Last Resort의 Plane 15 공통 글리프로 PUA 공급·해제 계약을
+    // 검사한다. 한컴 글리프의 실제 모양은 독립 문서의 Print 증거로 검사한다.
+    let program = include_bytes!("../fixtures/fonts/last-resort/LastResortHE-Regular.ttf");
+    let face = ttf_parser::Face::parse(program, 0).unwrap();
+    let glyph = face.glyph_index(symbol).expect("배포본의 Plane 15 글리프");
+    assert_ne!(glyph.0, 0);
+    assert!(face.glyph_bounding_box(glyph).is_some());
+    let advance_em =
+        f64::from(face.glyph_hor_advance(glyph).unwrap()) / f64::from(face.units_per_em());
     assert!(core
         .prepare_native_pua_fonts_with(|request| {
-            assert!(request.family.starts_with("RHWP Host Fixture"));
-            Some((program.clone(), 0))
+            assert!(request.family.starts_with("Last Resort High-Efficiency"));
+            Some((program.to_vec(), 0))
         })
         .unwrap());
     let prepared = core.build_page_render_tree(0).unwrap();
@@ -577,8 +521,8 @@ fn assert_prepared_source_symbol(symbol: char, fallback: &str) {
     assert_layer_display(&core, symbol, &symbol.to_string());
     let (advance, size) = source_advance(&prepared.root, symbol).unwrap();
     assert!(
-        (advance - size * 0.9).abs() <= 4.0 / 75.0,
-        "합성 원본 SFNT의 독립 hmtx 900/1000 전진을 배치도 소비한다"
+        (advance - size * advance_em).abs() <= 4.0 / 75.0,
+        "공급한 배포 원본 hmtx의 전진을 배치에서도 소비한다"
     );
     assert_eq!(format!("{:?}", core.document()), original);
     core.clear_native_pua_fonts();
@@ -699,19 +643,46 @@ fn compact_truetype_retains_unicode_coverage_and_natural_advances() {
 
 #[test]
 fn truetype_metrics_do_not_exhaust_budget_with_unused_font_bytes() {
+    use rhwp::renderer::native_webfonts::decode_font;
+
+    let programs = [
+        include_bytes!("../../assets/fonts/NotoSerifKR-Regular.woff2").as_slice(),
+        include_bytes!("../../assets/fonts/NotoSerifKR-Bold.woff2"),
+        include_bytes!("../../assets/fonts/GowunBatang-Regular.woff2"),
+        include_bytes!("../../assets/fonts/GowunBatang-Bold.woff2"),
+        include_bytes!("../../assets/fonts/GowunDodum-Regular.woff2"),
+        include_bytes!("../../assets/fonts/RHWPPublicBatang-Regular.woff2"),
+        include_bytes!("../../assets/fonts/Cafe24Supermagic-Regular-v1.0.woff2"),
+        include_bytes!("../../assets/fonts/Cafe24Ssurround-v2.0.woff2"),
+        include_bytes!("../../assets/fonts/D2Coding-Bold.woff2"),
+        include_bytes!("../../assets/fonts/D2Coding-Regular.woff2"),
+        include_bytes!("../../assets/fonts/NanumMyeongjo-ExtraBold.woff2"),
+    ];
     let mut fonts = NativePuaFonts::default();
-    for index in 0..7u8 {
-        let mut padded = REGULAR.to_vec();
-        padded.resize(10 * 1024 * 1024, index);
+    let mut original_bytes = 0;
+    for (index, source) in programs.into_iter().enumerate() {
+        let program = decode_font(source).expect("저장소 기본 공급 글꼴의 원본 프로그램");
+        original_bytes += program.len();
+        let face = ttf_parser::Face::parse(&program, 0).unwrap();
+        assert!(face.tables().glyf.is_some() && !face.is_variable());
+        let glyph = face.glyph_index('A').expect("원본 라틴 글리프");
+        let advance =
+            f64::from(face.glyph_hor_advance(glyph).unwrap()) / f64::from(face.units_per_em());
         let family = format!("fixture-{index}");
         fonts
-            .register_otf_for_source(&family, false, false, true, &padded, 0)
-            .expect("전진폭에 사용하지 않는 바이트는 보유 한도를 차지하지 않음");
-        assert!(fonts
-            .get_otf_for_source(&family, false, false, true)
-            .and_then(|metrics| metrics.source_ttf_advance_em('A'))
-            .is_some());
+            .register_otf_for_source(&family, false, false, true, &program, 0)
+            .expect("원본 윤곽 전체 대신 측정 프로그램만 보유");
+        assert_eq!(
+            fonts
+                .get_otf_for_source(&family, false, false, true)
+                .and_then(|metrics| metrics.source_ttf_advance_em('A')),
+            Some(advance)
+        );
     }
+    assert!(
+        original_bytes > 64 * 1024 * 1024,
+        "공급한 서로 다른 원본 프로그램의 합이 보유 한도를 넘어야 함"
+    );
 }
 
 #[test]
@@ -838,7 +809,7 @@ fn unassigned_hwp5_font_bits_allow_source_probe_without_truetype_declaration() {
 }
 
 #[test]
-fn supplied_truetype_advance_is_distinct_from_hft_and_cff() {
+fn supplied_truetype_advance_is_distinct_from_legacy_and_cff() {
     use rhwp::renderer::{
         layout::{EmbeddedTextMeasurer, TextMeasurer},
         TextStyle,
@@ -887,60 +858,55 @@ fn supplied_truetype_advance_is_distinct_from_hft_and_cff() {
 }
 
 #[test]
-fn hft_bold_tracking_requires_verified_source_and_program() {
+fn legacy_bold_tracking_requires_verified_source_and_program() {
+    use super::legacy_bold_tracking::has_verified_program_family;
     use rhwp::renderer::{
         layout::{EmbeddedTextMeasurer, TextMeasurer},
         TextStyle,
     };
-    let original = include_bytes!("../fixtures/fonts/RHWPHftOutline.otf");
-    let mut renamed = original.to_vec();
-    let utf16 = |s: &str| {
-        s.encode_utf16()
+    use ttf_parser::name_id;
+
+    // 글꼴 프로그램과 별개인 name 레코드에서 실제 판정기가 읽는 필드만 제공한다.
+    for (id, label, accepted) in [
+        (name_id::FAMILY, "Sinmyeong Junggothic", true),
+        (name_id::TYPOGRAPHIC_FAMILY, "딸기", true),
+        (name_id::FULL_NAME, "Senaru", false),
+        (name_id::POST_SCRIPT_NAME, "Senaru", false),
+        (name_id::FAMILY, "Unverified CFF", false),
+    ] {
+        let label: Vec<u8> = label.encode_utf16().flat_map(u16::to_be_bytes).collect();
+        let mut record: Vec<u8> = [0, 1, 18, 3, 1, 0x0409, id, label.len() as u16, 0]
+            .into_iter()
             .flat_map(u16::to_be_bytes)
-            .collect::<Vec<_>>()
-    };
-    let from = utf16("RHWP HFT Outline Fixture");
-    let to = utf16("Sinmyeong Junggothic    ");
-    assert_eq!(from.len(), to.len());
-    let mut count = 0;
-    for offset in 0..=renamed.len() - from.len() {
-        if renamed[offset..offset + from.len()] == from {
-            renamed[offset..offset + to.len()].copy_from_slice(&to);
-            count += 1;
-        }
+            .collect();
+        record.extend(label);
+        let table = ttf_parser::name::Table::parse(&record).unwrap();
+        assert_eq!(has_verified_program_family(table.names), accepted);
     }
-    assert!(count > 0);
+
+    let original = include_bytes!("../fixtures/fonts/RHWPHftOutline.otf");
     let mut programs = NativePuaFonts::default();
+    // 요청 이름만 인증된 family에 맞춰도 실제 파일에 이름이 없으면 전진을 빌려주지 않는다.
+    let requested = "Sinmyeong Junggothic";
     programs
-        .register_otf("verified", true, false, &renamed, 0)
+        .register_otf(requested, true, false, original, 0)
         .unwrap();
-    programs
-        .register_otf("other", true, false, original, 0)
-        .unwrap();
+    let program = programs.get_otf(requested, true, false).unwrap();
+    assert!(program.has_glyph('가'));
+    assert!(program.needs_faux_bold('가'));
+    assert!(!program.has_verified_hft_bold_tracking('가'));
     let mut style = TextStyle {
         font_size: 20.0,
         bold: true,
         source_font_is_hft: true,
-        native_otf_metrics: programs.get_otf("other", true, false),
+        native_otf_metrics: Some(program),
         ..Default::default()
     };
-    let width = |style: &TextStyle| {
-        let p = EmbeddedTextMeasurer.compute_char_positions("가", style);
-        p[1] - p[0]
-    };
+    let width = |style: &TextStyle| EmbeddedTextMeasurer.compute_char_positions("가", style)[1];
     let regular = width(&style);
     style.source_hwp3_hft_bold = true;
-    assert!(width(&style) > regular);
+    assert!((width(&style) - regular - 1.0).abs() < 0.1);
     style.source_hwp3_hft_bold = false;
-    style.native_otf_metrics = programs.get_otf("verified", true, false);
-    assert!(style
-        .native_otf_metrics
-        .as_ref()
-        .unwrap()
-        .has_verified_hft_bold_tracking('가'));
-    let without_source = width(&style);
     style.source_verified_hft_bold_tracking = true;
-    assert!((width(&style) - without_source - 1.0).abs() < 0.1);
-    style.native_otf_metrics = programs.get_otf("other", true, false);
     assert!((width(&style) - regular).abs() < 1e-8);
 }

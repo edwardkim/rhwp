@@ -1,0 +1,79 @@
+{
+  "status": "all-protected-pages-retained-before-hnc-double-rule-correction",
+  "base_source_head": "d7b5286cbf6401678a70eed3d66236a68dd2a72c",
+  "candidate_source_head": "19646e69fc99ba76f9ff0350c2a425fe07ec1e88",
+  "conditions": {
+    "native_host": "macOS",
+    "browser": "Chrome 157",
+    "browser_raster": "Chromium 기본 설정",
+    "dpi": 96,
+    "compat": "2022",
+    "raw_silhouette_radius_px": 2,
+    "font_scope": "사용자 설치를 보존하고 교체 전 확인한 검증용 프로그램을 명시 공급"
+  },
+  "software_focus_comparison": [
+    {
+      "page": 67,
+      "forced_software": "99.99",
+      "browser_default": "100.00",
+      "protected": "100.00"
+    },
+    {
+      "page": 86,
+      "forced_software": "99.95",
+      "browser_default": "99.96",
+      "protected": "99.96"
+    },
+    {
+      "page": 87,
+      "forced_software": "99.92",
+      "browser_default": "99.93",
+      "protected": "99.93"
+    },
+    {
+      "page": 91,
+      "forced_software": "99.98",
+      "browser_default": "99.98",
+      "protected": "99.98"
+    },
+    {
+      "page": 92,
+      "forced_software": "99.97",
+      "browser_default": "99.98",
+      "protected": "99.98"
+    }
+  ],
+  "indices_with_changed_png": [],
+  "review_image_sha256": {
+    "review-086.png": "49331062d1b789aa19726253b0434dbdac00055da10f9794d77476fdd545e712",
+    "overlay-086.png": "4d8b95c3e7c512c020a12c77729755ff46456d66027c5dcb91a0f6522061ef0a"
+  },
+  "cases": [
+    {
+      "variant": "candidate",
+      "pages": 103,
+      "declines": 0,
+      "tsv": "candidate.tsv",
+      "tsv_sha256": "be4f6d0ff2869a28691d07edf6d088b233d318c4cd5912f41687cd2a7bdce105",
+      "minimum": "99.86",
+      "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+      "wasm_sha256": "1ffb6d28f8e50635c6bdc614bbf42f6b7e1ba666c5b40ebb065a65b39bc7f3fc",
+      "font_environment_sha256": "c88fdd07f92f9d1a7d1766e10547741ec577bba1e53303f67df54779b5877637",
+      "font_supply_count": 1218
+    },
+    {
+      "variant": "fixed-base",
+      "pages": 103,
+      "declines": 0,
+      "tsv": "fixed-base.tsv",
+      "tsv_sha256": "be4f6d0ff2869a28691d07edf6d088b233d318c4cd5912f41687cd2a7bdce105",
+      "minimum": "99.86",
+      "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+      "wasm_sha256": "c32305fcccd7a18bef0f67305cc4674c51b9e4b052d15097038b31c7be7e26cd",
+      "font_environment_sha256": "c88fdd07f92f9d1a7d1766e10547741ec577bba1e53303f67df54779b5877637",
+      "font_supply_count": 1218
+    }
+  ]
+}

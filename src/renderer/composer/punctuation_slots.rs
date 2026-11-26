@@ -89,34 +89,34 @@ fn slot(
     // 프로그램에 있으면, 그 글리프를 공급하는 슬롯이 측정과 paint를 함께 소유한다.
     // HWP3의 기존 계약과, 원본 HFT 슬롯에 실제 CFF가 공급된 계약을 함께 소비한다.
     // 이름만 있거나 TTF 대체 공급인 경우에는 기존 원본 폭 계약을 유지한다.
+    let program_has_punctuation = |lang| {
+        let font = styles.native_pua_fonts.get_otf(
+            style.font_family_for_lang(lang),
+            style.bold,
+            style.italic,
+        )?;
+        if styles.source_hwp3_native {
+            // 선택한 글꼴 프로그램과 동명의 다른 설치 face를 섞어 한글 슬롯의
+            // 결측을 가리면 원문이 지정한 영문 슬롯을 잃는다.
+            return Some(
+                style
+                    .font_families_primary_program
+                    .get(lang)
+                    .copied()
+                    .flatten()
+                    .and_then(|identity| font.selected_program_has_glyph(&identity, ch))
+                    .unwrap_or_else(|| font.has_glyph(ch)),
+            );
+        }
+        style
+            .source_hft_for_lang(lang)
+            .then(|| font.primary_cff_has_glyph(ch))
+            .flatten()
+    };
     let supplied_latin_punctuation = inherited != 1
         && ch.is_ascii_punctuation()
-        && styles
-            .native_pua_fonts
-            .get_otf(
-                style.font_family_for_lang(inherited),
-                style.bold,
-                style.italic,
-            )
-            .is_some_and(|font| {
-                if styles.source_hwp3_native {
-                    !font.has_glyph(ch)
-                } else {
-                    style.source_hft_for_lang(inherited)
-                        && style.source_hft_for_lang(1)
-                        && font.primary_cff_has_glyph(ch) == Some(false)
-                }
-            })
-        && styles
-            .native_pua_fonts
-            .get_otf(style.font_family_for_lang(1), style.bold, style.italic)
-            .is_some_and(|font| {
-                if styles.source_hwp3_native {
-                    font.has_glyph(ch)
-                } else {
-                    font.primary_cff_has_glyph(ch) == Some(true)
-                }
-            });
+        && program_has_punctuation(inherited) == Some(false)
+        && program_has_punctuation(1) == Some(true);
     // HWP5 한자 뒤 ASCII 괄호는 앞 한자의 프로그램을 상속하지 않는다.
     // 독립 Print의 궁서/굴림/바탕 등 같은 크기 대조에서 영문 슬롯을 확인했다.
     // 일반 한글 뒤 구두점의 기존 프로그램 계약과 HWP3 cmap 공급 규칙은 유지한다.
@@ -159,18 +159,32 @@ pub(super) fn metric_slot(
 
 pub(super) fn try_resolve_run_slots<S: crate::storage::Storage>(
     lines: &mut [ComposedLine],
+    text: &str,
     styles: &ResolvedStyleSet,
     regenerated: bool,
     storage: &S,
 ) -> Result<(), S::Error> {
+    // 공백 양옆의 문자 소속은 스타일·줄 분할 전 원문에서 판정한다.
+    let chars: Vec<char> = if styles.word_spacing.active() && text.contains(' ') {
+        storage.collect(text.chars())?
+    } else {
+        Vec::new()
+    };
     for line in lines {
+        let mut offset = line.char_start;
         let mut resolved = storage.vec(0)?;
         for run in std::mem::take(&mut line.runs) {
             let style = styles.char_styles.get(run.char_style_id as usize);
+            let start_index = offset;
+            let has_word_space = !chars.is_empty() && run.text.contains(' ');
+            if !chars.is_empty() {
+                offset += run.source_scalar_count();
+            }
             if run.char_overlap.is_some()
-                || !run.text.chars().any(|ch| {
-                    slot(ch, run.lang_index, regenerated, style, styles) != run.lang_index
-                })
+                || (!has_word_space
+                    && !run.text.chars().any(|ch| {
+                        slot(ch, run.lang_index, regenerated, style, styles) != run.lang_index
+                    }))
             {
                 storage.push(&mut resolved, run)?;
                 continue;
@@ -182,10 +196,19 @@ pub(super) fn try_resolve_run_slots<S: crate::storage::Storage>(
             let mut model_start = 0;
             let mut lang = run.lang_index;
             let mut origin = run.neutral_space_origin;
+            let mut metric = run.space_metric;
             for (scalar, (byte, ch)) in run.text.char_indices().enumerate() {
                 let next = slot(ch, run.lang_index, regenerated, style, styles);
                 let next_origin = space_origin(ch, run.lang_index, style);
-                if (next, next_origin) != (lang, origin) {
+                let next_metric = if has_word_space && ch == ' ' {
+                    styles
+                        .word_spacing
+                        .metric_at(&chars, start_index + scalar)
+                        .unwrap_or(run.space_metric)
+                } else {
+                    run.space_metric
+                };
+                if (next, next_origin, next_metric) != (lang, origin, metric) {
                     if byte > start {
                         storage.push(
                             &mut resolved,
@@ -198,6 +221,7 @@ pub(super) fn try_resolve_run_slots<S: crate::storage::Storage>(
                                 )?,
                                 lang_index: lang,
                                 neutral_space_origin: origin,
+                                space_metric: metric,
                                 ..run.try_clone(storage)?
                             },
                         )?;
@@ -206,6 +230,7 @@ pub(super) fn try_resolve_run_slots<S: crate::storage::Storage>(
                     model_start = scalar;
                     lang = next;
                     origin = next_origin;
+                    metric = next_metric;
                 }
             }
             if start < run.text.len() {
@@ -220,6 +245,7 @@ pub(super) fn try_resolve_run_slots<S: crate::storage::Storage>(
                         text: storage.string(&run.text[start..])?,
                         lang_index: lang,
                         neutral_space_origin: origin,
+                        space_metric: metric,
                         ..run
                     },
                 )?;

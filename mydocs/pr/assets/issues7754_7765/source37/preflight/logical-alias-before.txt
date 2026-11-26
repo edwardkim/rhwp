@@ -1,0 +1,5 @@
+kind=2 query=Logical HFT Name chain=[String("Selected Physical Family"), String("Declared Glyph Fallback"), String("Logical HFT Name")]
+
+thread 'main' (1763807) panicked at /home/tsjang/rhwp/output/pr-review/issue7754-nine/source37_logical_alias_contract.rs:13:30:
+logical HFT name acquired unverified physical-family ownership
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

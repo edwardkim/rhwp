@@ -1,0 +1,40 @@
+{
+  "page": 20,
+  "box": [
+    155,
+    375,
+    640,
+    405
+  ],
+  "scale": 3,
+  "dpi": 96,
+  "reading": "독립 Print·전후 Native/fresh WASM의 같은 줄을 3배 확대해 옛한글, 후속 글자 및 주변 문장 간격을 대조했다. source36의 두 출력에서 원 HFT 폭 유지와 원 glyph 표시가 함께 보존되며 글자 누락·중복·겹침을 발견하지 않았다. 20쪽 raw는 두 경로 모두 99.98%다.",
+  "inputs": [
+    {
+      "label": "Independent Hancom Print",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-focused-native/issue7754-plain/pdf_png/pdf-020.png",
+      "sha256": "b2e7479b6389f5c5b671b7747fe617a0dc607b3bde58f88620117fb61894d3fa"
+    },
+    {
+      "label": "Native source35",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source35-focused-native/issue7754-plain/rhwp_png/rhwp_020.png",
+      "sha256": "27d8fc4eec691826226a4daeb0edb28766b7b7902d81231275b8d5623f022046"
+    },
+    {
+      "label": "Native source36",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-focused-native/issue7754-plain/rhwp_png/rhwp_020.png",
+      "sha256": "43aae96ef6580eefff5681c9e66c6bea34c008f1b9efad6d2e1025956a29e319"
+    },
+    {
+      "label": "WASM source35",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source35-focused-wasm/issue7754-plain/rhwp_png/rhwp_020.png",
+      "sha256": "2ea85630360054b662e52b85a65027fc8908fde73cf57e1d3f2273ea3fca8233"
+    },
+    {
+      "label": "fresh WASM source36",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-focused-wasm/issue7754-plain/rhwp_png/rhwp_020.png",
+      "sha256": "78427ee9b5ab92a4ba606066b8c46c078862812b28d08fab4ab364efc4b458db"
+    }
+  ],
+  "read_at": "2026-11-22T07:58:20.020145+09:00"
+}

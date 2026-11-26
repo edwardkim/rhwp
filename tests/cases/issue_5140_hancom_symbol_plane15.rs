@@ -1,16 +1,8 @@
 //! Issue #5140: 한컴 사용자 정의 기호(`0xA000 | X`) ↔ 평면 15 보충 PUA 사상 계약.
 //!
-//! HWP5 는 사용자 정의 기호를 BMP `0xA000 | X` 단일 유닛으로 담고, 한글이 HWPX 로 저장할
-//! 때는 같은 글자를 평면 15 보충 PUA(`U+F0000 | X`)로 올린다. 이 사상을 하지 않으면
-//! h2x 저장에서 그 글자가 Yi 음절 등으로 깨진다.
-//!
-//! **범위가 아니라 실측 집합이다.** `0xA000..=0xABFF` 전체를 밀면 한글이 실제로는 BMP 로
-//! 두는 값(`0xA813`)까지 옮겨 글자를 망친다. 표는 10k 코퍼스와 한글 SaveAs 대조에서
-//! 확인된 값만 담는다 — 새 값은 한글 실측으로만 추가한다.
-//!
-//! 이 계약은 원래 `src/parser/tags.rs` 의 `#[cfg(test)]` 안에 있었으나, 저장소 규약이
-//! 제품 소스의 단위시험 증가를 막으므로 통합 테스트로 옮겼다. 검사 대상은 모두 공개
-//! 항목이라 내용은 그대로다.
+//! The original measured lookup remains the composeText contract. Versioned
+//! paragraph text and the independent Hancom boundary pair are covered by
+//! `issue_5140_versioned_body_symbols.rs`; modern Unicode must not be remapped.
 
 use rhwp::parser::tags::{
     hancom_symbol_to_plane15, plane15_to_hancom_symbol, HANCOM_SYMBOL_BMP_TO_PLANE15,
@@ -34,8 +26,8 @@ fn hancom_symbol_maps_low_12_bits_into_plane15() {
     }
 }
 
-/// 범위가 아니라 실측 집합이라는 계약. `0xA813` 은 한글이 평면 15 로 올리지 않는
-/// 실측 반례(08103, 영어 단어 중간·맑은 고딕)이므로 표에 들어가면 안 된다.
+/// Preserve the original compose lookup: the new A813 body observation is
+/// version-dependent and does not establish an A813 compose rule.
 #[test]
 fn hancom_symbol_table_excludes_the_measured_counter_example() {
     assert_eq!(hancom_symbol_to_plane15(0xA813), None);

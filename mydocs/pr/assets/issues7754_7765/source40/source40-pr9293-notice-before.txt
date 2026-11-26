@@ -1,0 +1,123 @@
+✔ canonical font inventory and license contract (4.77135ms)
+✖ every public repository font has matching bytes and redistribution notices (128.56277ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 241.394161
+
+✖ failing tests:
+
+test at scripts/frontend-font-assets.test.mjs:99:1
+✖ every public repository font has matching bytes and redistribution notices (128.56277ms)
+  AssertionError [ERR_ASSERTION]: unregistered public fonts must fail the gate
+  + actual - expected
+  ... Skipped lines
+
+    [
+      'assets/fonts/Cafe24Ssurround-v2.0.woff2',
+      'assets/fonts/Cafe24Supermagic-Regular-v1.0.woff2',
+      'assets/fonts/D2Coding-Bold.woff2',
+      'assets/fonts/D2Coding-Regular.woff2',
+  ...
+      'tests/fixtures/fonts/RHWPNativeContainer.ttf',
+  +   'tests/fixtures/hft_mapped_symbol_program_tracking/fallback.ttf',
+      'tests/fixtures/issue7733_box_marker/program-present.ttf',
+      'tests/fixtures/issue8533/RHWPPrintFallbackContext.ttf',
+      'tests/fixtures/native_font_family_names/family-contract.ttf',
+      'tests/fixtures/native_font_styles/RHWPSuppliedStyle-Bold.ttf',
+      'tests/fixtures/native_font_styles/RHWPSuppliedStyle-Regular.ttf',
+
+      at TestContext.<anonymous> (file:///home/tsjang/rhwp-worktrees/pr-9293-font-notice/scripts/frontend-font-assets.test.mjs:115:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+      at Test.postRun (node:internal/test_runner/test:1330:19)
+      at Test.run (node:internal/test_runner/test:1258:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [
+      'assets/fonts/Cafe24Ssurround-v2.0.woff2',                               'assets/fonts/Cafe24Supermagic-Regular-v1.0.woff2',
+      'assets/fonts/D2Coding-Bold.woff2',                                      'assets/fonts/D2Coding-Regular.woff2',
+      'assets/fonts/GowunBatang-Bold.woff2',                                   'assets/fonts/GowunBatang-Regular.woff2',
+      'assets/fonts/GowunDodum-Regular.woff2',                                 'assets/fonts/Happiness-Sans-Bold.woff2',
+      'assets/fonts/Happiness-Sans-Regular.woff2',                             'assets/fonts/Happiness-Sans-Title.woff2',
+      'assets/fonts/HappinessSansVF.woff2',                                    'assets/fonts/LatinModernMath-Regular.woff2',
+      'assets/fonts/LatinModernMath-VariableOutline-subset.otf',               'assets/fonts/NanumGothic-Bold.woff2',
+      'assets/fonts/NanumGothic-ExtraBold.woff2',                              'assets/fonts/NanumGothic-Regular.woff2',
+      'assets/fonts/NanumGothicCoding-Bold.woff2',                             'assets/fonts/NanumGothicCoding-Regular.woff2',
+      'assets/fonts/NanumMyeongjo-Bold.woff2',                                 'assets/fonts/NanumMyeongjo-ExtraBold.woff2',
+      'assets/fonts/NanumMyeongjo-Regular.woff2',                              'assets/fonts/NotoSansKR-Bold.woff2',
+      'assets/fonts/NotoSansKR-ExtraLight.woff2',                              'assets/fonts/NotoSansKR-Regular.woff2',
+      'assets/fonts/NotoSansMath-Regular.woff2',                               'assets/fonts/NotoSansSymbols2-Regular.ttf',
+      'assets/fonts/NotoSerifKR-Bold.woff2',                                   'assets/fonts/NotoSerifKR-Regular.woff2',
+      'assets/fonts/Pretendard-Black.woff2',                                   'assets/fonts/Pretendard-Bold.woff2',
+      'assets/fonts/Pretendard-ExtraBold.woff2',                               'assets/fonts/Pretendard-ExtraLight.woff2',
+      'assets/fonts/Pretendard-Light.woff2',                                   'assets/fonts/Pretendard-Medium.woff2',
+      'assets/fonts/Pretendard-Regular.woff2',                                 'assets/fonts/Pretendard-SemiBold.woff2',
+      'assets/fonts/Pretendard-Thin.woff2',                                    'assets/fonts/RHWPOldHangul-Regular.woff2',
+      'assets/fonts/RHWPPublicBatang-Regular.woff2',                           'assets/fonts/SpoqaHanSans-Regular.woff2',
+      'tests/fixtures/fonts/RHWPBitmapSvgGlyphSmoke.ttf',                      'tests/fixtures/fonts/RHWPEquationCJKLight.ttf',
+      'tests/fixtures/fonts/RHWPEquationCJKRegular.ttf',                       'tests/fixtures/fonts/RHWPEquationLatinOnly.ttf',
+      'tests/fixtures/fonts/RHWPExactFaceSmoke.ttc',                           'tests/fixtures/fonts/RHWPExactKerningSmoke.ttf',
+      'tests/fixtures/fonts/RHWPHftOutline.otf',                               'tests/fixtures/fonts/RHWPHftOutlineJamo.otf',
+      'tests/fixtures/fonts/RHWPHostFixture-CoverageSubset.ttf',               'tests/fixtures/fonts/RHWPHostFixture-Italic.ttf',
+      'tests/fixtures/fonts/RHWPHostFixture-Oblique.ttf',                      'tests/fixtures/fonts/RHWPHostFixture-Preferred.ttf',
+      'tests/fixtures/fonts/RHWPHostFixture-Regular.ttf',                      'tests/fixtures/fonts/RHWPHostFixture.ttc',
+      'tests/fixtures/fonts/RHWPNativeContainer.ttc',                          'tests/fixtures/fonts/RHWPNativeContainer.ttf',
+      'tests/fixtures/hft_mapped_symbol_program_tracking/fallback.ttf',        'tests/fixtures/issue7733_box_marker/program-present.ttf',
+      'tests/fixtures/issue8533/RHWPPrintFallbackContext.ttf',                 'tests/fixtures/native_font_family_names/family-contract.ttf',
+      'tests/fixtures/native_font_styles/RHWPSuppliedStyle-Bold.ttf',          'tests/fixtures/native_font_styles/RHWPSuppliedStyle-Regular.ttf',
+      'tests/fixtures/native_inline_placeholder/placeholder-contract.ttf',     'ttfs/opensource/NotoSansKR-ExtraLight.ttf',
+      'ttfs/opensource/NotoSansKR-Regular.ttf',                                'ttfs/opensource/NotoSansSymbols2-Regular.ttf',
+      'ttfs/opensource/RHWPOldHangul-Regular.otf',                             'ttfs/opensource/RHWPPublicBatang-Regular.ttf',
+      'ttfs/redistributable/happiness-sans/HappinessSansVF.ttf',               'vendor/rhwp-pdf-import-backend/src/fonts/assets/DejaVuSans-Bold.ttf',
+      'vendor/rhwp-pdf-import-backend/src/fonts/assets/DejaVuSans.ttf',        'vendor/rhwp-pdf-import-backend/src/fonts/assets/DroidSansFallbackFull.ttf',
+      'vendor/rhwp-pdf-import-backend/src/fonts/assets/NotoEmoji-Regular.ttf', 'vendor/rhwp-pdf-import-backend/src/fonts/testdata/minimal-cff.otf'
+    ],
+    expected: [
+      'assets/fonts/Cafe24Ssurround-v2.0.woff2',                                   'assets/fonts/Cafe24Supermagic-Regular-v1.0.woff2',
+      'assets/fonts/D2Coding-Bold.woff2',                                          'assets/fonts/D2Coding-Regular.woff2',
+      'assets/fonts/GowunBatang-Bold.woff2',                                       'assets/fonts/GowunBatang-Regular.woff2',
+      'assets/fonts/GowunDodum-Regular.woff2',                                     'assets/fonts/Happiness-Sans-Bold.woff2',
+      'assets/fonts/Happiness-Sans-Regular.woff2',                                 'assets/fonts/Happiness-Sans-Title.woff2',
+      'assets/fonts/HappinessSansVF.woff2',                                        'assets/fonts/LatinModernMath-Regular.woff2',
+      'assets/fonts/LatinModernMath-VariableOutline-subset.otf',                   'assets/fonts/NanumGothic-Bold.woff2',
+      'assets/fonts/NanumGothic-ExtraBold.woff2',                                  'assets/fonts/NanumGothic-Regular.woff2',
+      'assets/fonts/NanumGothicCoding-Bold.woff2',                                 'assets/fonts/NanumGothicCoding-Regular.woff2',
+      'assets/fonts/NanumMyeongjo-Bold.woff2',                                     'assets/fonts/NanumMyeongjo-ExtraBold.woff2',
+      'assets/fonts/NanumMyeongjo-Regular.woff2',                                  'assets/fonts/NotoSansKR-Bold.woff2',
+      'assets/fonts/NotoSansKR-ExtraLight.woff2',                                  'assets/fonts/NotoSansKR-Regular.woff2',
+      'assets/fonts/NotoSansMath-Regular.woff2',                                   'assets/fonts/NotoSansSymbols2-Regular.ttf',
+      'assets/fonts/NotoSerifKR-Bold.woff2',                                       'assets/fonts/NotoSerifKR-Regular.woff2',
+      'assets/fonts/Pretendard-Black.woff2',                                       'assets/fonts/Pretendard-Bold.woff2',
+      'assets/fonts/Pretendard-ExtraBold.woff2',                                   'assets/fonts/Pretendard-ExtraLight.woff2',
+      'assets/fonts/Pretendard-Light.woff2',                                       'assets/fonts/Pretendard-Medium.woff2',
+      'assets/fonts/Pretendard-Regular.woff2',                                     'assets/fonts/Pretendard-SemiBold.woff2',
+      'assets/fonts/Pretendard-Thin.woff2',                                        'assets/fonts/RHWPOldHangul-Regular.woff2',
+      'assets/fonts/RHWPPublicBatang-Regular.woff2',                               'assets/fonts/SpoqaHanSans-Regular.woff2',
+      'tests/fixtures/fonts/RHWPBitmapSvgGlyphSmoke.ttf',                          'tests/fixtures/fonts/RHWPEquationCJKLight.ttf',
+      'tests/fixtures/fonts/RHWPEquationCJKRegular.ttf',                           'tests/fixtures/fonts/RHWPEquationLatinOnly.ttf',
+      'tests/fixtures/fonts/RHWPExactFaceSmoke.ttc',                               'tests/fixtures/fonts/RHWPExactKerningSmoke.ttf',
+      'tests/fixtures/fonts/RHWPHftOutline.otf',                                   'tests/fixtures/fonts/RHWPHftOutlineJamo.otf',
+      'tests/fixtures/fonts/RHWPHostFixture-CoverageSubset.ttf',                   'tests/fixtures/fonts/RHWPHostFixture-Italic.ttf',
+      'tests/fixtures/fonts/RHWPHostFixture-Oblique.ttf',                          'tests/fixtures/fonts/RHWPHostFixture-Preferred.ttf',
+      'tests/fixtures/fonts/RHWPHostFixture-Regular.ttf',                          'tests/fixtures/fonts/RHWPHostFixture.ttc',
+      'tests/fixtures/fonts/RHWPNativeContainer.ttc',                              'tests/fixtures/fonts/RHWPNativeContainer.ttf',
+      'tests/fixtures/issue7733_box_marker/program-present.ttf',                   'tests/fixtures/issue8533/RHWPPrintFallbackContext.ttf',
+      'tests/fixtures/native_font_family_names/family-contract.ttf',               'tests/fixtures/native_font_styles/RHWPSuppliedStyle-Bold.ttf',
+      'tests/fixtures/native_font_styles/RHWPSuppliedStyle-Regular.ttf',           'tests/fixtures/native_inline_placeholder/placeholder-contract.ttf',
+      'ttfs/opensource/NotoSansKR-ExtraLight.ttf',                                 'ttfs/opensource/NotoSansKR-Regular.ttf',
+      'ttfs/opensource/NotoSansSymbols2-Regular.ttf',                              'ttfs/opensource/RHWPOldHangul-Regular.otf',
+      'ttfs/opensource/RHWPPublicBatang-Regular.ttf',                              'ttfs/redistributable/happiness-sans/HappinessSansVF.ttf',
+      'vendor/rhwp-pdf-import-backend/src/fonts/assets/DejaVuSans-Bold.ttf',       'vendor/rhwp-pdf-import-backend/src/fonts/assets/DejaVuSans.ttf',
+      'vendor/rhwp-pdf-import-backend/src/fonts/assets/DroidSansFallbackFull.ttf', 'vendor/rhwp-pdf-import-backend/src/fonts/assets/NotoEmoji-Regular.ttf',
+      'vendor/rhwp-pdf-import-backend/src/fonts/testdata/minimal-cff.otf'
+    ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

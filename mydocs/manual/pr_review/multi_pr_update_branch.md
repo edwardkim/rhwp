@@ -191,6 +191,8 @@ collaborator가 외부 contributor PR의 source branch에 archive review·오늘
 - 각 문서에는 원 head, 체리픽 순서·적용 SHA, 충돌·선행 PR 의존성, 원 PR의 주장별 실제 검증 결과와 증적을
   적는다. 메인터너 보정이 있으면 필요했던 이유와 보정 SHA·재검증을 기록한다. PR을 열기 전에 확인할 수 있는
   로컬 결과까지 기재하고, 원격 CI·병합 결과는 확인한 시점에 기록한다.
+- 조판·렌더링을 검증한 원 PR마다 제출한 전쪽 TSV를 최종 통합 후보의 TSV와 대조한다.
+  [원 PR 대비 시각 하락 확인](#원-pr-대비-시각-하락-확인)을 마친 뒤 통합 PR을 제출·승인한다.
 - 원 PR별 archive 기록과 필요한 오늘할일은 같은 통합 PR에 둔다. 문서 보완은 통합 PR의 코드 후보 CI 성공 뒤
   trailing 문서 커밋으로 반영한다. CI 실행 정책 변경의 병합 후 기록은 [옵션 2](post_merge.md#711-ci-변경-pr은-옵션-2로-후속-기록)를
   따른다. 통합 PR 번호와 원 PR 번호는 기존 원 PR별 문서에서 연결한다.
@@ -198,3 +200,21 @@ collaborator가 외부 contributor PR의 source branch에 archive review·오늘
 
 fetch·visibility branch·Cargo 검증은 [로컬 검증](local_validation.md)을, 렌더 영향 증적은
 [시각·fixture 증적](visual_fixture_evidence.md)을 함께 따른다.
+
+### 원 PR 대비 시각 하락 확인
+
+1. 각 원 PR의 최종 검토 head와 그 head에서 확인한 시각 증적을 고정한다. 원 PR이 제출한 문서의
+   Native와 fresh WASM 전쪽 `silhouette_raw_match_percent`를 각각 최종 통합 후보와 같은 쪽끼리
+   비교한다. 원 PR의 대표 쪽이나 주장의 대상 쪽 밖에 있는 제출 TSV 행도 비교한다.
+2. 어느 한 쪽이라도 낮아지거나 대응 쪽의 증적이 누락되면 통합 PR의 생성·승인·병합을 보류한다.
+   원본·기준 PDF SHA, 쪽 대응, 실제 공급 글꼴·face, 출력 경로, compat, DPI, 측정 방법을 확인하고,
+   원 PR head와 최종 통합 후보를 같은 조건으로 다시 산출한다. 기준 PDF를 교체해야 하면 같은
+   독립 한컴 Print를 양쪽 head에 적용하고, 교체 사유와 새 기준의 SHA를 기록한다.
+3. 하락 쪽의 review·overlay를 독립 Print와 대조해 원인을 확인한다. 제품 출력이 후퇴했으면
+   메인터너가 보정하고, 측정 조건 차이면 양쪽 조건을 맞춰 다시 비교한다. 보정 뒤 전체 페이지를
+   다시 대조해 하락·누락 해소를 확인한다. 원 PR head·후보 SHA, TSV, 하락 쪽·backend·전후 수치,
+   원인과 해결 증적을 개별 검토 문서와 통합 PR 본문에 연결한다.
+
+원 PR보다 낮은 쪽은 하락폭과 관계없이 이 절을 적용한다. 최종 후보가 98% 이상인 쪽도 포함한다.
+[최신 devel 대비 2%p 재검토 기준](../verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)과
+[정본 보호 표시값 검사](../verification/visual_verification_governance.md#정본-보호-tsv의-공식-표시값-보존)도 함께 검증한다.

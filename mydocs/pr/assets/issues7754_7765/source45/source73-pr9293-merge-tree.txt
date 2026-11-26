@@ -1,0 +1,10 @@
+d6e00190fb4822aae9dd127a117743046eeff659
+
+Auto-merging src/renderer/layout/paragraph_layout.rs
+Auto-merging src/renderer/layout/text_measurement.rs
+Auto-merging src/renderer/typeset/paragraph/empty.rs
+Auto-merging tests/fixtures/body_overflow_baseline.tsv
+Auto-merging tests/fixtures/off_canvas_baseline.tsv
+Auto-merging tests/fixtures/oracle_page_count_baseline.tsv
+Auto-merging tests/fixtures/oracle_page_count_verified_references.json
+Auto-merging tests/fixtures/overflow_cell_baseline.tsv

@@ -82,7 +82,9 @@ mod tests {
         let styles = ResolvedStyleSet {
             section_tab_width_bits: Default::default(),
             source_hwp3_native: false,
+            legacy_body_symbols: false,
             word_compat_target: false,
+            word_spacing: Default::default(),
             source_program_projection_slots: Default::default(),
             unsubstituted_font_slots: Default::default(),
             isolated_jamo_font: None,
@@ -118,6 +120,7 @@ mod tests {
             bullets: Vec::new(),
             kerning_measurement_context: None,
             horizontal_shaping_context: None,
+            word_line_factors: None,
             supplemental_metrics: None,
         };
 

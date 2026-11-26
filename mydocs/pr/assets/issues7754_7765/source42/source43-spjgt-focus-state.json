@@ -1,0 +1,174 @@
+{
+  "started": 1795326931.2797086,
+  "authorization": "User requested trying SPJGT.otf in place of unavailable RHWPIndependentHFTSourceSymbols.",
+  "source_font": "/home/tsjang/.local/share/fonts/hft-cmap-v2/SPJGT.otf",
+  "source_font_sha256": "6f6cc714a13a2a68f4f9446c082ff7e6514d3088b14a954edf82933a0417b51a",
+  "private_copy": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source43-spjgt/SPJGT.otf",
+  "copy_sha256": "6f6cc714a13a2a68f4f9446c082ff7e6514d3088b14a954edf82933a0417b51a",
+  "postscript_name": "HYJunggothic-SPJGT",
+  "family": "HY Junggothic",
+  "existing_unicode_coverage": {
+    "U+2022": null,
+    "U+2027": null,
+    "U+25CB": "hft343B",
+    "U+FF5E": "hft340D"
+  },
+  "scope": "Three boundary pages only. Preserve original TTF/TTC choices, all other mappings, input/PDF/96DPI/Print and actual frozen producer. Replace only missing explicit CFF glyph fallback family. No cmap/outline/advance edits.",
+  "results": [
+    {
+      "backend": "native",
+      "role": "before",
+      "exit_code": 0,
+      "seconds": 42.44808342680335,
+      "source_head": "68b4f6bdfda465aaafd0634c587cd6a17252fed6",
+      "environment": "/home/tsjang/rhwp/mydocs/pr/assets/semanticist21-20261121/validation/final/font-supply/chemical-native.json",
+      "environment_sha256": "374d724612dab2e845b5d16cc96895b21f114aede6aa21153b6e700704f79dfa",
+      "changed_missing_fallbacks": [],
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source43-spjgt-focus/native/before/chemical/silhouette.tsv",
+      "tsv_sha256": "c8f21984af5366a3231dd9ac98a5ee0830af4a7994816ee40de5eb8c4282bef9",
+      "rows": [
+        {
+          "page": "61",
+          "tolerant_content_match_percent": "99.98",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.98",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "74",
+          "tolerant_content_match_percent": "99.86",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.86",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "91",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source43-spjgt-native-before.txt"
+    },
+    {
+      "backend": "native",
+      "role": "after",
+      "exit_code": 0,
+      "seconds": 36.732069255784154,
+      "source_head": "68b4f6bdfda465aaafd0634c587cd6a17252fed6",
+      "environment": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source43-spjgt/chemical-native-spjgt.json",
+      "environment_sha256": "d7f8aa4133e5f2695ea6a140f05d6011cae59a0d112ff17f681d5e3944d11a43",
+      "changed_missing_fallbacks": [
+        "HYGothic-Medium",
+        "HY Sinmyeongjo"
+      ],
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source43-spjgt-focus/native/after/chemical/silhouette.tsv",
+      "tsv_sha256": "c8f21984af5366a3231dd9ac98a5ee0830af4a7994816ee40de5eb8c4282bef9",
+      "rows": [
+        {
+          "page": "61",
+          "tolerant_content_match_percent": "99.98",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.98",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "74",
+          "tolerant_content_match_percent": "99.86",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.86",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "91",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source43-spjgt-native-after.txt"
+    },
+    {
+      "backend": "wasm",
+      "role": "before",
+      "exit_code": 0,
+      "seconds": 110.57294593309052,
+      "source_head": "68b4f6bdfda465aaafd0634c587cd6a17252fed6",
+      "environment": "/home/tsjang/rhwp/mydocs/pr/assets/semanticist21-20261121/validation/final/font-supply/chemical-wasm.json",
+      "environment_sha256": "d31081d4da1a713143035483b80ada9533cbe84be8a6edde24efa794d784183b",
+      "changed_missing_fallbacks": [],
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source43-spjgt-focus/wasm/before/chemical/silhouette.tsv",
+      "tsv_sha256": "840f2b98b6c98db426d6ca968593b839ebf627165ef4526f2c122951a1f200fc",
+      "rows": [
+        {
+          "page": "61",
+          "tolerant_content_match_percent": "99.99",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.99",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "74",
+          "tolerant_content_match_percent": "99.87",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.87",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "91",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source43-spjgt-wasm-before.txt"
+    },
+    {
+      "backend": "wasm",
+      "role": "after",
+      "exit_code": 0,
+      "seconds": 70.73912595584989,
+      "source_head": "68b4f6bdfda465aaafd0634c587cd6a17252fed6",
+      "environment": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source43-spjgt/chemical-wasm-spjgt.json",
+      "environment_sha256": "819997ba24b398d8e208ea3424f4d7029698be0a1b9383dbdaad85a0e49deb44",
+      "changed_missing_fallbacks": [
+        "HYGothic-Medium",
+        "HY Sinmyeongjo"
+      ],
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source43-spjgt-focus/wasm/after/chemical/silhouette.tsv",
+      "tsv_sha256": "5f1800e6369d9ff26053a272da032dd4766099eee86a1d9bd1e636003d076f11",
+      "rows": [
+        {
+          "page": "61",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "74",
+          "tolerant_content_match_percent": "99.88",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.88",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "91",
+          "tolerant_content_match_percent": "99.96",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.96",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source43-spjgt-wasm-after.txt"
+    }
+  ],
+  "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+  "pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+  "running": null,
+  "complete_coverage": true,
+  "ended": 1795327192.029671
+}

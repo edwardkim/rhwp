@@ -31,9 +31,22 @@ fn source_position(
     fs: f64,
     dpi: f64,
 ) -> Option<(f64, f64)> {
-    let (height, baseline) =
-        super::super::fraction_sup_frame::source_fraction_frame(numer, denom, fs, dpi)?;
-    let above = super::super::fraction_sup_frame::line_extension(numer, fs, dpi)?;
+    use super::super::fraction_sup_frame;
+    let ((height, baseline), above) = if fraction_sup_frame::ordinary_cjk_line(numer, fs)
+        && fraction_sup_frame::ordinary_cjk_line(denom, fs)
+    {
+        // 한글 대체 글꼴은 글리프를 공급하고 분자·분모 사이의 논리
+        // 줄 피치는 수식 프로그램이 유지한다.
+        (
+            super::super::font_frame_metrics::fraction_at_dpi(fs, dpi)?,
+            0.0,
+        )
+    } else {
+        (
+            fraction_sup_frame::source_fraction_frame(numer, denom, fs, dpi)?,
+            fraction_sup_frame::line_extension(numer, fs, dpi)?,
+        )
+    };
     let (line_height, line_baseline) = super::super::font_frame_metrics::line_at_dpi(fs, dpi)?;
     // 논리 글줄의 기준선과 자식 glyph의 자연 기준선을 분리한다.
     // 측정에 쓴 독립 분수 높이의 첫/마지막 글줄에 실제 표시도 배치한다.

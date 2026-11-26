@@ -63,6 +63,7 @@ test('embed protocol은 capability를 포함한 v1 connect와 session-bound requ
     'document-change-events-v1',
     'field-focus-events-v1',
     'command-error-v1',
+    'password-save-v1',
   ]);
 
   assert.equal(isRequestEnvelope({
@@ -302,7 +303,7 @@ test('embed runtime은 parent의 exact origin에서 v1 port session을 설치한
   assert.deepEqual(messages, [
     {
       type: 'rhwp-connected', version: 1, sessionId: 'session-a',
-      capabilities: EMBED_CAPABILITIES,
+      capabilities: EMBED_CAPABILITIES.filter(capability => capability !== 'password-save-v1'),
     },
     { type: 'rhwp-response', version: 1, sessionId: 'session-a', id: 4, result: 7 },
   ]);

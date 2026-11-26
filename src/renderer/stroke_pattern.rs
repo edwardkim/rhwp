@@ -8,6 +8,7 @@ pub(crate) use border::{border_circle, border_dash, table_border_circle};
 // 독립 한컴 Print의 pen 해상도. HWPUNIT에서 반올림한 뒤 출력 좌표로 변환한다.
 const HANCOM_PRINT_PEN_DPI: f64 = 600.0;
 const STYLE_DPI: f64 = 96.0;
+pub(super) const PRINT_PEN_PIXEL: f64 = STYLE_DPI / HANCOM_PRINT_PEN_DPI;
 
 pub(crate) fn shape_pen_width_to_px(width_hu: i32, line_type: u8) -> f64 {
     if line_type == 0 {
@@ -37,7 +38,7 @@ pub(crate) fn char_outline_stroke(outline_type: u8) -> Option<(f64, Vec<f64>)> {
         6 => (1.0, &[11.0, 3.0, 3.0, 3.0, 3.0, 3.0]),
         _ => (1.0, &[]),
     };
-    let unit = STYLE_DPI / HANCOM_PRINT_PEN_DPI;
+    let unit = PRINT_PEN_PIXEL;
     Some((width * unit, intervals.iter().map(|v| v * unit).collect()))
 }
 
@@ -85,7 +86,7 @@ impl StrokeDash {
             // 길이 0인 round cap의 지름은 선 굵기다.
             Self::HwpCircle => &[0.0, 2.25],
         };
-        let outline = STYLE_DPI / HANCOM_PRINT_PEN_DPI;
+        let outline = PRINT_PEN_PIXEL;
         let scale = if self.is_hwp_pattern() {
             (width - outline).max(outline)
         } else {

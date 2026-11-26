@@ -178,21 +178,18 @@ class HandbookGateTests(unittest.TestCase):
         from fontTools.ttLib import TTFont
         with tempfile.TemporaryDirectory() as temp:
             cache = Path(temp)
-            original = ROOT / 'tests/fixtures/fonts/RHWPExactKerningSmoke.ttf'
-            font = TTFont(original, recalcTimestamp=False)
-            font.flavor = 'woff'
-            source = cache / 'fixture.woff'
-            font.save(source)
-            font.close()
-            expected = hashlib.sha256(source.read_bytes()).hexdigest()
-            (cache / expected).mkdir()
-            source.replace(cache / expected / source.name)
-            with patch.object(handbook, 'WEBFONTS', {('Missing', 'Regular'): ('fixture.woff', expected)}), \
+            original = ROOT / 'assets/fonts/NotoSansKR-Regular.woff2'
+            data = original.read_bytes()
+            expected = hashlib.sha256(data).hexdigest()
+            source = cache / expected / 'fixture.woff2'
+            source.parent.mkdir()
+            source.write_bytes(data)
+            with patch.object(handbook, 'WEBFONTS', {('Missing', 'Regular'): ('fixture.woff2', expected)}), \
                     patch.object(handbook.urllib.request, 'urlopen') as fetch, \
                     patch('fontTools.ttLib.tables._h_e_a_d.timestampNow', return_value=3_900_000_000):
                 records = handbook.supply_webfonts(ROOT, cache, lambda *_: False)
             first_bytes = Path(records[0]['native_path']).read_bytes()
-            with patch.object(handbook, 'WEBFONTS', {('Missing', 'Regular'): ('fixture.woff', expected)}), \
+            with patch.object(handbook, 'WEBFONTS', {('Missing', 'Regular'): ('fixture.woff2', expected)}), \
                     patch.object(handbook.urllib.request, 'urlopen') as second_fetch, \
                     patch('fontTools.ttLib.tables._h_e_a_d.timestampNow', return_value=3_900_000_060):
                 repeated = handbook.supply_webfonts(ROOT, cache, lambda *_: False)

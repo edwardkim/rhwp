@@ -1,0 +1,16 @@
+{
+  "started": 1795329711.92193,
+  "scope": "Only three completed, unlocked rhwp incremental session directories in review-specific debug cache. No Cargo/Rust process or file reference. Preserve artifacts/deps, all frozen producers and other target profiles.",
+  "roots": [
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp-1j64n382z2daz",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp-3hfcj3hs02cn0",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp-1armcfpe4vv0t"
+  ],
+  "references": [],
+  "locks_acquired": 3,
+  "free_before": 1262796800,
+  "ended": 1795329713.4673,
+  "complete": true,
+  "free_after": 3442827264,
+  "actual_free_delta": 2180030464
+}

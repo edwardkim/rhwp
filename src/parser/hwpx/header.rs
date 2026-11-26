@@ -7,12 +7,14 @@ use quick_xml::events::Event;
 use quick_xml::Reader;
 
 use crate::model::document::{DocInfo, DocProperties, RawRecord};
+use crate::model::document_compatibility::CompatibilityTarget;
 use crate::model::style::*;
 use crate::parser::tags;
 
 use super::utils::{
-    attr_str, local_name, parse_bool, parse_color, parse_gradient_type, parse_hatch_style,
-    parse_i16, parse_i32, parse_i8, parse_u16, parse_u32, parse_u8, skip_element,
+    attr_str, local_name, parse_bool, parse_color, parse_fill_alpha_byte, parse_gradient_type,
+    parse_hatch_style, parse_i16, parse_i32, parse_i8, parse_u16, parse_u32, parse_u8,
+    skip_element,
 };
 use super::HwpxError;
 
@@ -254,6 +256,22 @@ pub(super) fn parse_hwpx_header_with_plain_margin_units(
     // compatibleDocument/docOption/trackchageConfig 등은 본문과 무관한 전역
     // 설정이라 헤더 재생성 시 splice 로 무손실 복원한다.
     doc_info.hwpx_head_tail = extract_head_tail(xml);
+    let target = match doc_info.hwpx_head_tail.as_deref() {
+        Some(tail) => parse_compatibility_target(tail, 0),
+        None => parse_compatibility_target(xml, 1),
+    };
+    let track_change = doc_info
+        .extra_records
+        .iter()
+        .position(|r| r.tag_id == tags::HWPTAG_TRACKCHANGE);
+    if target.is_some() || track_change.is_some() {
+        // linkinfo만 있는 구형 헤더도 한컴의 기본 호환 레코드 두 개를 생성한다.
+        let before = track_change.unwrap_or(doc_info.extra_records.len());
+        target
+            .unwrap_or_default()
+            .preset()
+            .insert_hwpx_records(&mut doc_info, before);
+    }
     doc_info.memo_properties_xml = extract_memo_properties(xml);
 
     Ok((doc_info, doc_props))
@@ -288,6 +306,31 @@ fn extract_head_tail(xml: &str) -> Option<String> {
     let start = xml.find(REF_END)? + REF_END.len();
     let end = xml[start..].find(HEAD_END)? + start;
     Some(xml[start..end].to_string())
+}
+
+/// `<head>`의 직접 자식만 읽는다. 다른 요소의 문자열·주석·하위 동명 요소는 무관하다.
+fn parse_compatibility_target(xml: &str, parent_depth: usize) -> Option<CompatibilityTarget> {
+    let mut reader = Reader::from_str(xml);
+    let mut depth = 0usize;
+    loop {
+        let event = reader.read_event().ok()?;
+        match &event {
+            Event::Start(node) | Event::Empty(node)
+                if depth == parent_depth
+                    && local_name(node.name().as_ref()) == b"compatibleDocument" =>
+            {
+                return node
+                    .attributes()
+                    .flatten()
+                    .find(|a| a.key.as_ref() == "targetProgram")
+                    .and_then(|a| CompatibilityTarget::from_xml(&attr_str(&a)));
+            }
+            Event::Start(_) => depth += 1,
+            Event::End(_) => depth = depth.saturating_sub(1),
+            Event::Eof => return None,
+            _ => {}
+        }
+    }
 }
 
 fn parse_doc_option_linkinfo(e: &quick_xml::events::BytesStart, doc_info: &mut DocInfo) {
@@ -338,17 +381,6 @@ fn parse_doc_option_linkinfo(e: &quick_xml::events::BytesStart, doc_info: &mut D
         tag_id: tags::HWPTAG_FORBIDDEN_CHAR,
         level: 1,
         data: vec![0; 16],
-    });
-
-    doc_info.extra_records.push(RawRecord {
-        tag_id: tags::HWPTAG_COMPATIBLE_DOCUMENT,
-        level: 0,
-        data: vec![0; 4],
-    });
-    doc_info.extra_records.push(RawRecord {
-        tag_id: tags::HWPTAG_LAYOUT_COMPATIBILITY,
-        level: 1,
-        data: vec![0; 20],
     });
 
     let mut track_change = vec![0; 1032];
@@ -1329,12 +1361,7 @@ fn parse_para_shape_switch(
     let mut def_next: Option<i32> = None;
     let mut def_line_spacing_type: Option<LineSpacingType> = None;
     let mut def_line_spacing: Option<i32> = None;
-    // case 원본 값(1× 스케일)을 임시 저장 ([#3368] default 채택 판정용)
-    let mut case_margin_left: Option<i32> = None;
-    let mut case_margin_right: Option<i32> = None;
-    let mut case_indent: Option<i32> = None;
-    let mut case_prev: Option<i32> = None;
-    let mut case_next: Option<i32> = None;
+    // 고정 줄간격의 정수 직렬화 정밀도는 여백의 CHAR/HWPUNIT 표지와 별개다.
     let mut case_line_spacing: Option<i32> = None;
 
     loop {
@@ -1401,23 +1428,18 @@ fn parse_para_shape_switch(
                                         match tag_name {
                                             b"left" => {
                                                 ps.margin_left = val2x;
-                                                case_margin_left = Some(val);
                                             }
                                             b"right" => {
                                                 ps.margin_right = val2x;
-                                                case_margin_right = Some(val);
                                             }
                                             b"intent" => {
                                                 ps.indent = val2x;
-                                                case_indent = Some(val);
                                             }
                                             b"prev" => {
                                                 ps.spacing_before = val2x;
-                                                case_prev = Some(val);
                                             }
                                             b"next" => {
                                                 ps.spacing_after = val2x;
-                                                case_next = Some(val);
                                             }
                                             _ => {}
                                         }
@@ -1527,27 +1549,17 @@ fn parse_para_shape_switch(
             ps.line_spacing = v;
         }
     } else {
-        // [#3368] case 와 default 가 반감 관계면 default 의 원본값을 채택한다.
-        // (홀수 값은 case 인코딩으로 표현되지 않아 case×2 로는 1 만큼 어긋난다.)
-        if let Some(v) = exact_value_from_default(case_margin_left, def_margin_left) {
-            ps.margin_left = v;
-        }
-        if let Some(v) = exact_value_from_default(case_margin_right, def_margin_right) {
-            ps.margin_right = v;
-        }
-        if let Some(v) = exact_value_from_default(case_indent, def_indent) {
-            ps.indent = v;
-        }
-        if let Some(v) = exact_value_from_default(case_prev, def_prev) {
-            ps.spacing_before = v;
-        }
-        if let Some(v) = exact_value_from_default(case_next, def_next) {
-            ps.spacing_after = v;
-        }
+        // 여백의 홀수 비트는 정밀도가 아니라 CHAR 단위다(#6875, #7816).
+        // 선택한 case의 명시 HWPUNIT을 홀수 fallback으로 덮으면 다른 길이가 된다.
+        // fallback은 이전 캐시 문맥의 독립 인증 자료로만 보존한다(#7765).
+        ps.hwpx_default_horizontal_margins = match (def_margin_left, def_margin_right, def_indent) {
+            (Some(left), Some(right), Some(indent)) => Some([left, right, indent]),
+            _ => None,
+        };
         let ls_exact = match ps.line_spacing_type {
             // PERCENT 는 비율이라 반감 대상이 아니다(방출측도 양쪽에 같은 값을 쓴다).
             LineSpacingType::Percent => None,
-            _ => exact_value_from_default(case_line_spacing, def_line_spacing),
+            _ => exact_line_spacing_from_default(case_line_spacing, def_line_spacing),
         };
         if let Some(v) = ls_exact {
             ps.line_spacing = v;
@@ -1571,25 +1583,10 @@ fn parse_para_shape_switch(
     Ok(())
 }
 
-/// `<switch>` 의 `case`(HwpUnitChar, 1× 스케일) 와 `default`(IR 과 같은 2× 스케일) 가
-/// 반감 관계일 때 `default` 에 남아 있는 원본값을 돌려준다. 그 외에는 `None`.
-///
-/// [#3368] 홀수 2× 값은 `case` 인코딩(정수 나눗셈)으로 표현할 수 없어, `case × 2` 로만
-/// 되읽으면 1 만큼 어긋난다 (`ml 101 → case 50 → 100`). 원본값은 `default` 에 그대로
-/// 남으므로 반감 관계가 확인되면 그쪽을 채택해 왕복을 고정점으로 만든다.
-///
-/// 판정식은 `|default − case × 2| ≤ 1` 이다. 음수 반내림 방향이 한컴(내림:
-/// `default -519 → case -260`) 과 우리 writer(0 방향 절단: `default -2621 → case -1310`)
-/// 에서 서로 달라 양쪽을 함께 받아야 한다. `default == case × 2` 인 짝수 값은 기존
-/// 결과와 같으므로 실제로 값이 바뀌는 것은 홀수 `default` 뿐이다.
-///
-/// 두 분기에 **같은 값**을 쓴 문서(반감 없음)는 `case != default` 조건으로 제외해
-/// 기존 `case × 2` 해석을 그대로 유지한다. 한컴 원본 표본 262개 실측 기준 margin 쌍
-/// 분포는 반감 16,248(그중 홀수 default 37) · 동일값 21 · 그 외 0 이며, lineSpacing 은
-/// PERCENT 가 동일값, FIXED/AT_LEAST 가 반감으로 같은 규칙을 따른다. 즉 이 정정으로
-/// 값이 바뀌는 한컴 원본 필드는 37개뿐이고, 모두 한컴이 `default` 에 적어 둔 값으로
-/// 되돌아간다.
-fn exact_value_from_default(case: Option<i32>, default: Option<i32>) -> Option<i32> {
+/// 고정/최소/여백 줄간격에서 정수 반감으로 잃은 정밀도를 복원한다(#3368).
+/// `|default − case × 2| ≤ 1`인 경우만 받아 음수 내림과 0 방향 절단을 모두 보존한다.
+/// 여백에는 적용하지 않는다. 여백의 홀수 비트는 명시 CHAR 단위 표지다(#7765).
+fn exact_line_spacing_from_default(case: Option<i32>, default: Option<i32>) -> Option<i32> {
     let (case, default) = (case?, default?);
     // i64 승격은 오버플로 없이 gap 을 계산하기 위한 것이다.
     let gap = i64::from(default) - i64::from(case) * 2;
@@ -1756,10 +1753,9 @@ fn parse_border_fill(
                                         }
                                     }
                                     b"alpha" => {
-                                        // HWPX alpha: 0.0=완전투명 ~ 1.0=불투명 (float string)
-                                        let val = attr_str(&attr);
-                                        if let Ok(f) = val.parse::<f64>() {
-                                            bf.fill.alpha = (f.clamp(0.0, 1.0) * 255.0) as u8;
+                                        if let Some(alpha) = parse_fill_alpha_byte(&attr_str(&attr))
+                                        {
+                                            bf.fill.alpha = alpha;
                                         }
                                     }
                                     _ => {}
@@ -1791,9 +1787,9 @@ fn parse_border_fill(
                                     b"blur" | b"step" => grad.blur = parse_i16(&attr),
                                     b"stepCenter" => grad.step_center = parse_u8(&attr),
                                     b"alpha" => {
-                                        let val = attr_str(&attr);
-                                        if let Ok(f) = val.parse::<f64>() {
-                                            bf.fill.alpha = (f.clamp(0.0, 1.0) * 255.0) as u8;
+                                        if let Some(alpha) = parse_fill_alpha_byte(&attr_str(&attr))
+                                        {
+                                            bf.fill.alpha = alpha;
                                         }
                                     }
                                     _ => {}

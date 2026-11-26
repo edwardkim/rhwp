@@ -38,7 +38,7 @@ impl Brush {
                 consumed_bytes += c;
 
                 let (brush_hatch, c) =
-                    DeviceIndependentBitmap::parse_with_color_usage(buf, color_usage)?;
+                    DeviceIndependentBitmap::parse_with_color_usage(buf, color_usage, None)?;
                 consumed_bytes += c;
 
                 Self::DIBPatternPT {

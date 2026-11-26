@@ -1,0 +1,60 @@
+{
+  "source": {
+    "base": "626a5b30ab773a48aec004a22ad789e508ae9c49",
+    "cases": [
+      {
+        "number": 9281,
+        "head": "f528069f3b38100e5928c1fb63bcfe1fba089d95",
+        "individual_tree": "bc747675e3114120247129a8a73579a157ac13d7",
+        "cumulative_tree": "bc747675e3114120247129a8a73579a157ac13d7",
+        "cumulative_commit": "980b84b40e0c5cf6848922b0c06406bfe262e499"
+      },
+      {
+        "number": 9286,
+        "head": "65ca6f4128150a570f06c055f8e1720ee6fb98e2",
+        "individual_tree": "1b6b267ff47f886ad18a6cbe08afe71851fb238a",
+        "cumulative_tree": "1a36d3229e820efe189bacffb39c5ee93529c56b",
+        "cumulative_commit": "eb375b02a9b2cb51c496065975da17bd63ca73a3"
+      },
+      {
+        "number": 9325,
+        "head": "6f4ded68c7391bf0497930230ef9aeba1c8ed29e",
+        "individual_tree": "4a46784957ca2854184ad0582a19f5d5e7870170",
+        "cumulative_tree": "1e3ff4a2a2aa8a9159e6a97ffaf84979b0a8927f",
+        "cumulative_commit": "327be655a1d4d95486bec4b2f0c76b2fd1169e7c"
+      }
+    ]
+  },
+  "base_artifacts": {
+    "native": {
+      "built_sha": "c1504cb12199081c010188557ff2f1e14d36d5ef",
+      "base_sha": "626a5b30ab773a48aec004a22ad789e508ae9c49",
+      "sha256": "a338a2fd1510b3d9e20324c9cd744ca4c380ff1ead716b9bcf79e123b2779cfd"
+    },
+    "wasm": {
+      "built_sha": "c1504cb12199081c010188557ff2f1e14d36d5ef",
+      "base_sha": "626a5b30ab773a48aec004a22ad789e508ae9c49",
+      "sha256": "a7918ac364238cdfce8e145fdb9988730df9479862d0e350af5aa21574743b7b"
+    }
+  },
+  "native_sha256": "d14319bb3b3005e386c5c8f565df8e94c449492ad75a1196b19bb84ad2ec8632",
+  "browser_wasm_sha256": "0b69eb561b47f67269d2bc46358485aa53d6ff24014e05986a98ae51d6840239",
+  "browser_glue_sha256": "8b64575064ff9157860de67cd2101bb10f8fe7a5b8903a9423601a660269e4b6",
+  "dpi": 96,
+  "raw_percent": "silhouette_raw_match_percent",
+  "hancom_print_method": 0,
+  "totals": {
+    "9281": {
+      "inputs": 8,
+      "pages_per_backend": 32
+    },
+    "9286": {
+      "inputs": 11,
+      "pages_per_backend": 11
+    },
+    "9325": {
+      "inputs": 12,
+      "pages_per_backend": 12
+    }
+  }
+}

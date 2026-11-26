@@ -1,0 +1,13 @@
+{
+  "id": "explicit-document-arial-substitute",
+  "substitutions": {
+    "Helvetica": "Arial",
+    "Helvetica-Bold": "Arial",
+    "Helvetica-Oblique": "Arial",
+    "Helvetica-BoldOblique": "Arial"
+  },
+  "preserveSourceMetrics": true,
+  "trueTypeFaces": [
+    "Arial"
+  ]
+}

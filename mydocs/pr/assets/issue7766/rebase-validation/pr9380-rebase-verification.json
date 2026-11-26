@@ -1,0 +1,1712 @@
+{
+  "base": "2c0c1d205a54b8d5bd262241bac1391cffe0d801",
+  "candidate": "953b43187325496645683fcc15ca989a815b0596",
+  "shape_pdf": {
+    "native": {
+      "records": [
+        {
+          "key": "original",
+          "raw": "99.94",
+          "png": "a2fe762eb768aaba97b8ac0cdc83c099d3dd25844d0f78eaf9836777018b13c2",
+          "pdf": "2ef220f5e9e717a7f869585e1c6b491d82275a07a5d40ad38b66c63b521714fc",
+          "wider": false,
+          "archived_raw": "99.97",
+          "archived_png": "988bec33a3a839edb08c5e641ecbe07e946c8023a3bbc0aa51efbb57d74ffb25"
+        },
+        {
+          "key": "cli-skewed-restored",
+          "raw": "99.94",
+          "png": "a2fe762eb768aaba97b8ac0cdc83c099d3dd25844d0f78eaf9836777018b13c2",
+          "pdf": "2ef220f5e9e717a7f869585e1c6b491d82275a07a5d40ad38b66c63b521714fc",
+          "wider": false,
+          "archived_raw": "99.97",
+          "archived_png": "988bec33a3a839edb08c5e641ecbe07e946c8023a3bbc0aa51efbb57d74ffb25"
+        },
+        {
+          "key": "cli-plain-restored",
+          "raw": "99.94",
+          "png": "a2fe762eb768aaba97b8ac0cdc83c099d3dd25844d0f78eaf9836777018b13c2",
+          "pdf": "2ef220f5e9e717a7f869585e1c6b491d82275a07a5d40ad38b66c63b521714fc",
+          "wider": false,
+          "archived_raw": "99.97",
+          "archived_png": "988bec33a3a839edb08c5e641ecbe07e946c8023a3bbc0aa51efbb57d74ffb25"
+        },
+        {
+          "key": "cli-skewed-noop",
+          "raw": "99.94",
+          "png": "a2fe762eb768aaba97b8ac0cdc83c099d3dd25844d0f78eaf9836777018b13c2",
+          "pdf": "2ef220f5e9e717a7f869585e1c6b491d82275a07a5d40ad38b66c63b521714fc",
+          "wider": false,
+          "archived_raw": "99.97",
+          "archived_png": "988bec33a3a839edb08c5e641ecbe07e946c8023a3bbc0aa51efbb57d74ffb25"
+        },
+        {
+          "key": "cli-skewed-resized",
+          "raw": "99.94",
+          "png": "5e998750f45ec66e1bd46499668a19f058116ccd62b14f0ec92b9dc9fca9ed1e",
+          "pdf": "d7dab3a3b457acbcd151371d76138e4176f43a9cfda23d878ca84aa7d2cd5965",
+          "wider": true,
+          "archived_raw": "99.97",
+          "archived_png": "a25ed9fe5d4da9b39f57bd4d37b30c69fd3ced4795b606bc16ee4f24244907d0"
+        },
+        {
+          "key": "hancom-wider",
+          "raw": "99.94",
+          "png": "5e998750f45ec66e1bd46499668a19f058116ccd62b14f0ec92b9dc9fca9ed1e",
+          "pdf": "d7dab3a3b457acbcd151371d76138e4176f43a9cfda23d878ca84aa7d2cd5965",
+          "wider": true,
+          "archived_raw": "99.97",
+          "archived_png": "a25ed9fe5d4da9b39f57bd4d37b30c69fd3ced4795b606bc16ee4f24244907d0"
+        },
+        {
+          "key": "hancom-restored",
+          "raw": "99.94",
+          "png": "a2fe762eb768aaba97b8ac0cdc83c099d3dd25844d0f78eaf9836777018b13c2",
+          "pdf": "2ef220f5e9e717a7f869585e1c6b491d82275a07a5d40ad38b66c63b521714fc",
+          "wider": false,
+          "archived_raw": "99.97",
+          "archived_png": "988bec33a3a839edb08c5e641ecbe07e946c8023a3bbc0aa51efbb57d74ffb25"
+        },
+        {
+          "key": "skewed-resized-hwp",
+          "raw": "99.94",
+          "png": "5e998750f45ec66e1bd46499668a19f058116ccd62b14f0ec92b9dc9fca9ed1e",
+          "pdf": "d7dab3a3b457acbcd151371d76138e4176f43a9cfda23d878ca84aa7d2cd5965",
+          "wider": true,
+          "archived_raw": "99.97",
+          "archived_png": "a25ed9fe5d4da9b39f57bd4d37b30c69fd3ced4795b606bc16ee4f24244907d0"
+        },
+        {
+          "key": "skewed-resized-hwpx",
+          "raw": "99.94",
+          "png": "5e998750f45ec66e1bd46499668a19f058116ccd62b14f0ec92b9dc9fca9ed1e",
+          "pdf": "d7dab3a3b457acbcd151371d76138e4176f43a9cfda23d878ca84aa7d2cd5965",
+          "wider": true,
+          "archived_raw": "99.97",
+          "archived_png": "a25ed9fe5d4da9b39f57bd4d37b30c69fd3ced4795b606bc16ee4f24244907d0"
+        },
+        {
+          "key": "skewed-restored-hwp",
+          "raw": "99.94",
+          "png": "a2fe762eb768aaba97b8ac0cdc83c099d3dd25844d0f78eaf9836777018b13c2",
+          "pdf": "2ef220f5e9e717a7f869585e1c6b491d82275a07a5d40ad38b66c63b521714fc",
+          "wider": false,
+          "archived_raw": "99.97",
+          "archived_png": "988bec33a3a839edb08c5e641ecbe07e946c8023a3bbc0aa51efbb57d74ffb25"
+        },
+        {
+          "key": "skewed-restored-hwpx",
+          "raw": "99.94",
+          "png": "a2fe762eb768aaba97b8ac0cdc83c099d3dd25844d0f78eaf9836777018b13c2",
+          "pdf": "2ef220f5e9e717a7f869585e1c6b491d82275a07a5d40ad38b66c63b521714fc",
+          "wider": false,
+          "archived_raw": "99.97",
+          "archived_png": "988bec33a3a839edb08c5e641ecbe07e946c8023a3bbc0aa51efbb57d74ffb25"
+        },
+        {
+          "key": "plain-restored-hwp",
+          "raw": "99.94",
+          "png": "a2fe762eb768aaba97b8ac0cdc83c099d3dd25844d0f78eaf9836777018b13c2",
+          "pdf": "2ef220f5e9e717a7f869585e1c6b491d82275a07a5d40ad38b66c63b521714fc",
+          "wider": false,
+          "archived_raw": "99.97",
+          "archived_png": "988bec33a3a839edb08c5e641ecbe07e946c8023a3bbc0aa51efbb57d74ffb25"
+        },
+        {
+          "key": "plain-restored-hwpx",
+          "raw": "99.94",
+          "png": "a2fe762eb768aaba97b8ac0cdc83c099d3dd25844d0f78eaf9836777018b13c2",
+          "pdf": "2ef220f5e9e717a7f869585e1c6b491d82275a07a5d40ad38b66c63b521714fc",
+          "wider": false,
+          "archived_raw": "99.97",
+          "archived_png": "988bec33a3a839edb08c5e641ecbe07e946c8023a3bbc0aa51efbb57d74ffb25"
+        }
+      ],
+      "minimum": "99.94",
+      "review_pages": {
+        "cli-skewed-resized": {
+          "raw": "99.94",
+          "render_sha256": "5e998750f45ec66e1bd46499668a19f058116ccd62b14f0ec92b9dc9fca9ed1e",
+          "print_png_sha256": "519f7b3f5dca4f46dcf9e8aba9b323eefd0aa315067de629100f100b1e97a120",
+          "review": {
+            "path": "pr9380/native/cli-skewed-resized/review.png",
+            "sha256": "9001fae6830656cc0020fb4339d98df4e8d6b776c15a44eb3e1f3dc6ef8fc004"
+          },
+          "overlay": {
+            "path": "pr9380/native/cli-skewed-resized/overlay.png",
+            "sha256": "65b22113c9de0b56b53a804a6b8743a11615c06e6137369e448f981daa89091e"
+          }
+        },
+        "cli-skewed-restored": {
+          "raw": "99.94",
+          "render_sha256": "a2fe762eb768aaba97b8ac0cdc83c099d3dd25844d0f78eaf9836777018b13c2",
+          "print_png_sha256": "eb03b9f0d85a0a8f9423154b8d0af5a98d434e9aa0c92d03328e4c7317e72beb",
+          "review": {
+            "path": "pr9380/native/cli-skewed-restored/review.png",
+            "sha256": "f7cdee1bc7206a1ab37d0a4a1c3dfadcc67ff3d3e0455bcc10c4ed39e4aaceac"
+          },
+          "overlay": {
+            "path": "pr9380/native/cli-skewed-restored/overlay.png",
+            "sha256": "da7ad3866d3e3c6f522ad3c7536aeced1e50318d30ec5d930f678a274c4ee0d7"
+          }
+        }
+      }
+    },
+    "wasm": {
+      "records": [
+        {
+          "key": "original",
+          "raw": "99.79",
+          "png": "21b05b6d2e377fa4a8d1a8f212a6ca0b279b71015fb65ea3f6043fbb2e44ecee",
+          "pdf": "2ef220f5e9e717a7f869585e1c6b491d82275a07a5d40ad38b66c63b521714fc",
+          "wider": false,
+          "archived_raw": "99.77",
+          "archived_png": "19c084d6ab3d6d5a63a92bb322766bb86b9a73260317be27337aabc700886faa"
+        },
+        {
+          "key": "cli-skewed-restored",
+          "raw": "99.79",
+          "png": "21b05b6d2e377fa4a8d1a8f212a6ca0b279b71015fb65ea3f6043fbb2e44ecee",
+          "pdf": "2ef220f5e9e717a7f869585e1c6b491d82275a07a5d40ad38b66c63b521714fc",
+          "wider": false,
+          "archived_raw": "99.77",
+          "archived_png": "19c084d6ab3d6d5a63a92bb322766bb86b9a73260317be27337aabc700886faa"
+        },
+        {
+          "key": "cli-plain-restored",
+          "raw": "99.79",
+          "png": "21b05b6d2e377fa4a8d1a8f212a6ca0b279b71015fb65ea3f6043fbb2e44ecee",
+          "pdf": "2ef220f5e9e717a7f869585e1c6b491d82275a07a5d40ad38b66c63b521714fc",
+          "wider": false,
+          "archived_raw": "99.77",
+          "archived_png": "19c084d6ab3d6d5a63a92bb322766bb86b9a73260317be27337aabc700886faa"
+        },
+        {
+          "key": "cli-skewed-noop",
+          "raw": "99.79",
+          "png": "21b05b6d2e377fa4a8d1a8f212a6ca0b279b71015fb65ea3f6043fbb2e44ecee",
+          "pdf": "2ef220f5e9e717a7f869585e1c6b491d82275a07a5d40ad38b66c63b521714fc",
+          "wider": false,
+          "archived_raw": "99.77",
+          "archived_png": "19c084d6ab3d6d5a63a92bb322766bb86b9a73260317be27337aabc700886faa"
+        },
+        {
+          "key": "cli-skewed-resized",
+          "raw": "99.79",
+          "png": "d4554ed35e17cf729bfaf166190e498501ae5b7c9a6c85da7d386d0ce53e8981",
+          "pdf": "d7dab3a3b457acbcd151371d76138e4176f43a9cfda23d878ca84aa7d2cd5965",
+          "wider": true,
+          "archived_raw": "99.77",
+          "archived_png": "9ccfbb542182f12e1b335ea2f381a35b881d8f04a60c439f4590712f7da6670b"
+        },
+        {
+          "key": "hancom-wider",
+          "raw": "99.79",
+          "png": "d4554ed35e17cf729bfaf166190e498501ae5b7c9a6c85da7d386d0ce53e8981",
+          "pdf": "d7dab3a3b457acbcd151371d76138e4176f43a9cfda23d878ca84aa7d2cd5965",
+          "wider": true,
+          "archived_raw": "99.77",
+          "archived_png": "9ccfbb542182f12e1b335ea2f381a35b881d8f04a60c439f4590712f7da6670b"
+        },
+        {
+          "key": "hancom-restored",
+          "raw": "99.79",
+          "png": "21b05b6d2e377fa4a8d1a8f212a6ca0b279b71015fb65ea3f6043fbb2e44ecee",
+          "pdf": "2ef220f5e9e717a7f869585e1c6b491d82275a07a5d40ad38b66c63b521714fc",
+          "wider": false,
+          "archived_raw": "99.77",
+          "archived_png": "19c084d6ab3d6d5a63a92bb322766bb86b9a73260317be27337aabc700886faa"
+        },
+        {
+          "key": "skewed-resized-hwp",
+          "raw": "99.79",
+          "png": "d4554ed35e17cf729bfaf166190e498501ae5b7c9a6c85da7d386d0ce53e8981",
+          "pdf": "d7dab3a3b457acbcd151371d76138e4176f43a9cfda23d878ca84aa7d2cd5965",
+          "wider": true,
+          "archived_raw": "99.77",
+          "archived_png": "9ccfbb542182f12e1b335ea2f381a35b881d8f04a60c439f4590712f7da6670b"
+        },
+        {
+          "key": "skewed-resized-hwpx",
+          "raw": "99.79",
+          "png": "d4554ed35e17cf729bfaf166190e498501ae5b7c9a6c85da7d386d0ce53e8981",
+          "pdf": "d7dab3a3b457acbcd151371d76138e4176f43a9cfda23d878ca84aa7d2cd5965",
+          "wider": true,
+          "archived_raw": "99.77",
+          "archived_png": "9ccfbb542182f12e1b335ea2f381a35b881d8f04a60c439f4590712f7da6670b"
+        },
+        {
+          "key": "skewed-restored-hwp",
+          "raw": "99.79",
+          "png": "21b05b6d2e377fa4a8d1a8f212a6ca0b279b71015fb65ea3f6043fbb2e44ecee",
+          "pdf": "2ef220f5e9e717a7f869585e1c6b491d82275a07a5d40ad38b66c63b521714fc",
+          "wider": false,
+          "archived_raw": "99.77",
+          "archived_png": "19c084d6ab3d6d5a63a92bb322766bb86b9a73260317be27337aabc700886faa"
+        },
+        {
+          "key": "skewed-restored-hwpx",
+          "raw": "99.79",
+          "png": "21b05b6d2e377fa4a8d1a8f212a6ca0b279b71015fb65ea3f6043fbb2e44ecee",
+          "pdf": "2ef220f5e9e717a7f869585e1c6b491d82275a07a5d40ad38b66c63b521714fc",
+          "wider": false,
+          "archived_raw": "99.77",
+          "archived_png": "19c084d6ab3d6d5a63a92bb322766bb86b9a73260317be27337aabc700886faa"
+        },
+        {
+          "key": "plain-restored-hwp",
+          "raw": "99.79",
+          "png": "21b05b6d2e377fa4a8d1a8f212a6ca0b279b71015fb65ea3f6043fbb2e44ecee",
+          "pdf": "2ef220f5e9e717a7f869585e1c6b491d82275a07a5d40ad38b66c63b521714fc",
+          "wider": false,
+          "archived_raw": "99.77",
+          "archived_png": "19c084d6ab3d6d5a63a92bb322766bb86b9a73260317be27337aabc700886faa"
+        },
+        {
+          "key": "plain-restored-hwpx",
+          "raw": "99.79",
+          "png": "21b05b6d2e377fa4a8d1a8f212a6ca0b279b71015fb65ea3f6043fbb2e44ecee",
+          "pdf": "2ef220f5e9e717a7f869585e1c6b491d82275a07a5d40ad38b66c63b521714fc",
+          "wider": false,
+          "archived_raw": "99.77",
+          "archived_png": "19c084d6ab3d6d5a63a92bb322766bb86b9a73260317be27337aabc700886faa"
+        }
+      ],
+      "minimum": "99.79",
+      "review_pages": {
+        "cli-skewed-resized": {
+          "raw": "99.79",
+          "render_sha256": "d4554ed35e17cf729bfaf166190e498501ae5b7c9a6c85da7d386d0ce53e8981",
+          "print_png_sha256": "519f7b3f5dca4f46dcf9e8aba9b323eefd0aa315067de629100f100b1e97a120",
+          "review": {
+            "path": "pr9380/wasm/cli-skewed-resized/review.png",
+            "sha256": "fa857005b46cadd9d0f628edd92353265c9db667650edff3a09eedc6fe371e37"
+          },
+          "overlay": {
+            "path": "pr9380/wasm/cli-skewed-resized/overlay.png",
+            "sha256": "701a1427ac42839734ae161048f5a7117b728799a76710824c7ba2ff14333914"
+          }
+        },
+        "cli-skewed-restored": {
+          "raw": "99.79",
+          "render_sha256": "21b05b6d2e377fa4a8d1a8f212a6ca0b279b71015fb65ea3f6043fbb2e44ecee",
+          "print_png_sha256": "eb03b9f0d85a0a8f9423154b8d0af5a98d434e9aa0c92d03328e4c7317e72beb",
+          "review": {
+            "path": "pr9380/wasm/cli-skewed-restored/review.png",
+            "sha256": "851dac041f062a6c7e1d578fa825d2210be23a75388b657ce032d42c33ec6106"
+          },
+          "overlay": {
+            "path": "pr9380/wasm/cli-skewed-restored/overlay.png",
+            "sha256": "289d43d3a832ba74b73a31ab65a65238197a45c423030f2ce94ad08340e1afbb"
+          }
+        }
+      }
+    }
+  },
+  "runtime": {
+    "base": {
+      "pass_count": 46,
+      "assertions": [
+        "PASS: F11 한 번: 나",
+        "PASS: F11 두 번: 가",
+        "PASS: F11 세 번: 고를 것 없음",
+        "PASS: body F11 선택 나",
+        "PASS: body live 선택 나, 입력 xy: {\"가\":\"\",\"나\":\"xy\"}",
+        "PASS: body HWP 선택 나, 입력 xy: {\"가\":\"\",\"나\":\"xy\"}",
+        "PASS: body HWPX 선택 나, 입력 xy: {\"가\":\"\",\"나\":\"xy\"}",
+        "PASS: body F11 선택 나",
+        "PASS: body live 선택 나, 입력 한글: {\"가\":\"\",\"나\":\"한글\"}",
+        "PASS: body HWP 선택 나, 입력 한글: {\"가\":\"\",\"나\":\"한글\"}",
+        "PASS: body HWPX 선택 나, 입력 한글: {\"가\":\"\",\"나\":\"한글\"}",
+        "PASS: body F11 선택 가",
+        "PASS: body live 선택 가, 입력 xy: {\"가\":\"xy\",\"나\":\"\"}",
+        "PASS: body HWP 선택 가, 입력 xy: {\"가\":\"xy\",\"나\":\"\"}",
+        "PASS: body HWPX 선택 가, 입력 xy: {\"가\":\"xy\",\"나\":\"\"}",
+        "PASS: body F11 선택 가",
+        "PASS: body live 선택 가, 입력 한글: {\"가\":\"한글\",\"나\":\"\"}",
+        "PASS: body HWP 선택 가, 입력 한글: {\"가\":\"한글\",\"나\":\"\"}",
+        "PASS: body HWPX 선택 가, 입력 한글: {\"가\":\"한글\",\"나\":\"\"}",
+        "PASS: cell F11 선택 나",
+        "PASS: cell live 선택 나, 입력 xy: {\"가\":\"\",\"나\":\"xy\"}",
+        "PASS: cell HWP 선택 나, 입력 xy: {\"가\":\"\",\"나\":\"xy\"}",
+        "PASS: cell HWPX 선택 나, 입력 xy: {\"가\":\"\",\"나\":\"xy\"}",
+        "PASS: cell F11 선택 나",
+        "PASS: cell live 선택 나, 입력 한글: {\"가\":\"\",\"나\":\"한글\"}",
+        "PASS: cell HWP 선택 나, 입력 한글: {\"가\":\"\",\"나\":\"한글\"}",
+        "PASS: cell HWPX 선택 나, 입력 한글: {\"가\":\"\",\"나\":\"한글\"}",
+        "PASS: cell F11 선택 가",
+        "PASS: cell live 선택 가, 입력 xy: {\"가\":\"xy\",\"나\":\"\"}",
+        "PASS: cell HWP 선택 가, 입력 xy: {\"가\":\"xy\",\"나\":\"\"}",
+        "PASS: cell HWPX 선택 가, 입력 xy: {\"가\":\"xy\",\"나\":\"\"}",
+        "PASS: cell F11 선택 가",
+        "PASS: cell live 선택 가, 입력 한글: {\"가\":\"한글\",\"나\":\"\"}",
+        "PASS: cell HWP 선택 가, 입력 한글: {\"가\":\"한글\",\"나\":\"\"}",
+        "PASS: cell HWPX 선택 가, 입력 한글: {\"가\":\"한글\",\"나\":\"\"}",
+        "PASS: 입력 후 F11로 이전 누름틀 선택",
+        "PASS: live 선택 이동과 이탈: {\"가\":\"ab\",\"나\":\"xy\"}",
+        "PASS: HWP 선택 이동과 이탈: {\"가\":\"ab\",\"나\":\"xy\"}",
+        "PASS: HWPX 선택 이동과 이탈: {\"가\":\"ab\",\"나\":\"xy\"}",
+        "PASS: End 뒤 입력은 누름틀 밖의 문단 끝에 남는다",
+        "PASS: live 화면 갱신 전 연속 입력: {\"가\":\"xy\",\"나\":\"\"}",
+        "PASS: HWP 화면 갱신 전 연속 입력: {\"가\":\"xy\",\"나\":\"\"}",
+        "PASS: HWPX 화면 갱신 전 연속 입력: {\"가\":\"xy\",\"나\":\"\"}",
+        "PASS: 셀 안 F11: 셀 누름틀",
+        "PASS: 셀 안 F11 두 번: 그 표",
+        "PASS: 셀 안 F11 세 번: 표 앞 본문 누름틀"
+      ],
+      "wasm_artifact_sha256": [
+        "d0d93c031a9cae960cf95dade72a5c046189415b87d2ab9dc6f863b90b0093c1"
+      ],
+      "xml_fields": [
+        {
+          "area": "body",
+          "selected": "나",
+          "input": "xy",
+          "fields": {
+            "가": "",
+            "나": "xy"
+          },
+          "hwpx_sha256": "58e94dba73a0008214a32c7f8cebb96d6a0471d7e101ba891266cac9bf0dc86d"
+        },
+        {
+          "area": "body",
+          "selected": "나",
+          "input": "한",
+          "fields": {
+            "가": "",
+            "나": "한"
+          },
+          "hwpx_sha256": "f17059029b1a389373b04afe152f9bbecd81d25e316ed77c2c0690a9ff581e25"
+        },
+        {
+          "area": "body",
+          "selected": "나",
+          "input": "한글",
+          "fields": {
+            "가": "",
+            "나": "한글"
+          },
+          "hwpx_sha256": "a9b90d13d8f94bf239645a3f18e079aac753a8789c565a863d77a03f44195120"
+        },
+        {
+          "area": "body",
+          "selected": "가",
+          "input": "xy",
+          "fields": {
+            "가": "xy",
+            "나": ""
+          },
+          "hwpx_sha256": "8f0827d143b7563d7e334de51717c291c9255e64a3f421b5416d6a2bb2fb0d42"
+        },
+        {
+          "area": "body",
+          "selected": "가",
+          "input": "한",
+          "fields": {
+            "가": "한",
+            "나": ""
+          },
+          "hwpx_sha256": "956a8d809cec03dd616ce64a8fd325a8f44b4e0ddfd98cd78b828495e9aa1181"
+        },
+        {
+          "area": "body",
+          "selected": "가",
+          "input": "한글",
+          "fields": {
+            "가": "한글",
+            "나": ""
+          },
+          "hwpx_sha256": "b2af1933082eed74fe4e582c53664eb8db97352ba56a1c30507123ffb2d0b808"
+        },
+        {
+          "area": "cell",
+          "selected": "나",
+          "input": "xy",
+          "fields": {
+            "가": "",
+            "나": "xy"
+          },
+          "hwpx_sha256": "bce79f3ee00d795bc8f3066b94391da54f1b0814fe8c08d02d7e6a42271514a6"
+        },
+        {
+          "area": "cell",
+          "selected": "나",
+          "input": "한",
+          "fields": {
+            "가": "",
+            "나": "한"
+          },
+          "hwpx_sha256": "43d33a29db8768191c21f71938e2575a59a864c3c066e47327ad12a63588650b"
+        },
+        {
+          "area": "cell",
+          "selected": "나",
+          "input": "한글",
+          "fields": {
+            "가": "",
+            "나": "한글"
+          },
+          "hwpx_sha256": "5b4b206b96e28a08cd7c0d4ee9304f7b5bfb399edb101ba4e25b94cd8fa5761f"
+        },
+        {
+          "area": "cell",
+          "selected": "가",
+          "input": "xy",
+          "fields": {
+            "가": "xy",
+            "나": ""
+          },
+          "hwpx_sha256": "f722150c9993f4e2693091f597269142faa32f91e951b41dbed40cc2292b4f67"
+        },
+        {
+          "area": "cell",
+          "selected": "가",
+          "input": "한",
+          "fields": {
+            "가": "한",
+            "나": ""
+          },
+          "hwpx_sha256": "05197775b1917b1eb479f73fb291b49a0ebba2d136c1cd2f3770aacfe798c0d4"
+        },
+        {
+          "area": "cell",
+          "selected": "가",
+          "input": "한글",
+          "fields": {
+            "가": "한글",
+            "나": ""
+          },
+          "hwpx_sha256": "fa9bfe57ec93adade57fb7004009cf7f377f205cc82369d9e71e4b86f25b7d81"
+        }
+      ],
+      "undo_redo": [
+        {
+          "area": "body",
+          "input": {
+            "live": {
+              "가": "x",
+              "나": ""
+            },
+            "HWP": {
+              "가": "x",
+              "나": ""
+            },
+            "HWPX": {
+              "가": "x",
+              "나": ""
+            }
+          },
+          "undo": {
+            "live": {
+              "가": "",
+              "나": ""
+            },
+            "HWP": {
+              "가": "",
+              "나": ""
+            },
+            "HWPX": {
+              "가": "",
+              "나": ""
+            }
+          },
+          "redo": {
+            "live": {
+              "가": "x",
+              "나": ""
+            },
+            "HWP": {
+              "가": "x",
+              "나": ""
+            },
+            "HWPX": {
+              "가": "x",
+              "나": ""
+            }
+          }
+        },
+        {
+          "area": "cell",
+          "input": {
+            "live": {
+              "가": "x",
+              "나": ""
+            },
+            "HWP": {
+              "가": "x",
+              "나": ""
+            },
+            "HWPX": {
+              "가": "x",
+              "나": ""
+            }
+          },
+          "undo": {
+            "live": {
+              "가": "",
+              "나": ""
+            },
+            "HWP": {
+              "가": "",
+              "나": ""
+            },
+            "HWPX": {
+              "가": "",
+              "나": ""
+            }
+          },
+          "redo": {
+            "live": {
+              "가": "x",
+              "나": ""
+            },
+            "HWP": {
+              "가": "x",
+              "나": ""
+            },
+            "HWPX": {
+              "가": "x",
+              "나": ""
+            }
+          }
+        }
+      ],
+      "replace_selected_value": [
+        {
+          "area": "body",
+          "values": {
+            "live": {
+              "가": "ab",
+              "나": ""
+            },
+            "HWP": {
+              "가": "ab",
+              "나": ""
+            },
+            "HWPX": {
+              "가": "ab",
+              "나": ""
+            }
+          }
+        },
+        {
+          "area": "cell",
+          "values": {
+            "live": {
+              "가": "ab",
+              "나": ""
+            },
+            "HWP": {
+              "가": "ab",
+              "나": ""
+            },
+            "HWPX": {
+              "가": "ab",
+              "나": ""
+            }
+          }
+        }
+      ],
+      "related_checks": {
+        "issue-270-set-field-persist": 11,
+        "embed-field-events": 10,
+        "issue-6806-zero-shape-resize-undo": 4,
+        "f11-rebase-use": 16
+      },
+      "saved_geometry": {
+        "resized": {
+          "hancom": {
+            "file": "hancom_wider.hwpx",
+            "geometry": {
+              "width": 16000,
+              "height": 8000,
+              "current_width": 12875,
+              "current_height": 0,
+              "x": 25000,
+              "y": 5000,
+              "scale": [
+                1.072961,
+                -0.390526,
+                212.463516,
+                0.0,
+                1.0,
+                0.0
+              ],
+              "translate": [
+                1.0,
+                0.0,
+                2912.0,
+                0.0,
+                1.0,
+                0.0
+              ]
+            },
+            "sha256": "30c06d87256d4d49ae76bea719238a2d591652ae3f7ae8405c88376c6bd17646"
+          },
+          "outputs": [
+            {
+              "file": "skewed-resized-hwpx.hwpx",
+              "geometry": {
+                "width": 16000,
+                "height": 8000,
+                "current_width": 12875,
+                "current_height": 0,
+                "x": 25000,
+                "y": 5000,
+                "scale": [
+                  1.0729613,
+                  -0.39052576,
+                  212.46352,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "translate": [
+                  1.0,
+                  0.0,
+                  2912.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ]
+              },
+              "sha256": "7742528218fa069aacc03a032b21e5c84c8cbca69ba5dbb45e860e42ddb8f71b"
+            },
+            {
+              "file": "cli-skewed-resized.hwpx",
+              "geometry": {
+                "width": 16000,
+                "height": 8000,
+                "current_width": 12875,
+                "current_height": 0,
+                "x": 25000,
+                "y": 5000,
+                "scale": [
+                  1.0729613,
+                  -0.39052576,
+                  212.46352,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "translate": [
+                  1.0,
+                  0.0,
+                  2912.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ]
+              },
+              "sha256": "7742528218fa069aacc03a032b21e5c84c8cbca69ba5dbb45e860e42ddb8f71b"
+            }
+          ]
+        },
+        "restored": {
+          "hancom": {
+            "file": "hancom_restored.hwpx",
+            "geometry": {
+              "width": 14912,
+              "height": 8000,
+              "current_width": 11999,
+              "current_height": 0,
+              "x": 25000,
+              "y": 5000,
+              "scale": [
+                1.0,
+                -0.36397,
+                -3e-06,
+                0.0,
+                1.0,
+                0.0
+              ],
+              "translate": [
+                1.0,
+                0.0,
+                2912.0,
+                0.0,
+                1.0,
+                0.0
+              ]
+            },
+            "sha256": "26a2c973d7cb4f0d48f266b33f2d2d3a7276d5fe804900a694980cf4d8e9a05c"
+          },
+          "outputs": [
+            {
+              "file": "skewed-restored-hwpx.hwpx",
+              "geometry": {
+                "width": 14912,
+                "height": 8000,
+                "current_width": 11999,
+                "current_height": 0,
+                "x": 25000,
+                "y": 5000,
+                "scale": [
+                  0.99999994,
+                  -0.36397,
+                  -2.8686525e-06,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "translate": [
+                  1.0,
+                  0.0,
+                  2912.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ]
+              },
+              "sha256": "c26fc922a334ed508f3dd98b5ef47d0236fc99ad995e571bf2d265764507e4e9"
+            },
+            {
+              "file": "cli-skewed-restored.hwpx",
+              "geometry": {
+                "width": 14912,
+                "height": 8000,
+                "current_width": 11999,
+                "current_height": 0,
+                "x": 25000,
+                "y": 5000,
+                "scale": [
+                  0.99999994,
+                  -0.36397,
+                  -2.8686525e-06,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "translate": [
+                  1.0,
+                  0.0,
+                  2912.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ]
+              },
+              "sha256": "c26fc922a334ed508f3dd98b5ef47d0236fc99ad995e571bf2d265764507e4e9"
+            }
+          ]
+        }
+      },
+      "cli_angle_boundaries": [
+        {
+          "axis": "skewX",
+          "request": -90,
+          "exit": 2,
+          "output": false,
+          "reopened": null
+        },
+        {
+          "axis": "skewX",
+          "request": -89,
+          "exit": 0,
+          "output": true,
+          "reopened": {
+            "skewX": -89,
+            "skewY": 0
+          }
+        },
+        {
+          "axis": "skewX",
+          "request": 89,
+          "exit": 0,
+          "output": true,
+          "reopened": {
+            "skewX": 89,
+            "skewY": 0
+          }
+        },
+        {
+          "axis": "skewX",
+          "request": 90,
+          "exit": 2,
+          "output": false,
+          "reopened": null
+        },
+        {
+          "axis": "skewY",
+          "request": -90,
+          "exit": 2,
+          "output": false,
+          "reopened": null
+        },
+        {
+          "axis": "skewY",
+          "request": -89,
+          "exit": 0,
+          "output": true,
+          "reopened": {
+            "skewX": 0,
+            "skewY": -89
+          }
+        },
+        {
+          "axis": "skewY",
+          "request": 89,
+          "exit": 0,
+          "output": true,
+          "reopened": {
+            "skewX": 0,
+            "skewY": 89
+          }
+        },
+        {
+          "axis": "skewY",
+          "request": 90,
+          "exit": 2,
+          "output": false,
+          "reopened": null
+        }
+      ],
+      "rejected_edits": [
+        {
+          "state": {
+            "rotationAngle": 30
+          },
+          "patch": {
+            "skewX": 20,
+            "width": 14600
+          },
+          "format": "hwp",
+          "before": {
+            "width": 14392,
+            "height": 12928,
+            "skewX": 0,
+            "skewY": 0,
+            "rotationAngle": 30,
+            "horzOffset": 3804,
+            "vertOffset": 2536
+          }
+        },
+        {
+          "state": {
+            "rotationAngle": 30
+          },
+          "patch": {
+            "skewX": 20,
+            "width": 14600
+          },
+          "format": "hwpx",
+          "before": {
+            "width": 14392,
+            "height": 12928,
+            "skewX": 0,
+            "skewY": 0,
+            "rotationAngle": 30,
+            "horzOffset": 3804,
+            "vertOffset": 2536
+          }
+        },
+        {
+          "state": {},
+          "patch": {
+            "skewY": 90,
+            "width": 14600
+          },
+          "format": "hwp",
+          "before": {
+            "width": 12000,
+            "height": 8000,
+            "skewX": 0,
+            "skewY": 0,
+            "rotationAngle": 0,
+            "horzOffset": 5000,
+            "vertOffset": 5000
+          }
+        },
+        {
+          "state": {},
+          "patch": {
+            "skewY": 90,
+            "width": 14600
+          },
+          "format": "hwpx",
+          "before": {
+            "width": 12000,
+            "height": 8000,
+            "skewX": 0,
+            "skewY": 0,
+            "rotationAngle": 0,
+            "horzOffset": 5000,
+            "vertOffset": 5000
+          }
+        },
+        {
+          "state": {},
+          "patch": {
+            "skewX": -90,
+            "width": 14600
+          },
+          "format": "hwp",
+          "before": {
+            "width": 12000,
+            "height": 8000,
+            "skewX": 0,
+            "skewY": 0,
+            "rotationAngle": 0,
+            "horzOffset": 5000,
+            "vertOffset": 5000
+          }
+        },
+        {
+          "state": {},
+          "patch": {
+            "skewX": -90,
+            "width": 14600
+          },
+          "format": "hwpx",
+          "before": {
+            "width": 12000,
+            "height": 8000,
+            "skewX": 0,
+            "skewY": 0,
+            "rotationAngle": 0,
+            "horzOffset": 5000,
+            "vertOffset": 5000
+          }
+        },
+        {
+          "state": {},
+          "patch": {
+            "rotationAngle": 30,
+            "skewX": 20,
+            "width": 14600
+          },
+          "format": "hwp",
+          "before": {
+            "width": 12000,
+            "height": 8000,
+            "skewX": 0,
+            "skewY": 0,
+            "rotationAngle": 0,
+            "horzOffset": 5000,
+            "vertOffset": 5000
+          }
+        },
+        {
+          "state": {},
+          "patch": {
+            "rotationAngle": 30,
+            "skewX": 20,
+            "width": 14600
+          },
+          "format": "hwpx",
+          "before": {
+            "width": 12000,
+            "height": 8000,
+            "skewX": 0,
+            "skewY": 0,
+            "rotationAngle": 0,
+            "horzOffset": 5000,
+            "vertOffset": 5000
+          }
+        }
+      ]
+    },
+    "candidate": {
+      "pass_count": 46,
+      "assertions": [
+        "PASS: F11 한 번: 나",
+        "PASS: F11 두 번: 가",
+        "PASS: F11 세 번: 고를 것 없음",
+        "PASS: body F11 선택 나",
+        "PASS: body live 선택 나, 입력 xy: {\"가\":\"\",\"나\":\"xy\"}",
+        "PASS: body HWP 선택 나, 입력 xy: {\"가\":\"\",\"나\":\"xy\"}",
+        "PASS: body HWPX 선택 나, 입력 xy: {\"가\":\"\",\"나\":\"xy\"}",
+        "PASS: body F11 선택 나",
+        "PASS: body live 선택 나, 입력 한글: {\"가\":\"\",\"나\":\"한글\"}",
+        "PASS: body HWP 선택 나, 입력 한글: {\"가\":\"\",\"나\":\"한글\"}",
+        "PASS: body HWPX 선택 나, 입력 한글: {\"가\":\"\",\"나\":\"한글\"}",
+        "PASS: body F11 선택 가",
+        "PASS: body live 선택 가, 입력 xy: {\"가\":\"xy\",\"나\":\"\"}",
+        "PASS: body HWP 선택 가, 입력 xy: {\"가\":\"xy\",\"나\":\"\"}",
+        "PASS: body HWPX 선택 가, 입력 xy: {\"가\":\"xy\",\"나\":\"\"}",
+        "PASS: body F11 선택 가",
+        "PASS: body live 선택 가, 입력 한글: {\"가\":\"한글\",\"나\":\"\"}",
+        "PASS: body HWP 선택 가, 입력 한글: {\"가\":\"한글\",\"나\":\"\"}",
+        "PASS: body HWPX 선택 가, 입력 한글: {\"가\":\"한글\",\"나\":\"\"}",
+        "PASS: cell F11 선택 나",
+        "PASS: cell live 선택 나, 입력 xy: {\"가\":\"\",\"나\":\"xy\"}",
+        "PASS: cell HWP 선택 나, 입력 xy: {\"가\":\"\",\"나\":\"xy\"}",
+        "PASS: cell HWPX 선택 나, 입력 xy: {\"가\":\"\",\"나\":\"xy\"}",
+        "PASS: cell F11 선택 나",
+        "PASS: cell live 선택 나, 입력 한글: {\"가\":\"\",\"나\":\"한글\"}",
+        "PASS: cell HWP 선택 나, 입력 한글: {\"가\":\"\",\"나\":\"한글\"}",
+        "PASS: cell HWPX 선택 나, 입력 한글: {\"가\":\"\",\"나\":\"한글\"}",
+        "PASS: cell F11 선택 가",
+        "PASS: cell live 선택 가, 입력 xy: {\"가\":\"xy\",\"나\":\"\"}",
+        "PASS: cell HWP 선택 가, 입력 xy: {\"가\":\"xy\",\"나\":\"\"}",
+        "PASS: cell HWPX 선택 가, 입력 xy: {\"가\":\"xy\",\"나\":\"\"}",
+        "PASS: cell F11 선택 가",
+        "PASS: cell live 선택 가, 입력 한글: {\"가\":\"한글\",\"나\":\"\"}",
+        "PASS: cell HWP 선택 가, 입력 한글: {\"가\":\"한글\",\"나\":\"\"}",
+        "PASS: cell HWPX 선택 가, 입력 한글: {\"가\":\"한글\",\"나\":\"\"}",
+        "PASS: 입력 후 F11로 이전 누름틀 선택",
+        "PASS: live 선택 이동과 이탈: {\"가\":\"ab\",\"나\":\"xy\"}",
+        "PASS: HWP 선택 이동과 이탈: {\"가\":\"ab\",\"나\":\"xy\"}",
+        "PASS: HWPX 선택 이동과 이탈: {\"가\":\"ab\",\"나\":\"xy\"}",
+        "PASS: End 뒤 입력은 누름틀 밖의 문단 끝에 남는다",
+        "PASS: live 화면 갱신 전 연속 입력: {\"가\":\"xy\",\"나\":\"\"}",
+        "PASS: HWP 화면 갱신 전 연속 입력: {\"가\":\"xy\",\"나\":\"\"}",
+        "PASS: HWPX 화면 갱신 전 연속 입력: {\"가\":\"xy\",\"나\":\"\"}",
+        "PASS: 셀 안 F11: 셀 누름틀",
+        "PASS: 셀 안 F11 두 번: 그 표",
+        "PASS: 셀 안 F11 세 번: 표 앞 본문 누름틀"
+      ],
+      "wasm_artifact_sha256": [
+        "0c4659cab1c3ff33db326fad3a8e4411dd1b7b736000df058607e9474f5b8c84"
+      ],
+      "xml_fields": [
+        {
+          "area": "body",
+          "selected": "나",
+          "input": "xy",
+          "fields": {
+            "가": "",
+            "나": "xy"
+          },
+          "hwpx_sha256": "58e94dba73a0008214a32c7f8cebb96d6a0471d7e101ba891266cac9bf0dc86d"
+        },
+        {
+          "area": "body",
+          "selected": "나",
+          "input": "한",
+          "fields": {
+            "가": "",
+            "나": "한"
+          },
+          "hwpx_sha256": "f17059029b1a389373b04afe152f9bbecd81d25e316ed77c2c0690a9ff581e25"
+        },
+        {
+          "area": "body",
+          "selected": "나",
+          "input": "한글",
+          "fields": {
+            "가": "",
+            "나": "한글"
+          },
+          "hwpx_sha256": "a9b90d13d8f94bf239645a3f18e079aac753a8789c565a863d77a03f44195120"
+        },
+        {
+          "area": "body",
+          "selected": "가",
+          "input": "xy",
+          "fields": {
+            "가": "xy",
+            "나": ""
+          },
+          "hwpx_sha256": "8f0827d143b7563d7e334de51717c291c9255e64a3f421b5416d6a2bb2fb0d42"
+        },
+        {
+          "area": "body",
+          "selected": "가",
+          "input": "한",
+          "fields": {
+            "가": "한",
+            "나": ""
+          },
+          "hwpx_sha256": "956a8d809cec03dd616ce64a8fd325a8f44b4e0ddfd98cd78b828495e9aa1181"
+        },
+        {
+          "area": "body",
+          "selected": "가",
+          "input": "한글",
+          "fields": {
+            "가": "한글",
+            "나": ""
+          },
+          "hwpx_sha256": "b2af1933082eed74fe4e582c53664eb8db97352ba56a1c30507123ffb2d0b808"
+        },
+        {
+          "area": "cell",
+          "selected": "나",
+          "input": "xy",
+          "fields": {
+            "가": "",
+            "나": "xy"
+          },
+          "hwpx_sha256": "bce79f3ee00d795bc8f3066b94391da54f1b0814fe8c08d02d7e6a42271514a6"
+        },
+        {
+          "area": "cell",
+          "selected": "나",
+          "input": "한",
+          "fields": {
+            "가": "",
+            "나": "한"
+          },
+          "hwpx_sha256": "43d33a29db8768191c21f71938e2575a59a864c3c066e47327ad12a63588650b"
+        },
+        {
+          "area": "cell",
+          "selected": "나",
+          "input": "한글",
+          "fields": {
+            "가": "",
+            "나": "한글"
+          },
+          "hwpx_sha256": "5b4b206b96e28a08cd7c0d4ee9304f7b5bfb399edb101ba4e25b94cd8fa5761f"
+        },
+        {
+          "area": "cell",
+          "selected": "가",
+          "input": "xy",
+          "fields": {
+            "가": "xy",
+            "나": ""
+          },
+          "hwpx_sha256": "f722150c9993f4e2693091f597269142faa32f91e951b41dbed40cc2292b4f67"
+        },
+        {
+          "area": "cell",
+          "selected": "가",
+          "input": "한",
+          "fields": {
+            "가": "한",
+            "나": ""
+          },
+          "hwpx_sha256": "05197775b1917b1eb479f73fb291b49a0ebba2d136c1cd2f3770aacfe798c0d4"
+        },
+        {
+          "area": "cell",
+          "selected": "가",
+          "input": "한글",
+          "fields": {
+            "가": "한글",
+            "나": ""
+          },
+          "hwpx_sha256": "fa9bfe57ec93adade57fb7004009cf7f377f205cc82369d9e71e4b86f25b7d81"
+        }
+      ],
+      "undo_redo": [
+        {
+          "area": "body",
+          "input": {
+            "live": {
+              "가": "x",
+              "나": ""
+            },
+            "HWP": {
+              "가": "x",
+              "나": ""
+            },
+            "HWPX": {
+              "가": "x",
+              "나": ""
+            }
+          },
+          "undo": {
+            "live": {
+              "가": "",
+              "나": ""
+            },
+            "HWP": {
+              "가": "",
+              "나": ""
+            },
+            "HWPX": {
+              "가": "",
+              "나": ""
+            }
+          },
+          "redo": {
+            "live": {
+              "가": "x",
+              "나": ""
+            },
+            "HWP": {
+              "가": "x",
+              "나": ""
+            },
+            "HWPX": {
+              "가": "x",
+              "나": ""
+            }
+          }
+        },
+        {
+          "area": "cell",
+          "input": {
+            "live": {
+              "가": "x",
+              "나": ""
+            },
+            "HWP": {
+              "가": "x",
+              "나": ""
+            },
+            "HWPX": {
+              "가": "x",
+              "나": ""
+            }
+          },
+          "undo": {
+            "live": {
+              "가": "",
+              "나": ""
+            },
+            "HWP": {
+              "가": "",
+              "나": ""
+            },
+            "HWPX": {
+              "가": "",
+              "나": ""
+            }
+          },
+          "redo": {
+            "live": {
+              "가": "x",
+              "나": ""
+            },
+            "HWP": {
+              "가": "x",
+              "나": ""
+            },
+            "HWPX": {
+              "가": "x",
+              "나": ""
+            }
+          }
+        }
+      ],
+      "replace_selected_value": [
+        {
+          "area": "body",
+          "values": {
+            "live": {
+              "가": "ab",
+              "나": ""
+            },
+            "HWP": {
+              "가": "ab",
+              "나": ""
+            },
+            "HWPX": {
+              "가": "ab",
+              "나": ""
+            }
+          }
+        },
+        {
+          "area": "cell",
+          "values": {
+            "live": {
+              "가": "ab",
+              "나": ""
+            },
+            "HWP": {
+              "가": "ab",
+              "나": ""
+            },
+            "HWPX": {
+              "가": "ab",
+              "나": ""
+            }
+          }
+        }
+      ],
+      "related_checks": {
+        "issue-270-set-field-persist": 11,
+        "embed-field-events": 10,
+        "issue-6806-zero-shape-resize-undo": 4,
+        "f11-rebase-use": 16
+      },
+      "saved_geometry": {
+        "resized": {
+          "hancom": {
+            "file": "hancom_wider.hwpx",
+            "geometry": {
+              "width": 16000,
+              "height": 8000,
+              "current_width": 12875,
+              "current_height": 0,
+              "x": 25000,
+              "y": 5000,
+              "scale": [
+                1.072961,
+                -0.390526,
+                212.463516,
+                0.0,
+                1.0,
+                0.0
+              ],
+              "translate": [
+                1.0,
+                0.0,
+                2912.0,
+                0.0,
+                1.0,
+                0.0
+              ]
+            },
+            "sha256": "30c06d87256d4d49ae76bea719238a2d591652ae3f7ae8405c88376c6bd17646"
+          },
+          "outputs": [
+            {
+              "file": "skewed-resized-hwpx.hwpx",
+              "geometry": {
+                "width": 16000,
+                "height": 8000,
+                "current_width": 12875,
+                "current_height": 0,
+                "x": 25000,
+                "y": 5000,
+                "scale": [
+                  1.0729613,
+                  -0.39052576,
+                  212.46352,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "translate": [
+                  1.0,
+                  0.0,
+                  2912.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ]
+              },
+              "sha256": "7742528218fa069aacc03a032b21e5c84c8cbca69ba5dbb45e860e42ddb8f71b"
+            },
+            {
+              "file": "cli-skewed-resized.hwpx",
+              "geometry": {
+                "width": 16000,
+                "height": 8000,
+                "current_width": 12875,
+                "current_height": 0,
+                "x": 25000,
+                "y": 5000,
+                "scale": [
+                  1.0729613,
+                  -0.39052576,
+                  212.46352,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "translate": [
+                  1.0,
+                  0.0,
+                  2912.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ]
+              },
+              "sha256": "7742528218fa069aacc03a032b21e5c84c8cbca69ba5dbb45e860e42ddb8f71b"
+            }
+          ]
+        },
+        "restored": {
+          "hancom": {
+            "file": "hancom_restored.hwpx",
+            "geometry": {
+              "width": 14912,
+              "height": 8000,
+              "current_width": 11999,
+              "current_height": 0,
+              "x": 25000,
+              "y": 5000,
+              "scale": [
+                1.0,
+                -0.36397,
+                -3e-06,
+                0.0,
+                1.0,
+                0.0
+              ],
+              "translate": [
+                1.0,
+                0.0,
+                2912.0,
+                0.0,
+                1.0,
+                0.0
+              ]
+            },
+            "sha256": "26a2c973d7cb4f0d48f266b33f2d2d3a7276d5fe804900a694980cf4d8e9a05c"
+          },
+          "outputs": [
+            {
+              "file": "skewed-restored-hwpx.hwpx",
+              "geometry": {
+                "width": 14912,
+                "height": 8000,
+                "current_width": 11999,
+                "current_height": 0,
+                "x": 25000,
+                "y": 5000,
+                "scale": [
+                  0.99999994,
+                  -0.36397,
+                  -2.8686525e-06,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "translate": [
+                  1.0,
+                  0.0,
+                  2912.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ]
+              },
+              "sha256": "c26fc922a334ed508f3dd98b5ef47d0236fc99ad995e571bf2d265764507e4e9"
+            },
+            {
+              "file": "cli-skewed-restored.hwpx",
+              "geometry": {
+                "width": 14912,
+                "height": 8000,
+                "current_width": 11999,
+                "current_height": 0,
+                "x": 25000,
+                "y": 5000,
+                "scale": [
+                  0.99999994,
+                  -0.36397,
+                  -2.8686525e-06,
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "translate": [
+                  1.0,
+                  0.0,
+                  2912.0,
+                  0.0,
+                  1.0,
+                  0.0
+                ]
+              },
+              "sha256": "c26fc922a334ed508f3dd98b5ef47d0236fc99ad995e571bf2d265764507e4e9"
+            }
+          ]
+        }
+      },
+      "cli_angle_boundaries": [
+        {
+          "axis": "skewX",
+          "request": -90,
+          "exit": 2,
+          "output": false,
+          "reopened": null
+        },
+        {
+          "axis": "skewX",
+          "request": -89,
+          "exit": 0,
+          "output": true,
+          "reopened": {
+            "skewX": -89,
+            "skewY": 0
+          }
+        },
+        {
+          "axis": "skewX",
+          "request": 89,
+          "exit": 0,
+          "output": true,
+          "reopened": {
+            "skewX": 89,
+            "skewY": 0
+          }
+        },
+        {
+          "axis": "skewX",
+          "request": 90,
+          "exit": 2,
+          "output": false,
+          "reopened": null
+        },
+        {
+          "axis": "skewY",
+          "request": -90,
+          "exit": 2,
+          "output": false,
+          "reopened": null
+        },
+        {
+          "axis": "skewY",
+          "request": -89,
+          "exit": 0,
+          "output": true,
+          "reopened": {
+            "skewX": 0,
+            "skewY": -89
+          }
+        },
+        {
+          "axis": "skewY",
+          "request": 89,
+          "exit": 0,
+          "output": true,
+          "reopened": {
+            "skewX": 0,
+            "skewY": 89
+          }
+        },
+        {
+          "axis": "skewY",
+          "request": 90,
+          "exit": 2,
+          "output": false,
+          "reopened": null
+        }
+      ],
+      "rejected_edits": [
+        {
+          "state": {
+            "rotationAngle": 30
+          },
+          "patch": {
+            "skewX": 20,
+            "width": 14600
+          },
+          "format": "hwp",
+          "before": {
+            "width": 14392,
+            "height": 12928,
+            "skewX": 0,
+            "skewY": 0,
+            "rotationAngle": 30,
+            "horzOffset": 3804,
+            "vertOffset": 2536
+          }
+        },
+        {
+          "state": {
+            "rotationAngle": 30
+          },
+          "patch": {
+            "skewX": 20,
+            "width": 14600
+          },
+          "format": "hwpx",
+          "before": {
+            "width": 14392,
+            "height": 12928,
+            "skewX": 0,
+            "skewY": 0,
+            "rotationAngle": 30,
+            "horzOffset": 3804,
+            "vertOffset": 2536
+          }
+        },
+        {
+          "state": {},
+          "patch": {
+            "skewY": 90,
+            "width": 14600
+          },
+          "format": "hwp",
+          "before": {
+            "width": 12000,
+            "height": 8000,
+            "skewX": 0,
+            "skewY": 0,
+            "rotationAngle": 0,
+            "horzOffset": 5000,
+            "vertOffset": 5000
+          }
+        },
+        {
+          "state": {},
+          "patch": {
+            "skewY": 90,
+            "width": 14600
+          },
+          "format": "hwpx",
+          "before": {
+            "width": 12000,
+            "height": 8000,
+            "skewX": 0,
+            "skewY": 0,
+            "rotationAngle": 0,
+            "horzOffset": 5000,
+            "vertOffset": 5000
+          }
+        },
+        {
+          "state": {},
+          "patch": {
+            "skewX": -90,
+            "width": 14600
+          },
+          "format": "hwp",
+          "before": {
+            "width": 12000,
+            "height": 8000,
+            "skewX": 0,
+            "skewY": 0,
+            "rotationAngle": 0,
+            "horzOffset": 5000,
+            "vertOffset": 5000
+          }
+        },
+        {
+          "state": {},
+          "patch": {
+            "skewX": -90,
+            "width": 14600
+          },
+          "format": "hwpx",
+          "before": {
+            "width": 12000,
+            "height": 8000,
+            "skewX": 0,
+            "skewY": 0,
+            "rotationAngle": 0,
+            "horzOffset": 5000,
+            "vertOffset": 5000
+          }
+        },
+        {
+          "state": {},
+          "patch": {
+            "rotationAngle": 30,
+            "skewX": 20,
+            "width": 14600
+          },
+          "format": "hwp",
+          "before": {
+            "width": 12000,
+            "height": 8000,
+            "skewX": 0,
+            "skewY": 0,
+            "rotationAngle": 0,
+            "horzOffset": 5000,
+            "vertOffset": 5000
+          }
+        },
+        {
+          "state": {},
+          "patch": {
+            "rotationAngle": 30,
+            "skewX": 20,
+            "width": 14600
+          },
+          "format": "hwpx",
+          "before": {
+            "width": 12000,
+            "height": 8000,
+            "skewX": 0,
+            "skewY": 0,
+            "rotationAngle": 0,
+            "horzOffset": 5000,
+            "vertOffset": 5000
+          }
+        }
+      ]
+    }
+  }
+}

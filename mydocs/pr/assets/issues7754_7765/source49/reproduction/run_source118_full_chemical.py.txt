@@ -1,0 +1,20 @@
+from pathlib import Path
+from decimal import Decimal
+import json,csv,subprocess,time,hashlib,traceback,os
+R=Path('/home/tsjang/rhwp');O=R/'output/pr-review/issue7754-nine';P=O/'source118-complete-fonts-full-chemical-state.json';s={'started':time.time(),'pid':os.getpid(),'results':[],'declines':[],'scope':'Actual Source105 whole-document validation with explicit original TTF, verified TTC, original CFF Latin and independent Junggothic complement. Both full 103-page invocations remain intact; no page-wise maximum selection.'}
+def save():P.write_text(json.dumps(s,ensure_ascii=False,indent=2)+'\n')
+def sha(p):
+ with Path(p).open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
+try:
+ build=json.load(open(O/'source105-corrected-build-state.json'));assert build.get('completed');s['producer_receipt_sha256']=sha(O/'source105-corrected-build-state.json')
+ M=R/'mydocs/pr/assets/visual-protected-baseline/manifest.json';m=json.load(open(M));table=M.with_name('final.tsv');assert sha(table)==m['table_sha256'];s['baseline_sha256']=sha(table);expected={(r['document_id'],r['backend'],int(r['page'])):Decimal(r['silhouette_raw_match_percent']) for r in csv.DictReader(table.open(),delimiter='\t')}
+ for backend,state_name in [('native','source114-default-chrome-focus-state.json'),('wasm','source115-default-chrome-focus-state.json')]:
+  focused=json.load(open(O/state_name));entry=next(r for r in focused['results'] if r['backend']==backend);assert entry['exit_code']==0 and len(entry['rows'])==10 and all(r['silhouette_raw_match_percent']=='100.00' for r in entry['rows']);d=next(x for x in m['datasets'] if x['logical_key']=='chemical' and x['backend']==backend);assert sha(R/d['input']['path'])==d['input']['sha256'] and sha(R/d['reference_pdf']['path'])==d['reference_pdf']['sha256']
+  command=list(entry['command']);out=O/'source118-full-chemical'/backend;command[command.index('--out')+1]=str(out);command[command.index('--pages')+1]=','.join(map(str,range(1,104)));q=next(x for x in build['results'] if x['label']=='candidate-'+backend);s['running']=backend;save();log=O/'logs'/f'source118-full-chemical-{backend}.txt';t=time.monotonic()
+  with log.open('w') as f:r=subprocess.run(command,cwd=R,stdout=f,stderr=subprocess.STDOUT,timeout=3600)
+  folder=out/'chemical';tsv=folder/'silhouette.tsv';rows=list(csv.DictReader(tsv.open(),delimiter='\t'));assert [int(x['page']) for x in rows]==list(range(1,104));meta=json.load(open(folder/'silhouette_manifest.json'));assert meta['pr_review_gate']['document_page_counts']=={'rhwp':103,'pdf':103};assert meta['dpi']==96 and meta['radius_px']==2
+  declines=[{'backend':backend,'page':int(x['page']),'protected':str(expected[(d['document_id'],backend,int(x['page']))]),'actual':x['silhouette_raw_match_percent']} for x in rows if Decimal(x['silhouette_raw_match_percent'])<expected[(d['document_id'],backend,int(x['page']))]]
+  s['results'].append({'backend':backend,'source_head':q['source_head'],'binary_sha256':sha(O/'bin/rhwp-source105-candidate-optimized'),'wasm_sha256':sha(O/'pkg-source105-candidate/rhwp_bg.wasm') if backend=='wasm' else None,'command':command,'exit_code':r.returncode,'seconds':time.monotonic()-t,'pages':len(rows),'complete_coverage':True,'minimum':min(x['silhouette_raw_match_percent'] for x in rows),'tsv':str(tsv),'tsv_sha256':sha(tsv),'manifest':str(folder/'silhouette_manifest.json'),'log':str(log)});s['declines']+=declines;save();print(backend,'full103',r.returncode,'declines',len(declines),'min',min(x['silhouette_raw_match_percent'] for x in rows),flush=True);assert r.returncode==0
+ s.update(complete_coverage=True,passed=not s['declines'],running=None)
+except Exception as e:s['error']=str(e);s['traceback']=traceback.format_exc();print(s['traceback'],flush=True)
+finally:s['ended']=time.time();save()

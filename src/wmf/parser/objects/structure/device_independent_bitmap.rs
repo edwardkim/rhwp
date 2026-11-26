@@ -34,10 +34,18 @@ impl DeviceIndependentBitmap {
     pub(crate) fn parse_with_color_usage<R: crate::wmf::Read>(
         buf: &mut R,
         color_usage: crate::wmf::parser::ColorUsage,
+        record_bytes: Option<usize>,
     ) -> Result<(Self, usize), crate::wmf::parser::ParseError> {
         let (dib_header_info, mut consumed_bytes) =
             crate::wmf::parser::BitmapInfoHeader::parse(buf)?;
-        let (colors, c) = Colors::parse(buf, color_usage, &dib_header_info)?;
+        // [MS-WMF] 2.2.2.9: Colors 의 크기는 이 DIB 를 담은 레코드에서 정한다. 레코드에 남은
+        // 바이트에서 헤더와 픽셀(aData)을 뺀 만큼만 색상표가 있을 수 있다. 헤더가 말하는 항목
+        // 수를 그대로 읽으면 색상표 없이 저장된 DIB 에서 다음 레코드를 침범한다.
+        let color_table_room = record_bytes.map(|bytes| {
+            bytes.saturating_sub(consumed_bytes.saturating_add(dib_header_info.size()))
+        });
+        let (colors, c) =
+            Colors::parse_within(buf, color_usage, &dib_header_info, color_table_room)?;
         consumed_bytes += c;
 
         //  TODO: Not written in [MS-WMF] how to parse this field.
@@ -73,6 +81,16 @@ impl Colors {
         color_usage: crate::wmf::parser::ColorUsage,
         dib_header_info: &crate::wmf::parser::BitmapInfoHeader,
     ) -> Result<(Self, usize), crate::wmf::parser::ParseError> {
+        Self::parse_within(buf, color_usage, dib_header_info, None)
+    }
+
+    /// `table_room` 은 담는 레코드에서 색상표가 차지할 수 있는 바이트 수다(`None` 은 제한 없음).
+    fn parse_within<R: crate::wmf::Read>(
+        buf: &mut R,
+        color_usage: crate::wmf::parser::ColorUsage,
+        dib_header_info: &crate::wmf::parser::BitmapInfoHeader,
+        table_room: Option<usize>,
+    ) -> Result<(Self, usize), crate::wmf::parser::ParseError> {
         if matches!(color_usage, crate::wmf::parser::ColorUsage::DIB_PAL_INDICES)
             || matches!(
                 dib_header_info.bit_count(),
@@ -86,16 +104,17 @@ impl Colors {
             dib_header_info,
             crate::wmf::parser::BitmapInfoHeader::Core { .. }
         ) {
-            return Self::parse_with_core_header(buf, color_usage, dib_header_info);
+            return Self::parse_with_core_header(buf, color_usage, dib_header_info, table_room);
         }
 
-        Self::parse_with_info_header(buf, color_usage, dib_header_info)
+        Self::parse_with_info_header(buf, color_usage, dib_header_info, table_room)
     }
 
     fn parse_with_core_header<R: crate::wmf::Read>(
         buf: &mut R,
         color_usage: crate::wmf::parser::ColorUsage,
         dib_header_info: &crate::wmf::parser::BitmapInfoHeader,
+        table_room: Option<usize>,
     ) -> Result<(Self, usize), crate::wmf::parser::ParseError> {
         assert!(matches!(
             dib_header_info,
@@ -115,6 +134,7 @@ impl Colors {
             color_usage,
             dib_header_info.color_used() as usize,
             true,
+            table_room,
         )
     }
 
@@ -122,6 +142,7 @@ impl Colors {
         buf: &mut R,
         color_usage: crate::wmf::parser::ColorUsage,
         dib_header_info: &crate::wmf::parser::BitmapInfoHeader,
+        table_room: Option<usize>,
     ) -> Result<(Self, usize), crate::wmf::parser::ParseError> {
         assert!(matches!(
             dib_header_info,
@@ -139,6 +160,7 @@ impl Colors {
                 color_usage,
                 dib_header_info.color_used() as usize,
                 false,
+                table_room,
             ),
             crate::wmf::parser::BitCount::BI_BITCOUNT_5 => {
                 // ignore result
@@ -147,6 +169,7 @@ impl Colors {
                     color_usage,
                     dib_header_info.color_used() as usize,
                     false,
+                    table_room,
                 )?;
 
                 Ok((Colors::Null, bytes))
@@ -172,6 +195,7 @@ impl Colors {
                                 color_usage,
                                 dib_header_info.color_used() as usize,
                                 false,
+                                table_room,
                             )?;
 
                             Ok((Colors::Null, bytes))
@@ -182,6 +206,7 @@ impl Colors {
                                 color_usage,
                                 dib_header_info.color_used() as usize,
                                 false,
+                                table_room,
                             )
                         }
                         _ => Ok((Colors::Null, 0)),
@@ -196,6 +221,7 @@ impl Colors {
         color_usage: crate::wmf::parser::ColorUsage,
         colors_length: usize,
         core: bool,
+        table_room: Option<usize>,
     ) -> Result<(Self, usize), crate::wmf::parser::ParseError> {
         // colors_length는 BITMAPINFOHEADER의 colors_used(검증되지 않은 u32)에서
         // 온다. 색상표가 존재하는 비트 심도(<=8bpp)에서 사양상 최대 항목 수는
@@ -203,6 +229,13 @@ impl Colors {
         // 거대한 값을 그대로 예약해 OOM abort로 이어진다 (doc_info.rs tab_count,
         // emf parse_points16 #2992와 동일한 클래스).
         let colors_length = colors_length.min(256);
+        let entry_bytes = match color_usage {
+            crate::wmf::parser::ColorUsage::DIB_RGB_COLORS if core => 3,
+            crate::wmf::parser::ColorUsage::DIB_RGB_COLORS => 4,
+            _ => 2,
+        };
+        let colors_length =
+            table_room.map_or(colors_length, |room| colors_length.min(room / entry_bytes));
         let mut consumed_bytes: usize = 0;
 
         match color_usage {
@@ -300,6 +333,7 @@ mod tests {
             crate::wmf::parser::ColorUsage::DIB_RGB_COLORS,
             u32::MAX as usize,
             false,
+            None,
         );
 
         assert!(result.is_err());

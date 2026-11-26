@@ -1,3 +1,13 @@
+//! 관계형·고정형: 기존 계약을 유지하고 #7754~#7765의 수용한 원본 범위를 복원한다.
+//! 주석 갱신: 2026-11-22T12:10:07+09:00; 직전 파일 변경: 2026-11-22T06:28:45+09:00 35438e228d53f2c1e81dd4082dd5721c96c1db3d.
+//! 복원 원본 측정: 2026-11-22 KST,96DPI·Print·PDFium·보정 전2px raw, 각 독립 Print와 같은 전체 쪽수.
+//! Native/fresh WASM 전쪽 최저: 7754 평문24쪽98.29/98.22%,7755 315쪽98.40/98.40%,
+//! 7756 1쪽99.00/98.99%,7757 3쪽99.78/99.80%,7759 1쪽99.94/99.94%,7760 19쪽99.18/99.18%,
+//! 7761 HWP46쪽99.98/99.98%,7762 HWPX46쪽99.98/99.98%,7765 HWP64쪽98.08/98.11%·HWPX64쪽98.69/98.69%.
+//! 근거: mydocs/pr/assets/issues7754_7765/source32/README.md; 시장구조조사의 선행 전쪽 교차 증거는 같은 상위 market-source7/README.md.
+//! 1-up 등록의 재검증: 2026-11-22 KST, 같은 96DPI·보정 전2px raw·전쪽, 시장315쪽98.40/98.40%, 수출입19쪽99.18/99.18%.
+//! 해당 Native/fresh WASM TSV: mydocs/pr/assets/issues7754_7765/source36/issues/{native,wasm}/candidate/.
+//! 이번 복원 범위 밖 입력의 기존 계약·근거는 아래 기록을 유지한다. 시스템 글꼴을 요구하지 않는다.
 //! 한글 정답지 PDF 대비 쪽수 원장 — 저장소 자산만으로 재현하는 v1.0 조판 판정.
 //!
 //! # 왜 필요한가
@@ -23,11 +33,13 @@
 //! 더 나빠질 때만 실패한다. 이 규약은 `local_validation.md` §4.3.0.1 의 "가능하면 최소
 //! 공개 fixture 와 자동 래칫을 마련한다" 를 이 축에 적용한 것이다.
 //!
-//! # 모아 찍기 문서는 대상이 아니다
+//! # 모아 찍기 선언과 독립 PDF의 논리 쪽 대응
 //!
 //! `print_method` 가 모아 찍기(4·5)면 한글이 한 장에 여러 쪽을 실어 뽑으므로 장 수가 애초에
 //! 다르다(`model::document::print_method_implies_nup` 주석의 실측표). 픽스처 생성 단계에서
-//! 제외하며, 이 시험도 같은 값을 확인해 이중으로 막는다.
+//! 제외하며, 이 시험도 같은 값을 확인해 이중으로 막는다. 단, 별도로 만든 독립 1-up
+//! Print PDF의 논리 쪽 대응을 전쪽 Native/fresh WASM 98% 이상으로 검증한 등록은
+//! 원본/PDF/양쪽 TSV의 SHA와 모든 쪽을 확인한 뒤 정확한 쪽수 대조를 유지한다.
 //!
 //! **정답지의 용지 방향 같은 간접 신호로 추측하지 않는다.** 세로로 뽑힌 정답지를 2-up 으로
 //! 오인하면 진짜 불일치를 삼킨다 — 픽스처를 만들며 실제로 겪었다(`hancom-hwp/hwpx-02.hwp`
@@ -56,6 +68,13 @@ use std::time::{Duration, Instant};
 use rhwp::document_core::DocumentCore;
 use rhwp::model::document::print_method_implies_nup;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+
+mod logical_page_reference {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/support/oracle_logical_page_reference.rs"
+    ));
+}
 
 const BASELINE_PATH: &str = "tests/fixtures/oracle_page_count_baseline.tsv";
 const PARTITIONS: usize = 16;
@@ -259,6 +278,8 @@ fn partition_rows(
 fn page_counts_do_not_drift_from_hancom_oracle_partition(part: usize) {
     let baseline = load_baseline();
     let root = repo_root();
+    let logical_pages = logical_page_reference::load(&root)
+        .unwrap_or_else(|e| panic!("독립 논리 쪽 참조 검증 실패: {e}"));
     let buckets = partition_rows(
         &root,
         baseline
@@ -299,10 +320,10 @@ fn page_counts_do_not_drift_from_hancom_oracle_partition(part: usize) {
                         elapsed.as_secs_f64()
                     );
                 }
-                if nup {
-                    // 픽스처 생성 단계에서 제외되므로 여기 오면 문서 해석이 바뀐 것이다.
+                if nup && logical_pages.get(rel).is_none_or(|pages| row.oracle != [*pages]) {
+                    // 선언만으로 물리 PDF를 논리 쪽수와 비교하지 않는다.
                     failures.lock().unwrap().push(format!(
-                        "{rel}: 모아 찍기 선언이 새로 생겼다 — 기준선에서 빼야 한다"
+                        "{rel}: 모아 찍기 선언이 있으며 검증한 독립 1-up 논리 쪽 참조가 없다"
                     ));
                     continue;
                 }

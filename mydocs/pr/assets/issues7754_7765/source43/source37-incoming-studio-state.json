@@ -1,0 +1,253 @@
+{
+  "started": 1795320169.7469897,
+  "pid": 1792417,
+  "results": [
+    {
+      "role": "base",
+      "label": "split-original-hft",
+      "source_head": "1a27faacff48ea7329e76ce8eca15aa9ca8aa877",
+      "wasm_sha256": "abdae9325eaa4df812872d80d03f388cb4a7b9d6cacf9323e8bfbf07bd4e3445",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_studio_with_frozen_pkg.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-base1a27",
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/studio_split_hft_probe.mjs",
+        "--mode=headless"
+      ],
+      "exit_code": 0,
+      "seconds": 99.31635829992592,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-base-studio-split-original-hft.log"
+    },
+    {
+      "role": "base",
+      "label": "memo-ui-9011",
+      "source_head": "1a27faacff48ea7329e76ce8eca15aa9ca8aa877",
+      "wasm_sha256": "abdae9325eaa4df812872d80d03f388cb4a7b9d6cacf9323e8bfbf07bd4e3445",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_studio_with_frozen_pkg.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-base1a27",
+        "/usr/local/bin/node",
+        "e2e/memo-ui-issue9011.test.mjs",
+        "--mode=headless"
+      ],
+      "exit_code": 0,
+      "seconds": 37.301533746067435,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-base-studio-memo-ui-9011.log"
+    },
+    {
+      "role": "base",
+      "label": "body-paste-8197",
+      "source_head": "1a27faacff48ea7329e76ce8eca15aa9ca8aa877",
+      "wasm_sha256": "abdae9325eaa4df812872d80d03f388cb4a7b9d6cacf9323e8bfbf07bd4e3445",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_studio_with_frozen_pkg.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-base1a27",
+        "/usr/local/bin/node",
+        "e2e/body-plain-text-paste-issue8197.test.mjs",
+        "--mode=headless"
+      ],
+      "exit_code": 0,
+      "seconds": 30.11115309712477,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-base-studio-body-paste-8197.log"
+    },
+    {
+      "role": "base",
+      "label": "host-font-input-9174",
+      "source_head": "1a27faacff48ea7329e76ce8eca15aa9ca8aa877",
+      "wasm_sha256": "abdae9325eaa4df812872d80d03f388cb4a7b9d6cacf9323e8bfbf07bd4e3445",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_studio_with_frozen_pkg.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-base1a27",
+        "/usr/local/bin/node",
+        "e2e/host-font-input-issue9165.test.mjs",
+        "--mode=headless"
+      ],
+      "exit_code": 0,
+      "seconds": 40.023124729981646,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-base-studio-host-font-input-9174.log"
+    },
+    {
+      "role": "base",
+      "label": "host-provider-canvas2d",
+      "source_head": "1a27faacff48ea7329e76ce8eca15aa9ca8aa877",
+      "wasm_sha256": "abdae9325eaa4df812872d80d03f388cb4a7b9d6cacf9323e8bfbf07bd4e3445",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_studio_with_frozen_pkg.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-base1a27",
+        "/usr/local/bin/node",
+        "e2e/host-font-provider-issue7403.test.mjs",
+        "--mode=headless",
+        "--renderer=canvas2d"
+      ],
+      "exit_code": 0,
+      "seconds": 79.58720209798776,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-base-studio-host-provider-canvas2d.log"
+    },
+    {
+      "role": "base",
+      "label": "host-provider-canvaskit",
+      "source_head": "1a27faacff48ea7329e76ce8eca15aa9ca8aa877",
+      "wasm_sha256": "abdae9325eaa4df812872d80d03f388cb4a7b9d6cacf9323e8bfbf07bd4e3445",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_studio_with_frozen_pkg.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-base1a27",
+        "/usr/local/bin/node",
+        "e2e/host-font-provider-issue7403.test.mjs",
+        "--mode=headless",
+        "--renderer=canvaskit"
+      ],
+      "exit_code": 0,
+      "seconds": 36.68259302992374,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-base-studio-host-provider-canvaskit.log"
+    },
+    {
+      "role": "base",
+      "label": "ruler-document-switch",
+      "source_head": "1a27faacff48ea7329e76ce8eca15aa9ca8aa877",
+      "wasm_sha256": "abdae9325eaa4df812872d80d03f388cb4a7b9d6cacf9323e8bfbf07bd4e3445",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_studio_with_frozen_pkg.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-base1a27",
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/ruler_document_switch_with_font_choice.mjs",
+        "--mode=headless"
+      ],
+      "exit_code": 0,
+      "seconds": 21.32724469783716,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-base-studio-ruler-document-switch.log"
+    },
+    {
+      "role": "candidate",
+      "label": "split-original-hft",
+      "source_head": "68b4f6bdfda465aaafd0634c587cd6a17252fed6",
+      "wasm_sha256": "76f7c64d27fe8fbbd7bd5baa2fdb3d30af9c8014fd16fb6b83afc498907ba7e3",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_studio_with_frozen_pkg.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37",
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/studio_split_hft_probe.mjs",
+        "--mode=headless"
+      ],
+      "exit_code": 0,
+      "seconds": 83.24650398897938,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source37-candidate-studio-split-original-hft.log"
+    },
+    {
+      "role": "candidate",
+      "label": "memo-ui-9011",
+      "source_head": "68b4f6bdfda465aaafd0634c587cd6a17252fed6",
+      "wasm_sha256": "76f7c64d27fe8fbbd7bd5baa2fdb3d30af9c8014fd16fb6b83afc498907ba7e3",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_studio_with_frozen_pkg.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37",
+        "/usr/local/bin/node",
+        "e2e/memo-ui-issue9011.test.mjs",
+        "--mode=headless"
+      ],
+      "exit_code": 0,
+      "seconds": 25.303977167932317,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source37-candidate-studio-memo-ui-9011.log"
+    },
+    {
+      "role": "candidate",
+      "label": "body-paste-8197",
+      "source_head": "68b4f6bdfda465aaafd0634c587cd6a17252fed6",
+      "wasm_sha256": "76f7c64d27fe8fbbd7bd5baa2fdb3d30af9c8014fd16fb6b83afc498907ba7e3",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_studio_with_frozen_pkg.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37",
+        "/usr/local/bin/node",
+        "e2e/body-plain-text-paste-issue8197.test.mjs",
+        "--mode=headless"
+      ],
+      "exit_code": 0,
+      "seconds": 24.33741130004637,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source37-candidate-studio-body-paste-8197.log"
+    },
+    {
+      "role": "candidate",
+      "label": "host-font-input-9174",
+      "source_head": "68b4f6bdfda465aaafd0634c587cd6a17252fed6",
+      "wasm_sha256": "76f7c64d27fe8fbbd7bd5baa2fdb3d30af9c8014fd16fb6b83afc498907ba7e3",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_studio_with_frozen_pkg.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37",
+        "/usr/local/bin/node",
+        "e2e/host-font-input-issue9165.test.mjs",
+        "--mode=headless"
+      ],
+      "exit_code": 0,
+      "seconds": 23.980379377957433,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source37-candidate-studio-host-font-input-9174.log"
+    },
+    {
+      "role": "candidate",
+      "label": "host-provider-canvas2d",
+      "source_head": "68b4f6bdfda465aaafd0634c587cd6a17252fed6",
+      "wasm_sha256": "76f7c64d27fe8fbbd7bd5baa2fdb3d30af9c8014fd16fb6b83afc498907ba7e3",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_studio_with_frozen_pkg.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37",
+        "/usr/local/bin/node",
+        "e2e/host-font-provider-issue7403.test.mjs",
+        "--mode=headless",
+        "--renderer=canvas2d"
+      ],
+      "exit_code": 0,
+      "seconds": 70.81323879910633,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source37-candidate-studio-host-provider-canvas2d.log"
+    },
+    {
+      "role": "candidate",
+      "label": "host-provider-canvaskit",
+      "source_head": "68b4f6bdfda465aaafd0634c587cd6a17252fed6",
+      "wasm_sha256": "76f7c64d27fe8fbbd7bd5baa2fdb3d30af9c8014fd16fb6b83afc498907ba7e3",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_studio_with_frozen_pkg.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37",
+        "/usr/local/bin/node",
+        "e2e/host-font-provider-issue7403.test.mjs",
+        "--mode=headless",
+        "--renderer=canvaskit"
+      ],
+      "exit_code": 0,
+      "seconds": 26.449062749976292,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source37-candidate-studio-host-provider-canvaskit.log"
+    },
+    {
+      "role": "candidate",
+      "label": "ruler-document-switch",
+      "source_head": "68b4f6bdfda465aaafd0634c587cd6a17252fed6",
+      "wasm_sha256": "76f7c64d27fe8fbbd7bd5baa2fdb3d30af9c8014fd16fb6b83afc498907ba7e3",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_studio_with_frozen_pkg.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37",
+        "/usr/local/bin/node",
+        "e2e/ruler-document-switch.test.mjs",
+        "--mode=headless"
+      ],
+      "exit_code": 1,
+      "seconds": 190.74582702410407,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source37-candidate-studio-ruler-document-switch.log"
+    }
+  ],
+  "base_reuse_receipt": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-incoming-studio-base-state.json",
+  "running": null,
+  "complete": true,
+  "passed": false,
+  "ended": 1795329141.123336
+}

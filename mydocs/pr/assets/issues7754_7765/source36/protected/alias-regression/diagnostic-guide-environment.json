@@ -1,0 +1,91 @@
+{
+  "id": "declared-program-a2952db593aa839b792f28470be6938dc34df5de31d79861b658b8e0e6eac763-selected-family-query-diagnostic",
+  "preserveSourceMetrics": true,
+  "selectedPrograms": {
+    "HCI Poppy": {
+      "family": "HCI Poppy",
+      "openTypeCff": true,
+      "programId": "629bb8256586eaad663399a52c294f12510847527d1933b3c38c682b29af8433",
+      "query": "HCI Poppy",
+      "trueType": false
+    },
+    "명조": {
+      "family": "Myeongjo",
+      "openTypeCff": true,
+      "programId": "273a2975151dbf480c5784f8b57a76287898c0554b37a4b329005b97e2e4d1f6",
+      "query": "명조",
+      "trueType": false
+    },
+    "산세리프": {
+      "family": "Sans Serif",
+      "openTypeCff": true,
+      "programId": "816b002869f513df2be25cc02d4269407c4858653eb449c59239d21b2e6078e1",
+      "query": "산세리프",
+      "trueType": false
+    },
+    "샘물": {
+      "family": "Saemmul",
+      "openTypeCff": true,
+      "programId": "45f1b810ec6fe05b42a6a0b4acdf4425293f11113a49dc835dd1ad3af623e330",
+      "query": "샘물",
+      "trueType": false
+    },
+    "시스템": {
+      "family": "System",
+      "openTypeCff": true,
+      "programId": "ed3563d6c0a0cb5438fa9582f62e2b2c39a3ab896c2bd5d4db2c71636e9afe02",
+      "query": "시스템",
+      "trueType": false
+    },
+    "한양견고딕": {
+      "family": "HY Gyeongothic",
+      "openTypeCff": true,
+      "programId": "3e303c073fa50cfb35c05d1972ae2aefcf472c396b9f29fa46fb952cfbf782b2",
+      "query": "한양견고딕",
+      "trueType": false
+    },
+    "한양견명조": {
+      "family": "HY Gyeonmyeongjo",
+      "openTypeCff": true,
+      "programId": "ba5e752c517e6aa831489ee0f6ff33e1fff540984f4162ab31f4db2ef8794436",
+      "query": "한양견명조",
+      "trueType": false
+    },
+    "한양신명조": {
+      "family": "HY Sinmyeongjo",
+      "openTypeCff": true,
+      "programId": "8a2bf911559bb4cecd47f2a82a1fe8d65ac80cc94cd6d0ebce66b94a409cc865",
+      "query": "HY Sinmyeongjo",
+      "trueType": false
+    },
+    "한양중고딕": {
+      "family": "HY Junggothic",
+      "openTypeCff": true,
+      "programId": "1fd7e301e828b77b80781953d7e1fced20086ccd0cb81a38ccf96915be5e1842",
+      "query": "한양중고딕",
+      "trueType": false
+    },
+    "휴먼명조": {
+      "family": "휴먼명조",
+      "openTypeCff": false,
+      "programId": "f44febee110ef64620a17f9e884aac284878aef1bdf3cb3f41bc9efb462e629e",
+      "query": "휴먼명조",
+      "trueType": true
+    }
+  },
+  "substitutions": {
+    "HCI Poppy": "HCI Poppy",
+    "명조": "Myeongjo",
+    "산세리프": "Sans Serif",
+    "샘물": "Saemmul",
+    "시스템": "System",
+    "한양견고딕": "HY Gyeongothic",
+    "한양견명조": "HY Gyeonmyeongjo",
+    "한양신명조": "HY Sinmyeongjo",
+    "한양중고딕": "HY Junggothic",
+    "휴먼명조": "휴먼명조"
+  },
+  "trueTypeFaces": [
+    "휴먼명조"
+  ]
+}

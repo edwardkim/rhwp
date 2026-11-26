@@ -1,0 +1,75 @@
+{
+  "scope": "Read-only font supply inventory; Windows rhwp direct PDF feature tests remain excluded",
+  "files": [
+    {
+      "path": "C:\\Windows\\Fonts\\batang.ttc",
+      "sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+      "name": "batang.ttc",
+      "bytes": 16271112,
+      "matches_canonical": false
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\gulim.ttc",
+      "sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+      "name": "gulim.ttc",
+      "bytes": 13531200,
+      "matches_canonical": false
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\cour.ttf",
+      "sha256": "93c3ff526c19d03496c01c6a1bfd1031f97af021a13e859a89dfc717a0b6b6ec",
+      "name": "cour.ttf",
+      "bytes": 806504,
+      "matches_canonical": false
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\courbd.ttf",
+      "sha256": "716c08d704f154870bd9fb78b185d0b644912301dfa9c9e6daf45bdb4832a299",
+      "name": "courbd.ttf",
+      "bytes": 805244,
+      "matches_canonical": false
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\courbi.ttf",
+      "sha256": "8fdb188252a2db0f020c89831bddb61cadfe290c3616fe534479b4d3b10d09c1",
+      "name": "courbi.ttf",
+      "bytes": 577488,
+      "matches_canonical": false
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\couri.ttf",
+      "sha256": "5861588608d3a3775d921a7e4acb8362b21630c6b63718bc68adb7137ce53beb",
+      "name": "couri.ttf",
+      "bytes": 667440,
+      "matches_canonical": false
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\times.ttf",
+      "sha256": "2cff2a03d8034801979dd6d16f09b9a825c3d710fcf068f2ebfbf0e1425c87cf",
+      "name": "times.ttf",
+      "bytes": 1195688,
+      "matches_canonical": false
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\timesbd.ttf",
+      "sha256": "621b4a765fef5d255d19530f4bf936104c6519f2e232a0eef1923474e5b9cf22",
+      "name": "timesbd.ttf",
+      "bytes": 1175904,
+      "matches_canonical": false
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\timesbi.ttf",
+      "sha256": "2852329a38acf9252504669d9c23d5e88366cf77e8209d508f5e7198639648ea",
+      "name": "timesbi.ttf",
+      "bytes": 881860,
+      "matches_canonical": false
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\timesi.ttf",
+      "sha256": "3a1c2bc8528bfa432e0414d4ec69bf5813563c474e16a9ad0f57ca262f8d24a2",
+      "name": "timesi.ttf",
+      "bytes": 940288,
+      "matches_canonical": false
+    }
+  ]
+}

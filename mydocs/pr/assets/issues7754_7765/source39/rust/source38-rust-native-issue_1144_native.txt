@@ -1,0 +1,10 @@
+[RustTestSuite] issue_1144_native -> issue_1144_native
+[RustTestSuite] cargo nextest run --locked --test issue_1144_native --cargo-profile release-test --target-dir /home/tsjang/rhwp/target/pr-review --features native-skia --test-threads 12 --no-fail-fast
+   Compiling rhwp v0.9.1 (/home/tsjang/rhwp-worktrees/task-7754-rebase-5665)
+    Finished `release-test` profile [optimized] target(s) in 11.32s
+────────────
+ Nextest run ID f91161c7-7670-4815-a6e8-9ba0b526d303 with nextest profile: default
+    Starting 1 test across 1 binary
+        PASS [   0.101s] (1/1) rhwp::issue_1144_native issue_1144_skia_png_export_entrypoint_does_not_freeze_filename_context
+────────────
+     Summary [   0.102s] 1 test run: 1 passed, 0 skipped

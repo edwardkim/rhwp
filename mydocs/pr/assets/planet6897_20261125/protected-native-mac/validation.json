@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "previous_source": "049fd5ed2fa1b9647c5c44aaa1bf73ded7d0cf54",
+  "candidate_renderer_source": "8355876d60cb96ff9ec36104202aef208aec7df1",
+  "candidate_source_note": "Native 바이너리는 구두점 보정의 제품 소스 변경으로 먼저 빌드했다. 연결 커밋은 같은 제품 로직과 주석·집중 검사를 포함한다.",
+  "pala_sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+  "native_comparisons": [
+    {
+      "key": "decree",
+      "backend": "native-skia",
+      "pages": 74,
+      "original": {
+        "path": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+        "sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617"
+      },
+      "reference_pdf": {
+        "path": "pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+        "sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9"
+      },
+      "dpi": 96,
+      "compat": "2022",
+      "rasterizer_policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "metric": "silhouette_raw_match_percent",
+      "radius_px": 2,
+      "font_environment_sha256": "751a9c20401b9da40d711240848035806055b7dcd4830e9339d9801fb6031fcf",
+      "ordered_font_sha256": [
+        "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+        "49dd1ef0caa6989a7dd95b484fdd052cbc846f6514c0c08421ed03a6cb1669cc",
+        "820d3212f688b546a327ea43a7202e3379cdbbd767ebac9753997e3f3d285171",
+        "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+        "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d"
+      ],
+      "previous_native_binary_sha256": "36f2cff6ab0d910ac7d041fc9d2063ead9a9aa1ba5b660d78819716552c570ff",
+      "candidate_native_binary_sha256": "785fb53155f7c501a3b745b79797e33695f0f69c3febccefd87234493a5a6d22",
+      "candidate_capture_worktree_head": "ce65c8ce7c1a586d7ec64984b4dc336f273bdfa0",
+      "candidate_tsv": "mydocs/pr/assets/planet6897_20261125/protected-native-mac/decree/silhouette.tsv",
+      "candidate_tsv_sha256": "66433cdacda5567ec1afa2ba8f8d5db06247bda10f9a64a5e6f945d6bf08021d",
+      "candidate_minimum_display": "99.90",
+      "same_supply_display_changes": [],
+      "different_png_pages": []
+    },
+    {
+      "key": "nested",
+      "backend": "native-skia",
+      "pages": 17,
+      "original": {
+        "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+        "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626"
+      },
+      "reference_pdf": {
+        "path": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+        "sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b"
+      },
+      "dpi": 96,
+      "compat": "2022",
+      "rasterizer_policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "metric": "silhouette_raw_match_percent",
+      "radius_px": 2,
+      "font_environment_sha256": "e038a1dc0793cdc43a40eeaeefe83d72baf5f92448a4fb4b98b523f729bb6159",
+      "ordered_font_sha256": [
+        "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9",
+        "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+        "be6bb7a453d15aa9aebe230925fff89641b1cea1331db880257d087f6939c81c",
+        "6055db675c538c216942788d7b83c8812c955d5bef37c2d6903a5cdb00c2930b",
+        "97cf924058802123f52b26e365f5d9bfe35d379cb4ccab688285179e8e39b3f2",
+        "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5",
+        "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+        "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002",
+        "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+        "4e7f536a6715270e06c6cc3b5474456007c193a7754131335195286d889f6757",
+        "a49e5cb16f806afef0e69f05c3c3668dda3db90e3229a9a3cd2d1f83995e34d4",
+        "cf8614cb09e038ff24c0edb2ba2cfa6b8911c7c913cfe590e7e56014e7e63e5a",
+        "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+        "87c4cd1acd713cca565bd34694b2df5aa3240d6ef8c8d178b6b36782cd46edd2",
+        "c9825ad4daaea9809b50dfeb0f1145a2ddccbbccbdd076e491d0570ea38d5ce3",
+        "e3601c10b4ffd156c14d1e0138cd7ab5fd439214347d8883c6524a39cbc2a5a5",
+        "678e0724266842b469ccee25e4f089c24cb78de8698cc4054248fb76776a1198",
+        "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+        "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c",
+        "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+        "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab"
+      ],
+      "previous_native_binary_sha256": "36f2cff6ab0d910ac7d041fc9d2063ead9a9aa1ba5b660d78819716552c570ff",
+      "candidate_native_binary_sha256": "785fb53155f7c501a3b745b79797e33695f0f69c3febccefd87234493a5a6d22",
+      "candidate_capture_worktree_head": "ce65c8ce7c1a586d7ec64984b4dc336f273bdfa0",
+      "candidate_tsv": "mydocs/pr/assets/planet6897_20261125/protected-native-mac/nested/silhouette.tsv",
+      "candidate_tsv_sha256": "bbc2d3d1346b20d67d12fcb4e56839581437e41d50d160c5f0f198116c5aa487",
+      "candidate_minimum_display": "99.64",
+      "same_supply_display_changes": [],
+      "different_png_pages": []
+    }
+  ],
+  "approval_scope": "시행령 4쪽과 중첩 표 10쪽의 Native 보호값만 기존 100.00에서 실측 표시값으로 조정한다."
+}

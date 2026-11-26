@@ -1,0 +1,64 @@
+{
+  "fixed_base": "d7b5286cbf6401678a70eed3d66236a68dd2a72c",
+  "source_head": "19646e69fc99ba76f9ff0350c2a425fe07ec1e88",
+  "dpi": 96,
+  "compat": "2022",
+  "raw_radius_px": 2,
+  "profile": "print",
+  "pages": 9,
+  "declines": [],
+  "results": [
+    {
+      "backend": "native",
+      "variant": "base",
+      "exit": 1,
+      "tsv_sha256": "baf5c5b566600fa66edb7be31f57f2ca36e16a7b24f804fc8a125583ad3f0e1f",
+      "minimum": "86.99",
+      "p4": "86.99",
+      "pages": {
+        "1": "100.00",
+        "2": "99.99",
+        "3": "99.90",
+        "4": "86.99",
+        "5": "99.85",
+        "6": "99.91",
+        "7": "99.80",
+        "8": "99.93",
+        "9": "99.78"
+      },
+      "below_98": [
+        4
+      ],
+      "native_sha256": "ce06101fc8271df1e456c4aab8da1882cf4d48f58d22729fb8453d193dd2c519",
+      "wasm_sha256": null,
+      "input_sha256": "45d1785c7c6db19dc595af3a3a66b5f60d820407db16331d3a43403b01ede8eb",
+      "pdf_sha256": "d1da90986b7aeffff25765075c4e3c1a5f3d70755af13a1fa060be861610554b",
+      "tsv": "base-silhouette.tsv"
+    },
+    {
+      "backend": "native",
+      "variant": "candidate",
+      "exit": 0,
+      "tsv_sha256": "3b3b089773c9585d64a7a66a6d08553cae3ba385cb66caca65f2e57cec77015f",
+      "minimum": "99.78",
+      "p4": "99.93",
+      "pages": {
+        "1": "100.00",
+        "2": "99.99",
+        "3": "99.90",
+        "4": "99.93",
+        "5": "99.85",
+        "6": "99.91",
+        "7": "99.80",
+        "8": "99.93",
+        "9": "99.78"
+      },
+      "below_98": [],
+      "native_sha256": "fe91bd066efaf1f8b01becf3a1faaa1b6260834c8ebaabbd5a9df3f5a7996892",
+      "wasm_sha256": null,
+      "input_sha256": "45d1785c7c6db19dc595af3a3a66b5f60d820407db16331d3a43403b01ede8eb",
+      "pdf_sha256": "d1da90986b7aeffff25765075c4e3c1a5f3d70755af13a1fa060be861610554b",
+      "tsv": "silhouette.tsv"
+    }
+  ]
+}

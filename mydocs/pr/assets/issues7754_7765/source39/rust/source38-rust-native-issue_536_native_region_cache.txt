@@ -1,0 +1,47 @@
+[RustTestSuite] issue_536_native_region_cache -> regression_suite_004::issue_536_native_region_cache
+[RustTestSuite] cargo nextest run --locked --test regression_suite_004 -E test(/(^|::)issue_536_native_region_cache::/) --cargo-profile release-test --target-dir /home/tsjang/rhwp/target/pr-review --features native-skia --test-threads 12 --no-fail-fast
+    Finished `release-test` profile [optimized] target(s) in 0.36s
+────────────
+ Nextest run ID 9c696510-35c4-44d6-a0b4-652ef55b6be9 with nextest profile: default
+    Starting 39 tests across 1 binary (290 tests skipped)
+        PASS [   0.043s] ( 1/39) rhwp::regression_suite_004 issue_536_native_region_cache::cold_fixed_tiles_match_with_culling_enabled_or_disabled
+        PASS [   0.055s] ( 2/39) rhwp::regression_suite_004 issue_536_native_region_cache::a_large_page_renders_a_small_tile_without_a_full_page_bitmap
+        PASS [   0.074s] ( 3/39) rhwp::regression_suite_004 issue_536_native_region_cache::distinct_pages_keep_their_own_exact_full_page_crops_on_warm_round_trips
+        PASS [   0.102s] ( 4/39) rhwp::regression_suite_004 issue_536_native_region_cache::entry_cap_evicts_the_least_recently_used_scale_after_a_successful_hit
+        PASS [   0.110s] ( 5/39) rhwp::regression_suite_004 issue_536_native_region_cache::invalid_requests_and_rejected_updates_preserve_all_entries_and_lru_order
+        PASS [   0.112s] ( 6/39) rhwp::regression_suite_004 issue_536_native_region_cache::an_oversized_page_evicts_all_retained_pages_before_bypassing_retention
+        PASS [   0.118s] ( 7/39) rhwp::regression_suite_004 issue_536_native_region_cache::cooperative_tiled_cancellation_discards_partial_frames_and_retains_complete_tiles
+        PASS [   0.102s] ( 8/39) rhwp::regression_suite_004 issue_536_native_region_cache::native_cache_budget_bypass_and_disable_preserve_pixels_without_retention
+        PASS [   0.145s] ( 9/39) rhwp::regression_suite_004 issue_536_native_region_cache::a_page_above_the_retention_cap_evicts_the_old_entry_and_replays_on_each_request
+        PASS [   0.093s] (10/39) rhwp::regression_suite_004 issue_536_native_region_cache::native_page_and_tile_snapshots_share_one_retained_byte_budget
+        PASS [   0.149s] (11/39) rhwp::regression_suite_004 issue_536_native_region_cache::composition_preview_and_cancel_invalidate_without_leaving_a_stale_cached_page
+        PASS [   0.046s] (12/39) rhwp::regression_suite_004 issue_536_native_region_cache::native_thin_page_tile_metadata_cap_evicts_even_below_the_byte_budget
+        PASS [   0.160s] (13/39) rhwp::regression_suite_004 issue_536_native_region_cache::font_generation_change_invalidates_even_when_document_revision_is_unchanged
+        PASS [   0.096s] (14/39) rhwp::regression_suite_004 issue_536_native_region_cache::native_page_entry_cap_counts_pages_separately_from_retained_tiles
+        PASS [   0.190s] (15/39) rhwp::regression_suite_004 issue_536_native_region_cache::edits_undo_and_redo_invalidate_region_snapshots_and_stamp_new_revision
+        PASS [   0.090s] (16/39) rhwp::regression_suite_004 issue_536_native_region_cache::native_tile_byte_limit_evicts_the_least_recently_used_tile
+        PASS [   0.042s] (17/39) rhwp::regression_suite_004 issue_536_native_region_cache::one_tile_matches_the_existing_full_page_raster_and_padding_policy
+        PASS [   0.132s] (18/39) rhwp::regression_suite_004 issue_536_native_region_cache::native_page_round_trips_and_scale_keys_reuse_snapshots_until_explicit_clear
+        PASS [   0.125s] (19/39) rhwp::regression_suite_004 issue_536_native_region_cache::native_regions_replay_once_then_reuse_one_bounded_page_for_moving_windows
+        PASS [   0.095s] (20/39) rhwp::regression_suite_004 issue_536_native_region_cache::native_tiled_frames_allow_high_scale_and_preserve_the_page_cache
+        PASS [   0.105s] (21/39) rhwp::regression_suite_004 issue_536_native_region_cache::native_tile_disable_and_oversized_bypass_keep_uncached_pixels
+        PASS [   0.046s] (22/39) rhwp::regression_suite_004 issue_536_native_region_cache::prepared_snapshot_owns_pixels_after_renderer_and_tree_are_dropped
+        PASS [   0.115s] (23/39) rhwp::regression_suite_004 issue_536_native_region_cache::native_tiled_off_page_clear_preserves_retained_snapshots_without_replay
+        PASS [   0.108s] (24/39) rhwp::regression_suite_004 issue_536_native_region_cache::off_page_requests_do_not_replay_or_replace_small_retained_pages
+        PASS [   0.060s] (25/39) rhwp::regression_suite_004 issue_536_native_region_cache::prepared_off_page_reads_count_retained_pixels_in_peak_budget_before_allocating
+        PASS [   0.057s] (26/39) rhwp::regression_suite_004 issue_536_native_region_cache::preparing_a_wholly_off_page_request_avoids_an_oversized_working_bitmap
+        PASS [   0.147s] (27/39) rhwp::regression_suite_004 issue_536_native_region_cache::native_tiled_warm_frames_keep_pixels_and_skip_replay
+        PASS [   0.064s] (28/39) rhwp::regression_suite_004 issue_536_native_region_cache::prepared_snapshot_reads_fractional_aa_gradient_and_clip_regions_exactly
+        PASS [   0.063s] (29/39) rhwp::regression_suite_004 issue_536_native_region_cache::print_fill_snapping_matches_without_culling_at_clip_edges
+        PASS [   0.059s] (30/39) rhwp::regression_suite_004 issue_536_native_region_cache::proven_off_clip_subtree_is_skipped_without_changing_pixels
+        PASS [   0.159s] (31/39) rhwp::regression_suite_004 issue_536_native_region_cache::native_tiles_keep_page_and_exact_scale_keys_separate
+        PASS [   0.064s] (32/39) rhwp::regression_suite_004 issue_536_native_region_cache::runtime_contracts::tiled_runtime_uses_large_page_tiles_and_exposes_combined_raster_cache
+        PASS [   0.144s] (33/39) rhwp::regression_suite_004 issue_536_native_region_cache::overlapping_native_tiled_windows_replay_only_new_grid_tiles
+        PASS [   0.043s] (34/39) rhwp::regression_suite_004 issue_536_native_region_cache::unknown_shadow_bounds_are_replayed_even_outside_the_clip
+        PASS [   0.077s] (35/39) rhwp::regression_suite_004 issue_536_native_region_cache::stroke_floor_and_antialiasing_near_clip_survive_culling_at_fractional_scales
+        PASS [   0.078s] (36/39) rhwp::regression_suite_004 issue_536_native_region_cache::runtime_contracts::worker_output_budget_matches_actual_exact_and_tiled_frame_geometry
+        PASS [   0.104s] (37/39) rhwp::regression_suite_004 issue_536_native_region_cache::rejected_native_tiled_requests_preserve_snapshots_counters_and_recency
+        PASS [   0.096s] (38/39) rhwp::regression_suite_004 issue_536_native_region_cache::total_byte_cap_evicts_the_least_recently_used_page_before_the_entry_cap
+        PASS [   0.594s] (39/39) rhwp::regression_suite_004 issue_536_native_region_cache::fixed_grid_tiles_keep_overlap_pixels_stable_across_window_and_cache_changes
+────────────
+     Summary [   0.595s] 39 tests run: 39 passed, 290 skipped

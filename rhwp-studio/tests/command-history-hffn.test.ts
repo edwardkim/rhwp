@@ -84,9 +84,9 @@ test('onCompositionEnd 게이트가 HF/FN 을 기록에서 제외하지 않는�
     'compositionEnd 게이트가 HF/FN 을 다시 배제함 → IME 편집 미기록(데이터 손실)',
   );
   // HF/FN 조합 결과를 실제로 record 한다.
-  assert.match(textSrc, /new InsertTextInHeaderFooterCommand\(target,[^)]*composed\)/,
+  assert.match(textSrc, /new InsertTextInHeaderFooterCommand\(target,[^)]*composed, areaStart\)/,
     'compositionEnd 에서 HF 조합 텍스트를 기록해야 함');
-  assert.match(textSrc, /new InsertTextInFootnoteCommand\(target,[^)]*composed\)/,
+  assert.match(textSrc, /new InsertTextInFootnoteCommand\(target,[^)]*composed, areaStart\)/,
     'compositionEnd 에서 FN 조합 텍스트를 기록해야 함');
 });
 

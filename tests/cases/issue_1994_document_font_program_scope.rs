@@ -287,7 +287,7 @@ fn slot_selected_face_query_precedes_shared_family() {
 }
 
 #[test]
-fn automatic_hft_program_identity_preserves_its_canonical_paint_alias() {
+fn automatic_legacy_program_identity_preserves_its_canonical_paint_alias() {
     let mut core = selected_program_core();
     let mut document = core.document().clone();
     for fonts in &mut document.doc_info.font_faces {
@@ -313,7 +313,7 @@ fn automatic_hft_program_identity_preserves_its_canonical_paint_alias() {
     assert_eq!(
         run.style.font_family.split(',').next(),
         Some("HY Sinmyeongjo"),
-        "자동 HFT 인증은 다른 프로그램에도 대응하는 원본 별칭을 재승격하지 않는다"
+        "자동 선택에서는 여러 프로그램에 대응하는 별칭을 원본의 증거로 쓰지 않는다"
     );
     let mut explicit: Value = serde_json::from_str(&selected).unwrap();
     explicit["preserveSourceMetrics"] = json!(false);

@@ -530,6 +530,7 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
             continue;
         };
         let start = first_range.start;
+        let mut end = start;
         let mut metrics = RowMetrics::default();
         while let Some(Atom::Box(item)) = atoms.get(index) {
             let InlineFlowContent::Text { range, .. } = &item.content else {
@@ -538,6 +539,7 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
             if !word.contains(&range.start) {
                 break;
             }
+            end = range.end;
             metrics = metrics.with(item);
             index += 1;
         }
@@ -545,8 +547,16 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
         if let Some(Atom::Box(next)) = atoms.get(index) {
             if matches!(next.content, InlineFlowContent::Table { .. }) {
                 // 구분 공백 없이 붙은 TAC는 앞 어절의 수용 후보에 속한다.
-                // 후보가 한 줄보다 크면 새 줄에서 개체 앞 경계를 분리한다.
-                storage.insert_tree_map(&mut attached_word_metrics, start, metrics.with(next))?;
+                // 글자의 줄 끝을 허용하는 문단은 결합 폭이 한 줄보다 크면 표 앞에서 나눈다.
+                let can_break = super::composer::can_break_after_text_token(
+                    &chars[start..end],
+                    style.korean_break_unit,
+                );
+                storage.insert_tree_map(
+                    &mut attached_word_metrics,
+                    start,
+                    (metrics.with(next), can_break),
+                )?;
             }
         }
     }
@@ -776,7 +786,10 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
                 let lookahead = match &item.content {
                     InlineFlowContent::Text { range, .. } => attached_word_metrics
                         .get(&range.start)
-                        .copied()
+                        .filter(|(metrics, can_break)| {
+                            !can_break || metrics.width <= row_width + 0.01
+                        })
+                        .map(|(metrics, _)| *metrics)
                         .or_else(|| {
                             word_metrics
                                 .get(&range.start)
@@ -846,6 +859,17 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
             }
         }
     }
+    let paragraph_end_trailing = alignment::paragraph_end_aligned_trailing_spaces(
+        &row,
+        &chars,
+        style.alignment,
+        |char_style| {
+            styles
+                .char_styles
+                .get(char_style as usize)
+                .is_some_and(|cs| cs.underline != crate::model::style::UnderlineType::None)
+        },
+    );
     let Some(()) = finish_row_with_storage(
         &mut result,
         &mut row,
@@ -853,7 +877,7 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
         &exclusions,
         style,
         frame.dpi,
-        RowEnding::ParagraphEnd(&chars),
+        RowEnding::ParagraphEnd(&chars, paragraph_end_trailing),
         float_tail_hung_from,
         storage,
     )?
@@ -919,6 +943,14 @@ fn finish_row_with_storage<S: crate::storage::Storage>(
             .map(|item| item.width)
             .sum::<f64>();
     }
+    // 문단 끝 줄은 호출자가 정한 말미 공백만 정렬 폭에서 뺀다. 상자의 전진량은
+    // 그대로 두어 글자 원점·커서 위치는 바뀌지 않는다.
+    row_metrics.width -= row
+        .iter()
+        .rev()
+        .take(ending.paragraph_end_trimmed_boxes())
+        .map(|item| item.width)
+        .sum::<f64>();
     let row_horizontal = paragraph_row_horizontal(horizontal, style, plan.boxes.is_empty());
     let Some((mut x, y, carved, available_width)) = row_geometry_with_storage(
         row_metrics,
@@ -1454,11 +1486,18 @@ pub(crate) fn plan_square_table_host(
     if !uses_stored_rows
         && !uncached
         && rows.len() == para.line_segs.len()
-        && rows.iter().zip(&para.line_segs).all(|(row, source)| {
-            row.column_start == source.column_start && row.segment_width == source.segment_width
-        })
+        && rows
+            .iter()
+            .zip(&para.line_segs)
+            .enumerate()
+            .all(|(index, (row, source))| {
+                row.text_start == para.line_seg_text_start(index)
+                    && row.column_start == source.column_start
+                    && row.segment_width == source.segment_width
+            })
     {
-        // 같은 물리 구간의 저장 줄은 기존 소유자에게 남긴다.
+        // 같은 물리 상자에서도 문자 경계가 바뀌면 현재 계획을 fit과 배치에 전달한다.
+        // 원문 문자 소속까지 같은 저장 줄만 기존 소유자에게 남긴다.
         return None;
     }
     // 글자 없는 host 의 줄 하나는 개체 조판 부호의 글자 모양까지 든 가장 큰 글자로 높이를

@@ -1,0 +1,526 @@
+{
+  "alpha": {
+    "recovered": {
+      "opened": [
+        {
+          "width": 11844,
+          "height": 13597,
+          "lineAlpha": 0,
+          "fillBgColor": 11066613,
+          "fillAlpha": 255,
+          "shadowAlpha": 0
+        }
+      ],
+      "saves": {
+        "Hwp": [
+          [
+            {
+              "width": 11844,
+              "height": 13597,
+              "lineAlpha": 0,
+              "fillBgColor": 11066613,
+              "fillAlpha": 255,
+              "shadowAlpha": 0
+            }
+          ],
+          [
+            {
+              "width": 11844,
+              "height": 13597,
+              "lineAlpha": 0,
+              "fillBgColor": 11066613,
+              "fillAlpha": 255,
+              "shadowAlpha": 0
+            }
+          ]
+        ],
+        "Hwpx": [
+          [
+            {
+              "width": 11844,
+              "height": 13597,
+              "lineAlpha": 0,
+              "fillBgColor": 11066613,
+              "fillAlpha": 255,
+              "shadowAlpha": 0
+            }
+          ],
+          [
+            {
+              "width": 11844,
+              "height": 13597,
+              "lineAlpha": 0,
+              "fillBgColor": 11066613,
+              "fillAlpha": 255,
+              "shadowAlpha": 0
+            }
+          ]
+        ]
+      }
+    },
+    "original": {
+      "opened": [
+        {
+          "width": 11844,
+          "height": 13597,
+          "lineAlpha": 0,
+          "fillBgColor": 11066613,
+          "fillAlpha": 255,
+          "shadowAlpha": 0
+        }
+      ],
+      "saves": {
+        "Hwp": [
+          [
+            {
+              "width": 11844,
+              "height": 13597,
+              "lineAlpha": 0,
+              "fillBgColor": 11066613,
+              "fillAlpha": 255,
+              "shadowAlpha": 0
+            }
+          ],
+          [
+            {
+              "width": 11844,
+              "height": 13597,
+              "lineAlpha": 0,
+              "fillBgColor": 11066613,
+              "fillAlpha": 255,
+              "shadowAlpha": 0
+            }
+          ]
+        ],
+        "Hwpx": [
+          [
+            {
+              "width": 11844,
+              "height": 13597,
+              "lineAlpha": 0,
+              "fillBgColor": 11066613,
+              "fillAlpha": 255,
+              "shadowAlpha": 0
+            }
+          ],
+          [
+            {
+              "width": 11844,
+              "height": 13597,
+              "lineAlpha": 0,
+              "fillBgColor": 11066613,
+              "fillAlpha": 255,
+              "shadowAlpha": 0
+            }
+          ]
+        ]
+      }
+    },
+    "release": {
+      "opened": [
+        {
+          "width": 11844,
+          "height": 13597,
+          "lineAlpha": 0,
+          "fillBgColor": 11066613,
+          "fillAlpha": 1,
+          "shadowAlpha": 0
+        }
+      ],
+      "saves": {
+        "Hwp": [
+          [
+            {
+              "width": 11844,
+              "height": 13597,
+              "lineAlpha": 0,
+              "fillBgColor": 11066613,
+              "fillAlpha": 1,
+              "shadowAlpha": 0
+            }
+          ],
+          [
+            {
+              "width": 11844,
+              "height": 13597,
+              "lineAlpha": 0,
+              "fillBgColor": 11066613,
+              "fillAlpha": 1,
+              "shadowAlpha": 0
+            }
+          ]
+        ],
+        "Hwpx": [
+          [
+            {
+              "width": 11844,
+              "height": 13597,
+              "lineAlpha": 0,
+              "fillBgColor": 11066613,
+              "fillAlpha": 1,
+              "shadowAlpha": 0
+            }
+          ],
+          [
+            {
+              "width": 11844,
+              "height": 13597,
+              "lineAlpha": 0,
+              "fillBgColor": 11066613,
+              "fillAlpha": 1,
+              "shadowAlpha": 0
+            }
+          ]
+        ]
+      }
+    },
+    "archived": {
+      "opened": [
+        {
+          "width": 11844,
+          "height": 13597,
+          "lineAlpha": 0,
+          "fillBgColor": 11066613,
+          "fillAlpha": 1,
+          "shadowAlpha": 0
+        }
+      ],
+      "saves": {
+        "Hwp": [
+          [
+            {
+              "width": 11844,
+              "height": 13597,
+              "lineAlpha": 0,
+              "fillBgColor": 11066613,
+              "fillAlpha": 1,
+              "shadowAlpha": 0
+            }
+          ],
+          [
+            {
+              "width": 11844,
+              "height": 13597,
+              "lineAlpha": 0,
+              "fillBgColor": 11066613,
+              "fillAlpha": 1,
+              "shadowAlpha": 0
+            }
+          ]
+        ],
+        "Hwpx": [
+          [
+            {
+              "width": 11844,
+              "height": 13597,
+              "lineAlpha": 0,
+              "fillBgColor": 11066613,
+              "fillAlpha": 1,
+              "shadowAlpha": 0
+            }
+          ],
+          [
+            {
+              "width": 11844,
+              "height": 13597,
+              "lineAlpha": 0,
+              "fillBgColor": 11066613,
+              "fillAlpha": 1,
+              "shadowAlpha": 0
+            }
+          ]
+        ]
+      }
+    },
+    "contributorMarked": {
+      "opened": [
+        {
+          "width": 9000,
+          "height": 6000,
+          "lineAlpha": 0,
+          "fillBgColor": 255,
+          "fillAlpha": 255,
+          "shadowAlpha": 0
+        }
+      ],
+      "saves": {
+        "Hwp": [
+          [
+            {
+              "width": 9000,
+              "height": 6000,
+              "lineAlpha": 0,
+              "fillBgColor": 255,
+              "fillAlpha": 255,
+              "shadowAlpha": 0
+            }
+          ],
+          [
+            {
+              "width": 9000,
+              "height": 6000,
+              "lineAlpha": 0,
+              "fillBgColor": 255,
+              "fillAlpha": 255,
+              "shadowAlpha": 0
+            }
+          ]
+        ],
+        "Hwpx": [
+          [
+            {
+              "width": 9000,
+              "height": 6000,
+              "lineAlpha": 0,
+              "fillBgColor": 255,
+              "fillAlpha": 255,
+              "shadowAlpha": 0
+            }
+          ],
+          [
+            {
+              "width": 9000,
+              "height": 6000,
+              "lineAlpha": 0,
+              "fillBgColor": 255,
+              "fillAlpha": 255,
+              "shadowAlpha": 0
+            }
+          ]
+        ]
+      }
+    }
+  },
+  "api": {
+    "bodyArc": {
+      "before": {
+        "args": [
+          0,
+          0,
+          3
+        ],
+        "x": 10100,
+        "y": 8500,
+        "axis": "x",
+        "width": 19000,
+        "height": 17000
+      },
+      "after": {
+        "opened": {
+          "x": 13100,
+          "y": 8500,
+          "axis": "x",
+          "width": 19000,
+          "height": 17000
+        },
+        "saves": {
+          "Hwp": [
+            {
+              "x": 13100,
+              "y": 8500,
+              "axis": "x",
+              "width": 19000,
+              "height": 17000
+            },
+            {
+              "x": 13100,
+              "y": 8500,
+              "axis": "x",
+              "width": 19000,
+              "height": 17000
+            }
+          ],
+          "Hwpx": [
+            {
+              "x": 13100,
+              "y": 8500,
+              "axis": "x",
+              "width": 19000,
+              "height": 17000
+            },
+            {
+              "x": 13100,
+              "y": 8500,
+              "axis": "x",
+              "width": 19000,
+              "height": 17000
+            }
+          ]
+        }
+      }
+    },
+    "cellArc": {
+      "before": {
+        "args": [
+          0,
+          1,
+          "[{\"controlIndex\":0,\"cellIndex\":0,\"cellParaIndex\":0}]",
+          0
+        ],
+        "x": 10304,
+        "y": 8500,
+        "axis": "x",
+        "width": 19000,
+        "height": 17000
+      },
+      "after": {
+        "opened": {
+          "x": 13304,
+          "y": 8500,
+          "axis": "x",
+          "width": 19000,
+          "height": 17000
+        },
+        "saves": {
+          "Hwp": [
+            {
+              "x": 13304,
+              "y": 8500,
+              "axis": "x",
+              "width": 19000,
+              "height": 17000
+            },
+            {
+              "x": 13304,
+              "y": 8500,
+              "axis": "x",
+              "width": 19000,
+              "height": 17000
+            }
+          ],
+          "Hwpx": [
+            {
+              "x": 13304,
+              "y": 8500,
+              "axis": "x",
+              "width": 19000,
+              "height": 17000
+            },
+            {
+              "x": 13304,
+              "y": 8500,
+              "axis": "x",
+              "width": 19000,
+              "height": 17000
+            }
+          ]
+        }
+      }
+    },
+    "bodyOrthogonal": {
+      "before": {
+        "args": [
+          0,
+          0,
+          3
+        ],
+        "x": 10100,
+        "y": 8500,
+        "axis": "x",
+        "width": 19000,
+        "height": 17000
+      },
+      "after": {
+        "opened": {
+          "x": 13100,
+          "y": 8500,
+          "axis": "x",
+          "width": 19000,
+          "height": 17000
+        },
+        "saves": {
+          "Hwp": [
+            {
+              "x": 13100,
+              "y": 8500,
+              "axis": "x",
+              "width": 19000,
+              "height": 17000
+            },
+            {
+              "x": 13100,
+              "y": 8500,
+              "axis": "x",
+              "width": 19000,
+              "height": 17000
+            }
+          ],
+          "Hwpx": [
+            {
+              "x": 13100,
+              "y": 8500,
+              "axis": "x",
+              "width": 19000,
+              "height": 17000
+            },
+            {
+              "x": 13100,
+              "y": 8500,
+              "axis": "x",
+              "width": 19000,
+              "height": 17000
+            }
+          ]
+        }
+      }
+    },
+    "cellOrthogonal": {
+      "before": {
+        "args": [
+          0,
+          1,
+          "[{\"controlIndex\":0,\"cellIndex\":0,\"cellParaIndex\":0}]",
+          0
+        ],
+        "x": 10304,
+        "y": 8500,
+        "axis": "x",
+        "width": 19000,
+        "height": 17000
+      },
+      "after": {
+        "opened": {
+          "x": 13304,
+          "y": 8500,
+          "axis": "x",
+          "width": 19000,
+          "height": 17000
+        },
+        "saves": {
+          "Hwp": [
+            {
+              "x": 13304,
+              "y": 8500,
+              "axis": "x",
+              "width": 19000,
+              "height": 17000
+            },
+            {
+              "x": 13304,
+              "y": 8500,
+              "axis": "x",
+              "width": 19000,
+              "height": 17000
+            }
+          ],
+          "Hwpx": [
+            {
+              "x": 13304,
+              "y": 8500,
+              "axis": "x",
+              "width": 19000,
+              "height": 17000
+            },
+            {
+              "x": 13304,
+              "y": 8500,
+              "axis": "x",
+              "width": 19000,
+              "height": 17000
+            }
+          ]
+        }
+      }
+    }
+  }
+}

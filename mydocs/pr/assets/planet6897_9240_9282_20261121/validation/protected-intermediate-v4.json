@@ -1,0 +1,252 @@
+{
+  "status": "intermediate-before-hnc-double-rule-correction",
+  "baseline_sha256": "7f558bd4a1c8b901001492a977476efe1b1df3165dd3fef220f43ca1f87f55e3",
+  "product": {
+    "source_head": "19646e69fc99ba76f9ff0350c2a425fe07ec1e88",
+    "native_sha256": "fe91bd066efaf1f8b01becf3a1faaa1b6260834c8ebaabbd5a9df3f5a7996892",
+    "wasm_sha256": "1ffb6d28f8e50635c6bdc614bbf42f6b7e1ba666c5b40ebb065a65b39bc7f3fc"
+  },
+  "contributor_gate": [
+    {
+      "key": "seo-re-03-latin",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.0",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "representative_sha256": {
+        "review": "5881cf19f9f338bc640a799341c47ea472c65c5c8ffb1d5b684c76c13e3e1fdc",
+        "overlay": "5d71693b65adc4f8da4603be47b5779fc75f956f33a3110661dfda481342528e"
+      }
+    },
+    {
+      "key": "seo-re-03-latin",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.0",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "representative_sha256": {
+        "review": "10fd1852de090f9deed07f3d00f07cfc573581dcac90ee05adcceb8386686aad",
+        "overlay": "6112c22b8007f586ff5f6a853989c2e354c2987e740f9d07d330978dcb901c08"
+      }
+    },
+    {
+      "key": "angle-narrow",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.0",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "representative_sha256": {
+        "review": "fc569a1f551b40e749c536a9fa8167b2d8ba43e3f497c541a7933af7630f1127",
+        "overlay": "bad2076ac3b2cd803de4a804441f38e2a5f3639ea4c11bcd4d2580476ab314c7"
+      }
+    },
+    {
+      "key": "angle-narrow",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.0",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "representative_sha256": {
+        "review": "66b0f584991aff6c49f676b95febb56c527238b4fdd2c557f3202837c0bfb022",
+        "overlay": "f005a352a1010f14d075fa08c798890b23a3d773b92422dc4ed0414656fc0b45"
+      }
+    },
+    {
+      "key": "seo-pic-crop-01",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "99.99756",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "representative_sha256": {
+        "review": "df5248c3837863609c3385b59f23898d97bbd36b96f40df59d1cfde882cf273c",
+        "overlay": "66403aaaffe871648bd66be9607c3b2fac5a884adfc8d55e4232de50bb841c62"
+      }
+    },
+    {
+      "key": "seo-pic-crop-01",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "99.99756",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "representative_sha256": {
+        "review": "37764373d56f44033d9442d1a9a63acd9a06a5b39c3b69e3e27ced8e05f5dd2b",
+        "overlay": "a9a1430d6fbe87d8eaf3d6f9db75c7d1e442c0071d9ce4ce7261df386be967de"
+      }
+    },
+    {
+      "key": "seo-shape-group-02",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.0",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "representative_sha256": {
+        "review": "b81b21b068d8c1817f14108e9aa84ea1ece53136458f1877ba401bd553a28be9",
+        "overlay": "e36839b6320e613821d513bbf2fbe9384010671e926b07a2f7f8d3c49676f6f3"
+      }
+    },
+    {
+      "key": "seo-shape-group-02",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.0",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "representative_sha256": {
+        "review": "9f18890b2567cb7e19db0f23ef926a54201303a987fa70d62ef626af844febe2",
+        "overlay": "7690fc866c0466d82a2e0f9e5c04e1b17afbfe1107c8b3556c7585137d37ab97"
+      }
+    }
+  ],
+  "wmf_affected_protection": [
+    {
+      "key": "handbook-hwp",
+      "pages": 383,
+      "state": "scores-retained-font-condition-review",
+      "accepted_environment_sha256": "3bc96343dfd2b69422fd9b09661a14723ea1e7158cb3ec5e015d78f408337271",
+      "actual_environment_sha256": "9d1351039b7e802f708c5c1bab199b30c612eaf4ab9a3f9561d2eee1ceb892be",
+      "accepted_font_file_count": 1221,
+      "actual_font_file_count": 1221,
+      "backend": "native",
+      "input_sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+      "print_sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+      "tsv_sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590",
+      "declines": 0,
+      "minimum": "99.97"
+    },
+    {
+      "key": "sample16-hwpx",
+      "pages": 64,
+      "state": "scores-retained-font-condition-review",
+      "accepted_environment_sha256": "300d7233a5527172ad4df993214d791fe214a69cf6e36017a637ca7cb928d183",
+      "actual_environment_sha256": "300d7233a5527172ad4df993214d791fe214a69cf6e36017a637ca7cb928d183",
+      "accepted_font_file_count": 1220,
+      "actual_font_file_count": 1219,
+      "backend": "native",
+      "input_sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+      "print_sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "declines": 0,
+      "minimum": "99.99"
+    },
+    {
+      "key": "sample16-hwp2022",
+      "pages": 64,
+      "state": "scores-retained-font-condition-review",
+      "accepted_environment_sha256": "e64dc04a55787efcbd55dcddd9f7a9fc8454a1df06a20c4cd9e99c9dd88de36b",
+      "actual_environment_sha256": "e64dc04a55787efcbd55dcddd9f7a9fc8454a1df06a20c4cd9e99c9dd88de36b",
+      "accepted_font_file_count": 1220,
+      "actual_font_file_count": 1219,
+      "backend": "native",
+      "input_sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+      "print_sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+      "tsv_sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+      "declines": 0,
+      "minimum": "100.00"
+    },
+    {
+      "key": "sample16-hwp2024",
+      "pages": 64,
+      "state": "scores-retained-font-condition-review",
+      "accepted_environment_sha256": "4fb70119f4959fb6461ed304d4b166c499b58caab0cc428f9fbab5fb2ef79b8b",
+      "actual_environment_sha256": "4fb70119f4959fb6461ed304d4b166c499b58caab0cc428f9fbab5fb2ef79b8b",
+      "accepted_font_file_count": 1220,
+      "actual_font_file_count": 1219,
+      "backend": "native",
+      "input_sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+      "print_sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "declines": 0,
+      "minimum": "99.99"
+    },
+    {
+      "key": "spec13",
+      "pages": 71,
+      "state": "scores-retained-font-condition-review",
+      "accepted_environment_sha256": "96b95d283cb70263faa7774a39277f9d73c0a28d95a2eec6bb448ce42d30ca73",
+      "actual_environment_sha256": "7826f6f056be20abc62051116b1738344f1304f0c53263330771d8c623ca912f",
+      "accepted_font_file_count": 1221,
+      "actual_font_file_count": 1219,
+      "backend": "native",
+      "input_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+      "print_sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+      "tsv_sha256": "1740db49214ba69905b9030002a2bc90897ca3fc6c623a305a91e5ed956dbcc2",
+      "declines": 0,
+      "minimum": "99.69"
+    },
+    {
+      "key": "handbook-hwp",
+      "pages": 383,
+      "state": "scores-retained",
+      "accepted_environment_sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25",
+      "actual_environment_sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25",
+      "accepted_font_file_count": 1219,
+      "actual_font_file_count": 1219,
+      "backend": "wasm",
+      "input_sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+      "print_sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+      "tsv_sha256": "42d98e13b63b2cdaa6b49f2b313e53fd2b281214a5b4b46caeabc92ab186b97a",
+      "declines": 0,
+      "minimum": "99.96"
+    },
+    {
+      "key": "handbook-hwpx",
+      "pages": 383,
+      "state": "scores-retained",
+      "accepted_environment_sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25",
+      "actual_environment_sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25",
+      "accepted_font_file_count": 1219,
+      "actual_font_file_count": 1219,
+      "backend": "wasm",
+      "input_sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+      "print_sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+      "tsv_sha256": "42d98e13b63b2cdaa6b49f2b313e53fd2b281214a5b4b46caeabc92ab186b97a",
+      "declines": 0,
+      "minimum": "99.96"
+    },
+    {
+      "key": "spec13",
+      "pages": 71,
+      "state": "scores-retained",
+      "accepted_environment_sha256": null,
+      "actual_environment_sha256": null,
+      "accepted_font_file_count": 1219,
+      "actual_font_file_count": 1219,
+      "backend": "wasm",
+      "input_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+      "print_sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+      "tsv_sha256": "b620227f2a2aac18809adb5258d89dd84f25206c0db156e07861e257887a7a3a",
+      "declines": 0,
+      "minimum": "99.67"
+    }
+  ],
+  "native_narrow_hft_scope": [
+    {
+      "key": "nested",
+      "pages": 17,
+      "base_sha256": "ce06101fc8271df1e456c4aab8da1882cf4d48f58d22729fb8453d193dd2c519",
+      "candidate_sha256": "fe91bd066efaf1f8b01becf3a1faaa1b6260834c8ebaabbd5a9df3f5a7996892",
+      "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "print_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+      "candidate_tsv_sha256": "065e29b177f9d5d2f16bfe073d878c98cc03399681ae727daf0a15a845b1f592",
+      "base_tsv_sha256": "065e29b177f9d5d2f16bfe073d878c98cc03399681ae727daf0a15a845b1f592",
+      "base_candidate_different_pngs": [],
+      "supply_count": 1235,
+      "declines": 0,
+      "font_supply_scope": "선택 경로에서 교체 후 ENMJ/SPMJ/SPSMJ 파일만 제외하고 보존한 프로그램 제공"
+    },
+    {
+      "key": "chemical",
+      "pages": 103,
+      "base_sha256": "ce06101fc8271df1e456c4aab8da1882cf4d48f58d22729fb8453d193dd2c519",
+      "candidate_sha256": "fe91bd066efaf1f8b01becf3a1faaa1b6260834c8ebaabbd5a9df3f5a7996892",
+      "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "print_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+      "candidate_tsv_sha256": "9726358be649e638244c17d475594eae16b145c147c9780e0edeb216c28702c0",
+      "base_tsv_sha256": "9726358be649e638244c17d475594eae16b145c147c9780e0edeb216c28702c0",
+      "base_candidate_different_pngs": [],
+      "supply_count": 1217,
+      "declines": 0,
+      "font_supply_scope": "선택 경로에서 교체 후 ENMJ/SPMJ/SPSMJ 파일만 제외하고 보존한 프로그램 제공"
+    }
+  ],
+  "scope_note": "native 일부 정본 환경 식별 또는 파일 수 차이는 results의 state로 보존한다. 전 보호 문서와 이중선 보정판의 최종 수용을 나타내지 않는다."
+}

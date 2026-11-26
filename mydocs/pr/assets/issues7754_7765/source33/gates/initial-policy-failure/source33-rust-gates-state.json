@@ -1,0 +1,48 @@
+{
+  "started": 1795289854.086888,
+  "results": [
+    {
+      "index": 0,
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source33-rust-gate-00.log",
+      "exit_code": 0,
+      "seconds": 10.409552968107164
+    },
+    {
+      "index": 1,
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "5665e538292a0686a912f6a4d8950c55be89929a"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source33-rust-gate-01.log",
+      "exit_code": 1,
+      "seconds": 1.5243479830678552
+    }
+  ],
+  "environment": {
+    "CARGO_BUILD_JOBS": "3",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0"
+  },
+  "source_head": "002cff159fbdbbb8985151540022f83c6c7a48e0",
+  "producer_source": "adaa1963674e1a69c4369b80160ac6eb873bec1b",
+  "running": {
+    "index": 1,
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--check",
+      "--base-ref",
+      "5665e538292a0686a912f6a4d8950c55be89929a"
+    ]
+  },
+  "passed": false,
+  "ended": 1795289866.0529637
+}

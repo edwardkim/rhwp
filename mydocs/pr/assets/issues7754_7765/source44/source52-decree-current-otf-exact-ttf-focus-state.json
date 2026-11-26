@@ -1,0 +1,579 @@
+{
+  "started": 1795330098.3400464,
+  "scope": "Four decree pages; exact canonical H2GTRE and H2HDRM supplied privately in original TTF priority. Frozen base/candidate, Native/fresh WASM. Not the full protected inventory.",
+  "results": [
+    {
+      "backend": "native",
+      "role": "base",
+      "exit_code": 0,
+      "seconds": 26.040943739935756,
+      "command": [
+        "bwrap",
+        "--ro-bind",
+        "/",
+        "/",
+        "--dev",
+        "/dev",
+        "--proc",
+        "/proc",
+        "--bind",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine",
+        "--bind",
+        "/tmp",
+        "/tmp",
+        "--setenv",
+        "XDG_CACHE_HOME",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source52-decree-current-otf-font-cache",
+        "--bind",
+        "/home/tsjang/rhwp/output/pr-review/font-catalog-cache",
+        "/home/tsjang/rhwp/output/pr-review/font-catalog-cache",
+        "--bind",
+        "/home/tsjang/rhwp/output/pr-review/native-webfont-cache",
+        "/home/tsjang/rhwp/output/pr-review/native-webfont-cache",
+        "--",
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--hwp",
+        "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+        "--pdf",
+        "pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+        "--key",
+        "decree",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-base1a27-optimized",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source52-decree-current-otf-exact-ttf-focus/native/base",
+        "--pages",
+        "4,24,45,63",
+        "--font-environment",
+        "/home/tsjang/rhwp/mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/decree-native.json",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/pala.ttf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palab.ttf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palabi.ttf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palai.ttf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-canonical-fonts-20261122/820d3212f688-H2GTRE.TTF",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-canonical-fonts-20261122/e50c7200521c-H2HDRM.TTF"
+      ],
+      "font_files": [
+        {
+          "path": "C:\\Windows\\Fonts\\pala.ttf",
+          "bytes": 472284,
+          "sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/pala.ttf"
+        },
+        {
+          "path": "C:\\Windows\\Fonts\\palab.ttf",
+          "bytes": 419932,
+          "sha256": "8e14668bbae03f78ed668dbe3261218881960dcd9fb80ad6c1d1dfb4226a57c3",
+          "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palab.ttf"
+        },
+        {
+          "path": "C:\\Windows\\Fonts\\palabi.ttf",
+          "bytes": 335292,
+          "sha256": "d0e722b91ffd5391cc2e7d6e976f274d5aee9fe0b8d0fedfffe093763e695cde",
+          "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palabi.ttf"
+        },
+        {
+          "path": "C:\\Windows\\Fonts\\palai.ttf",
+          "bytes": 413708,
+          "sha256": "99f0af2d1941707fecda23da38bafbed5144a73a3720d773c05b9d4c445920ed",
+          "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palai.ttf"
+        },
+        {
+          "path": "C:\\Windows\\Fonts\\H2GTRE.TTF",
+          "bytes": 3485364,
+          "sha256": "820d3212f688b546a327ea43a7202e3379cdbbd767ebac9753997e3f3d285171",
+          "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-canonical-fonts-20261122/820d3212f688-H2GTRE.TTF"
+        },
+        {
+          "path": "C:\\Windows\\Fonts\\H2HDRM.TTF",
+          "bytes": 1169072,
+          "sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+          "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-canonical-fonts-20261122/e50c7200521c-H2HDRM.TTF"
+        }
+      ],
+      "binary_sha256": "97ae20cc86799d72e8d4388112f6e74c6c1b395f8f1c81bad088f2e6b3144a44",
+      "wasm_sha256": null,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source52-decree-current-otf-exact-ttf-focus/native/base/decree/silhouette.tsv",
+      "tsv_sha256": "17748deb1b756d5b3343842430545520b11833a21cd9640450922b424ded4307",
+      "rows": [
+        {
+          "page": "4",
+          "tolerant_content_match_percent": "99.89",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.89",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "24",
+          "tolerant_content_match_percent": "99.91",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.91",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "45",
+          "tolerant_content_match_percent": "99.89",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.89",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "63",
+          "tolerant_content_match_percent": "99.99",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.99",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source52-decree-current-otf-native-base.txt"
+    },
+    {
+      "backend": "native",
+      "role": "candidate",
+      "exit_code": 0,
+      "seconds": 27.834788249107078,
+      "command": [
+        "bwrap",
+        "--ro-bind",
+        "/",
+        "/",
+        "--dev",
+        "/dev",
+        "--proc",
+        "/proc",
+        "--bind",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine",
+        "--bind",
+        "/tmp",
+        "/tmp",
+        "--setenv",
+        "XDG_CACHE_HOME",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source52-decree-current-otf-font-cache",
+        "--bind",
+        "/home/tsjang/rhwp/output/pr-review/font-catalog-cache",
+        "/home/tsjang/rhwp/output/pr-review/font-catalog-cache",
+        "--bind",
+        "/home/tsjang/rhwp/output/pr-review/native-webfont-cache",
+        "/home/tsjang/rhwp/output/pr-review/native-webfont-cache",
+        "--",
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--hwp",
+        "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+        "--pdf",
+        "pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+        "--key",
+        "decree",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source37-optimized",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source52-decree-current-otf-exact-ttf-focus/native/candidate",
+        "--pages",
+        "4,24,45,63",
+        "--font-environment",
+        "/home/tsjang/rhwp/mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/decree-native.json",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/pala.ttf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palab.ttf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palabi.ttf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palai.ttf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-canonical-fonts-20261122/820d3212f688-H2GTRE.TTF",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-canonical-fonts-20261122/e50c7200521c-H2HDRM.TTF"
+      ],
+      "font_files": [
+        {
+          "path": "C:\\Windows\\Fonts\\pala.ttf",
+          "bytes": 472284,
+          "sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/pala.ttf"
+        },
+        {
+          "path": "C:\\Windows\\Fonts\\palab.ttf",
+          "bytes": 419932,
+          "sha256": "8e14668bbae03f78ed668dbe3261218881960dcd9fb80ad6c1d1dfb4226a57c3",
+          "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palab.ttf"
+        },
+        {
+          "path": "C:\\Windows\\Fonts\\palabi.ttf",
+          "bytes": 335292,
+          "sha256": "d0e722b91ffd5391cc2e7d6e976f274d5aee9fe0b8d0fedfffe093763e695cde",
+          "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palabi.ttf"
+        },
+        {
+          "path": "C:\\Windows\\Fonts\\palai.ttf",
+          "bytes": 413708,
+          "sha256": "99f0af2d1941707fecda23da38bafbed5144a73a3720d773c05b9d4c445920ed",
+          "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palai.ttf"
+        },
+        {
+          "path": "C:\\Windows\\Fonts\\H2GTRE.TTF",
+          "bytes": 3485364,
+          "sha256": "820d3212f688b546a327ea43a7202e3379cdbbd767ebac9753997e3f3d285171",
+          "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-canonical-fonts-20261122/820d3212f688-H2GTRE.TTF"
+        },
+        {
+          "path": "C:\\Windows\\Fonts\\H2HDRM.TTF",
+          "bytes": 1169072,
+          "sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+          "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-canonical-fonts-20261122/e50c7200521c-H2HDRM.TTF"
+        }
+      ],
+      "binary_sha256": "249e11dedc91f4f2c90b145e82b9bd0102d27a0b1e1ebaa15030431178cdfa02",
+      "wasm_sha256": null,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source52-decree-current-otf-exact-ttf-focus/native/candidate/decree/silhouette.tsv",
+      "tsv_sha256": "17748deb1b756d5b3343842430545520b11833a21cd9640450922b424ded4307",
+      "rows": [
+        {
+          "page": "4",
+          "tolerant_content_match_percent": "99.89",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.89",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "24",
+          "tolerant_content_match_percent": "99.91",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.91",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "45",
+          "tolerant_content_match_percent": "99.89",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.89",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "63",
+          "tolerant_content_match_percent": "99.99",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.99",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source52-decree-current-otf-native-candidate.txt"
+    },
+    {
+      "backend": "wasm",
+      "role": "base",
+      "exit_code": 0,
+      "seconds": 45.62306648190133,
+      "command": [
+        "bwrap",
+        "--ro-bind",
+        "/",
+        "/",
+        "--dev",
+        "/dev",
+        "--proc",
+        "/proc",
+        "--bind",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine",
+        "--bind",
+        "/tmp",
+        "/tmp",
+        "--setenv",
+        "XDG_CACHE_HOME",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source52-decree-current-otf-font-cache",
+        "--bind",
+        "/home/tsjang/rhwp/output/pr-review/font-catalog-cache",
+        "/home/tsjang/rhwp/output/pr-review/font-catalog-cache",
+        "--bind",
+        "/home/tsjang/rhwp/output/pr-review/native-webfont-cache",
+        "/home/tsjang/rhwp/output/pr-review/native-webfont-cache",
+        "--setenv",
+        "VISUAL_SWEEP_CHROME",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/chrome155-private-font-context.sh",
+        "--",
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--hwp",
+        "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+        "--pdf",
+        "pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+        "--key",
+        "decree",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-base1a27-optimized",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source52-decree-current-otf-exact-ttf-focus/wasm/base",
+        "--pages",
+        "4,24,45,63",
+        "--font-environment",
+        "/home/tsjang/rhwp/mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/decree-wasm.json",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-base1a27",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/pala.ttf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palab.ttf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palabi.ttf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palai.ttf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-canonical-fonts-20261122/820d3212f688-H2GTRE.TTF",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-canonical-fonts-20261122/e50c7200521c-H2HDRM.TTF"
+      ],
+      "font_files": [
+        {
+          "path": "C:\\Windows\\Fonts\\pala.ttf",
+          "bytes": 472284,
+          "sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/pala.ttf"
+        },
+        {
+          "path": "C:\\Windows\\Fonts\\palab.ttf",
+          "bytes": 419932,
+          "sha256": "8e14668bbae03f78ed668dbe3261218881960dcd9fb80ad6c1d1dfb4226a57c3",
+          "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palab.ttf"
+        },
+        {
+          "path": "C:\\Windows\\Fonts\\palabi.ttf",
+          "bytes": 335292,
+          "sha256": "d0e722b91ffd5391cc2e7d6e976f274d5aee9fe0b8d0fedfffe093763e695cde",
+          "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palabi.ttf"
+        },
+        {
+          "path": "C:\\Windows\\Fonts\\palai.ttf",
+          "bytes": 413708,
+          "sha256": "99f0af2d1941707fecda23da38bafbed5144a73a3720d773c05b9d4c445920ed",
+          "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palai.ttf"
+        },
+        {
+          "path": "C:\\Windows\\Fonts\\H2GTRE.TTF",
+          "bytes": 3485364,
+          "sha256": "820d3212f688b546a327ea43a7202e3379cdbbd767ebac9753997e3f3d285171",
+          "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-canonical-fonts-20261122/820d3212f688-H2GTRE.TTF"
+        },
+        {
+          "path": "C:\\Windows\\Fonts\\H2HDRM.TTF",
+          "bytes": 1169072,
+          "sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+          "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-canonical-fonts-20261122/e50c7200521c-H2HDRM.TTF"
+        }
+      ],
+      "binary_sha256": "97ae20cc86799d72e8d4388112f6e74c6c1b395f8f1c81bad088f2e6b3144a44",
+      "wasm_sha256": "abdae9325eaa4df812872d80d03f388cb4a7b9d6cacf9323e8bfbf07bd4e3445",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source52-decree-current-otf-exact-ttf-focus/wasm/base/decree/silhouette.tsv",
+      "tsv_sha256": "91eff12f05fde3b34665bd911bc36f1595836aa5df372429c9b36720afcd6a75",
+      "rows": [
+        {
+          "page": "4",
+          "tolerant_content_match_percent": "99.88",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.88",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "24",
+          "tolerant_content_match_percent": "99.90",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.90",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "45",
+          "tolerant_content_match_percent": "99.88",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.88",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "63",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source52-decree-current-otf-wasm-base.txt"
+    },
+    {
+      "backend": "wasm",
+      "role": "candidate",
+      "exit_code": 0,
+      "seconds": 24.2922014570795,
+      "command": [
+        "bwrap",
+        "--ro-bind",
+        "/",
+        "/",
+        "--dev",
+        "/dev",
+        "--proc",
+        "/proc",
+        "--bind",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine",
+        "--bind",
+        "/tmp",
+        "/tmp",
+        "--setenv",
+        "XDG_CACHE_HOME",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source52-decree-current-otf-font-cache",
+        "--bind",
+        "/home/tsjang/rhwp/output/pr-review/font-catalog-cache",
+        "/home/tsjang/rhwp/output/pr-review/font-catalog-cache",
+        "--bind",
+        "/home/tsjang/rhwp/output/pr-review/native-webfont-cache",
+        "/home/tsjang/rhwp/output/pr-review/native-webfont-cache",
+        "--setenv",
+        "VISUAL_SWEEP_CHROME",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/chrome155-private-font-context.sh",
+        "--",
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--hwp",
+        "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+        "--pdf",
+        "pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+        "--key",
+        "decree",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source37-optimized",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source52-decree-current-otf-exact-ttf-focus/wasm/candidate",
+        "--pages",
+        "4,24,45,63",
+        "--font-environment",
+        "/home/tsjang/rhwp/mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/decree-wasm.json",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/pala.ttf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palab.ttf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palabi.ttf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palai.ttf",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-canonical-fonts-20261122/820d3212f688-H2GTRE.TTF",
+        "--font-path",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-canonical-fonts-20261122/e50c7200521c-H2HDRM.TTF"
+      ],
+      "font_files": [
+        {
+          "path": "C:\\Windows\\Fonts\\pala.ttf",
+          "bytes": 472284,
+          "sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/pala.ttf"
+        },
+        {
+          "path": "C:\\Windows\\Fonts\\palab.ttf",
+          "bytes": 419932,
+          "sha256": "8e14668bbae03f78ed668dbe3261218881960dcd9fb80ad6c1d1dfb4226a57c3",
+          "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palab.ttf"
+        },
+        {
+          "path": "C:\\Windows\\Fonts\\palabi.ttf",
+          "bytes": 335292,
+          "sha256": "d0e722b91ffd5391cc2e7d6e976f274d5aee9fe0b8d0fedfffe093763e695cde",
+          "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palabi.ttf"
+        },
+        {
+          "path": "C:\\Windows\\Fonts\\palai.ttf",
+          "bytes": 413708,
+          "sha256": "99f0af2d1941707fecda23da38bafbed5144a73a3720d773c05b9d4c445920ed",
+          "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palai.ttf"
+        },
+        {
+          "path": "C:\\Windows\\Fonts\\H2GTRE.TTF",
+          "bytes": 3485364,
+          "sha256": "820d3212f688b546a327ea43a7202e3379cdbbd767ebac9753997e3f3d285171",
+          "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-canonical-fonts-20261122/820d3212f688-H2GTRE.TTF"
+        },
+        {
+          "path": "C:\\Windows\\Fonts\\H2HDRM.TTF",
+          "bytes": 1169072,
+          "sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+          "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-canonical-fonts-20261122/e50c7200521c-H2HDRM.TTF"
+        }
+      ],
+      "binary_sha256": "249e11dedc91f4f2c90b145e82b9bd0102d27a0b1e1ebaa15030431178cdfa02",
+      "wasm_sha256": "76f7c64d27fe8fbbd7bd5baa2fdb3d30af9c8014fd16fb6b83afc498907ba7e3",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source52-decree-current-otf-exact-ttf-focus/wasm/candidate/decree/silhouette.tsv",
+      "tsv_sha256": "91eff12f05fde3b34665bd911bc36f1595836aa5df372429c9b36720afcd6a75",
+      "rows": [
+        {
+          "page": "4",
+          "tolerant_content_match_percent": "99.88",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.88",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "24",
+          "tolerant_content_match_percent": "99.90",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.90",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "45",
+          "tolerant_content_match_percent": "99.88",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.88",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "63",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source52-decree-current-otf-wasm-candidate.txt"
+    }
+  ],
+  "running": null,
+  "complete_coverage": true,
+  "ended": 1795330224.7037218
+}

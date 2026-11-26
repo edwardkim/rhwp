@@ -266,7 +266,7 @@ fn check_picture_props_accepts_setter_values_and_rejects_the_rest() {
         r#"{"wrap":"TopAndBottom"}"#,
         r#"{"textWrap":"topAndBottom"}"#,
         r#"{"textWrap":"TopAndBottom","vertRelto":"Para"}"#,
-        r#"{"horzAlign":"Inside"}"#,
+        r#"{"horzAlign":"Middle"}"#,
         r#"{"treatAsChar":"true"}"#,
         r#"{"width":-1}"#,
         r#"{"paddingLeft":40000}"#,

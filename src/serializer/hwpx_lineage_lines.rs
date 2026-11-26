@@ -21,7 +21,7 @@ pub(super) fn prepare_section<'a>(
         return section;
     }
     let mut staged = section.into_owned();
-    super::hwpx::roundtrip::project_exported_line_caches(&mut staged.paragraphs);
+    super::hwpx::roundtrip::project_exported_body_line_caches(&mut staged.paragraphs);
     for master in &mut staged.section_def.master_pages {
         super::hwpx::roundtrip::project_exported_line_caches(&mut master.paragraphs);
     }

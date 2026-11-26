@@ -1,0 +1,96 @@
+frozen pkg /home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37 at http://127.0.0.1:41309
+=== E2E: Issue #7403 canvaskit: host font identity, replacement and document preservation ===
+
+  [browser] headless Chrome 실행
+  [wasm-artifact] matched 76f7c64d27fe8fbbd7bd5baa2fdb3d30af9c8014fd16fb6b83afc498907ba7e3
+  Screenshot: e2e/screenshots/host-font-7403-ttc-slants.png
+Face paint contracts: {"checks":[{"type":"textRun","style":"Italic","count":1,"sameAsStandalone":true,"differsFromUpright":true},{"type":"textRun","style":"Oblique","count":1,"sameAsStandalone":true,"differsFromUpright":true},{"type":"charOverlap","style":"Italic","count":1,"sameAsStandalone":true,"differsFromUpright":true},{"type":"charOverlap","style":"Oblique","count":1,"sameAsStandalone":true,"differsFromUpright":true}],"invalid":{"count":0,"failed":1},"recoveredCount":1,"reads":12}
+  Screenshot: e2e/screenshots/host-font-7403-faces.png
+  Screenshot: e2e/screenshots/canvaskit-host-font-7403-document.png
+history: start
+history: typing
+history: refreshed
+history: verified
+race: switching document
+race: current document ready
+race: late document read discarded
+Document lifecycle contracts: {"historyResult":{"clean":true,"bytesUnchanged":true,"undoUnchanged":true,"redoUnchanged":true,"redoCount":1,"beforeLength":15,"redoneLength":16,"undoneLength":15},"switched":{"changedDocument":true,"sameImage":true,"sameBytes":true,"countBefore":1,"countAfter":1},"replacedRace":{"aborted":true,"sameImage":true,"count":1}}
+Provider detach contracts: {"state":{"active":false,"generation":23,"count":0,"lastError":null},"bytesUnchanged":true,"pages":1}
+{
+  "result": {
+    "metadataReads": 0,
+    "reads": [
+      {
+        "id": "face-400",
+        "version": "serif"
+      },
+      {
+        "id": "face-700",
+        "version": "serif"
+      },
+      {
+        "id": "face-400",
+        "version": "sans"
+      },
+      {
+        "id": "face-700",
+        "version": "sans"
+      },
+      {
+        "id": "face-400",
+        "version": "failed"
+      },
+      {
+        "id": "face-700",
+        "version": "failed"
+      },
+      {
+        "id": "face-400",
+        "version": "recovered"
+      },
+      {
+        "id": "face-700",
+        "version": "recovered"
+      }
+    ],
+    "cssBefore": "\"Malgun Gothic\", \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Pretendard\", \"Noto Sans Symbols2\", \"함초롬바탕\", \"D2Coding\", \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", sans-serif",
+    "cssAfter": "\"Malgun Gothic\", \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Pretendard\", \"Noto Sans Symbols2\", \"함초롬바탕\", \"D2Coding\", \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", sans-serif",
+    "storedBefore": null,
+    "storedAfter": null,
+    "exactMatchesStyles": true,
+    "replacementChangesPixels": true,
+    "recoveryRestoresPixels": true,
+    "failedCount": 2,
+    "registered": 2
+  },
+  "preserved": {
+    "dirty": true,
+    "generation": 2,
+    "expectedGeneration": 2,
+    "hwpUnchanged": true,
+    "roundtrips": [
+      {
+        "name": "smoke.hwp",
+        "fonts": [
+          "RHWP Host Smoke",
+          "함초롬돋움",
+          "함초롬바탕"
+        ],
+        "bold": true
+      },
+      {
+        "name": "smoke.hwpx",
+        "fonts": [
+          "RHWP Host Smoke",
+          "함초롬돋움",
+          "함초롬바탕"
+        ],
+        "bold": true
+      }
+    ],
+    "svgUnchanged": true,
+    "svgHasAlias": false
+  }
+}
+
+📋 HTML 보고서: ../output/e2e/host-font-provider-issue7403-report.html

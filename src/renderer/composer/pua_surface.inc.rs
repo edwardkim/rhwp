@@ -240,7 +240,7 @@ fn pua_flow_text_display(ch: char) -> Option<&'static str> {
 /// 원본 한 문자와 표시 한 문자의 대응만 replay 경계에 공유한다.
 /// 여러 글자 확장·미등록 PUA의 기존 계약은 바꾸지 않는다.
 fn verified_pua_replay_scalar(ch: char) -> Option<char> {
-    let display = pua_plain_text_display(hancom_symbol_display_key(ch))?;
+    let display = pua_plain_text_display(ch)?;
     let mut scalars = display.chars();
     let scalar = scalars.next()?;
     (scalars.next().is_none() && scalar != ch).then_some(scalar)
@@ -261,16 +261,8 @@ pub(crate) fn one_to_one_pua_replay_text(text: &str) -> std::borrow::Cow<'_, str
     )
 }
 
-/// [#5800] HWP5 원시 한컴 사용자 기호를 **표시 매핑 조회용 평면-15 키**로 정규화한다.
-///
-/// 같은 글자를 HWP5 는 BMP 단일 유닛 `0xA000 | X` 로, HWPX 는 평면 15 보충 PUA
-/// `U+F0000 | X` 로 싣는다(`parser::tags::HANCOM_SYMBOL_BMP_TO_PLANE15` — 한글 실측
-/// 값 집합). 표시 매핑표(`hancom_pua` · `map_pua_bullet_char`)는 평면 15 키만 갖고
-/// 있어 HWP5 경로가 표를 못 타고 원시 코드포인트를 그대로 그렸다 — `0xA832` 가
-/// 유니코드 U+A832(실로티 나그리 `꠲`)로, `0xA12B` 가 `ꄫ` 로 나오는 식이다.
-///
-/// **정규화는 표에 값이 있을 때만 한다.** 값이 없으면 원문을 그대로 둬서, 미등록 PUA
-/// 축(#5599)이 관측하는 표면을 이 변경이 흔들지 않게 한다.
+/// Compatibility lookup for callers explicitly interpreting raw Hancom symbols.
+/// Ordinary paragraph text was decoded at composition using its file version.
 pub(crate) fn hancom_symbol_display_key(ch: char) -> char {
     let Ok(unit) = u16::try_from(ch as u32) else {
         return ch;
@@ -292,12 +284,11 @@ pub(crate) fn hancom_symbol_display_key(ch: char) -> char {
 /// 이미 확정한 단일 표시 기호를 원문 폭 측정에도 전달한다.
 /// 다문자 확장과 글자겹침 숫자는 각 구성 owner의 계약을 유지한다.
 pub(crate) fn single_scalar_display_char(ch: char) -> char {
-    let key = hancom_symbol_display_key(ch);
     // 합성 기호는 정규화한 원 키 자체가 표시 기호다. paint가 테두리와 안쪽 글자를 그린다.
-    if super::enclosed_pua(key).is_some() {
-        return key;
+    if super::enclosed_pua(ch).is_some() {
+        return ch;
     }
-    if let Some(display) = pua_plain_text_display(key) {
+    if let Some(display) = pua_plain_text_display(ch) {
         let mut chars = display.chars();
         if let Some(first) = chars.next() {
             if chars.next().is_none() {
@@ -306,7 +297,7 @@ pub(crate) fn single_scalar_display_char(ch: char) -> char {
         }
         return ch;
     }
-    super::layout::map_pua_bullet_char(key)
+    super::layout::map_pua_bullet_char(ch)
 }
 
 /// 한글 방점(U+302E/U+302F)을 렌더용 spacing 가운데 점 글리프로 치환한다. (Task #1735)
@@ -334,41 +325,41 @@ fn tone_mark_display(ch: char) -> Option<char> {
 /// CharOverlap 전용 숫자(`U+F02CE..=U+F02E1`)는 여기서 확장하지 않는다.
 /// 해당 문자는 `pua_to_display_text()`가 글자겹침 렌더러에서만 처리한다.
 pub fn expand_pua_display_text(text: &str) -> String {
-    match expand_pua_display_text_with_storage(text, &crate::storage::Unbounded) {
+    match try_expand_pua_surface(text.chars().map(hancom_symbol_display_key), None, true, &crate::storage::Unbounded) {
         Ok(value) => value,
         Err(never) => match never {},
     }
 }
 
 pub(crate) fn expand_pua_display_text_with_storage<S: crate::storage::Storage>(
-    text: &str,
+    chars: impl Iterator<Item = char>,
     storage: &S,
 ) -> Result<String, S::Error> {
-    try_expand_pua_surface(text, None, true, storage)
+    try_expand_pua_surface(chars, None, true, storage)
 }
 
 pub fn expand_pua_render_text_in_style(text: &str, style: &TextStyle) -> String {
     if style.literal_soft_hyphen && text.contains('\u{00AD}') {
         let visible = text.replace('\u{00AD}', "-");
-        expand_pua_surface(&visible, style.native_pua_metrics.as_deref(), false)
+        expand_pua_surface(visible.chars(), style.native_pua_metrics.as_deref(), false)
     } else {
-        expand_pua_surface(text, style.native_pua_metrics.as_deref(), false)
+        expand_pua_surface(text.chars(), style.native_pua_metrics.as_deref(), false)
     }
 }
 
 fn expand_pua_surface(
-    text: &str,
+    chars: impl Iterator<Item = char>,
     program: Option<&super::native_pua_fonts::NativePuaMetrics>,
     flow: bool,
 ) -> String {
-    match try_expand_pua_surface(text, program, flow, &crate::storage::Unbounded) {
+    match try_expand_pua_surface(chars, program, flow, &crate::storage::Unbounded) {
         Ok(value) => value,
         Err(never) => match never {},
     }
 }
 
 fn try_expand_pua_surface<S: crate::storage::Storage>(
-    text: &str,
+    chars: impl Iterator<Item = char>,
     program: Option<&super::native_pua_fonts::NativePuaMetrics>,
     flow: bool,
     storage: &S,
@@ -376,9 +367,7 @@ fn try_expand_pua_surface<S: crate::storage::Storage>(
     use super::pua_oldhangul::map_pua_old_hangul;
 
     let mut out = storage.string("")?;
-    for ch in text.chars() {
-        // [#5800] HWP5 원시 기호값을 먼저 평면-15 키로 정규화한다.
-        let ch = hancom_symbol_display_key(ch);
+    for ch in chars {
         // 실제 공급 원 glyph와 렌더러 합성 기호(#8201)는 Unicode 표시 대체보다 우선한다.
         if program.is_some_and(|program| program.advance_em(ch).is_some())
             || super::enclosed_pua(ch).is_some()
@@ -405,15 +394,22 @@ fn try_expand_pua_surface<S: crate::storage::Storage>(
 
 /// 실제 paint는 원본 점선 U+F081C도 표시한다. 흐름이 비어도 잉크는 남는다.
 pub fn expand_pua_render_text(text: &str) -> String {
-    expand_pua_surface(text, None, false)
+    expand_pua_surface(text.chars().map(hancom_symbol_display_key), None, false)
+}
+
+/// Body text has already been decoded when the composed runs were built.
+pub(crate) fn expand_body_render_text(text: &str) -> String {
+    expand_pua_surface(text.chars(), None, false)
 }
 
 /// PUA 테두리 숫자와 한컴 PUA 기호를 표시 문자열로 변환한다. (렌더러 전용)
 ///
 /// draw_char_overlap()에서 호출하여, 실제 렌더링 시에만 변환한다.
 pub fn pua_to_display_text(ch: char) -> Option<String> {
-    // [#5800] HWP5 원시 기호값을 먼저 평면-15 키로 정규화한다.
-    let ch = hancom_symbol_display_key(ch);
+    pua_display_for_key(hancom_symbol_display_key(ch))
+}
+
+fn pua_display_for_key(ch: char) -> Option<String> {
     let cp = ch as u32;
     if let Some(replacement) = pua_plain_text_display(ch) {
         return Some(replacement.to_string());
@@ -439,15 +435,24 @@ pub fn pua_to_display_text(ch: char) -> Option<String> {
 ///
 /// 의미를 모르는 PUA 는 **매핑을 지어내지 않고 그대로 둔다.**
 pub fn pua_to_text_surface(text: &str) -> std::borrow::Cow<'_, str> {
+    extract_pua_text(text, hancom_symbol_display_key)
+}
+
+/// Extract semantic text from composed runs or PDF ToUnicode entries. Both carry Unicode.
+pub(crate) fn body_text_surface(text: &str) -> std::borrow::Cow<'_, str> {
+    extract_pua_text(text, std::convert::identity)
+}
+
+fn extract_pua_text(text: &str, key: impl Fn(char) -> char) -> std::borrow::Cow<'_, str> {
     if !text
         .chars()
-        .any(|ch| text_surface_replacement(ch).is_some())
+        .any(|ch| text_surface_replacement(key(ch)).is_some())
     {
         return std::borrow::Cow::Borrowed(text);
     }
     let mut out = String::with_capacity(text.len());
     for ch in text.chars() {
-        match text_surface_replacement(ch) {
+        match text_surface_replacement(key(ch)) {
             Some(rep) => out.push_str(&rep),
             None => out.push(ch),
         }
@@ -475,7 +480,7 @@ fn text_surface_replacement(ch: char) -> Option<String> {
         return Some('\u{246B}'.to_string());
     }
     // 렌더가 이미 표시 문자열을 갖고 있는 대역은 같은 답을 쓴다.
-    if let Some(replacement) = pua_to_display_text(ch) {
+    if let Some(replacement) = pua_display_for_key(ch) {
         return Some(replacement);
     }
     // 렌더의 글리프 치환 표(`map_pua_bullet_char`)를 텍스트 표면에도 적용한다.

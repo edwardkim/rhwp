@@ -1,0 +1,117 @@
+TAP version 13
+# Subtest: W1 candidate identity vectors produce the exact candidateId and ruleId
+ok 1 - W1 candidate identity vectors produce the exact candidateId and ruleId
+  ---
+  duration_ms: 25.910422
+  ...
+# Subtest: every golden rule joins to the W1 ledger with the exact evidence anchor
+ok 2 - every golden rule joins to the W1 ledger with the exact evidence anchor
+  ---
+  duration_ms: 1.183195
+  ...
+# Subtest: a missing ledger row is explicit and never receives a guessed ruleId
+ok 3 - a missing ledger row is explicit and never receives a guessed ruleId
+  ---
+  duration_ms: 47.068007
+  ...
+# Subtest: limits use 1024 by default and reject invalid or oversized values without clamping
+ok 4 - limits use 1024 by default and reject invalid or oversized values without clamping
+  ---
+  duration_ms: 1.567782
+  ...
+# Subtest: valid v1 envelope passes and missing fields, inconsistent counts and silent truncation fail
+ok 5 - valid v1 envelope passes and missing fields, inconsistent counts and silent truncation fail
+  ---
+  duration_ms: 23.097528
+  ...
+# Subtest: observed glyph miss requires an explicit failure instead of a guessed face
+ok 6 - observed glyph miss requires an explicit failure instead of a guessed face
+  ---
+  duration_ms: 3.120596
+  ...
+# Subtest: 활성 v2 직접 규칙의 앵커는 과거 W1 후보 링크와 구분해 검증한다
+ok 7 - 활성 v2 직접 규칙의 앵커는 과거 W1 후보 링크와 구분해 검증한다
+  ---
+  duration_ms: 119.995664
+  ...
+# Subtest: v2 앵커의 후보·규칙·소유자·관계가 바뀌거나 비활성 규칙이면 거절한다
+ok 8 - v2 앵커의 후보·규칙·소유자·관계가 바뀌거나 비활성 규칙이면 거절한다
+  ---
+  duration_ms: 38.143947
+  ...
+# Subtest: W1 source digest drift is detected without exposing an absolute checkout path
+not ok 9 - W1 source digest drift is detected without exposing an absolute checkout path
+  ---
+  duration_ms: 173.774229
+  location: '/home/tsjang/rhwp/scripts/tests/font_decision_trace_contract.test.mjs:274:1'
+  failureType: 'testCodeFailure'
+  error: "ENOENT: no such file or directory, open '/home/tsjang/rhwp/ttfs/FONTS.md'"
+  code: 'ENOENT'
+  stack: |-
+    Object.openSync (node:fs:573:18)
+    Object.readFileSync (node:fs:452:35)
+    file:///home/tsjang/rhwp/scripts/tests/font_decision_trace_contract.test.mjs:288:22
+    Array.flatMap (<anonymous>)
+    TestContext.<anonymous> (file:///home/tsjang/rhwp/scripts/tests/font_decision_trace_contract.test.mjs:287:55)
+    Test.runInAsyncScope (node:async_hooks:206:9)
+    Test.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    Test.postRun (node:internal/test_runner/test:889:19)
+    Test.run (node:internal/test_runner/test:835:12)
+  ...
+# Subtest: hashes ignore object key order and unordered diagnostics but preserve fallback chain order
+ok 10 - hashes ignore object key order and unordered diagnostics but preserve fallback chain order
+  ---
+  duration_ms: 2.574477
+  ...
+# Subtest: portable layout hash ignores backend state while normalized hash preserves it
+ok 11 - portable layout hash ignores backend state while normalized hash preserves it
+  ---
+  duration_ms: 1.206924
+  ...
+# Subtest: absolute host paths, user directories, tokens and error stacks are rejected
+ok 12 - absolute host paths, user directories, tokens and error stacks are rejected
+  ---
+  duration_ms: 1.362838
+  ...
+# Subtest: public fixture manifest is tracked, byte-stable and excludes private corpus paths
+ok 13 - public fixture manifest is tracked, byte-stable and excludes private corpus paths
+  ---
+  duration_ms: 819.98268
+  ...
+# Subtest: schema fixes v1 enums and the 4096 hard record limit
+ok 14 - schema fixes v1 enums and the 4096 hard record limit
+  ---
+  duration_ms: 3.460322
+  ...
+# node:internal/modules/esm/get_format:189
+#   throw new ERR_UNKNOWN_FILE_EXTENSION(ext, filepath);
+#         ^
+# TypeError [ERR_UNKNOWN_FILE_EXTENSION]: Unknown file extension ".ts" for /home/tsjang/rhwp/rhwp-studio/src/core/font-decision-trace.ts
+#     at Object.getFileProtocolModuleFormat [as file:] (node:internal/modules/esm/get_format:189:9)
+#     at defaultGetFormat (node:internal/modules/esm/get_format:232:36)
+#     at defaultLoad (node:internal/modules/esm/load:145:22)
+#     at async ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:543:45) {
+#   code: 'ERR_UNKNOWN_FILE_EXTENSION'
+# }
+# Node.js v20.20.0
+# Subtest: /home/tsjang/rhwp/scripts/tests/font_decision_trace_e2e.test.mjs
+not ok 2 - /home/tsjang/rhwp/scripts/tests/font_decision_trace_e2e.test.mjs
+  ---
+  duration_ms: 174.081603
+  location: '/home/tsjang/rhwp/scripts/tests/font_decision_trace_e2e.test.mjs:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+1..15
+# tests 15
+# suites 0
+# pass 13
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1650.233356

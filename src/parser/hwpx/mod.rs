@@ -291,6 +291,47 @@ fn resolve_master_page_hrefs<'a, 'b>(
     (hrefs, missing_refs)
 }
 
+/// 한컴은 첫 구역 첫 문단에서 구역 정의와 단 정의 사이에 글자나 다른 컨트롤이
+/// 끼면 그 구역 정의를 버리고 새 문서 기본값으로 연다. 용지·여백·첫 쪽 감추기·시작 쪽 번호·바탕쪽이
+/// 모두 기본값이 되고, 한컴으로 다시 저장하면 바탕쪽 참조도 사라진다. 같은 차례라도 둘째 구역부터는
+/// 구역 정의를 그대로 쓴다(한컴 12.30 Mac 화면, 2026-11-23).
+fn drop_first_section_def_like_hancom(section: &mut Section) {
+    use crate::model::control::Control;
+    let Some(paragraph) = section.paragraphs.first() else {
+        return;
+    };
+    let Some(secd) = paragraph
+        .controls
+        .iter()
+        .position(|c| matches!(c, Control::SectionDef(_)))
+    else {
+        return;
+    };
+    let cold_gap = paragraph.controls[secd + 1..]
+        .iter()
+        .position(|c| matches!(c, Control::ColumnDef(_)));
+    let Some(gap) = cold_gap else {
+        return;
+    };
+    if gap == 0 {
+        let offsets = paragraph.control_utf16_positions();
+        if offsets[secd].checked_add(crate::model::control::CTRL_CHAR_CODE_UNITS)
+            == Some(offsets[secd + 1])
+        {
+            return;
+        }
+    }
+    let Ok(blank) =
+        section::parse_hwpx_section(crate::serializer::hwpx::section::EMPTY_SECTION_XML)
+    else {
+        return;
+    };
+    if let Control::SectionDef(definition) = &mut section.paragraphs[0].controls[secd] {
+        **definition = blank.section_def.clone();
+    }
+    section.section_def = blank.section_def;
+}
+
 /// [#3460] `binaryItemIDRef` 를 매니페스트 위치 기준 정규 이름(`image{N}`)으로 통일한다.
 ///
 /// 섹션 파서는 `binaryItemIDRef` 에서 **숫자만 뽑아** `bin_data_id` 로 쓰고(숫자 불변식,
@@ -458,6 +499,14 @@ pub(crate) fn parse_hwpx_with_reservation(
     data: &[u8],
     reservation: Option<std::sync::Arc<dyn crate::storage::Reservation>>,
 ) -> Result<Document, HwpxError> {
+    parse_hwpx_package(data, reservation, false)
+}
+
+fn parse_hwpx_package(
+    data: &[u8],
+    reservation: Option<std::sync::Arc<dyn crate::storage::Reservation>>,
+    recover_legacy_alpha: bool,
+) -> Result<Document, HwpxError> {
     // 1. ZIP 컨테이너 열기
     let mut reader = reader::HwpxReader::open_with_reservation(data, reservation.clone())?;
 
@@ -488,6 +537,7 @@ pub(crate) fn parse_hwpx_with_reservation(
         crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH,
         crate::model::document::HWP3_ORIGIN_HWPX_PARAGRAPH_AXIS_PATH,
         crate::model::document::HWP3_EXTERNAL_REALIGN_HWPX_PATH,
+        crate::model::document::HWPX_ORIGIN_HWPX_MARKER_PATH,
     ];
     let mut hwpx_aux_entries: Vec<(String, Vec<u8>)> = Vec::new();
     for path in HWPX_AUX_PATHS {
@@ -538,9 +588,20 @@ pub(crate) fn parse_hwpx_with_reservation(
     ));
     let package_info = content::parse_content_hpf(&content_xml)?;
 
+    // 2-1. rhwp 원본 마커만 있고 정수 alpha 표지가 없으면 예전 rhwp 저장본이다 — 그 시절
+    // 저장기는 채우기 alpha 를 0.0~1.0 비율로 썼다(완전 투명 = `1`). header 의 borderFill 과
+    // 구역의 도형 채우기가 모두 이 규칙을 따른다.
+    let legacy_origin = hwpx_aux_entries.iter().any(|(path, _)| {
+        path == crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH
+            || path == crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH
+    });
+    let ratio_alpha = (legacy_origin || recover_legacy_alpha)
+        && !reader.contains_entry(crate::model::document::RHWP_BYTE_ALPHA_HWPX_MARKER_PATH);
+    let _ratio_alpha_guard = utils::RatioAlphaGuard::set(ratio_alpha);
+
     // 3. header.xml → DocInfo, DocProperties
-    let header_xml = reader.read_file("Contents/header.xml")?;
-    let header_xml = canonicalize_bullet_image_refs(&header_xml, &package_info.bin_data_items);
+    let original_header = reader.read_file("Contents/header.xml")?;
+    let header_xml = canonicalize_bullet_image_refs(&original_header, &package_info.bin_data_items);
     let tracking_visibility = tracked_changes::Visibility::from_header(&header_xml)?;
     // 평문 여백의 단위 전환은 header.xml이 아닌 패키지 xmlVersion에 따른다.
     let physical_plain_margin = hwpx_aux_entries
@@ -552,6 +613,13 @@ pub(crate) fn parse_hwpx_with_reservation(
         &canonicalize_header_image_refs(&header_xml, &package_info.bin_data_items),
         physical_plain_margin,
     )?;
+    use crate::model::document_compatibility::DocumentCompatibility;
+    if let Ok(bytes) = reader.read_file_bytes_limited(
+        DocumentCompatibility::HWPX_ENTRY,
+        DocumentCompatibility::ENCODED_SIZE,
+    ) {
+        DocumentCompatibility::restore_nonpreset(&mut doc_info, original_header.as_bytes(), &bytes);
+    }
     let default_para_shape_id = u16::try_from(doc_info.para_shapes.len()).ok();
     let default_para_shape_scope = section::DefaultParaShapeScope::enter(default_para_shape_id);
     if let Ok(bytes) = reader.read_file_bytes_limited(
@@ -784,6 +852,9 @@ pub(crate) fn parse_hwpx_with_reservation(
     // [#6868 잔여] 구역 경계를 넘는 누름틀의 종료 마커를 잇는다 — 구역 하나를 파싱하는
     // 동안에는 앞 구역에서 열린 필드를 볼 수 없다.
     section::link_orphan_field_ends_across_sections(&mut sections);
+    if let Some(first) = sections.first_mut() {
+        drop_first_section_def_like_hancom(first);
+    }
 
     // [Task #1608] (제거) 과거 Task #554 의 HWP3-origin tolerance 부여는
     // head version == "1.4" 오탐지로 네이티브 HWPX 전반에 부당 적용되어 삭제했다.
@@ -969,10 +1040,23 @@ pub(crate) fn parse_hwpx_with_reservation(
 /// `parse_hwpx` 경로로 들어간다. 비암호 HWPX에 비밀번호를 넘기면 원본 바이트를
 /// 다시 쓰지 않고 종전 파서 결과를 그대로 반환한다.
 pub fn parse_hwpx_with_password(data: &[u8], password: &[u8]) -> Result<Document, HwpxError> {
-    match crypto::decrypt_hwpx_package(data, password)? {
-        Some(decrypted) => parse_hwpx(&decrypted),
-        None => parse_hwpx(data),
-    }
+    parse_hwpx_for_open(data, Some(password), false)
+}
+
+pub(super) fn parse_hwpx_for_open(
+    data: &[u8],
+    password: Option<&[u8]>,
+    recover_legacy_alpha: bool,
+) -> Result<Document, HwpxError> {
+    let decrypted = match password {
+        Some(password) => crypto::decrypt_hwpx_package(data, password)?,
+        None => None,
+    };
+    parse_hwpx_package(
+        decrypted.as_deref().unwrap_or(data),
+        None,
+        recover_legacy_alpha,
+    )
 }
 
 fn resolve_embedded_font_references(

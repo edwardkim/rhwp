@@ -116,9 +116,9 @@ use super::layout::split_into_clusters;
 #[cfg(target_arch = "wasm32")]
 mod faux_bold_outline;
 #[cfg(target_arch = "wasm32")]
-mod hft_outline;
-#[cfg(target_arch = "wasm32")]
 mod implicit_symbol;
+#[cfg(target_arch = "wasm32")]
+mod legacy_font_outline;
 #[cfg(target_arch = "wasm32")]
 mod middle_dot;
 #[cfg(target_arch = "wasm32")]
@@ -457,7 +457,7 @@ pub struct WebCanvasRenderer {
     active_decoration_trim: usize,
     suppress_text_glyphs: bool,
     metric_descriptor_mismatch: std::cell::Cell<bool>,
-    hft_outline_fonts: Option<super::hft_outline::HftOutlineFonts>,
+    legacy_font_outlines: Option<super::legacy_font_outline::HftOutlineFonts>,
     hft_outline_enabled: bool,
     print_text_geometry: bool,
     high_quality_images: bool,
@@ -498,7 +498,7 @@ impl WebCanvasRenderer {
             active_decoration_trim: 0,
             suppress_text_glyphs: false,
             metric_descriptor_mismatch: std::cell::Cell::new(false),
-            hft_outline_fonts: None,
+            legacy_font_outlines: None,
             hft_outline_enabled: false,
             print_text_geometry: false,
             high_quality_images: false,
@@ -513,8 +513,11 @@ impl WebCanvasRenderer {
         })
     }
 
-    pub(crate) fn set_hft_outline_fonts(&mut self, fonts: &super::hft_outline::HftOutlineFonts) {
-        self.hft_outline_fonts = Some(fonts.clone());
+    pub(crate) fn set_hft_outline_fonts(
+        &mut self,
+        fonts: &super::legacy_font_outline::HftOutlineFonts,
+    ) {
+        self.legacy_font_outlines = Some(fonts.clone());
     }
 
     /// 줌 스케일 설정 (1.0 = 100%, 2.0 = 200%)
@@ -1300,6 +1303,11 @@ impl WebCanvasRenderer {
         style: &LineStyle,
         width: f64,
     ) {
+        if style.alpha != 0 {
+            self.ctx.save();
+            self.ctx
+                .set_global_alpha(self.ctx.global_alpha() * super::alpha_to_opacity(style.alpha));
+        }
         let color = color_to_css(style.color);
         let (lx1, ly1, lx2, ly2) = (x1, y1, x2, y2);
         let dx = x2 - x1;
@@ -1403,7 +1411,11 @@ impl WebCanvasRenderer {
             &super::arrow::line_heads((x1, y1, x2, y2), style),
             &color,
             width,
+            0,
         );
+        if style.alpha != 0 {
+            self.ctx.restore();
+        }
     }
 
     fn render_ellipse(
@@ -1595,6 +1607,7 @@ impl WebCanvasRenderer {
                 &super::arrow::connector_heads(path),
                 &color_to_css(style.color),
                 style.width,
+                style.alpha,
             );
         }
         if restore_transform {
@@ -2288,6 +2301,17 @@ impl WebCanvasRenderer {
         true
     }
 
+    /// 면과 획이 달라도 상위 레이어의 불투명도는 양쪽에 곱한다.
+    fn begin_shape_fill(&self, style: &ShapeStyle) -> Option<f64> {
+        if style.opacity == 1.0 && style.stroke_alpha == 0 {
+            return None;
+        }
+        let parent = self.ctx.global_alpha();
+        self.ctx.save();
+        self.ctx.set_global_alpha(parent * style.opacity);
+        Some(parent)
+    }
+
     /// 그라데이션을 포함한 사각형 그리기
     fn draw_rect_with_gradient(
         &mut self,
@@ -2299,11 +2323,7 @@ impl WebCanvasRenderer {
         style: &ShapeStyle,
         gradient: Option<&GradientFillInfo>,
     ) {
-        let need_opacity = style.opacity < 1.0;
-        if need_opacity {
-            self.ctx.save();
-            self.ctx.set_global_alpha(style.opacity);
-        }
+        let parent_alpha = self.begin_shape_fill(style);
         // 그림자는 fill에만 적용 (stroke 전에 해제)
         self.apply_shadow(style);
 
@@ -2344,6 +2364,10 @@ impl WebCanvasRenderer {
             }
             self.clear_shadow(style); // stroke 전에 그림자 해제
             if let Some(stroke) = style.stroke_color {
+                if let Some(parent) = parent_alpha {
+                    self.ctx
+                        .set_global_alpha(parent * super::alpha_to_opacity(style.stroke_alpha));
+                }
                 self.ctx.set_stroke_style_str(&color_to_css(stroke));
                 self.ctx
                     .set_line_width(style.stroke_dash.canvas_width(style.stroke_width));
@@ -2372,6 +2396,10 @@ impl WebCanvasRenderer {
             }
             self.clear_shadow(style); // stroke 전에 그림자 해제
             if let Some(stroke) = style.stroke_color {
+                if let Some(parent) = parent_alpha {
+                    self.ctx
+                        .set_global_alpha(parent * super::alpha_to_opacity(style.stroke_alpha));
+                }
                 self.ctx.set_stroke_style_str(&color_to_css(stroke));
                 self.ctx
                     .set_line_width(style.stroke_dash.canvas_width(style.stroke_width));
@@ -2383,7 +2411,7 @@ impl WebCanvasRenderer {
             }
         }
 
-        if need_opacity {
+        if parent_alpha.is_some() {
             self.ctx.restore();
         }
     }
@@ -2398,6 +2426,11 @@ impl WebCanvasRenderer {
         style: &ShapeStyle,
         gradient: Option<&GradientFillInfo>,
     ) {
+        if let Some(commands) = super::ellipse::patterned_outline(cx, cy, rx, ry, style) {
+            self.draw_path_with_gradient(&commands, style, gradient);
+            return;
+        }
+        let parent_alpha = self.begin_shape_fill(style);
         self.apply_shadow(style);
         self.ctx.begin_path();
         let _ = self
@@ -2426,6 +2459,10 @@ impl WebCanvasRenderer {
         }
 
         if let Some(stroke) = style.stroke_color {
+            if let Some(parent) = parent_alpha {
+                self.ctx
+                    .set_global_alpha(parent * super::alpha_to_opacity(style.stroke_alpha));
+            }
             self.ctx.set_stroke_style_str(&color_to_css(stroke));
             self.ctx
                 .set_line_width(style.stroke_dash.canvas_width(style.stroke_width));
@@ -2436,6 +2473,9 @@ impl WebCanvasRenderer {
             self.ctx.set_line_cap("butt");
         }
         self.clear_shadow(style);
+        if parent_alpha.is_some() {
+            self.ctx.restore();
+        }
     }
 
     /// 그라데이션을 포함한 패스 그리기
@@ -2445,6 +2485,7 @@ impl WebCanvasRenderer {
         style: &ShapeStyle,
         gradient: Option<&GradientFillInfo>,
     ) {
+        let parent_alpha = self.begin_shape_fill(style);
         self.apply_shadow(style);
         self.ctx.begin_path();
         let mut min_x = f64::MAX;
@@ -2550,6 +2591,10 @@ impl WebCanvasRenderer {
         }
 
         if let Some(stroke) = style.stroke_color {
+            if let Some(parent) = parent_alpha {
+                self.ctx
+                    .set_global_alpha(parent * super::alpha_to_opacity(style.stroke_alpha));
+            }
             self.ctx.set_stroke_style_str(&color_to_css(stroke));
             self.ctx
                 .set_line_width(style.stroke_dash.canvas_width(style.stroke_width));
@@ -2566,6 +2611,9 @@ impl WebCanvasRenderer {
             self.ctx.set_shadow_offset_x(0.0);
             self.ctx.set_shadow_offset_y(0.0);
             self.ctx.set_shadow_blur(0.0);
+        }
+        if parent_alpha.is_some() {
+            self.ctx.restore();
         }
     }
 
@@ -3077,12 +3125,22 @@ impl Renderer for WebCanvasRenderer {
                         // 문맥 shaping의 내부 전진·결합은 브라우저가 결정한다.
                         // 저장 원점은 유지하며 낱글자 폭의 합으로 다시 압축하지 않는다.
                         let contextual = contextual_text::is_contextual(cluster_str);
+                        let mut missing_font = None;
                         let fit = if measured_descriptor.is_some() || contextual {
                             None
                         } else if cluster_advance > 0.0 {
                             self.ctx.measure_text(glyph_text).ok().and_then(|metrics| {
                                 let ink_width = metrics.actual_bounding_box_left()
                                     + metrics.actual_bounding_box_right();
+                                if ink_width == 0.0
+                                    && super::text_glyph_visibility::visible_missing_sign(ch)
+                                    && glyph_text.len() == ch.len_utf8()
+                                {
+                                    missing_font = self.visible_fallback_font(glyph_text, style);
+                                    if missing_font.is_some() {
+                                        return None;
+                                    }
+                                }
                                 super::canvas_cluster_fit(
                                     style,
                                     cluster_str,
@@ -3106,10 +3164,14 @@ impl Renderer for WebCanvasRenderer {
                         self.ctx.translate(char_x + fit_dx, y).unwrap_or(());
                         self.ctx.scale(ratio * fit_scale, 1.0).unwrap_or(());
                         self.apply_synthetic_italic(synthetic_italic);
-                        let painted = self.draw_hft_outline(glyph_text, style, font_size)
-                            || stroke_space.as_ref().is_some_and(|space| {
-                                self.draw_faux_bold_outline(glyph_text, style, font_size, space)
-                            });
+                        if let Some(descriptor) = &missing_font {
+                            self.ctx.set_font(descriptor);
+                        }
+                        let painted = missing_font.is_none()
+                            && (self.draw_hft_outline(glyph_text, style, font_size)
+                                || stroke_space.as_ref().is_some_and(|space| {
+                                    self.draw_faux_bold_outline(glyph_text, style, font_size, space)
+                                }));
                         if !painted {
                             Self::fill_positioned_text(
                                 &self.ctx,
@@ -3517,8 +3579,11 @@ impl Renderer for WebCanvasRenderer {
                 (std::borrow::Cow::Borrowed(data), mime_type)
             };
 
+        // 브라우저는 JPEG EXIF 방향을 적용해 돌려 그린다. 한/글처럼 바이트 그대로 그리게 방향을 1로 둔다.
+        let upright = crate::renderer::image_resolver::upright_jpeg(&render_data);
+        let render_data = upright.as_deref().unwrap_or(&render_data);
         // Base64 인코딩 및 data URL 생성
-        let base64_data = base64::engine::general_purpose::STANDARD.encode(&*render_data);
+        let base64_data = base64::engine::general_purpose::STANDARD.encode(render_data);
         let data_url = format!("data:{};base64,{}", render_mime, base64_data);
 
         if let Ok(img) = HtmlImageElement::new() {
@@ -3716,6 +3781,45 @@ impl WebCanvasRenderer {
 
         // 캐시 미스: draw_image로 로드 시작 (다음 렌더에서 crop 적용)
         self.draw_image(data, dx, dy, dw, dh);
+    }
+
+    // When no installed face covers a sign, Canvas may use the primary face's
+    // empty .notdef even if a declared fallback has a visible missing glyph.
+    fn visible_fallback_font(&self, text: &str, style: &TextStyle) -> Option<String> {
+        // A mapped glyph may intentionally be empty. A verified owner keeps it.
+        if self.legacy_font_outlines.as_ref().is_some_and(|fonts| {
+            fonts
+                .pua_coverage
+                .text_faces
+                .select(
+                    &super::canvas_text_font::family_chain(style),
+                    text,
+                    style.is_visually_bold(),
+                    style.italic,
+                )
+                .is_some_and(|face| face.predecessors_known)
+        }) {
+            return None;
+        }
+        let ctx = &self.ctx;
+        let active = ctx.font();
+        let (prefix, _) = active.split_once("px ")?;
+        let families = super::internal_font_family_members(&style.font_family);
+        ctx.save();
+        let result = families
+            .into_iter()
+            .skip(1)
+            .map(super::css_single_quoted_font_family)
+            .chain(std::iter::once(String::from("sans-serif")))
+            .find_map(|family| {
+                let descriptor = format!("{prefix}px {family}");
+                ctx.set_font(&descriptor);
+                let metrics = ctx.measure_text(text).ok()?;
+                (metrics.actual_bounding_box_left() + metrics.actual_bounding_box_right() > 0.0)
+                    .then_some(descriptor)
+            });
+        ctx.restore();
+        result
     }
 
     fn fill_positioned_text(
@@ -4517,7 +4621,7 @@ impl WebCanvasRenderer {
                 })
         };
         let original_size_hu = if is_wmf {
-            super::metafile_geometry::wmf_crop_reference(original_size_hu)
+            super::metafile_geometry::wmf_crop_reference(original_size_hu, Some(data), crop)
         } else {
             original_size_hu
         };
@@ -4672,8 +4776,12 @@ fn draw_arrow_heads(
     heads: &[super::arrow::ArrowHead],
     color: &str,
     stroke_width: f64,
+    alpha: u8,
 ) {
     ctx.save();
+    if alpha != 0 {
+        ctx.set_global_alpha(ctx.global_alpha() * super::alpha_to_opacity(alpha));
+    }
     let _ = ctx.set_line_dash(&js_sys::Array::new());
     for head in heads {
         ctx.begin_path();

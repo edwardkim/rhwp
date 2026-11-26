@@ -488,20 +488,26 @@ impl TypesetState {
     ) -> Result<(), S::Error> {
         if let Some(continuation) = continuation {
             let fragment = continuation.row_fragment;
-            storage.push(
-                &mut self.data.pending_overlay_continuations,
-                crate::renderer::pagination::OverlayContinuation {
-                    para_index: para_idx,
-                    control_index: ctrl_idx,
-                    start_row: continuation.first_unfit,
-                    start_cut: match &fragment {
-                        Some(f) => storage.copy_slice(&f.end_cut)?,
-                        None => Vec::new(),
+            let resumed = fragment.as_ref().filter(|row| !row.fully_consumed);
+            // 잔여 행이 없는 컷(모든 행을 이 쪽에 그림)은 다음 쪽 대기열에 올리지 않는다.
+            let carries_rows = continuation.remaining_px > 0.0 || resumed.is_some();
+            if carries_rows {
+                storage.push(
+                    &mut self.data.pending_overlay_continuations,
+                    crate::renderer::pagination::OverlayContinuation {
+                        para_index: para_idx,
+                        control_index: ctrl_idx,
+                        start_row: continuation.first_unfit
+                            + usize::from(fragment.as_ref().is_some_and(|f| f.fully_consumed)),
+                        start_cut: match resumed {
+                            Some(f) => storage.copy_slice(&f.end_cut)?,
+                            None => Vec::new(),
+                        },
+                        start_row_height: resumed.map(|f| f.remaining_height),
+                        reserve_px: continuation.reserve_px,
                     },
-                    start_row_height: fragment.as_ref().map(|f| f.remaining_height),
-                    reserve_px: continuation.reserve_px,
-                },
-            )?;
+                )?;
+            }
             storage.push(
                 &mut self.data.current_column_overlay_cuts,
                 (
@@ -750,6 +756,7 @@ impl TypesetState {
     pub(super) fn empty_float_page(
         &self,
         paragraphs: &[crate::model::paragraph::Paragraph],
+        para_index: usize,
     ) -> EmptyFloatPage<'_> {
         EmptyFloatPage {
             layout: &self.data.layout,
@@ -758,6 +765,9 @@ impl TypesetState {
             current_height: self.data.current_height,
             current_items: &self.data.current_items,
             visible_float_exclusions: &self.data.visible_float_exclusions,
+            source_prefix_origin_hu: super::stored_reset_ownership::accepted_source_prefix_origin(
+                self, paragraphs, para_index,
+            ),
             // 원본 0 줄이 실제 첫 완전한 본문 항목으로 수용된 단만 원점을
             // 증명한다. 이어받기 조각·첫 표·추가 zone의 raw vpos는 다른 축이다.
             original_column_origin: self.data.current_zone_y_offset == 0.0

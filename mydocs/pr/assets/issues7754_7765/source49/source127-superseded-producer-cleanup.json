@@ -1,0 +1,96 @@
+{
+  "started": 1795341343.9378984,
+  "scope": "Completed, superseded task-owned producer/link/probe executables only. Preserve Source105 and actual base Source88, all active Cargo/target files, fonts, source code, TS/JS, visual PNG/TSV/PDF, source/build receipts and logs. Historical producer artifacts can be reconstructed from the preserved source/build hashes.",
+  "free_before": 543985664,
+  "references": [],
+  "files": [
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source74-preview-optimized",
+      "bytes": 89328760,
+      "links_before": 1,
+      "sha256": "797bacbe7771d4fdf4a4e05dea79c9ef7e003a4a0432d871eaef5cabef9a6f88"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source33-optimized",
+      "bytes": 89284120,
+      "links_before": 1,
+      "sha256": "14d4ae261ee487dfa3603e13b928f16d38326462b31d828d56b0d7f4670bb6bb"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source36-optimized",
+      "bytes": 89290000,
+      "links_before": 1,
+      "sha256": "92030aef1db4981ba6cdf95d5cc8a1f98e65e74ea09c512cb60d756fab1175be"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source37-optimized",
+      "bytes": 89305392,
+      "links_before": 1,
+      "sha256": "249e11dedc91f4f2c90b145e82b9bd0102d27a0b1e1ebaa15030431178cdfa02"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-native-library/librhwp.rlib",
+      "bytes": 167364392,
+      "links_before": 1,
+      "sha256": "3bcce51f132854fc07635d26952477fbac06978587919f7f676394f25bc6f9ef"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-native-library/librhwp.rlib",
+      "bytes": 167512104,
+      "links_before": 2,
+      "sha256": "d0b6e0a2eb5421bc0e69e77c6886b771ebe547dd58b278522b213c37f7802df3"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source74-preview-native-library/librhwp.rlib",
+      "bytes": 167598714,
+      "links_before": 1,
+      "sha256": "85fe90d03e33f52c79ebb7acbc98b156fd173ad8efd012f82db265dfba706ccb"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-nested-live/librhwp-candidate.rlib",
+      "bytes": 167409634,
+      "links_before": 1,
+      "sha256": "656ef974b4e59433ee9ad6464f7f6ab66790a58f5e591e2c26ec65f76850c0c6"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-nested-live/candidate-runner",
+      "bytes": 72143784,
+      "links_before": 1,
+      "sha256": "6b578d6018927b98ccab1a49022d05a020edb695901309fad34f8b4ec789a390"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-nested-live/base-runner",
+      "bytes": 72144360,
+      "links_before": 1,
+      "sha256": "cdf3932cdd71aed5c1538b840575816140c1dc46370a684dcd263302acc9aeb8"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/librhwp-candidate.rlib",
+      "bytes": 167512104,
+      "links_before": 1,
+      "sha256": "d0b6e0a2eb5421bc0e69e77c6886b771ebe547dd58b278522b213c37f7802df3"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate-runner",
+      "bytes": 72136888,
+      "links_before": 1,
+      "sha256": "16d1581174fb6aa814f890065eca901cdc71cb685e77be11e884098cf11bb67b"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source54-font-trace/probe",
+      "bytes": 70682184,
+      "links_before": 1,
+      "sha256": "abcae4fa2662d6bdb575abe0c7f4e773ab17b184bff42043cd4ad42af8102fc0"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source54-font-trace/environment-probe",
+      "bytes": 70747816,
+      "links_before": 1,
+      "sha256": "cb04c1c1a89a0be621cb6b76abbd8d4e13e6602a1b7db6bcfcf69d242a5df023"
+    }
+  ],
+  "ended": 1795341387.5400612,
+  "free_after": 1742921728,
+  "complete": true,
+  "actual_free_delta": 1198936064
+}

@@ -60,7 +60,7 @@ function createSvgLine(
 }
 
 /** 핸들 방향 */
-export type HandleDirection = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'rotate';
+export type HandleDirection = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'rotate' | 'midpoint';
 
 interface HandleInfo {
   dir: HandleDirection;
@@ -309,7 +309,8 @@ export class TableObjectRenderer {
     lineBBox: { pageIndex: number; x1: number; y1: number; x2: number; y2: number;
                 x: number; y: number; width: number; height: number },
     zoom: number,
-    midPoint?: { x: number; y: number },
+    midPoint: { x: number; y: number } | undefined,
+    showStraightGuide: boolean,
   ): void {
     this.clear();
     this.ensureAttached();
@@ -325,7 +326,7 @@ export class TableObjectRenderer {
     const ey = pageOffset + lineBBox.y2 * zoom;
 
     // 직선 표시 (SVG) — 연결선은 점선 불필요 (마커만 표시)
-    if (!midPoint) {
+    if (showStraightGuide) {
       const svgEl = document.createElement('div');
       svgEl.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;';
       const svg = createSvgRoot('100%', '100%');
@@ -346,7 +347,7 @@ export class TableObjectRenderer {
     if (midPoint) {
       const mx = pageLeft + midPoint.x * zoom;
       const my = pageOffset + midPoint.y * zoom;
-      handlePoints.push(['s', mx, my]); // 's'를 중간점 핸들로 사용
+      handlePoints.push(['midpoint', mx, my]);
     }
     for (const [dir, cx, cy] of handlePoints) {
       const el = document.createElement('div');

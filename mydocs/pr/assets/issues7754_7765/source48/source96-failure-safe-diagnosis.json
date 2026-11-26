@@ -1,0 +1,18 @@
+{
+  "job_id": "ae060183-8c68-4cd4-bb04-f5ad217c6539",
+  "status": "failed",
+  "phase": "failed",
+  "stage": "converting_document",
+  "elapsed_seconds": 600,
+  "progress_current_page": 6,
+  "progress_total_pages": 7,
+  "progress_percent": 83.33,
+  "error_classifiers": {
+    "timeout": false,
+    "font": false,
+    "crash": false,
+    "missing": false,
+    "denied": false,
+    "print": false
+  }
+}

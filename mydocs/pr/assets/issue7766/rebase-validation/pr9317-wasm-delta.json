@@ -1,0 +1,42 @@
+{
+  "base": "2c0c1d205a54b8d5bd262241bac1391cffe0d801",
+  "candidate": "953b43187325496645683fcc15ca989a815b0596",
+  "backend": "wasm",
+  "input_sha256": "e0cb2372922ec5c89cc028e583b78a1e1d264385569f23cd0f2daf29a91f410b",
+  "reference_sha256": "e68b80c8b1306536c857327496ae626be1bfc2b931900cfa6832482ab9e446e7",
+  "pages": 46,
+  "unchanged_pages": 44,
+  "verified_title_improvements": [
+    {
+      "page": 7,
+      "title": "초격차·신산업 분야",
+      "middle_dot_width_px": {
+        "base": 6.7,
+        "candidate": 10.2
+      },
+      "raw_before": "99.93",
+      "raw_after": "99.99",
+      "overlay_sha256": "e18defaf29fb597c38a39e480a4706382b5d505a5e67d677b52e7a4d6e2ac0d4",
+      "tree_diff_sha256": "a97d1e2d826e99d5372f77d08dc8f2d6535980a5a75520fcdb95a2c515faccb3",
+      "reviewed_against_independent_print": true,
+      "base_png_sha256": "1df8ae18acae87ec34b16f7b59b90504bf8968641abeaa591a87a936e1033ef4",
+      "candidate_png_sha256": "39f65949f0941214b89a0901f1627cb9692450974bb3195ceb76c1764ff68938"
+    },
+    {
+      "page": 43,
+      "title": "정책자금 신청·접수 시스템 이용절차",
+      "middle_dot_width_px": {
+        "base": 6.7,
+        "candidate": 10.2
+      },
+      "raw_before": "98.20",
+      "raw_after": "98.38",
+      "overlay_sha256": "cf702de40e65535bd9e7bfc52fd0eeae9c82dc8e28dad2ad38cc1dcbb937d650",
+      "tree_diff_sha256": "aa752e07af2f917d7024f5746dd119b83d4dd10d3cebd76ceaf8044f347afb9f",
+      "reviewed_against_independent_print": true,
+      "base_png_sha256": "4e2ef3098a809765c358775a7ccf5a83a01989be336e6dc090323d007316bb0f",
+      "candidate_png_sha256": "636e30fde2e87e2b5f8a3830a5e07cf79b8f1494f6649ba75d3b212b5e341128"
+    }
+  ],
+  "previous_review_reused_after_same_base_and_candidate_png_hashes": true
+}

@@ -1,13 +1,13 @@
-//! 평행 도형 그림자를 backend 공통의 일반 도형과 이동 레이어로 내린다.
+//! 도형 그림자(평행·작게·크게·기울임)를 backend 공통의 일반 도형과 변환 레이어로 내린다.
 
 use crate::paint::layer_tree::{CacheHint, GroupKind, LayerNode};
-use crate::renderer::render_tree::{GroupNode, PathNode, RenderNode, RenderNodeType};
-use crate::renderer::{PathCommand, ShadowStyle, ShapeStyle};
+use crate::renderer::render_tree::{BoundingBox, GroupNode, PathNode, RenderNode, RenderNodeType};
+use crate::renderer::{alpha_to_opacity, PathCommand, ShadowStyle, ShapeStyle};
 
 pub(super) struct ShadowParts {
     pub body: RenderNode,
     pub silhouette: RenderNode,
-    pub offset: (f64, f64),
+    pub matrix: [f64; 6],
 }
 
 fn shadow_style(node: &RenderNode) -> Option<&ShadowStyle> {
@@ -39,29 +39,36 @@ fn clear_shadow(node: &mut RenderNode) {
     }
 }
 
+/// 원 획과 그림자의 불투명도를 곱한 뒤 가장 가까운 HWP 투명도 바이트로 되돌린다.
+fn shadow_stroke_alpha(stroke: u8, shadow: u8) -> u8 {
+    let opacity = u16::from(255 - stroke) * u16::from(255 - shadow);
+    255 - ((opacity + 127) / 255) as u8
+}
+
 fn recolor(style: &mut ShapeStyle, shadow: &ShadowStyle, has_gradient: bool) {
     style.fill_color = (style.fill_color.is_some() || style.pattern.is_some() || has_gradient)
         .then_some(shadow.color);
     style.pattern = None;
     style.stroke_color = style.stroke_color.map(|_| shadow.color);
-    style.opacity *= 1.0 - f64::from(shadow.alpha) / 255.0;
+    style.opacity *= alpha_to_opacity(shadow.alpha);
+    style.stroke_alpha = shadow_stroke_alpha(style.stroke_alpha, shadow.alpha);
     style.shadow = None;
 }
 
-/// 평행 그림자의 실제 이동량. 기본 이동량에 저장 offset을 더한 값이며,
+/// 그림자 실루엣을 본체 상자에서 그림자 자리로 옮기는 쪽 공간 행렬.
 /// 그림자 레이어의 재생과 잉크 경계 계산이 함께 소비한다.
-pub(super) fn offset_px(shadow: &ShadowStyle) -> Option<(f64, f64)> {
-    let (x, y) = crate::model::shape::shadow::parallel_preset_hu(shadow.shadow_type)?;
-    let offset = (
-        crate::renderer::hwpunit_to_px(x, crate::renderer::DEFAULT_DPI) + shadow.offset_x,
-        crate::renderer::hwpunit_to_px(y, crate::renderer::DEFAULT_DPI) + shadow.offset_y,
-    );
-    (offset.0.is_finite() && offset.1.is_finite()).then_some(offset)
+pub(super) fn matrix_px(shadow: &ShadowStyle, body: BoundingBox) -> Option<[f64; 6]> {
+    crate::model::shape::shadow::matrix(
+        shadow.shadow_type,
+        [body.x, body.y, body.width, body.height],
+        crate::renderer::DEFAULT_DPI / crate::renderer::HWPUNIT_PER_INCH,
+        (shadow.offset_x, shadow.offset_y),
+    )
 }
 
 pub(super) fn split(node: &RenderNode) -> Option<ShadowParts> {
     let shadow = shadow_style(node)?;
-    let offset = offset_px(shadow)?;
+    let matrix = matrix_px(shadow, node.bbox)?;
 
     let mut body = node.clone();
     clear_shadow(&mut body);
@@ -85,15 +92,16 @@ pub(super) fn split(node: &RenderNode) -> Option<ShadowParts> {
             path.gradient = None;
             if let Some(style) = &mut path.line_style {
                 style.color = shadow.color;
+                style.alpha = shadow_stroke_alpha(style.alpha, shadow.alpha);
             }
         }
         RenderNodeType::Line(line) => {
-            // 일반 Path의 opacity를 사용해 선 그림자의 alpha도 공통 재생한다.
+            let alpha = shadow_stroke_alpha(line.style.alpha, shadow.alpha);
             let style = ShapeStyle {
                 stroke_color: Some(shadow.color),
                 stroke_width: line.style.width,
                 stroke_dash: line.style.dash,
-                opacity: 1.0 - f64::from(shadow.alpha) / 255.0,
+                stroke_alpha: alpha,
                 ..ShapeStyle::default()
             };
             let mut path = PathNode::new(
@@ -106,6 +114,7 @@ pub(super) fn split(node: &RenderNode) -> Option<ShadowParts> {
             );
             let mut line_style = line.style.clone();
             line_style.color = shadow.color;
+            line_style.alpha = alpha;
             path.line_style = Some(line_style);
             path.connector_endpoints = Some((line.x1, line.y1, line.x2, line.y2));
             path.transform = line.transform;
@@ -122,12 +131,12 @@ pub(super) fn split(node: &RenderNode) -> Option<ShadowParts> {
     Some(ShadowParts {
         body,
         silhouette,
-        offset,
+        matrix,
     })
 }
 
-/// 도형 변환 뒤의 페이지 좌표에서 이동한다. 같은 레이어를 재생·경계 계산이 소비한다.
-pub(super) fn translated(layer: LayerNode, offset: (f64, f64)) -> LayerNode {
+/// 도형 변환 뒤의 페이지 좌표에서 그림자 자리로 옮긴다. 같은 레이어를 재생·경계 계산이 소비한다.
+pub(super) fn transformed(layer: LayerNode, matrix: [f64; 6]) -> LayerNode {
     let source = layer.source_node_id;
     let metadata = layer.layer;
     let mut group = LayerNode::group(
@@ -136,7 +145,7 @@ pub(super) fn translated(layer: LayerNode, offset: (f64, f64)) -> LayerNode {
         vec![layer],
         CacheHint::None,
         GroupKind::Group(GroupNode {
-            paint_transform: Some([1.0, 0.0, 0.0, 1.0, offset.0, offset.1]),
+            paint_transform: Some(matrix),
             section_index: None,
             para_index: None,
             control_index: None,

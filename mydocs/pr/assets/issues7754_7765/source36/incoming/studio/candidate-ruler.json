@@ -1,0 +1,37 @@
+{
+  "role": "candidate",
+  "label": "ruler-document-switch",
+  "command": [
+    "/usr/local/bin/node",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_studio_with_frozen_pkg.mjs",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source36",
+    "/usr/local/bin/node",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/ruler_document_switch_with_font_choice.mjs",
+    "--mode=headless"
+  ],
+  "started": 1795305022.2454202,
+  "source_head": "436f8629b7f2b9aee520962297b79cdf15c17743",
+  "wasm_sha256": "483c42c9ac2c1356985a6e1a2b2ae7c4a1a5616ec64882cc371d7cd38028b9bf",
+  "purpose": "Retain final exit code and actual UI choices in structured receipt; original retry log preserved.",
+  "exit_code": 0,
+  "ended": 1795305058.964084,
+  "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-candidate-ruler-confirmation.log",
+  "log_sha256": "2120c771557ccba6a792415a752cedcf4fe6544ff19daa56c9385129bee4270a",
+  "actual_states": {
+    "portrait": {
+      "bandWidth": 795,
+      "pageWidth": 793.7,
+      "zoom": 1
+    },
+    "landscape": {
+      "bandWidth": 1123,
+      "pageWidth": 1122.5,
+      "zoom": 1
+    },
+    "fontChoices": [
+      "대체 글꼴로 보기",
+      "대체 글꼴로 보기"
+    ]
+  },
+  "passed": true
+}

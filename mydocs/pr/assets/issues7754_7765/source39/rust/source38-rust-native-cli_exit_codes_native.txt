@@ -1,0 +1,11 @@
+[RustTestSuite] cli_exit_codes_native -> cli_exit_codes_native
+[RustTestSuite] cargo nextest run --locked --test cli_exit_codes_native --cargo-profile release-test --target-dir /home/tsjang/rhwp/target/pr-review --features native-skia --test-threads 12 --no-fail-fast
+   Compiling rhwp v0.9.1 (/home/tsjang/rhwp-worktrees/task-7754-rebase-5665)
+    Finished `release-test` profile [optimized] target(s) in 14m 53s
+────────────
+ Nextest run ID a1174517-7573-4e6b-8a66-9c91c21972ab with nextest profile: default
+    Starting 2 tests across 1 binary
+        PASS [   0.072s] (1/2) rhwp::cli_exit_codes_native export_png_follows_the_same_contract
+        PASS [   1.010s] (2/2) rhwp::cli_exit_codes_native png_json_metadata_and_render_preserve_feature_and_provenance_contracts
+────────────
+     Summary [   1.027s] 2 tests run: 2 passed, 0 skipped

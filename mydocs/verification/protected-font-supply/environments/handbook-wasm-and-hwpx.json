@@ -1,0 +1,21 @@
+{
+  "id": "handbook145-print-observed-20261031",
+  "preserveSourceMetrics": true,
+  "substitutions": {
+    "-윤고딕120": "Haansoft Batang",
+    "-윤명조120": "Haansoft Batang",
+    "-윤명조140": "Haansoft Batang",
+    "Dinbol": "Haansoft Batang",
+    "HCI Poppy": "HCI Poppy",
+    "Yoon가변 윤명조 120_TT": "Haansoft Batang",
+    "명조": "Myeongjo",
+    "신명 세명조": "Sinmyeong Semyeongjo",
+    "신명 신명조": "Sinmyeong Sinmyeongjo",
+    "한양신명조": "HY Sinmyeongjo",
+    "한양중고딕": "HY Junggothic",
+    "정부상징 부처명_16040911": "Haansoft Batang"
+  },
+  "trueTypeFaces": [
+    "Haansoft Batang"
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "head": "c01b25ae6d182c6ea44b5425fd3cd666b18e1a61",
+  "captures": [
+    {
+      "backend": "native",
+      "page": 474,
+      "score": "100.00",
+      "fixture_registered": false,
+      "sample_hash": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+      "pdf_hash": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+      "font_supply_count": 1219,
+      "hbatang_sha256": [
+        "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+        "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+      ],
+      "review": "native-review.png",
+      "overlay": "native-overlay.png",
+      "review_sha256": "435a126992284f33b4fa9272e0516e3d7ade1ac77ac06c40a7744cfa6960c119",
+      "overlay_sha256": "7365f6fb17746f7816eb7b5c6f8eba9c84ff999a67ddf31d39cb164110278b1b",
+      "tsv": "native-tsv.tsv",
+      "tsv_sha256": "754c36a9693e492af7bc353f085647e0b189b8f2000ba10f5e1c7e5c65905d8d"
+    },
+    {
+      "backend": "wasm",
+      "page": 474,
+      "score": "100.00",
+      "fixture_registered": false,
+      "sample_hash": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+      "pdf_hash": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+      "font_supply_count": 1218,
+      "hbatang_sha256": [
+        "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+      ],
+      "review": "wasm-review.png",
+      "overlay": "wasm-overlay.png",
+      "review_sha256": "77079eb27678214e9267e485178a7871c37f055ede8252dc8521eb54193add24",
+      "overlay_sha256": "ea052c3d875725332afc663b8ff503bc045af19a7d6e215be4241db72eb0a152",
+      "tsv": "wasm-tsv.tsv",
+      "tsv_sha256": "754c36a9693e492af7bc353f085647e0b189b8f2000ba10f5e1c7e5c65905d8d"
+    }
+  ],
+  "verified_candidate": "954226e426517dc02ef0a15cc739899ab54b7fae",
+  "reuse_reason": "두 번째 제거에서도 제품 코드와 실행 도구가 같고 출력에 해당 합성 파일을 공급하지 않았다.",
+  "base": "8a196ca7aea2aa3cf32d394f5b7da2bdf4520479",
+  "runtime_producer": "b405943d2e5428de80cc4ad7ff8367a795b8aa28",
+  "comparison_profile": "96 DPI, 2px 이웃 raw 실루엣, 소수 둘째 자리 표시값"
+}

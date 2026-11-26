@@ -1,0 +1,25 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 9290,
+  "title": "자리차지 표로 여는 쪽에서 문단 앞 간격을 포함한 첫 저장 줄 vpos 를 쪽 원점으로 써서 표 아래 본문이 위로 당겨진다",
+  "entries": [
+    {
+      "path": "samples/issue9290/labor-townhall-table-opened-page.hwpx",
+      "format": "hwpx",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/9290",
+      "originalFilename": "156731281_251125 2025 우리 노동부 타운홀 미팅 개최(노무제공자지원과).hwpx",
+      "bytes": 106647,
+      "sha256": "4a0d235391c59e2f22dc79e51c08fd0f18660a6d64b5747b8998e603d52078d4",
+      "lastSavedWith": {
+        "product": "hancom-office-2022",
+        "version": "12.0.0.4204"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/issue9290/labor-townhall-table-opened-page-2020.pdf",
+      "referencePdfSha256": "20f1811357f632b27e12949e420fbda9f72453790129cc202c7080a6b073ae39",
+      "referencePdfPageCount": 3,
+      "contract": "전체 3쪽으로 한/글 Print 와 같다. 3쪽은 글 없는 host 문단(pi=25, 문단 앞 간격 1500HU)의 문단 기준 자리차지 표로 시작하고, host 첫 저장 줄 vpos 1500 은 문단 앞 간격이며 다음 문단 첫 줄 vpos 5400 에서 간격 사다리가 닫히므로 저장 쪽 원점은 0 이다. 표 윗변 − 본문 윗변 = 표의 바깥 위 여백, 표 아래 본문 줄(pi=26..=33) 윗변 − 본문 윗변 = 각 줄의 저장 vpos."
+    }
+  ]
+}

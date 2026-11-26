@@ -1,0 +1,16 @@
+
+running 3 tests
+
+thread 'case0::first_nested_cut_reserves_blank_minimum_without_consuming_the_next_line' (1483291) panicked at /home/tsjang/rhwp/tests/cases/issue_7765_hwpx_saved_flow_ownership.rs:228:5:
+첫 자식 컷은 글자 외에 선언 최소의 빈 물리 띠도 수용한다: 32.1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test case0::first_nested_cut_reserves_blank_minimum_without_consuming_the_next_line ... FAILED
+test case0::saved_empty_prefix_and_tail_keep_their_real_page_owners ... ok
+test case0::every_cell_keeps_its_text_once_across_all_real_fragments ... ok
+
+failures:
+
+failures:
+    case0::first_nested_cut_reserves_blank_minimum_without_consuming_the_next_line
+
+test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 13.79s

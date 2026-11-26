@@ -1,0 +1,66 @@
+[
+  {
+    "axis": "skewX",
+    "request": -90,
+    "exit": 2,
+    "output": false
+  },
+  {
+    "axis": "skewX",
+    "request": -89,
+    "exit": 0,
+    "output": true,
+    "reopened": {
+      "skewX": -89,
+      "skewY": 0
+    }
+  },
+  {
+    "axis": "skewX",
+    "request": 89,
+    "exit": 0,
+    "output": true,
+    "reopened": {
+      "skewX": 89,
+      "skewY": 0
+    }
+  },
+  {
+    "axis": "skewX",
+    "request": 90,
+    "exit": 2,
+    "output": false
+  },
+  {
+    "axis": "skewY",
+    "request": -90,
+    "exit": 2,
+    "output": false
+  },
+  {
+    "axis": "skewY",
+    "request": -89,
+    "exit": 0,
+    "output": true,
+    "reopened": {
+      "skewX": 0,
+      "skewY": -89
+    }
+  },
+  {
+    "axis": "skewY",
+    "request": 89,
+    "exit": 0,
+    "output": true,
+    "reopened": {
+      "skewX": 0,
+      "skewY": 89
+    }
+  },
+  {
+    "axis": "skewY",
+    "request": 90,
+    "exit": 2,
+    "output": false
+  }
+]

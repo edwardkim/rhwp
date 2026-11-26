@@ -1,0 +1,154 @@
+{
+  "source": {
+    "path": "samples/issue9379/kaf_appendix.hwp",
+    "bytes": 2762240,
+    "sha256": "f5f835cb60fdb1883f5857bcc0799c22dfe24e4c1b683dfc10e9382da30d77c2"
+  },
+  "dpi": 96,
+  "compat": "2022",
+  "metric": "silhouette_raw_match_percent",
+  "backend_pdf": "PDFium",
+  "base_source": "0521a1df673e7f64d8bf7ef785a6a60001d3b9c3",
+  "candidate_source": "52c5dad13d",
+  "evidence_files": [
+    {
+      "path": "mydocs/pr/assets/issue_9395/inputs/kaf_appendix_resaved.hwp",
+      "bytes": 2451456,
+      "sha256": "7fa8002b5b0cd45182ff5ff22fcb5c1fb604316fb0cfcbb84cc2b6823807d661"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_9395/inputs/kaf_appendix_size_protected.hwp",
+      "bytes": 2762240,
+      "sha256": "a266f2091de39eb62e79d72453be384d56cfd3fcb033de67cb2adf879ddacd40"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_9395/inputs/kaf_appendix_size_protected_resaved.hwp",
+      "bytes": 2451456,
+      "sha256": "b372e8bc8ac7b0cddc4c013ccffe6588a654c78b97d77ec1fb7a6b2c395efc77"
+    },
+    {
+      "path": "pdf/issue9395/kaf_appendix_resaved-2020.pdf",
+      "bytes": 784040,
+      "sha256": "fd8e1a75b778ca2174cc0847beee2bb141b8b0e325b81e94c82fa1372c1c8da4"
+    },
+    {
+      "path": "pdf/issue9395/kaf_appendix_size_protected-2020.pdf",
+      "bytes": 784028,
+      "sha256": "9eeb182f4704f4554ce55f188799e8e0336efc35dea38e4ef7b932d1932dc134"
+    }
+  ],
+  "jobs": [
+    {
+      "job_id": "0917870c-de5c-4ce7-83cf-13182dd1f5f4",
+      "operation": "hwp",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9172",
+      "elapsed_seconds": 23,
+      "pdf_output_mode": ""
+    },
+    {
+      "job_id": "268ee21d-1623-484b-aee1-002a06de5552",
+      "operation": "pdf",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9172",
+      "elapsed_seconds": 31,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "job_id": "6937d227-2c69-4265-8cdc-d1733129616c",
+      "operation": "pdf",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9172",
+      "elapsed_seconds": 815,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "job_id": "381b8ec2-807f-4f86-a389-c4c5dbee2b4d",
+      "operation": "hwp",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9172",
+      "elapsed_seconds": 28,
+      "pdf_output_mode": ""
+    }
+  ],
+  "resaved_frame": {
+    "common_height_hu": 7855,
+    "element_height_hu": 8743,
+    "base_clip_height_px": 104.73333333333333,
+    "final_clip_height_px": 116.57333333333334,
+    "native_changed_pages": [
+      36
+    ]
+  },
+  "protected_frame": {
+    "common_height_hu": 7855,
+    "element_height_after_mcp_resave_hu": 7855,
+    "mcp_resave_vertical_scale": 1.0,
+    "protected_ctrl_header_bit": 20,
+    "base_native_page36": "94.89",
+    "base_wasm_page36": "94.94"
+  },
+  "tsv": {
+    "original": {
+      "native": {
+        "path": "mydocs/pr/assets/issue_9395/original/native/silhouette.tsv",
+        "bytes": 1188,
+        "sha256": "3fd9ef4afef750461430145019af2badcc77a9cceeb202448f92eb79557a47fb",
+        "page36": "100.00"
+      },
+      "wasm": {
+        "path": "mydocs/pr/assets/issue_9395/original/wasm/silhouette.tsv",
+        "bytes": 1191,
+        "sha256": "6970018eed455b3f29770aa71ad51aeb6c460a479871ecea61541f95f90839e9",
+        "page36": "100.00"
+      }
+    },
+    "resaved": {
+      "native": {
+        "path": "mydocs/pr/assets/issue_9395/resaved/native/silhouette.tsv",
+        "bytes": 1183,
+        "sha256": "b09d2ad19b038e85b7cb087c5562ad65a3cb9db299f06890bc4c89a08eb2ee4f",
+        "page36": "100.00"
+      },
+      "wasm": {
+        "path": "mydocs/pr/assets/issue_9395/resaved/wasm/silhouette.tsv",
+        "bytes": 1191,
+        "sha256": "0fa018d20dbb843e124af0034918fe72f193111527e16546c11f2c15c8808ac5",
+        "page36": "100.00"
+      }
+    },
+    "protected": {
+      "native": {
+        "path": "mydocs/pr/assets/issue_9395/protected/native/silhouette.tsv",
+        "bytes": 1186,
+        "sha256": "37e4eb521fa18570dbc51ea6f4b77d0eca4a1bac924f76ad469b79c058a9ed45",
+        "page36": "99.96"
+      },
+      "wasm": {
+        "path": "mydocs/pr/assets/issue_9395/protected/wasm/silhouette.tsv",
+        "bytes": 1189,
+        "sha256": "365b6d0a119147ba1067812a1fa827122be33e3f5685f87211380f47243534f6",
+        "page36": "99.96"
+      }
+    }
+  },
+  "protected_baseline": {
+    "native": {
+      "pages": 2023,
+      "documents": 23,
+      "increases": [],
+      "declines": []
+    },
+    "wasm": {
+      "pages": 2023,
+      "documents": 23,
+      "increases": [],
+      "declines": []
+    }
+  },
+  "page31_pdf_diagnostic": {
+    "diagnostic": "MuPDF: unknown cid font type",
+    "same_native_png_for_resaved_base_and_final": true,
+    "previous_evidence": "mydocs/pr/assets/planet6897_20261125/kaf-print-repair/README.md"
+  }
+}

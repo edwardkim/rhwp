@@ -1,0 +1,160 @@
+{
+  "source": "a0b40b2f937eee79413724928c79c603ce3d2433",
+  "base": "622af208ee12c4cb16357d465e4802e7fd4726bc",
+  "validated_head": "38c3b5171c52a925b2f575e9ad17a61fa620ca28",
+  "oracle_reference_verification": {
+    "all_hashes_verified": 21,
+    "new_pdf_page_counts": [
+      {
+        "sample": "samples/issue5140-version-boundary/legacy-symbols-v5.0.1.5.hwp",
+        "pages": 1,
+        "tsv_row": "samples/issue5140-version-boundary/legacy-symbols-v5.0.1.5.hwp\t1\t1"
+      },
+      {
+        "sample": "samples/issue5140-version-boundary/legacy-symbols-v5.0.1.6.hwp",
+        "pages": 1,
+        "tsv_row": "samples/issue5140-version-boundary/legacy-symbols-v5.0.1.6.hwp\t1\t1"
+      },
+      {
+        "sample": "samples/issue886/1660000-201400009-kobe-earthquake.hwp",
+        "pages": 64,
+        "tsv_row": "samples/issue886/1660000-201400009-kobe-earthquake.hwp\t64\t64"
+      },
+      {
+        "sample": "samples/issue9272/trade-remedy-decree-table-tail-empty-lines.hwpx",
+        "pages": 7,
+        "tsv_row": "samples/issue9272/trade-remedy-decree-table-tail-empty-lines.hwpx\t7\t7"
+      },
+      {
+        "sample": "samples/issue9279/forest-press-release-tac-table-shape-tail.hwpx",
+        "pages": 3,
+        "tsv_row": "samples/issue9279/forest-press-release-tac-table-shape-tail.hwpx\t3\t3"
+      },
+      {
+        "sample": "samples/issue9285/child-product-safety-plan-wmf-mask-dib.hwpx",
+        "pages": 9,
+        "tsv_row": "samples/issue9285/child-product-safety-plan-wmf-mask-dib.hwpx\t9\t9"
+      }
+    ]
+  },
+  "native_page_counts": [
+    {
+      "sample": "samples/issue5140-version-boundary/legacy-symbols-v5.0.1.5.hwp",
+      "native_pages": 1,
+      "pdf_pages": 1
+    },
+    {
+      "sample": "samples/issue5140-version-boundary/legacy-symbols-v5.0.1.6.hwp",
+      "native_pages": 1,
+      "pdf_pages": 1
+    },
+    {
+      "sample": "samples/issue886/1660000-201400009-kobe-earthquake.hwp",
+      "native_pages": 64,
+      "pdf_pages": 64
+    },
+    {
+      "sample": "samples/issue9272/trade-remedy-decree-table-tail-empty-lines.hwpx",
+      "native_pages": 7,
+      "pdf_pages": 7
+    },
+    {
+      "sample": "samples/issue9279/forest-press-release-tac-table-shape-tail.hwpx",
+      "native_pages": 3,
+      "pdf_pages": 3
+    },
+    {
+      "sample": "samples/issue9285/child-product-safety-plan-wmf-mask-dib.hwpx",
+      "native_pages": 9,
+      "pdf_pages": 9
+    }
+  ],
+  "hancom_hwpx_content": [
+    {
+      "version": "5.0.1.5",
+      "paragraphs_checked": 15,
+      "text_and_bold_equal": true
+    },
+    {
+      "version": "5.0.1.6",
+      "paragraphs_checked": 15,
+      "text_and_bold_equal": true
+    }
+  ],
+  "native_wasm_export": {
+    "javascript": "36fa6ce45be4ef3c5617535a640a90bbd7363927fd47f8b8c7a5f7760585ed6e",
+    "wasm": "1c872dc232f0caf4f9fba652dd6fe06eb86d3bca13077358415f8906c9364324",
+    "results": [
+      {
+        "version": "5.0.1.5",
+        "pages": 1,
+        "native_equal": true,
+        "hwpx_sha256": "5bdd71ec32501c8cdfd9651fd5aa29998705d2bfa2257f9bb6d21ef3b3edbd17"
+      },
+      {
+        "version": "5.0.1.6",
+        "pages": 1,
+        "native_equal": true,
+        "hwpx_sha256": "d546b9bcde769bfda82659b95100443eed5a7c9ea9cb29b09ee6575333fcebec"
+      }
+    ]
+  },
+  "visual_comparisons": [
+    {
+      "backend": "native",
+      "case": "legacy-export",
+      "version": "5.0.1.5",
+      "pages": 1,
+      "silhouette_percent": "100.00",
+      "sha256": {
+        "silhouette.tsv": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "review-001.png": "880d4bd04273b62a0eaa140504548e6007bb5f236e3316e7384bb85c933f19f2",
+        "overlay-001.png": "00ce018b441b8e92c5d1133942ad5847212828d7f5b753f07a945ecb02adf9fe",
+        "rhwp-001.png": "21d59d7a716f74530dd474f54157d3ca58eefe827c13eb7abf7c109080ba2350",
+        "hancom-001.png": "2ede24008ce026168d77649057766757507ba885a6b09dcdf0760b712249f224"
+      }
+    },
+    {
+      "backend": "native",
+      "case": "modern-export",
+      "version": "5.0.1.6",
+      "pages": 1,
+      "silhouette_percent": "98.38",
+      "sha256": {
+        "silhouette.tsv": "474fadeef17b160ab0d033003732c486754a62bbbdb036712e2164bcfc368764",
+        "review-001.png": "176ce4a6d23fc2b2a682ceb1599cd4db7c08fc47a60ecccf68574981516510b1",
+        "overlay-001.png": "bfed3f4f7b823a4470922e86c13ccb23cafce4c1503a4ddde97a3fc1b0bf9e15",
+        "rhwp-001.png": "69ce01b6bbb631894f5cebbfe0f47876be7e582826f144ecba34ba14ec3f7b6c",
+        "hancom-001.png": "a38c29259f09ce1a208b4cbf17c13fad257e39b9a8cc34e0e29537481dd3c856"
+      }
+    },
+    {
+      "backend": "wasm",
+      "case": "legacy-export",
+      "version": "5.0.1.5",
+      "pages": 1,
+      "silhouette_percent": "100.00",
+      "sha256": {
+        "silhouette.tsv": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "review-001.png": "368e96e9d3336959b90ab0a46caeb140951248090cf69db644c02ebf7d88f4f7",
+        "overlay-001.png": "bc2d01547af3f6a5109b1a79555516f290e67077c17bcc06d73a4958da84146a",
+        "rhwp-001.png": "8cb9bd2abfe1e33a4bd2e58a9a73588306e90db19ca8024f42b4cefe4d4eaf0c",
+        "hancom-001.png": "2ede24008ce026168d77649057766757507ba885a6b09dcdf0760b712249f224"
+      }
+    },
+    {
+      "backend": "wasm",
+      "case": "modern-export",
+      "version": "5.0.1.6",
+      "pages": 1,
+      "silhouette_percent": "98.51",
+      "sha256": {
+        "silhouette.tsv": "ca6873fef863a6ab8d645cdac17bd80c3047609a91cba992207172395d3d1cb6",
+        "review-001.png": "a0682aff184caa060b0a71978ff0041cdece454b1a20b970670c2bec4dc2f58e",
+        "overlay-001.png": "fe87aa9ec29fc2ceb6a6e23da06d5cea2eb51f04115805b66ad55cb072374598",
+        "rhwp-001.png": "333ed30dfa25fec2367305337d8e6553b314de195611fa66f75b5e5dccfa20f2",
+        "hancom-001.png": "a38c29259f09ce1a208b4cbf17c13fad257e39b9a8cc34e0e29537481dd3c856"
+      }
+    }
+  ]
+}

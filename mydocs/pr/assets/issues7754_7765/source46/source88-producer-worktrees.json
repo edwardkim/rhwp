@@ -1,0 +1,17 @@
+{
+  "base": {
+    "source": "8a196ca7aea2aa3cf32d394f5b7da2bdf4520479",
+    "worktree": "/home/tsjang/rhwp-worktrees/task-7754-pr9293-preview"
+  },
+  "candidate": {
+    "source": "8f9fd0414ffcfb720fa4a601c79c4590480de0e8",
+    "worktree": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665"
+  },
+  "removed_owned_symlinks": [
+    "/home/tsjang/rhwp-worktrees/task-7754-pr9293-preview/output",
+    "/home/tsjang/rhwp-worktrees/task-7754-pr9293-preview/samples",
+    "/home/tsjang/rhwp-worktrees/task-7754-pr9293-preview/pdf",
+    "/home/tsjang/rhwp-worktrees/task-7754-pr9293-preview/mydocs/pr"
+  ],
+  "scope": "Reuse completed owned worktrees. Only task-created corpus symlinks were unlinked; no target contents or user changes were removed. Closed PR9293 preview is retired; build/measurement evidence is retained."
+}

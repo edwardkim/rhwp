@@ -1,0 +1,43 @@
+{
+  "page": 1,
+  "box": [
+    250,
+    150,
+    510,
+    213
+  ],
+  "scale": 4,
+  "dpi": 96,
+  "created": 1795299127.8374033,
+  "inputs": [
+    {
+      "label": "Independent Hancom Print",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source35-focused-native/issue7754-plain/pdf_png/pdf-001.png",
+      "sha256": "a395bd44c18842bb89135af2466b1702660d805c9495b868a9f1350f9dd093f7"
+    },
+    {
+      "label": "Native before source34",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source34-native-plain-full/issue7754-plain/rhwp_png/rhwp_001.png",
+      "sha256": "26c76e9f0e0ce487d96baec5f8dfbc2d8bb84db27544505c4c3369bc69a74f47"
+    },
+    {
+      "label": "Native after source35",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source35-focused-native/issue7754-plain/rhwp_png/rhwp_001.png",
+      "sha256": "e8086f1bb4190e20878aca1eb58ebbba825676261496ae24a4e685820fff944c"
+    },
+    {
+      "label": "WASM before source33",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-wasm/candidate/issue7754-plain/rhwp_png/rhwp_001.png",
+      "sha256": "44341efb839827648e28c80b736c15235ca37f1025e971919136fa991b0e283b"
+    },
+    {
+      "label": "fresh WASM after source35",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source35-focused-wasm/issue7754-plain/rhwp_png/rhwp_001.png",
+      "sha256": "8251540cd889c1a8d32f842ad9f010aa443d0d0f23c5904f38837fa47e4548c9"
+    }
+  ],
+  "panel_sha256": "7d3baae222d3fb013a68445328057e5a74cef21d6bdc9cb4546937ba4a0c9bf0",
+  "reading": "옛한글의 아래아·초중종성 모양을 원 CFF와 대조했다. Native/fresh WASM은 모두 원 glyph를 표시한다. PDF는 해당 글자 위에 raster image를 덧그려 CFF 윤곽 대비 96dpi에서 2px 아래에 놓인다. 후속 97·본문의 원점은 유지된다. 임의 y 보정은 추가하지 않는다.",
+  "read_at": "2026-11-22T07:17:50.663074+09:00",
+  "scope": "source35 only; source36 must be measured again"
+}

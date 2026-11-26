@@ -1,3 +1,12 @@
+//! 관계형·고정형: 저장 vpos 되감김의 쪽 소속과 독립 Print 전체 쪽수.
+//! 주석 갱신: 2026-11-21T14:06:28+00:00.
+//! 직전 파일 변경 커밋(커미터): 2026-10-13T20:06:29+09:00,
+//! bd3a2b9cf879857a15e75476c79e9bc92067b57e (Git에서 확인).
+//! 2026-11-21, PDFium Print 96 DPI, 색상 경계 보정 전 반경 2px 실루엣 raw:
+//! 4·5쪽 Native/fresh WASM 각각 100.00%; 전체 315쪽 전쪽 최저 각각 98.40%.
+//! 근거: mydocs/pr/assets/issues7754_7765/market-source7/README.md.
+//! 독립 Print: pdf/issue7755/market-2017-manual-print-2024.pdf.
+//!
 //! [#6761] 문단 경계의 저장 `vpos` 되감김을 분할 경로가 쪽 경계로 쓰지 않는다.
 //!
 //! # 무엇이 깨져 있었나
@@ -17,7 +26,7 @@
 //!
 //! # 독립 기대값 — 한/글 정본
 //!
-//! `pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf`
+//! `pdf/issue7755/market-2017-manual-print-2024.pdf`
 //! (315쪽, 이 문서의 정본)에서 그 두 줄은 **5쪽 첫 두 줄**이다.
 //!
 //! ```text
@@ -36,7 +45,7 @@ use std::path::Path;
 use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
-/// 되감김이 쪽 경계인 문서. 정본은 `pdf/task2070/…-2022.pdf`(315쪽).
+/// 되감김이 쪽 경계인 문서. 정본은 위의 수동 한컴 Print(315쪽).
 const SAMPLE_MARKET: &str =
     "samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp";
 
@@ -89,7 +98,11 @@ fn body_bottom(root: &RenderNode) -> f64 {
 #[test]
 fn stored_rewind_paragraph_starts_the_next_page() {
     let core = core(SAMPLE_MARKET);
-    // 전체 쪽수 전제만 #7445로 이관하고 본문 되감김 검사는 유지한다.
+    assert_eq!(
+        core.page_count(),
+        315,
+        "전쪽 시각 검증 뒤 독립 Print 쪽수와 본문 소속을 함께 복원한다"
+    );
 
     let p4 = core.build_page_render_tree(3).expect("4쪽 렌더 트리").root;
     let bottom = body_bottom(&p4);
@@ -123,6 +136,4 @@ fn stored_rewind_paragraph_starts_the_next_page() {
     );
 }
 
-// #7445: 교육과정 문서의 실패한 쪽수 편차 검사만 이관한다.
-// upstream 74f9b71b1 선택7쪽이 모두90% 미만(최저22.02606%).
-// 시장구조 문서의 정상 되감김 검사와 교육과정 원문/PDF는 유지한다.
+// 범위 밖 교육과정의 이관은 유지한다. 이 문서의 전체 쪽수는 #7755에서 복원했다.

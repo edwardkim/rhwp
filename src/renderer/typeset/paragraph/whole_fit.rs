@@ -264,10 +264,21 @@ pub(super) fn inspect(
             page.body_height,
             dpi,
         );
-    let stored_vpos_rewind_break = saved_object_frame_reset
-        || (stored_vpos_rewind_base
-            && (page_occupied_height >= available * STORED_VPOS_REWIND_MIN_FILL
-                || stored_rewind_at_matching_flow_position));
+    let stale_closed_float_reset = page.col_count == 1
+        && crate::renderer::typeset::stored_reset_ownership::closed_float_reset_is_stale(
+            page.profile,
+            paragraphs,
+            para_idx,
+            page.current_items,
+            current_page_vpos_base,
+            page.current_height,
+            dpi,
+        );
+    let stored_vpos_rewind_break = !stale_closed_float_reset
+        && (saved_object_frame_reset
+            || (stored_vpos_rewind_base
+                && (page_occupied_height >= available * STORED_VPOS_REWIND_MIN_FILL
+                    || stored_rewind_at_matching_flow_position)));
     // [#5755] 되돌아간 문단이 통째로는 안 들어가는 경우 — 어차피 전체 배치는 실패라
     // 종전엔 split 경로로 흘러가 저장 좌표(새 쪽의 쪽-지역 좌표)를 현재 쪽 꼬리
     // 적합 근거로 오독, 본문 밖·용지 밖까지 그렸다(156677324 pi=9: 996>934px).

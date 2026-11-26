@@ -1,0 +1,4 @@
+    Checking rhwp v0.9.1 (/home/tsjang/rhwp-worktrees/task-7754-rebase-5665)
+    Checking rhwp-subsecond v0.0.0 (/home/tsjang/rhwp-worktrees/task-7754-rebase-5665/tools/rhwp-subsecond)
+    Checking rhwp-native-ffi v0.1.0 (/home/tsjang/rhwp-worktrees/task-7754-rebase-5665/bindings/Native)
+    Finished `dev` profile [unoptimized] target(s) in 5m 27s

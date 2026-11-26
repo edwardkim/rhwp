@@ -360,6 +360,12 @@ const KNOWN_GENUINE_HIDDEN_TEXT: &[&str] = &[
 /// `… 발전해야 한다”<U+200B>라고 밝혔다.`, 앞 `”`·뒤 한글 음절). 배포 원문에 든 줄 나눔
 /// 허용 표지이며 숨은 문구는 없다. 탐지 자체는 옳다.
 ///
+/// `1660000-201400009-kobe-earthquake.hwp`(planet6897/rhwp-issue-docs#886) 구역 4 의 본문 문단 4곳에
+/// U+200B 가 2개씩 잇달아 있다(문단 171 문자 46 `… 지원법」의 조치와<U+200B><U+200B> 대체로 …`,
+/// 문단 198 문자 74 `… 명시하는 동<U+200B><U+200B>시에 …`, 문단 199 문자 60 `… 설치했으며, 국<U+200B><U+200B>토교통성 …`,
+/// 문단 227 문자 65 `… 재해대책의 발행<U+200B><U+200B>을 허용하고 …`). 원문 보고서를 옮겨 붙일 때 남은
+/// 줄 나눔 흔적이며 화면·원문 모두 숨은 문구는 없다. 탐지 자체는 옳다.
+///
 /// 규칙을 느슨하게 하지 않고 이 문서만 뺀다. 제로폭 탐지의 감도를 낮추면
 /// 낱자 사이에 끼워 넣는 진짜 회피(`비밀<U+200B>번호`)까지 함께 놓친다.
 /// 항목을 추가할 때는 반드시 위와 같은 개별 근거(문단·코드포인트·앞뒤 문자)를 남긴다.
@@ -370,6 +376,7 @@ const KNOWN_GENUINE_ZERO_WIDTH: &[&str] = &[
     "1351000-201800239_hpv_cohort_final_report.hwp",
     "1480000-201900510_facility_pollution_study.hwp",
     "press_release_orphan_hidden_end.hwpx",
+    "1660000-201400009-kobe-earthquake.hwp",
 ];
 
 /// `samples/` 바로 아래가 아닌 허용목록 문서. 자기검증이 조용히 건너뛰지 않게 경로를 둔다.
@@ -377,6 +384,7 @@ const KNOWN_GENUINE_ZERO_WIDTH_SUBDIR: &[&str] = &[
     "samples/issue8692/employment_service_interim_report.hwp",
     "samples/issue8842/1351000-201800239_hpv_cohort_final_report.hwp",
     "samples/issue9026/press_release_orphan_hidden_end.hwpx",
+    "samples/issue886/1660000-201400009-kobe-earthquake.hwp",
 ];
 
 const SECURITY_SWEEP_SAMPLES_ENV: &str = "RHWP_SECURITY_SWEEP_SAMPLES_JSON";
@@ -530,7 +538,35 @@ fn new_sample_documents_are_clean_across_all_three_detectors() {
 
         let unicode = unicode_finding_count(&core);
         checked_unicode += 1;
-        if unicode > 0 && !KNOWN_GENUINE_ZERO_WIDTH.contains(&name.as_str()) {
+        if *path == repo("samples/issue5140-version-boundary/syloti-placeholders.hwp") {
+            // The shaping fixture deliberately contrasts ZWJ and ZWNJ before a
+            // Syloti hasanta. Check every finding, including its source position.
+            let report = inspect_unicode(path);
+            let findings: Vec<_> = report["findings"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|f| {
+                    serde_json::json!([
+                        f["kind"],
+                        f["codepoint"],
+                        f["section"],
+                        f["paragraph"],
+                        f["charOffset"],
+                        f["runLength"]
+                    ])
+                })
+                .collect();
+            assert_eq!(unicode, 3);
+            assert_eq!(
+                serde_json::Value::Array(findings),
+                serde_json::json!([
+                    ["zero_width", "U+200D", 0, 11, 1, 1],
+                    ["zero_width", "U+200D", 0, 12, 1, 1],
+                    ["zero_width", "U+200C", 0, 13, 1, 1]
+                ])
+            );
+        } else if unicode > 0 && !KNOWN_GENUINE_ZERO_WIDTH.contains(&name.as_str()) {
             dirty.push(format!("  - [unicode] {name}: {unicode}건"));
         }
     }

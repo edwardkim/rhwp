@@ -54,7 +54,7 @@ fn body_multiplication_keeps_its_independent_proportional_slot() {
     let advance = positions[index + 1] - positions[index];
     assert!(
         (advance / run.style.font_size - 0.616).abs() < 0.004,
-        "HFT 곱셈은 대체 TTF의 전각 슬롯으로 넓히지 않음: {advance}"
+        "원본 곱셈 기호에 대체 TTF의 전각 폭을 적용하지 않는다: {advance}"
     );
     assert!(
         (positions.last().unwrap() - node.bbox.width).abs() < 1e-6,

@@ -3161,6 +3161,13 @@ fn write_shape_style(buf: &mut String, style: &ShapeStyle) {
         stroke_dash_json(style.stroke_dash),
         style.opacity,
     );
+    if style.stroke_color.is_some() && (style.stroke_alpha != 0 || style.opacity < 1.0) {
+        let _ = write!(
+            buf,
+            ",\"strokeOpacity\":{:.6}",
+            crate::renderer::alpha_to_opacity(style.stroke_alpha)
+        );
+    }
     if let Some(shadow) = &style.shadow {
         buf.push_str(",\"shadow\":");
         write_shadow_style(buf, shadow);
@@ -3239,6 +3246,13 @@ fn write_line_style(buf: &mut String, style: &LineStyle) {
         style.start_arrow_size,
         style.end_arrow_size,
     );
+    if style.alpha != 0 {
+        let _ = write!(
+            buf,
+            ",\"strokeOpacity\":{:.6}",
+            crate::renderer::alpha_to_opacity(style.alpha)
+        );
+    }
     if let Some(intervals) = &style.dash_pattern {
         buf.push_str(",\"dashPattern\":[");
         for (index, value) in intervals.iter().enumerate() {

@@ -10,7 +10,8 @@ use crate::paint::shaping_glyph::lower_horizontal_shaping_page_sidecars;
 use crate::paint::shaping_glyph_vertical::lower_vertical_shaping_page_sidecars;
 use crate::paint::EmbeddedFontFace;
 use crate::renderer::render_tree::{
-    BoundingBox, ControlCode, NodeId, PageRenderTree, RectangleNode, RenderNode, RenderNodeType,
+    BoundingBox, ControlCode, GroupNode, NodeId, PageRenderTree, RectangleNode, RenderNode,
+    RenderNodeType, TextRunNode,
 };
 use std::collections::HashMap;
 
@@ -46,6 +47,7 @@ pub struct LayerBuilder {
     metafile_device_pixel_width: Option<f64>,
     hancom2024_print_bitmap: bool,
     print_png_rgb555: bool,
+    print_bmp_full_color: bool,
     metafile_fonts: super::metafile_fonts::MetafileFonts,
     prior_print_solid_fill: bool,
     hangul2024_print: bool,
@@ -69,6 +71,7 @@ impl LayerBuilder {
             metafile_device_pixel_width: None,
             hancom2024_print_bitmap: false,
             print_png_rgb555: false,
+            print_bmp_full_color: false,
             metafile_fonts: Default::default(),
             prior_print_solid_fill: false,
             hangul2024_print: false,
@@ -101,6 +104,11 @@ impl LayerBuilder {
 
     pub(crate) fn with_print_png_rgb555(mut self, enabled: bool) -> Self {
         self.print_png_rgb555 = enabled;
+        self
+    }
+
+    pub(crate) fn with_print_bmp_full_color(mut self, enabled: bool) -> Self {
+        self.print_bmp_full_color = enabled;
         self
     }
 
@@ -307,8 +315,16 @@ impl LayerBuilder {
                 .page_context
                 .map(PagePaintContext::without_rectangle_mapping);
         }
+        let mut previous_text = None;
         let mut children = crate::renderer::paint_order::children(node)
-            .filter_map(|child| self.build_node(child))
+            .filter_map(|child| {
+                let layer = self.build_node(child, previous_text);
+                previous_text = match &child.node_type {
+                    RenderNodeType::TextRun(run) => Some(run),
+                    _ => None,
+                };
+                layer
+            })
             .collect::<Vec<_>>();
         self.page_context = previous_context;
         self.shape_group_depth = previous_group_depth;
@@ -333,11 +349,15 @@ impl LayerBuilder {
         children
     }
 
-    fn build_node(&mut self, node: &RenderNode) -> Option<LayerNode> {
+    fn build_node(
+        &mut self,
+        node: &RenderNode,
+        previous_text: Option<&TextRunNode>,
+    ) -> Option<LayerNode> {
         if let Some(paths) = &node.paint_clip {
             let mut unclipped = node.clone();
             unclipped.paint_clip = None;
-            let child = self.build_node(&unclipped)?;
+            let child = self.build_node(&unclipped, previous_text)?;
             return Some(LayerNode {
                 bounds: node.bbox,
                 source_node_id: Some(node.id),
@@ -353,7 +373,7 @@ impl LayerBuilder {
                 let mut print_node = node.clone();
                 print_node.bbox = bbox;
                 print_node.print_bbox = None;
-                return self.build_node(&print_node);
+                return self.build_node(&print_node, previous_text);
             }
         }
         if !node.visible || (node.editor_only && !self.profile.shows_editor_visuals()) {
@@ -365,22 +385,44 @@ impl LayerBuilder {
                     placeholder.kind
                         == crate::renderer::render_tree::PlaceholderKind::MissingPicture
                 }
-                // #8858 그림 미지정과 #8957 미해결 연결 그림의 편집용 표시를 제외한다.
-                RenderNodeType::Image(image) => image.is_nonprinting_picture_placeholder(),
+                // 편집용 미지정·연결 그림 표시와 Print가 지원하지 않는 Picture 코덱.
+                RenderNodeType::Image(image) => image.is_nonprinting_picture(),
                 _ => false,
             }
         {
             return None;
         }
 
+        // 기울인 도형은 원래 크기로 그린 몸체·글·그림자를 한 변환 묶음으로 기울인다.
+        if let Some(skew) = node_skew(node) {
+            let mut local = node.clone();
+            clear_skew(&mut local);
+            let child = self.build_node(&local, previous_text)?;
+            let mut group = LayerNode::group(
+                node.bbox,
+                Some(node.id),
+                vec![child],
+                CacheHint::None,
+                GroupKind::Group(GroupNode {
+                    paint_transform: Some(skew),
+                    section_index: None,
+                    para_index: None,
+                    control_index: None,
+                }),
+            )
+            .with_layer(node.layer);
+            group.bounds = group.visual_bounds(true);
+            return Some(group);
+        }
+
         if let Some(parts) = super::parallel_shadow::split(node) {
-            let shadow = self.build_node(&parts.silhouette)?;
-            let body = self.build_node(&parts.body)?;
+            let shadow = self.build_node(&parts.silhouette, previous_text)?;
+            let body = self.build_node(&parts.body, previous_text)?;
             let mut group = LayerNode::group(
                 node.bbox,
                 Some(node.id),
                 vec![
-                    super::parallel_shadow::translated(shadow, parts.offset),
+                    super::parallel_shadow::transformed(shadow, parts.matrix),
                     body,
                 ],
                 CacheHint::None,
@@ -405,7 +447,7 @@ impl LayerBuilder {
                 self.page_context = self
                     .page_context
                     .map(PagePaintContext::without_rectangle_mapping);
-                let child = self.build_node(&local);
+                let child = self.build_node(&local, previous_text);
                 self.page_context = previous_context;
                 let child = child?;
                 let mut group = LayerNode::group(
@@ -468,7 +510,7 @@ impl LayerBuilder {
                             super::dot_leader::prepare(&self.metafile_fonts, node.bbox, &mut run);
                     }
                 }
-                let mut ops = text_run_ops(node.bbox, run, self.output_options);
+                let mut ops = text_run_ops(node.bbox, run, self.output_options, previous_text);
                 ops.extend(
                     leader_paths
                         .into_iter()
@@ -603,7 +645,14 @@ impl LayerBuilder {
                     let soft_edge_prepared = soft_edge_payload.is_some();
                     let group_projection = (self.shape_group_depth > 0
                         && image_fill_clip.is_none())
-                    .then(|| super::group_picture::project(&image, frame, self.layout_dpi))
+                    .then(|| {
+                        super::group_picture::project(
+                            &image,
+                            frame,
+                            self.layout_dpi,
+                            self.print_bmp_full_color,
+                        )
+                    })
                     .flatten();
                     if let Some((full, image, payload)) = group_projection {
                         image_fill_clip = Some(frame);
@@ -627,6 +676,7 @@ impl LayerBuilder {
                                             frame,
                                             self.layout_dpi,
                                             self.print_png_rgb555,
+                                            self.print_bmp_full_color,
                                         )
                                     })
                                     .flatten()
@@ -682,6 +732,24 @@ impl LayerBuilder {
                                     &self.metafile_fonts,
                                 )
                             });
+                        if self.profile == RenderProfile::Print && !self.hancom2024_print_bitmap {
+                            if let Some(payload) = resolved.as_mut() {
+                                super::metafile_print::place_device_strokes(
+                                    &image,
+                                    node.bbox,
+                                    self.image_page_size,
+                                    self.image_reference_origin,
+                                    self.layout_dpi,
+                                    payload,
+                                );
+                                super::metafile_print::place_monochrome_tiles(
+                                    &image,
+                                    node.bbox,
+                                    self.layout_dpi,
+                                    payload,
+                                );
+                            }
+                        }
                         if let Some(window) =
                             crate::renderer::image_resolver::resolve_print_jpeg_window(
                                 &mut image,
@@ -1093,6 +1161,7 @@ fn text_run_ops(
     bbox: crate::renderer::render_tree::BoundingBox,
     run: crate::renderer::render_tree::TextRunNode,
     output_options: LayerOutputOptions,
+    previous: Option<&TextRunNode>,
 ) -> Vec<PaintOp> {
     let has_char_overlap = run.char_overlap.is_some();
     let show_text_marks = output_options.show_paragraph_marks || output_options.show_control_codes;
@@ -1114,7 +1183,7 @@ fn text_run_ops(
             + has_strikethrough as usize
             + has_emphasis_dot as usize,
     );
-    ops.push(PaintOp::text_run(bbox, run.clone()));
+    super::syloti_marks::push_text(&mut ops, bbox, &run, previous);
     if has_char_overlap {
         ops.push(PaintOp::char_overlap(bbox, run.clone()));
     }
@@ -1146,6 +1215,24 @@ fn text_run_ops(
         ));
     }
     ops
+}
+
+fn node_skew(node: &RenderNode) -> Option<[f64; 6]> {
+    match &node.node_type {
+        RenderNodeType::Rectangle(rect) => rect.transform.skew,
+        RenderNodeType::Ellipse(ellipse) => ellipse.transform.skew,
+        RenderNodeType::Path(path) => path.transform.skew,
+        _ => None,
+    }
+}
+
+fn clear_skew(node: &mut RenderNode) {
+    match &mut node.node_type {
+        RenderNodeType::Rectangle(rect) => rect.transform.skew = None,
+        RenderNodeType::Ellipse(ellipse) => ellipse.transform.skew = None,
+        RenderNodeType::Path(path) => path.transform.skew = None,
+        _ => {}
+    }
 }
 
 #[cfg(test)]

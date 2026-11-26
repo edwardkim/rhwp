@@ -1,0 +1,186 @@
+{
+  "production_source": "adaa1963674e1a69c4369b80160ac6eb873bec1b",
+  "scope": "10 plain originals, 583 full pages per backend. Encrypted original 24 pages is separate. Direct enlarged review is also separate.",
+  "results": [
+    {
+      "key": "issue7756",
+      "backend": "native",
+      "pages": 1,
+      "minimum": 99.0,
+      "display100_pages": 0,
+      "input_sha256": "da81b4010331bcac290f900c7cf224c97ee8355399614725ce46c197ff1a22a4",
+      "pdf_sha256": "38ff94fabff9672417bef2d17986b3d9944e7818fe42e091294024f737e104f4"
+    },
+    {
+      "key": "issue7759",
+      "backend": "native",
+      "pages": 1,
+      "minimum": 99.93,
+      "display100_pages": 0,
+      "input_sha256": "1bcdc7a2de38680cdb715556f40c8477f8242131d28de949b09e945022bf35fa",
+      "pdf_sha256": "41451dd4d1b6a43b78cc532500a54a310314da84fc1b2963e49485443d0b4d0d"
+    },
+    {
+      "key": "issue7757",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 99.78,
+      "display100_pages": 2,
+      "input_sha256": "f217c02af7bc2a6641b9544afd29765ddccdd15021507b7554521f68b9d560dc",
+      "pdf_sha256": "0299869bf040b01e07a19dde600852e44aec406257916b781eabdfbce6ed5aba"
+    },
+    {
+      "key": "issue7760",
+      "backend": "native",
+      "pages": 19,
+      "minimum": 99.18,
+      "display100_pages": 15,
+      "input_sha256": "83fca0151c67e2adeb7a85203f5c75204d8e53af4e44902958c96b85adf6845e",
+      "pdf_sha256": "5a04f0ffdbfcde8d707ea6fe6e99bb446236daa7ae2c0b32830ae4303aec395b"
+    },
+    {
+      "key": "issue7754-plain",
+      "backend": "native",
+      "pages": 24,
+      "minimum": 98.14,
+      "display100_pages": 0,
+      "input_sha256": "20ed90f48c6501cad99f6aa1f82d81d2a2132eb04f2d1d32805ac251749e4d0e",
+      "pdf_sha256": "b20bd5c0b3716818113cc6bc2a18ba768325b338a3a16840e3680e124cfea01d"
+    },
+    {
+      "key": "issue7761",
+      "backend": "native",
+      "pages": 46,
+      "minimum": 99.98,
+      "display100_pages": 45,
+      "input_sha256": "e8592e74c9a8425c4ee2c5824d012ebe45e9f6dd36880b784ba594b4fd0a31ce",
+      "pdf_sha256": "8015d2d28ee20ba66579f9375a0e36dfdd8e8725228015dc807748110bc09219"
+    },
+    {
+      "key": "issue7762",
+      "backend": "native",
+      "pages": 46,
+      "minimum": 99.98,
+      "display100_pages": 45,
+      "input_sha256": "85071b419b3467466ec391ecde187ad25723ce564178c2ed37c53b09e731138c",
+      "pdf_sha256": "051aa8c4b94ca7cddc21e18d7fdc45b370e492b65c711c801d2c95479117cbab"
+    },
+    {
+      "key": "issue7765-hwp",
+      "backend": "native",
+      "pages": 64,
+      "minimum": 98.08,
+      "display100_pages": 44,
+      "input_sha256": "ee82c7755617003cb972ba398da9cffadfed24ac0fa068eee1a5347da7658a88",
+      "pdf_sha256": "ac34bb60492e3749a53183cfb63c814f86379895937dd1309d3bc3d2d1b8126a"
+    },
+    {
+      "key": "issue7765-hwpx",
+      "backend": "native",
+      "pages": 64,
+      "minimum": 98.69,
+      "display100_pages": 22,
+      "input_sha256": "0f4f055c74a3d39f70e417ca6c700880d9645a202798cd0e5c11f6e32c180a19",
+      "pdf_sha256": "369cf882ad36c1aea27ff4f4ad6fa9d66720d7638a6e8793b0b9b79f75a443f8"
+    },
+    {
+      "key": "issue7755",
+      "backend": "native",
+      "pages": 315,
+      "minimum": 98.4,
+      "display100_pages": 211,
+      "input_sha256": "84d297375c48e1e903247a389e9ec3907e3cdc57a4a7e29a819a01c2a1e3a341",
+      "pdf_sha256": "89e32b43af21bde3cf869e76b816d214fa0bc30e3f14512c4c3af184430cd616"
+    },
+    {
+      "key": "issue7756",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": 98.99,
+      "display100_pages": 0,
+      "input_sha256": "da81b4010331bcac290f900c7cf224c97ee8355399614725ce46c197ff1a22a4",
+      "pdf_sha256": "38ff94fabff9672417bef2d17986b3d9944e7818fe42e091294024f737e104f4"
+    },
+    {
+      "key": "issue7759",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": 99.94,
+      "display100_pages": 0,
+      "input_sha256": "1bcdc7a2de38680cdb715556f40c8477f8242131d28de949b09e945022bf35fa",
+      "pdf_sha256": "41451dd4d1b6a43b78cc532500a54a310314da84fc1b2963e49485443d0b4d0d"
+    },
+    {
+      "key": "issue7757",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 99.8,
+      "display100_pages": 2,
+      "input_sha256": "f217c02af7bc2a6641b9544afd29765ddccdd15021507b7554521f68b9d560dc",
+      "pdf_sha256": "0299869bf040b01e07a19dde600852e44aec406257916b781eabdfbce6ed5aba"
+    },
+    {
+      "key": "issue7760",
+      "backend": "wasm",
+      "pages": 19,
+      "minimum": 99.18,
+      "display100_pages": 15,
+      "input_sha256": "83fca0151c67e2adeb7a85203f5c75204d8e53af4e44902958c96b85adf6845e",
+      "pdf_sha256": "5a04f0ffdbfcde8d707ea6fe6e99bb446236daa7ae2c0b32830ae4303aec395b"
+    },
+    {
+      "key": "issue7754-plain",
+      "backend": "wasm",
+      "pages": 24,
+      "minimum": 98.07,
+      "display100_pages": 0,
+      "input_sha256": "20ed90f48c6501cad99f6aa1f82d81d2a2132eb04f2d1d32805ac251749e4d0e",
+      "pdf_sha256": "b20bd5c0b3716818113cc6bc2a18ba768325b338a3a16840e3680e124cfea01d"
+    },
+    {
+      "key": "issue7761",
+      "backend": "wasm",
+      "pages": 46,
+      "minimum": 99.98,
+      "display100_pages": 44,
+      "input_sha256": "e8592e74c9a8425c4ee2c5824d012ebe45e9f6dd36880b784ba594b4fd0a31ce",
+      "pdf_sha256": "8015d2d28ee20ba66579f9375a0e36dfdd8e8725228015dc807748110bc09219"
+    },
+    {
+      "key": "issue7762",
+      "backend": "wasm",
+      "pages": 46,
+      "minimum": 99.98,
+      "display100_pages": 44,
+      "input_sha256": "85071b419b3467466ec391ecde187ad25723ce564178c2ed37c53b09e731138c",
+      "pdf_sha256": "051aa8c4b94ca7cddc21e18d7fdc45b370e492b65c711c801d2c95479117cbab"
+    },
+    {
+      "key": "issue7765-hwp",
+      "backend": "wasm",
+      "pages": 64,
+      "minimum": 98.11,
+      "display100_pages": 46,
+      "input_sha256": "ee82c7755617003cb972ba398da9cffadfed24ac0fa068eee1a5347da7658a88",
+      "pdf_sha256": "ac34bb60492e3749a53183cfb63c814f86379895937dd1309d3bc3d2d1b8126a"
+    },
+    {
+      "key": "issue7765-hwpx",
+      "backend": "wasm",
+      "pages": 64,
+      "minimum": 98.69,
+      "display100_pages": 15,
+      "input_sha256": "0f4f055c74a3d39f70e417ca6c700880d9645a202798cd0e5c11f6e32c180a19",
+      "pdf_sha256": "369cf882ad36c1aea27ff4f4ad6fa9d66720d7638a6e8793b0b9b79f75a443f8"
+    },
+    {
+      "key": "issue7755",
+      "backend": "wasm",
+      "pages": 315,
+      "minimum": 98.4,
+      "display100_pages": 212,
+      "input_sha256": "84d297375c48e1e903247a389e9ec3907e3cdc57a4a7e29a819a01c2a1e3a341",
+      "pdf_sha256": "89e32b43af21bde3cf869e76b816d214fa0bc30e3f14512c4c3af184430cd616"
+    }
+  ]
+}

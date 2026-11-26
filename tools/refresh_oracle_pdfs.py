@@ -420,7 +420,7 @@ def main():
     parser.add_argument('--npx', default=shutil.which('npx') or 'npx')
     parser.add_argument(
         '--package',
-        default=str(TOOLS_DIR.parent / 'tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz'),
+        default=str(TOOLS_DIR / 'hwp-convert-mcp-2024-client-0.10.0.tgz'),
     )
     parser.add_argument('--env-file', default=default_env_file())
     parser.add_argument('--timeout-seconds', type=int, default=1800)

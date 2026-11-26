@@ -1,0 +1,21 @@
+{
+  "scope": "Read-only Times/Courier/Gulim/Batang/HCR older Windows component font versions; no remote mutation",
+  "results": [
+    {
+      "host": "win10-ted",
+      "shell": "PowerShell -NoProfile -EncodedCommand over SSH",
+      "exit_code": 0,
+      "seconds": 3.1179025173187256,
+      "stdout": "{\"files\":[{\"path\":\"C:\\\\Windows\\\\WinSxS\\\\amd64_microsoft-windows-font-truetype-batang_31bf3856ad364e35_10.0.19041.1_none_6dda999d05a86565\\\\batang.ttc\",\"sha256\":\"84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89\",\"bytes\":16271112},{\"path\":\"C:\\\\Windows\\\\WinSxS\\\\amd64_microsoft-windows-font-truetype-gulim_31bf3856ad364e35_10.0.19041.1_none_fb7d77f0fbecbb24\\\\gulim.ttc\",\"sha256\":\"4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226\",\"bytes\":13531200}],\"roots\":[\"C:\\\\Windows\\\\WinSxS\\\\amd64_microsoft-windows-font-bitmap-courier_31bf3856ad364e35_10.0.19041.1_none_ac801acd225379ee\",\"C:\\\\Windows\\\\WinSxS\\\\amd64_microsoft-windows-font-truetype-batang_31bf3856ad364e35_10.0.19041.1_none_6dda999d05a86565\",\"C:\\\\Windows\\\\WinSxS\\\\amd64_microsoft-windows-font-truetype-gulim_31bf3856ad364e35_10.0.19041.1_none_fb7d77f0fbecbb24\"]}\r\n",
+      "stderr": "#< CLIXML\r\n<Objs Version=\"1.1.0.1\" xmlns=\"http://schemas.microsoft.com/powershell/2004/04\"><Obj S=\"progress\" RefId=\"0\"><TN RefId=\"0\"><T>System.Management.Automation.PSCustomObject</T><T>System.Object</T></TN><MS><I64 N=\"SourceId\">1</I64><PR N=\"Record\"><AV>처음 사용하기 위해 모듈을 준비하는 중입니다.</AV><AI>0</AI><Nil /><PI>-1</PI><PC>-1</PC><T>Completed</T><SR>-1</SR><SD> </SD></PR></MS></Obj><Obj S=\"progress\" RefId=\"1\"><TNRef RefId=\"0\" /><MS><I64 N=\"SourceId\">1</I64><PR N=\"Record\"><AV>처음 사용하기 위해 모듈을 준비하는 중입니다.</AV><AI>0</AI><Nil /><PI>-1</PI><PC>-1</PC><T>Completed</T><SR>-1</SR><SD> </SD></PR></MS></Obj></Objs>"
+    },
+    {
+      "host": "win10-hwp-convert-2024",
+      "shell": "PowerShell -NoProfile -EncodedCommand over SSH",
+      "exit_code": 0,
+      "seconds": 4.783985376358032,
+      "stdout": "{\"files\":[{\"path\":\"C:\\\\Windows\\\\WinSxS\\\\amd64_microsoft-windows-font-truetype-batang_31bf3856ad364e35_10.0.19041.1_none_6dda999d05a86565\\\\batang.ttc\",\"sha256\":\"84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89\",\"bytes\":16271112},{\"path\":\"C:\\\\Windows\\\\WinSxS\\\\amd64_microsoft-windows-font-truetype-gulim_31bf3856ad364e35_10.0.19041.1_none_fb7d77f0fbecbb24\\\\gulim.ttc\",\"sha256\":\"4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226\",\"bytes\":13531200}],\"roots\":[\"C:\\\\Windows\\\\WinSxS\\\\amd64_microsoft-windows-font-bitmap-courier_31bf3856ad364e35_10.0.19041.1_none_ac801acd225379ee\",\"C:\\\\Windows\\\\WinSxS\\\\amd64_microsoft-windows-font-truetype-batang_31bf3856ad364e35_10.0.19041.1_none_6dda999d05a86565\",\"C:\\\\Windows\\\\WinSxS\\\\amd64_microsoft-windows-font-truetype-gulim_31bf3856ad364e35_10.0.19041.1_none_fb7d77f0fbecbb24\"]}\r\n",
+      "stderr": "Warning: Permanently added '172.21.1.6' (ED25519) to the list of known hosts.\r\n#< CLIXML\r\n<Objs Version=\"1.1.0.1\" xmlns=\"http://schemas.microsoft.com/powershell/2004/04\"><Obj S=\"progress\" RefId=\"0\"><TN RefId=\"0\"><T>System.Management.Automation.PSCustomObject</T><T>System.Object</T></TN><MS><I64 N=\"SourceId\">1</I64><PR N=\"Record\"><AV>처음 사용하기 위해 모듈을 준비하는 중입니다.</AV><AI>0</AI><Nil /><PI>-1</PI><PC>-1</PC><T>Completed</T><SR>-1</SR><SD> </SD></PR></MS></Obj><Obj S=\"progress\" RefId=\"1\"><TNRef RefId=\"0\" /><MS><I64 N=\"SourceId\">1</I64><PR N=\"Record\"><AV>처음 사용하기 위해 모듈을 준비하는 중입니다.</AV><AI>0</AI><Nil /><PI>-1</PI><PC>-1</PC><T>Completed</T><SR>-1</SR><SD> </SD></PR></MS></Obj></Objs>"
+    }
+  ]
+}

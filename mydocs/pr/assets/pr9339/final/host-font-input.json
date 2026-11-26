@@ -1,0 +1,84 @@
+{
+  "base": {
+    "head": "17b17c934b527aa523f037ca12d8713394e43c82",
+    "wasm_sha256": "3abae5ce7a5fa9b26e660df30125cc7d560e3a6440c4e33450482fc5046aaff7",
+    "test_sha256": "80fd44c5f76e582dc9dffdd356251b1180fef921171f61af33d496876cf32e2a",
+    "exit": 0,
+    "catalog_results": [
+      {
+        "catalog": "none",
+        "text": "A가가가가가가가가가가가가가가가가가가가가가",
+        "composed": "A가가가가가가가가가가가가가가가가가가가가가한",
+        "pasted": "A가가가가가가가가가가가가가가가가가가가가가한Z",
+        "undone": "A가가가가가가가가가가가가가가가가가가가가가한",
+        "redone": "A가가가가가가가가가가가가가가가가가가가가가한Z",
+        "finalPages": 3,
+        "trees": 0,
+        "reads": 0
+      },
+      {
+        "catalog": "empty",
+        "text": "A가가가가가가가가가가가가가가가가가가가가가",
+        "composed": "A가가가가가가가가가가가가가가가가가가가가가한",
+        "pasted": "A가가가가가가가가가가가가가가가가가가가가가한Z",
+        "undone": "A가가가가가가가가가가가가가가가가가가가가가한",
+        "redone": "A가가가가가가가가가가가가가가가가가가가가가한Z",
+        "finalPages": 3,
+        "trees": 0,
+        "reads": 0
+      },
+      {
+        "catalog": "populated",
+        "text": "A가가가가가가가가가가가가가가가가가가가가가",
+        "composed": "A가가가가가가가가가가가가가가가가가가가가가한",
+        "pasted": "A가가가가가가가가가가가가가가가가가가가가가한Z",
+        "undone": "A가가가가가가가가가가가가가가가가가가가가가한",
+        "redone": "A가가가가가가가가가가가가가가가가가가가가가한Z",
+        "finalPages": 3,
+        "trees": 22,
+        "reads": 2
+      }
+    ]
+  },
+  "fixed": {
+    "head": "c1504cb12199081c010188557ff2f1e14d36d5ef",
+    "wasm_sha256": "a7918ac364238cdfce8e145fdb9988730df9479862d0e350af5aa21574743b7b",
+    "test_sha256": "80fd44c5f76e582dc9dffdd356251b1180fef921171f61af33d496876cf32e2a",
+    "exit": 0,
+    "catalog_results": [
+      {
+        "catalog": "none",
+        "text": "A가가가가가가가가가가가가가가가가가가가가가",
+        "composed": "A가가가가가가가가가가가가가가가가가가가가가한",
+        "pasted": "A가가가가가가가가가가가가가가가가가가가가가한Z",
+        "undone": "A가가가가가가가가가가가가가가가가가가가가가한",
+        "redone": "A가가가가가가가가가가가가가가가가가가가가가한Z",
+        "finalPages": 3,
+        "trees": 0,
+        "reads": 0
+      },
+      {
+        "catalog": "empty",
+        "text": "A가가가가가가가가가가가가가가가가가가가가가",
+        "composed": "A가가가가가가가가가가가가가가가가가가가가가한",
+        "pasted": "A가가가가가가가가가가가가가가가가가가가가가한Z",
+        "undone": "A가가가가가가가가가가가가가가가가가가가가가한",
+        "redone": "A가가가가가가가가가가가가가가가가가가가가가한Z",
+        "finalPages": 3,
+        "trees": 0,
+        "reads": 0
+      },
+      {
+        "catalog": "populated",
+        "text": "A가가가가가가가가가가가가가가가가가가가가가",
+        "composed": "A가가가가가가가가가가가가가가가가가가가가가한",
+        "pasted": "A가가가가가가가가가가가가가가가가가가가가가한Z",
+        "undone": "A가가가가가가가가가가가가가가가가가가가가가한",
+        "redone": "A가가가가가가가가가가가가가가가가가가가가가한Z",
+        "finalPages": 3,
+        "trees": 22,
+        "reads": 2
+      }
+    ]
+  }
+}

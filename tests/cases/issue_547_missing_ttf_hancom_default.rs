@@ -98,7 +98,11 @@ fn missing_ttf_without_document_substitute_requests_hancom_batang() {
     }
     // HFT 는 한컴 내장 프로그램이 그리므로 기본 대체를 요청하지 않는다.
     for request in requests.iter().filter(|r| r.source == HFT_FACE) {
-        assert!(hancom_default(request).is_empty(), "HFT 선언 {:?}", request);
+        assert!(
+            hancom_default(request).is_empty(),
+            "구형 글꼴 선언 {:?}",
+            request
+        );
     }
     // 문서 대체가 있는 TTF 는 문서 대체 필드가 소유한다.
     for request in requests.iter().filter(|r| r.source == SUBSTITUTED_FACE) {
@@ -116,7 +120,7 @@ fn missing_ttf_without_document_substitute_requests_hancom_batang() {
 /// 이 원본의 TTF·대체 없는 `한양신명조` 본문(`<신설>`, `제4조(사업시행예정…`)을
 /// Type3 /T10(HFT)으로 출력한다. 한컴 기본 대체(한컴바탕)를 요청하면 안 된다.
 #[test]
-fn ttf_declared_hancom_builtin_hft_name_does_not_request_hancom_batang() {
+fn ttf_declared_hancom_builtin_legacy_name_does_not_request_hancom_batang() {
     let bytes =
         std::fs::read("samples/issue1891/80168_regulatory_analysis.hwpx").expect("80168 원본");
     let core = DocumentCore::from_bytes(&bytes).expect("80168 원본 파싱");
@@ -143,7 +147,7 @@ fn ttf_declared_hancom_builtin_hft_name_does_not_request_hancom_batang() {
     for request in hanyang {
         assert!(
             hancom_default(request).is_empty(),
-            "한컴 내장 HFT 이름은 한컴 기본 대체 대상이 아님: {request:?}"
+            "한컴 내장 글꼴 이름은 한컴 기본 대체 대상에서 제외한다: {request:?}"
         );
     }
 }
@@ -169,7 +173,7 @@ fn hancom_default_is_a_display_substitution_after_original_and_document_substitu
     );
     assert!(
         selected["substitutions"].get(HFT_FACE).is_none(),
-        "HFT 선언은 한컴 기본 대체로 바꾸지 않음: {selected}"
+        "구형 글꼴 선언은 한컴 기본 대체로 바꾸지 않음: {selected}"
     );
     let original = select(
         &core,
@@ -207,14 +211,14 @@ fn bullet_runs(node: &RenderNode, out: &mut Vec<(f64, f64)>) {
 /// `∙`(/Widths 1000)과 반각 공백(/Widths 500)의 합이다. 수정 전에는 표시용 HY중고딕
 /// 표의 U+2219 결측을 반각으로 재어 `∙ ` 런이 14.4px·17.3px 로 좁았다.
 #[test]
-fn hft_symbol_slot_bullet_advances_one_em() {
+fn legacy_symbol_slot_bullet_advances_one_em() {
     let core = load();
     let doc_info = &core.document().doc_info;
     let symbol = &doc_info.font_faces[5];
     let shape = &doc_info.char_shapes[139];
     let face = &symbol[usize::from(shape.font_ids[5])];
     assert_eq!(face.name, HFT_FACE, "∙ 런의 기호 슬롯 원본");
-    assert_eq!(face.alt_type, 2, "HFT 선언");
+    assert_eq!(face.alt_type, 2, "구형 글꼴 선언");
     for (page, expected) in [(13u32, 21.6f64), (14, 26.0)] {
         let tree = core.build_page_render_tree(page).expect("render tree");
         let mut runs = Vec::new();
@@ -323,9 +327,9 @@ fn hancom_default_supply_owns_body_paint_and_dash_advance() {
     // 14쪽(0-기준 13) HFT 한양중고딕 본문은 기존 HFT 대체 체인을 유지한다.
     let page14 = core.render_page_svg_native(13).unwrap();
     let hft = first_families(&page14, "서");
-    assert!(!hft.is_empty(), "14쪽 HFT 본문 `서`");
+    assert!(!hft.is_empty(), "14쪽 구형 글꼴로 선언된 본문 `서`");
     assert!(
         hft.iter().all(|family| !is_hancom_default(family)),
-        "HFT 본문은 한컴 기본 대체로 바꾸지 않음: {hft:?}"
+        "구형 글꼴을 선언한 본문에는 한컴 기본 대체를 적용하지 않는다: {hft:?}"
     );
 }

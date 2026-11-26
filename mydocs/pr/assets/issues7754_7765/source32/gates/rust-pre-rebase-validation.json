@@ -1,0 +1,79 @@
+{
+  "production_source": "2f46647df16da00365b22a1364cdc0b28b8344bc",
+  "started": 1795285425.2008507,
+  "environment": {
+    "CARGO_BUILD_JOBS": "4",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0"
+  },
+  "results": [
+    {
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source32-final-rust-gate-0.log",
+      "exit_code": 0,
+      "seconds": 62.09759850404225
+    },
+    {
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source32-final-rust-gate-1.log",
+      "exit_code": 0,
+      "seconds": 38.76293314900249
+    },
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source32-final-rust-gate-2.log",
+      "exit_code": 0,
+      "seconds": 60.71175749087706
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source32-final-rust-gate-3.log",
+      "exit_code": 0,
+      "seconds": 361.9526389071252
+    }
+  ],
+  "cancelled": true,
+  "cancelled_at": 1795286878.3168316,
+  "cancellation_reason": "Superseded by latest upstream/devel 5665e538292a0686a912f6a4d8950c55be89929a; source32 full nextest remained in compilation with zero tests executed. Restart full verification on the rebased base/head.",
+  "complete_coverage": false,
+  "ended": 1795286878.3168328
+}

@@ -1,0 +1,18 @@
+[
+  {
+    "source": "base",
+    "cli_sha256": "840c62480d86453d8a94b90c80ec4e50c65a654e1132a2f8159db7b1182dbeda",
+    "library_sha256": "f8886926b7cc11ddf5ac978835294cf22bb8cb6e63b3580c9b1421f1e0dca477",
+    "test_sha256": "a24b21f3b144b286115dff37f9749970b54136d03a9766c29252805fecc25241",
+    "exit_code": 101,
+    "output_sha256": "5f70c63004d05048de556e03f60b7ff900e813304e4ce4ac4945262e12921816"
+  },
+  {
+    "source": "candidate",
+    "cli_sha256": "68ad3d78f4e0cf0ab17d2f981ea630d67bc4cc9da957c679a417cf8f2c80b360",
+    "library_sha256": "0f325c3fb7520a171a98a5d81862e229216ca8bbef640e1f0374383e935e5d33",
+    "test_sha256": "a24b21f3b144b286115dff37f9749970b54136d03a9766c29252805fecc25241",
+    "exit_code": 0,
+    "output_sha256": "244589e1dc424069823ce658ba69e54b81ba36b9e3d56acd1914b10f54c206d2"
+  }
+]

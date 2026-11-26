@@ -1,0 +1,39 @@
+{
+  "started": 1795327064.3393283,
+  "scope": "Only generated PNG intermediates from superseded Source32/Source33 candidate original runs. Preserve every JSON, TSV, log, original, PDF and all formal evidence. All original baseline role images, Source36 before-correction and Source37 final image sets remain.",
+  "roots": [
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-native-final",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-wasm-final",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/candidate",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-wasm/candidate"
+  ],
+  "process_references": [],
+  "sequencing_scripts_checked": [
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/aggregate_source37_matrices.py",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_source37_candidate_ctrl_data.py",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_source37_canonical_original_world.py",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_source37_features_wasm_after_originals.py",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_source37_incoming_studio.py",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_source37_matrix_role.py",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_source37_wasm_live.py",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_source37_wasm_saved_live.py",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_source38_public_visual_gate.py",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_source38_rust_gates.py",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_source42_ordered_protected_pair.py",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_source43_spjgt_focus.py",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/score_source37_live_preservation.py",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/score_source37_saved_live_and_content.py",
+    "/home/tsjang/rhwp/scripts/export-wasm-png-for-sweep.mjs",
+    "/home/tsjang/rhwp/scripts/visual_sweep.py",
+    "scripts/visual_sweep.py"
+  ],
+  "inventory": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source43-obsolete-original-png-inventory.json",
+  "inventory_sha256": "caf50be1a8a1c0181cd92c998fb9f1457500356f32f0feb991d8f32e989a4fe5",
+  "count": 9072,
+  "apparent_bytes": 1377529142,
+  "free_before": 2414686208,
+  "complete": true,
+  "free_after": 3099881472,
+  "ended": 1795327068.9849358,
+  "actual_free_delta": 685195264
+}

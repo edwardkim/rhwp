@@ -3,7 +3,17 @@
 use super::{line_breaking, ParagraphBox, ResolvedStyleSet};
 use crate::model::paragraph::{ColumnBreakType, LineSeg, Paragraph};
 
-/// 구판 writer가 캐시에 사용한 이전 저장 단위를 공통 여백 해석기로 복원한다.
+fn trace_margin_context(source: &Paragraph) -> bool {
+    std::env::var("RHWP_DIAG_MARGIN_CONTEXT").is_ok_and(|filter| {
+        filter == "all"
+            || filter
+                .split(',')
+                .any(|value| value.parse().ok() == Some(source.para_shape_id))
+    })
+}
+
+/// 구판 writer의 fallback 원본을 공통 여백 해석기로 복원한다.
+/// 출처가 없는 이전 판본은 기존 2배 저장 단위 계약을 유지한다.
 /// px 값을 배로 늘리면 하위 단위 비트가 CHAR인 음수 값의 의미가 달라진다.
 pub(crate) fn previous_margin_styles(
     doc_info: &crate::model::document::DocInfo,
@@ -28,15 +38,21 @@ pub(crate) fn previous_margin_styles_with_storage<S: crate::storage::Storage>(
         let mut previous =
             crate::storage::optional(crate::storage::try_clone(current, storage), failure)?;
         for (raw, style) in doc_info.para_shapes.iter().zip(&mut previous.para_styles) {
-            let px = |value: i32| {
-                value.checked_mul(2).map(|value| {
-                    crate::renderer::style_resolver::paragraph_margin_hwpunit(value, doc_info) * dpi
-                        / crate::renderer::HWPUNIT_PER_INCH
-                })
+            let [left, right, indent] = match raw.hwpx_default_horizontal_margins {
+                Some(margins) => margins,
+                None => [
+                    raw.margin_left.checked_mul(2)?,
+                    raw.margin_right.checked_mul(2)?,
+                    raw.indent.checked_mul(2)?,
+                ],
             };
-            style.margin_left = px(raw.margin_left)?;
-            style.margin_right = px(raw.margin_right)?;
-            style.indent = px(raw.indent)?;
+            let px = |value: i32| {
+                crate::renderer::style_resolver::paragraph_margin_hwpunit(value, doc_info) * dpi
+                    / crate::renderer::HWPUNIT_PER_INCH
+            };
+            style.margin_left = px(left);
+            style.margin_right = px(right);
+            style.indent = px(indent);
         }
         Some(previous)
     })
@@ -73,8 +89,8 @@ fn current_rows_with_storage<S: crate::storage::Storage>(
     storage: &S,
 ) -> Result<Option<(Vec<LineSeg>, Vec<(u32, super::SpaceMetric)>)>, S::Error> {
     crate::storage::with_optional(|failure| {
-        let mut input = crate::storage::optional(storage.clone_paragraph(source), failure)?;
-        input.line_segs.clear();
+        // 새 Frame의 fill은 저장 줄을 수용하지 않는다. 원본 줄은 들여쓰기와
+        // terminal-ink·provenance 계약의 입력이므로 삭제하지 않는다.
         let style = styles.para_styles.get(source.para_shape_id as usize);
         let box_ = if body {
             ParagraphBox::body_for_style(width, style, dpi)
@@ -84,7 +100,7 @@ fn current_rows_with_storage<S: crate::storage::Storage>(
         let mut frame = box_.frame(top);
         let rows = crate::storage::optional(
             line_breaking::layout_paragraph_in_frame_with_storage(
-                &input, &mut frame, styles, dpi, storage,
+                source, &mut frame, styles, dpi, storage,
             ),
             failure,
         )??;
@@ -97,7 +113,7 @@ fn current_rows_with_storage<S: crate::storage::Storage>(
 
 /// 호출자가 구판 marker·XML 여백 단위를 확인한 뒤에만 사용하는 문맥 인증이다.
 /// 현재 폭에 더 적은 줄이 들어간다는 사실만으로 정상 저장 캐시를 버리지 않는다.
-/// 이전 2배 여백으로 구성한 모든 줄 경계가 원본과 정확히 같아야 한다.
+/// 이전 원본 여백으로 구성한 모든 줄 경계가 원본과 정확히 같아야 한다.
 fn has_previous_margin_partition(
     source: &Paragraph,
     width: f64,
@@ -137,12 +153,16 @@ fn has_previous_margin_partition_with_storage<S: crate::storage::Storage>(
     let starts = |rows: &[LineSeg]| storage.collect(rows.iter().map(|line| line.text_start));
     let source_starts = storage
         .collect((0..source.line_segs.len()).map(|index| source.line_seg_text_start(index)))?;
+    let trace = trace_margin_context(source);
     let Some((current, _)) =
         current_rows_with_storage(source, width, styles, dpi, 0, body, storage)?
     else {
         return Ok(false);
     };
     if starts(&current)? == source_starts {
+        if trace {
+            eprintln!("MARGIN_CONTEXT shape={} body={body} width={width} current_equals_source starts={source_starts:?}", source.para_shape_id);
+        }
         return Ok(false);
     }
     let previous_style = previous.para_styles.get(source.para_shape_id as usize);
@@ -151,17 +171,25 @@ fn has_previous_margin_partition_with_storage<S: crate::storage::Storage>(
     } else {
         ParagraphBox::content_for_style(width, previous_style, dpi)
     };
-    if !line_breaking::stored_rows_reproduce_frame_expectation_with_storage(
-        source,
-        &mut previous_box.frame(0),
-        previous,
-        dpi,
-        storage,
-    )? {
+    let previous_frame_matches =
+        line_breaking::stored_rows_reproduce_frame_expectation_with_storage(
+            source,
+            &mut previous_box.frame(0),
+            previous,
+            dpi,
+            storage,
+        )?;
+    if !previous_frame_matches && !trace {
         return Ok(false);
     }
     match current_rows_with_storage(source, width, previous, dpi, 0, body, storage)? {
-        Some((rows, _)) => Ok(starts(&rows)? == source_starts),
+        Some((rows, _)) => {
+            let previous_starts = starts(&rows)?;
+            if trace {
+                eprintln!("MARGIN_CONTEXT shape={} body={body} width={width} previous_frame={previous_frame_matches} indent={} previous_indent={} source={source_starts:?} current={:?} previous={previous_starts:?} first={:?}", source.para_shape_id, style.indent, previous_style.map_or(0.0, |style| style.indent), starts(&current)?, source.line_segs.first());
+            }
+            Ok(previous_frame_matches && previous_starts == source_starts)
+        }
         None => Ok(false),
     }
 }
@@ -278,6 +306,16 @@ pub(crate) fn project_cell_with_storage<S: crate::storage::Storage>(
     storage: &S,
 ) -> Result<Option<Vec<Paragraph>>, S::Error> {
     crate::storage::with_optional(|failure| {
+        for paragraph in original {
+            if trace_margin_context(paragraph) && is_plain_original(paragraph, styles) {
+                let _ = crate::storage::optional(
+                    has_previous_margin_partition_with_storage(
+                        paragraph, width, styles, previous, dpi, false, storage,
+                    ),
+                    failure,
+                )?;
+            }
+        }
         if original.first()?.line_segs.first()?.vertical_pos != 0
             || original.iter().any(|para| !is_plain_original(para, styles))
             || !original.iter().any(|para| {

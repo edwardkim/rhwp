@@ -1,0 +1,4131 @@
+{
+  "base": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+  "candidate": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+  "cases_per_backend": 71,
+  "identical_pngs_per_backend": 110,
+  "large_table": {
+    "input": "samples/issue2063_huge_cellbreak_table.hwp",
+    "pages": 161,
+    "layout_json_sha256": "a11e32dfd53c10f9a7def68a4bea4a61e7114907db12ee73937fea79b8e4a16b"
+  },
+  "results": [
+    {
+      "case": "cell-pictures-continued",
+      "pr": "9298",
+      "backend": "native",
+      "input": "tests/fixtures/pr9298_cell_picture_flow/cell-pictures-continued.hwpx",
+      "pdf": "pdf/pr9298/cell-pictures-continued-2024.pdf",
+      "input_sha256": "ec83e97fe1de42a3514197985a537f395a57720493a652f3e771b9e5e87c60a9",
+      "pdf_sha256": "7fe7ccec923ac60ac3d77613995dab19eaf7edba1a22acf343a4847b52417062",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "cell-pictures-front",
+      "pr": "9298",
+      "backend": "native",
+      "input": "tests/fixtures/pr9298_cell_picture_flow/cell-pictures-front.hwp",
+      "pdf": "pdf/pr9298/cell-pictures-front-2024.pdf",
+      "input_sha256": "52343be534e320d85111bf626cd201c930a4c7309fbb356e4fe239b66756cd9b",
+      "pdf_sha256": "d841c79d90e25c434ac2145fce2eb9f51aaf50cb335a7936dcf38b0130f76b76",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "cell-pictures-rule",
+      "pr": "9298",
+      "backend": "native",
+      "input": "tests/fixtures/pr9298_cell_picture_flow/cell-pictures-rule.hwp",
+      "pdf": "pdf/pr9298/cell-pictures-rule-2024.pdf",
+      "input_sha256": "11730a74c0567345b8334b365c35da084c362eb17f3e7db3c23c1de004120588",
+      "pdf_sha256": "aafa39e87c2055b242aa6ca1eaab69ad3c47fc104910bdc768c1a80d162d3ba8",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grid2x2",
+      "pr": "control",
+      "backend": "native",
+      "input": "samples/cell_negative_offset_stack/grid2x2.hwpx",
+      "pdf": "pdf/grid2x2-2024.pdf",
+      "input_sha256": "ed8cea29f0fde98aba4f721830d9be099289461cb8553ff5479939a2827b0cad",
+      "pdf_sha256": "2f67e7f4999ee9fab0e72ace064f584658d29e188c260418d40ae84072f57eb5",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-bottom-align",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/grow-bottom-align.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-bottom-align-2020.pdf",
+      "input_sha256": "af83b2ec57241a2ac0fc0a4031384a0cb17d9cdf33d55937650ece436437b862",
+      "pdf_sha256": "64ac2034a0630a1eb5bc40abbca15435740f0a172a731b104e2cb230d3863992",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-bottom-margin0",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/grow-bottom-margin0.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-bottom-margin0-2020.pdf",
+      "input_sha256": "dca85851bb9505a22557b4650afc79e410a1dd5d7b4e72e54a273a83f2f523f6",
+      "pdf_sha256": "6524907f1e8d2da1a5e3871fd8fc4f519f47b7785f61cbd0334e823890f41e3a",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-bottom-margin10mm",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pk40991_overlay_nested/grow-bottom-margin10mm.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-bottom-margin10mm-2020.pdf",
+      "input_sha256": "b25d5bf9d0b53603a5f0e58aec19eeace1a1ff81a11b25d3c18031b949c620e1",
+      "pdf_sha256": "dd0cd4a5fe0cd529fcfc831c42d7aa20957ba7c7bd3e4364164623ed8b6084eb",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-declared-fit",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/grow-declared-fit.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-declared-fit-2020.pdf",
+      "input_sha256": "540e957282dc733b7c6c28867912a9f1f64d2966da1df7df6bb94ecff3a72fd5",
+      "pdf_sha256": "3ae15a2afc8ca95e5ab17459ae86334a47b38fee7870376da380c395369c0cc0",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-declared-near",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/grow-declared-near.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-declared-near-2020.pdf",
+      "input_sha256": "71646608e2610244ccd311f0890c32b8e752fd91f1d3f4aefd19b349c738bde5",
+      "pdf_sha256": "6eca2f9705618cf558a2a8e59a8903dcb8b2aa4c71047acb1a4254b114259315",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-declared-short",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/grow-declared-short.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-declared-short-2020.pdf",
+      "input_sha256": "b005982200a19786637e424df9936409c7b6d23453d31f4bb4a5d8605fd1efbd",
+      "pdf_sha256": "6f88d8f21d9e400bcc3b9f38a6d9e7035fc46a4338e7808c033fd812895921f0",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-declared-under",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/grow-declared-under.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-declared-under-2020.pdf",
+      "input_sha256": "dfd7ef7d31f215631c7c0f6e71e6b8e98d422084af879184b922fc647ec67d0b",
+      "pdf_sha256": "a587111f648bf4a6c497cbd2e89483cb02f5a0106a18579c0d7c32b997aa16d6",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-inner-top0",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/grow-inner-top0.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-inner-top0-2020.pdf",
+      "input_sha256": "a0a85d5353aa6bc5e11c10187aaf10e8cbbf792caa50b8bd582d5cf6220a5bd7",
+      "pdf_sha256": "bdf1232cb04fc44edee6283679b546295f543e4dcec6dd60ad4f296eccfec94e",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-inner-top900",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/grow-inner-top900.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-inner-top900-2020.pdf",
+      "input_sha256": "37ab83fd8dfcf32e62e6b4c6034b6bc8b58e7b38772cb7b0d2a1da8f6d0c1066",
+      "pdf_sha256": "5f239760b28f8d81217fe2b15a892248ba6fb07920226fee02086812683c2188",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-page-before-large",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/grow-page-before-large.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-page-before-large-2020.pdf",
+      "input_sha256": "550d377ade89712be7b66640d724f4b2a3088296e0ebfcfe8256319671375844",
+      "pdf_sha256": "7ff4adb187efa221e1703e749b87fb2902886320ff12be4a9b74db034747fb45",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-page-before-small",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/grow-page-before-small.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-page-before-small-2020.pdf",
+      "input_sha256": "a4baa3e2c0457888029499501f3d31efa2ea001bca0e7b5cfc51fdaf1762392d",
+      "pdf_sha256": "69501fce5a7f01720282782533f0fb447cd53ce32ab39830a5c489da91ffe8d5",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-page-near-large",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/grow-page-near-large.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-page-near-large-2020.pdf",
+      "input_sha256": "a411068c183b6d06a474c923220987283b1cb7064bd13d4d2d79f251bef1ea80",
+      "pdf_sha256": "475e83d89abc3a86cbcc00784cfe9a5840af3adfc78b0f7b0971e817d7f024b8",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-page-near-small",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/grow-page-near-small.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-page-near-small-2020.pdf",
+      "input_sha256": "c1244d6d19fdcf377cb951e4cfdd196de85e7167acd8e80c190c95740664b240",
+      "pdf_sha256": "7e031669843bb191e33d0963e360f445bad5952b9ad4fa21866613d582098b76",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-parent-padding0",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/grow-parent-padding0.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-parent-padding0-2020.pdf",
+      "input_sha256": "5dc3991f94d2be38bd3e82e302e2145f1dfbb23030c0ba396a71694ea12563c6",
+      "pdf_sha256": "0781840b142651ca193a39ee5403ae28fc68a4e2e7809ea9abc1aceba46847fe",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-parent-padding300",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/grow-parent-padding300.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-parent-padding300-2020.pdf",
+      "input_sha256": "5382bd2bdf4e4bf6522f2b9ca412f443729ca1c35cee68d29c5c9da1dcec504c",
+      "pdf_sha256": "121ac4d7399c124469f01a07a2a3e866c2826acf433007ddfe1c59cf7d6ee582",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_anchor_offset-hancom2024",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/overlay_nested_anchor_offset-hancom.hwp",
+      "pdf": "pdf/pr9349-cell-floats/overlay_nested_anchor_offset-hancom-2024.pdf",
+      "input_sha256": "b5484e4006470c7d3b0b368788e9ed43691cfe9b3a822b01f59e5ddd6465fc75",
+      "pdf_sha256": "16fd762fef3fffa80bf12340db3707c3e02f644ba04fbd3efd7fa299b91c0657",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_anchor_offset-hwp-printed2024",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_anchor_offset.hwp",
+      "pdf": "pdf/pr9349-cell-floats/overlay_nested_anchor_offset-hwp5-2024.pdf",
+      "input_sha256": "2d14bebe9d2fed41363f9b3e901cd2a1b88b2aad1b43303b50efc9629e5d46eb",
+      "pdf_sha256": "5cc9edce20635d66827fd78fb3a20a1033eaab2a0aa427ca0c4ce04f62bf11fe",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.79",
+      "head_minimum": "99.79",
+      "base_tsv_sha256": "0b74f4d20482ff8955c06778d58ccd1edf7044d495a38e4deda533a3ec7db068",
+      "head_tsv_sha256": "0b74f4d20482ff8955c06778d58ccd1edf7044d495a38e4deda533a3ec7db068",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_anchor_offset-hwp-vs-hwpx-print",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_anchor_offset.hwp",
+      "pdf": "pdf/overlay_nested_anchor_offset-2020.pdf",
+      "input_sha256": "2d14bebe9d2fed41363f9b3e901cd2a1b88b2aad1b43303b50efc9629e5d46eb",
+      "pdf_sha256": "5685f9719268611fe2fea5cc4c54b8d94690d69d9248a21701a29479dbc086c7",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.79",
+      "head_minimum": "99.79",
+      "base_tsv_sha256": "0b74f4d20482ff8955c06778d58ccd1edf7044d495a38e4deda533a3ec7db068",
+      "head_tsv_sha256": "0b74f4d20482ff8955c06778d58ccd1edf7044d495a38e4deda533a3ec7db068",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_anchor_offset-hwpx",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_anchor_offset.hwpx",
+      "pdf": "pdf/overlay_nested_anchor_offset-2020.pdf",
+      "input_sha256": "35655892aed665ce4105dae237ea330f4abdf0d8a106fcd205bf3d569751512c",
+      "pdf_sha256": "5685f9719268611fe2fea5cc4c54b8d94690d69d9248a21701a29479dbc086c7",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_center-hancom2024",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/overlay_nested_center-hancom.hwp",
+      "pdf": "pdf/pr9349-cell-floats/overlay_nested_center-hancom-2024.pdf",
+      "input_sha256": "364ee9268b9d80b7b345064d12d4cc2952468283bdf28628a183fe8e3f585fcf",
+      "pdf_sha256": "2a13f048b63dfd173a3ac8fd52a68baea68ff8259450ed229ba45e3a00463cd8",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_center-hwp-printed2024",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_center.hwp",
+      "pdf": "pdf/pr9349-cell-floats/overlay_nested_center-hwp5-2024.pdf",
+      "input_sha256": "7057b23289c5d610c190000a22afcca27365c60e725eea326bc173cbcfc4d382",
+      "pdf_sha256": "9ee2f15d5445dc48eb72dc3af5e69c8800dd2a2f20ab1970b700886908d961ab",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.78",
+      "head_minimum": "99.78",
+      "base_tsv_sha256": "e04ad47f657fe4f1a6c94ec5272516054d938122fb40616e7ad47baa4b6b6641",
+      "head_tsv_sha256": "e04ad47f657fe4f1a6c94ec5272516054d938122fb40616e7ad47baa4b6b6641",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_center-hwp-vs-hwpx-print",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_center.hwp",
+      "pdf": "pdf/overlay_nested_center-2020.pdf",
+      "input_sha256": "7057b23289c5d610c190000a22afcca27365c60e725eea326bc173cbcfc4d382",
+      "pdf_sha256": "9863d13dc4e67dd22881b9bb920451b9cd4faf00ffc50ef0ff54c641ad094666",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.78",
+      "head_minimum": "99.78",
+      "base_tsv_sha256": "e04ad47f657fe4f1a6c94ec5272516054d938122fb40616e7ad47baa4b6b6641",
+      "head_tsv_sha256": "e04ad47f657fe4f1a6c94ec5272516054d938122fb40616e7ad47baa4b6b6641",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_center-hwpx",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_center.hwpx",
+      "pdf": "pdf/overlay_nested_center-2020.pdf",
+      "input_sha256": "a3a00c28ad294edd06ca44c965ef8717a3d338aad70c177908a76a12695e1250",
+      "pdf_sha256": "9863d13dc4e67dd22881b9bb920451b9cd4faf00ffc50ef0ff54c641ad094666",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_grow_split-hancom2024",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_grow_split-hancom.hwp",
+      "pdf": "pdf/pr9349-cell-floats/overlay_nested_grow_split-hancom-2024.pdf",
+      "input_sha256": "f344f9a90cbcf978ca10e4a5bdcfd7e93f333133dd59d7dc845123cb52be5ca6",
+      "pdf_sha256": "68b9953e40135036624e753f82762e13d3e75af7809623c18ce9a229cecb1cde",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_grow_split-hwp-printed2024",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_grow_split.hwp",
+      "pdf": "pdf/pr9349-cell-floats/overlay_nested_grow_split-hwp5-2024.pdf",
+      "input_sha256": "fddf880baca7f47d6bc63310c6020007bc45f0dee6264346cba59b8be6dde5ad",
+      "pdf_sha256": "db6871098a2dc87f860dbef74b7064a2be2a63d38fea206900f0859bd1c94622",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.72",
+      "head_minimum": "99.72",
+      "base_tsv_sha256": "b885d69c5cad4c4871084188d8aae386cbcf265b367e1b7428ca5dfc83cdc8f0",
+      "head_tsv_sha256": "b885d69c5cad4c4871084188d8aae386cbcf265b367e1b7428ca5dfc83cdc8f0",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_grow_split-hwp-vs-hwpx-print",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_grow_split.hwp",
+      "pdf": "pdf/overlay_nested_grow_split-2020.pdf",
+      "input_sha256": "fddf880baca7f47d6bc63310c6020007bc45f0dee6264346cba59b8be6dde5ad",
+      "pdf_sha256": "9543221c17aed43f7a1e69b4740e88cd2cce46397a41b06ada0af5f040385f92",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.72",
+      "head_minimum": "99.72",
+      "base_tsv_sha256": "b885d69c5cad4c4871084188d8aae386cbcf265b367e1b7428ca5dfc83cdc8f0",
+      "head_tsv_sha256": "b885d69c5cad4c4871084188d8aae386cbcf265b367e1b7428ca5dfc83cdc8f0",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_grow_split-hwpx",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_grow_split.hwpx",
+      "pdf": "pdf/overlay_nested_grow_split-2020.pdf",
+      "input_sha256": "a8e81ba6b6c2a20d1e4a7534ad733d6db1a8fe969e4069a70d72dd26e12acd07",
+      "pdf_sha256": "9543221c17aed43f7a1e69b4740e88cd2cce46397a41b06ada0af5f040385f92",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_split-hancom2024",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_split-hancom.hwp",
+      "pdf": "pdf/pr9349-cell-floats/overlay_nested_split-hancom-2024.pdf",
+      "input_sha256": "4297b3c07c04c9b59b193e8b3e64c6b01476a5b61e7fa1e5c3619a550debc51b",
+      "pdf_sha256": "d8eb0e1a7cae7af3eca13ff621ad76413a08218d4dcac7e613be3227bd6604e3",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_split-hwp-printed2024",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_split.hwp",
+      "pdf": "pdf/pr9349-cell-floats/overlay_nested_split-hwp5-2024.pdf",
+      "input_sha256": "081f65a524c363e56941336d5173822410e1d9f3d1a86f740a4a285ce2ed2de7",
+      "pdf_sha256": "b14c43a063a9edebc30b6e1d8383cabe5d7a67b68f4889ecbe8c8ddfb3c43b07",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.77",
+      "head_minimum": "99.77",
+      "base_tsv_sha256": "90fcfefa1eeec9afa4fdac288b3f0180a78b6b9f154428d4df73032a86a8ee26",
+      "head_tsv_sha256": "90fcfefa1eeec9afa4fdac288b3f0180a78b6b9f154428d4df73032a86a8ee26",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_split-hwp-vs-hwpx-print",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_split.hwp",
+      "pdf": "pdf/overlay_nested_split-2020.pdf",
+      "input_sha256": "081f65a524c363e56941336d5173822410e1d9f3d1a86f740a4a285ce2ed2de7",
+      "pdf_sha256": "409cb44d7093eb14502dd311a4ee840a44ce2e19672a8a26a994c3298806be80",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.77",
+      "head_minimum": "99.77",
+      "base_tsv_sha256": "90fcfefa1eeec9afa4fdac288b3f0180a78b6b9f154428d4df73032a86a8ee26",
+      "head_tsv_sha256": "90fcfefa1eeec9afa4fdac288b3f0180a78b6b9f154428d4df73032a86a8ee26",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_split-hwpx",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_split.hwpx",
+      "pdf": "pdf/overlay_nested_split-2020.pdf",
+      "input_sha256": "cf210576eadb274585d92543553c9fc2852284ba05c3ce419417d8c97acfd2cc",
+      "pdf_sha256": "409cb44d7093eb14502dd311a4ee840a44ce2e19672a8a26a994c3298806be80",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper-100300",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pk40991_overlay_nested/grow-last-row-content-fit.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-last-row-content-fit-2020.pdf",
+      "input_sha256": "ba711e7fca5f895993a2e3d156ddcf9c3db6b8391c336867b3e94cc7da2f0e3e",
+      "pdf_sha256": "67f4ced71e8a0563049f0856884ed29e75789d3d174830eebcdbf5ae35f02948",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper-103300",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/paper-103300.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/paper-103300-2020.pdf",
+      "input_sha256": "0f11afdb8f0d39a6468f446a3e34b55028fd37d5172883d26bf493d1bc0203b2",
+      "pdf_sha256": "1183b9d9763bb1fe1a500abc1cccfc14633c7c296096de944ad30a0f87d6a945",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "96.44",
+      "head_minimum": "96.44",
+      "base_tsv_sha256": "0316555e5a9628ae349e15d783532fcc7f37c7db8c36f273b3d152d2413f0aef",
+      "head_tsv_sha256": "0316555e5a9628ae349e15d783532fcc7f37c7db8c36f273b3d152d2413f0aef",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper-103900",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/paper-103900.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/paper-103900-2020.pdf",
+      "input_sha256": "3f205313f2d2c260f737cbcf8a78a6e477b8e7fa5dc1ec986d5bf30d08a1f9b0",
+      "pdf_sha256": "d02d4ff14da2e65303003789b5e7d50a3ea995a2ce6a686117470e92ca14b6b4",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper-104500",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/paper-104500.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/paper-104500-2020.pdf",
+      "input_sha256": "5844437855137b5c19310909be94653541949fbfb0c7e9e51b53edcc8839203d",
+      "pdf_sha256": "8fa06882920097c216521c5f1bd2cbbc7b1267becee5d48ac652f3f38d6a1340",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper-104800",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/paper-104800.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/paper-104800-2020.pdf",
+      "input_sha256": "dab18435be734edbf35009fed2512ffe2427ef95809c2feb1f4fec7bbb6b31e1",
+      "pdf_sha256": "ac0b96700db54db44259c122f865aeb13a71443e71567a6dc522cac533c9888c",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper-105400",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pk40991_overlay_nested/grow-tail-only-continuation.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-tail-only-continuation-2020.pdf",
+      "input_sha256": "2916db8bb9176814114d7d9f71ace0154f264d7c50f6450e9cdb488704ef4ac5",
+      "pdf_sha256": "418fbbbeacd5dc922dc972d0cbca022933df1159c7331a2d7e5e50ed6b7b89ab",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper-106000",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/paper-106000.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/paper-106000-2020.pdf",
+      "input_sha256": "e82931f675c416af4f669b66c059bb10ebfed7d09f3d6c3461efba6e34646e4e",
+      "pdf_sha256": "728cb8bbb84bdf1e5623892b3f0b98cdd06100b13e708609b4c061f193b5e734",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper-107200",
+      "pr": "9407",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/paper-107200.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/paper-107200-2020.pdf",
+      "input_sha256": "16c00063572e8be5dcccd3324dfb19a6b399ba52e4b648bd98fd86e060512d71",
+      "pdf_sha256": "d6fc49f7a3c4a3b91bbcfd18f225665d2bcec55f92daf19546beaf813101c0e9",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper-split-behind",
+      "pr": "9352",
+      "backend": "native",
+      "input": "samples/pk40991_cell_paper_shape/paper-split-behind.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/paper-split-behind-2020.pdf",
+      "input_sha256": "91c0c0b45512ebd4398b74080d800be0c3b69c9272042660e4bf8678048e7b7d",
+      "pdf_sha256": "27e4f8c8ba2459ecdc9419fb626cf1c25bc71c60b3eeda5b26afb1d9daace1ba",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper-split-front",
+      "pr": "9352",
+      "backend": "native",
+      "input": "samples/pk40991_cell_paper_shape/paper-split-front.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/paper-split-front-2020.pdf",
+      "input_sha256": "900656db3a6c7a85ef57d1a09f2ce023947dc319bfb77eec76f9c540a7ef241c",
+      "pdf_sha256": "2dbee55996c102bbe279c836ff44ec7e76cc80ef8b9aa44810cc1b34e7f682c3",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper-split-latin-default",
+      "pr": "9352",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/paper-split-latin-default.hwp",
+      "pdf": "pdf/pr9349-cell-floats/paper-split-latin-default-2024.pdf",
+      "input_sha256": "5a2e89115d46d6c90d46e3499bb24eb52d9214318ad4672cdb6f3dcb9b33d1e3",
+      "pdf_sha256": "53b861fe22e529abd73485030ad3d8852ae3d1298dd060d1efdc2f91e92babc5",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper-split-latin-explicit-hcr",
+      "pr": "9352",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/paper-split-latin-explicit-hcr.hwp",
+      "pdf": "pdf/pr9349-cell-floats/paper-split-latin-explicit-hcr-2024.pdf",
+      "input_sha256": "373189b9202cc34fb65d97aa5a2f7a95c88144dc3848f9b6a7a4250488d7c7d6",
+      "pdf_sha256": "7bb3fef271af7b16d97d5023fac0d2ffc790ed671ce7d808f99ad15fda0ce429",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_front-hancom2024",
+      "pr": "9352",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/paper_front-hancom.hwp",
+      "pdf": "pdf/pr9349-cell-floats/paper_front-hancom-2024.pdf",
+      "input_sha256": "855e1469431a59d9624ce8dd10c382eb3b9de449d8ad2bca1761ad472be48ec0",
+      "pdf_sha256": "515d02a5783dd59950fb415859ada9cd8714e0b1b04e4b69f3ec6715d60c9d62",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_front-hwp-printed2024",
+      "pr": "9352",
+      "backend": "native",
+      "input": "samples/pk40991_cell_paper_shape/paper_front.hwp",
+      "pdf": "pdf/pr9349-cell-floats/paper_front-hwp5-2024.pdf",
+      "input_sha256": "9ee02d688febdaa47b69ffbd57ce5ab49f5aa4b87a15d840fbdd402ececf1094",
+      "pdf_sha256": "e17a4471791d7e96c0e473e1f57eac5ca97b0ae7145cc8ae5615b5b1baaf3cfe",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.88",
+      "head_minimum": "99.88",
+      "base_tsv_sha256": "11775ea485d1a132e2dde732c1b209a02447f21df7747d5031c6271796ecb49f",
+      "head_tsv_sha256": "11775ea485d1a132e2dde732c1b209a02447f21df7747d5031c6271796ecb49f",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_front-hwp-vs-hwpx-print",
+      "pr": "9352",
+      "backend": "native",
+      "input": "samples/pk40991_cell_paper_shape/paper_front.hwp",
+      "pdf": "pdf/paper_front-2020.pdf",
+      "input_sha256": "9ee02d688febdaa47b69ffbd57ce5ab49f5aa4b87a15d840fbdd402ececf1094",
+      "pdf_sha256": "dd0e168ac2cc146d00771c75f0d3b730b14deb57b2fbad11d13d7f67e9e631e1",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.88",
+      "head_minimum": "99.88",
+      "base_tsv_sha256": "11775ea485d1a132e2dde732c1b209a02447f21df7747d5031c6271796ecb49f",
+      "head_tsv_sha256": "11775ea485d1a132e2dde732c1b209a02447f21df7747d5031c6271796ecb49f",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_front-hwpx",
+      "pr": "9352",
+      "backend": "native",
+      "input": "samples/pk40991_cell_paper_shape/paper_front.hwpx",
+      "pdf": "pdf/paper_front-2020.pdf",
+      "input_sha256": "3d335ab4ff7d1acef8735074170335dbdf701d79621c205fc6cfde9660961412",
+      "pdf_sha256": "dd0e168ac2cc146d00771c75f0d3b730b14deb57b2fbad11d13d7f67e9e631e1",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_square-hancom2024",
+      "pr": "9352",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/paper_square-hancom.hwp",
+      "pdf": "pdf/pr9349-cell-floats/paper_square-hancom-2024.pdf",
+      "input_sha256": "59e30d9804e9c8b8f003b973945ca253e3b57de4e3804c3f8ad4ea89ec31e347",
+      "pdf_sha256": "1e7329895e41caa0f0b797f0fa3fed6b6979f5cefb9497f27758659cbaade87f",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_square-hwp-printed2024",
+      "pr": "9352",
+      "backend": "native",
+      "input": "samples/pk40991_cell_paper_shape/paper_square.hwp",
+      "pdf": "pdf/pr9349-cell-floats/paper_square-hwp5-2024.pdf",
+      "input_sha256": "8f9eae5778d6b1ec679cb314a4b653e64af3530af39fd3707b629df00ff4bfdd",
+      "pdf_sha256": "b330544e972694b26d9e88b88f9fe0ceea62e5bd9ebae52f7852d54ed2c731e0",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.88",
+      "head_minimum": "99.88",
+      "base_tsv_sha256": "11775ea485d1a132e2dde732c1b209a02447f21df7747d5031c6271796ecb49f",
+      "head_tsv_sha256": "11775ea485d1a132e2dde732c1b209a02447f21df7747d5031c6271796ecb49f",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_square-hwp-vs-hwpx-print",
+      "pr": "9352",
+      "backend": "native",
+      "input": "samples/pk40991_cell_paper_shape/paper_square.hwp",
+      "pdf": "pdf/paper_square-2020.pdf",
+      "input_sha256": "8f9eae5778d6b1ec679cb314a4b653e64af3530af39fd3707b629df00ff4bfdd",
+      "pdf_sha256": "de62a88d1dbe3ffece67de40df987637f3754819950834d3fcd0ae5aebb0daef",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.88",
+      "head_minimum": "99.88",
+      "base_tsv_sha256": "11775ea485d1a132e2dde732c1b209a02447f21df7747d5031c6271796ecb49f",
+      "head_tsv_sha256": "11775ea485d1a132e2dde732c1b209a02447f21df7747d5031c6271796ecb49f",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_square-hwpx",
+      "pr": "9352",
+      "backend": "native",
+      "input": "samples/pk40991_cell_paper_shape/paper_square.hwpx",
+      "pdf": "pdf/paper_square-2020.pdf",
+      "input_sha256": "bb26acda215afaea3353f7e4b30e330857fba68d976818f06188d9e35ebeaf3b",
+      "pdf_sha256": "de62a88d1dbe3ffece67de40df987637f3754819950834d3fcd0ae5aebb0daef",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_square_nested-hancom2024",
+      "pr": "9352",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/paper_square_nested-hancom.hwp",
+      "pdf": "pdf/pr9349-cell-floats/paper_square_nested-hancom-2024.pdf",
+      "input_sha256": "6e271493d15c5c9b23c6b4bc1b3fb33168aec9ee3577281e57ef4789078e2b46",
+      "pdf_sha256": "015587872c0eb9c904c4ea8b90c3509a3659802c40130603bdf5d1a105d9d405",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_square_nested-hwp-printed2024",
+      "pr": "9352",
+      "backend": "native",
+      "input": "samples/pk40991_cell_paper_shape/paper_square_nested.hwp",
+      "pdf": "pdf/pr9349-cell-floats/paper_square_nested-hwp5-2024.pdf",
+      "input_sha256": "7a16cb7b1a518c6f2c328d8b18b1a9964b87198798ffc4ae194c6f2caccb069d",
+      "pdf_sha256": "a9e52b147e696edb6bdd2ebf1495896612114ac942b2f44ddc2834ce5ee89f10",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.84",
+      "head_minimum": "99.84",
+      "base_tsv_sha256": "d7b38777bcd1628064c252b33623ee543fa3dfa1d1072f20deedb376bc83e3e6",
+      "head_tsv_sha256": "d7b38777bcd1628064c252b33623ee543fa3dfa1d1072f20deedb376bc83e3e6",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_square_nested-hwp-vs-hwpx-print",
+      "pr": "9352",
+      "backend": "native",
+      "input": "samples/pk40991_cell_paper_shape/paper_square_nested.hwp",
+      "pdf": "pdf/paper_square_nested-2020.pdf",
+      "input_sha256": "7a16cb7b1a518c6f2c328d8b18b1a9964b87198798ffc4ae194c6f2caccb069d",
+      "pdf_sha256": "3fef4b4f87433ba6743ae3e4a1a8a243af48f41006a4439d445fc4a7ffc85d0b",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.84",
+      "head_minimum": "99.84",
+      "base_tsv_sha256": "d7b38777bcd1628064c252b33623ee543fa3dfa1d1072f20deedb376bc83e3e6",
+      "head_tsv_sha256": "d7b38777bcd1628064c252b33623ee543fa3dfa1d1072f20deedb376bc83e3e6",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_square_nested-hwpx",
+      "pr": "9352",
+      "backend": "native",
+      "input": "samples/pk40991_cell_paper_shape/paper_square_nested.hwpx",
+      "pdf": "pdf/paper_square_nested-2020.pdf",
+      "input_sha256": "9b2f5f2a878cc4ba491dc8687075fd948701c662a6d96030d8f105da3064fbaf",
+      "pdf_sha256": "3fef4b4f87433ba6743ae3e4a1a8a243af48f41006a4439d445fc4a7ffc85d0b",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_square_split-hancom2024",
+      "pr": "9352",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/paper_square_split-hancom.hwp",
+      "pdf": "pdf/pr9349-cell-floats/paper_square_split-hancom-2024.pdf",
+      "input_sha256": "e00376b78b8021716296833e087f534f51ef6b561dfc0770517a1534a8692fde",
+      "pdf_sha256": "d2158263453e838a561048aef90dd9b07fc55195feda3ac5711861428f2d4e0b",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_square_split-hwp-printed2024",
+      "pr": "9352",
+      "backend": "native",
+      "input": "samples/pk40991_cell_paper_shape/paper_square_split.hwp",
+      "pdf": "pdf/pr9349-cell-floats/paper_square_split-hwp5-2024.pdf",
+      "input_sha256": "a44958e77127e32db6f7c25ca6afe4a5fcc5e7eb31ca024c65d9da0206ac83b6",
+      "pdf_sha256": "a4bd612dd9e5b6473b54f8341d76e27acf5b8d1142bbed8eee83f34e312c5ba8",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "96.24",
+      "head_minimum": "96.24",
+      "base_tsv_sha256": "162e65a17f63853a8afe521f8a567b40059183ae4f1354b87a33fb8fe02431b8",
+      "head_tsv_sha256": "162e65a17f63853a8afe521f8a567b40059183ae4f1354b87a33fb8fe02431b8",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_square_split-hwp-vs-hwpx-print",
+      "pr": "9352",
+      "backend": "native",
+      "input": "samples/pk40991_cell_paper_shape/paper_square_split.hwp",
+      "pdf": "pdf/paper_square_split-2020.pdf",
+      "input_sha256": "a44958e77127e32db6f7c25ca6afe4a5fcc5e7eb31ca024c65d9da0206ac83b6",
+      "pdf_sha256": "2c7cdd941dffa46a8ed2ca90a7e553e8aae67cd7e5712c604bf95d8784b6e310",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "96.24",
+      "head_minimum": "96.24",
+      "base_tsv_sha256": "162e65a17f63853a8afe521f8a567b40059183ae4f1354b87a33fb8fe02431b8",
+      "head_tsv_sha256": "162e65a17f63853a8afe521f8a567b40059183ae4f1354b87a33fb8fe02431b8",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_square_split-hwpx",
+      "pr": "9352",
+      "backend": "native",
+      "input": "samples/pk40991_cell_paper_shape/paper_square_split.hwpx",
+      "pdf": "pdf/paper_square_split-2020.pdf",
+      "input_sha256": "bad59008efcbc94659612d2426dfdac42c93cc64b49acfddf08ddf62aebc7dbc",
+      "pdf_sha256": "2c7cdd941dffa46a8ed2ca90a7e553e8aae67cd7e5712c604bf95d8784b6e310",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "photo-a5-height",
+      "pr": "9384",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/photo-a5-height.hwp",
+      "pdf": "pdf/pr9349-cell-floats/photo-a5-height-2020.pdf",
+      "input_sha256": "3e2a085dc886a803aaa2ba003b361545ea5b6879d707d6a56d24cd7cca68b123",
+      "pdf_sha256": "c5f8663ac1e4709e5c71b410f7482d7fc7bc106d0542549bcb6a4f0fcd8ff89a",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "photo-center-overlap",
+      "pr": "9384",
+      "backend": "native",
+      "input": "samples/side_by_side_photo_cell/photo-center-overlap.hwp",
+      "pdf": "pdf/pr9349-cell-floats/photo-center-overlap-2020.pdf",
+      "input_sha256": "67cb7ffa55c2c3d7d34e89ff088e5baa35b091c5c4b566afa15d0b84d7bc861a",
+      "pdf_sha256": "e7a5abc5929d3e8265b9a8cd6cab8b750e6a1f99e1c0bc0931bda730d7af042e",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "photo-left-touch",
+      "pr": "9384",
+      "backend": "native",
+      "input": "samples/side_by_side_photo_cell/photo-left-touch.hwp",
+      "pdf": "pdf/pr9349-cell-floats/photo-left-touch-2020.pdf",
+      "input_sha256": "404fff252c0ae48c53594382158c2457fa8b05cd20d7a78627a7f8121038af35",
+      "pdf_sha256": "ff7376fc58f03e8a9290d62516f0a21d0cd63a485b536a65e2c505bee4f4c172",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "photo-right-overlap",
+      "pr": "9384",
+      "backend": "native",
+      "input": "samples/side_by_side_photo_cell/photo-right-overlap.hwp",
+      "pdf": "pdf/pr9349-cell-floats/photo-right-overlap-2020.pdf",
+      "input_sha256": "e08924f8ed3475ff63757fec3c58f2bc2558e782ebb0d29e49635bfee345cf5f",
+      "pdf_sha256": "7282cc4f616a942f0994aefeeed88f55cc4dd706fc3c6b61fb3db45bf654dd8f",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "photo-right-overlap-neg",
+      "pr": "9384",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/photo-right-overlap-neg.hwp",
+      "pdf": "pdf/pr9349-cell-floats/photo-right-overlap-neg-2020.pdf",
+      "input_sha256": "8f908dd6cb820f8b370cee4e4e621979c85117d48b421cd97d811214a6a61aa6",
+      "pdf_sha256": "54dc4c4349ff545bb78b5a6b28c0275b35d91b0a909b2366d34d6056a6d40617",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "photo-short-page",
+      "pr": "9384",
+      "backend": "native",
+      "input": "samples/pr9349-cell-floats/photo-short-page.hwp",
+      "pdf": "pdf/pr9349-cell-floats/photo-short-page-2020.pdf",
+      "input_sha256": "04ca8dcfe156a73e2deaa430693fde6e430d00143050323b2646241e2940dc9b",
+      "pdf_sha256": "7c80c54835a355690a99b40844c9a7e113b83d28aa988974185a2c77c94ddd45",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "row3-mixed",
+      "pr": "control",
+      "backend": "native",
+      "input": "samples/cell_negative_offset_stack/row3-mixed.hwpx",
+      "pdf": "pdf/row3-mixed-2024.pdf",
+      "input_sha256": "88ea59c2ff62ecd9ddd6b49bde576b3bed5153bacbbc63dae4a6353697712424",
+      "pdf_sha256": "9c2f9b3ad6e26ede8ef1298103407b41a7762b8f7780315781e25d4e994319e1",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "side-by-side",
+      "pr": "9384",
+      "backend": "native",
+      "input": "samples/side_by_side_photo_cell/side-by-side-photo-rows.hwp",
+      "pdf": "pdf/side-by-side-photo-rows-2020.pdf",
+      "input_sha256": "c3c904a40b3192f398ae8b81d3b8b19b89738fda43a4fbd3381e62db1df1c38d",
+      "pdf_sha256": "a3353c9274074e501c57553727a4a4fb411cb923e738ed05a8a2758eaa20d550",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "cell-pictures-continued",
+      "pr": "9298",
+      "backend": "wasm",
+      "input": "tests/fixtures/pr9298_cell_picture_flow/cell-pictures-continued.hwpx",
+      "pdf": "pdf/pr9298/cell-pictures-continued-2024.pdf",
+      "input_sha256": "ec83e97fe1de42a3514197985a537f395a57720493a652f3e771b9e5e87c60a9",
+      "pdf_sha256": "7fe7ccec923ac60ac3d77613995dab19eaf7edba1a22acf343a4847b52417062",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "cell-pictures-front",
+      "pr": "9298",
+      "backend": "wasm",
+      "input": "tests/fixtures/pr9298_cell_picture_flow/cell-pictures-front.hwp",
+      "pdf": "pdf/pr9298/cell-pictures-front-2024.pdf",
+      "input_sha256": "52343be534e320d85111bf626cd201c930a4c7309fbb356e4fe239b66756cd9b",
+      "pdf_sha256": "d841c79d90e25c434ac2145fce2eb9f51aaf50cb335a7936dcf38b0130f76b76",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "cell-pictures-rule",
+      "pr": "9298",
+      "backend": "wasm",
+      "input": "tests/fixtures/pr9298_cell_picture_flow/cell-pictures-rule.hwp",
+      "pdf": "pdf/pr9298/cell-pictures-rule-2024.pdf",
+      "input_sha256": "11730a74c0567345b8334b365c35da084c362eb17f3e7db3c23c1de004120588",
+      "pdf_sha256": "aafa39e87c2055b242aa6ca1eaab69ad3c47fc104910bdc768c1a80d162d3ba8",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grid2x2",
+      "pr": "control",
+      "backend": "wasm",
+      "input": "samples/cell_negative_offset_stack/grid2x2.hwpx",
+      "pdf": "pdf/grid2x2-2024.pdf",
+      "input_sha256": "ed8cea29f0fde98aba4f721830d9be099289461cb8553ff5479939a2827b0cad",
+      "pdf_sha256": "2f67e7f4999ee9fab0e72ace064f584658d29e188c260418d40ae84072f57eb5",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-bottom-align",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/grow-bottom-align.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-bottom-align-2020.pdf",
+      "input_sha256": "af83b2ec57241a2ac0fc0a4031384a0cb17d9cdf33d55937650ece436437b862",
+      "pdf_sha256": "64ac2034a0630a1eb5bc40abbca15435740f0a172a731b104e2cb230d3863992",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-bottom-margin0",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/grow-bottom-margin0.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-bottom-margin0-2020.pdf",
+      "input_sha256": "dca85851bb9505a22557b4650afc79e410a1dd5d7b4e72e54a273a83f2f523f6",
+      "pdf_sha256": "6524907f1e8d2da1a5e3871fd8fc4f519f47b7785f61cbd0334e823890f41e3a",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-bottom-margin10mm",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pk40991_overlay_nested/grow-bottom-margin10mm.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-bottom-margin10mm-2020.pdf",
+      "input_sha256": "b25d5bf9d0b53603a5f0e58aec19eeace1a1ff81a11b25d3c18031b949c620e1",
+      "pdf_sha256": "dd0cd4a5fe0cd529fcfc831c42d7aa20957ba7c7bd3e4364164623ed8b6084eb",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-declared-fit",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/grow-declared-fit.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-declared-fit-2020.pdf",
+      "input_sha256": "540e957282dc733b7c6c28867912a9f1f64d2966da1df7df6bb94ecff3a72fd5",
+      "pdf_sha256": "3ae15a2afc8ca95e5ab17459ae86334a47b38fee7870376da380c395369c0cc0",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-declared-near",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/grow-declared-near.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-declared-near-2020.pdf",
+      "input_sha256": "71646608e2610244ccd311f0890c32b8e752fd91f1d3f4aefd19b349c738bde5",
+      "pdf_sha256": "6eca2f9705618cf558a2a8e59a8903dcb8b2aa4c71047acb1a4254b114259315",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-declared-short",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/grow-declared-short.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-declared-short-2020.pdf",
+      "input_sha256": "b005982200a19786637e424df9936409c7b6d23453d31f4bb4a5d8605fd1efbd",
+      "pdf_sha256": "6f88d8f21d9e400bcc3b9f38a6d9e7035fc46a4338e7808c033fd812895921f0",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-declared-under",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/grow-declared-under.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-declared-under-2020.pdf",
+      "input_sha256": "dfd7ef7d31f215631c7c0f6e71e6b8e98d422084af879184b922fc647ec67d0b",
+      "pdf_sha256": "a587111f648bf4a6c497cbd2e89483cb02f5a0106a18579c0d7c32b997aa16d6",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-inner-top0",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/grow-inner-top0.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-inner-top0-2020.pdf",
+      "input_sha256": "a0a85d5353aa6bc5e11c10187aaf10e8cbbf792caa50b8bd582d5cf6220a5bd7",
+      "pdf_sha256": "bdf1232cb04fc44edee6283679b546295f543e4dcec6dd60ad4f296eccfec94e",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-inner-top900",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/grow-inner-top900.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-inner-top900-2020.pdf",
+      "input_sha256": "37ab83fd8dfcf32e62e6b4c6034b6bc8b58e7b38772cb7b0d2a1da8f6d0c1066",
+      "pdf_sha256": "5f239760b28f8d81217fe2b15a892248ba6fb07920226fee02086812683c2188",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-page-before-large",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/grow-page-before-large.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-page-before-large-2020.pdf",
+      "input_sha256": "550d377ade89712be7b66640d724f4b2a3088296e0ebfcfe8256319671375844",
+      "pdf_sha256": "7ff4adb187efa221e1703e749b87fb2902886320ff12be4a9b74db034747fb45",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.95",
+      "head_minimum": "99.95",
+      "base_tsv_sha256": "9487d0448cc21ba3657d016aeae1007ee964132ea1f9f33bfa66d54464a4b54d",
+      "head_tsv_sha256": "9487d0448cc21ba3657d016aeae1007ee964132ea1f9f33bfa66d54464a4b54d",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-page-before-small",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/grow-page-before-small.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-page-before-small-2020.pdf",
+      "input_sha256": "a4baa3e2c0457888029499501f3d31efa2ea001bca0e7b5cfc51fdaf1762392d",
+      "pdf_sha256": "69501fce5a7f01720282782533f0fb447cd53ce32ab39830a5c489da91ffe8d5",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.95",
+      "head_minimum": "99.95",
+      "base_tsv_sha256": "9487d0448cc21ba3657d016aeae1007ee964132ea1f9f33bfa66d54464a4b54d",
+      "head_tsv_sha256": "9487d0448cc21ba3657d016aeae1007ee964132ea1f9f33bfa66d54464a4b54d",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-page-near-large",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/grow-page-near-large.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-page-near-large-2020.pdf",
+      "input_sha256": "a411068c183b6d06a474c923220987283b1cb7064bd13d4d2d79f251bef1ea80",
+      "pdf_sha256": "475e83d89abc3a86cbcc00784cfe9a5840af3adfc78b0f7b0971e817d7f024b8",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-page-near-small",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/grow-page-near-small.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-page-near-small-2020.pdf",
+      "input_sha256": "c1244d6d19fdcf377cb951e4cfdd196de85e7167acd8e80c190c95740664b240",
+      "pdf_sha256": "7e031669843bb191e33d0963e360f445bad5952b9ad4fa21866613d582098b76",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-parent-padding0",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/grow-parent-padding0.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-parent-padding0-2020.pdf",
+      "input_sha256": "5dc3991f94d2be38bd3e82e302e2145f1dfbb23030c0ba396a71694ea12563c6",
+      "pdf_sha256": "0781840b142651ca193a39ee5403ae28fc68a4e2e7809ea9abc1aceba46847fe",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "grow-parent-padding300",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/grow-parent-padding300.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-parent-padding300-2020.pdf",
+      "input_sha256": "5382bd2bdf4e4bf6522f2b9ca412f443729ca1c35cee68d29c5c9da1dcec504c",
+      "pdf_sha256": "121ac4d7399c124469f01a07a2a3e866c2826acf433007ddfe1c59cf7d6ee582",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_anchor_offset-hancom2024",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/overlay_nested_anchor_offset-hancom.hwp",
+      "pdf": "pdf/pr9349-cell-floats/overlay_nested_anchor_offset-hancom-2024.pdf",
+      "input_sha256": "b5484e4006470c7d3b0b368788e9ed43691cfe9b3a822b01f59e5ddd6465fc75",
+      "pdf_sha256": "16fd762fef3fffa80bf12340db3707c3e02f644ba04fbd3efd7fa299b91c0657",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_anchor_offset-hwp-printed2024",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_anchor_offset.hwp",
+      "pdf": "pdf/pr9349-cell-floats/overlay_nested_anchor_offset-hwp5-2024.pdf",
+      "input_sha256": "2d14bebe9d2fed41363f9b3e901cd2a1b88b2aad1b43303b50efc9629e5d46eb",
+      "pdf_sha256": "5cc9edce20635d66827fd78fb3a20a1033eaab2a0aa427ca0c4ce04f62bf11fe",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.78",
+      "head_minimum": "99.78",
+      "base_tsv_sha256": "e04ad47f657fe4f1a6c94ec5272516054d938122fb40616e7ad47baa4b6b6641",
+      "head_tsv_sha256": "e04ad47f657fe4f1a6c94ec5272516054d938122fb40616e7ad47baa4b6b6641",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_anchor_offset-hwp-vs-hwpx-print",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_anchor_offset.hwp",
+      "pdf": "pdf/overlay_nested_anchor_offset-2020.pdf",
+      "input_sha256": "2d14bebe9d2fed41363f9b3e901cd2a1b88b2aad1b43303b50efc9629e5d46eb",
+      "pdf_sha256": "5685f9719268611fe2fea5cc4c54b8d94690d69d9248a21701a29479dbc086c7",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.78",
+      "head_minimum": "99.78",
+      "base_tsv_sha256": "e04ad47f657fe4f1a6c94ec5272516054d938122fb40616e7ad47baa4b6b6641",
+      "head_tsv_sha256": "e04ad47f657fe4f1a6c94ec5272516054d938122fb40616e7ad47baa4b6b6641",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_anchor_offset-hwpx",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_anchor_offset.hwpx",
+      "pdf": "pdf/overlay_nested_anchor_offset-2020.pdf",
+      "input_sha256": "35655892aed665ce4105dae237ea330f4abdf0d8a106fcd205bf3d569751512c",
+      "pdf_sha256": "5685f9719268611fe2fea5cc4c54b8d94690d69d9248a21701a29479dbc086c7",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_center-hancom2024",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/overlay_nested_center-hancom.hwp",
+      "pdf": "pdf/pr9349-cell-floats/overlay_nested_center-hancom-2024.pdf",
+      "input_sha256": "364ee9268b9d80b7b345064d12d4cc2952468283bdf28628a183fe8e3f585fcf",
+      "pdf_sha256": "2a13f048b63dfd173a3ac8fd52a68baea68ff8259450ed229ba45e3a00463cd8",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_center-hwp-printed2024",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_center.hwp",
+      "pdf": "pdf/pr9349-cell-floats/overlay_nested_center-hwp5-2024.pdf",
+      "input_sha256": "7057b23289c5d610c190000a22afcca27365c60e725eea326bc173cbcfc4d382",
+      "pdf_sha256": "9ee2f15d5445dc48eb72dc3af5e69c8800dd2a2f20ab1970b700886908d961ab",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.78",
+      "head_minimum": "99.78",
+      "base_tsv_sha256": "e04ad47f657fe4f1a6c94ec5272516054d938122fb40616e7ad47baa4b6b6641",
+      "head_tsv_sha256": "e04ad47f657fe4f1a6c94ec5272516054d938122fb40616e7ad47baa4b6b6641",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_center-hwp-vs-hwpx-print",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_center.hwp",
+      "pdf": "pdf/overlay_nested_center-2020.pdf",
+      "input_sha256": "7057b23289c5d610c190000a22afcca27365c60e725eea326bc173cbcfc4d382",
+      "pdf_sha256": "9863d13dc4e67dd22881b9bb920451b9cd4faf00ffc50ef0ff54c641ad094666",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.78",
+      "head_minimum": "99.78",
+      "base_tsv_sha256": "e04ad47f657fe4f1a6c94ec5272516054d938122fb40616e7ad47baa4b6b6641",
+      "head_tsv_sha256": "e04ad47f657fe4f1a6c94ec5272516054d938122fb40616e7ad47baa4b6b6641",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_center-hwpx",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_center.hwpx",
+      "pdf": "pdf/overlay_nested_center-2020.pdf",
+      "input_sha256": "a3a00c28ad294edd06ca44c965ef8717a3d338aad70c177908a76a12695e1250",
+      "pdf_sha256": "9863d13dc4e67dd22881b9bb920451b9cd4faf00ffc50ef0ff54c641ad094666",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_grow_split-hancom2024",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_grow_split-hancom.hwp",
+      "pdf": "pdf/pr9349-cell-floats/overlay_nested_grow_split-hancom-2024.pdf",
+      "input_sha256": "f344f9a90cbcf978ca10e4a5bdcfd7e93f333133dd59d7dc845123cb52be5ca6",
+      "pdf_sha256": "68b9953e40135036624e753f82762e13d3e75af7809623c18ce9a229cecb1cde",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_grow_split-hwp-printed2024",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_grow_split.hwp",
+      "pdf": "pdf/pr9349-cell-floats/overlay_nested_grow_split-hwp5-2024.pdf",
+      "input_sha256": "fddf880baca7f47d6bc63310c6020007bc45f0dee6264346cba59b8be6dde5ad",
+      "pdf_sha256": "db6871098a2dc87f860dbef74b7064a2be2a63d38fea206900f0859bd1c94622",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.72",
+      "head_minimum": "99.72",
+      "base_tsv_sha256": "b885d69c5cad4c4871084188d8aae386cbcf265b367e1b7428ca5dfc83cdc8f0",
+      "head_tsv_sha256": "b885d69c5cad4c4871084188d8aae386cbcf265b367e1b7428ca5dfc83cdc8f0",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_grow_split-hwp-vs-hwpx-print",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_grow_split.hwp",
+      "pdf": "pdf/overlay_nested_grow_split-2020.pdf",
+      "input_sha256": "fddf880baca7f47d6bc63310c6020007bc45f0dee6264346cba59b8be6dde5ad",
+      "pdf_sha256": "9543221c17aed43f7a1e69b4740e88cd2cce46397a41b06ada0af5f040385f92",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.72",
+      "head_minimum": "99.72",
+      "base_tsv_sha256": "b885d69c5cad4c4871084188d8aae386cbcf265b367e1b7428ca5dfc83cdc8f0",
+      "head_tsv_sha256": "b885d69c5cad4c4871084188d8aae386cbcf265b367e1b7428ca5dfc83cdc8f0",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_grow_split-hwpx",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_grow_split.hwpx",
+      "pdf": "pdf/overlay_nested_grow_split-2020.pdf",
+      "input_sha256": "a8e81ba6b6c2a20d1e4a7534ad733d6db1a8fe969e4069a70d72dd26e12acd07",
+      "pdf_sha256": "9543221c17aed43f7a1e69b4740e88cd2cce46397a41b06ada0af5f040385f92",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_split-hancom2024",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_split-hancom.hwp",
+      "pdf": "pdf/pr9349-cell-floats/overlay_nested_split-hancom-2024.pdf",
+      "input_sha256": "4297b3c07c04c9b59b193e8b3e64c6b01476a5b61e7fa1e5c3619a550debc51b",
+      "pdf_sha256": "d8eb0e1a7cae7af3eca13ff621ad76413a08218d4dcac7e613be3227bd6604e3",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_split-hwp-printed2024",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_split.hwp",
+      "pdf": "pdf/pr9349-cell-floats/overlay_nested_split-hwp5-2024.pdf",
+      "input_sha256": "081f65a524c363e56941336d5173822410e1d9f3d1a86f740a4a285ce2ed2de7",
+      "pdf_sha256": "b14c43a063a9edebc30b6e1d8383cabe5d7a67b68f4889ecbe8c8ddfb3c43b07",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.77",
+      "head_minimum": "99.77",
+      "base_tsv_sha256": "90fcfefa1eeec9afa4fdac288b3f0180a78b6b9f154428d4df73032a86a8ee26",
+      "head_tsv_sha256": "90fcfefa1eeec9afa4fdac288b3f0180a78b6b9f154428d4df73032a86a8ee26",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_split-hwp-vs-hwpx-print",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_split.hwp",
+      "pdf": "pdf/overlay_nested_split-2020.pdf",
+      "input_sha256": "081f65a524c363e56941336d5173822410e1d9f3d1a86f740a4a285ce2ed2de7",
+      "pdf_sha256": "409cb44d7093eb14502dd311a4ee840a44ce2e19672a8a26a994c3298806be80",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.77",
+      "head_minimum": "99.77",
+      "base_tsv_sha256": "90fcfefa1eeec9afa4fdac288b3f0180a78b6b9f154428d4df73032a86a8ee26",
+      "head_tsv_sha256": "90fcfefa1eeec9afa4fdac288b3f0180a78b6b9f154428d4df73032a86a8ee26",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "overlay_nested_split-hwpx",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pk40991_overlay_nested/overlay_nested_split.hwpx",
+      "pdf": "pdf/overlay_nested_split-2020.pdf",
+      "input_sha256": "cf210576eadb274585d92543553c9fc2852284ba05c3ce419417d8c97acfd2cc",
+      "pdf_sha256": "409cb44d7093eb14502dd311a4ee840a44ce2e19672a8a26a994c3298806be80",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper-100300",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pk40991_overlay_nested/grow-last-row-content-fit.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-last-row-content-fit-2020.pdf",
+      "input_sha256": "ba711e7fca5f895993a2e3d156ddcf9c3db6b8391c336867b3e94cc7da2f0e3e",
+      "pdf_sha256": "67f4ced71e8a0563049f0856884ed29e75789d3d174830eebcdbf5ae35f02948",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper-103300",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/paper-103300.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/paper-103300-2020.pdf",
+      "input_sha256": "0f11afdb8f0d39a6468f446a3e34b55028fd37d5172883d26bf493d1bc0203b2",
+      "pdf_sha256": "1183b9d9763bb1fe1a500abc1cccfc14633c7c296096de944ad30a0f87d6a945",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "97.11",
+      "head_minimum": "97.11",
+      "base_tsv_sha256": "056e3110c175a069c42f8d77304d30b0eaae7d810eeef274b8a0a48fb7f7ff8f",
+      "head_tsv_sha256": "056e3110c175a069c42f8d77304d30b0eaae7d810eeef274b8a0a48fb7f7ff8f",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper-103900",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/paper-103900.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/paper-103900-2020.pdf",
+      "input_sha256": "3f205313f2d2c260f737cbcf8a78a6e477b8e7fa5dc1ec986d5bf30d08a1f9b0",
+      "pdf_sha256": "d02d4ff14da2e65303003789b5e7d50a3ea995a2ce6a686117470e92ca14b6b4",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.95",
+      "head_minimum": "99.95",
+      "base_tsv_sha256": "9487d0448cc21ba3657d016aeae1007ee964132ea1f9f33bfa66d54464a4b54d",
+      "head_tsv_sha256": "9487d0448cc21ba3657d016aeae1007ee964132ea1f9f33bfa66d54464a4b54d",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper-104500",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/paper-104500.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/paper-104500-2020.pdf",
+      "input_sha256": "5844437855137b5c19310909be94653541949fbfb0c7e9e51b53edcc8839203d",
+      "pdf_sha256": "8fa06882920097c216521c5f1bd2cbbc7b1267becee5d48ac652f3f38d6a1340",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper-104800",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/paper-104800.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/paper-104800-2020.pdf",
+      "input_sha256": "dab18435be734edbf35009fed2512ffe2427ef95809c2feb1f4fec7bbb6b31e1",
+      "pdf_sha256": "ac0b96700db54db44259c122f865aeb13a71443e71567a6dc522cac533c9888c",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper-105400",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pk40991_overlay_nested/grow-tail-only-continuation.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/grow-tail-only-continuation-2020.pdf",
+      "input_sha256": "2916db8bb9176814114d7d9f71ace0154f264d7c50f6450e9cdb488704ef4ac5",
+      "pdf_sha256": "418fbbbeacd5dc922dc972d0cbca022933df1159c7331a2d7e5e50ed6b7b89ab",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper-106000",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/paper-106000.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/paper-106000-2020.pdf",
+      "input_sha256": "e82931f675c416af4f669b66c059bb10ebfed7d09f3d6c3461efba6e34646e4e",
+      "pdf_sha256": "728cb8bbb84bdf1e5623892b3f0b98cdd06100b13e708609b4c061f193b5e734",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper-107200",
+      "pr": "9407",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/paper-107200.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/paper-107200-2020.pdf",
+      "input_sha256": "16c00063572e8be5dcccd3324dfb19a6b399ba52e4b648bd98fd86e060512d71",
+      "pdf_sha256": "d6fc49f7a3c4a3b91bbcfd18f225665d2bcec55f92daf19546beaf813101c0e9",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper-split-behind",
+      "pr": "9352",
+      "backend": "wasm",
+      "input": "samples/pk40991_cell_paper_shape/paper-split-behind.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/paper-split-behind-2020.pdf",
+      "input_sha256": "91c0c0b45512ebd4398b74080d800be0c3b69c9272042660e4bf8678048e7b7d",
+      "pdf_sha256": "27e4f8c8ba2459ecdc9419fb626cf1c25bc71c60b3eeda5b26afb1d9daace1ba",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper-split-front",
+      "pr": "9352",
+      "backend": "wasm",
+      "input": "samples/pk40991_cell_paper_shape/paper-split-front.hwpx",
+      "pdf": "pdf/pr9349-cell-floats/paper-split-front-2020.pdf",
+      "input_sha256": "900656db3a6c7a85ef57d1a09f2ce023947dc319bfb77eec76f9c540a7ef241c",
+      "pdf_sha256": "2dbee55996c102bbe279c836ff44ec7e76cc80ef8b9aa44810cc1b34e7f682c3",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper-split-latin-default",
+      "pr": "9352",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/paper-split-latin-default.hwp",
+      "pdf": "pdf/pr9349-cell-floats/paper-split-latin-default-2024.pdf",
+      "input_sha256": "5a2e89115d46d6c90d46e3499bb24eb52d9214318ad4672cdb6f3dcb9b33d1e3",
+      "pdf_sha256": "53b861fe22e529abd73485030ad3d8852ae3d1298dd060d1efdc2f91e92babc5",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper-split-latin-explicit-hcr",
+      "pr": "9352",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/paper-split-latin-explicit-hcr.hwp",
+      "pdf": "pdf/pr9349-cell-floats/paper-split-latin-explicit-hcr-2024.pdf",
+      "input_sha256": "373189b9202cc34fb65d97aa5a2f7a95c88144dc3848f9b6a7a4250488d7c7d6",
+      "pdf_sha256": "7bb3fef271af7b16d97d5023fac0d2ffc790ed671ce7d808f99ad15fda0ce429",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_front-hancom2024",
+      "pr": "9352",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/paper_front-hancom.hwp",
+      "pdf": "pdf/pr9349-cell-floats/paper_front-hancom-2024.pdf",
+      "input_sha256": "855e1469431a59d9624ce8dd10c382eb3b9de449d8ad2bca1761ad472be48ec0",
+      "pdf_sha256": "515d02a5783dd59950fb415859ada9cd8714e0b1b04e4b69f3ec6715d60c9d62",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_front-hwp-printed2024",
+      "pr": "9352",
+      "backend": "wasm",
+      "input": "samples/pk40991_cell_paper_shape/paper_front.hwp",
+      "pdf": "pdf/pr9349-cell-floats/paper_front-hwp5-2024.pdf",
+      "input_sha256": "9ee02d688febdaa47b69ffbd57ce5ab49f5aa4b87a15d840fbdd402ececf1094",
+      "pdf_sha256": "e17a4471791d7e96c0e473e1f57eac5ca97b0ae7145cc8ae5615b5b1baaf3cfe",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.87",
+      "head_minimum": "99.87",
+      "base_tsv_sha256": "04d5aaced6735bab5829864e58d39818e1a60046989fae5ecf994affa242236f",
+      "head_tsv_sha256": "04d5aaced6735bab5829864e58d39818e1a60046989fae5ecf994affa242236f",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_front-hwp-vs-hwpx-print",
+      "pr": "9352",
+      "backend": "wasm",
+      "input": "samples/pk40991_cell_paper_shape/paper_front.hwp",
+      "pdf": "pdf/paper_front-2020.pdf",
+      "input_sha256": "9ee02d688febdaa47b69ffbd57ce5ab49f5aa4b87a15d840fbdd402ececf1094",
+      "pdf_sha256": "dd0e168ac2cc146d00771c75f0d3b730b14deb57b2fbad11d13d7f67e9e631e1",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.87",
+      "head_minimum": "99.87",
+      "base_tsv_sha256": "04d5aaced6735bab5829864e58d39818e1a60046989fae5ecf994affa242236f",
+      "head_tsv_sha256": "04d5aaced6735bab5829864e58d39818e1a60046989fae5ecf994affa242236f",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_front-hwpx",
+      "pr": "9352",
+      "backend": "wasm",
+      "input": "samples/pk40991_cell_paper_shape/paper_front.hwpx",
+      "pdf": "pdf/paper_front-2020.pdf",
+      "input_sha256": "3d335ab4ff7d1acef8735074170335dbdf701d79621c205fc6cfde9660961412",
+      "pdf_sha256": "dd0e168ac2cc146d00771c75f0d3b730b14deb57b2fbad11d13d7f67e9e631e1",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_square-hancom2024",
+      "pr": "9352",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/paper_square-hancom.hwp",
+      "pdf": "pdf/pr9349-cell-floats/paper_square-hancom-2024.pdf",
+      "input_sha256": "59e30d9804e9c8b8f003b973945ca253e3b57de4e3804c3f8ad4ea89ec31e347",
+      "pdf_sha256": "1e7329895e41caa0f0b797f0fa3fed6b6979f5cefb9497f27758659cbaade87f",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_square-hwp-printed2024",
+      "pr": "9352",
+      "backend": "wasm",
+      "input": "samples/pk40991_cell_paper_shape/paper_square.hwp",
+      "pdf": "pdf/pr9349-cell-floats/paper_square-hwp5-2024.pdf",
+      "input_sha256": "8f9eae5778d6b1ec679cb314a4b653e64af3530af39fd3707b629df00ff4bfdd",
+      "pdf_sha256": "b330544e972694b26d9e88b88f9fe0ceea62e5bd9ebae52f7852d54ed2c731e0",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.87",
+      "head_minimum": "99.87",
+      "base_tsv_sha256": "04d5aaced6735bab5829864e58d39818e1a60046989fae5ecf994affa242236f",
+      "head_tsv_sha256": "04d5aaced6735bab5829864e58d39818e1a60046989fae5ecf994affa242236f",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_square-hwp-vs-hwpx-print",
+      "pr": "9352",
+      "backend": "wasm",
+      "input": "samples/pk40991_cell_paper_shape/paper_square.hwp",
+      "pdf": "pdf/paper_square-2020.pdf",
+      "input_sha256": "8f9eae5778d6b1ec679cb314a4b653e64af3530af39fd3707b629df00ff4bfdd",
+      "pdf_sha256": "de62a88d1dbe3ffece67de40df987637f3754819950834d3fcd0ae5aebb0daef",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.87",
+      "head_minimum": "99.87",
+      "base_tsv_sha256": "04d5aaced6735bab5829864e58d39818e1a60046989fae5ecf994affa242236f",
+      "head_tsv_sha256": "04d5aaced6735bab5829864e58d39818e1a60046989fae5ecf994affa242236f",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_square-hwpx",
+      "pr": "9352",
+      "backend": "wasm",
+      "input": "samples/pk40991_cell_paper_shape/paper_square.hwpx",
+      "pdf": "pdf/paper_square-2020.pdf",
+      "input_sha256": "bb26acda215afaea3353f7e4b30e330857fba68d976818f06188d9e35ebeaf3b",
+      "pdf_sha256": "de62a88d1dbe3ffece67de40df987637f3754819950834d3fcd0ae5aebb0daef",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_square_nested-hancom2024",
+      "pr": "9352",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/paper_square_nested-hancom.hwp",
+      "pdf": "pdf/pr9349-cell-floats/paper_square_nested-hancom-2024.pdf",
+      "input_sha256": "6e271493d15c5c9b23c6b4bc1b3fb33168aec9ee3577281e57ef4789078e2b46",
+      "pdf_sha256": "015587872c0eb9c904c4ea8b90c3509a3659802c40130603bdf5d1a105d9d405",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_square_nested-hwp-printed2024",
+      "pr": "9352",
+      "backend": "wasm",
+      "input": "samples/pk40991_cell_paper_shape/paper_square_nested.hwp",
+      "pdf": "pdf/pr9349-cell-floats/paper_square_nested-hwp5-2024.pdf",
+      "input_sha256": "7a16cb7b1a518c6f2c328d8b18b1a9964b87198798ffc4ae194c6f2caccb069d",
+      "pdf_sha256": "a9e52b147e696edb6bdd2ebf1495896612114ac942b2f44ddc2834ce5ee89f10",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.84",
+      "head_minimum": "99.84",
+      "base_tsv_sha256": "d7b38777bcd1628064c252b33623ee543fa3dfa1d1072f20deedb376bc83e3e6",
+      "head_tsv_sha256": "d7b38777bcd1628064c252b33623ee543fa3dfa1d1072f20deedb376bc83e3e6",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_square_nested-hwp-vs-hwpx-print",
+      "pr": "9352",
+      "backend": "wasm",
+      "input": "samples/pk40991_cell_paper_shape/paper_square_nested.hwp",
+      "pdf": "pdf/paper_square_nested-2020.pdf",
+      "input_sha256": "7a16cb7b1a518c6f2c328d8b18b1a9964b87198798ffc4ae194c6f2caccb069d",
+      "pdf_sha256": "3fef4b4f87433ba6743ae3e4a1a8a243af48f41006a4439d445fc4a7ffc85d0b",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "99.84",
+      "head_minimum": "99.84",
+      "base_tsv_sha256": "d7b38777bcd1628064c252b33623ee543fa3dfa1d1072f20deedb376bc83e3e6",
+      "head_tsv_sha256": "d7b38777bcd1628064c252b33623ee543fa3dfa1d1072f20deedb376bc83e3e6",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_square_nested-hwpx",
+      "pr": "9352",
+      "backend": "wasm",
+      "input": "samples/pk40991_cell_paper_shape/paper_square_nested.hwpx",
+      "pdf": "pdf/paper_square_nested-2020.pdf",
+      "input_sha256": "9b2f5f2a878cc4ba491dc8687075fd948701c662a6d96030d8f105da3064fbaf",
+      "pdf_sha256": "3fef4b4f87433ba6743ae3e4a1a8a243af48f41006a4439d445fc4a7ffc85d0b",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_square_split-hancom2024",
+      "pr": "9352",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/paper_square_split-hancom.hwp",
+      "pdf": "pdf/pr9349-cell-floats/paper_square_split-hancom-2024.pdf",
+      "input_sha256": "e00376b78b8021716296833e087f534f51ef6b561dfc0770517a1534a8692fde",
+      "pdf_sha256": "d2158263453e838a561048aef90dd9b07fc55195feda3ac5711861428f2d4e0b",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_square_split-hwp-printed2024",
+      "pr": "9352",
+      "backend": "wasm",
+      "input": "samples/pk40991_cell_paper_shape/paper_square_split.hwp",
+      "pdf": "pdf/pr9349-cell-floats/paper_square_split-hwp5-2024.pdf",
+      "input_sha256": "a44958e77127e32db6f7c25ca6afe4a5fcc5e7eb31ca024c65d9da0206ac83b6",
+      "pdf_sha256": "a4bd612dd9e5b6473b54f8341d76e27acf5b8d1142bbed8eee83f34e312c5ba8",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "96.23",
+      "head_minimum": "96.23",
+      "base_tsv_sha256": "60b6c4634c849bebd7ff9be8356e3dd03bd6f5cb7870b305a211727efbcdc731",
+      "head_tsv_sha256": "60b6c4634c849bebd7ff9be8356e3dd03bd6f5cb7870b305a211727efbcdc731",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_square_split-hwp-vs-hwpx-print",
+      "pr": "9352",
+      "backend": "wasm",
+      "input": "samples/pk40991_cell_paper_shape/paper_square_split.hwp",
+      "pdf": "pdf/paper_square_split-2020.pdf",
+      "input_sha256": "a44958e77127e32db6f7c25ca6afe4a5fcc5e7eb31ca024c65d9da0206ac83b6",
+      "pdf_sha256": "2c7cdd941dffa46a8ed2ca90a7e553e8aae67cd7e5712c604bf95d8784b6e310",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "96.23",
+      "head_minimum": "96.23",
+      "base_tsv_sha256": "60b6c4634c849bebd7ff9be8356e3dd03bd6f5cb7870b305a211727efbcdc731",
+      "head_tsv_sha256": "60b6c4634c849bebd7ff9be8356e3dd03bd6f5cb7870b305a211727efbcdc731",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "paper_square_split-hwpx",
+      "pr": "9352",
+      "backend": "wasm",
+      "input": "samples/pk40991_cell_paper_shape/paper_square_split.hwpx",
+      "pdf": "pdf/paper_square_split-2020.pdf",
+      "input_sha256": "bad59008efcbc94659612d2426dfdac42c93cc64b49acfddf08ddf62aebc7dbc",
+      "pdf_sha256": "2c7cdd941dffa46a8ed2ca90a7e553e8aae67cd7e5712c604bf95d8784b6e310",
+      "page_count": 2,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "head_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "same_png_count": 2,
+      "base_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "photo-a5-height",
+      "pr": "9384",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/photo-a5-height.hwp",
+      "pdf": "pdf/pr9349-cell-floats/photo-a5-height-2020.pdf",
+      "input_sha256": "3e2a085dc886a803aaa2ba003b361545ea5b6879d707d6a56d24cd7cca68b123",
+      "pdf_sha256": "c5f8663ac1e4709e5c71b410f7482d7fc7bc106d0542549bcb6a4f0fcd8ff89a",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "photo-center-overlap",
+      "pr": "9384",
+      "backend": "wasm",
+      "input": "samples/side_by_side_photo_cell/photo-center-overlap.hwp",
+      "pdf": "pdf/pr9349-cell-floats/photo-center-overlap-2020.pdf",
+      "input_sha256": "67cb7ffa55c2c3d7d34e89ff088e5baa35b091c5c4b566afa15d0b84d7bc861a",
+      "pdf_sha256": "e7a5abc5929d3e8265b9a8cd6cab8b750e6a1f99e1c0bc0931bda730d7af042e",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "photo-left-touch",
+      "pr": "9384",
+      "backend": "wasm",
+      "input": "samples/side_by_side_photo_cell/photo-left-touch.hwp",
+      "pdf": "pdf/pr9349-cell-floats/photo-left-touch-2020.pdf",
+      "input_sha256": "404fff252c0ae48c53594382158c2457fa8b05cd20d7a78627a7f8121038af35",
+      "pdf_sha256": "ff7376fc58f03e8a9290d62516f0a21d0cd63a485b536a65e2c505bee4f4c172",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "photo-right-overlap",
+      "pr": "9384",
+      "backend": "wasm",
+      "input": "samples/side_by_side_photo_cell/photo-right-overlap.hwp",
+      "pdf": "pdf/pr9349-cell-floats/photo-right-overlap-2020.pdf",
+      "input_sha256": "e08924f8ed3475ff63757fec3c58f2bc2558e782ebb0d29e49635bfee345cf5f",
+      "pdf_sha256": "7282cc4f616a942f0994aefeeed88f55cc4dd706fc3c6b61fb3db45bf654dd8f",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "photo-right-overlap-neg",
+      "pr": "9384",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/photo-right-overlap-neg.hwp",
+      "pdf": "pdf/pr9349-cell-floats/photo-right-overlap-neg-2020.pdf",
+      "input_sha256": "8f908dd6cb820f8b370cee4e4e621979c85117d48b421cd97d811214a6a61aa6",
+      "pdf_sha256": "54dc4c4349ff545bb78b5a6b28c0275b35d91b0a909b2366d34d6056a6d40617",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "photo-short-page",
+      "pr": "9384",
+      "backend": "wasm",
+      "input": "samples/pr9349-cell-floats/photo-short-page.hwp",
+      "pdf": "pdf/pr9349-cell-floats/photo-short-page-2020.pdf",
+      "input_sha256": "04ca8dcfe156a73e2deaa430693fde6e430d00143050323b2646241e2940dc9b",
+      "pdf_sha256": "7c80c54835a355690a99b40844c9a7e113b83d28aa988974185a2c77c94ddd45",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "row3-mixed",
+      "pr": "control",
+      "backend": "wasm",
+      "input": "samples/cell_negative_offset_stack/row3-mixed.hwpx",
+      "pdf": "pdf/row3-mixed-2024.pdf",
+      "input_sha256": "88ea59c2ff62ecd9ddd6b49bde576b3bed5153bacbbc63dae4a6353697712424",
+      "pdf_sha256": "9c2f9b3ad6e26ede8ef1298103407b41a7762b8f7780315781e25d4e994319e1",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    },
+    {
+      "case": "side-by-side",
+      "pr": "9384",
+      "backend": "wasm",
+      "input": "samples/side_by_side_photo_cell/side-by-side-photo-rows.hwp",
+      "pdf": "pdf/side-by-side-photo-rows-2020.pdf",
+      "input_sha256": "c3c904a40b3192f398ae8b81d3b8b19b89738fda43a4fbd3381e62db1df1c38d",
+      "pdf_sha256": "a3353c9274074e501c57553727a4a4fb411cb923e738ed05a8a2758eaa20d550",
+      "page_count": 1,
+      "declines": [],
+      "passed": true,
+      "base_sha": "5fa8cede504eca188d2e003931a50e9a8434d6da",
+      "head_sha": "c8c869349182a68067b8da69fbabcbd164b0cc73",
+      "base_minimum": "100.00",
+      "head_minimum": "100.00",
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "head_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_png_count": 1,
+      "base_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "base_exit": 0,
+      "head_exit": 0
+    }
+  ]
+}

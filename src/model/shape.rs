@@ -5,7 +5,7 @@ use super::paragraph::Paragraph;
 use super::style::{Fill, ShapeBorderLine};
 use super::*;
 
-pub(crate) mod shadow;
+pub mod shadow;
 
 /// `raw_ctrl_data` (CTRL_HEADER) 바이트 오프셋 상수.
 ///
@@ -111,6 +111,9 @@ pub struct CommonObjAttr {
     /// 되돌려, 원본이 `DoubleLine`/`TripleLine`/`Margin` 드롭캡으로 개체를 감싼
     /// 문단이었더라도 저장 시 드롭캡 스타일이 유실된다.
     pub drop_cap_style: DropCapStyle,
+    /// HWP5 그림 개체 CTRL_HEADER 직속 ParameterSet. 구성 요소의 CTRL_DATA와 독립적이다.
+    #[serde(skip)]
+    pub hwp5_header_ctrl_data: Option<Box<[u8]>>,
     /// 파싱된 필드 이후 추가 바이트 (라운드트립 보존용)
     pub raw_extra: Vec<u8>,
     /// HWPX `lock`(개체 잠금) 속성 보존 (#2840, #2855, #2931).
@@ -352,7 +355,7 @@ pub struct ShapeComponentAttr {
     pub render_b: f64,
     pub render_c: f64,
     /// [#8225] 묶음 안 자식 도형의 CTRL_DATA 원본 (자식 SHAPE_COMPONENT 바로 아래 레코드, 라운드트립 보존용).
-    /// 한컴은 여기에 개체 설명 글 같은 ParameterSet 을 둔다. 맨 위 개체의 CTRL_DATA 는
+    /// 한컴은 여기에 개체 설명 글 같은 ParameterSet을 둔다. 최상위 SHAPE_COMPONENT의 CTRL_DATA는
     /// `Paragraph.ctrl_data_records` 가 갖는다.
     #[serde(skip)]
     pub ctrl_data: Option<Vec<u8>>,
@@ -484,6 +487,9 @@ impl DrawingObjAttr {
 /// 글상자 (그리기 개체 내 텍스트)
 #[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct TextBox {
+    /// 열기 시 글꼴 줄 높이를 복원한 경우에만 원본 글줄로 렌더링 높이를 계산한다.
+    #[serde(skip)]
+    pub font_line_heights_refreshed: bool,
     /// Text-only local HWPUNIT clipping; paragraphs remain editable and untrimmed.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub paint_clip: Option<Vec<super::text_clip::TextClipPath>>,
@@ -889,6 +895,30 @@ pub struct ConnectorData {
     pub control_points: Vec<ConnectorControlPoint>,
     /// SC_LINE 끝 패딩/추가 바이트 (라운드트립 보존)
     pub raw_trailing: Vec<u8>,
+}
+
+impl ConnectorData {
+    /// 꺾인·곡선 연결선 가운데 점의 이동 축.
+    ///
+    /// 한/글처럼 끝점 사이 안쪽 제어점 둘이 같은 x에 있으면(세로 가운데 선) x로, 같은 y면 y로만 옮긴다.
+    /// 꺾임이 하나뿐이거나 두 점이 한 축에 놓이지 않으면 가운데 점이 없다.
+    pub fn midpoint_axis(&self) -> Option<char> {
+        if !self.link_type.is_stroke() && !self.link_type.is_arc() {
+            return None;
+        }
+        match self.control_points.as_slice() {
+            [_, a, b, _] if a.point_type == 2 && b.point_type == 2 => {
+                if a.x == b.x {
+                    Some('x')
+                } else if a.y == b.y {
+                    Some('y')
+                } else {
+                    None
+                }
+            }
+            _ => None,
+        }
+    }
 }
 
 /// 사각형 개체 (HWPTAG_SHAPE_COMPONENT_RECTANGLE)

@@ -1,0 +1,65 @@
+[
+  {
+    "text": "Standard:KAFaddressstandard",
+    "base": [
+      {
+        "page": 34,
+        "count": 1
+      }
+    ],
+    "candidate": [
+      {
+        "page": 33,
+        "count": 1
+      }
+    ],
+    "author_pdf": [
+      {
+        "page": 33,
+        "count": 1
+      }
+    ]
+  },
+  {
+    "text": "landmark",
+    "base": [
+      {
+        "page": 38,
+        "count": 1
+      }
+    ],
+    "candidate": [
+      {
+        "page": 37,
+        "count": 1
+      }
+    ],
+    "author_pdf": [
+      {
+        "page": 37,
+        "count": 1
+      }
+    ]
+  },
+  {
+    "text": "surname,given",
+    "base": [
+      {
+        "page": 43,
+        "count": 1
+      }
+    ],
+    "candidate": [
+      {
+        "page": 42,
+        "count": 1
+      }
+    ],
+    "author_pdf": [
+      {
+        "page": 42,
+        "count": 1
+      }
+    ]
+  }
+]

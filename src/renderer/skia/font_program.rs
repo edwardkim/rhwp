@@ -7,9 +7,16 @@ pub(super) fn original_program_order(typeface: &Typeface) -> Option<u8> {
     if let Some((bytes, index)) = coretext::original_program(typeface) {
         return Some(program_order(&bytes, index));
     }
-    typeface
-        .to_existing_font_data()
-        .map(|(bytes, index)| program_order(bytes.as_bytes(), index))
+    if let Some((data, index)) = typeface.to_existing_font_data() {
+        return Some(program_order(data.as_bytes(), index));
+    }
+    // DWrite's onOpenStream returns the backing IDWriteFontFileStream and
+    // IDWriteFontFace::GetIndex, so its original SFNT/TTC identity survives.
+    #[cfg(target_os = "windows")]
+    if let Some((bytes, index)) = typeface.to_font_bytes() {
+        return Some(program_order(&bytes, index));
+    }
+    None
 }
 
 /// Rank the original container, before an OS font manager repacks a TTC face.

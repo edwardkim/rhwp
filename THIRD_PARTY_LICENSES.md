@@ -409,6 +409,9 @@ USE THE FONT SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.
 | `tests/fixtures/fonts/RHWPEquation*.ttf` (3개) | Adobe Noto Sans KR 수정본, SIL OFL 1.1 | [출처·변형 설명](tests/fixtures/fonts/RHWPEquationFonts.LICENSE.md), [전문](tests/fixtures/fonts/RHWPEquationFonts.OFL.txt). 내부 family는 `RHWP Equation Contract`; 문서의 요청 이름은 렌더러의 명시적 대체 설정으로 연결 |
 | `tests/fixtures/native_font_family_names/family-contract.ttf` | Adobe Noto Sans KR 수정본, SIL OFL 1.1 | [출처](tests/fixtures/native_font_family_names/README.md), [전문](tests/fixtures/native_font_family_names/OFL.txt) |
 | `tests/fixtures/native_font_styles/*.ttf` (2개) | Adobe Noto Sans KR 수정본, SIL OFL 1.1 | [출처·재생성](tests/fixtures/native_font_styles/README.md), [전문](tests/fixtures/native_font_styles/OFL.txt) |
+| `tests/fixtures/fonts/source-code-pro/SourceCodePro-Regular.otf` | Adobe Source Code Pro 2.042 원본, SIL OFL 1.1 | [출처·SHA-256](tests/fixtures/fonts/source-code-pro/README.md), [전문](tests/fixtures/fonts/source-code-pro/LICENSE.md) |
+| `tests/fixtures/fonts/source-sans-3/*.otf` (3개) | Adobe Source Sans 3 공식 원본, SIL OFL 1.1 | [출처·SHA-256](tests/fixtures/fonts/source-sans-3/README.md), [3.028R 전문](tests/fixtures/fonts/source-sans-3/LICENSE-3.028.md), [3.052R 전문](tests/fixtures/fonts/source-sans-3/LICENSE-3.052.md) |
+| `tests/fixtures/fonts/last-resort/LastResortHE-Regular.ttf` | Unicode Last Resort 17.000 배포 원본, SIL OFL 1.1 | [출처·SHA-256](tests/fixtures/fonts/last-resort/README.md), [전문](tests/fixtures/fonts/last-resort/OFL.txt) |
 | 나머지 `tests/fixtures/fonts/`의 TTF·TTC (7개) | 저장소 생성기의 직접 작성 윤곽선, MIT | 각 `*.LICENSE.md`에 생성기·용도 기록. 외부 폰트 수정본과 구별 |
 
 `assets/fonts/NotoSansMath-Regular.woff2`는 Ubuntu 설치본의 전체 TTF를 WOFF2로 변환한
@@ -538,8 +541,8 @@ rhwp는 **MIT 라이선스**로 배포된다.
 *이 문서는 `Cargo.toml`, `Cargo.lock`, 각 `package.json`/`package-lock.json`, `assets/fonts/FONTS.md` 기준으로 현행화되었으며, 의존성 업데이트 시 함께 갱신해야 한다.*
 
 배포 폰트의 파일별 SHA·원본 저작권·라이선스 전문은
-[fonts/licenses](assets/fonts/licenses/README.md)에 함께 보존한다. 제품 폰트 37개와
-공개 테스트·Native 원본 18개를 [목록](assets/fonts/licenses/font-notices.json)에 등록하며,
+[fonts/licenses](assets/fonts/licenses/README.md)에 함께 보존한다. 제품과 저장소의
+공개 테스트·Native 글꼴을 [목록](assets/fonts/licenses/font-notices.json)에 등록하며,
 등록되지 않은 공개 폰트 또는 배포 고지 누락은 `scripts/frontend-font-assets.test.mjs`가 검출한다.
 상용 글꼴의 문서 요청 이름은 대체 설정에서 처리하고, 파생 폰트의 내부 이름으로 사용하지 않는다.
 

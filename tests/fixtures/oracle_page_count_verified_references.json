@@ -3,6 +3,135 @@
   "purpose": "이미 독립 검증한 과거 경로의 원본/PDF를 바이트 신원으로 고정한다. 일반 canonical 형식·엔진 선택 규칙은 유지한다.",
   "references": [
     {
+      "sample": "samples/hwpspec.hwp",
+      "source_sha256": "64df877f3c4accda0111ecf39d837da889741bb821b220cf61b6c126dc88364d",
+      "pdf": "pdf/issue7772/hwpspec-hancom-one-up-2024.pdf",
+      "pdf_sha256": "a4f52594ead9e292f6d124a362f91ed28d84fa29a3e23858232b1a95f7bedd39",
+      "pages": 178,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issue7772/README.md",
+      "logical_page_comparison": {
+        "native": {
+          "tsv": "mydocs/pr/assets/issue7772/hwpspec-native.tsv",
+          "sha256": "2dc76f5c6be5257ebd2d63752840213bf06a6f5ab150277b3984f9a0e43c750e"
+        },
+        "wasm": {
+          "tsv": "mydocs/pr/assets/issue7772/hwpspec-wasm.tsv",
+          "sha256": "0b1c1cb3fe554efa3d7b4e2023458095ffac078c9539cf043c9f6397312798d9"
+        }
+      }
+    },
+    {
+      "sample": "samples/issue1891/86712_regulatory_analysis.hwpx",
+      "source_sha256": "0f4f055c74a3d39f70e417ca6c700880d9645a202798cd0e5c11f6e32c180a19",
+      "pdf": "pdf/issue7765/regulatory-86712-hwpx-original-print-2024.pdf",
+      "pdf_sha256": "369cf882ad36c1aea27ff4f4ad6fa9d66720d7638a6e8793b0b9b79f75a443f8",
+      "pages": 64,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    },
+    {
+      "sample": "samples/복학원서.hwp",
+      "source_sha256": "da81b4010331bcac290f900c7cf224c97ee8355399614725ce46c197ff1a22a4",
+      "pdf": "pdf/issue7756/bokhak-original-print-2024.pdf",
+      "pdf_sha256": "38ff94fabff9672417bef2d17986b3d9944e7818fe42e091294024f737e104f4",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    },
+    {
+      "sample": "samples/143E433F503322BD33.hwp",
+      "source_sha256": "1bcdc7a2de38680cdb715556f40c8477f8242131d28de949b09e945022bf35fa",
+      "pdf": "pdf/143E433F503322BD33-hwp-2020.pdf",
+      "pdf_sha256": "41451dd4d1b6a43b78cc532500a54a310314da84fc1b2963e49485443d0b4d0d",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    },
+    {
+      "sample": "samples/task1768/distribution_doc.hwpx",
+      "source_sha256": "f217c02af7bc2a6641b9544afd29765ddccdd15021507b7554521f68b9d560dc",
+      "pdf": "pdf/issue7642-failed-regression-print-20261015/distribution_doc-2020.pdf",
+      "pdf_sha256": "0299869bf040b01e07a19dde600852e44aec406257916b781eabdfbce6ed5aba",
+      "pages": 3,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    },
+    {
+      "sample": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+      "source_sha256": "83fca0151c67e2adeb7a85203f5c75204d8e53af4e44902958c96b85adf6845e",
+      "pdf": "pdf/156636617-monthly-trade-hwp-2020.pdf",
+      "pdf_sha256": "5a04f0ffdbfcde8d707ea6fe6e99bb446236daa7ae2c0b32830ae4303aec395b",
+      "pages": 19,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md",
+      "logical_page_comparison": {
+        "native": {
+          "tsv": "mydocs/pr/assets/issues7754_7765/source36/issues/native/candidate/issue7760/silhouette.tsv",
+          "sha256": "172585033d8a550d1ac6120b2d27fe6d7b131ba54b6ce3cb36b695a7c93100d3"
+        },
+        "wasm": {
+          "tsv": "mydocs/pr/assets/issues7754_7765/source36/issues/wasm/candidate/issue7760/all-pages.tsv",
+          "sha256": "bf0d5f934fbc5797056a59c34cd0d1aaf9c4b898fb5a3bdf217aa2638ef7c837"
+        }
+      }
+    },
+    {
+      "sample": "samples/HWP5-nopassword-123456.hwpx",
+      "source_sha256": "20ed90f48c6501cad99f6aa1f82d81d2a2132eb04f2d1d32805ac251749e4d0e",
+      "pdf": "pdf/HWP5-nopassword-123456-hwpx-2024.pdf",
+      "pdf_sha256": "b20bd5c0b3716818113cc6bc2a18ba768325b338a3a16840e3680e124cfea01d",
+      "pages": 24,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    },
+    {
+      "sample": "samples/[2027] 온새미로 1 본교재.hwpx",
+      "source_sha256": "85071b419b3467466ec391ecde187ad25723ce564178c2ed37c53b09e731138c",
+      "pdf": "pdf/[2027] 온새미로 1 본교재-hwpx-2024.pdf",
+      "pdf_sha256": "051aa8c4b94ca7cddc21e18d7fdc45b370e492b65c711c801d2c95479117cbab",
+      "pages": 46,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    },
+    {
+      "sample": "samples/[2027] 온새미로 1 본교재.hwp",
+      "source_sha256": "e8592e74c9a8425c4ee2c5824d012ebe45e9f6dd36880b784ba594b4fd0a31ce",
+      "pdf": "pdf/issue7761/onsaemiro-hwp-original-print-2024.pdf",
+      "pdf_sha256": "8015d2d28ee20ba66579f9375a0e36dfdd8e8725228015dc807748110bc09219",
+      "pages": 46,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    },
+    {
+      "sample": "samples/86712_regulatory_analysis.hwp",
+      "source_sha256": "ee82c7755617003cb972ba398da9cffadfed24ac0fa068eee1a5347da7658a88",
+      "pdf": "pdf/issue7382-regression-review/86712_regulatory_analysis-font-supplied-2024.pdf",
+      "pdf_sha256": "ac34bb60492e3749a53183cfb63c814f86379895937dd1309d3bc3d2d1b8126a",
+      "pages": 64,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    },
+    {
+      "sample": "samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp",
+      "source_sha256": "84d297375c48e1e903247a389e9ec3907e3cdc57a4a7e29a819a01c2a1e3a341",
+      "pdf": "pdf/issue7755/market-2017-manual-print-2024.pdf",
+      "pdf_sha256": "89e32b43af21bde3cf869e76b816d214fa0bc30e3f14512c4c3af184430cd616",
+      "pages": 315,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md",
+      "logical_page_comparison": {
+        "native": {
+          "tsv": "mydocs/pr/assets/issues7754_7765/source36/issues/native/candidate/issue7755/silhouette.tsv",
+          "sha256": "539562fe370c1da57c258c31c24f1f14ac00f96045295a5da8b0952a0c5a35d2"
+        },
+        "wasm": {
+          "tsv": "mydocs/pr/assets/issues7754_7765/source36/issues/wasm/candidate/issue7755/all-pages.tsv",
+          "sha256": "5ddbea24d26e328cf51c79396366c03f51b87b4639c338f28b71e997cd63132a"
+        }
+      }
+    },
+    {
       "sample": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
       "source_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
       "pdf": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
@@ -136,6 +265,744 @@
       "pages": 215,
       "provenance": "desktop_hancom_print",
       "evidence": "mydocs/pr/assets/issues7749_7753_20261121/print-references.json"
+    },
+    {
+      "sample": "samples/issue886/1660000-201400009-kobe-earthquake.hwp",
+      "source_sha256": "a2a6d53dad049bf27c4855e05227e467aba7b71184f43a0dbd1136d972bea13f",
+      "pdf": "pdf/issue886/1660000-201400009-kobe-earthquake-hancom-2020.pdf",
+      "pdf_sha256": "d0fcc123cf3c73aa68ecd6e3ecd7676c887b0c21b6eb13833fce00a3278d6f59",
+      "pages": 64,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/planet6897_9240_9282_20261121/mcp-print-verification.json"
+    },
+    {
+      "sample": "samples/issue9272/trade-remedy-decree-table-tail-empty-lines.hwpx",
+      "source_sha256": "37624fffaa34704360298c9edfc3d636f5a0fabd0db040a7bc6a161b73a1301d",
+      "pdf": "pdf/issue9272/trade-remedy-decree-table-tail-empty-lines-2024.pdf",
+      "pdf_sha256": "25f1443410590604f527e07739b0b33f3f34ba5d207e85b3f2fccac87c859fc7",
+      "pages": 7,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/planet6897_9240_9282_20261121/mcp-print-verification.json"
+    },
+    {
+      "sample": "samples/issue9279/forest-press-release-tac-table-shape-tail.hwpx",
+      "source_sha256": "4763ea3fac592f39dccc36808d022edd0be57db2746e38a50cb9dfe5e6726ea9",
+      "pdf": "pdf/issue9279/forest-press-release-tac-table-shape-tail-2024.pdf",
+      "pdf_sha256": "1a5a6c2d74197b6e691807b86e1bf3f346779abe623f2ee7e687054de5bde097",
+      "pages": 3,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/planet6897_9240_9282_20261121/mcp-print-verification.json"
+    },
+    {
+      "sample": "samples/issue9285/child-product-safety-plan-wmf-mask-dib.hwpx",
+      "source_sha256": "45d1785c7c6db19dc595af3a3a66b5f60d820407db16331d3a43403b01ede8eb",
+      "pdf": "pdf/issue9285/child-product-safety-plan-wmf-mask-dib-2020.pdf",
+      "pdf_sha256": "d1da90986b7aeffff25765075c4e3c1a5f3d70755af13a1fa060be861610554b",
+      "pages": 9,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/planet6897_9240_9282_20261121/wmf-9285/print-verification.json"
+    },
+    {
+      "sample": "samples/issue5140-version-boundary/legacy-symbols-v5.0.1.5.hwp",
+      "source_sha256": "bd45ac8a92eefc77695a0800130215452cd83f9a2f312e41d4c09385e31857f2",
+      "pdf": "pdf/issue5140-version-boundary/legacy-symbols-v5.0.1.5.pdf",
+      "pdf_sha256": "83b9986558d2bc36686944beedde8463af16de996ebcd8216a35b9cc698dcbc4",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "samples/issue5140-version-boundary/README.md"
+    },
+    {
+      "sample": "samples/issue5140-version-boundary/legacy-symbols-v5.0.1.6.hwp",
+      "source_sha256": "7ccb9736edbfbd727c8fdcaa4eff44f4e196168254b3f22c539193e4d78f79d3",
+      "pdf": "pdf/issue5140-version-boundary/legacy-symbols-v5.0.1.6.pdf",
+      "pdf_sha256": "77b4f67f348aa4ce825845c8635e1219152d4a53fde3bb5a321dedf1bb783909",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "samples/issue5140-version-boundary/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/neighbors-v5.hwp",
+      "source_sha256": "fe06995eae6499fa5a4c19e72a7be8491723b4985520ec333794e09984ea995f",
+      "pdf": "pdf/issue5140-version-boundary/neighbors-v5-2020.pdf",
+      "pdf_sha256": "1b3c5488670d8b4f325fccdb868d1350143537df55d898a2051d0de7183bc4e4",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/neighbors-v6.hwp",
+      "source_sha256": "07429b766c1e0078bf79f2673056a403dc9cb5e904b74eaf4815b4a2c8fa2d18",
+      "pdf": "pdf/issue5140-version-boundary/neighbors-v6-2020.pdf",
+      "pdf_sha256": "0bcdf1ed67959fa858271a4b58453b4906fd4781f5872a76cd5f9f07c818a0b9",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "samples/issue5140-version-boundary/issue5800-v5.0.1.5.hwp",
+      "source_sha256": "f3898d64da3f8cf8307fa29bd52d9f3c8339b6003e5ab6610b2325684c32c3c1",
+      "pdf": "pdf/issue5140-version-boundary/issue5800-v5.0.1.5-2020.pdf",
+      "pdf_sha256": "d41e66fecf8b3801b0ed86f109acd95e130df8737506a1a8e72cc8cab15997a9",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "samples/issue5800-hancom-symbol.hwp",
+      "source_sha256": "e09951a7ac179344a9f9c3dd9625a6de757a5d5cc5cee2fcb7c76c040959476d",
+      "pdf": "pdf/issue5140-version-boundary/issue5800-hancom-symbol-2020.pdf",
+      "pdf_sha256": "af0f46cbc65984afd845f273a60af9486ee4b2476fe408a01b203def567156e9",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "samples/issue5140-version-boundary/syloti-mark-control.hwp",
+      "source_sha256": "6412d298aa3f7b1444c04ee681f6a5b6e8669091d02d8ebb7fd0a4bff08f1bb5",
+      "pdf": "pdf/issue5140-version-boundary/syloti-mark-control-2020.pdf",
+      "pdf_sha256": "1550235fd52f360deeeffc7e6353d798007c8ded2a827706b923dbf69e7f6fd9",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "samples/issue5140-version-boundary/syloti-boundaries.hwp",
+      "source_sha256": "2dc1fdb162d895d7b4602432b68b701c29d57e69a3a9eaea4676c5457da1b748",
+      "pdf": "pdf/issue5140-version-boundary/syloti-boundaries-2020.pdf",
+      "pdf_sha256": "70ee06449dd5baa42a9f517a5863e45c88682a2166f7dbe656072e1c51492ca4",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "samples/issue5140-version-boundary/syloti-placeholders.hwp",
+      "source_sha256": "8ae5c95f6cf9c1e7ae71f6bc9f48462a6a2f55a74b33f0a36a12c2e0313eef14",
+      "pdf": "pdf/issue5140-version-boundary/syloti-placeholders-2020.pdf",
+      "pdf_sha256": "d04b61cbc149362432b5e91f7333b393dd009bfe578615bfd6de8e7d7720a49e",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/indic/indic-break-controls.hwp",
+      "source_sha256": "ec5593b897ce1d8336a53c063d2301b876ffab012df59f56eda1a156d021fd1e",
+      "pdf": "pdf/issue5140-version-boundary/indic/indic-break-controls-2020.pdf",
+      "pdf_sha256": "46acd625a0e67e5cdbdd6d1b63c86b68c8c974c49bfece81525f6cac9a0b8b24",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/indic/indic-number-advances.hwp",
+      "source_sha256": "00372178fa768ce6aab01eaae7bcf39126e0443c12f7bf2efb41bc2439ae765e",
+      "pdf": "pdf/issue5140-version-boundary/indic/indic-number-advances-2020.pdf",
+      "pdf_sha256": "4e2af63d4cd287f45b258bfd6dd7a3bf93a7f6c4493e2c4a5e34e33cd2845ba6",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/indic/indic-number-batang-bold.hwp",
+      "source_sha256": "680baa206e568f0eb8cfcee492d4d98db8b8441a7a9d6e841ab9ef66ffa82811",
+      "pdf": "pdf/issue5140-version-boundary/indic/indic-number-batang-bold-2020.pdf",
+      "pdf_sha256": "17c2891460ae1715bcaebf7b9341e43f1e00d4cb83f502952026dbf325d653ba",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/indic/indic-number-dotum-bold.hwp",
+      "source_sha256": "1ccb33e661ad3d15d9db2b91130d9cc1605b866d53935e4e7c79d6f3c5039451",
+      "pdf": "pdf/issue5140-version-boundary/indic/indic-number-dotum-bold-2020.pdf",
+      "pdf_sha256": "c3a0c85f16e6e9408438bda55a703b25e3ea60bbaf61f2418ed25a6992c3d18d",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/indic/indic-number-dotum.hwp",
+      "source_sha256": "da9d394daba0ba6e3bd30bcd3d813a15d322d238eb28b62a7b71533d00cf499c",
+      "pdf": "pdf/issue5140-version-boundary/indic/indic-number-dotum-2020.pdf",
+      "pdf_sha256": "03d874e45cfe51f7ba1d73d23aa8c4f6b7aa35ea0e395dd65403bbc86a07f683",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/indic/indic-number-line-widths.hwp",
+      "source_sha256": "0c4dea313973c9351cc6c6d77d1e3167746eaf173e10f08d6d7fb20bbc4ba547",
+      "pdf": "pdf/issue5140-version-boundary/indic/indic-number-line-widths-2020.pdf",
+      "pdf_sha256": "a80a4b3cdc2c09b57b2706b3ccdd8dff811f397a7d418546ef23035deb913cb4",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/indic/indic-number-long-lines.hwp",
+      "source_sha256": "d3513755092e8b032a6eb911200da6addda8a0739981969e45d87ffb1a1057d1",
+      "pdf": "pdf/issue5140-version-boundary/indic/indic-number-long-lines-2020.pdf",
+      "pdf_sha256": "1ed6b7bedccd1ab138b9da65b0a1a0c7ee23a13963d1d9ff4d4de68367c30373",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/indic/indic-run-boundaries.hwp",
+      "source_sha256": "f32669a28d63c50c0df2eab80f8ec0a130c773908d939a8433d450f279a2d0fc",
+      "pdf": "pdf/issue5140-version-boundary/indic/indic-run-boundaries-2020.pdf",
+      "pdf_sha256": "1c7e0a1b4f7c13173403a58071a891f4834569ad9b1c605c7f27dd897c335836",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/indic/indic-run-pairs.hwp",
+      "source_sha256": "3190a4263bb2e5e85a0125c0e6da36135c82bcf658b61252277354b0d57ffad9",
+      "pdf": "pdf/issue5140-version-boundary/indic/indic-run-pairs-2020.pdf",
+      "pdf_sha256": "0fd49ad11a6fac5ddfac7ce4b01fa971ac3744bb7d104178dbca0a577b19c829",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/indic/indic-seal-mixed.hwp",
+      "source_sha256": "a16fbd46ea966e0ee0544fb74992a5af66effd10b92bfebc353826f03ddffcc8",
+      "pdf": "pdf/issue5140-version-boundary/indic/indic-seal-mixed-2020.pdf",
+      "pdf_sha256": "10da6a83f894ce9fc2ecf22c7f2ff7e455ce213ba8c9abb89f6cabc2a202580f",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/indic/indic-seal-ten.hwp",
+      "source_sha256": "4974fde9f676bd1125c83c231a047759c5a78566a5033bc064ac56395cd74a8b",
+      "pdf": "pdf/issue5140-version-boundary/indic/indic-seal-ten-2020.pdf",
+      "pdf_sha256": "dc1ce1a9bb92c0c0efab1089bd4ef74d5790b0a013d971f7d97d2a2aeefab431",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "samples/pk40991_cell_paper_shape/paper-split-behind.hwpx",
+      "source_sha256": "91c0c0b45512ebd4398b74080d800be0c3b69c9272042660e4bf8678048e7b7d",
+      "pdf": "pdf/pr9349-cell-floats/paper-split-behind-2020.pdf",
+      "pdf_sha256": "27e4f8c8ba2459ecdc9419fb626cf1c25bc71c60b3eeda5b26afb1d9daace1ba",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pk40991_cell_paper_shape/paper-split-front.hwpx",
+      "source_sha256": "900656db3a6c7a85ef57d1a09f2ce023947dc319bfb77eec76f9c540a7ef241c",
+      "pdf": "pdf/pr9349-cell-floats/paper-split-front-2020.pdf",
+      "pdf_sha256": "2dbee55996c102bbe279c836ff44ec7e76cc80ef8b9aa44810cc1b34e7f682c3",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pk40991_cell_paper_shape/paper_front.hwp",
+      "source_sha256": "9ee02d688febdaa47b69ffbd57ce5ab49f5aa4b87a15d840fbdd402ececf1094",
+      "pdf": "pdf/pr9349-cell-floats/paper_front-hwp5-2024.pdf",
+      "pdf_sha256": "e17a4471791d7e96c0e473e1f57eac5ca97b0ae7145cc8ae5615b5b1baaf3cfe",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pk40991_cell_paper_shape/paper_front.hwpx",
+      "source_sha256": "3d335ab4ff7d1acef8735074170335dbdf701d79621c205fc6cfde9660961412",
+      "pdf": "pdf/paper_front-2020.pdf",
+      "pdf_sha256": "dd0e168ac2cc146d00771c75f0d3b730b14deb57b2fbad11d13d7f67e9e631e1",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pk40991_cell_paper_shape/paper_square.hwp",
+      "source_sha256": "8f9eae5778d6b1ec679cb314a4b653e64af3530af39fd3707b629df00ff4bfdd",
+      "pdf": "pdf/pr9349-cell-floats/paper_square-hwp5-2024.pdf",
+      "pdf_sha256": "b330544e972694b26d9e88b88f9fe0ceea62e5bd9ebae52f7852d54ed2c731e0",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pk40991_cell_paper_shape/paper_square.hwpx",
+      "source_sha256": "bb26acda215afaea3353f7e4b30e330857fba68d976818f06188d9e35ebeaf3b",
+      "pdf": "pdf/paper_square-2020.pdf",
+      "pdf_sha256": "de62a88d1dbe3ffece67de40df987637f3754819950834d3fcd0ae5aebb0daef",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pk40991_cell_paper_shape/paper_square_nested.hwp",
+      "source_sha256": "7a16cb7b1a518c6f2c328d8b18b1a9964b87198798ffc4ae194c6f2caccb069d",
+      "pdf": "pdf/pr9349-cell-floats/paper_square_nested-hwp5-2024.pdf",
+      "pdf_sha256": "a9e52b147e696edb6bdd2ebf1495896612114ac942b2f44ddc2834ce5ee89f10",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pk40991_cell_paper_shape/paper_square_nested.hwpx",
+      "source_sha256": "9b2f5f2a878cc4ba491dc8687075fd948701c662a6d96030d8f105da3064fbaf",
+      "pdf": "pdf/paper_square_nested-2020.pdf",
+      "pdf_sha256": "3fef4b4f87433ba6743ae3e4a1a8a243af48f41006a4439d445fc4a7ffc85d0b",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pk40991_cell_paper_shape/paper_square_split.hwp",
+      "source_sha256": "a44958e77127e32db6f7c25ca6afe4a5fcc5e7eb31ca024c65d9da0206ac83b6",
+      "pdf": "pdf/pr9349-cell-floats/paper_square_split-hwp5-2024.pdf",
+      "pdf_sha256": "a4bd612dd9e5b6473b54f8341d76e27acf5b8d1142bbed8eee83f34e312c5ba8",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pk40991_cell_paper_shape/paper_square_split.hwpx",
+      "source_sha256": "bad59008efcbc94659612d2426dfdac42c93cc64b49acfddf08ddf62aebc7dbc",
+      "pdf": "pdf/paper_square_split-2020.pdf",
+      "pdf_sha256": "2c7cdd941dffa46a8ed2ca90a7e553e8aae67cd7e5712c604bf95d8784b6e310",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pk40991_overlay_nested/grow-bottom-margin10mm.hwpx",
+      "source_sha256": "b25d5bf9d0b53603a5f0e58aec19eeace1a1ff81a11b25d3c18031b949c620e1",
+      "pdf": "pdf/pr9349-cell-floats/grow-bottom-margin10mm-2020.pdf",
+      "pdf_sha256": "dd0cd4a5fe0cd529fcfc831c42d7aa20957ba7c7bd3e4364164623ed8b6084eb",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pk40991_overlay_nested/grow-last-row-content-fit.hwpx",
+      "source_sha256": "ba711e7fca5f895993a2e3d156ddcf9c3db6b8391c336867b3e94cc7da2f0e3e",
+      "pdf": "pdf/pr9349-cell-floats/grow-last-row-content-fit-2020.pdf",
+      "pdf_sha256": "67f4ced71e8a0563049f0856884ed29e75789d3d174830eebcdbf5ae35f02948",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pk40991_overlay_nested/grow-tail-only-continuation.hwpx",
+      "source_sha256": "2916db8bb9176814114d7d9f71ace0154f264d7c50f6450e9cdb488704ef4ac5",
+      "pdf": "pdf/pr9349-cell-floats/grow-tail-only-continuation-2020.pdf",
+      "pdf_sha256": "418fbbbeacd5dc922dc972d0cbca022933df1159c7331a2d7e5e50ed6b7b89ab",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pk40991_overlay_nested/overlay_nested_anchor_offset.hwp",
+      "source_sha256": "2d14bebe9d2fed41363f9b3e901cd2a1b88b2aad1b43303b50efc9629e5d46eb",
+      "pdf": "pdf/pr9349-cell-floats/overlay_nested_anchor_offset-hwp5-2024.pdf",
+      "pdf_sha256": "5cc9edce20635d66827fd78fb3a20a1033eaab2a0aa427ca0c4ce04f62bf11fe",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pk40991_overlay_nested/overlay_nested_anchor_offset.hwpx",
+      "source_sha256": "35655892aed665ce4105dae237ea330f4abdf0d8a106fcd205bf3d569751512c",
+      "pdf": "pdf/overlay_nested_anchor_offset-2020.pdf",
+      "pdf_sha256": "5685f9719268611fe2fea5cc4c54b8d94690d69d9248a21701a29479dbc086c7",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pk40991_overlay_nested/overlay_nested_center.hwp",
+      "source_sha256": "7057b23289c5d610c190000a22afcca27365c60e725eea326bc173cbcfc4d382",
+      "pdf": "pdf/pr9349-cell-floats/overlay_nested_center-hwp5-2024.pdf",
+      "pdf_sha256": "9ee2f15d5445dc48eb72dc3af5e69c8800dd2a2f20ab1970b700886908d961ab",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pk40991_overlay_nested/overlay_nested_center.hwpx",
+      "source_sha256": "a3a00c28ad294edd06ca44c965ef8717a3d338aad70c177908a76a12695e1250",
+      "pdf": "pdf/overlay_nested_center-2020.pdf",
+      "pdf_sha256": "9863d13dc4e67dd22881b9bb920451b9cd4faf00ffc50ef0ff54c641ad094666",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pk40991_overlay_nested/overlay_nested_grow_split-hancom.hwp",
+      "source_sha256": "f344f9a90cbcf978ca10e4a5bdcfd7e93f333133dd59d7dc845123cb52be5ca6",
+      "pdf": "pdf/pr9349-cell-floats/overlay_nested_grow_split-hancom-2024.pdf",
+      "pdf_sha256": "68b9953e40135036624e753f82762e13d3e75af7809623c18ce9a229cecb1cde",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pk40991_overlay_nested/overlay_nested_grow_split.hwp",
+      "source_sha256": "fddf880baca7f47d6bc63310c6020007bc45f0dee6264346cba59b8be6dde5ad",
+      "pdf": "pdf/pr9349-cell-floats/overlay_nested_grow_split-hwp5-2024.pdf",
+      "pdf_sha256": "db6871098a2dc87f860dbef74b7064a2be2a63d38fea206900f0859bd1c94622",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pk40991_overlay_nested/overlay_nested_grow_split.hwpx",
+      "source_sha256": "a8e81ba6b6c2a20d1e4a7534ad733d6db1a8fe969e4069a70d72dd26e12acd07",
+      "pdf": "pdf/overlay_nested_grow_split-2020.pdf",
+      "pdf_sha256": "9543221c17aed43f7a1e69b4740e88cd2cce46397a41b06ada0af5f040385f92",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pk40991_overlay_nested/overlay_nested_split-hancom.hwp",
+      "source_sha256": "4297b3c07c04c9b59b193e8b3e64c6b01476a5b61e7fa1e5c3619a550debc51b",
+      "pdf": "pdf/pr9349-cell-floats/overlay_nested_split-hancom-2024.pdf",
+      "pdf_sha256": "d8eb0e1a7cae7af3eca13ff621ad76413a08218d4dcac7e613be3227bd6604e3",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pk40991_overlay_nested/overlay_nested_split.hwp",
+      "source_sha256": "081f65a524c363e56941336d5173822410e1d9f3d1a86f740a4a285ce2ed2de7",
+      "pdf": "pdf/pr9349-cell-floats/overlay_nested_split-hwp5-2024.pdf",
+      "pdf_sha256": "b14c43a063a9edebc30b6e1d8383cabe5d7a67b68f4889ecbe8c8ddfb3c43b07",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pk40991_overlay_nested/overlay_nested_split.hwpx",
+      "source_sha256": "cf210576eadb274585d92543553c9fc2852284ba05c3ce419417d8c97acfd2cc",
+      "pdf": "pdf/overlay_nested_split-2020.pdf",
+      "pdf_sha256": "409cb44d7093eb14502dd311a4ee840a44ce2e19672a8a26a994c3298806be80",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/grow-bottom-align.hwpx",
+      "source_sha256": "af83b2ec57241a2ac0fc0a4031384a0cb17d9cdf33d55937650ece436437b862",
+      "pdf": "pdf/pr9349-cell-floats/grow-bottom-align-2020.pdf",
+      "pdf_sha256": "64ac2034a0630a1eb5bc40abbca15435740f0a172a731b104e2cb230d3863992",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/grow-bottom-margin0.hwpx",
+      "source_sha256": "dca85851bb9505a22557b4650afc79e410a1dd5d7b4e72e54a273a83f2f523f6",
+      "pdf": "pdf/pr9349-cell-floats/grow-bottom-margin0-2020.pdf",
+      "pdf_sha256": "6524907f1e8d2da1a5e3871fd8fc4f519f47b7785f61cbd0334e823890f41e3a",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/grow-declared-fit.hwpx",
+      "source_sha256": "540e957282dc733b7c6c28867912a9f1f64d2966da1df7df6bb94ecff3a72fd5",
+      "pdf": "pdf/pr9349-cell-floats/grow-declared-fit-2020.pdf",
+      "pdf_sha256": "3ae15a2afc8ca95e5ab17459ae86334a47b38fee7870376da380c395369c0cc0",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/grow-declared-near.hwpx",
+      "source_sha256": "71646608e2610244ccd311f0890c32b8e752fd91f1d3f4aefd19b349c738bde5",
+      "pdf": "pdf/pr9349-cell-floats/grow-declared-near-2020.pdf",
+      "pdf_sha256": "6eca2f9705618cf558a2a8e59a8903dcb8b2aa4c71047acb1a4254b114259315",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/grow-declared-short.hwpx",
+      "source_sha256": "b005982200a19786637e424df9936409c7b6d23453d31f4bb4a5d8605fd1efbd",
+      "pdf": "pdf/pr9349-cell-floats/grow-declared-short-2020.pdf",
+      "pdf_sha256": "6f88d8f21d9e400bcc3b9f38a6d9e7035fc46a4338e7808c033fd812895921f0",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/grow-declared-under.hwpx",
+      "source_sha256": "dfd7ef7d31f215631c7c0f6e71e6b8e98d422084af879184b922fc647ec67d0b",
+      "pdf": "pdf/pr9349-cell-floats/grow-declared-under-2020.pdf",
+      "pdf_sha256": "a587111f648bf4a6c497cbd2e89483cb02f5a0106a18579c0d7c32b997aa16d6",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/grow-inner-top0.hwpx",
+      "source_sha256": "a0a85d5353aa6bc5e11c10187aaf10e8cbbf792caa50b8bd582d5cf6220a5bd7",
+      "pdf": "pdf/pr9349-cell-floats/grow-inner-top0-2020.pdf",
+      "pdf_sha256": "bdf1232cb04fc44edee6283679b546295f543e4dcec6dd60ad4f296eccfec94e",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/grow-inner-top900.hwpx",
+      "source_sha256": "37ab83fd8dfcf32e62e6b4c6034b6bc8b58e7b38772cb7b0d2a1da8f6d0c1066",
+      "pdf": "pdf/pr9349-cell-floats/grow-inner-top900-2020.pdf",
+      "pdf_sha256": "5f239760b28f8d81217fe2b15a892248ba6fb07920226fee02086812683c2188",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/grow-page-before-large.hwpx",
+      "source_sha256": "550d377ade89712be7b66640d724f4b2a3088296e0ebfcfe8256319671375844",
+      "pdf": "pdf/pr9349-cell-floats/grow-page-before-large-2020.pdf",
+      "pdf_sha256": "7ff4adb187efa221e1703e749b87fb2902886320ff12be4a9b74db034747fb45",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/grow-page-before-small.hwpx",
+      "source_sha256": "a4baa3e2c0457888029499501f3d31efa2ea001bca0e7b5cfc51fdaf1762392d",
+      "pdf": "pdf/pr9349-cell-floats/grow-page-before-small-2020.pdf",
+      "pdf_sha256": "69501fce5a7f01720282782533f0fb447cd53ce32ab39830a5c489da91ffe8d5",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/grow-page-near-large.hwpx",
+      "source_sha256": "a411068c183b6d06a474c923220987283b1cb7064bd13d4d2d79f251bef1ea80",
+      "pdf": "pdf/pr9349-cell-floats/grow-page-near-large-2020.pdf",
+      "pdf_sha256": "475e83d89abc3a86cbcc00784cfe9a5840af3adfc78b0f7b0971e817d7f024b8",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/grow-page-near-small.hwpx",
+      "source_sha256": "c1244d6d19fdcf377cb951e4cfdd196de85e7167acd8e80c190c95740664b240",
+      "pdf": "pdf/pr9349-cell-floats/grow-page-near-small-2020.pdf",
+      "pdf_sha256": "7e031669843bb191e33d0963e360f445bad5952b9ad4fa21866613d582098b76",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/grow-parent-padding0.hwpx",
+      "source_sha256": "5dc3991f94d2be38bd3e82e302e2145f1dfbb23030c0ba396a71694ea12563c6",
+      "pdf": "pdf/pr9349-cell-floats/grow-parent-padding0-2020.pdf",
+      "pdf_sha256": "0781840b142651ca193a39ee5403ae28fc68a4e2e7809ea9abc1aceba46847fe",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/grow-parent-padding300.hwpx",
+      "source_sha256": "5382bd2bdf4e4bf6522f2b9ca412f443729ca1c35cee68d29c5c9da1dcec504c",
+      "pdf": "pdf/pr9349-cell-floats/grow-parent-padding300-2020.pdf",
+      "pdf_sha256": "121ac4d7399c124469f01a07a2a3e866c2826acf433007ddfe1c59cf7d6ee582",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/overlay_nested_anchor_offset-hancom.hwp",
+      "source_sha256": "b5484e4006470c7d3b0b368788e9ed43691cfe9b3a822b01f59e5ddd6465fc75",
+      "pdf": "pdf/pr9349-cell-floats/overlay_nested_anchor_offset-hancom-2024.pdf",
+      "pdf_sha256": "16fd762fef3fffa80bf12340db3707c3e02f644ba04fbd3efd7fa299b91c0657",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/overlay_nested_center-hancom.hwp",
+      "source_sha256": "364ee9268b9d80b7b345064d12d4cc2952468283bdf28628a183fe8e3f585fcf",
+      "pdf": "pdf/pr9349-cell-floats/overlay_nested_center-hancom-2024.pdf",
+      "pdf_sha256": "2a13f048b63dfd173a3ac8fd52a68baea68ff8259450ed229ba45e3a00463cd8",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/paper-103300.hwpx",
+      "source_sha256": "0f11afdb8f0d39a6468f446a3e34b55028fd37d5172883d26bf493d1bc0203b2",
+      "pdf": "pdf/pr9349-cell-floats/paper-103300-2020.pdf",
+      "pdf_sha256": "1183b9d9763bb1fe1a500abc1cccfc14633c7c296096de944ad30a0f87d6a945",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/paper-103900.hwpx",
+      "source_sha256": "3f205313f2d2c260f737cbcf8a78a6e477b8e7fa5dc1ec986d5bf30d08a1f9b0",
+      "pdf": "pdf/pr9349-cell-floats/paper-103900-2020.pdf",
+      "pdf_sha256": "d02d4ff14da2e65303003789b5e7d50a3ea995a2ce6a686117470e92ca14b6b4",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/paper-104500.hwpx",
+      "source_sha256": "5844437855137b5c19310909be94653541949fbfb0c7e9e51b53edcc8839203d",
+      "pdf": "pdf/pr9349-cell-floats/paper-104500-2020.pdf",
+      "pdf_sha256": "8fa06882920097c216521c5f1bd2cbbc7b1267becee5d48ac652f3f38d6a1340",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/paper-104800.hwpx",
+      "source_sha256": "dab18435be734edbf35009fed2512ffe2427ef95809c2feb1f4fec7bbb6b31e1",
+      "pdf": "pdf/pr9349-cell-floats/paper-104800-2020.pdf",
+      "pdf_sha256": "ac0b96700db54db44259c122f865aeb13a71443e71567a6dc522cac533c9888c",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/paper-106000.hwpx",
+      "source_sha256": "e82931f675c416af4f669b66c059bb10ebfed7d09f3d6c3461efba6e34646e4e",
+      "pdf": "pdf/pr9349-cell-floats/paper-106000-2020.pdf",
+      "pdf_sha256": "728cb8bbb84bdf1e5623892b3f0b98cdd06100b13e708609b4c061f193b5e734",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/paper-107200.hwpx",
+      "source_sha256": "16c00063572e8be5dcccd3324dfb19a6b399ba52e4b648bd98fd86e060512d71",
+      "pdf": "pdf/pr9349-cell-floats/paper-107200-2020.pdf",
+      "pdf_sha256": "d6fc49f7a3c4a3b91bbcfd18f225665d2bcec55f92daf19546beaf813101c0e9",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/paper-split-latin-default.hwp",
+      "source_sha256": "5a2e89115d46d6c90d46e3499bb24eb52d9214318ad4672cdb6f3dcb9b33d1e3",
+      "pdf": "pdf/pr9349-cell-floats/paper-split-latin-default-2024.pdf",
+      "pdf_sha256": "53b861fe22e529abd73485030ad3d8852ae3d1298dd060d1efdc2f91e92babc5",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/paper-split-latin-explicit-hcr.hwp",
+      "source_sha256": "373189b9202cc34fb65d97aa5a2f7a95c88144dc3848f9b6a7a4250488d7c7d6",
+      "pdf": "pdf/pr9349-cell-floats/paper-split-latin-explicit-hcr-2024.pdf",
+      "pdf_sha256": "7bb3fef271af7b16d97d5023fac0d2ffc790ed671ce7d808f99ad15fda0ce429",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/paper_front-hancom.hwp",
+      "source_sha256": "855e1469431a59d9624ce8dd10c382eb3b9de449d8ad2bca1761ad472be48ec0",
+      "pdf": "pdf/pr9349-cell-floats/paper_front-hancom-2024.pdf",
+      "pdf_sha256": "515d02a5783dd59950fb415859ada9cd8714e0b1b04e4b69f3ec6715d60c9d62",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/paper_square-hancom.hwp",
+      "source_sha256": "59e30d9804e9c8b8f003b973945ca253e3b57de4e3804c3f8ad4ea89ec31e347",
+      "pdf": "pdf/pr9349-cell-floats/paper_square-hancom-2024.pdf",
+      "pdf_sha256": "1e7329895e41caa0f0b797f0fa3fed6b6979f5cefb9497f27758659cbaade87f",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/paper_square_nested-hancom.hwp",
+      "source_sha256": "6e271493d15c5c9b23c6b4bc1b3fb33168aec9ee3577281e57ef4789078e2b46",
+      "pdf": "pdf/pr9349-cell-floats/paper_square_nested-hancom-2024.pdf",
+      "pdf_sha256": "015587872c0eb9c904c4ea8b90c3509a3659802c40130603bdf5d1a105d9d405",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/paper_square_split-hancom.hwp",
+      "source_sha256": "e00376b78b8021716296833e087f534f51ef6b561dfc0770517a1534a8692fde",
+      "pdf": "pdf/pr9349-cell-floats/paper_square_split-hancom-2024.pdf",
+      "pdf_sha256": "d2158263453e838a561048aef90dd9b07fc55195feda3ac5711861428f2d4e0b",
+      "pages": 2,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/photo-a5-height.hwp",
+      "source_sha256": "3e2a085dc886a803aaa2ba003b361545ea5b6879d707d6a56d24cd7cca68b123",
+      "pdf": "pdf/pr9349-cell-floats/photo-a5-height-2020.pdf",
+      "pdf_sha256": "c5f8663ac1e4709e5c71b410f7482d7fc7bc106d0542549bcb6a4f0fcd8ff89a",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/photo-right-overlap-neg.hwp",
+      "source_sha256": "8f908dd6cb820f8b370cee4e4e621979c85117d48b421cd97d811214a6a61aa6",
+      "pdf": "pdf/pr9349-cell-floats/photo-right-overlap-neg-2020.pdf",
+      "pdf_sha256": "54dc4c4349ff545bb78b5a6b28c0275b35d91b0a909b2366d34d6056a6d40617",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/pr9349-cell-floats/photo-short-page.hwp",
+      "source_sha256": "04ca8dcfe156a73e2deaa430693fde6e430d00143050323b2646241e2940dc9b",
+      "pdf": "pdf/pr9349-cell-floats/photo-short-page-2020.pdf",
+      "pdf_sha256": "7c80c54835a355690a99b40844c9a7e113b83d28aa988974185a2c77c94ddd45",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/side_by_side_photo_cell/photo-center-overlap.hwp",
+      "source_sha256": "67cb7ffa55c2c3d7d34e89ff088e5baa35b091c5c4b566afa15d0b84d7bc861a",
+      "pdf": "pdf/pr9349-cell-floats/photo-center-overlap-2020.pdf",
+      "pdf_sha256": "e7a5abc5929d3e8265b9a8cd6cab8b750e6a1f99e1c0bc0931bda730d7af042e",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/side_by_side_photo_cell/photo-left-touch.hwp",
+      "source_sha256": "404fff252c0ae48c53594382158c2457fa8b05cd20d7a78627a7f8121038af35",
+      "pdf": "pdf/pr9349-cell-floats/photo-left-touch-2020.pdf",
+      "pdf_sha256": "ff7376fc58f03e8a9290d62516f0a21d0cd63a485b536a65e2c505bee4f4c172",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/side_by_side_photo_cell/photo-right-overlap.hwp",
+      "source_sha256": "e08924f8ed3475ff63757fec3c58f2bc2558e782ebb0d29e49635bfee345cf5f",
+      "pdf": "pdf/pr9349-cell-floats/photo-right-overlap-2020.pdf",
+      "pdf_sha256": "7282cc4f616a942f0994aefeeed88f55cc4dd706fc3c6b61fb3db45bf654dd8f",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
+    },
+    {
+      "sample": "samples/side_by_side_photo_cell/side-by-side-photo-rows.hwp",
+      "source_sha256": "c3c904a40b3192f398ae8b81d3b8b19b89738fda43a4fbd3381e62db1df1c38d",
+      "pdf": "pdf/side-by-side-photo-rows-2020.pdf",
+      "pdf_sha256": "a3353c9274074e501c57553727a4a4fb411cb923e738ed05a8a2758eaa20d550",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/inputs.tsv"
     }
   ]
 }

@@ -1,0 +1,268 @@
+{
+  "product_source": "65b6fe383c3bd8cbcf83de7909c7a6c24eb32c35",
+  "fixed_base": "d7b5286cbf6401678a70eed3d66236a68dd2a72c",
+  "native_sha256": "19316bb73574a843504838b8ed76188d6d39e0b379a904e3aa8b38f89b3cc417",
+  "wasm_sha256": "b7daba5a67af717138d37638f8a1a477dd0990f034b234e985a534c5d6ef228f",
+  "base_547_path": "native-base-comparison/547/base.tsv and wasm-base-comparison/547/base.tsv",
+  "fallback_scope": "only_page_1_of_the_64_page_document",
+  "prior_full_fallback_record": "../886-no-original/v4/evidence.json",
+  "records": [
+    {
+      "case": "547",
+      "backend": "native",
+      "pages": 22,
+      "minimum": "99.68",
+      "input_sha256": "bcc0ac10f2410a85b677efea2ed034789820781bed5379109a987de28168924f",
+      "reference_pdf_sha256": "60c46d0c41bd739a7f3609cf5bee2fc0e2178216ce89a9ee602bdd89512d5885",
+      "manifest_sha256": "f1171243fe7682769ce3c756c62f7728bb0f12a62c6a3fe37cb43cc9d243f53d",
+      "tsv_sha256": "30a0cd319ab5f8c607716b968c1e55d329c1246a7d2e7001727067b7f4f614c1",
+      "tsv": "547/native/silhouette.tsv",
+      "evidence": [
+        {
+          "page": 2,
+          "score": "99.94",
+          "files": {
+            "raw": {
+              "file": "547/native/raw-002.png",
+              "sha256": "a2e8794edbfc657219f1c165add628508e3a80bf115c0cb2bf233e0195110a07"
+            },
+            "print": {
+              "file": "547/native/print-002.png",
+              "sha256": "fbc3bb78250dc9b41cf275f205af0ecc0f2d95e686ed996a9f4bd8d2f5a86674"
+            },
+            "review": {
+              "file": "547/native/review-002.png",
+              "sha256": "8efddff489888014ab97900b3db950ca215d05ee605e650318c71e49c25a542c"
+            },
+            "overlay": {
+              "file": "547/native/overlay-002.png",
+              "sha256": "39ae319fa846474b136040a91cd40d78d92fae228cd608e05926738b7b4ae9be"
+            }
+          }
+        },
+        {
+          "page": 21,
+          "score": "99.70",
+          "files": {
+            "raw": {
+              "file": "547/native/raw-021.png",
+              "sha256": "15a03782741f26d00fdf226eb274a77c1db9d46efcd216531a8b50fd69eaeff3"
+            },
+            "print": {
+              "file": "547/native/print-021.png",
+              "sha256": "48451c46fc4b0fe44d113953753e68008ee666490c0888cc72360d0e34d18e9b"
+            },
+            "review": {
+              "file": "547/native/review-021.png",
+              "sha256": "293b963b1261d5f04c34a3d9a4680363c0165645e830ead034ee645313f2136c"
+            },
+            "overlay": {
+              "file": "547/native/overlay-021.png",
+              "sha256": "c041e2929a5276bab8db72f5000cfae22ee914ac0e64d18bc424cf05f4046e76"
+            }
+          }
+        },
+        {
+          "page": 22,
+          "score": "99.93",
+          "files": {
+            "raw": {
+              "file": "547/native/raw-022.png",
+              "sha256": "04aecf0686777a21b68a8be2f5a0ef6882a1a36da39a1cc2e516cdc196746b1b"
+            },
+            "print": {
+              "file": "547/native/print-022.png",
+              "sha256": "352b71f97091c1628c53f97de47c3a58645014a22e13bc08dcd04ec577c8e9ce"
+            },
+            "review": {
+              "file": "547/native/review-022.png",
+              "sha256": "60363b7a06fd47c89c7ae72da525f92867ba57babe46481ecf8b69ba3248377a"
+            },
+            "overlay": {
+              "file": "547/native/overlay-022.png",
+              "sha256": "5e23c2f10945152d721f14bf4e684014d3131dbd85e826313a64514795219ebf"
+            }
+          }
+        }
+      ],
+      "baseline": "../native-base-comparison/547/base.tsv",
+      "devel_declines_over_2pp": {}
+    },
+    {
+      "case": "886-no-original",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "94.93",
+      "input_sha256": "a2a6d53dad049bf27c4855e05227e467aba7b71184f43a0dbd1136d972bea13f",
+      "reference_pdf_sha256": "d0fcc123cf3c73aa68ecd6e3ecd7676c887b0c21b6eb13833fce00a3278d6f59",
+      "manifest_sha256": "b9911ae69d680d25cb97fedb8256eace5802542b4f221d98de93f3d4b25bfcea",
+      "tsv_sha256": "0a06334af366e5917f95df417d195483759f6d49018d845065f06ec6d35eef8b",
+      "tsv": "886-no-original/native/silhouette.tsv",
+      "evidence": [
+        {
+          "page": 1,
+          "score": "94.93",
+          "files": {
+            "raw": {
+              "file": "886-no-original/native/raw-001.png",
+              "sha256": "3863fd3ea5339d22e7599418deb65f56a6de29ef718c36a51084de3216f0ada1"
+            },
+            "print": {
+              "file": "886-no-original/native/print-001.png",
+              "sha256": "26d62770c84e6b8fe06cf4f232f0d4fd18f50eeaf6298ad250f60aee9aada651"
+            },
+            "review": {
+              "file": "886-no-original/native/review-001.png",
+              "sha256": "64b48e956176ecbc2fe2f697321658a6fc90a18c34d140ff986dce61712539d1"
+            },
+            "overlay": {
+              "file": "886-no-original/native/overlay-001.png",
+              "sha256": "633f934b936549abcc3bccd2158788fda652c1b25f84d2ff3b86325c9a4720f0"
+            }
+          }
+        }
+      ],
+      "v4_score_equal": true,
+      "absent_from_isolated_font_profile": [
+        "ENGGT.otf",
+        "ENGGTI.otf",
+        "HGGGT.otf"
+      ]
+    },
+    {
+      "case": "547",
+      "backend": "wasm",
+      "pages": 22,
+      "minimum": "99.68",
+      "input_sha256": "bcc0ac10f2410a85b677efea2ed034789820781bed5379109a987de28168924f",
+      "reference_pdf_sha256": "60c46d0c41bd739a7f3609cf5bee2fc0e2178216ce89a9ee602bdd89512d5885",
+      "manifest_sha256": "3ffd90e0ccc025f1d2284a0019ad201563175802cc4be9bb085118ad94e16f0a",
+      "tsv_sha256": "d460b6dc98116621a6cdcbad717f77861606b95d26091165efb2bfd043703458",
+      "tsv": "547/wasm/silhouette.tsv",
+      "evidence": [
+        {
+          "page": 2,
+          "score": "99.94",
+          "files": {
+            "raw": {
+              "file": "547/wasm/raw-002.png",
+              "sha256": "209274ceaeac57154b773960a054f5204746e2ef3ff38e1ddf4559be900dcc65"
+            },
+            "print": {
+              "file": "547/wasm/print-002.png",
+              "sha256": "fbc3bb78250dc9b41cf275f205af0ecc0f2d95e686ed996a9f4bd8d2f5a86674"
+            },
+            "review": {
+              "file": "547/wasm/review-002.png",
+              "sha256": "3b3ed9e4f41bcdc47a6529766cd35c15fb1511459ba1647446e1170272ce94c2"
+            },
+            "overlay": {
+              "file": "547/wasm/overlay-002.png",
+              "sha256": "57e4431721e8b6ed605133103b293d62598b7f2bed5fd01638a53b524e272ab7"
+            }
+          }
+        },
+        {
+          "page": 21,
+          "score": "99.69",
+          "files": {
+            "raw": {
+              "file": "547/wasm/raw-021.png",
+              "sha256": "db3030b7170612a31176f209c8e36ec16524a53c96e63171d783bde2c2edd102"
+            },
+            "print": {
+              "file": "547/wasm/print-021.png",
+              "sha256": "48451c46fc4b0fe44d113953753e68008ee666490c0888cc72360d0e34d18e9b"
+            },
+            "review": {
+              "file": "547/wasm/review-021.png",
+              "sha256": "38c17ee0e1213b7b717a850d6248f1c2a39bcb4504d3bce144d02c416d6663b5"
+            },
+            "overlay": {
+              "file": "547/wasm/overlay-021.png",
+              "sha256": "ab71926125b12d82140f8eeba535fc540f5cf45fff8091ba410809a700f44b14"
+            }
+          }
+        },
+        {
+          "page": 22,
+          "score": "99.92",
+          "files": {
+            "raw": {
+              "file": "547/wasm/raw-022.png",
+              "sha256": "8fe1af263642086a69f41ab1bd5662077deb93654580ed687c12954ef712c5b2"
+            },
+            "print": {
+              "file": "547/wasm/print-022.png",
+              "sha256": "352b71f97091c1628c53f97de47c3a58645014a22e13bc08dcd04ec577c8e9ce"
+            },
+            "review": {
+              "file": "547/wasm/review-022.png",
+              "sha256": "586eac2131306220d5ecaa49227a22bb56eda38527db47581ce2a1d495b094d8"
+            },
+            "overlay": {
+              "file": "547/wasm/overlay-022.png",
+              "sha256": "d0968246a4b6226e8a8744fba928d3a91433010e38e25a03e5a0066115b3ae58"
+            }
+          }
+        }
+      ],
+      "baseline": "../wasm-base-comparison/547/base.tsv",
+      "devel_declines_over_2pp": {}
+    },
+    {
+      "case": "886-no-original",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "94.93",
+      "input_sha256": "a2a6d53dad049bf27c4855e05227e467aba7b71184f43a0dbd1136d972bea13f",
+      "reference_pdf_sha256": "d0fcc123cf3c73aa68ecd6e3ecd7676c887b0c21b6eb13833fce00a3278d6f59",
+      "manifest_sha256": "4f2e8af3d6a43ccde1005b1170a572d4c6518c3550b111e2b34dd664fef5b96b",
+      "tsv_sha256": "0a06334af366e5917f95df417d195483759f6d49018d845065f06ec6d35eef8b",
+      "tsv": "886-no-original/wasm/silhouette.tsv",
+      "evidence": [
+        {
+          "page": 1,
+          "score": "94.93",
+          "files": {
+            "raw": {
+              "file": "886-no-original/wasm/raw-001.png",
+              "sha256": "27eaec05fee3e1d646adb7ff941a48bcee7b76acbbdc97c43a7a6804323f7b9b"
+            },
+            "print": {
+              "file": "886-no-original/wasm/print-001.png",
+              "sha256": "26d62770c84e6b8fe06cf4f232f0d4fd18f50eeaf6298ad250f60aee9aada651"
+            },
+            "review": {
+              "file": "886-no-original/wasm/review-001.png",
+              "sha256": "73544a24be478df66a037f2e9abcb3b36f9d52a1315fcc0d3af2edb0ea343830"
+            },
+            "overlay": {
+              "file": "886-no-original/wasm/overlay-001.png",
+              "sha256": "4e1da925e5fe0379e63b9a17d6b015987d7f54ee21043050f453be6426de2014"
+            }
+          }
+        }
+      ],
+      "v4_score_equal": true,
+      "absent_from_isolated_font_profile": [
+        "ENGGT.otf",
+        "ENGGTI.otf",
+        "HGGGT.otf"
+      ],
+      "prior_selected_fallback_program": "HY견고딕"
+    }
+  ],
+  "fallback_wasm_registered_family": "HY견고딕",
+  "fallback_wasm_registered_program_sha256": [
+    "5f64ab96d886cc2fe90fbe70632e5b3b82d6410f6789d12224887cdf88faf5b1",
+    "c370326241e3e11b250ff6429a79a6c1ec022629debbbe1cd9fbed3c04ee014f",
+    "f0d5856d71bd2f509f6f796a6f7cbb0350305f8dc8f5308081e0e24f7e7be127"
+  ],
+  "direct_reading": {
+    "547_p2": "목차 테두리, 항목과 점선, 우측 쪽번호가 보존된다.",
+    "547_p21": "서약서 문구와 쪽번호가 보존된다. 원 기호와 일부 공백의 미세 차이가 남는다.",
+    "547_p22": "테두리와 서약서 문구가 보존된다. 원 기호·날짜·쪽번호의 미세 차이가 남는다.",
+    "886_no_original_p1": "두 경로에서 제목과 소방방재청 표기를 읽을 수 있다. 원 HFT와 대체 글꼴의 외곽과 간격 차이가 보인다."
+  }
+}

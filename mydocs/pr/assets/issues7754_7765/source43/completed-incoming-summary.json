@@ -1,0 +1,898 @@
+{
+  "recorded_at": "2026-11-22T06:49:17.622546+00:00",
+  "source_head": "68b4f6bdfda465aaafd0634c587cd6a17252fed6",
+  "current_source_equivalence": "mydocs/pr/assets/issues7754_7765/source38/source38-rebase-production-equivalence.json",
+  "all_four_matrices_pass": true,
+  "studio": {
+    "passed": true,
+    "original_results": "mydocs/pr/assets/issues7754_7765/source43/source37-incoming-studio-state.json",
+    "original_failed_test_preserved": true,
+    "ruler_recovery": "mydocs/pr/assets/issues7754_7765/source43/source48-ruler-font-choice-retry-state.json",
+    "reason": "Candidate initially omitted the actual substitute-font choice used by the base. Repeated with the identical base user journey and unchanged ruler assertions; pass."
+  },
+  "live_and_reopen": {
+    "records_including_base_candidate": 48,
+    "page_rows_including_base_candidate": 168,
+    "minimum": 98.07,
+    "passed": true
+  },
+  "ctrl_data": {
+    "inputs": 4,
+    "actual_save_reopen_rounds": 8,
+    "physical_owner_payload_comparisons": 8,
+    "passed": true
+  },
+  "pr_submission": "deferred_until_PR_9293_is_merged; protected font investigation remains incomplete",
+  "files": [
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm-candidate-state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state.json",
+      "sha256": "78cc083496a38715e1b66faaf43ce6fe1e16dded6280b385eedf7fff86d9905e",
+      "bytes": 319708
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm-comparison.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-comparison.json",
+      "sha256": "29ad1508d5f7bc17a0822a857363c5d090681e30a0ead45a63814887b9b9a235",
+      "bytes": 41163
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-matrix-aggregate-state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-matrix-aggregate-state.json",
+      "sha256": "358cfe3e03bc90782971b4aca271b6243f41e92897248bd76998a40ca3bcdde4",
+      "bytes": 1012
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-incoming-studio-state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-incoming-studio-state.json",
+      "sha256": "219abbb95e8f49be3b8fdb091494d7ece4eaaa84717da7421004999bf9a3f13a",
+      "bytes": 10855
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source47-ruler-retry-state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source47-ruler-retry-state.json",
+      "sha256": "3d8e179bd0e95a7bcfdeaa0edd0202ac316dfd86795ce4a14f0b34f4eb1c71ef",
+      "bytes": 1221
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source48-ruler-font-choice-retry-state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source48-ruler-font-choice-retry-state.json",
+      "sha256": "62bd57d746da7a24f67c14a80a5ef3f0fb9923e5c42934304692fdd968be556f",
+      "bytes": 1346
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source49-candidate-ctrl-data-state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source49-candidate-ctrl-data-state.json",
+      "sha256": "ab9560193fcf79139d2a8e0b69a3a3d9437ab92e6a5897106f7465791adcdcb5",
+      "bytes": 1314
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-ctrl-data-wasm/candidate/state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-ctrl-data-wasm/candidate/state.json",
+      "sha256": "0273d03d62d02aafbea88a37b6344a1cd1949f50a5bf0d307ad9829832c55fc5",
+      "bytes": 3831
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-ctrl-data-wasm/candidate/physical-record-validation.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-ctrl-data-wasm/candidate/physical-record-validation.json",
+      "sha256": "e7e42607d85f1ae65a76bba6b98590b4faa37a29915f922f69c5f3ae43b53904",
+      "bytes": 170668
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-wasm-live/state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-wasm-live/state.json",
+      "sha256": "eb4e105d198a1aaf735d5fe117d6e99c584c573ab8e6cbeee6e01398c80892a6",
+      "bytes": 22746
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-wasm-saved-live/state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-wasm-saved-live/state.json",
+      "sha256": "18a5c6cd78012899368b3f54414e400f261f75e704f438fa024194583f6b35ee",
+      "bytes": 25473
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/state.json",
+      "sha256": "0f59f4dbbd98f1084f000caf8d8f3e9eeebc3ce08d98dcccf972295b915c33b5",
+      "bytes": 46003
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-saved-live-scores/state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-saved-live-scores/state.json",
+      "sha256": "99a8c14862bd81340237ad86dba9386fcce0140554c076d0da39f488abeeae99",
+      "bytes": 71837
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/captions-caption-captioned_picture_inside_a_caption_survives_hwp_round_trip/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/000/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-captions-caption-captioned_picture_inside_a_caption_survives_hwp_round_trip.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-captions-caption-captioned_picture_inside_a_caption_survives_hwp_round_trip.txt",
+      "sha256": "1156881d20bd6f4abbe97733892ee966525b88b907db982d1a4d13366f9c9731",
+      "bytes": 2351
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/captions-caption-cell_picture_caption_lines_address_the_caption/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/001/silhouette.tsv",
+      "sha256": "87fb54a7cc1a769a6eb675e4c2449108aeeff8e115dbc7928ae1f712616dc74a",
+      "bytes": 130
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-captions-caption-cell_picture_caption_lines_address_the_caption.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-captions-caption-cell_picture_caption_lines_address_the_caption.txt",
+      "sha256": "c4d96a8f77482c0297d7f701951290c734212a239b1282c0278cb3bf233f2c86",
+      "bytes": 2229
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/captions-caption-header-false-false/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/002/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-captions-caption-header-false-false.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-captions-caption-header-false-false.txt",
+      "sha256": "5528e6f99c12c11be085d3b425490148a6fc0a0f50704b732836a220a0e67653",
+      "bytes": 1951
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/captions-caption-header-true-false/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/003/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-captions-caption-header-true-false.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-captions-caption-header-true-false.txt",
+      "sha256": "14e8e62521d4b6c71afc5fd5954a309105352d4cb1396df1fa1e3c7ce4a88de0",
+      "bytes": 1941
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/captions-caption-header-true-true/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/004/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-captions-caption-header-true-true.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-captions-caption-header-true-true.txt",
+      "sha256": "5ad45313a3aed3992ea30b9cae3014db544899628f4990eebbd2d8b59e641caf",
+      "bytes": 1931
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/captions-caption-include_margin_widens_a_bottom_caption_to_the_outer_margins/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/005/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-captions-caption-include_margin_widens_a_bottom_caption_to_the_outer_margins.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-captions-caption-include_margin_widens_a_bottom_caption_to_the_outer_margins.txt",
+      "sha256": "988b7b0a600b41629538d2cb2b1aa31313d8694e6c03b5d5470fac65af99ed2d",
+      "bytes": 2361
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/captions-caption-inline_picture_caption_starts_under_the_picture/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/006/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-captions-caption-inline_picture_caption_starts_under_the_picture.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-captions-caption-inline_picture_caption_starts_under_the_picture.txt",
+      "sha256": "5360e8e6936f8cb2b48d06331d6c77f44ebe03f3ccedd6ae99e42c7d6e02d9ca",
+      "bytes": 2241
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/captions-caption-narrowing_a_side_caption_rewraps_its_text/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/007/silhouette.tsv",
+      "sha256": "6fa62f05fd812da7ec8d83ece040e99308df38fb39cc45003909319eceaa58d8",
+      "bytes": 130
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-captions-caption-narrowing_a_side_caption_rewraps_its_text.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-captions-caption-narrowing_a_side_caption_rewraps_its_text.txt",
+      "sha256": "33ac592aa7c5b85d6ddc74cc035c92a5f709361172eec67017e0311d1d9714b0",
+      "bytes": 2179
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/empty-overlap-overlap-false-hwpx/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/008/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-empty-overlap-overlap-false-hwpx.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-empty-overlap-overlap-false-hwpx.txt",
+      "sha256": "5c0385c02c74af44e12f8c725be85201c8f2cf43ad334161e99bca90e94c84e4",
+      "bytes": 1913
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/empty-overlap-overlap-true-hwpx/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/009/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-empty-overlap-overlap-true-hwpx.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-empty-overlap-overlap-true-hwpx.txt",
+      "sha256": "e0b1faf91d5c06eb67544decf9abd9e329ce0213407f2ce5de6d2a6e02d4785b",
+      "bytes": 1903
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-c2-eachColumn/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/010/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-footnotes-c2-eachColumn.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-footnotes-c2-eachColumn.txt",
+      "sha256": "6f5ba3b57b0565a0829851df80fc192852e811ea7be5f909f73a056cee4358c3",
+      "bytes": 1790
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-c2-rightColumn/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/011/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-footnotes-c2-rightColumn.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-footnotes-c2-rightColumn.txt",
+      "sha256": "a53a4c4333e8f2e223e367cfea4d9775a7f8a0bad7ee33475e50189c54b6845c",
+      "bytes": 1800
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-c3u-eachColumn/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/012/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-footnotes-c3u-eachColumn.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-footnotes-c3u-eachColumn.txt",
+      "sha256": "ad1b6a4af07a906fd249bde559f595842051fa83d0408da8f13fc3e3acd0280a",
+      "bytes": 1800
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-c3u-touch-hwp/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/013/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-footnotes-c3u-touch-hwp.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-footnotes-c3u-touch-hwp.txt",
+      "sha256": "50588977e05b1a310a096bc338760a863ea5029813575f426d938a683f87e621",
+      "bytes": 1830
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-c3u-touch-hwpx/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/014/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-footnotes-c3u-touch-hwpx.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-footnotes-c3u-touch-hwpx.txt",
+      "sha256": "fa4fd9f5c593af76f71afc5ce91bd7794a5db4bb48890738ad28172e337ff7a2",
+      "bytes": 1840
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-edited-each/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/015/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-footnotes-edited-each.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-footnotes-edited-each.txt",
+      "sha256": "ab08fbbb50fb34e93ef8a0e9ab94ba49109468ce373fd676e9de02df1e0475ce",
+      "bytes": 1818
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-edited-two/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/016/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-footnotes-edited-two.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-footnotes-edited-two.txt",
+      "sha256": "89b253c7aaac7d7b6a87e4b3cf910abbfdc608b52a5b8e0cb9a42abea4ea164f",
+      "bytes": 1808
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-overflow-e2/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/017/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-footnotes-overflow-e2.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-footnotes-overflow-e2.txt",
+      "sha256": "55957bd8ef9882488995d86142cb358d06465d48a9138ef9297403a086230535",
+      "bytes": 1770
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-overflow-e2-tail/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/018/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-footnotes-overflow-e2-tail.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-footnotes-overflow-e2-tail.txt",
+      "sha256": "5ce954be5c51be5bc6f1876985d60ecf786ec15e30066029c0c42303a3f214bc",
+      "bytes": 1820
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-refold-e3u/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/019/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-footnotes-refold-e3u.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-footnotes-refold-e3u.txt",
+      "sha256": "3ece0ab0ce0ea6231a9d9c9a36a1c68c7bc6bc4b62ea97d542cced583503a771",
+      "bytes": 1760
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/resized-group-resized-group-hwp/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/020/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-resized-group-resized-group-hwp.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-resized-group-resized-group-hwp.txt",
+      "sha256": "8b520148ba9a5e8c5ebce5f938bd96f6c9da4e91abaf6ea719211c1cf436625e",
+      "bytes": 1903
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/resized-group-resized-group-hwpx/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/021/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-resized-group-resized-group-hwpx.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-resized-group-resized-group-hwpx.txt",
+      "sha256": "02249641bc2d038ab6a6f594844978f57a59e4e4c7753975b15f711a901841e1",
+      "bytes": 1913
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-edited-narrow/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/022/silhouette.tsv",
+      "sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "bytes": 152
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-footnotes-edited-narrow.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-footnotes-edited-narrow.txt",
+      "sha256": "5300a2a2cfaef938d6e2f53e8d616502e5e918b962750325c5e84e196acc78c7",
+      "bytes": 2170
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-edited-one/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/023/silhouette.tsv",
+      "sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "bytes": 152
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-footnotes-edited-one.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-footnotes-edited-one.txt",
+      "sha256": "a1e99f8335145e8ed4a5a08aad71646ecba964410712e87986843bf4dff49a5c",
+      "bytes": 2134
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-overflow-e2-flow/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/024/silhouette.tsv",
+      "sha256": "7b55b10dee5269fec94ed4c36a869747432c5b77ec9a732dd501ff9d6fb0c049",
+      "bytes": 150
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-footnotes-overflow-e2-flow.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-footnotes-overflow-e2-flow.txt",
+      "sha256": "d3bf0a672be1d112cebb46fd1b4d9c63d66598648c138b7db98520d126427484",
+      "bytes": 2156
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-overflow-r2/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/025/silhouette.tsv",
+      "sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "bytes": 152
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-footnotes-overflow-r2.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-footnotes-overflow-r2.txt",
+      "sha256": "9cc06242a2ca3078b50a9a144c059d4f72764e5545e6aabe3620a46cece4acca",
+      "bytes": 2098
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-overflow-r2-flow/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/026/silhouette.tsv",
+      "sha256": "97953f0ae367d4b07dc48e2c8c270af33404b9bd9427729310ec2436712286fb",
+      "bytes": 150
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-footnotes-overflow-r2-flow.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-footnotes-overflow-r2-flow.txt",
+      "sha256": "2b711a75f58c60577d1dad5902d1a106f220e6646d4d7b08eec7ca5dc9707233",
+      "bytes": 2156
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-overflow-r3u/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/027/silhouette.tsv",
+      "sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "bytes": 152
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-footnotes-overflow-r3u.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-footnotes-overflow-r3u.txt",
+      "sha256": "ac7779a626b0499c38093d36ccea12489787bf07372114323c45d1e69e07ceaa",
+      "bytes": 2110
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-refold-e3u-chain/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/028/silhouette.tsv",
+      "sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "bytes": 152
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-footnotes-refold-e3u-chain.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-footnotes-refold-e3u-chain.txt",
+      "sha256": "3bfaa47d58889123f096f10ee6abffa100b50e41f830e50e439abcd8e5193c79",
+      "bytes": 2158
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/nested-row-split-nested-30-hwp/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/029/silhouette.tsv",
+      "sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+      "bytes": 170
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-nested-row-split-nested-30-hwp.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-nested-row-split-nested-30-hwp.txt",
+      "sha256": "8ba5db6e8edc187351fa112ba245334ab67b67454204eab6dd3a7499a5f959f3",
+      "bytes": 2569
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/nested-row-split-nested-30-hwpx/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/030/silhouette.tsv",
+      "sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+      "bytes": 170
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-nested-row-split-nested-30-hwpx.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-nested-row-split-nested-30-hwpx.txt",
+      "sha256": "818bef82d84e4d7bef4884b733e5ef6f55c0787f49883ab0a07a5158a13717d5",
+      "bytes": 2583
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/nested-row-split-nested-70-hwp/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/031/silhouette.tsv",
+      "sha256": "a1a00d59bc14f14356db7548ee38aca48704d0b03a534de4669fcce362ed8180",
+      "bytes": 190
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-nested-row-split-nested-70-hwp.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-nested-row-split-nested-70-hwp.txt",
+      "sha256": "3764a9242888c6ac801b39e8e098148749df6a89fc811501e53d9a1555367e65",
+      "bytes": 2908
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-features-wasm/candidate/nested-row-split-nested-70-hwpx/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-features-wasm-candidate-state/032/silhouette.tsv",
+      "sha256": "52b1b7e10e23981253a3c90358999e23815ce6a4f3f9886054a0b1556255c224",
+      "bytes": 190
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-features-wasm-candidate-nested-row-split-nested-70-hwpx.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/render-logs/source37-features-wasm-candidate-nested-row-split-nested-70-hwpx.txt",
+      "sha256": "ae5e75d06e6da9cea64faee03610be3a572a51c9b1552e63a5bda97b9a36320f",
+      "bytes": 2924
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/native/base/origin-30-live/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/000/silhouette.tsv",
+      "sha256": "36902c7854b7c9fb53e87587a058d265c2c9eaf2305e3e8fa82c7a71dcfe0663",
+      "bytes": 170
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/native/base/origin-30-reopen-hwp/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/001/silhouette.tsv",
+      "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "bytes": 172
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/native/base/origin-30-reopen-hwpx/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/002/silhouette.tsv",
+      "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "bytes": 172
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/native/base/origin-70-live/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/003/silhouette.tsv",
+      "sha256": "5b9473addff79cba4b50155cb52a03c9f83b14a4a68be52275b48b134d373a92",
+      "bytes": 190
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/native/base/origin-70-reopen-hwp/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/004/silhouette.tsv",
+      "sha256": "18c3218f9c1f9d579a7f6cf3333ac572189e0f2944c87aba9164496dfd272c48",
+      "bytes": 190
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/native/base/origin-70-reopen-hwpx/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/005/silhouette.tsv",
+      "sha256": "18c3218f9c1f9d579a7f6cf3333ac572189e0f2944c87aba9164496dfd272c48",
+      "bytes": 190
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/native/base/hancom-30-live/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/006/silhouette.tsv",
+      "sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+      "bytes": 170
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/native/base/hancom-30-reopen-hwp/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/007/silhouette.tsv",
+      "sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+      "bytes": 170
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/native/base/hancom-30-reopen-hwpx/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/008/silhouette.tsv",
+      "sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+      "bytes": 170
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/native/base/hancom-70-live/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/009/silhouette.tsv",
+      "sha256": "52b1b7e10e23981253a3c90358999e23815ce6a4f3f9886054a0b1556255c224",
+      "bytes": 190
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/native/base/hancom-70-reopen-hwp/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/010/silhouette.tsv",
+      "sha256": "18c3218f9c1f9d579a7f6cf3333ac572189e0f2944c87aba9164496dfd272c48",
+      "bytes": 190
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/native/base/hancom-70-reopen-hwpx/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/011/silhouette.tsv",
+      "sha256": "18c3218f9c1f9d579a7f6cf3333ac572189e0f2944c87aba9164496dfd272c48",
+      "bytes": 190
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/native/candidate/origin-30-live/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/012/silhouette.tsv",
+      "sha256": "36902c7854b7c9fb53e87587a058d265c2c9eaf2305e3e8fa82c7a71dcfe0663",
+      "bytes": 170
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/native/candidate/origin-30-reopen-hwp/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/013/silhouette.tsv",
+      "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "bytes": 172
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/native/candidate/origin-30-reopen-hwpx/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/014/silhouette.tsv",
+      "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "bytes": 172
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/native/candidate/origin-70-live/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/015/silhouette.tsv",
+      "sha256": "5b9473addff79cba4b50155cb52a03c9f83b14a4a68be52275b48b134d373a92",
+      "bytes": 190
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/native/candidate/origin-70-reopen-hwp/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/016/silhouette.tsv",
+      "sha256": "18c3218f9c1f9d579a7f6cf3333ac572189e0f2944c87aba9164496dfd272c48",
+      "bytes": 190
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/native/candidate/origin-70-reopen-hwpx/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/017/silhouette.tsv",
+      "sha256": "18c3218f9c1f9d579a7f6cf3333ac572189e0f2944c87aba9164496dfd272c48",
+      "bytes": 190
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/native/candidate/hancom-30-live/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/018/silhouette.tsv",
+      "sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+      "bytes": 170
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/native/candidate/hancom-30-reopen-hwp/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/019/silhouette.tsv",
+      "sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+      "bytes": 170
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/native/candidate/hancom-30-reopen-hwpx/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/020/silhouette.tsv",
+      "sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+      "bytes": 170
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/native/candidate/hancom-70-live/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/021/silhouette.tsv",
+      "sha256": "52b1b7e10e23981253a3c90358999e23815ce6a4f3f9886054a0b1556255c224",
+      "bytes": 190
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/native/candidate/hancom-70-reopen-hwp/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/022/silhouette.tsv",
+      "sha256": "18c3218f9c1f9d579a7f6cf3333ac572189e0f2944c87aba9164496dfd272c48",
+      "bytes": 190
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/native/candidate/hancom-70-reopen-hwpx/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/023/silhouette.tsv",
+      "sha256": "18c3218f9c1f9d579a7f6cf3333ac572189e0f2944c87aba9164496dfd272c48",
+      "bytes": 190
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/wasm/base/origin-30-live/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/024/silhouette.tsv",
+      "sha256": "36902c7854b7c9fb53e87587a058d265c2c9eaf2305e3e8fa82c7a71dcfe0663",
+      "bytes": 170
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/wasm/base/origin-70-live/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/025/silhouette.tsv",
+      "sha256": "5b9473addff79cba4b50155cb52a03c9f83b14a4a68be52275b48b134d373a92",
+      "bytes": 190
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/wasm/base/hancom-30-live/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/026/silhouette.tsv",
+      "sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+      "bytes": 170
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/wasm/base/hancom-70-live/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/027/silhouette.tsv",
+      "sha256": "52b1b7e10e23981253a3c90358999e23815ce6a4f3f9886054a0b1556255c224",
+      "bytes": 190
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/wasm/candidate/origin-30-live/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/028/silhouette.tsv",
+      "sha256": "36902c7854b7c9fb53e87587a058d265c2c9eaf2305e3e8fa82c7a71dcfe0663",
+      "bytes": 170
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/wasm/candidate/origin-70-live/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/029/silhouette.tsv",
+      "sha256": "5b9473addff79cba4b50155cb52a03c9f83b14a4a68be52275b48b134d373a92",
+      "bytes": 190
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/wasm/candidate/hancom-30-live/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/030/silhouette.tsv",
+      "sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+      "bytes": 170
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-live-scores/wasm/candidate/hancom-70-live/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-live-scores/031/silhouette.tsv",
+      "sha256": "52b1b7e10e23981253a3c90358999e23815ce6a4f3f9886054a0b1556255c224",
+      "bytes": 190
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-saved-live-scores/base/origin-30-reopen-hwp/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-saved-live-scores/000/silhouette.tsv",
+      "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "bytes": 172
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-saved-live-scores/base/origin-30-reopen-hwpx/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-saved-live-scores/001/silhouette.tsv",
+      "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "bytes": 172
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-saved-live-scores/base/origin-70-reopen-hwp/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-saved-live-scores/002/silhouette.tsv",
+      "sha256": "93791d4b009919727f9f3b82d7d7897bad054d184a0ff9f8a9b4fc8a770ca8c8",
+      "bytes": 190
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-saved-live-scores/base/origin-70-reopen-hwpx/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-saved-live-scores/003/silhouette.tsv",
+      "sha256": "18c3218f9c1f9d579a7f6cf3333ac572189e0f2944c87aba9164496dfd272c48",
+      "bytes": 190
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-saved-live-scores/base/hancom-30-reopen-hwp/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-saved-live-scores/004/silhouette.tsv",
+      "sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+      "bytes": 170
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-saved-live-scores/base/hancom-30-reopen-hwpx/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-saved-live-scores/005/silhouette.tsv",
+      "sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+      "bytes": 170
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-saved-live-scores/base/hancom-70-reopen-hwp/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-saved-live-scores/006/silhouette.tsv",
+      "sha256": "18c3218f9c1f9d579a7f6cf3333ac572189e0f2944c87aba9164496dfd272c48",
+      "bytes": 190
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-saved-live-scores/base/hancom-70-reopen-hwpx/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-saved-live-scores/007/silhouette.tsv",
+      "sha256": "18c3218f9c1f9d579a7f6cf3333ac572189e0f2944c87aba9164496dfd272c48",
+      "bytes": 190
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-saved-live-scores/candidate/origin-30-reopen-hwp/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-saved-live-scores/008/silhouette.tsv",
+      "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "bytes": 172
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-saved-live-scores/candidate/origin-30-reopen-hwpx/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-saved-live-scores/009/silhouette.tsv",
+      "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "bytes": 172
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-saved-live-scores/candidate/origin-70-reopen-hwp/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-saved-live-scores/010/silhouette.tsv",
+      "sha256": "93791d4b009919727f9f3b82d7d7897bad054d184a0ff9f8a9b4fc8a770ca8c8",
+      "bytes": 190
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-saved-live-scores/candidate/origin-70-reopen-hwpx/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-saved-live-scores/011/silhouette.tsv",
+      "sha256": "18c3218f9c1f9d579a7f6cf3333ac572189e0f2944c87aba9164496dfd272c48",
+      "bytes": 190
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-saved-live-scores/candidate/hancom-30-reopen-hwp/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-saved-live-scores/012/silhouette.tsv",
+      "sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+      "bytes": 170
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-saved-live-scores/candidate/hancom-30-reopen-hwpx/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-saved-live-scores/013/silhouette.tsv",
+      "sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+      "bytes": 170
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-saved-live-scores/candidate/hancom-70-reopen-hwp/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-saved-live-scores/014/silhouette.tsv",
+      "sha256": "18c3218f9c1f9d579a7f6cf3333ac572189e0f2944c87aba9164496dfd272c48",
+      "bytes": 190
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source37-saved-live-scores/candidate/hancom-70-reopen-hwpx/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/source37-saved-live-scores/015/silhouette.tsv",
+      "sha256": "18c3218f9c1f9d579a7f6cf3333ac572189e0f2944c87aba9164496dfd272c48",
+      "bytes": 190
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source36-base-studio-split-original-hft.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/studio-logs/source36-base-studio-split-original-hft.txt",
+      "sha256": "1f23d4e8e5fc6c9332d53f3271152f3db75d16e8a0c52289750860f22ced8158",
+      "bytes": 226
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source36-base-studio-memo-ui-9011.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/studio-logs/source36-base-studio-memo-ui-9011.txt",
+      "sha256": "741a54c0a135de4e7e3fdd9c5c610147672514764447558a1132b2d5de7b3e12",
+      "bytes": 782
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source36-base-studio-body-paste-8197.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/studio-logs/source36-base-studio-body-paste-8197.txt",
+      "sha256": "c79f46ded8652b0c8b5d30bb68ba74a897d28d4ffe9d2b50859db19bae524cd7",
+      "bytes": 1898
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source36-base-studio-host-font-input-9174.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/studio-logs/source36-base-studio-host-font-input-9174.txt",
+      "sha256": "9f585c32ba5d47307e2880982d2a4de83cdb39af523d342c034b1c54acf067f1",
+      "bytes": 3650
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source36-base-studio-host-provider-canvas2d.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/studio-logs/source36-base-studio-host-provider-canvas2d.txt",
+      "sha256": "548ae9c7ba505f62b2ab9ec908017033a19250d74907ce1078e2996c55518c1b",
+      "bytes": 9236
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source36-base-studio-host-provider-canvaskit.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/studio-logs/source36-base-studio-host-provider-canvaskit.txt",
+      "sha256": "191ec4e0af273734e8e6fc7e41aee13668766227678ddac1446cabbdbfba9f07",
+      "bytes": 3560
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source36-base-studio-ruler-document-switch.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/studio-logs/source36-base-studio-ruler-document-switch.txt",
+      "sha256": "b9fa1ebc6fd20c2826e0a26290f225c2fbfd1402020e586505bc7d5af12ac4ee",
+      "bytes": 804
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-candidate-studio-split-original-hft.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/studio-logs/source37-candidate-studio-split-original-hft.txt",
+      "sha256": "dabc9f2035110165526880b786390911962ee84b1e76d5947c317cf44aa6688d",
+      "bytes": 440
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-candidate-studio-memo-ui-9011.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/studio-logs/source37-candidate-studio-memo-ui-9011.txt",
+      "sha256": "73452f813a0f8fb4bde4e9842a0783189023d4fda3cf2847aa086c3a6d1a5a46",
+      "bytes": 782
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-candidate-studio-body-paste-8197.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/studio-logs/source37-candidate-studio-body-paste-8197.txt",
+      "sha256": "0d99e5036866ac6562a9e7046952893390b29fbcde0b05a5c59987a182aa1f79",
+      "bytes": 1680
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-candidate-studio-host-font-input-9174.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/studio-logs/source37-candidate-studio-host-font-input-9174.txt",
+      "sha256": "c2817d3d7a8c28d450f05e692569b0abad120178b8dfdf10a66c58ede267c901",
+      "bytes": 3649
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-candidate-studio-host-provider-canvas2d.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/studio-logs/source37-candidate-studio-host-provider-canvas2d.txt",
+      "sha256": "c8c5faaaa77a26c8a3588be7b6015041a73ba8bd7d897250a6327fa159adb681",
+      "bytes": 9236
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-candidate-studio-host-provider-canvaskit.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/studio-logs/source37-candidate-studio-host-provider-canvaskit.txt",
+      "sha256": "53fac83d8b11343628d5ef2ecca6498509c1e4a3b7bb5124dacec525093bbe42",
+      "bytes": 3560
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source37-candidate-studio-ruler-document-switch.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/studio-logs/source37-candidate-studio-ruler-document-switch.txt",
+      "sha256": "c160a7ce1cb85b07e7d0a3af50630f3351093230da383720fb5be30389d1f9e1",
+      "bytes": 532
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source48-ruler-font-choice-retry.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/studio-logs/source48-ruler-font-choice-retry.txt",
+      "sha256": "3fc516ac1bd0fcac6ce60fab7df0f4499999e918cc9def9727f5bcdd03e09167",
+      "bytes": 804
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/ruler_document_switch_with_font_choice.mjs",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/ruler_document_switch_with_font_choice.mjs.txt",
+      "sha256": "302ab593f12ac16a9e8e0a526f3e74ae6af2d9006957b6f0bf3580ee0e25a9f1",
+      "bytes": 5266
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source49-candidate-ctrl-data-wasm-edit-save-reopen.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/ctrl-logs/source49-candidate-ctrl-data-wasm-edit-save-reopen.txt",
+      "sha256": "db3db2d48de57340283fa7f75a371792f92d9f4020e5eb008816724fe8968986",
+      "bytes": 597
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source49-candidate-ctrl-data-physical-owner-payload.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source43/ctrl-logs/source49-candidate-ctrl-data-physical-owner-payload.txt",
+      "sha256": "1d7a886b44734eab918cb373299453848427c685fbb771b18face2f7a13c3079",
+      "bytes": 66
+    }
+  ]
+}

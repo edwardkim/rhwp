@@ -1,0 +1,694 @@
+{
+  "candidate": "24ec51a6f9186d509d3f3285faa6f9f6e067af5e",
+  "devel": "2c0c1d205a54b8d5bd262241bac1391cffe0d801",
+  "original_pr": {
+    "number": 9327,
+    "head": "39d018f7a363910d0cd3a483a078214b66a6b423"
+  },
+  "candidate_build": {
+    "native": "57ac54841729fb413fe3acda86cb077beaa584ba1e7bd5698723790ea7dc39b5",
+    "wasm_js": "5ec4c5ce9ed9b852cb5e0d97a4baa6eb6fbe734cebdbb321709088d794678406",
+    "wasm_module": "48150c7062a0b396d7de6d3e0efe0100e67f73c416c01b7e0af11c8c168954d1"
+  },
+  "scope": "Visual Sweep only. Rust regression, canonical protected cases, and Studio checks have separate evidence.",
+  "captures": [
+    {
+      "document": "jeju",
+      "backend": "native",
+      "pages": 313,
+      "layout_generation": "2024",
+      "dpi": 96,
+      "radius_px": 2,
+      "minimum": "98.18",
+      "inputs": {
+        "hwp": {
+          "path": "samples/issue8759/6500000-201700118_jeju_tourism_education_plan.hwp",
+          "sha256": "fa87e135c3d609324457adb37230e220be9406ba99a94d26a813ba7132244ac9"
+        },
+        "pdf": {
+          "path": "pdf/issue8759/6500000-201700118_jeju_tourism_education_plan-2024.pdf",
+          "sha256": "4c7292f010ceecc9b8f4656f77e25b570e24534324b04574851bb5e34187604e"
+        }
+      },
+      "candidate_tsv": {
+        "path": "jeju/native/candidate-silhouette.tsv",
+        "sha256": "6356ba0b503927ec383cb8063a7f748557d61a35c7b7f82166bf9f1fe0e6e023",
+        "bytes": 6837
+      },
+      "devel_tsv": {
+        "path": "jeju/native/devel-silhouette.tsv",
+        "sha256": "1a9e2e9afcf7286233adaba1035416fee2729cfaf5dd79c5f626faf999c38977",
+        "bytes": 6805
+      },
+      "reference_comparison": {
+        "path": "jeju/native/comparison.json",
+        "sha256": "e26bc3e2f110909012a27b6cca0fd035ce00717b5ca4c8f0a54283935eed4427",
+        "bytes": 44021
+      }
+    },
+    {
+      "document": "food",
+      "backend": "native",
+      "pages": 141,
+      "layout_generation": "2022",
+      "dpi": 96,
+      "radius_px": 2,
+      "minimum": "98.25",
+      "inputs": {
+        "hwp": {
+          "path": "mydocs/pr/assets/planet6897_clean20_20261113/counterexamples/1543000-202100035-food-security-report.hwp",
+          "sha256": "8cc9b219a5c54fdc2324f63da32b224a1ac23877c6c92976c407e6c42475317c"
+        },
+        "pdf": {
+          "path": "pdf/issue8997/1543000-202100035-food-security-report-2020.pdf",
+          "sha256": "4c2d909332e5fe3be5044a76cc9d5448e29e98087b4688907fdf1ce093dccc04"
+        }
+      },
+      "candidate_tsv": {
+        "path": "food/native/candidate-silhouette.tsv",
+        "sha256": "6e1bb2dbf2458a633b4f9437779ba96627483e8cff55f9faed96718fafb3d31c",
+        "bytes": 3079
+      },
+      "devel_tsv": {
+        "path": "food/native/devel-silhouette.tsv",
+        "sha256": "5f2d02a8915152195965b10a04f8bbd83799742be6bbae7e8324a0853ae837bb",
+        "bytes": 3064
+      },
+      "reference_comparison": {
+        "path": "food/native/comparison.json",
+        "sha256": "3043fab6467fa0b15bca13d610322005c0baf3af0bada39f81aa75b108831a36",
+        "bytes": 19863
+      }
+    },
+    {
+      "document": "jeju",
+      "backend": "wasm",
+      "pages": 313,
+      "layout_generation": "2024",
+      "dpi": 96,
+      "radius_px": 2,
+      "minimum": "98.15",
+      "inputs": {
+        "hwp": {
+          "path": "samples/issue8759/6500000-201700118_jeju_tourism_education_plan.hwp",
+          "sha256": "fa87e135c3d609324457adb37230e220be9406ba99a94d26a813ba7132244ac9"
+        },
+        "pdf": {
+          "path": "pdf/issue8759/6500000-201700118_jeju_tourism_education_plan-2024.pdf",
+          "sha256": "4c7292f010ceecc9b8f4656f77e25b570e24534324b04574851bb5e34187604e"
+        }
+      },
+      "candidate_tsv": {
+        "path": "jeju/wasm/candidate-silhouette.tsv",
+        "sha256": "3b1c16dcd4313958a2eed77ed0eee83612f80bfa7ef0d597c87e30707ea2e489",
+        "bytes": 6838
+      },
+      "devel_tsv": {
+        "path": "jeju/wasm/devel-silhouette.tsv",
+        "sha256": "65805b58b1b972517b72a202bd59e47c71ebd9665fb6d8cc526078fee8ed1ea2",
+        "bytes": 6805
+      },
+      "reference_comparison": {
+        "path": "jeju/wasm/comparison.json",
+        "sha256": "663c7907bb9c1326e13ebf39b8153addef3e501e79b41e16d48030ebfc0576d7",
+        "bytes": 44021
+      }
+    },
+    {
+      "document": "food",
+      "backend": "wasm",
+      "pages": 141,
+      "layout_generation": "2022",
+      "dpi": 96,
+      "radius_px": 2,
+      "minimum": "98.18",
+      "inputs": {
+        "hwp": {
+          "path": "mydocs/pr/assets/planet6897_clean20_20261113/counterexamples/1543000-202100035-food-security-report.hwp",
+          "sha256": "8cc9b219a5c54fdc2324f63da32b224a1ac23877c6c92976c407e6c42475317c"
+        },
+        "pdf": {
+          "path": "pdf/issue8997/1543000-202100035-food-security-report-2020.pdf",
+          "sha256": "4c2d909332e5fe3be5044a76cc9d5448e29e98087b4688907fdf1ce093dccc04"
+        }
+      },
+      "candidate_tsv": {
+        "path": "food/wasm/candidate-silhouette.tsv",
+        "sha256": "6fcf3da23c17418b609dacb4e10bf705448bbd8b51411ad4a85fe76afe356b9f",
+        "bytes": 3065
+      },
+      "devel_tsv": {
+        "path": "food/wasm/devel-silhouette.tsv",
+        "sha256": "39f84417166f56d1bd9e0eeb525219710be99714f47326a17248d38b0d46d970",
+        "bytes": 3051
+      },
+      "reference_comparison": {
+        "path": "food/wasm/comparison.json",
+        "sha256": "a36332a88a2ef652e03f89373c3947f0c0b631a0a83820182a1934e19aa4d55b",
+        "bytes": 19835
+      }
+    }
+  ],
+  "panels": [
+    {
+      "document": "food",
+      "backend": "native",
+      "page": 1,
+      "raw": "100.00",
+      "files": {
+        "review": {
+          "path": "food/native/review/review_001.png",
+          "sha256": "7c9fbf10b45f0551f13c22d98dd28299bf5245e655320903d56515f4a9838833",
+          "bytes": 122925
+        },
+        "overlay": {
+          "path": "food/native/overlay/overlay_001.png",
+          "sha256": "d4c0aa5346c1746aa8a2beee6c3bd3e907baeed11f98c514f7d122745cd33634",
+          "bytes": 54007
+        }
+      }
+    },
+    {
+      "document": "food",
+      "backend": "wasm",
+      "page": 1,
+      "raw": "100.00",
+      "files": {
+        "review": {
+          "path": "food/wasm/review/review_001.png",
+          "sha256": "6dfc57d634b5f10685afeb433eb27c74e04a864b84eb6e0f89b2334bece3a5d9",
+          "bytes": 122776
+        },
+        "overlay": {
+          "path": "food/wasm/overlay/overlay_001.png",
+          "sha256": "a24ce46c7d69f41b0f9b6d21884dd638c167798413dcb72fb41faee3eee36e81",
+          "bytes": 53983
+        }
+      }
+    },
+    {
+      "document": "food",
+      "backend": "native",
+      "page": 2,
+      "raw": "99.84",
+      "files": {
+        "review": {
+          "path": "food/native/review/review_002.png",
+          "sha256": "37b799ef7545d74cdd5ba0ce2f5a7680b6abd356b578fa13115e8887a65eeb3c",
+          "bytes": 178988
+        },
+        "overlay": {
+          "path": "food/native/overlay/overlay_002.png",
+          "sha256": "e22202732e4d6d3c9b4d91f0f769ca840598f4cce1df6ef5c3a7623108f5f0a2",
+          "bytes": 69186
+        }
+      }
+    },
+    {
+      "document": "food",
+      "backend": "wasm",
+      "page": 2,
+      "raw": "99.84",
+      "files": {
+        "review": {
+          "path": "food/wasm/review/review_002.png",
+          "sha256": "73443dc62b0a1eee439b7f06cd614b721cbfd83b41660667edf373698ec14bd8",
+          "bytes": 183765
+        },
+        "overlay": {
+          "path": "food/wasm/overlay/overlay_002.png",
+          "sha256": "c540d15a4c0d1948c8490234b598eb9137d8ca491b7e63af1954218039818f30",
+          "bytes": 70732
+        }
+      }
+    },
+    {
+      "document": "food",
+      "backend": "native",
+      "page": 92,
+      "raw": "99.86",
+      "files": {
+        "review": {
+          "path": "food/native/review/review_092.png",
+          "sha256": "88a1205a19e4e958b41549da9da0f5df7a30f0e2d8e79061f2c109fe02c05f90",
+          "bytes": 565753
+        },
+        "overlay": {
+          "path": "food/native/overlay/overlay_092.png",
+          "sha256": "cd6d45cd402897d5059cd3b65cfd53d672a5b1753bb414acce461ca482bbc36f",
+          "bytes": 193693
+        }
+      }
+    },
+    {
+      "document": "food",
+      "backend": "wasm",
+      "page": 92,
+      "raw": "99.84",
+      "files": {
+        "review": {
+          "path": "food/wasm/review/review_092.png",
+          "sha256": "e27a565e5b703e766182f4b0197f6a1e1533cc6699154da4ce6d747366be0c95",
+          "bytes": 583293
+        },
+        "overlay": {
+          "path": "food/wasm/overlay/overlay_092.png",
+          "sha256": "a4218af626e6bed3ea5fcdd51c0e3b32abe7da91b84134a381926b6e5746ad16",
+          "bytes": 207662
+        }
+      }
+    },
+    {
+      "document": "food",
+      "backend": "native",
+      "page": 96,
+      "raw": "100.00",
+      "files": {
+        "review": {
+          "path": "food/native/review/review_096.png",
+          "sha256": "d87c45c5c71924c70cb943a6d24fd83e0853a533026dcab2e288cc71d39c94d5",
+          "bytes": 467355
+        },
+        "overlay": {
+          "path": "food/native/overlay/overlay_096.png",
+          "sha256": "33f765247d274b99c0a51783cb66437d19865cefd9d7eacc8d08fae2c75637ec",
+          "bytes": 170167
+        }
+      }
+    },
+    {
+      "document": "food",
+      "backend": "wasm",
+      "page": 96,
+      "raw": "100.00",
+      "files": {
+        "review": {
+          "path": "food/wasm/review/review_096.png",
+          "sha256": "7b2d01cd6656ccb6e328eb6cf295a390a0f1e821e415b647c45bff7d454a2d75",
+          "bytes": 442311
+        },
+        "overlay": {
+          "path": "food/wasm/overlay/overlay_096.png",
+          "sha256": "5a8b6a0859a03c349e7d063f3505ea6079ce2bc99f64997135bbf284df73eecd",
+          "bytes": 166418
+        }
+      }
+    },
+    {
+      "document": "food",
+      "backend": "native",
+      "page": 97,
+      "raw": "98.89",
+      "files": {
+        "review": {
+          "path": "food/native/review/review_097.png",
+          "sha256": "1715f80485bb05ae7bef74df4a8eb2a29170eac8e07c0f01376760c519e5ecb4",
+          "bytes": 567733
+        },
+        "overlay": {
+          "path": "food/native/overlay/overlay_097.png",
+          "sha256": "996398b885570dddb4dc1ad3ff52eb75b9d3c3522e207068850affb8437cfbfc",
+          "bytes": 184465
+        }
+      }
+    },
+    {
+      "document": "food",
+      "backend": "wasm",
+      "page": 97,
+      "raw": "98.89",
+      "files": {
+        "review": {
+          "path": "food/wasm/review/review_097.png",
+          "sha256": "4470d7067a238c191769a981afceaa297f12b42a2807d1a53b7a07d996f99393",
+          "bytes": 554248
+        },
+        "overlay": {
+          "path": "food/wasm/overlay/overlay_097.png",
+          "sha256": "6a66ced73c70fd3711cda6e3922688748c85e3695010b37643c53fbc81eb1771",
+          "bytes": 183198
+        }
+      }
+    },
+    {
+      "document": "food",
+      "backend": "native",
+      "page": 98,
+      "raw": "100.00",
+      "files": {
+        "review": {
+          "path": "food/native/review/review_098.png",
+          "sha256": "2d80588f47e4264dc6dbf12647904e5e11af29ccaf02da724a49b83d2306c724",
+          "bytes": 510340
+        },
+        "overlay": {
+          "path": "food/native/overlay/overlay_098.png",
+          "sha256": "c1377c002519d76ebe662c89058b58b248a458cdd774d4de3da468344d550285",
+          "bytes": 175040
+        }
+      }
+    },
+    {
+      "document": "food",
+      "backend": "wasm",
+      "page": 98,
+      "raw": "100.00",
+      "files": {
+        "review": {
+          "path": "food/wasm/review/review_098.png",
+          "sha256": "28acaa0a87bebcc0f66d5340b6c733422fc9d5543072cff04defea8add402aa5",
+          "bytes": 525517
+        },
+        "overlay": {
+          "path": "food/wasm/overlay/overlay_098.png",
+          "sha256": "0cf3cd39e88d2121b3974e7b8eb011e3f58145032398911a125ae83635db7c7f",
+          "bytes": 182698
+        }
+      }
+    },
+    {
+      "document": "jeju",
+      "backend": "native",
+      "page": 47,
+      "raw": "99.94",
+      "files": {
+        "review": {
+          "path": "jeju/native/review/review_047.png",
+          "sha256": "7013bfd95d0adaf358db5c100200d4e129ec96c9d45e1219514b39f5f92febb3",
+          "bytes": 379587
+        },
+        "overlay": {
+          "path": "jeju/native/overlay/overlay_047.png",
+          "sha256": "a61310770d2aa6720b83d3153d114569b350b38738ca67733bb2c56d964de654",
+          "bytes": 132061
+        }
+      }
+    },
+    {
+      "document": "jeju",
+      "backend": "wasm",
+      "page": 47,
+      "raw": "99.97",
+      "files": {
+        "review": {
+          "path": "jeju/wasm/review/review_047.png",
+          "sha256": "99afb7c0523640f2d831a5ccc0d18eaacf057dbbf41752a3b38024ce7448db03",
+          "bytes": 374682
+        },
+        "overlay": {
+          "path": "jeju/wasm/overlay/overlay_047.png",
+          "sha256": "44e6180955aa88d0fa367732ce946d69589f67d25d65cb7ec8cb4642b04022ba",
+          "bytes": 133810
+        }
+      }
+    },
+    {
+      "document": "jeju",
+      "backend": "native",
+      "page": 48,
+      "raw": "100.00",
+      "files": {
+        "review": {
+          "path": "jeju/native/review/review_048.png",
+          "sha256": "b78a1bc8a71962ce76c9df99f93b913b0365dba7e3bf5b89aaa8f11b9bb6556a",
+          "bytes": 396214
+        },
+        "overlay": {
+          "path": "jeju/native/overlay/overlay_048.png",
+          "sha256": "76d29adba4f4191c2fc85c5847197b5d18794ceb0072422c646cbf99a8b3d3f5",
+          "bytes": 135784
+        }
+      }
+    },
+    {
+      "document": "jeju",
+      "backend": "wasm",
+      "page": 48,
+      "raw": "100.00",
+      "files": {
+        "review": {
+          "path": "jeju/wasm/review/review_048.png",
+          "sha256": "98a40f10a463c39f15650647551cc674f0d25dbf5af90b90c892aeaaf1225a3e",
+          "bytes": 400080
+        },
+        "overlay": {
+          "path": "jeju/wasm/overlay/overlay_048.png",
+          "sha256": "87b5a18406a5fdee2f6a510780386391dff3b73b01986714f894ca6bfdab8691",
+          "bytes": 140744
+        }
+      }
+    },
+    {
+      "document": "jeju",
+      "backend": "native",
+      "page": 49,
+      "raw": "100.00",
+      "files": {
+        "review": {
+          "path": "jeju/native/review/review_049.png",
+          "sha256": "a5670559a51c0f07b658516193c477df96ad38a33149401cc63190bd066cdc78",
+          "bytes": 425346
+        },
+        "overlay": {
+          "path": "jeju/native/overlay/overlay_049.png",
+          "sha256": "1219cd88133f17507229ae472b51c71b70f4f37b3e74961581de4738c6e28e19",
+          "bytes": 145994
+        }
+      }
+    },
+    {
+      "document": "jeju",
+      "backend": "wasm",
+      "page": 49,
+      "raw": "100.00",
+      "files": {
+        "review": {
+          "path": "jeju/wasm/review/review_049.png",
+          "sha256": "9c5d51d30f98b2e2903388ee64148e7e830fd59ae8f22bf55099ed539b2d325f",
+          "bytes": 430628
+        },
+        "overlay": {
+          "path": "jeju/wasm/overlay/overlay_049.png",
+          "sha256": "b2e4d4c44c44257e7d100bd59083efa566c5de2c10db50d85ddd60e932a0161e",
+          "bytes": 153682
+        }
+      }
+    },
+    {
+      "document": "jeju",
+      "backend": "native",
+      "page": 50,
+      "raw": "100.00",
+      "files": {
+        "review": {
+          "path": "jeju/native/review/review_050.png",
+          "sha256": "530260ecceda22f007d41d66fd4ad442c66834d59a669e086da27fce208f4209",
+          "bytes": 370461
+        },
+        "overlay": {
+          "path": "jeju/native/overlay/overlay_050.png",
+          "sha256": "3dae31948a53185a9f292de64cdb2d2da07fb788d4303d6ae6e098f50076ba7f",
+          "bytes": 129838
+        }
+      }
+    },
+    {
+      "document": "jeju",
+      "backend": "wasm",
+      "page": 50,
+      "raw": "100.00",
+      "files": {
+        "review": {
+          "path": "jeju/wasm/review/review_050.png",
+          "sha256": "37cb9d28fc826a014131a5208133ca38ecf437725497f08b4349aa6911bad86d",
+          "bytes": 372733
+        },
+        "overlay": {
+          "path": "jeju/wasm/overlay/overlay_050.png",
+          "sha256": "4abcd1ee2a48cb0b1046a8eccf739a0b6cba5e253b9c3592a4aa918a4a91f7d9",
+          "bytes": 133843
+        }
+      }
+    },
+    {
+      "document": "jeju",
+      "backend": "native",
+      "page": 168,
+      "raw": "100.00",
+      "files": {
+        "review": {
+          "path": "jeju/native/review/review_168.png",
+          "sha256": "ae1e1cd2d9d6611ead5da2138715e1ddd6a289493118e072e1a51574072b6fdd",
+          "bytes": 709756
+        },
+        "overlay": {
+          "path": "jeju/native/overlay/overlay_168.png",
+          "sha256": "d029d2b008aab1240f37e8dcc9cd79d705c054529453478e15a915a7edb83849",
+          "bytes": 273386
+        }
+      }
+    },
+    {
+      "document": "jeju",
+      "backend": "wasm",
+      "page": 168,
+      "raw": "100.00",
+      "files": {
+        "review": {
+          "path": "jeju/wasm/review/review_168.png",
+          "sha256": "b758bf55f8a747aac227e544181febd0d82849bfc72f34c589250bcca11f2576",
+          "bytes": 707089
+        },
+        "overlay": {
+          "path": "jeju/wasm/overlay/overlay_168.png",
+          "sha256": "01caa2e42960eb97afe19e3a19549309411c6adae00bd0abbb9ef03586cad644",
+          "bytes": 273551
+        }
+      }
+    },
+    {
+      "document": "jeju",
+      "backend": "native",
+      "page": 240,
+      "raw": "100.00",
+      "files": {
+        "review": {
+          "path": "jeju/native/review/review_240.png",
+          "sha256": "aa8436f5931dfe1ed6cc023011874fc58f726ea97c8dcd426294de65d49b1648",
+          "bytes": 273882
+        },
+        "overlay": {
+          "path": "jeju/native/overlay/overlay_240.png",
+          "sha256": "0ca4c740724fa7fa47541779cd87023dba23bf8fe1aeb4ad31c419dff57cf2b3",
+          "bytes": 98408
+        }
+      }
+    },
+    {
+      "document": "jeju",
+      "backend": "wasm",
+      "page": 240,
+      "raw": "100.00",
+      "files": {
+        "review": {
+          "path": "jeju/wasm/review/review_240.png",
+          "sha256": "2ef219ad12c59fdf5aea4ccce9c36a56c4d94a41488194137f8f2612b1f79615",
+          "bytes": 243480
+        },
+        "overlay": {
+          "path": "jeju/wasm/overlay/overlay_240.png",
+          "sha256": "5517a1c2492a446b7bb98b41eefecfced91ae5c5e6d96b05db2bf0aac1a3c1f9",
+          "bytes": 96650
+        }
+      }
+    },
+    {
+      "document": "jeju",
+      "backend": "native",
+      "page": 244,
+      "raw": "100.00",
+      "files": {
+        "review": {
+          "path": "jeju/native/review/review_244.png",
+          "sha256": "5a022a3ebc12342d73f4d966879352691f877d94adfb9f5cadb5d8ea881332fe",
+          "bytes": 413335
+        },
+        "overlay": {
+          "path": "jeju/native/overlay/overlay_244.png",
+          "sha256": "d0718a364fd7309efb6fb76bf3dc0ba6e53c8c07407e9ea53320c1411a55aa1d",
+          "bytes": 173516
+        }
+      }
+    },
+    {
+      "document": "jeju",
+      "backend": "wasm",
+      "page": 244,
+      "raw": "100.00",
+      "files": {
+        "review": {
+          "path": "jeju/wasm/review/review_244.png",
+          "sha256": "c2924f354e88a5930d165a63980f4dff8c9efe5000483d269d26a8a29f93d385",
+          "bytes": 400700
+        },
+        "overlay": {
+          "path": "jeju/wasm/overlay/overlay_244.png",
+          "sha256": "c7a9b7cbe4d58e69ea345268a9d328b5cb2f2100216e23b12a097bf5bbd9af7f",
+          "bytes": 174123
+        }
+      }
+    },
+    {
+      "document": "jeju",
+      "backend": "native",
+      "page": 299,
+      "raw": "100.00",
+      "files": {
+        "review": {
+          "path": "jeju/native/review/review_299.png",
+          "sha256": "486a128579fd20787529521e56f045cd10add3c619d2c34dc28cea5064f3ec44",
+          "bytes": 395471
+        },
+        "overlay": {
+          "path": "jeju/native/overlay/overlay_299.png",
+          "sha256": "75eddada69fc3fff00ca1a3ef1f190f8f56a4ef33805eb4e1d9817e4b49f29c4",
+          "bytes": 137448
+        }
+      }
+    },
+    {
+      "document": "jeju",
+      "backend": "wasm",
+      "page": 299,
+      "raw": "100.00",
+      "files": {
+        "review": {
+          "path": "jeju/wasm/review/review_299.png",
+          "sha256": "11f05a87bac168b8cc033c76041fb816b81aaf844702c8eb052feef033aa35d9",
+          "bytes": 400899
+        },
+        "overlay": {
+          "path": "jeju/wasm/overlay/overlay_299.png",
+          "sha256": "c54f9bb948648cb521aa2969838124141687d33e5fb3ddb6f68810c881a73ff0",
+          "bytes": 141193
+        }
+      }
+    },
+    {
+      "document": "jeju",
+      "backend": "native",
+      "page": 306,
+      "raw": "98.18",
+      "files": {
+        "review": {
+          "path": "jeju/native/review/review_306.png",
+          "sha256": "be6915301b0216986d4335f49b46c2d75bb88f997415f0fbb9fbaff3b27b1b91",
+          "bytes": 605922
+        },
+        "overlay": {
+          "path": "jeju/native/overlay/overlay_306.png",
+          "sha256": "764d55c5bea902251acf6d9e122ca8978566badf9199adb5bcb0a38a421eb1da",
+          "bytes": 203105
+        }
+      }
+    },
+    {
+      "document": "jeju",
+      "backend": "wasm",
+      "page": 306,
+      "raw": "98.15",
+      "files": {
+        "review": {
+          "path": "jeju/wasm/review/review_306.png",
+          "sha256": "c53d824aad572cb6e9bea9e23cb00feb3473ddc72cf031365d781beb68fa7a02",
+          "bytes": 616110
+        },
+        "overlay": {
+          "path": "jeju/wasm/overlay/overlay_306.png",
+          "sha256": "926294fd534ef3608bb9c9482d93337db3598932af863f6c03d228b383a06efb",
+          "bytes": 213236
+        }
+      }
+    }
+  ]
+}

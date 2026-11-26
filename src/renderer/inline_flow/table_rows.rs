@@ -4,7 +4,7 @@ use crate::model::{control::Control, paragraph::Paragraph};
 
 /// 현재 단에 전체 계획이 들어가지 않으면 기존 행 분할 소유자가 처리한다.
 pub(crate) fn standalone_table_fragment_owner(para: &Paragraph) -> bool {
-    match standalone_table_fragment_owner_with_storage(para, &crate::storage::Unbounded) {
+    match standalone_table_fragment_owner_with_storage(para, false, &crate::storage::Unbounded) {
         Ok(value) => value,
         Err(never) => match never {},
     }
@@ -12,6 +12,7 @@ pub(crate) fn standalone_table_fragment_owner(para: &Paragraph) -> bool {
 
 pub(crate) fn standalone_table_fragment_owner_with_storage<S: crate::storage::Storage>(
     para: &Paragraph,
+    legacy_symbols: bool,
     storage: &S,
 ) -> Result<bool, S::Error> {
     let flow_objects = para
@@ -19,10 +20,12 @@ pub(crate) fn standalone_table_fragment_owner_with_storage<S: crate::storage::St
         .iter()
         .filter(|c| matches!(c, Control::Table(_)))
         .count();
-    let has_text =
-        super::super::composer::expand_pua_display_text_with_storage(&para.text, storage)?
-            .chars()
-            .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace());
+    let has_text = super::super::composer::expand_pua_display_text_with_storage(
+        crate::model::provenance::body_chars(&para.text, legacy_symbols),
+        storage,
+    )?
+    .chars()
+    .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace());
     Ok(flow_objects == 1
         && !has_text
         && para.controls.iter().any(|control| {
@@ -36,7 +39,7 @@ pub(crate) fn standalone_table_fragment_owner_with_storage<S: crate::storage::St
 /// Reflowed TAC rows also own the text preceding, separating and following
 /// their objects. Stored rows and controls with other owners retain that path.
 pub(crate) fn supports_table_text_rows(para: &Paragraph) -> bool {
-    match supports_table_text_rows_with_storage(para, &crate::storage::Unbounded) {
+    match supports_table_text_rows_with_storage(para, false, &crate::storage::Unbounded) {
         Ok(value) => value,
         Err(never) => match never {},
     }
@@ -44,6 +47,7 @@ pub(crate) fn supports_table_text_rows(para: &Paragraph) -> bool {
 
 pub(crate) fn supports_table_text_rows_with_storage<S: crate::storage::Storage>(
     para: &Paragraph,
+    legacy_symbols: bool,
     storage: &S,
 ) -> Result<bool, S::Error> {
     // 현재 단에 들어가는 전체 물리 줄은 같은 계획으로 측정·배치한다.
@@ -54,10 +58,12 @@ pub(crate) fn supports_table_text_rows_with_storage<S: crate::storage::Storage>(
         .iter()
         .filter(|control| matches!(control, Control::Table(_)))
         .count();
-    let has_text =
-        super::super::composer::expand_pua_display_text_with_storage(&para.text, storage)?
-            .chars()
-            .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace());
+    let has_text = super::super::composer::expand_pua_display_text_with_storage(
+        crate::model::provenance::body_chars(&para.text, legacy_symbols),
+        storage,
+    )?
+    .chars()
+    .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace());
     // [#8507] 텍스트 스트림이 빈 host 는 줄 재조판이 개체 줄을 한 번 정한다. 필드 시작 뒤로
     // 넘긴 표는 빈 필드 줄 + 표 줄의 두 줄이 되며, 그 줄 구성도 이 계획이 다시 나누지 않는다.
     // 작성 개행·공백만 있는 문단은 여러 줄이어도 기존처럼 이 계획이 줄을 소유한다.

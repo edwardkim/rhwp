@@ -1841,6 +1841,10 @@ rhwp edit sanitize 배포본.hwp -o /tmp/재확인.hwp --json | jq .removedCount
 ### `export-hwpx <입력.hwp|.hwpx> [출력.hwpx] [--verify] [--verify-pages] [--output-password-stdin]` (#1868, #1638)
 HWP 문서를 HWPX(ZIP+XML)로 변환 저장. `convert`(배포용 해제)와 별개의 포맷 변환 명령.
 - 입력 포맷 자동 감지(HWP5/HWP3/HWPX — HWPX 입력은 재직렬화).
+- v0.9.1 등 구버전 rhwp로 변환한 HWPX의 완전 투명 채움이 불투명하게 보이면
+  `rhwp export-hwpx old.hwpx recovered.hwpx --recover-legacy-alpha`를 실행한다.
+  이 옵션은 옛 파일의 채움 값 `1`을 `255`로 복원한다. 한컴에서 작성한 HWPX의 정수 `1`은
+  투명도 1/255이므로 일반 열기를 사용한다. 복원 후에는 모든 편집기에서 일반 열기로 재사용한다.
 - 출력 생략 시 입력과 같은 폴더에 `<입력 stem>.hwpx`. 입력==출력 경로면 거부(원본 보호).
 - `--verify` — 변환 후 산출물을 재파싱하여 원본 IR과 산출물 IR 차이를 검출한다.
   차이가 있으면 산출물은 남기고 종료 코드 3으로 실패한다.

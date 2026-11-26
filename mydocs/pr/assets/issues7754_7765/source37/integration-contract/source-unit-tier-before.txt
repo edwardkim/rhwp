@@ -1,0 +1,4 @@
+[RustUnitTier] 오류: PR base 대비 source-side test 총량 증가 금지: 4093 > 4092
+PR base 대비 source-side 기준선 상향 금지: 4093 > 4092
+PR base 대비 source unit test 증가 금지: src/renderer/style_resolver.rs::tests#1 (27 > 26)
+PR base 대비 module 기준선 상향 금지: src/renderer/style_resolver.rs::tests#1 (27 > 26)

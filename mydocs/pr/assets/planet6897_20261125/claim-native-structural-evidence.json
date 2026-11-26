@@ -1,0 +1,276 @@
+[
+  {
+    "key": "food",
+    "page": 92,
+    "base": [
+      {
+        "prefix": "대책본부장의직위",
+        "boxes": [
+          {
+            "x": 118.8,
+            "y": 861.1,
+            "w": 222.0,
+            "h": 12.0
+          }
+        ]
+      }
+    ],
+    "candidate": [
+      {
+        "prefix": "대책본부장의직위",
+        "boxes": [
+          {
+            "x": 118.8,
+            "y": 861.1,
+            "w": 222.0,
+            "h": 12.0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "kaf-appendix",
+    "page": 36,
+    "base": [
+      {
+        "prefix": "In each",
+        "boxes": [
+          {
+            "x": 79.4,
+            "y": 178.6,
+            "w": 636.9,
+            "h": 17.3
+          }
+        ]
+      },
+      {
+        "prefix": "as 'Road",
+        "boxes": [
+          {
+            "x": 79.4,
+            "y": 211.9,
+            "w": 262.1,
+            "h": 17.3
+          }
+        ]
+      },
+      {
+        "prefix": "Cadastre",
+        "boxes": [
+          {
+            "x": 79.4,
+            "y": 245.1,
+            "w": 74.3,
+            "h": 17.3
+          }
+        ]
+      }
+    ],
+    "candidate": [
+      {
+        "prefix": "In each",
+        "boxes": [
+          {
+            "x": 79.4,
+            "y": 178.6,
+            "w": 636.9,
+            "h": 22.5
+          }
+        ]
+      },
+      {
+        "prefix": "as 'Road",
+        "boxes": [
+          {
+            "x": 79.4,
+            "y": 221.9,
+            "w": 262.1,
+            "h": 22.5
+          }
+        ]
+      },
+      {
+        "prefix": "Cadastre",
+        "boxes": [
+          {
+            "x": 79.4,
+            "y": 265.1,
+            "w": 74.3,
+            "h": 22.5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "kaf-appendix",
+    "page": 40,
+    "base": [
+      {
+        "prefix": "We categories",
+        "boxes": [
+          {
+            "x": 79.4,
+            "y": 171.9,
+            "w": 640.9,
+            "h": 17.3
+          }
+        ]
+      },
+      {
+        "prefix": "components that",
+        "boxes": [
+          {
+            "x": 79.4,
+            "y": 205.1,
+            "w": 640.9,
+            "h": 17.3
+          }
+        ]
+      },
+      {
+        "prefix": "listed below",
+        "boxes": [
+          {
+            "x": 79.4,
+            "y": 238.4,
+            "w": 614.9,
+            "h": 17.3
+          }
+        ]
+      },
+      {
+        "prefix": "delivery area",
+        "boxes": [
+          {
+            "x": 79.4,
+            "y": 271.7,
+            "w": 126.3,
+            "h": 17.3
+          }
+        ]
+      }
+    ],
+    "candidate": [
+      {
+        "prefix": "We categories",
+        "boxes": [
+          {
+            "x": 79.4,
+            "y": 171.9,
+            "w": 640.9,
+            "h": 22.5
+          }
+        ]
+      },
+      {
+        "prefix": "components that",
+        "boxes": [
+          {
+            "x": 79.4,
+            "y": 215.1,
+            "w": 640.9,
+            "h": 22.5
+          }
+        ]
+      },
+      {
+        "prefix": "listed below",
+        "boxes": [
+          {
+            "x": 79.4,
+            "y": 258.4,
+            "w": 614.9,
+            "h": 22.5
+          }
+        ]
+      },
+      {
+        "prefix": "delivery area",
+        "boxes": [
+          {
+            "x": 79.4,
+            "y": 301.7,
+            "w": 126.3,
+            "h": 22.5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "kaf-appendix",
+    "page": 42,
+    "base": [
+      {
+        "prefix": "Parcel based",
+        "boxes": [
+          {
+            "x": 132.6,
+            "y": 191.9,
+            "w": 583.7,
+            "h": 17.3
+          }
+        ]
+      },
+      {
+        "prefix": "Survey",
+        "boxes": [
+          {
+            "x": 132.6,
+            "y": 225.2,
+            "w": 583.7,
+            "h": 17.3
+          }
+        ]
+      },
+      {
+        "prefix": "addresses system",
+        "boxes": [
+          {
+            "x": 132.6,
+            "y": 258.5,
+            "w": 542.2,
+            "h": 17.3
+          }
+        ]
+      }
+    ],
+    "candidate": [
+      {
+        "prefix": "Parcel based",
+        "boxes": [
+          {
+            "x": 132.6,
+            "y": 191.9,
+            "w": 583.7,
+            "h": 22.5
+          }
+        ]
+      },
+      {
+        "prefix": "Survey",
+        "boxes": [
+          {
+            "x": 132.6,
+            "y": 235.2,
+            "w": 583.7,
+            "h": 22.5
+          }
+        ]
+      },
+      {
+        "prefix": "addresses system",
+        "boxes": [
+          {
+            "x": 132.6,
+            "y": 278.5,
+            "w": 542.2,
+            "h": 22.5
+          }
+        ]
+      }
+    ]
+  }
+]

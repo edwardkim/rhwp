@@ -32,6 +32,7 @@ CI 와 회귀 시험은 만들어진 TSV 만 읽는다 — Rust 쪽에 PDF 파�
 """
 import argparse
 import collections
+from ctypes import ArgumentError
 import io
 import hashlib
 from pathlib import Path
@@ -48,6 +49,10 @@ if TOOLS_DIR not in sys.path:
     sys.path.insert(0, TOOLS_DIR)
 
 from oracle_pdf_selection import choose_canonical, engine_for_product, stem  # noqa: E402
+from oracle_page_count.logical_page_reference import (  # noqa: E402
+    permits_logical_pages,
+    validate_logical_page_comparison,
+)
 
 FIXTURE = 'tests/fixtures/oracle_page_count_baseline.tsv'
 
@@ -212,6 +217,16 @@ def inactive_oracle_samples():
     return retired
 
 
+def oracle_page_text(page):
+    text = page.get_textpage()
+    try:
+        return squeeze(text.get_text_range())
+    except (RecursionError, ArgumentError):
+        # PDFium excludes unmapped glyphs from text indices. Its range helper
+        # can exhaust Python's stack while skipping a long run of them.
+        return squeeze(text.get_text_bounded())
+
+
 def oracle_pages_and_text(git_path, tmp):
     """정답지 PDF 의 (쪽 수, 쪽별 본문). 쪽별로 두는 이유는 수록 범위 확인 때문이다."""
     import pypdfium2 as pdfium
@@ -219,11 +234,8 @@ def oracle_pages_and_text(git_path, tmp):
         if subprocess.run(['git', 'show', 'HEAD:' + git_path], stdout=fh).returncode != 0:
             return None, []
     try:
-        doc = pdfium.PdfDocument(tmp)
-        n = len(doc)
-        pages = [squeeze(doc[i].get_textpage().get_text_range()) for i in range(n)]
-        doc.close()
-        return n, pages
+        with pdfium.PdfDocument(tmp) as doc:
+            return len(doc), [oracle_page_text(page) for page in doc]
     except Exception:
         return None, []
 
@@ -313,6 +325,7 @@ def load_verified_references(root=None):
                 raise ValueError(f'SHA-256 형식 오류: {relative}')
             if hashlib.sha256(path.read_bytes()).hexdigest() != digest:
                 raise ValueError(f'등록된 바이트와 다르다: {relative}')
+        validate_logical_page_comparison(root, entry)
         refs[sample] = entry
     return refs
 
@@ -356,7 +369,7 @@ def main():
         got, nup, product = rhwp_info(args.rhwp, sample)
         if got is None:
             continue
-        if nup:
+        if nup and not permits_logical_pages(registration):
             skipped_nup.append(sample)
             continue
         picked = ([registration['pdf']] if registration is not None

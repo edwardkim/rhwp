@@ -1,0 +1,173 @@
+{
+  "scope": "Completed actual Source105 results only; remaining full Rust, complete protected aggregation, WASM issue matrix and browser reconciliation are still pending.",
+  "files": [
+    {
+      "source": "output/pr-review/issue7754-nine/source105-corrected-build-state.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/source105-corrected-build-state.json",
+      "sha256": "8edef6f5f73dc0f225dc2a4529569a44c994676d745c7c4aa5c10102e0d756f7",
+      "bytes": 1673759
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source107-focused-state.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/source107-focused-state.json",
+      "sha256": "f3ef42067c5971eef07cbe13365ccf098e9c5b648cbaa556d8ded47b47c9ecd7",
+      "bytes": 141024
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source118-complete-fonts-full-chemical-state.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/source118-complete-fonts-full-chemical-state.json",
+      "sha256": "0b2f298c1c71077f330f52e507dea9f5b2e8b7d6b5ac6b5d03f450cf6809a90d",
+      "bytes": 143407
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source124-qualified-outline-state.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/source124-qualified-outline-state.json",
+      "sha256": "e9e2e3be0b23051736566b836def17fcdc1bc23fe8e827acee17bcd32a93bacc",
+      "bytes": 278070
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source115-additional-original-fonts.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/source115-additional-original-fonts.json",
+      "sha256": "e235e2c43c15d0ad58678ec86c524e6182283dd15c650d69d884a947f6b313de",
+      "bytes": 1365
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source116-used-ttf-glyph-identity.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/source116-used-ttf-glyph-identity.json",
+      "sha256": "41ca51ada479d2188b4c5fc3ed1d1df7aa4da350052fdefd64704811b9996a90",
+      "bytes": 814281
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source123-used-ttc-glyph-identity.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/source123-used-ttc-glyph-identity.json",
+      "sha256": "86337078bfe2f12826a19876ad352582b23bc54157e2304569e4edf14dc3626d",
+      "bytes": 798724
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source126-encrypted-results.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/source126-encrypted-results.json",
+      "sha256": "3fae3a02748ab724d209edee190efa8fe20aae24bb5ebe31c5b0f2c2326cf14f",
+      "bytes": 3104
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source127-rejected-duplicate-cleanup.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/source127-rejected-duplicate-cleanup.json",
+      "sha256": "aa15b85f7315031b2150e0c65508c3945d633e7161c0e2ed5d433edbd8c50803",
+      "bytes": 2508
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source127-superseded-producer-cleanup.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/source127-superseded-producer-cleanup.json",
+      "sha256": "d92f73f2901dab01fa8344ae234502bc1a2aaa9ea9e2f682c2bf90453c334d42",
+      "bytes": 4033
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source118-full-chemical/native/chemical/silhouette.tsv",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/chemical/native/silhouette.tsv",
+      "sha256": "d55cc0d20d9cf48ab7af6139c63f9c7ce9d90ff2cd4d0c668a810fccb2ae63f3",
+      "bytes": 2268
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source118-full-chemical/native/chemical/silhouette_manifest.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/chemical/native/silhouette_manifest.json",
+      "sha256": "1f062ebceed9028e6be904ccab87e7ad9586962e4f2dc118d4c7dcfc7daae00f",
+      "bytes": 105576
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source124-qualified-outline/native/base/outline/silhouette.tsv",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/outline/native/base/silhouette.tsv",
+      "sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+      "bytes": 292
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source124-qualified-outline/native/base/outline/silhouette_manifest.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/outline/native/base/silhouette_manifest.json",
+      "sha256": "2e82a9284b8e21f610482ecfd568b85f6cf2aa31c56cd9305543ccdd3e17f669",
+      "bytes": 22551
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source124-qualified-outline/native/candidate/outline/silhouette.tsv",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/outline/native/candidate/silhouette.tsv",
+      "sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+      "bytes": 292
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source124-qualified-outline/native/candidate/outline/silhouette_manifest.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/outline/native/candidate/silhouette_manifest.json",
+      "sha256": "62ad1fc45d9dc7a4bdead3595ec50c57e00f7b35ca553b0ccdd722e911f810df",
+      "bytes": 22663
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source118-full-chemical/wasm/chemical/silhouette.tsv",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/chemical/wasm/silhouette.tsv",
+      "sha256": "2b4dc472b3c8267e03c34e0a4a62fe65c3987f7caab39ce1cde6c6d744bcd573",
+      "bytes": 2270
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source118-full-chemical/wasm/chemical/silhouette_manifest.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/chemical/wasm/silhouette_manifest.json",
+      "sha256": "aa6bd6b0107d742168dbdd7a79c959f6f3d1f9ca749791e53061c1b45ce37d6d",
+      "bytes": 105656
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source124-qualified-outline/wasm/base/outline/silhouette.tsv",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/outline/wasm/base/silhouette.tsv",
+      "sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+      "bytes": 292
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source124-qualified-outline/wasm/base/outline/silhouette_manifest.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/outline/wasm/base/silhouette_manifest.json",
+      "sha256": "c1d121292aacce5801535c346659281f5ffc267b8e12320859fdb19bcdee6c01",
+      "bytes": 22980
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source124-qualified-outline/wasm/candidate/outline/silhouette.tsv",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/outline/wasm/candidate/silhouette.tsv",
+      "sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+      "bytes": 292
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source124-qualified-outline/wasm/candidate/outline/silhouette_manifest.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/outline/wasm/candidate/silhouette_manifest.json",
+      "sha256": "8c6516d2027b93e1f5e7ebbc94b8dcf13d1606030f893b74c625eb0f52e4973d",
+      "bytes": 23104
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/run_source118_full_chemical.py",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/reproduction/run_source118_full_chemical.py.txt",
+      "sha256": "afbb82aa864abfcfa0a4ced4d58482e16855b373606f847f300d064ce8e34cfb",
+      "bytes": 3801
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/verify_source123_used_ttc_glyphs.py",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/reproduction/verify_source123_used_ttc_glyphs.py.txt",
+      "sha256": "b59174007fcf17927c62da42eb179415300aee5c08040f322f2ef9c06030f8cd",
+      "bytes": 3452
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/run_source124_qualified_outline.py",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/reproduction/run_source124_qualified_outline.py.txt",
+      "sha256": "854f643fd413928e48754c16c945f9eb661be3774f3c3d04ee826f9d64e26f88",
+      "bytes": 5046
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source108-required-handbook/required-handbook-8153-gate.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/required-handbook/required-handbook-8153-gate.json",
+      "sha256": "3376c4873a674576f946dae5194312a8900b28493b71b485fe1ce17bfeca748f",
+      "bytes": 540
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source108-required-handbook/required-handbook-8153-native/silhouette.tsv",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/required-handbook/required-handbook-8153-native/silhouette.tsv",
+      "sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590",
+      "bytes": 8428
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source108-required-handbook/required-handbook-8153-native/silhouette_manifest.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source49/required-handbook/required-handbook-8153-native/silhouette_manifest.json",
+      "sha256": "050403172d1f153cc3912f5fc99f9a9f2354d12e4577a5867187bc02f718d2d4",
+      "bytes": 359447
+    }
+  ]
+}

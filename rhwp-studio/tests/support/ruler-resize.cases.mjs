@@ -187,7 +187,7 @@ test('문서 교체 중 없는 쪽은 핀을 제거하고 로드 알림만으로
   assertPainted(f);
 });
 
-for (const event of ['viewport-scroll', 'zoom-changed', 'theme-changed', 'document-view-changed']) {
+for (const event of ['zoom-changed', 'theme-changed', 'document-view-changed']) {
   test(`${event}: 예약된 갱신에서도 최신 크기를 반영하고 같은 크기는 재설정하지 않는다`, t => {
     const f = rulerFixture(t);
     f.container.clientWidth = 500;
@@ -204,29 +204,57 @@ for (const event of ['viewport-scroll', 'zoom-changed', 'theme-changed', 'docume
   });
 }
 
-test('resize와 zoom/scroll/theme 갱신은 최신 focus와 geometry를 두 축에 함께 적용한다', t => {
+test('스크롤 알림을 발행하는 프레임에 최신 좌표로 두 축을 그린다', t => {
   const f = rulerFixture(t);
-  f.wasm.pageCount = f.scroll.pageCount = 2;
-  const secondPage = { ...f.page, width: 500, height: 650, bodyLeft: 80, bodyRight: 450 };
-  f.wasm.getPageInfo = index => index === 1 ? secondPage : f.page;
-  f.scroll.getPageLeftResolved = index => index * 550;
-  f.scroll.getPageOffset = index => index * 750;
-  f.bus.emit('focused-page-changed', 1);
-  f.bus.emit('active-page-changed', { pageIndex: 0, source: 'viewport' });
-  f.viewport.getZoom = () => 0.5;
-  f.viewport.getScrollX = () => 500;
-  f.viewport.getScrollY = () => 700;
   f.operations.length = 0;
-  for (const event of ['zoom-changed', 'viewport-resize', 'viewport-scroll', 'theme-changed']) f.bus.emit(event);
-  f.flush();
-  assert.equal(f.ruler.focusedPageIndex, 1);
-  assert.equal(f.ruler.hPageIdx, 1);
-  assert.equal(f.ruler.hPins.find(pin => pin.kind === 'pageMarginLeft').x, 90);
-  assert.deepEqual(f.ruler.vPins.map(pin => [pin.pageIdx, pin.y]), [[1, 70], [1, 355]]);
-  assert.equal(operations(f, 'transform').length, 2);
-  assert.deepEqual(f.commits, [], 'resize는 문서를 변경하지 않는다');
-  assertPainted(f);
+  requestAnimationFrame(() => f.bus.emit('viewport-scroll', 15, 25));
+  f.viewport.getScrollX = () => 25;
+  f.viewport.getScrollY = () => 15;
+
+  assert.equal(f.flush(), 1);
+  assert.deepEqual(operations(f, 'transform').map(op => op.axis), ['h', 'v']);
+  assert.equal(f.ruler.hPins.find(pin => pin.kind === 'pageMarginLeft').x, 15);
+  assert.equal(f.ruler.vPins.find(pin => pin.kind === 'top').y, 25);
+  assert.equal(new Set(f.operations.map(op => op.frame)).size, 1);
+  assert.equal(f.frames.size, 0, '다음 프레임에 스크롤 갱신을 예약하지 않는다');
+  assert.deepEqual(resets(f), []);
 });
+
+for (const first of ['viewport-scroll', 'focused-page-changed']) {
+  test(`${first}: resize/zoom/scroll/theme 갱신은 최신 focus와 geometry를 두 축에 한 번 적용한다`, t => {
+    const f = rulerFixture(t);
+    f.wasm.pageCount = f.scroll.pageCount = 2;
+    const secondPage = { ...f.page, width: 500, height: 650, bodyLeft: 80, bodyRight: 450 };
+    f.wasm.getPageInfo = index => index === 1 ? secondPage : f.page;
+    f.scroll.getPageLeftResolved = index => index * 550;
+    f.scroll.getPageOffset = index => index * 750;
+    const queueScroll = () => requestAnimationFrame(() => f.bus.emit('viewport-scroll', 700, 500));
+    if (first === 'viewport-scroll') queueScroll();
+    f.bus.emit('focused-page-changed', 1);
+    f.bus.emit('active-page-changed', { pageIndex: 0, source: 'viewport' });
+    f.viewport.getZoom = () => 0.5;
+    f.viewport.getScrollX = () => 500;
+    f.viewport.getScrollY = () => 700;
+    f.operations.length = 0;
+    f.container.clientWidth = 500;
+    f.container.clientHeight = 650;
+    for (const event of ['zoom-changed', 'viewport-resize', 'theme-changed']) f.bus.emit(event);
+    if (first !== 'viewport-scroll') queueScroll();
+    assert.equal(f.flush(), first === 'viewport-scroll' ? 1 : 2);
+    assert.equal(f.frames.size, 0);
+    assert.equal(f.ruler.focusedPageIndex, 1);
+    assert.equal(f.ruler.hPageIdx, 1);
+    assert.equal(f.ruler.hPins.find(pin => pin.kind === 'pageMarginLeft').x, 90);
+    assert.deepEqual(f.ruler.vPins.map(pin => [pin.pageIdx, pin.y]), [[1, 70], [1, 355]]);
+    assert.deepEqual(resets(f), [
+      { axis: 'h', dimension: 'width', value: 500 },
+      { axis: 'v', dimension: 'height', value: 650 },
+    ]);
+    assert.equal(operations(f, 'transform').length, 2, 'callback 순서와 관계없이 두 축을 한 번만 그린다');
+    assert.deepEqual(f.commits, [], 'resize는 문서를 변경하지 않는다');
+    assertPainted(f);
+  });
+}
 
 test('dispose는 대기 중 resize·paint와 drag listener를 제거한다', t => {
   const f = rulerFixture(t);

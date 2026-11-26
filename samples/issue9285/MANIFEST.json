@@ -1,0 +1,25 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 9285,
+  "title": "색상표 없이 저장된 WMF 1비트 DIB 를 색상표가 있는 것으로 읽어 WMF 변환 전체가 실패한다",
+  "entries": [
+    {
+      "path": "samples/issue9285/child-product-safety-plan-wmf-mask-dib.hwpx",
+      "format": "hwpx",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/9285",
+      "originalFilename": "156671472_0122(23조간)생활어린이제품안전과, 제4차 어린이제품 안전관리 기본계획 발표.hwpx",
+      "bytes": 1419940,
+      "sha256": "45d1785c7c6db19dc595af3a3a66b5f60d820407db16331d3a43403b01ede8eb",
+      "lastSavedWith": {
+        "product": "hancom-office-2020",
+        "version": "11.0.0.8658"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/issue9285/child-product-safety-plan-wmf-mask-dib-2020.pdf",
+      "referencePdfSha256": "d1da90986b7aeffff25765075c4e3c1a5f3d70755af13a1fa060be861610554b",
+      "referencePdfPageCount": 9,
+      "contract": "전체 9쪽으로 한/글 Print 와 같다. 4쪽 1×4 표 셋째 칸의 그림 BinData/image7.wmf 는 색상표 없는 512×512 1비트 마스크 DIB 넷을 META_DIBSTRETCHBLT(SRCPAINT)로 싣는다. 이 WMF 가 변환되어 모든 쪽의 SVG 에 변환하지 못한 WMF 원본(image/x-wmf)이 남지 않는다."
+    }
+  ]
+}

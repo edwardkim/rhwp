@@ -1,0 +1,30 @@
+{
+  "kaf-table": {
+    "type0_object": "31",
+    "cid_object": "268",
+    "cid_subtype": "Type1",
+    "descriptor_object": "264",
+    "descriptor_name": "INPILL+Gulim",
+    "cid_font_type_error_count": 44,
+    "p31_percent": "95.69",
+    "below_98": {
+      "31": "95.69"
+    },
+    "pdf_sha256": "95e90e154ab3d2efc698485959025a217986f8247da6f8852569ef6c292ce600",
+    "tsv_sha256": "f88a01bc708b33624dc4d0d1ac51a87c58e204289ce1185c31f6fdf4f0a7fc30"
+  },
+  "kaf-appendix": {
+    "type0_object": "31",
+    "cid_object": "347",
+    "cid_subtype": "Type1",
+    "descriptor_object": "343",
+    "descriptor_name": "INPILL+Gulim",
+    "cid_font_type_error_count": 44,
+    "p31_percent": "95.69",
+    "below_98": {
+      "31": "95.69"
+    },
+    "pdf_sha256": "dec426a6ab8a25c7b0177b5039ad5731ec638e5da8b37012fd34a3646d44491f",
+    "tsv_sha256": "557003f502e925628399aa15dc3854846aea703f74aca9953d791b736d743641"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "page": 5,
+  "box": [
+    140,
+    245,
+    665,
+    275
+  ],
+  "scale": 3,
+  "dpi": 96,
+  "created": 1795299128.3195848,
+  "inputs": [
+    {
+      "label": "Independent Hancom Print",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source35-focused-native/issue7754-plain/pdf_png/pdf-005.png",
+      "sha256": "5402d5b6f28138a85d991e742e8c659ee7eed1da4d603b93e9c54c8e27558c5f"
+    },
+    {
+      "label": "Native before source34",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source34-native-plain-full/issue7754-plain/rhwp_png/rhwp_005.png",
+      "sha256": "9ffd07fb93a1085d978fbef849a0bacd0ec4ce8a534fc6470ee8c20a762a7a80"
+    },
+    {
+      "label": "Native after source35",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source35-focused-native/issue7754-plain/rhwp_png/rhwp_005.png",
+      "sha256": "e8e6d9cc6bf43c1b68cb8b44b269f2bdb868cdcb3d78371a2cd399061d8628f9"
+    },
+    {
+      "label": "WASM before source33",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-wasm/candidate/issue7754-plain/rhwp_png/rhwp_005.png",
+      "sha256": "5cb621a79e8cb25519f129140e818eb83a7c44e3b0443f5cae647e8c5fab53b6"
+    },
+    {
+      "label": "fresh WASM after source35",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source35-focused-wasm/issue7754-plain/rhwp_png/rhwp_005.png",
+      "sha256": "598b7bbe84f761c32d92c1729e910cbe83c82090d1719126ecc3ea51dc2951de"
+    }
+  ],
+  "panel_sha256": "6d9dcd6ea6e5522363a55e9a0261d75332be7b97a11bbdee8ccad6856976d26e",
+  "reading": "제목 가. ᄒᆞᆫ글 2.5의 옛한글 자형·다음 글자와 숫자 간격을 독립 Print와 확대 대조했다. 기존 Native 자형/후속 글자 겹침과 WASM의 빠진 획이 보정됐다.",
+  "read_at": "2026-11-22T07:17:50.665700+09:00",
+  "scope": "source35 only; source36 must be measured again"
+}

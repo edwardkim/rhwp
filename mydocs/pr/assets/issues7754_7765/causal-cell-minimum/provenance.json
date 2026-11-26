@@ -1,0 +1,127 @@
+{
+  "original": "samples/issue1891/86712_regulatory_analysis.hwpx",
+  "original_sha256": "0f4f055c74a3d39f70e417ca6c700880d9645a202798cd0e5c11f6e32c180a19",
+  "purpose": "independent Hancom Print causal experiment; excluded from active regression input collection",
+  "experiments": [
+    {
+      "job_id": "b5ba1e51-7e90-402d-811d-469a417a1fd7",
+      "status": "succeeded",
+      "phase": "completed",
+      "target": "pdf",
+      "engine": "2024",
+      "created_at": "2026-11-21T16:29:10.877Z",
+      "started_at": "2026-11-21T16:29:10.878Z",
+      "completed_at": "2026-11-21T16:29:44.086Z",
+      "elapsed_seconds": 33,
+      "output_bytes": 824943,
+      "terminal": true,
+      "input": "mydocs/pr/assets/issues7754_7765/causal-cell-minimum/child-cell-height-0.hwpx.bin",
+      "input_sha256": "be3f6713a49f6921ed561f8f11399576a2efdd91187b581c9b5e4fd5101fcbca",
+      "reference_pdf": "pdf/issue7765/causal-cell-minimum/child-cell-height-0-2024.pdf",
+      "pdf_sha256": "fb44bef2df5520f03007dc25f7346b59e6d34a5a4a4da5e024e735467579fd65",
+      "only_xml_change": {
+        "member": "Contents/section0.xml",
+        "node_index": 9657,
+        "tag": "{http://www.hancom.co.kr/hwpml/2011/paragraph}cellSz",
+        "before": {
+          "width": "36572",
+          "height": "3280"
+        },
+        "after": {
+          "width": "36572",
+          "height": "0"
+        }
+      }
+    },
+    {
+      "job_id": "53df34c7-d8e7-4657-ae8a-165ef93e1f1b",
+      "status": "succeeded",
+      "phase": "completed",
+      "target": "pdf",
+      "engine": "2024",
+      "created_at": "2026-11-21T16:29:11.846Z",
+      "started_at": "2026-11-21T16:29:44.088Z",
+      "completed_at": "2026-11-21T16:30:15.405Z",
+      "elapsed_seconds": 31,
+      "output_bytes": 824947,
+      "terminal": true,
+      "input": "mydocs/pr/assets/issues7754_7765/causal-cell-minimum/child-cell-height-4280.hwpx.bin",
+      "input_sha256": "50a7b96d5df2ec3d2b98330154202f282c00e6be49f93ae5ad8312d13d4f43d0",
+      "reference_pdf": "pdf/issue7765/causal-cell-minimum/child-cell-height-4280-2024.pdf",
+      "pdf_sha256": "1808f5c9bd1844516bfc3acd19a565cde8031aab61e25ff5b3ad89a6ac9226cf",
+      "only_xml_change": {
+        "member": "Contents/section0.xml",
+        "node_index": 9657,
+        "tag": "{http://www.hancom.co.kr/hwpml/2011/paragraph}cellSz",
+        "before": {
+          "width": "36572",
+          "height": "3280"
+        },
+        "after": {
+          "width": "36572",
+          "height": "4280"
+        }
+      }
+    },
+    {
+      "job_id": "3b301695-206b-4d91-b0cf-886e6e2139e2",
+      "status": "succeeded",
+      "phase": "completed",
+      "target": "pdf",
+      "engine": "2024",
+      "created_at": "2026-11-21T16:31:58.576Z",
+      "started_at": "2026-11-21T16:31:58.578Z",
+      "completed_at": "2026-11-21T16:32:29.775Z",
+      "elapsed_seconds": 31,
+      "output_bytes": 824943,
+      "terminal": true,
+      "input": "mydocs/pr/assets/issues7754_7765/causal-cell-minimum/child-cell-height-2000.hwpx.bin",
+      "input_sha256": "9afc01b4037805882ffc79c9424a6b66d487dbd788a00fe9fdb814258cdfa523",
+      "reference_pdf": "pdf/issue7765/causal-cell-minimum/child-cell-height-2000-2024.pdf",
+      "pdf_sha256": "44bcfd54699d804e4ec260bb99d3725b723dc5e4184a04e9cf780fcf6b017f40",
+      "only_xml_change": {
+        "member": "Contents/section0.xml",
+        "node_index": 9657,
+        "tag": "{http://www.hancom.co.kr/hwpml/2011/paragraph}cellSz",
+        "before": {
+          "width": "36572",
+          "height": "3280"
+        },
+        "after": {
+          "width": "36572",
+          "height": "2000"
+        }
+      }
+    },
+    {
+      "job_id": "875ebc18-697e-4f73-9f40-6a6491783bef",
+      "status": "succeeded",
+      "phase": "completed",
+      "target": "pdf",
+      "engine": "2024",
+      "created_at": "2026-11-21T16:31:59.785Z",
+      "started_at": "2026-11-21T16:32:29.777Z",
+      "completed_at": "2026-11-21T16:33:02.625Z",
+      "elapsed_seconds": 32,
+      "output_bytes": 824946,
+      "terminal": true,
+      "input": "mydocs/pr/assets/issues7754_7765/causal-cell-minimum/child-cell-height-2400.hwpx.bin",
+      "input_sha256": "0d3c1124d5a7766e3377ed188e91c8203dda45de03ea1d38c5211ba32249137d",
+      "reference_pdf": "pdf/issue7765/causal-cell-minimum/child-cell-height-2400-2024.pdf",
+      "pdf_sha256": "bc13f62db9fc8b74f3512ed3b30572379497d4305594ae71d25b7a5cbffa631a",
+      "only_xml_change": {
+        "member": "Contents/section0.xml",
+        "node_index": 9657,
+        "tag": "{http://www.hancom.co.kr/hwpml/2011/paragraph}cellSz",
+        "before": {
+          "width": "36572",
+          "height": "3280"
+        },
+        "after": {
+          "width": "36572",
+          "height": "2400"
+        }
+      }
+    }
+  ]
+}

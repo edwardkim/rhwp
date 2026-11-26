@@ -1,0 +1,63 @@
+{
+  "status": "passed",
+  "publishedBaseline": "ae4559e3d3d04f60da7887a11e889bfb4f6c5fa86df1e6c47745e9f6bb796a68",
+  "sourceCatalog": "5f1c1dae909916fab5da05f2f74f2e93dc83547f3432178a068c5d40bd6ce8d8",
+  "documents": [
+    {
+      "input": "samples/re-03-latin-only-hancom.hwp",
+      "backend": "native",
+      "minimum": "100.0",
+      "exit": 0,
+      "representativePage": 1
+    },
+    {
+      "input": "samples/re-03-latin-only-hancom.hwp",
+      "backend": "wasm",
+      "minimum": "100.0",
+      "exit": 0,
+      "representativePage": 1
+    },
+    {
+      "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "backend": "native",
+      "minimum": "100.0",
+      "exit": 0,
+      "representativePage": 1
+    },
+    {
+      "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "backend": "wasm",
+      "minimum": "100.0",
+      "exit": 0,
+      "representativePage": 1
+    },
+    {
+      "input": "samples/pic-crop-01.hwp",
+      "backend": "native",
+      "minimum": "99.99756",
+      "exit": 0,
+      "representativePage": 1
+    },
+    {
+      "input": "samples/pic-crop-01.hwp",
+      "backend": "wasm",
+      "minimum": "99.99756",
+      "exit": 0,
+      "representativePage": 1
+    },
+    {
+      "input": "samples/shape-group-02.hwp",
+      "backend": "native",
+      "minimum": "100.0",
+      "exit": 0,
+      "representativePage": 1
+    },
+    {
+      "input": "samples/shape-group-02.hwp",
+      "backend": "wasm",
+      "minimum": "100.0",
+      "exit": 0,
+      "representativePage": 1
+    }
+  ]
+}

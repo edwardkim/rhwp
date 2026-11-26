@@ -1,0 +1,34 @@
+{
+  "command": [
+    "rustc",
+    "--edition=2021",
+    "--test",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/issue_7754_original_layout_cli_draft.rs",
+    "-o",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-original-layout-probe/cli-layout-contract",
+    "--extern",
+    "serde_json=/home/tsjang/rhwp/target/pr-review/release-test/deps/libserde_json-6b264a499acbc87b.rlib",
+    "--extern",
+    "roxmltree=/home/tsjang/rhwp/target/pr-review/release-test/deps/libroxmltree-31e4a2376cdcf02d.rlib",
+    "-L",
+    "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps"
+  ],
+  "compile_exit": 0,
+  "compile_stderr": "",
+  "results": [
+    {
+      "role": "source33",
+      "exit_code": 101,
+      "seconds": 2.4759559251833707,
+      "stdout": "\nrunning 2 tests\ntest stored_full_paragraph_frame_does_not_apply_margin_twice ... FAILED\ntest old_hangul_origins_match_independent_print_on_best_qualified_page ... ok\n\nfailures:\n\nfailures:\n    stored_full_paragraph_frame_does_not_apply_margin_twice\n\ntest result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.32s\n\n",
+      "stderr": "\nthread 'stored_full_paragraph_frame_does_not_apply_margin_twice' (1618175) panicked at /home/tsjang/rhwp/output/pr-review/issue7754-nine/issue_7754_original_layout_cli_draft.rs:87:9:\nassertion `left == right` failed: same complete paragraph origin; no double margin\n  left: Number(206.7)\n right: Number(160.1)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+    },
+    {
+      "role": "source36",
+      "exit_code": 0,
+      "seconds": 0.7979842571076006,
+      "stdout": "\nrunning 2 tests\ntest stored_full_paragraph_frame_does_not_apply_margin_twice ... ok\ntest old_hangul_origins_match_independent_print_on_best_qualified_page ... ok\n\ntest result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.77s\n\n",
+      "stderr": ""
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+== p0001-0001 ==
++ /home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source37-optimized dump-note-shape /home/tsjang/rhwp/mydocs/pr/assets/semanticist21-20261121/captions/caption-header-false-false.hwp
++ node /home/tsjang/rhwp/scripts/export-wasm-png-for-sweep.mjs --pkg /home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37 --input /home/tsjang/rhwp/mydocs/pr/assets/semanticist21-20261121/captions/caption-header-false-false.hwp --out /home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/captions-caption-header-false-false/silhouette-parts/p0001-0001 --fonts /home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/captions-caption-header-false-false/silhouette-parts/p0001-0001/font-catalog.json --options /home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/captions-caption-header-false-false/silhouette-parts/p0001-0001/canvas-options.json
+PNG export pages: 1
++ /home/tsjang/rhwp/venv/bin/python /home/tsjang/rhwp/scripts/visual_sweep_pdf.py --pdf /home/tsjang/rhwp/pdf/pr9220-picture-captions/caption-header-false-false-hwp-2020.pdf --dpi 96 --prefix /home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/captions-caption-header-false-false/silhouette-parts/p0001-0001/pdf_png/pdf --pages 1
+실루엣 보조값 1쪽: /home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/captions-caption-header-false-false/silhouette-parts/p0001-0001/silhouette.tsv
+{"key": "p0001-0001", "pages": 1, "minimum": "100.00", "exact100": 1}
+실루엣 보조값 1쪽: /home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/captions-caption-header-false-false/silhouette.tsv
+{"key": "captions-caption-header-false-false", "pages": 1, "minimum": "100.00", "exact100": 1}
+summary: /home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/summary.json

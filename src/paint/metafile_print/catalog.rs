@@ -23,6 +23,7 @@ pub(crate) struct SourceUse {
 
 pub(super) struct Source {
     pub(super) svg: Arc<Vec<u8>>,
+    pub(super) embedded_wmf_fallback: bool,
     /// 같은 source를 선행 상태가 다른 곳에 쓰면 하나의 상태로 추측하지 않는다.
     pub(super) preceding_polygon: Option<bool>,
 }
@@ -181,20 +182,24 @@ impl Catalogue {
                 if result.sources.len() >= MAX_SOURCES {
                     return None;
                 }
-                // enhanced payload는 기존 EMF 소비자가 소유한다. 실패한 source의
-                // 선행 상태나 이미지 목록을 성공한 것처럼 건너뛰지 않는다.
+                let enhanced =
+                    crate::parser::ole_container::emf_from_wmf_comment_chunks(&usage.data);
                 let converted =
-                    crate::parser::ole_container::emf_from_wmf_comment_chunks(&usage.data)
-                        .is_none()
-                        .then(|| {
-                            WMFConverter::new(
-                                usage.data.as_ref(),
-                                SVGPlayer::new().with_source_contract(),
-                            )
-                            .run()
-                            .ok()
-                        })
-                        .flatten();
+                    WMFConverter::new(usage.data.as_ref(), SVGPlayer::new().with_source_contract())
+                        .run()
+                        .ok()
+                        .filter(|svg| {
+                            enhanced.as_ref().is_none_or(|emf| {
+                                // EMF+는 재생에 성공한 경로가 소유한다. 바깥 WMF를 쓰는
+                                // 그림은 장치 재생 가능 여부와 별개로 source 순서를 보존한다.
+                                crate::renderer::metafile_geometry::svg_viewport(svg).is_some_and(
+                                    |viewport| {
+                                        crate::emf::emfplus::convert_supported(emf, viewport)
+                                            .is_none()
+                                    },
+                                )
+                            })
+                        });
                 let Some(svg) = converted.filter(|svg| svg.len() <= MAX_SVG_BYTES) else {
                     preceding_polygon = None;
                     known_resources = false;
@@ -209,6 +214,7 @@ impl Catalogue {
                     key,
                     Source {
                         svg: svg.clone(),
+                        embedded_wmf_fallback: enhanced.is_some(),
                         preceding_polygon,
                     },
                 );
@@ -224,7 +230,11 @@ impl Catalogue {
             let full_crop = usage.crop.is_none_or(|crop| {
                 crate::renderer::svg::compute_image_crop_src(
                     crop,
-                    crate::renderer::metafile_geometry::wmf_crop_reference(usage.crop_reference),
+                    crate::renderer::metafile_geometry::wmf_crop_reference(
+                        usage.crop_reference,
+                        Some(usage.data.as_ref()),
+                        Some(crop),
+                    ),
                     width,
                     height,
                 ) == (0.0, 0.0, width, height)
@@ -279,6 +289,10 @@ impl Catalogue {
     pub(super) fn jpeg(&self, data: &[u8]) -> Option<Vec<u8>> {
         let (key, _) = raster_identity(data)?;
         let quality = self.qualities.get(&key).copied().flatten()?;
-        encode_print_jpeg(data, quality, false)
+        encode_print_jpeg(
+            data,
+            quality,
+            crate::renderer::image_resolver::PrintJpegTransfer::Direct,
+        )
     }
 }

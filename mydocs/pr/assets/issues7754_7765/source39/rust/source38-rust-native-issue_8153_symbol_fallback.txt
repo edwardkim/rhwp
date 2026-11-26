@@ -1,0 +1,11 @@
+[RustTestSuite] issue_8153_symbol_fallback -> regression_suite_012::issue_8153_symbol_fallback
+[RustTestSuite] cargo nextest run --locked --test regression_suite_012 -E test(/(^|::)issue_8153_symbol_fallback::/) --cargo-profile release-test --target-dir /home/tsjang/rhwp/target/pr-review --features native-skia --test-threads 12 --no-fail-fast
+   Compiling rhwp v0.9.1 (/home/tsjang/rhwp-worktrees/task-7754-rebase-5665)
+    Finished `release-test` profile [optimized] target(s) in 39.50s
+────────────
+ Nextest run ID 1b4bc6ca-ac24-4272-8c37-9c9bdd991223 with nextest profile: default
+    Starting 2 tests across 1 binary (345 tests skipped)
+        PASS [   0.032s] (1/2) rhwp::regression_suite_012 issue_8153_symbol_fallback::missing_primary_symbol_keeps_the_same_slot_with_unclassified_font_type
+        PASS [   0.152s] (2/2) rhwp::regression_suite_012 issue_8153_symbol_fallback::mapped_empty_symbols_use_real_fallback_without_changing_source_or_positions
+────────────
+     Summary [   0.153s] 2 tests run: 2 passed, 345 skipped

@@ -38,7 +38,7 @@ fn verified_dotum_small_square_preserves_its_original_three_eighths_cell() {
 }
 
 #[test]
-fn explicit_hft_program_keeps_its_existing_compatibility_cell() {
+fn explicit_legacy_program_keeps_its_existing_compatibility_cell() {
     for family in ["돋움", "Dotum"] {
         let style = TextStyle {
             font_family: family.to_owned(),
@@ -82,7 +82,7 @@ fn actual_source_dotum_slot_uses_the_verified_glyph_without_trusting_the_whole_t
     );
     assert!(
         !run.style.source_font_is_hft,
-        "유형 미상 슬롯을 HFT로 추정하지 않는다"
+        "유형 미상 슬롯을 구형 글꼴로 추정하지 않는다"
     );
     let mut style = run.style.clone();
     style.font_size = 32.0;

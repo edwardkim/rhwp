@@ -1,0 +1,3 @@
+kind=2 query=Logical HFT Name chain=[String("Selected Physical Family"), String("Declared Glyph Fallback")]
+kind=2 query=Selected-PostScript-Name chain=[String("Selected-PostScript-Name"), String("Declared Glyph Fallback"), String("Selected Physical Family")]
+kind=1 query=Logical HFT Name chain=[String("Logical HFT Name"), String("Declared Glyph Fallback"), String("Selected Physical Family")]

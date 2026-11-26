@@ -133,7 +133,8 @@ fn issue_8160_sample16_ordinary_tab_keeps_its_single_source_owner() {
 }
 
 #[test]
-fn issue_8160_sample16_hft_bold_heading_preserves_content_and_independent_completed_page_origin() {
+fn issue_8160_sample16_legacy_bold_heading_preserves_content_and_independent_completed_page_origin()
+{
     // 독립 Print p19 /T4의 기준선과 뒤 글자. 최종 양쪽 raw98% 자격은 stage5에 기록한다.
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
     let mut core = DocumentCore::from_bytes(
@@ -196,7 +197,7 @@ fn issue_8160_sample16_hft_bold_heading_preserves_content_and_independent_comple
     assert_eq!(origins.len(), 1);
     assert!(
         (origins[0].0 - 299.6766764322917).abs() <= 2.0,
-        "원본 HFT 굵은 전진 뒤 '터': {:?}",
+        "원본 굵은 글자의 전진 뒤 '터': {:?}",
         origins[0]
     );
     assert!((origins[0].1 - 636.1599934895834).abs() <= 2.0);

@@ -71,8 +71,11 @@ for (const mode of ['header', 'footer', 'footnote']) {
     const history = new CommandHistory();
     const insert = (...args) => {
       const chars = [...value];
-      chars.splice(args.at(-2), 0, ...args.at(-1));
+      const start = Math.min(args.at(-2), chars.length);
+      chars.splice(start, 0, ...args.at(-1));
       value = chars.join('');
+      const result = { ok: true, charOffset: start + [...args.at(-1)].length };
+      return mode === 'footnote' ? result : JSON.stringify(result);
     };
     const remove = (...args) => {
       const chars = [...value];

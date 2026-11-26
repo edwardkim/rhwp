@@ -1,0 +1,31 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 9379,
+  "title": "KAF 회의자료 부록 쪽 — 글 상자 칸 줄 간격이 좁고 그림 배율·자르기가 한/글과 다르다",
+  "entries": [
+    {
+      "path": "samples/issue9379/kaf_appendix.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/9379",
+      "originalFilename": "1311000-201100031_D0150014-2-001_한국주소포럼(KAF) 총회 회의자료(한글)110421.hwp",
+      "derivedFrom": {
+        "sha256": "8014ae9b6c3b07ed031640becfefdfb2b8272afe7878efe2fcca27b5c5f6c9e5",
+        "bytes": 2900992,
+        "pageCount": 66,
+        "procedure": "rhwp edit delete-paragraph --section 1 --para 32 로 33~44쪽의 11×6 표 문단(#9000)만 삭제. 원본 45~66쪽(부록)이 33~54쪽이 된다."
+      },
+      "bytes": 2762240,
+      "sha256": "f5f835cb60fdb1883f5857bcc0799c22dfe24e4c1b683dfc10e9382da30d77c2",
+      "lastSavedWith": {
+        "product": "rhwp",
+        "version": "5.0.2.2"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/issue9379/kaf_appendix-2020.pdf",
+      "referencePdfSha256": "7787910c514b5947639fb5857e1a5847616000115f18210a76eff05765c07a2c",
+      "referencePdfPageCount": 54,
+      "contract": "전체 54쪽으로 한/글 2020 Print 와 같다. 36·40·42쪽 글 상자(글꼴에 어울리는 줄 높이, 함초롬바탕 13pt, 192%) 줄 피치는 한/글 2020 재저장 3243 HU 이다. 38·39·52쪽 WMF 그림(자르기 = 메타파일 원래 크기 전체)은 자르기 창 없이 틀 전체에 그리고, 36쪽 부분 자르기 띠 그림은 자르기 창을 유지한다."
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+frozen pkg /home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37 at http://127.0.0.1:38897
+=== E2E: #9011 메모 UI CRUD·undo·redo·저장 ===
+
+  [browser] headless Chrome 실행
+  [wasm-artifact] matched 76f7c64d27fe8fbbd7bd5baa2fdb3d30af9c8014fd16fb6b83afc498907ba7e3
+  HWP 1회차: 본문과 두 셀의 메모 및 대상 위치 보존
+  HWP 2회차: 본문과 두 셀의 메모 및 대상 위치 보존
+  HWPX 1회차: 본문과 두 셀의 메모 및 대상 위치 보존
+  HWPX 2회차: 본문과 두 셀의 메모 및 대상 위치 보존
+  묶음 안 글상자: 오류 표시, 저장 바이트·dirty 유지
+  [wasm-artifact] matched 76f7c64d27fe8fbbd7bd5baa2fdb3d30af9c8014fd16fb6b83afc498907ba7e3
+
+📋 HTML 보고서: ../output/e2e/memo-ui-issue9011-report.html

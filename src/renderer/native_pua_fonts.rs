@@ -36,10 +36,10 @@ const EXISTING_SUPPORTED_SYMBOLS: [char; 11] = [
 /// 원본 글꼴이 공급된 HWP3 괘선도 같은 측정·paint 경로에서 원 glyph를 쓴다.
 /// 앞선 11개 기호의 공급 순서는 유지하고, 독립 한컴 저장값 77개 중 기존 2개를
 /// 제외한 75개만 추가한다. 방향·굵기·점선의 Unicode 추정으로 IR을 바꾸지 않는다.
-pub const SUPPORTED_SYMBOLS: [char; 86] = with_hwp3_line_symbols();
+pub const SUPPORTED_SYMBOLS: [char; 87] = with_hwp3_line_symbols();
 
-const fn with_hwp3_line_symbols() -> [char; 86] {
-    let mut symbols = ['\0'; 86];
+const fn with_hwp3_line_symbols() -> [char; 87] {
+    let mut symbols = ['\0'; 87];
     let mut count = 0;
     while count < EXISTING_SUPPORTED_SYMBOLS.len() {
         symbols[count] = EXISTING_SUPPORTED_SYMBOLS[count];
@@ -67,6 +67,10 @@ const fn with_hwp3_line_symbols() -> [char; 86] {
         }
         row += 1;
     }
+    // 기존 86개 공급자 탐색 순서는 유지한다. Enter 키의 원 프로그램이
+    // 실제 공급된 경우에만 같은 glyph와 전진폭을 쓰고, 없으면 의미 대체한다.
+    symbols[count] = '\u{F03A0}';
+    count += 1;
     assert!(count == symbols.len());
     symbols
 }
@@ -115,7 +119,9 @@ struct NativeOtfProgram {
     faux_bold: bool,
     cff: bool,
     static_truetype: bool,
-    verified_hft_bold_tracking: bool,
+    visible_notdef_advance: Option<f64>,
+    verified_legacy_font_bold_tracking: bool,
+    visible_old_hangul_advances: Arc<BTreeMap<char, f64>>,
 }
 
 impl PartialEq for NativeOtfMetrics {
@@ -129,6 +135,70 @@ impl PartialEq for NativeOtfMetrics {
 }
 
 impl NativeOtfMetrics {
+    /// 분할 프로그램을 실제 공급 순서로 읽되 앞 프로그램의 자모를 건너뛰지 않는다.
+    /// 원 자모를 지원하는 face는 기존 shaping이 소유한다. 그 전의 동일 family
+    /// 프로그램이 호환 음절을 공급할 때만 그 프로그램의 hmtx를 함께 반환한다.
+    pub(crate) fn compatibility_cluster_advance(&self, cluster: &str, glyph: char) -> Option<f64> {
+        for program in &self.programs {
+            let face = ttf_parser::Face::parse(&program.bytes, program.face_index).ok()?;
+            if cluster
+                .chars()
+                .any(|ch| face.glyph_index(ch).is_some_and(|id| id.0 != 0))
+            {
+                return None;
+            }
+            if face.glyph_index(glyph).is_some_and(|id| id.0 != 0) {
+                // compact SFNT에는 윤곽이 없다. 등록 전 원 프로그램에서 확인한
+                // 가시 glyph의 전진만 소비하고, 빈 cmap 소유자를 건너뛰지 않는다.
+                return program.visible_old_hangul_advances.get(&glyph).copied();
+            }
+        }
+        None
+    }
+
+    /// 선택한 주 프로그램 자체의 공백 전진. 뒤 fallback의 공백은 사용하지 않는다.
+    /// useFontSpace의 원본 선언을 확인한 호출자만 사용한다.
+    /// 전진이 0이면 유효한 공백 폭이 없으므로 호출자가 기본 폭을 사용한다.
+    pub(crate) fn selected_program_space_advance_em(
+        &self,
+        identity: &super::font_environment::FontProgramIdentity,
+    ) -> Option<f64> {
+        let face = self.selected_program_face(identity)?;
+        let glyph = face.glyph_index(' ').filter(|glyph| glyph.0 != 0)?;
+        let advance = face
+            .glyph_hor_advance(glyph)
+            .filter(|&advance| advance > 0)?;
+        let em = face.units_per_em();
+        (em > 0).then(|| f64::from(advance) / f64::from(em))
+    }
+
+    /// 명시적으로 선택한 원본 프로그램의 cmap만 확인한다.
+    pub(crate) fn selected_program_has_glyph(
+        &self,
+        identity: &super::font_environment::FontProgramIdentity,
+        character: char,
+    ) -> Option<bool> {
+        let face = self.selected_program_face(identity)?;
+        Some(
+            face.glyph_index(character)
+                .is_some_and(|glyph| glyph.0 != 0),
+        )
+    }
+
+    fn selected_program_face(
+        &self,
+        identity: &super::font_environment::FontProgramIdentity,
+    ) -> Option<ttf_parser::Face<'_>> {
+        let program = self.programs.iter().find(|program| {
+            identity.matches(
+                &program.source_digest,
+                &program.selection_digest,
+                program.source_face_index,
+            )
+        })?;
+        ttf_parser::Face::parse(&program.bytes, program.face_index).ok()
+    }
+
     /// 뒤 대체 후보가 아닌 실제 주 프로그램의 cmap을 확인한다.
     /// 같은 family의 기준 파일 결측보다 현재 공급한 프로그램의 hit가 우선한다.
     pub(crate) fn primary_has_glyph(&self, character: char) -> Option<bool> {
@@ -229,6 +299,11 @@ impl NativeOtfMetrics {
         found
     }
 
+    /// First outlined glyph zero in paint order, after character coverage is exhausted.
+    pub(crate) fn visible_notdef_advance_em(&self) -> Option<f64> {
+        self.programs.iter().find_map(|p| p.visible_notdef_advance)
+    }
+
     pub fn needs_faux_bold(&self, character: char) -> bool {
         self.glyph_metric(character)
             .is_some_and(|(_, faux, _, _)| faux)
@@ -278,7 +353,7 @@ impl NativeOtfMetrics {
                     (
                         f64::from(width) / f64::from(face.units_per_em()),
                         program.faux_bold,
-                        program.verified_hft_bold_tracking,
+                        program.verified_legacy_font_bold_tracking,
                         program_index,
                     )
                 });
@@ -292,8 +367,7 @@ impl NativeOtfMetrics {
 
 impl NativePuaMetrics {
     pub fn advance_em(&self, character: char) -> Option<f64> {
-        let key = super::composer::hancom_symbol_display_key(character);
-        self.advances[SUPPORTED_SYMBOLS.iter().position(|ch| *ch == key)?]
+        self.advances[SUPPORTED_SYMBOLS.iter().position(|ch| *ch == character)?]
     }
 }
 
@@ -354,6 +428,24 @@ impl NativePuaFonts {
             && !face.is_variable()
             && face.tables().colr.is_none()
             && face.tables().svg.is_none();
+        // The compact measurement face below has no outlines. An empty glyph
+        // zero can still have an hmtx entry, so store its advance only if visible.
+        let notdef = ttf_parser::GlyphId(0);
+        let visible_notdef_advance = face
+            .glyph_bounding_box(notdef)
+            .filter(|bounds| bounds.x_min < bounds.x_max && bounds.y_min < bounds.y_max)
+            .and_then(|_| face.glyph_hor_advance(notdef))
+            .map(|advance| f64::from(advance) / f64::from(face.units_per_em()));
+        let visible_old_hangul_advances = (0xe000..=0xf8ff)
+            .filter_map(char::from_u32)
+            .filter_map(|character| {
+                super::pua_oldhangul::map_pua_old_hangul(character)?;
+                let glyph = face.glyph_index(character).filter(|id| id.0 != 0)?;
+                face.glyph_bounding_box(glyph)?;
+                let width = face.glyph_hor_advance(glyph)?;
+                (width > 0).then(|| (character, f64::from(width) / f64::from(face.units_per_em())))
+            })
+            .collect();
         let source_digest: [u8; 32] = Sha256::digest(bytes).into();
         let source_face_index = face_index;
         // FontEnvironment의 Native 신원 생성과 같은 입력·collection face를 소비한다.
@@ -362,14 +454,8 @@ impl NativePuaFonts {
         selection_digest.update(face_index.to_be_bytes());
         let selection_digest: [u8; 32] = selection_digest.finalize().into();
         let faux_bold = bold && !face.is_bold();
-        let verified_hft_bold_tracking = face.names().into_iter().any(|name| {
-            matches!(
-                name.name_id,
-                ttf_parser::name_id::FAMILY | ttf_parser::name_id::TYPOGRAPHIC_FAMILY
-            ) && name.to_string().is_some_and(|family| {
-                super::legacy_font_advances::has_verified_hft_bold_tracking_family(&family)
-            })
-        });
+        let verified_legacy_font_bold_tracking =
+            super::legacy_font_advances::tracking::has_verified_program_family(face.names());
         // CFF도 cmap/hmtx만 측정에 사용한다. 원본 신원·형식은 위에서 보존하고
         // 윤곽은 별도 paint 저장소가 소유하므로 측정 세션에 중복 보관하지 않는다.
         let compact = metric_sfnt::compact_metrics(bytes, face_index);
@@ -428,7 +514,9 @@ impl NativePuaFonts {
             faux_bold,
             cff,
             static_truetype,
-            verified_hft_bold_tracking,
+            visible_notdef_advance,
+            verified_legacy_font_bold_tracking,
+            visible_old_hangul_advances: Arc::new(visible_old_hangul_advances),
         });
         self.otf_programs
             .entry(family.to_owned())

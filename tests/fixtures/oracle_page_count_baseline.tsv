@@ -4,6 +4,32 @@
 # 정답지쪽수는 원본 형식·rhwp info --json 저장 제품 엔진이 일치하는 canonical PDF만 쓴다.
 # 형식 미표기·kopub/no-ttf 쪽수는 섞지 않는다. rhwp가 다르면 미해결 격차다.
 # 모아 찍기(print_method 4·5) 문서는 장 수가 애초에 달라 제외한다.
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-break-controls-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-break-controls.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-number-advances-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-number-advances.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-number-batang-bold-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-number-batang-bold.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-number-dotum-bold-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-number-dotum-bold.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-number-dotum-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-number-dotum.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-number-line-widths-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-number-line-widths.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-number-long-lines-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-number-long-lines.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-run-boundaries-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-run-boundaries.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-run-pairs-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-run-pairs.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-seal-mixed-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-seal-mixed.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-seal-ten-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-seal-ten.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/neighbors-v5-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/neighbors-v5.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/neighbors-v6-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/neighbors-v6.hwp	1	1
 samples/2010-01-06.hwp	6	6
 samples/2022년 국립국어원 업무계획.hwp	35	35
 samples/20250130-hongbo.hwp	4	4
@@ -32,6 +58,18 @@ samples/basic/treatise sample.hwp	7	7
 samples/bitmap.hwp	1	1
 samples/biz_plan.hwp	6	6
 samples/calc-cell.hwp	1	1
+samples/cell_negative_offset_stack/grid2x2.hwpx	1	1
+samples/cell_negative_offset_stack/pr9339-review/grid-center-aligned.hwpx	1	1
+samples/cell_negative_offset_stack/pr9339-review/grid-center-in.hwpx	1	1
+samples/cell_negative_offset_stack/pr9339-review/grid-center-out.hwpx	1	1
+samples/cell_negative_offset_stack/pr9339-review/grid-margin.hwpx	1	1
+samples/cell_negative_offset_stack/pr9339-review/grid-outside.hwpx	1	1
+samples/cell_negative_offset_stack/pr9339-review/grid-overlap-first.hwpx	1	1
+samples/cell_negative_offset_stack/pr9339-review/grid-overlap-one.hwpx	1	1
+samples/cell_negative_offset_stack/pr9339-review/grid-positive.hwpx	1	1
+samples/cell_negative_offset_stack/pr9339-review/grid-right-same.hwpx	1	1
+samples/cell_negative_offset_stack/pr9339-review/grid-right.hwpx	1	1
+samples/cell_negative_offset_stack/row3-mixed.hwpx	1	1
 samples/chart/가로막대형/3차원누적가로막대형.hwp	1	1
 samples/chart/가로막대형/3차원누적가로막대형.hwpx	1	1
 samples/chart/가로막대형/3차원묶은가로막대형.hwp	1	1
@@ -121,6 +159,8 @@ samples/hwp3-sample5.hwp	64	64
 samples/hwp_table_test-m.hwp	3	3
 samples/hwp_table_test.hwp	3	3
 samples/hwpctl_Action_Table__v1.1.hwp	16	16
+# 검증한 한컴 2024 독립 1-up: pdf/issue7772/hwpspec-hancom-one-up-2024.pdf.
+samples/hwpspec.hwp	178	178
 samples/hwpctl_ParameterSetID_Item_v1.2.hwp	74	74
 samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp	9	9
 samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwpx	9	9
@@ -181,6 +221,7 @@ samples/issue1510_coanchored_float_tables.hwpx	2	2
 samples/issue1663_coanchored_float_orphan.hwpx	2	2
 samples/issue1770_rowsplit_tolerance.hwpx	4	4
 samples/issue1835_tac_stale_height.hwp	3	3
+samples/issue1853_caption_precedes_body_split.hwpx	52	52
 samples/issue1893_clickhere_field_roundtrip.hwpx	1	1
 samples/issue1950_hwp3_tab_charoffset.hwp	1	1
 samples/issue2004_cell_image_stack.hwp	8	8
@@ -216,6 +257,18 @@ samples/issue3765/zone_switch_ladder_understates_page.hwpx	2	2
 samples/issue3837/stored_vpos_rewind_form.hwp	4	4
 samples/issue4514/sample1-repro.hwp	46	46
 samples/issue4889/18098267_nested_fragment_origin.hwp	3	3
+# 검증한 과거 경로: pdf/issue5140-version-boundary/issue5800-v5.0.1.5-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue5140-version-boundary/issue5800-v5.0.1.5.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/legacy-symbols-v5.0.1.5.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue5140-version-boundary/legacy-symbols-v5.0.1.5.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/legacy-symbols-v5.0.1.6.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue5140-version-boundary/legacy-symbols-v5.0.1.6.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/syloti-boundaries-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue5140-version-boundary/syloti-boundaries.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/syloti-mark-control-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue5140-version-boundary/syloti-mark-control.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/syloti-placeholders-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue5140-version-boundary/syloti-placeholders.hwp	1	1
 samples/issue5447/3차원묶은세로막대형-대조군.hwpx	1	1
 samples/issue5447/3차원묶은세로막대형-행추가.hwp	1	1
 samples/issue5447/3차원묶은세로막대형-행추가.hwpx	1	1
@@ -289,6 +342,8 @@ samples/issue5652/표식이있는꺽은선형-행추가.hwpx	1	1
 samples/issue5787/nested_square_table_horz_offset.hwp	1	1
 samples/issue5788/tac_table_missing_anchor_line_spacing.hwp	8	8
 samples/issue5798/offcolumn_float_table_no_band.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/issue5800-hancom-symbol-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue5800-hancom-symbol.hwp	1	1
 samples/issue5809/156518601_p1_square_host.hwpx	1	1
 samples/issue5818/cell_square_logo_text_wrap.hwpx	1	1
 samples/issue5821/condensed_ratio_title_box.hwpx	1	1
@@ -353,12 +408,20 @@ samples/issue8660/picture_in_front_with_table_host_over_12px.hwp	2	2
 samples/issue8660/picture_top_and_bottom_over_12px_text_follows.hwp	2	2
 samples/issue8660/picture_unrestricted_over_12px.hwp	1	1
 samples/issue8660/rect_top_and_bottom_over_12px.hwp	2	2
+# 검증한 과거 경로: pdf/issue886/1660000-201400009-kobe-earthquake-hancom-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue886/1660000-201400009-kobe-earthquake.hwp	64	64
 samples/issue9073/proficiency_test_result_form.hwpx	1	1
 samples/issue9073/veterans_summer_support_press_release.hwpx	2	2
 samples/issue9079/black_stork_restoration_press_release.hwpx	6	6
 samples/issue9085/facility_fee_reduction_criteria.hwpx	1	1
 samples/issue9087/hft-sinmyeong_sunmyeongjo-bold-probe.hwpx	4	4
 samples/issue9087/hft-sinmyeong_sunmyeongjo-probe.hwpx	4	4
+# 검증한 과거 경로: pdf/issue9272/trade-remedy-decree-table-tail-empty-lines-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue9272/trade-remedy-decree-table-tail-empty-lines.hwpx	7	7
+# 검증한 과거 경로: pdf/issue9279/forest-press-release-tac-table-shape-tail-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue9279/forest-press-release-tac-table-shape-tail.hwpx	3	3
+# 검증한 과거 경로: pdf/issue9285/child-product-safety-plan-wmf-mask-dib-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue9285/child-product-safety-plan-wmf-mask-dib.hwpx	9	9
 samples/issue_265.hwp	16	16
 samples/k-water-rfp-2024.hwp	27	27
 samples/k-water-rfp.hwp	27	27
@@ -382,6 +445,7 @@ samples/pic2-2018.hwp	2	2
 samples/pic2.hwp	2	2
 samples/pic2.hwpx	2	2
 samples/pr-149.hwp	1	1
+samples/pr-1674.hwp	35	35
 samples/pua-test.hwp	1	1
 samples/re-01-hangul-only-empty-hancom.hwp	1	1
 samples/re-01-hangul-only-hancom.hwp	1	1
@@ -692,3 +756,143 @@ samples/pr4093/outline_navigation_table_cell_number.hwpx	1	1
 samples/한글문서파일형식_5.0_revision1.3.hwp	71	71
 mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp	415	415
 samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp	103	103
+# 표·주석·도형 17개 원본의 독립 한컴 인쇄. 합계 19쪽.
+samples/semanticist21-20261123/inline-shape.hwp	1	1
+samples/semanticist21-20261123/inline-shape.hwpx	1	1
+samples/semanticist21-20261123/merged-grid-column.hwp	1	1
+samples/semanticist21-20261123/merged-grid-column.hwpx	1	1
+samples/semanticist21-20261123/merged-grid-row.hwp	1	1
+samples/semanticist21-20261123/merged-grid-row.hwpx	1	1
+samples/semanticist21-20261123/merged-grid-source.hwp	1	1
+samples/semanticist21-20261123/merged-grid-source.hwpx	1	1
+samples/semanticist21-20261123/nested-table.hwp	1	1
+samples/semanticist21-20261123/nested-table.hwpx	1	1
+samples/semanticist21-20261123/shadow-presets.hwpx	1	1
+samples/semanticist21-20261123/single-row-resize.hwp	1	1
+samples/semanticist21-20261123/single-row-resize.hwpx	1	1
+samples/semanticist21-20261123/table-cell-notes.hwp	2	2
+samples/semanticist21-20261123/table-cell-notes.hwpx	2	2
+samples/semanticist21-20261123/textbox-notes.hwp	1	1
+samples/semanticist21-20261123/textbox-notes.hwpx	1	1
+samples/143E433F503322BD33.hwp	1	1
+samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp	19	19
+samples/86712_regulatory_analysis.hwp	64	64
+samples/HWP5-nopassword-123456.hwpx	24	24
+samples/issue1891/86712_regulatory_analysis.hwpx	64	64
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	315	315
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper-split-behind-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_cell_paper_shape/paper-split-behind.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper-split-front-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_cell_paper_shape/paper-split-front.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper_front-hwp5-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_cell_paper_shape/paper_front.hwp	1	1
+# 검증한 과거 경로: pdf/paper_front-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_cell_paper_shape/paper_front.hwpx	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper_square-hwp5-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_cell_paper_shape/paper_square.hwp	1	1
+# 검증한 과거 경로: pdf/paper_square-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_cell_paper_shape/paper_square.hwpx	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper_square_nested-hwp5-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_cell_paper_shape/paper_square_nested.hwp	1	1
+# 검증한 과거 경로: pdf/paper_square_nested-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_cell_paper_shape/paper_square_nested.hwpx	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper_square_split-hwp5-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_cell_paper_shape/paper_square_split.hwp	2	2
+# 검증한 과거 경로: pdf/paper_square_split-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_cell_paper_shape/paper_square_split.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-bottom-margin10mm-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_overlay_nested/grow-bottom-margin10mm.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-last-row-content-fit-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_overlay_nested/grow-last-row-content-fit.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-tail-only-continuation-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_overlay_nested/grow-tail-only-continuation.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/overlay_nested_anchor_offset-hwp5-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_overlay_nested/overlay_nested_anchor_offset.hwp	1	1
+# 검증한 과거 경로: pdf/overlay_nested_anchor_offset-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_overlay_nested/overlay_nested_anchor_offset.hwpx	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/overlay_nested_center-hwp5-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_overlay_nested/overlay_nested_center.hwp	1	1
+# 검증한 과거 경로: pdf/overlay_nested_center-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_overlay_nested/overlay_nested_center.hwpx	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/overlay_nested_grow_split-hancom-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_overlay_nested/overlay_nested_grow_split-hancom.hwp	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/overlay_nested_grow_split-hwp5-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_overlay_nested/overlay_nested_grow_split.hwp	2	2
+# 검증한 과거 경로: pdf/overlay_nested_grow_split-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_overlay_nested/overlay_nested_grow_split.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/overlay_nested_split-hancom-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_overlay_nested/overlay_nested_split-hancom.hwp	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/overlay_nested_split-hwp5-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_overlay_nested/overlay_nested_split.hwp	2	2
+# 검증한 과거 경로: pdf/overlay_nested_split-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_overlay_nested/overlay_nested_split.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-bottom-align-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-bottom-align.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-bottom-margin0-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-bottom-margin0.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-declared-fit-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-declared-fit.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-declared-near-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-declared-near.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-declared-short-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-declared-short.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-declared-under-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-declared-under.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-inner-top0-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-inner-top0.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-inner-top900-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-inner-top900.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-page-before-large-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-page-before-large.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-page-before-small-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-page-before-small.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-page-near-large-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-page-near-large.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-page-near-small-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-page-near-small.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-parent-padding0-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-parent-padding0.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-parent-padding300-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-parent-padding300.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/overlay_nested_anchor_offset-hancom-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/overlay_nested_anchor_offset-hancom.hwp	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/overlay_nested_center-hancom-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/overlay_nested_center-hancom.hwp	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper-103300-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/paper-103300.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper-103900-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/paper-103900.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper-104500-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/paper-104500.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper-104800-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/paper-104800.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper-106000-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/paper-106000.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper-107200-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/paper-107200.hwpx	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper-split-latin-default-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/paper-split-latin-default.hwp	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper-split-latin-explicit-hcr-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/paper-split-latin-explicit-hcr.hwp	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper_front-hancom-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/paper_front-hancom.hwp	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper_square-hancom-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/paper_square-hancom.hwp	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper_square_nested-hancom-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/paper_square_nested-hancom.hwp	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper_square_split-hancom-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/paper_square_split-hancom.hwp	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/photo-a5-height-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/photo-a5-height.hwp	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/photo-right-overlap-neg-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/photo-right-overlap-neg.hwp	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/photo-short-page-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/photo-short-page.hwp	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/photo-center-overlap-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/side_by_side_photo_cell/photo-center-overlap.hwp	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/photo-left-touch-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/side_by_side_photo_cell/photo-left-touch.hwp	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/photo-right-overlap-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/side_by_side_photo_cell/photo-right-overlap.hwp	1	1
+# 검증한 과거 경로: pdf/side-by-side-photo-rows-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/side_by_side_photo_cell/side-by-side-photo-rows.hwp	1	1

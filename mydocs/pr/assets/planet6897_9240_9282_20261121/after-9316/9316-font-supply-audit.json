@@ -1,0 +1,13 @@
+{
+  "source": "8a196ca7aea2aa3cf32d394f5b7da2bdf4520479",
+  "conditions": 46,
+  "pages": 4046,
+  "synthetic_fixture_in_tree": false,
+  "synthetic_fixture_in_protected_receipts": false,
+  "sample10_hbatang_sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+  "files_sha256": {
+    "protected-pages": "c61d65fc414b7bf005fc020c4e7114777a908ecbf67e30d066957275eeed3bc5",
+    "protected-conditions": "2afa0279c8efeeceb0bbc62984d83197912185c5b0f6d25deb783e8f41a3cedd"
+  },
+  "empty_point_fixture_in_protected_receipts": false
+}

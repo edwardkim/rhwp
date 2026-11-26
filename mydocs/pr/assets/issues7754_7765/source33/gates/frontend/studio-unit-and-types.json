@@ -1,0 +1,34 @@
+{
+  "production_source": "adaa1963674e1a69c4369b80160ac6eb873bec1b",
+  "wasm_files": {
+    "rhwp.js": "f38b73899bde75b74e9eb4ed924627595dee12339706d4ed88eeaf5d7c9d81fe",
+    "rhwp_bg.wasm": "3c5dff21cb6a620f49b1a7328f3e3a07e9149faea631f62f4e0ec59b81b0ebee",
+    "rhwp.d.ts": "fa6f55bf282eb6a5c38a50eea2d45e9b1cfd8d27f3634aff124c7c464a04637e",
+    "rhwp_bg.wasm.d.ts": "18b2a546542b8301deccb30c54c7f5c8ad26440129ff408ca2226c685738f3b9"
+  },
+  "results": [
+    {
+      "label": "studio-unit",
+      "cwd": "/home/tsjang/rhwp/rhwp-studio",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-browser-gates/studio-unit.log",
+      "exit_code": 0,
+      "seconds": 54.479115328984335
+    },
+    {
+      "label": "studio-types",
+      "cwd": "/home/tsjang/rhwp/rhwp-studio",
+      "command": [
+        "node_modules/.bin/tsc",
+        "--noEmit"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-browser-gates/studio-types.log",
+      "exit_code": 0,
+      "seconds": 1.9523447519168258
+    }
+  ],
+  "scope": "Completed Studio Node unit and type checks only; browser and contributor gates are still pending."
+}

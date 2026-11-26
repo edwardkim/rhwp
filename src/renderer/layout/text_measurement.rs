@@ -417,13 +417,17 @@ fn compute_char_positions_walk(
     let supplemental = super::super::supplemental_metrics::standalone_scalar_mask(text, style);
     let contextual = super::super::arabic_context::advances(&chars, style);
     let char_width = |i: usize| -> f64 {
-        char_width_decision_with_hft_tracking(
+        measure_scalar_advance(
             &chars,
             &cluster_len,
             i,
             style,
             supplemental.as_ref().is_some_and(|mask| mask[i]),
-            include_hft_bold_tracking,
+            if include_hft_bold_tracking {
+                AdvancePurpose::Layout
+            } else {
+                AdvancePurpose::GlyphFit
+            },
             contextual.as_ref().and_then(|widths| widths[i]),
         )
         .final_width_px
@@ -556,13 +560,13 @@ impl EmbeddedTextMeasurer {
             let contextual =
                 super::super::arabic_context::advances_with_storage(&chars, style, storage)?;
             let char_width = |i: usize| -> f64 {
-                char_width_decision_with_hft_tracking(
+                measure_scalar_advance(
                     &chars,
                     &cluster_len,
                     i,
                     style,
                     supplemental.as_ref().is_some_and(|mask| mask[i]),
-                    true,
+                    AdvancePurpose::Layout,
                     contextual.as_ref().and_then(|widths| widths[i]),
                 )
                 .final_width_px
@@ -1067,7 +1071,27 @@ fn try_char_style_to_text_style<S: crate::renderer::style_resolver::storage::Sto
                 storage,
             )?,
             // [#7387] 공백은 run 의 언어 슬롯과 무관하게 영문 슬롯 글꼴이 정한다.
-            font_space_em: cs.font_space_em,
+            font_space_em: cs.font_space_em.or_else(|| {
+                // 정적 공백 계약이 없을 때도 원본 useFontSpace 선언을 잃지 않는다.
+                // 실제 선택한 동일 프로그램만 해소하며 generic fallback을 재지정하지 않는다.
+                if !styles
+                    .source_char_shapes
+                    .get(char_style_id as usize)?
+                    .use_font_space
+                {
+                    return None;
+                }
+                let identity = cs.font_families_primary_program.get(1).copied().flatten()?;
+                styles
+                    .native_pua_fonts
+                    .get_otf_for_source(
+                        cs.font_family_for_lang(1),
+                        cs.bold,
+                        cs.italic,
+                        styles.native_otf_metrics_source_ttf(char_style_id, 1),
+                    )?
+                    .selected_program_space_advance_em(&identity)
+            }),
             inherited_half_space_em: false,
             layout_half_space: false,
             layout_half_space_em: {
@@ -1296,6 +1320,7 @@ static KOPUB_DOTUM_LATIN_0: [u16; 95] = [
 
 /// 저장 줄의 재구성에 사용할 수 있는 실제 원본 전진 표인가.
 /// KoPub Dotum Light의 전진은 독립 Print와 TTF에서 확인했다(#7765).
+/// 맑은 고딕 regular도 원 TTF의 cmap·hmtx와 정적 표를 대조했다.
 /// 글꼴의 모든 문자를 인증하지 않으며 검증된 범위만 별도로 확인한다.
 pub(crate) fn verified_source_projection_face(face: &str, bold: bool, italic: bool) -> bool {
     let face = face.trim();
@@ -1304,7 +1329,15 @@ pub(crate) fn verified_source_projection_face(face: &str, bold: bool, italic: bo
         && (matches!(face, "KoPub돋움체 Light" | "KoPubDotum Light" | "KoPub Dotum Light")
             // 같은 Light 프로그램의 설치 조회 이름도 동일한 검증 범위를 쓴다.
             // Medium/Bold·World와 계열 이름만 같은 프로그램은 인증하지 않는다.
-            || super::super::installed_font_program_aliases("KoPub돋움체 Light").contains(&face))
+            || super::super::installed_font_program_aliases("KoPub돋움체 Light").contains(&face)
+            || matches!(face, "맑은 고딕" | "Malgun Gothic"))
+}
+
+fn verified_source_projection_character(face: &str, ch: char) -> bool {
+    (' '..='~').contains(&ch)
+        || ('가'..='힣').contains(&ch)
+        || (!matches!(face.trim(), "맑은 고딕" | "Malgun Gothic")
+            && super::kopub_symbol_metrics::advance_em(true, false, ch).is_some())
 }
 
 pub(crate) fn verified_source_projection_text(
@@ -1314,11 +1347,9 @@ pub(crate) fn verified_source_projection_text(
     text: &str,
 ) -> bool {
     verified_source_projection_face(face, bold, italic)
-        && text.chars().all(|ch| {
-            (' '..='~').contains(&ch)
-                || ('가'..='힣').contains(&ch)
-                || super::kopub_symbol_metrics::advance_em(true, false, ch).is_some()
-        })
+        && text
+            .chars()
+            .all(|ch| verified_source_projection_character(face, ch))
 }
 
 /// 원 프로그램의 확인된 결측을 같은 선언 체인의 실제 폭 공급자가 해소한 경우다.
@@ -1331,10 +1362,7 @@ pub(crate) fn verified_source_projection_text_with_fallback(style: &TextStyle, t
         return false;
     }
     text.chars().all(|ch| {
-        if (' '..='~').contains(&ch)
-            || ('가'..='힣').contains(&ch)
-            || super::kopub_symbol_metrics::advance_em(true, false, ch).is_some()
-        {
+        if verified_source_projection_character(primary, ch) {
             return true;
         }
         if font_metrics_data::verified_named_program_has_glyph(
@@ -2043,24 +2071,74 @@ pub(crate) fn char_width_decision<'a>(
     allow_supplemental: bool,
 ) -> CharWidthDecision<'a> {
     let contextual = super::super::arabic_context::advances(chars, style);
-    char_width_decision_with_hft_tracking(
+    measure_scalar_advance(
         chars,
         cluster_len,
         i,
         style,
         allow_supplemental,
-        true,
+        AdvancePurpose::Layout,
         contextual.as_ref().and_then(|widths| widths[i]),
     )
 }
 
-fn char_width_decision_with_hft_tracking<'a>(
+/// Resolve a missing Common Indic Number Form after all ordinary and prepared
+/// advances. A supplied real glyph wins even in a font whose original type
+/// was unspecified. The Hancom fallback applies only to a verified HCR miss.
+fn indic_number_fallback_advance(
+    style: &TextStyle,
+    ch: char,
+    width_source: &str,
+    purpose: AdvancePurpose,
+) -> Option<(f64, &'static str)> {
+    if width_source != "heuristicHalfwidth" || style.source_font_is_hft {
+        return None;
+    }
+    let family = style
+        .metric_font_family
+        .as_deref()
+        .unwrap_or(&style.font_family);
+    let print_em =
+        font_metrics_data::indic_number_print_notdef_em(family, style.bold, style.italic, ch)?;
+    if let Some(font) = style
+        .native_otf_metrics
+        .as_deref()
+        .filter(|font| font.has_glyph(ch))
+    {
+        return font
+            .source_ttf_advance_em(ch)
+            .map(|em| (em, "nativeTrueType"))
+            .or_else(|| font.advance_em(ch).map(|em| (em, "nativeOtf")));
+    }
+    // Hancom breaks the line using the document's unassigned character slot.
+    // Its visible substitute is fitted inside the resulting line: an isolated
+    // Gulim glyph zero gets a full em, while 85 slots fit in a 425.2 pt line
+    // at 10 pt. Real character glyphs above keep their own advance throughout.
+    if purpose == AdvancePurpose::LineBreak {
+        return None;
+    }
+    let explicit_em = style
+        .native_otf_metrics
+        .as_deref()
+        .filter(|_| style.glyph_fallback_advance_explicit)
+        .and_then(|font| font.visible_notdef_advance_em());
+    Some((explicit_em.unwrap_or(print_em), "missingGlyphAdvance"))
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum AdvancePurpose {
+    LineBreak,
+    Layout,
+    GlyphFit,
+}
+
+fn measure_scalar_advance<'a>(
     chars: &[char],
     cluster_len: &[u8],
     i: usize,
     style: &'a TextStyle,
     allow_supplemental: bool,
-    include_hft_bold_tracking: bool,
+    purpose: AdvancePurpose,
     contextual_advance: Option<f64>,
 ) -> CharWidthDecision<'a> {
     let (font_size, ratio, _) = style_params(style);
@@ -2074,7 +2152,7 @@ fn char_width_decision_with_hft_tracking<'a>(
         .as_ref()
         .is_some_and(|program| program.advance_em(chars[i]).is_some())
     {
-        super::super::composer::hancom_symbol_display_key(chars[i])
+        chars[i]
     } else {
         super::super::composer::single_scalar_display_char(chars[i])
     };
@@ -2160,13 +2238,13 @@ fn char_width_decision_with_hft_tracking<'a>(
                 .literal_figure_space_em
                 .map(|em| font_size * em)
                 .unwrap_or_else(|| {
-                    char_width_decision_with_hft_tracking(
+                    measure_scalar_advance(
                         &['0'],
                         &[1],
                         0,
                         style,
                         false,
-                        false,
+                        AdvancePurpose::GlyphFit,
                         None,
                     )
                     .base_width_px
@@ -2225,6 +2303,14 @@ fn char_width_decision_with_hft_tracking<'a>(
             None,
             "exact",
         )
+    } else if let Some(em) = font_metrics_data::implicit_double_rule_advance_em(chars[i]) {
+        em_exact = Some(em);
+        (
+            quantize_hwp_px(font_size * em),
+            "implicitSymbolProgram",
+            None,
+            "hit",
+        )
     } else if let Some(em) = style
         .native_pua_metrics
         .as_ref()
@@ -2265,26 +2351,42 @@ fn char_width_decision_with_hft_tracking<'a>(
                 )
             })
             .flatten();
-        let old_glyph_metric = cluster_glyph
-            .filter(|glyph| crate::renderer::pua_oldhangul::is_pua_old_hangul(*glyph))
-            .and_then(|glyph| {
-                style
-                    .selected_primary_font_program
-                    .and_then(|_| {
-                        font_metrics_data::old_hangul_syllable_advance_em(
-                            css_primary_face(display_family),
-                            style.bold,
-                            style.italic,
-                            glyph,
-                        )
-                    })
-                    .map(|em| (glyph, em, None))
-                    .or_else(|| {
-                        if latin.is_some() {
-                            return None;
-                        }
-                        font_metrics_data::declared_old_hangul_fallback(style, glyph)
-                            .map(|(metric, em)| (glyph, em, Some(metric)))
+        // 표시용 원 glyph를 선택해도 저장 HFT의 전진폭 계약은 유지한다.
+        // 실제 프로그램의 hmtx는 자연 메트릭을 요청했거나 HFT가 아닌 경로에서만 쓴다.
+        let old_glyph_metric = (cluster_len[i] > 1
+            && (!style.source_font_is_hft || style.natural_program_metrics))
+            .then(|| {
+                crate::renderer::pua_glyph::source_program_glyph(
+                    style,
+                    &chars[i..i + usize::from(cluster_len[i])]
+                        .iter()
+                        .collect::<String>(),
+                )
+            })
+            .flatten()
+            .map(|(glyph, advance)| (glyph, advance, None))
+            .or_else(|| {
+                cluster_glyph
+                    .filter(|glyph| crate::renderer::pua_oldhangul::is_pua_old_hangul(*glyph))
+                    .and_then(|glyph| {
+                        style
+                            .selected_primary_font_program
+                            .and_then(|_| {
+                                font_metrics_data::old_hangul_syllable_advance_em(
+                                    css_primary_face(display_family),
+                                    style.bold,
+                                    style.italic,
+                                    glyph,
+                                )
+                            })
+                            .map(|em| (glyph, em, None))
+                            .or_else(|| {
+                                if latin.is_some() {
+                                    return None;
+                                }
+                                font_metrics_data::declared_old_hangul_fallback(style, glyph)
+                                    .map(|(metric, em)| (glyph, em, Some(metric)))
+                            })
                     })
             });
         let metric_character = cluster_glyph
@@ -2301,19 +2403,20 @@ fn char_width_decision_with_hft_tracking<'a>(
         let source_ttf = latin.map_or(style.source_font_is_ttf, |slot| slot.source_font_is_ttf);
         let regular_bold_advance = !source_hft && (source_ttf || original_glyph_face.is_none());
         let implicit_symbol_em = font_metrics_data::implicit_symbol_advance_em(chars[i]);
-        let verified_non_hft_em = (!source_hft && metric_character == '\u{25AA}')
-            .then(|| {
-                font_metrics_data::find_metric(
-                    css_primary_face(measured_family),
-                    measured_bold,
-                    style.italic,
-                )
-            })
-            .flatten()
-            .and_then(|found| {
-                font_metrics_data::verified_non_hft_glyph_width(found.metric, metric_character)
-                    .map(|width| f64::from(width) / f64::from(found.metric.em_size))
-            });
+        let verified_non_hft_em = (!source_hft
+            && matches!(metric_character, '\u{25AA}' | '\u{25E6}'))
+        .then(|| {
+            font_metrics_data::find_metric(
+                css_primary_face(measured_family),
+                measured_bold,
+                style.italic,
+            )
+        })
+        .flatten()
+        .and_then(|found| {
+            font_metrics_data::verified_non_hft_glyph_width(found.metric, metric_character)
+                .map(|width| f64::from(width) / f64::from(found.metric.em_size))
+        });
         let original_glyph_em = implicit_symbol_em
             .or_else(|| {
                 original_glyph_face.and_then(|face| {
@@ -2793,9 +2896,16 @@ fn char_width_decision_with_hft_tracking<'a>(
     })
     .flatten();
     let supplemented = supplement.is_some();
-    let (base_width_raw, width_source) = supplement
-        .map(|entry| (entry.natural_advance_px(), entry.width_source()))
-        .unwrap_or((base_width_raw, width_source));
+    let (base_width_raw, width_source) = if let Some(entry) = supplement {
+        (entry.natural_advance_px(), entry.width_source())
+    } else if let Some((em, source)) =
+        indic_number_fallback_advance(style, c, width_source, purpose)
+    {
+        em_exact = Some(em);
+        (font_size * em, source)
+    } else {
+        (base_width_raw, width_source)
+    };
     let base_width_px = if clamp_dash_leader {
         base_width_raw.min(font_size * 0.3)
     } else {
@@ -2806,7 +2916,7 @@ fn char_width_decision_with_hft_tracking<'a>(
     // 본문용 굵기 자간을 빌리지 않는다. 준비된 원 PUA 프로그램·본문 글리프와
     // 리터럴 Unicode 문자는 기존의 자기 프로그램 계약을 유지한다.
     let include_hft_bold_tracking =
-        include_hft_bold_tracking && width_source != "implicitSymbolProgram";
+        purpose != AdvancePurpose::GlyphFit && width_source != "implicitSymbolProgram";
     // 원본 HFT의 굵기는 intrinsic 글리프 폭을 바꾸지 않고 약0.05em의
     // 추가 전진을 준다. 독립 Print 22행의 굵기·크기·자간 대조를 따른다.
     // 표시용 TTF의 bold 메트릭이나 배분 자간과 구분하고 원본 자간을 함께 소비한다.
@@ -3016,6 +3126,27 @@ pub(crate) fn estimate_text_width_unrounded_with_storage<S: crate::storage::Stor
     style: &TextStyle,
     storage: &S,
 ) -> Result<f64, S::Error> {
+    measure_unrounded(text, style, AdvancePurpose::Layout, storage)
+}
+
+pub(crate) fn line_break_text_width(text: &str, style: &TextStyle) -> f64 {
+    match measure_unrounded(
+        text,
+        style,
+        AdvancePurpose::LineBreak,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(width) => width,
+        Err(never) => match never {},
+    }
+}
+
+fn measure_unrounded<S: crate::storage::Storage>(
+    text: &str,
+    style: &TextStyle,
+    purpose: AdvancePurpose,
+    storage: &S,
+) -> Result<f64, S::Error> {
     let (_, _, tab_w) = style_params(style);
     let chars: Vec<char> = storage.collect(text.chars())?;
     let cluster_len = build_cluster_len_with_storage(&chars, storage)?;
@@ -3026,13 +3157,13 @@ pub(crate) fn estimate_text_width_unrounded_with_storage<S: crate::storage::Stor
     )?;
     let contextual = super::super::arabic_context::advances_with_storage(&chars, style, storage)?;
     let char_width = |i: usize| -> f64 {
-        char_width_decision_with_hft_tracking(
+        measure_scalar_advance(
             &chars,
             &cluster_len,
             i,
             style,
             supplemental.as_ref().is_some_and(|mask| mask[i]),
-            true,
+            purpose,
             contextual.as_ref().and_then(|widths| widths[i]),
         )
         .final_width_px
@@ -3763,7 +3894,7 @@ mod tests {
     /// 회귀 시(원명 미해소 → 휴리스틱 폴백) embedded 커버리지 구멍이
     /// 셀 재래핑 줄수를 바꾼다 (#2430 재래핑 오발동의 재발 형태).
     #[test]
-    fn issue_2430_hft_faces_ascii_embedded_coverage() {
+    fn issue_2430_legacy_faces_ascii_embedded_coverage() {
         let fs = 40.0 / 3.0; // 10pt = 13.333px
         for fam in [
             "한양신명조",

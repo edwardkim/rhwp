@@ -1,3 +1,10 @@
+//! 관계형·고정형 회귀 — 원본 문서의 한글·영문 구두점 소속과 조건부 출력 기준.
+//! 주석 갱신 2026-11-23 KST. 직전 파일 변경 2026-10-24T15:11:35+09:00
+//! `60972534680a0c5e51e54ec189b92e252e81a867`.
+//! 채용 공고는 2026-11-23 한컴 2020 Print에 96 DPI 2px raw 실루엣으로 대조했다.
+//! 35쪽 Native/fresh WASM 최저 98.38/98.51%, 2쪽 각각 99.65%.
+//! 채용 공고의 한컴바탕 쉼표와 뒤 단어의 소속은 `mydocs/pr/assets/issue7776/`을 근거로 한다.
+//!
 //! C449: 원문/독립 Print74쪽의 Native/fresh WASM 전쪽 raw90과 직접 판독 후 보강한다.
 //! p8은 양쪽99.9988% 이상이므로 독립 PDF Tm/cm의 핵심 좌표를 ±2 CSS px로 보호한다.
 //! 과거7807021b76에서 분리했던 8쪽 줄 소속/74쪽 계약도 원문 소유 관계와 함께 복원한다.
@@ -309,4 +316,38 @@ fn plain_label_keeps_its_closing_line_beside_a_nested_continuation() {
         fragments[1][1], expected[1],
         "37쪽은 조문 번호만 이어받는다"
     );
+}
+
+#[test]
+fn pr1674_commas_use_the_preceding_hangul_slot() {
+    let bytes = include_bytes!("../../samples/pr-1674.hwp");
+    let core = DocumentCore::from_bytes(bytes).expect("채용 공고 원본");
+    let trace = core
+        .get_font_decision_trace_native(1, r#"{"maxCharacters":4096}"#)
+        .expect("2쪽 구두점의 원본 글꼴 추적");
+    let trace: serde_json::Value = serde_json::from_str(&trace).expect("글꼴 추적 JSON");
+    let records = trace["records"].as_array().expect("쪽 전체 글자 추적");
+    let mut offsets = Vec::new();
+    for pair in records.windows(2) {
+        let [preceding, comma] = pair else {
+            unreachable!()
+        };
+        let source = &comma["source"];
+        if source["paragraphIndex"] != 15
+            || source["character"] != ","
+            || !matches!(source["charOffset"].as_u64(), Some(6 | 14 | 24 | 33))
+        {
+            continue;
+        }
+        let document = &comma["document"];
+        assert_eq!(source["runIndex"], preceding["source"]["runIndex"]);
+        assert_eq!(document["inheritedLanguageSlot"], 0);
+        assert_eq!(document["face"], "한컴바탕");
+        assert_eq!(
+            comma["layoutMetric"]["requestedFace"], preceding["layoutMetric"]["requestedFace"],
+            "쉼표가 앞 한글과 같은 글꼴에서 전진폭을 읽는다"
+        );
+        offsets.push(source["charOffset"].as_u64().unwrap());
+    }
+    assert_eq!(offsets, [6, 14, 24, 33]);
 }

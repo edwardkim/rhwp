@@ -9,6 +9,14 @@ pub(super) fn source_vertical_positions(para: &Paragraph) -> Option<&[i32]> {
         .filter(|positions| positions.len() == para.line_segs.len())
 }
 
+/// 본문에 원본 쪽·단 좌표가 있으면, 편집기가 다시 만든 줄은 그 좌표계를 보증할 수 없다.
+/// HWPX의 선택적 줄 캐시를 생략하면 소비자가 자기 조판 결과로 경계를 정한다.
+pub(super) fn body_uses_source_line_frames(paragraphs: &[Paragraph]) -> bool {
+    paragraphs
+        .iter()
+        .any(|para| para.source_line_seg_vertical_pos.is_some() || para.rebuilt_source_line_frame)
+}
+
 /// 편집/재조판 결과의 미계산 탭은 소비자가 다시 계산하도록 캐시를 생략한다.
 /// 원본에서 읽은 정상 줄 분할은 미계산 탭 하나만으로 폐기하지 않는다.
 /// `layout_space_metrics`는 줄 구성 결과와 함께 게시되는 재조판 출처이며,
@@ -34,6 +42,11 @@ pub(super) fn can_serialize_line_partition(para: &Paragraph) -> bool {
 
 /// 재구성된 축의 단독 표 줄은 문자 분할이 없고 원본 쪽 좌표도 아니다.
 /// HWPX 소비자가 표의 물리 상자로 줄을 다시 구성하도록 해당 캐시만 생략한다.
-pub(super) fn can_serialize_hwpx_line_partition(para: &Paragraph) -> bool {
-    can_serialize_line_partition(para) && !para.rebased_single_table_row()
+pub(super) fn can_serialize_hwpx_line_partition(
+    para: &Paragraph,
+    body_uses_source_frames: bool,
+) -> bool {
+    can_serialize_line_partition(para)
+        && !para.rebased_single_table_row()
+        && (!body_uses_source_frames || source_vertical_positions(para).is_some())
 }

@@ -1,0 +1,38 @@
+{
+  "print": {
+    "engine": "2024",
+    "hancom_version": "13.0.0.4225",
+    "pdf_output_mode": "hancom2024_pdf_driver_one_up",
+    "pdf_print_method": 0
+  },
+  "pages": [
+    1,
+    1
+  ],
+  "raster": [
+    {
+      "dpi": 96,
+      "original": "0aa684002be743a8321798f03ff9af131a96173349acce03783623b4d6d335db",
+      "padded": "0aa684002be743a8321798f03ff9af131a96173349acce03783623b4d6d335db",
+      "identical": true
+    },
+    {
+      "dpi": 192,
+      "original": "544d1031244d068bf07329acd574646f25b5964eff44b93bbe2ba7664b2d8551",
+      "padded": "544d1031244d068bf07329acd574646f25b5964eff44b93bbe2ba7664b2d8551",
+      "identical": true
+    }
+  ],
+  "files": {
+    "samples/issue1921/59043_regulatory_analysis.hwp": "da9f9c9862475d1710f6ecf93e3ce134726054fe0be0d9523b9d60d1a90c82ef",
+    "samples/semanticist21-20261123/jpeg-exif-original-photo.hwpx": "e06189ef799276a8acbc270edb96f80868ca30e689a32b63796fdc41463de964",
+    "pdf/issue1921/59043_regulatory_analysis-2022.pdf": "fade38ba20113ab52eaf42c55eec207943fe66e1b18efdeee06bfa65a1d64fa1",
+    "pdf/semanticist21-20261123/59043_regulatory_analysis-2024.pdf": "024df9a449dc84e9f07c719eb7ec95cd85cf7e945a1fbaabf77141ccf54402dc",
+    "pdf/semanticist21-20261123/jpeg-exif-original-photo-2024.pdf": "13fab0c8426ac50694af2f4f6991a693ff8a3029d5bd394c7317ac5b407b0c1c",
+    "padded.hwpx": "fc9c34a50951f692b1206fa2348b980328c83a290c1363e71fcaf7c44da8fb1f",
+    "padded-2024.pdf": "1500e45f0387023728f73cfc43fec8cf67334ca8ee50626a046d7a51fce97e8f",
+    "orientation-one.hwpx": "b8ba93f86805bbd94515d482cf06038dc8ba959cbe5a18761fb94d0d55171812",
+    "original-photo.jpg": "f086a28321e8902efe93dc2d509a8f8a521b89fa8b1b933f7998dabb754f0649",
+    "marker-padding.jpg": "d2eb995c9e4f43ad644847821ce65b6bf2bd956e229df2f24fd9279272741bc2"
+  }
+}

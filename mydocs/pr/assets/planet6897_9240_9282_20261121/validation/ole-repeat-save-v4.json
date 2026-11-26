@@ -1,0 +1,110 @@
+{
+  "source_sha256": "7ee3c3ef43b95204383b800fbe36644e7eb5730f399065ebc90bab3c269082a2",
+  "hwp_records": [
+    {
+      "bin_data_id": 3,
+      "extent": [
+        47625,
+        16500
+      ],
+      "border_color": 0,
+      "border_width": 0,
+      "border_attr": 3221225473,
+      "ole_record_sha256": "96889dee012a55636a9c6cf3fab8dcc3ce201eebca5ca50246a2678075c6c405"
+    },
+    {
+      "bin_data_id": 4,
+      "extent": [
+        47925,
+        11324
+      ],
+      "border_color": 0,
+      "border_width": 0,
+      "border_attr": 3221225473,
+      "ole_record_sha256": "d88e913144a6e7c99d8f3b404dd1617481c8763923a3f58265359fba34e7d285"
+    }
+  ],
+  "ole_payloads_sha256": [
+    "701c3139052181b5e258114d7df477e8a140ff2f2ee2e9f887ab1f7a74e46fbc",
+    "c6a57b7ae84b5b096698a9abcdc28dc34e85d1bb03a142e39daeccbe062f490e"
+  ],
+  "hwpx_records": [
+    {
+      "item_id": "image3",
+      "instance": "1435041374",
+      "path": "BinData/image3.OLE",
+      "extent": [
+        47625,
+        16500
+      ],
+      "border": {
+        "color": "#000000",
+        "width": "0",
+        "style": "SOLID",
+        "endCap": "ROUND",
+        "headStyle": "NORMAL",
+        "tailStyle": "NORMAL",
+        "headfill": "1",
+        "tailfill": "1",
+        "headSz": "SMALL_SMALL",
+        "tailSz": "SMALL_SMALL",
+        "outlineStyle": "NORMAL",
+        "alpha": "0"
+      },
+      "payload_sha256": "c6a57b7ae84b5b096698a9abcdc28dc34e85d1bb03a142e39daeccbe062f490e"
+    },
+    {
+      "item_id": "image4",
+      "instance": "1435041387",
+      "path": "BinData/image4.OLE",
+      "extent": [
+        47925,
+        11324
+      ],
+      "border": {
+        "color": "#000000",
+        "width": "0",
+        "style": "SOLID",
+        "endCap": "ROUND",
+        "headStyle": "NORMAL",
+        "tailStyle": "NORMAL",
+        "headfill": "1",
+        "tailfill": "1",
+        "headSz": "SMALL_SMALL",
+        "tailSz": "SMALL_SMALL",
+        "outlineStyle": "NORMAL",
+        "alpha": "0"
+      },
+      "payload_sha256": "701c3139052181b5e258114d7df477e8a140ff2f2ee2e9f887ab1f7a74e46fbc"
+    }
+  ],
+  "cli_producer_sha256": "fe91bd066efaf1f8b01becf3a1faaa1b6260834c8ebaabbd5a9df3f5a7996892",
+  "edit_and_reopen_generations_per_format": 2,
+  "hwp_to_hwpx_verified": true,
+  "source_path": "samples/issue9239/senior-employment-policy-caption-float-table.hwp",
+  "source_head": "19646e69fc99ba76f9ff0350c2a425fe07ec1e88",
+  "cli_check": "edit insert-text --verify ×2, search --json final reopen, export-hwpx --verify",
+  "input_and_outputs": [
+    {
+      "name": "pass0.hwpx",
+      "sha256": "709154250dd83a5a5b04488eab80a8904169e3ac8609d32a502bf72c698b43f6"
+    },
+    {
+      "name": "pass1.hwp",
+      "sha256": "c32939be391410ce55138b9e0be6105e1d7a90a4ae47177a4e10ea0154483c2c"
+    },
+    {
+      "name": "pass1.hwpx",
+      "sha256": "2555d775245aae0a5fe3bca0fa2420aa3d03479aba9e58335a56b4f1d3ef6ca3"
+    },
+    {
+      "name": "pass2.hwp",
+      "sha256": "c0bce1e4a5a30029d89413d0e9bce4a434f7895a4afd6dd7e06db3dc4787ec75"
+    },
+    {
+      "name": "pass2.hwpx",
+      "sha256": "e1832a09040299901c32e5ed5183fccce3abd6693a1279d2b74d8b52dc83ed3d"
+    }
+  ],
+  "independent_check": "CFB/BodyText SHAPE_OLE payload and BinData SHA-256; ZIP content.hpf and OLE extent, border and binaryItemIDRef"
+}

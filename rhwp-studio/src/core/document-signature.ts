@@ -29,6 +29,10 @@ function startsWithBytes(bytes: Uint8Array, signature: readonly number[]): boole
   return signature.every((byte, index) => bytes[index] === byte);
 }
 
+export function isHwp3Document(bytes: Uint8Array): boolean {
+  return startsWithBytes(bytes, HWP3_SIGNATURE);
+}
+
 function decodeXmlPrefix(bytes: Uint8Array): string {
   const prefixLength = Math.min(bytes.length, 64 * 1024);
   if (startsWithBytes(bytes, [0xFF, 0xFE])) {
@@ -84,7 +88,7 @@ export function detectDocumentByteKind(
   contentType?: string | null,
 ): DocumentByteKind {
   if (startsWithBytes(bytes, HWP_CFB_SIGNATURE)) return 'hwp';
-  if (startsWithBytes(bytes, HWP3_SIGNATURE)) return 'hwp';
+  if (isHwp3Document(bytes)) return 'hwp';
   if (ZIP_SIGNATURES.some(signature => startsWithBytes(bytes, signature))) return 'zip';
 
   const prefix = decodeXmlPrefix(bytes).trimStart();

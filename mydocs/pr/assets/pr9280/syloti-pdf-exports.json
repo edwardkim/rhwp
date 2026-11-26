@@ -1,0 +1,38 @@
+[
+  {
+    "format": "HWP",
+    "backend": "direct",
+    "pages": 1,
+    "circle_traces": 6,
+    "text": "B◌꠆C\nꠇ꠆C\n◌꠆C\nB◌꠆◌꠆\nC\n◌꠆C\nB◌꠆ꠇ꠆C\nU+A810: AꠐB\nNEXT\nU+A811: AꠑB\nNEXT\nU+A813: AꠓB\nNEXT\nU+A817: AꠗB\nNEXT\nU+A81A: AꠚB\nNEXT\nU+A81C: AꠜB\nNEXT\nU+A827: AꠧB\nNEXT\nU+A832: A\u0000B\nNEXT\nU+A848: AꡈB\nNEXT\n",
+    "image_sha256": "bc4cc2d52e7f9a51bed2c962abd2369c729e3bfaa02001aaa3c9e75b9e77e14a",
+    "pdf_sha256": "e64d15a1e13a0b492ebcf7b2bd75de2ee2d966f1e26892f4146bcf5ddd8bfd3f"
+  },
+  {
+    "format": "HWP",
+    "backend": "svg",
+    "pages": 1,
+    "circle_traces": 6,
+    "text": "B◌꠆C\nꠇ꠆C\n◌꠆C\nB◌꠆◌꠆\nC\n◌꠆C\nB◌꠆ꠇ꠆C\nU+A810: AꠐB\nNEXT\nU+A811: AꠑB\nNEXT\nU+A813: AꠓB\nNEXT\nU+A817: AꠗB\nNEXT\nU+A81A: AꠚB\nNEXT\nU+A81C: AꠜB\nNEXT\nU+A827: AꠧB\nNEXT\nU+A832: A\nB\nNEXT\nU+A848: AꡈB\nNEXT\n",
+    "image_sha256": "a2660371e1c4c0dc0049b43c82aac1d3086a4c04beac09a4c0a766664d410a8f",
+    "pdf_sha256": "2fb3374b44177873168b57bf08aa4eacd44f51cb776c29baa3658dbab48a61ab"
+  },
+  {
+    "format": "HWPX",
+    "backend": "direct",
+    "pages": 1,
+    "circle_traces": 6,
+    "text": "B◌꠆C\nꠇ꠆C\n◌꠆C\nB◌꠆◌꠆\nC\n◌꠆C\nB◌꠆ꠇ꠆C\nU+A810: AꠐB\nNEXT\nU+A811: AꠑB\nNEXT\nU+A813: AꠓB\nNEXT\nU+A817: AꠗB\nNEXT\nU+A81A: AꠚB\nNEXT\nU+A81C: AꠜB\nNEXT\nU+A827: AꠧB\nNEXT\nU+A832: A\u0000B\nNEXT\nU+A848: AꡈB\nNEXT\n",
+    "image_sha256": "bc4cc2d52e7f9a51bed2c962abd2369c729e3bfaa02001aaa3c9e75b9e77e14a",
+    "pdf_sha256": "e64d15a1e13a0b492ebcf7b2bd75de2ee2d966f1e26892f4146bcf5ddd8bfd3f"
+  },
+  {
+    "format": "HWPX",
+    "backend": "svg",
+    "pages": 1,
+    "circle_traces": 6,
+    "text": "B◌꠆C\nꠇ꠆C\n◌꠆C\nB◌꠆◌꠆\nC\n◌꠆C\nB◌꠆ꠇ꠆C\nU+A810: AꠐB\nNEXT\nU+A811: AꠑB\nNEXT\nU+A813: AꠓB\nNEXT\nU+A817: AꠗB\nNEXT\nU+A81A: AꠚB\nNEXT\nU+A81C: AꠜB\nNEXT\nU+A827: AꠧB\nNEXT\nU+A832: A\nB\nNEXT\nU+A848: AꡈB\nNEXT\n",
+    "image_sha256": "a2660371e1c4c0dc0049b43c82aac1d3086a4c04beac09a4c0a766664d410a8f",
+    "pdf_sha256": "2fb3374b44177873168b57bf08aa4eacd44f51cb776c29baa3658dbab48a61ab"
+  }
+]

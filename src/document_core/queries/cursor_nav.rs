@@ -7,7 +7,7 @@ use super::super::helpers::{
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
-use crate::model::paragraph::Paragraph;
+use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::renderer::render_tree::TextRunNode;
 
 /// 선택 영역이 문단 끝을 넘을 때 글자 끝에 더 칠하는 문단 부호 폭(px, 2.5pt).
@@ -1927,71 +1927,81 @@ impl DocumentCore {
             }
         }
 
+        // 본문 캐럿과 선택 줄의 시작이 같은 인라인 개체의 논리 칸을 사용한다.
+        fn body_cursor_control_index(
+            node: &RenderNode,
+            section: usize,
+            paragraph: usize,
+            source: &Paragraph,
+        ) -> Option<usize> {
+            match &node.node_type {
+                RenderNodeType::Equation(eq)
+                    if eq.cell_index.is_none()
+                        && eq.section_index == Some(section)
+                        && eq.para_index == Some(paragraph) =>
+                {
+                    eq.control_index
+                }
+                RenderNodeType::FormObject(form)
+                    if form.cell_location.is_none()
+                        && form.section_index == section
+                        && form.para_index == paragraph
+                        && source
+                            .controls
+                            .get(form.control_index)
+                            .is_some_and(Control::is_treat_as_char_object) =>
+                {
+                    Some(form.control_index)
+                }
+                _ => None,
+            }
+        }
+
         fn find_body_cursor(
             node: &RenderNode,
             sec: usize,
             para: usize,
-            render_para: Option<&Paragraph>,
+            render_para: &Paragraph,
             offset: usize,
             page: u32,
             bias: CursorBias,
         ) -> Option<CursorHit> {
-            let control_positions = render_para
-                .map(find_logical_control_positions)
-                .unwrap_or_default();
+            let control_positions = find_logical_control_positions(render_para);
 
             fn visit(
                 node: &RenderNode,
                 sec: usize,
                 para: usize,
-                render_para: Option<&Paragraph>,
+                render_para: &Paragraph,
                 control_positions: &[usize],
                 offset: usize,
                 page: u32,
                 bias: CursorBias,
                 best: &mut Option<(u8, CursorHit)>,
             ) {
-                let address = match &node.node_type {
-                    RenderNodeType::Equation(eq) if eq.cell_index.is_none() => eq
-                        .section_index
-                        .zip(eq.para_index)
-                        .zip(eq.control_index)
-                        .map(|((s, p), c)| (s, p, c)),
-                    RenderNodeType::FormObject(form)
-                        if form.cell_location.is_none()
-                            && render_para
-                                .and_then(|p| p.controls.get(form.control_index))
-                                .is_some_and(Control::is_treat_as_char_object) =>
-                    {
-                        Some((form.section_index, form.para_index, form.control_index))
-                    }
-                    _ => None,
-                };
-                if let Some((s, p, ci)) = address {
-                    if s == sec && p == para {
-                        if let Some(pos) = control_positions.get(ci).copied() {
-                            if offset == pos || offset == pos + 1 {
-                                let x = if offset == pos {
-                                    node.bbox.x
-                                } else {
-                                    node.bbox.x + node.bbox.width
-                                };
-                                update_best_cursor(
-                                    best,
-                                    if matches!(node.node_type, RenderNodeType::FormObject(_)) {
-                                        cursor_score(offset, pos, 1, bias)
-                                    } else {
-                                        0
-                                    },
-                                    CursorHit {
-                                        page,
-                                        x,
-                                        y: node.bbox.y,
-                                        h: node.bbox.height.max(10.0),
-                                    },
-                                );
-                            }
-                        }
+                if let Some(&pos) = body_cursor_control_index(node, sec, para, render_para)
+                    .and_then(|index| control_positions.get(index))
+                {
+                    if offset == pos || offset == pos + 1 {
+                        let x = if offset == pos {
+                            node.bbox.x
+                        } else {
+                            node.bbox.x + node.bbox.width
+                        };
+                        update_best_cursor(
+                            best,
+                            if matches!(node.node_type, RenderNodeType::FormObject(_)) {
+                                cursor_score(offset, pos, 1, bias)
+                            } else {
+                                0
+                            },
+                            CursorHit {
+                                page,
+                                x,
+                                y: node.bbox.y,
+                                h: node.bbox.height.max(10.0),
+                            },
+                        );
                     }
                 }
 
@@ -2254,6 +2264,7 @@ impl DocumentCore {
             para: usize,
             render_para: &Paragraph,
             target: Option<SelectionCellTarget<'_>>,
+            control_positions: &[usize],
             starts: &mut Vec<usize>,
         ) {
             // 본문 선택에 머리말·꼬리말·주석·캡션의 같은 문단 번호를 섞지 않는다.
@@ -2270,53 +2281,56 @@ impl DocumentCore {
                 if line.caption_owner.is_some() {
                     return;
                 }
-                // 빈 양식 줄의 종단 TextRun은 가시 글자 시작을 갖지 않는다.
-                // 그 줄에 실제로 놓인 양식의 논리 칸으로 줄 시작을 확인한다.
-                let cell_line_owned = node.children.iter().any(|child| {
-                    let RenderNodeType::TextRun(run) = &child.node_type else {
-                        return false;
-                    };
+                let owns_run = |run: &TextRunNode| {
                     run.section_index == Some(sec)
-                        && run.cell_context.as_ref().is_some_and(|ctx| match target {
+                        && match target {
+                            None => run.cell_context.is_none() && run.para_index == Some(para),
                             Some(SelectionCellTarget::Flat {
                                 parent_para_idx,
                                 control_idx,
                                 cell_idx,
-                            }) => flat_cell_ctx_matches(
-                                ctx,
-                                parent_para_idx,
-                                control_idx,
-                                cell_idx,
-                                para,
-                            ),
+                            }) => run.cell_context.as_ref().is_some_and(|ctx| {
+                                flat_cell_ctx_matches(
+                                    ctx,
+                                    parent_para_idx,
+                                    control_idx,
+                                    cell_idx,
+                                    para,
+                                )
+                            }),
                             Some(SelectionCellTarget::Path {
                                 parent_para_idx,
                                 path,
-                            }) => path_cell_ctx_matches(ctx, parent_para_idx, path, para),
-                            None => false,
-                        })
+                            }) => run.cell_context.as_ref().is_some_and(|ctx| {
+                                path_cell_ctx_matches(ctx, parent_para_idx, path, para)
+                            }),
+                        }
+                };
+                // 셀 양식의 평면 주소는 같은 줄의 TextRun에 기록된 전체 셀 경로로 확인한다.
+                let cell_line_owned = target.is_some() && node.children.iter().any(|child| {
+                    matches!(&child.node_type, RenderNodeType::TextRun(run) if owns_run(run))
                 });
-                let positions = find_logical_control_positions(render_para);
-                let form_start = node
+                let control_start = node
                     .children
                     .iter()
                     .filter_map(|child| {
-                        let RenderNodeType::FormObject(form) = &child.node_type else {
-                            return None;
+                        let index = if target.is_none() {
+                            body_cursor_control_index(child, sec, para, render_para)?
+                        } else {
+                            let RenderNodeType::FormObject(form) = &child.node_type else {
+                                return None;
+                            };
+                            (cell_line_owned
+                                && form.cell_location.is_some()
+                                && form.section_index == sec
+                                && form.para_index == para
+                                && render_para
+                                    .controls
+                                    .get(form.control_index)
+                                    .is_some_and(Control::is_treat_as_char_object))
+                            .then_some(form.control_index)?
                         };
-                        (form.section_index == sec
-                            && form.para_index == para
-                            && if target.is_none() {
-                                form.cell_location.is_none()
-                            } else {
-                                form.cell_location.is_some() && cell_line_owned
-                            }
-                            && render_para
-                                .controls
-                                .get(form.control_index)
-                                .is_some_and(Control::is_treat_as_char_object))
-                        .then_some(positions.get(form.control_index).copied())
-                        .flatten()
+                        control_positions.get(index).copied()
                     })
                     .min();
                 let start = node
@@ -2326,49 +2340,28 @@ impl DocumentCore {
                         let RenderNodeType::TextRun(run) = &child.node_type else {
                             return None;
                         };
-                        let owned = match target {
-                            None => {
-                                run.section_index == Some(sec)
-                                    && run.para_index == Some(para)
-                                    && run.cell_context.is_none()
-                            }
-                            Some(target) => {
-                                run.section_index == Some(sec)
-                                    && run.cell_context.as_ref().is_some_and(|ctx| match target {
-                                        SelectionCellTarget::Flat {
-                                            parent_para_idx,
-                                            control_idx,
-                                            cell_idx,
-                                        } => flat_cell_ctx_matches(
-                                            ctx,
-                                            parent_para_idx,
-                                            control_idx,
-                                            cell_idx,
-                                            para,
-                                        ),
-                                        SelectionCellTarget::Path {
-                                            parent_para_idx,
-                                            path,
-                                        } => {
-                                            path_cell_ctx_matches(ctx, parent_para_idx, path, para)
-                                        }
-                                    })
-                            }
-                        };
-                        (owned && (!run.text.is_empty() || form_start.is_none()))
+                        (owns_run(run) && (!run.text.is_empty() || control_start.is_none()))
                             .then_some(run.char_start)
                             .flatten()
                     })
                     .min()
                     .into_iter()
-                    .chain(form_start)
+                    .chain(control_start)
                     .min();
                 if let Some(start) = start {
                     starts.push(start);
                 }
             }
             for child in &node.children {
-                collect_rendered_line_starts(child, sec, para, render_para, target, starts);
+                collect_rendered_line_starts(
+                    child,
+                    sec,
+                    para,
+                    render_para,
+                    target,
+                    control_positions,
+                    starts,
+                );
             }
         }
 
@@ -2462,7 +2455,7 @@ impl DocumentCore {
                     &tree.root,
                     section_idx,
                     para_idx,
-                    Some(render_para),
+                    render_para,
                     offset,
                     page,
                     bias,
@@ -2565,11 +2558,18 @@ impl DocumentCore {
             // 편집한 HWPX는 저장 줄을 생략할 수 있다. 캐럿과 같은 렌더 트리의
             // 실제 TextLine 소유·글자 경계만 사용하며 좌표로 줄을 추정하지 않는다.
             let mut rendered_starts = Vec::new();
-            if para
-                .controls
+            // 저장 줄 없이 가져온 문단에는 재조판용 합성 줄만 남을 수 있다(#9139).
+            // 이 경우 화면의 자동 줄바꿈은 실제로 그려진 TextLine에서 읽는다.
+            let only_generated_lines = para
+                .line_segs
                 .iter()
-                .any(|control| matches!(control, Control::Form(form) if form.common.treat_as_char))
+                .all(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0);
+            if only_generated_lines
+                || para.controls.iter().any(
+                    |control| matches!(control, Control::Form(form) if form.common.treat_as_char),
+                )
             {
+                let control_positions = find_logical_control_positions(para);
                 for (_, tree) in &tree_cache {
                     collect_rendered_line_starts(
                         &tree.root,
@@ -2577,6 +2577,7 @@ impl DocumentCore {
                         para_idx,
                         para,
                         cell_target,
+                        &control_positions,
                         &mut rendered_starts,
                     );
                 }

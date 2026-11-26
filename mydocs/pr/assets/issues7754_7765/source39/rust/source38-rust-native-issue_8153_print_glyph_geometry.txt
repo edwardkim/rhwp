@@ -1,0 +1,17 @@
+[RustTestSuite] issue_8153_print_glyph_geometry -> regression_suite_004::issue_8153_print_glyph_geometry
+[RustTestSuite] cargo nextest run --locked --test regression_suite_004 -E test(/(^|::)issue_8153_print_glyph_geometry::/) --cargo-profile release-test --target-dir /home/tsjang/rhwp/target/pr-review --features native-skia --test-threads 12 --no-fail-fast
+    Finished `release-test` profile [optimized] target(s) in 5.02s
+────────────
+ Nextest run ID 229d6c37-4505-4bda-84ac-e144dc951991 with nextest profile: default
+    Starting 9 tests across 1 binary (320 tests skipped)
+        PASS [   0.026s] (1/9) rhwp::regression_suite_004 issue_8153_print_glyph_geometry::split_hft_original_programs::display_program_preserves_original_hft_advance
+        PASS [   0.030s] (2/9) rhwp::regression_suite_004 issue_8153_print_glyph_geometry::split_hft_original_programs::earlier_original_jamo_is_not_replaced_by_later_compatible_program
+        PASS [   0.031s] (3/9) rhwp::regression_suite_004 issue_8153_print_glyph_geometry::explicit_print_generation_survives_layer_cache_transitions
+        PASS [   0.035s] (4/9) rhwp::regression_suite_004 issue_8153_print_glyph_geometry::print_screen_print_roundtrip_keeps_each_raster_contract
+        PASS [   0.038s] (5/9) rhwp::regression_suite_004 issue_8153_print_glyph_geometry::screen_ordinary_ttf_keeps_existing_baseline_grid
+        PASS [   0.038s] (6/9) rhwp::regression_suite_004 issue_8153_print_glyph_geometry::print_generation_uses_distinct_native_picture_cache_entries
+        PASS [   0.042s] (7/9) rhwp::regression_suite_004 issue_8153_print_glyph_geometry::print_ordinary_ttf_preserves_fractional_baseline
+        PASS [   0.044s] (8/9) rhwp::regression_suite_004 issue_8153_print_glyph_geometry::legacy_print_ttf_preserves_fractional_baseline_across_generation_changes
+        PASS [   0.047s] (9/9) rhwp::regression_suite_004 issue_8153_print_glyph_geometry::split_hft_original_programs::native_paint_reaches_visible_compatible_glyph_in_later_fragment
+────────────
+     Summary [   0.048s] 9 tests run: 9 passed, 320 skipped

@@ -1,0 +1,311 @@
+{
+  "product_commit": "9e1d1cd94807b43e145b3b006058a298e8d83910",
+  "base": "bd3cd171331e80e79881dc8e9ed37f837ef6be77",
+  "windows": {
+    "Build": "26300",
+    "Revision": 9974,
+    "DisplayVersion": "26H2",
+    "Architecture": "AMD64",
+    "Processors": "16"
+  },
+  "windows_release_sha256": "8d7298dcc6e42d20e4aaffd198dafd0fdf9b11eb4db93353f9adaa2ae26866a8",
+  "linux_native_sha256": "fec4a1a3e10b7ffe60094fa0974c71f0772a95b7832db9479148e55308ed2151",
+  "wasm_packages": {
+    "develop": {
+      "rhwp_bg.wasm": "1ebf78ab36d8ba646ff732333b2e5b6ee39643d6b86a6af3fc6b4407c83c590e",
+      "rhwp.js": "36fa6ce45be4ef3c5617535a640a90bbd7363927fd47f8b8c7a5f7760585ed6e",
+      "compiler": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+      "builder": "wasm-pack 0.15.0",
+      "source_commit": "bd3cd171331e80e79881dc8e9ed37f837ef6be77",
+      "command": "scripts/wasm-pack-locked.sh --target web"
+    },
+    "candidate": {
+      "rhwp_bg.wasm": "d801b44b5d324338dbf030722fcde4c9b171091d6351865c016741d9c8227cab",
+      "rhwp.js": "36fa6ce45be4ef3c5617535a640a90bbd7363927fd47f8b8c7a5f7760585ed6e",
+      "compiler": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+      "builder": "wasm-pack 0.15.0",
+      "source_commit": "9e1d1cd94807b43e145b3b006058a298e8d83910",
+      "command": "scripts/wasm-pack-locked.sh --target web"
+    }
+  },
+  "wasm_font_file_sha256": {
+    "H2GTRE.TTF": "820d3212f688b546a327ea43a7202e3379cdbbd767ebac9753997e3f3d285171",
+    "H2GTRM.TTF": "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5",
+    "H2MJRE.TTF": "2fda1cc69297fe605ee8804984d26666c2543b0ec22b8f50031123a18d81924e",
+    "H2HDRM.TTF": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+    "gulim.ttc": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12",
+    "batang.ttc": "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8",
+    "malgun.ttf": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+    "malgunbd.ttf": "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082",
+    "malgunsl.ttf": "c0ca810a242c4482594182db40f0f9d35a3d51bb2eeac750e6e867b2110eb00e",
+    "arial.ttf": "edfbd22a3d088fc2f5d7c79b8c9c732df6dc878a60f0a80be0f92a3c7a634404",
+    "arialbd.ttf": "4d59199834e7439c67ea4949407639961060b21b173833f566eb60ac6fd8f5af",
+    "times.ttf": "0bf1b21b27b370039b60eca23d532c3fe3fb308750d8f13816db70a6cb666804",
+    "symbol.ttf": "bbf1192965e5266fbf23370416337d2861fc1e8bd349def93f2994ba67382fc3",
+    "HBATANG.TTF": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+    "HDOTUM.TTF": "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0",
+    "0a1ecc38c31a1d6cd9d4ca00aa95cb0939428ac1e7635efb7335c8ae98a87747.otf": "39c5925cf712ba90568994b008266fec755f41fd14ba6112b8c9b6d1a08566b1",
+    "6fb3106d45346c8edc533082a458d29eaa4bf325298f6f2770c49a868e861231.otf": "24b49246526c86ddd7bf44d3ee88a3cc044f51f51af4e01c29a1e699059981e1"
+  },
+  "windows_font_environment_sha256": {
+    "announce": "0e5fb28d89fb56028e2ef1f940bb6a5c15c54bea78f415361e16381b1d06425d",
+    "guide": "c59006d90ad039cddd35406d50628b23993cdd1301e768a73022d257231a41e0",
+    "form": "b951c3236a5e4e3ebcf446630155da409cc2b61b795e503148016af1ea3dadd1"
+  },
+  "windows_capture": {
+    "announce": {
+      "font_environment_equal": true,
+      "native_font_supply_equal": true,
+      "hancom_print": {
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "webfont_resources": 2,
+      "unavailable_fonts": 11
+    },
+    "guide": {
+      "font_environment_equal": true,
+      "native_font_supply_equal": true,
+      "hancom_print": {
+        "hancom_version": "13.0.0.3901",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2024_pdf_driver_one_up"
+      },
+      "webfont_resources": 2,
+      "unavailable_fonts": 7
+    },
+    "form": {
+      "font_environment_equal": true,
+      "native_font_supply_equal": true,
+      "hancom_print": {
+        "hancom_version": "13.0.0.3901",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2024_pdf_driver_one_up"
+      },
+      "webfont_resources": 2,
+      "unavailable_fonts": 6
+    }
+  },
+  "windows_announce_profiles": [
+    {
+      "mode": "screen",
+      "pages": 11,
+      "rendered": 11,
+      "bytes": 448565,
+      "seconds": 6.655493099999999,
+      "cpuSeconds": 5.984375
+    },
+    {
+      "mode": "fast-preview",
+      "pages": 11,
+      "rendered": 11,
+      "bytes": 448565,
+      "seconds": 5.9850653,
+      "cpuSeconds": 5.703125
+    },
+    {
+      "mode": "replay",
+      "pages": 11,
+      "rendered": 11,
+      "bytes": 449074,
+      "seconds": 4.3534733,
+      "cpuSeconds": 4.09375
+    }
+  ],
+  "windows_png_repeated_run_comparison": [
+    {
+      "revision": "devel",
+      "trial": 1,
+      "page": 5,
+      "raw_rgb_sha256": "23bb2c30071acf67a3cf24abfc9f7c6cf4d2b51d96f39d3388a9fa826e81b114"
+    },
+    {
+      "revision": "devel",
+      "trial": 7,
+      "page": 5,
+      "raw_rgb_sha256": "78b13425abc105b4f3447e04e3d16ab648e5946715e1efa248ee0cbdc2dd18bf"
+    },
+    {
+      "revision": "devel",
+      "trial": 8,
+      "page": 5,
+      "raw_rgb_sha256": "78b13425abc105b4f3447e04e3d16ab648e5946715e1efa248ee0cbdc2dd18bf"
+    },
+    {
+      "revision": "candidate",
+      "trial": 1,
+      "page": 5,
+      "raw_rgb_sha256": "78b13425abc105b4f3447e04e3d16ab648e5946715e1efa248ee0cbdc2dd18bf"
+    },
+    {
+      "revision": "candidate",
+      "trial": 7,
+      "page": 5,
+      "raw_rgb_sha256": "78b13425abc105b4f3447e04e3d16ab648e5946715e1efa248ee0cbdc2dd18bf"
+    },
+    {
+      "revision": "candidate",
+      "trial": 8,
+      "page": 5,
+      "raw_rgb_sha256": "78b13425abc105b4f3447e04e3d16ab648e5946715e1efa248ee0cbdc2dd18bf"
+    }
+  ],
+  "tests": {
+    "rust_gates_kst": {
+      "prepare": [
+        "2026-11-22T13:48:33+09:00",
+        "2026-11-22T13:48:35+09:00"
+      ],
+      "fmt": [
+        "2026-11-22T13:48:35+09:00",
+        "2026-11-22T13:49:03+09:00"
+      ],
+      "manifest": [
+        "2026-11-22T13:49:03+09:00",
+        "2026-11-22T13:49:04+09:00"
+      ],
+      "native-lib": [
+        "2026-11-22T13:49:04+09:00",
+        "2026-11-22T13:56:00+09:00"
+      ],
+      "native-picture": [
+        "2026-11-22T13:56:00+09:00",
+        "2026-11-22T14:02:16+09:00"
+      ],
+      "native-pdf": [
+        "2026-11-22T14:02:16+09:00",
+        "2026-11-22T14:02:38+09:00"
+      ],
+      "regressions": [
+        "2026-11-22T14:02:38+09:00",
+        "2026-11-22T14:30:22+09:00"
+      ],
+      "clippy": [
+        "2026-11-22T14:30:22+09:00",
+        "2026-11-22T14:32:52+09:00"
+      ],
+      "clippy-wasm": [
+        "2026-11-22T14:32:52+09:00",
+        "2026-11-22T14:35:08+09:00"
+      ],
+      "workspace-build": [
+        "2026-11-22T14:35:08+09:00",
+        "2026-11-22T14:38:09+09:00"
+      ],
+      "clippy-workspace": [
+        "2026-11-22T14:38:09+09:00",
+        "2026-11-22T14:41:54+09:00"
+      ],
+      "clippy-skia": [
+        "2026-11-22T14:41:54+09:00",
+        "2026-11-22T14:44:56+09:00"
+      ]
+    },
+    "test_counts": {
+      "native-lib": {
+        "passed": 4033,
+        "failed": 0,
+        "ignored": 12
+      },
+      "native-picture": "2 tests run: 2 passed, 343 skipped",
+      "native-pdf": "37 tests run: 37 passed, 311 skipped",
+      "regressions": "13948 tests run: 13948 passed (4 slow), 45 skipped"
+    },
+    "handbook": {
+      "status": "passed",
+      "baseline_sha256": "b2ea68f97a242d111522132b6c733f15a65b29b56e227943fd9c15f9c8d35597",
+      "pages": 383,
+      "regressions": []
+    },
+    "contributor_common_gate": {
+      "status": "passed",
+      "baseline_sha256": "b2ea68f97a242d111522132b6c733f15a65b29b56e227943fd9c15f9c8d35597",
+      "measurements": [
+        {
+          "document_id": "52ee61fe7201e36b",
+          "backend": "native",
+          "status": "passed",
+          "minimum": "100.0",
+          "regressions": []
+        },
+        {
+          "document_id": "52ee61fe7201e36b",
+          "backend": "wasm",
+          "status": "passed",
+          "minimum": "100.0",
+          "regressions": []
+        },
+        {
+          "document_id": "59f6ab1155623bda",
+          "backend": "native",
+          "status": "passed",
+          "minimum": "100.0",
+          "regressions": []
+        },
+        {
+          "document_id": "59f6ab1155623bda",
+          "backend": "wasm",
+          "status": "passed",
+          "minimum": "100.0",
+          "regressions": []
+        },
+        {
+          "document_id": "cdacd874b6e6ac66",
+          "backend": "native",
+          "status": "passed",
+          "minimum": "99.99756",
+          "regressions": []
+        },
+        {
+          "document_id": "cdacd874b6e6ac66",
+          "backend": "wasm",
+          "status": "passed",
+          "minimum": "99.99756",
+          "regressions": []
+        },
+        {
+          "document_id": "d03a9dde3d5dc7ac",
+          "backend": "native",
+          "status": "passed",
+          "minimum": "100.0",
+          "regressions": []
+        },
+        {
+          "document_id": "d03a9dde3d5dc7ac",
+          "backend": "wasm",
+          "status": "passed",
+          "minimum": "100.0",
+          "regressions": []
+        }
+      ]
+    }
+  },
+  "protected": {
+    "rows": 4046,
+    "documents": 23,
+    "below_official_floor": 0,
+    "rows_above_official_floor": 0,
+    "missing": 0,
+    "baseline_sha256_before_comparison": "b2ea68f97a242d111522132b6c733f15a65b29b56e227943fd9c15f9c8d35597"
+  },
+  "verification_browser": {
+    "browser": "Chrome for Testing",
+    "version": "156.0.8078.47",
+    "browser_executable_sha256": "230f0db8c5086182f46c59c867c0d461eb525d6552dfad226ea6b4d9ec249db2"
+  },
+  "windows_short_form_standalone_trials": 4,
+  "source_font_control": {
+    "pages": 19,
+    "font_file_sha256_list": "print-fonts.tsv",
+    "windows_pdf_changed_pixels": 0,
+    "windows_pdf_text_changed_pages": 0,
+    "wasm_changed_pixels": 0,
+    "minima": {
+      "windows_candidate_pdf_raw": 99.66234,
+      "windows_candidate_png_raw": 99.66217,
+      "linux_candidate_native_raw": 99.69041,
+      "wasm_candidate_raw": 99.60127
+    }
+  }
+}

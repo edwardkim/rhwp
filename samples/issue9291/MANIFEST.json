@@ -1,0 +1,25 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 9291,
+  "title": "빈 줄 감추기 구역에서 한/글 저장 사다리가 자리를 남긴 쪽 첫 빈 줄까지 지워 쪽 본문이 위로 당겨진다",
+  "entries": [
+    {
+      "path": "samples/issue9291/consumer-price-trend-page-start-empty-line.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/9291",
+      "originalFilename": "148735526_2012년_6월_소비자물가동향.hwp",
+      "bytes": 380928,
+      "sha256": "c9354fd934d772bd3c50c3f2c2a019b50b824c705563063a321db0a4ee4745ff",
+      "lastSavedWith": {
+        "product": null,
+        "version": "6.0.5.771"
+      },
+      "referenceEngine": "2024",
+      "referencePdf": "pdf/issue9291/consumer-price-trend-page-start-empty-line-2024.pdf",
+      "referencePdfSha256": "dfb56730a6038b3634e1246d6a2a8eb21805a90a33e5f64e377c41447f6cd46c",
+      "referencePdfPageCount": 18,
+      "contract": "전체 18쪽으로 한/글 Print 와 같다. 구역 정의는 빈 줄 감추기(bit 19)를 켠다. 12쪽을 여는 빈 문단 pi=164(vpos 0, 줄 높이 1400, 줄간격 -280) 다음 문단 pi=165 의 저장 vpos 1120, 18쪽 pi=210(vpos 0, 1800, 1080) 다음 pi=211 의 저장 vpos 2880 은 빈 줄의 전진을 계상한 사다리이므로 빈 줄을 지우지 않는다. 제목 줄 윗변 − 본문 윗변 = 다음 문단 저장 vpos. 다음 문단이 빈 줄과 같은 vpos 에 저장된 반례에서는 빈 줄을 감춘다."
+    }
+  ]
+}

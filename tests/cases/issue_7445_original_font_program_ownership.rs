@@ -19,6 +19,9 @@
 //! 원본 글꼴 프로그램·기호 소유는 공개 글꼴 결정 API로 확인한다.
 //! 전쪽 Native/fresh WASM 90%와 해당 쪽 98%·직접 판독을 마친 실물 경계는
 //! 내용 관계와 독립±2CSSpx로 함께 보호한다. 근거: stage5 C75/C76 보고서.
+//! 공백 폭 관계형 검사 주석 갱신: 2026-11-24T02:45:03+09:00.
+//! 설치 글꼴 없이 같은 합성 글꼴의 양수·0 공백 전진을 대조한다. 공개 글꼴 결정 API의
+//! 폭 선택 계약을 확인하는 합성 검사이므로 실물 페이지 일치율과 좌표는 적용하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::{renderer::font_environment::FontEnvironment, DocumentCore};
@@ -64,6 +67,70 @@ fn record(core: &DocumentCore, character: &str) -> Value {
         .find(|r| r["source"]["character"] == character)
         .expect("원본 글자 기록")
         .clone()
+}
+
+#[test]
+fn zero_advance_in_selected_font_preserves_default_space() {
+    use sha2::{Digest, Sha256};
+
+    let font_bytes = include_bytes!("../fixtures/fonts/RHWPEquationCJKRegular.ttf");
+    let face = ttf_parser::Face::parse(font_bytes, 0).unwrap();
+    let glyph = face.glyph_index(' ').unwrap();
+    assert!(face.glyph_hor_advance(glyph).unwrap() > 0);
+    let table = face
+        .raw_face()
+        .table(ttf_parser::Tag::from_bytes(b"hmtx"))
+        .unwrap();
+    let offset = table.as_ptr() as usize - font_bytes.as_ptr() as usize + usize::from(glyph.0) * 4;
+    let mut without_advance = font_bytes.to_vec();
+    without_advance[offset..offset + 2].copy_from_slice(&0u16.to_be_bytes());
+    let changed = ttf_parser::Face::parse(&without_advance, 0).unwrap();
+    assert_eq!(changed.glyph_hor_advance(glyph), Some(0));
+
+    let family = "RHWP Equation Contract";
+    let mut document = core(family, "A A", None);
+    let mut model = document.document().clone();
+    for shape in &mut model.doc_info.char_shapes {
+        shape.use_font_space = true;
+    }
+    document.set_document(model);
+    let default_space = advance(&record(&document, " "));
+
+    let prepare = |document: &mut DocumentCore, program: &[u8]| {
+        let digest: String = Sha256::digest(program)
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect();
+        let snapshot = serde_json::json!([{
+            "query": family,
+            "family": family,
+            "programId": format!("sweep-{digest}"),
+            "trueType": true,
+        }]);
+        let environment = FontEnvironment::from_available_programs(
+            &document.document().doc_info,
+            &snapshot.to_string(),
+        )
+        .unwrap()
+        .expect("공급된 원본 글꼴 프로그램 선택");
+        document.set_font_environment(Some(environment)).unwrap();
+        assert!(document
+            .prepare_native_otf_fonts_with(|request| {
+                request
+                    .family
+                    .split(',')
+                    .any(|name| name.trim() == family)
+                    .then(|| (program.to_vec(), 0))
+            })
+            .unwrap());
+    };
+    prepare(&mut document, font_bytes);
+    let positive = record(&document, " ");
+    assert_eq!(positive["layoutMetric"]["widthSource"], "useFontSpace");
+    assert!(advance(&positive) > 0.0 && advance(&positive) < default_space);
+
+    prepare(&mut document, &without_advance);
+    assert_eq!(advance(&record(&document, " ")), default_space);
 }
 
 #[test]
@@ -171,7 +238,7 @@ fn verified_ttf_program_selects_its_text_frame_without_reclassifying_source() {
     assert!(frames(&original_hft, false).iter().all(|frame| *frame));
     assert!(
         frames(&original_hft, true).iter().all(|frame| !frame),
-        "HFT의 기존 Type3 fill 경계는 유지"
+        "기존 Type 3 글리프의 채움 경계를 유지한다"
     );
 
     direct.set_font_environment(Some(FontEnvironment::from_json(
@@ -710,7 +777,7 @@ fn worklife_repeated_plus_keeps_the_following_value_on_its_independent_origin() 
     assert_eq!(core.document().sections[0].paragraphs[pi].text, text);
 }
 #[test]
-fn worklife_declared_hft_quote_keeps_the_following_year_in_canvas_print() {
+fn worklife_declared_legacy_quote_keeps_the_following_year_in_canvas_print() {
     use rhwp::document_core::CanvasMetricReply;
     use rhwp::renderer::supplemental_metrics::{MetricBackend, MetricContext};
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
@@ -836,7 +903,7 @@ fn worklife_declared_hft_quote_keeps_the_following_year_in_canvas_print() {
         // T16 따옴표는 ToUnicode 2019, Widths 225, FontMatrix .001이며 hmtx를 추정하지 않는다.
         assert!(
             (x - 109.86046346028646).abs() <= 2.0,
-            "year after HFT quote: {x}"
+            "year after the original quotation mark: {x}"
         );
     }
     core.select_canvas_metrics(true).unwrap();
@@ -844,7 +911,7 @@ fn worklife_declared_hft_quote_keeps_the_following_year_in_canvas_print() {
     assert_eq!(core.page_count(), 6);
 }
 #[test]
-fn declared_hft_quote_preserves_ttf_and_unmeasured_style_boundaries() {
+fn declared_legacy_quote_preserves_ttf_and_unmeasured_style_boundaries() {
     use rhwp::renderer::supplemental_metrics::{MetricBackend, MetricContext};
     let context = MetricContext {
         document_generation: 1,
@@ -897,7 +964,7 @@ fn declared_hft_quote_preserves_ttf_and_unmeasured_style_boundaries() {
     );
 }
 #[test]
-fn hft_human_bold_tracking_preserves_regular_ttf_spaces_and_native_program_ownership() {
+fn legacy_human_bold_tracking_preserves_regular_ttf_spaces_and_native_program_ownership() {
     let mut program = core("휴먼명조", "가 •", None);
     let mut source = program.document().clone();
     for font in source.doc_info.font_faces.iter_mut().flatten() {
@@ -971,7 +1038,7 @@ fn original_hci_bold_comparison_glyphs_preserve_style_and_ttf_boundaries() {
     }
 }
 #[test]
-fn declared_hft_gothic_keeps_its_monospace_ascii_punctuation() {
+fn declared_legacy_gothic_keeps_its_monospace_ascii_punctuation() {
     // 별도 빈 HWPX의 전체 ASCII 표본을 한컴2020 Print: 95자 모두500/1000em.
     // sample11의 좌표나 잠정 배치를 기대값으로 사용하지 않는다.
     let input = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/hwp3-sample11.hwp");
@@ -987,7 +1054,7 @@ fn declared_hft_gothic_keeps_its_monospace_ascii_punctuation() {
     assert!(!source_faces.is_empty());
     assert!(
         source_faces.iter().all(|face| face.alt_type == 2),
-        "공통 IR의 HFT 선언까지 전달되어야 실제 조판이 같은 폭을 소비한다"
+        "공통 문서 모델의 구형 글꼴 선언을 조판에 전달해 같은 폭을 적용한다"
     );
     let mut program = core("고딕", " .,:()!?A1", None);
     let mut source = program.document().clone();
@@ -1240,7 +1307,7 @@ fn exact_primary_program_certificate_preserves_native_program_boundaries() {
     primary.set_font_environment(Some(selected)).unwrap();
     assert!(
         (advance(&record(&primary, "가")) - 7500.0).abs() <= 2.0,
-        "주 TTF 프로그램에 원 HFT 굵게 추적을 덧붙이지 않는다"
+        "주 TrueType 글꼴 폭에 원본 구형 글꼴의 굵기 보정을 더하지 않는다"
     );
     assert_eq!(primary.export_hwpx_native().unwrap(), original);
 

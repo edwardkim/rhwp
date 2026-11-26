@@ -1,0 +1,299 @@
+{
+  "candidate": {
+    "case": "nested",
+    "pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+    "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+    "wasm_sha256": "1ffb6d28f8e50635c6bdc614bbf42f6b7e1ba666c5b40ebb065a65b39bc7f3fc",
+    "font_environment_sha256": "c43de121c1b5d7ed8e144856a3ad2cec661124a4c923c1bfde6dab70358913e1",
+    "exit": 0,
+    "requested_pages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17
+    ],
+    "font_supply_count": 1219,
+    "rows": [
+      {
+        "page": 1,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 2,
+        "observed": "99.99",
+        "protected": "99.99",
+        "declined": false
+      },
+      {
+        "page": 3,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 4,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 5,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 6,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 7,
+        "observed": "99.99",
+        "protected": "99.99",
+        "declined": false
+      },
+      {
+        "page": 8,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 9,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 10,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 11,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 12,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 13,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 14,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 15,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 16,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 17,
+        "observed": "99.98",
+        "protected": "99.98",
+        "declined": false
+      }
+    ]
+  },
+  "fixed_base": {
+    "case": "nested",
+    "pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+    "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+    "wasm_sha256": "c32305fcccd7a18bef0f67305cc4674c51b9e4b052d15097038b31c7be7e26cd",
+    "font_environment_sha256": "c43de121c1b5d7ed8e144856a3ad2cec661124a4c923c1bfde6dab70358913e1",
+    "exit": 0,
+    "requested_pages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17
+    ],
+    "font_supply_count": 1219,
+    "rows": [
+      {
+        "page": 1,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 2,
+        "observed": "99.99",
+        "protected": "99.99",
+        "declined": false
+      },
+      {
+        "page": 3,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 4,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 5,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 6,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 7,
+        "observed": "99.99",
+        "protected": "99.99",
+        "declined": false
+      },
+      {
+        "page": 8,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 9,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 10,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 11,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 12,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 13,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 14,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 15,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 16,
+        "observed": "100.00",
+        "protected": "100.00",
+        "declined": false
+      },
+      {
+        "page": 17,
+        "observed": "99.98",
+        "protected": "99.98",
+        "declined": false
+      }
+    ]
+  },
+  "candidate_tsv_sha256": "065e29b177f9d5d2f16bfe073d878c98cc03399681ae727daf0a15a845b1f592",
+  "base_tsv_sha256": "065e29b177f9d5d2f16bfe073d878c98cc03399681ae727daf0a15a845b1f592",
+  "indices_with_changed_png": [],
+  "coverage": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17
+  ],
+  "reconstructed_font_supply_count": 1219,
+  "font_scope": "macOS 사용자의 현재 설치 글꼴을 보존하고 교체 전 확인한 검증용 프로그램 묶음과 H2GTRM을 명시 공급",
+  "base_source_head": "d7b5286cbf6401678a70eed3d66236a68dd2a72c",
+  "candidate_source_head": "19646e69fc99ba76f9ff0350c2a425fe07ec1e88",
+  "images_016": {
+    "overlay-016.png": "b6358d16075010086bbef36c48f4be93d5fe84678f08fc6625e89877ded10d49",
+    "review-016.png": "cf8ee860a2dfe6f8af725add103ccc25b9a5ec12504bcbfaeac83622a045f4d2"
+  },
+  "candidate_tsv": "candidate.tsv",
+  "fixed_base_tsv": "fixed-base.tsv",
+  "scope": "정본 17쪽의 같은 글꼴 조건에서 고정 base·후보를 대조한 V4 기록"
+}

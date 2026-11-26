@@ -120,6 +120,14 @@ pub struct DocumentFontSelectionRequest {
     /// 측정 원천을 바꾸는 `public_fallback` 선택 경로와 구분한다.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub hancom_missing_default: Vec<String>,
+    /// [#886] 렌더러 사슬이 원 이름 뒤에 잇는 표시 대체 face
+    /// (`installed_render_font_aliases`, 예: 한양견고딕 → HY견고딕). 원 프로그램의
+    /// 신원은 아니며, 원본·문서 대체·공급 원장이 모두 없을 때 공개 일반 대체보다
+    /// 먼저 확인한다. SVG/Canvas와 Native가 같은 표시 face를 고르게 한다.
+    /// `hancom_missing_default`가 적용되는 원본은 공통 환경이 그 face로 치환하므로
+    /// 그 확인이 이 표시 대체보다 앞선다(edwardkim/rhwp#9208).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub display_aliases: Vec<String>,
 }
 
 /// 출력 호스트가 실제로 로드한 프로그램. 형식 미확인 시 HFT 메트릭을 유지한다.
@@ -373,6 +381,17 @@ impl FontEnvironment {
                     } else {
                         Vec::new()
                     };
+                // SVG/Canvas·Skia 사슬이 원 이름 뒤에 잇는 표시 대체(#6171)다.
+                // 원 프로그램의 신원이 아니므로 primary와 분리해 공급자에 알린다.
+                let mut display_aliases = Vec::new();
+                for name in [font.name.as_str(), primary] {
+                    for alias in super::installed_render_font_aliases(name) {
+                        let alias = (*alias).to_owned();
+                        if !primary_names.contains(&alias) && !display_aliases.contains(&alias) {
+                            display_aliases.push(alias);
+                        }
+                    }
+                }
                 requests.push((
                     language,
                     font_id,
@@ -386,6 +405,7 @@ impl FontEnvironment {
                             .as_deref()
                             .map(program_names)
                             .unwrap_or_default(),
+                        display_aliases,
                     },
                 ));
             }
@@ -1031,6 +1051,28 @@ impl FontEnvironment {
             selection.language_slot == language_slot
                 && selection.font_id == font_id
                 && selection.source == face
+        })
+    }
+
+    pub(crate) fn has_scoped_natural_replacement(
+        &self,
+        source: &str,
+        language_slot: usize,
+        font_id: u16,
+    ) -> bool {
+        self.selects_natural_program_for(source)
+            && self
+                .document_substitution(source, language_slot, font_id)
+                .is_some_and(|selection| {
+                    selection.target != source
+                        && !super::installed_font_program_aliases(source)
+                            .contains(&selection.target.as_str())
+                })
+    }
+
+    pub(crate) fn has_scoped_natural_replacements(&self) -> bool {
+        self.document_substitutions.iter().any(|slot| {
+            self.has_scoped_natural_replacement(&slot.source, slot.language_slot, slot.font_id)
         })
     }
 

@@ -1,0 +1,16 @@
+[RustTestSuite] issue_7820_sixel_contract -> regression_suite_008::issue_7820_sixel_contract
+[RustTestSuite] cargo nextest run --locked --test regression_suite_008 -E test(/(^|::)issue_7820_sixel_contract::/) --cargo-profile release-test --target-dir /home/tsjang/rhwp/target/pr-review --features native-skia --test-threads 12 --no-fail-fast
+   Compiling rhwp v0.9.1 (/home/tsjang/rhwp-worktrees/task-7754-rebase-5665)
+    Finished `release-test` profile [optimized] target(s) in 58.32s
+────────────
+ Nextest run ID baeb8d71-7094-47ab-b861-6d417a213b4a with nextest profile: default
+    Starting 7 tests across 1 binary (369 tests skipped)
+        PASS [   0.016s] (1/7) rhwp::regression_suite_008 issue_7820_sixel_contract::rejects_invalid_stride_buffer_dimensions_and_premultiplication
+        PASS [   0.017s] (2/7) rhwp::regression_suite_008 issue_7820_sixel_contract::padded_rows_and_premultiplied_alpha_compose_on_white
+        PASS [   0.017s] (3/7) rhwp::regression_suite_008 issue_7820_sixel_contract::png_preserves_straight_alpha_and_explicit_rgba_order
+        PASS [   0.017s] (4/7) rhwp::regression_suite_008 issue_7820_sixel_contract::sixel_has_only_one_dcs_stream_with_square_pixels
+        PASS [   0.029s] (5/7) rhwp::regression_suite_008 issue_7820_sixel_contract::target_width_preserves_ratio_and_checks_both_dimensions_and_pixel_budget
+        PASS [   0.044s] (6/7) rhwp::regression_suite_008 issue_7820_sixel_contract::cli_help_and_capabilities_declare_feature_and_options
+        PASS [   0.105s] (7/7) rhwp::regression_suite_008 issue_7820_sixel_contract::cli_usage_errors_never_emit_graphics_or_logs_to_stdout
+────────────
+     Summary [   0.107s] 7 tests run: 7 passed, 369 skipped

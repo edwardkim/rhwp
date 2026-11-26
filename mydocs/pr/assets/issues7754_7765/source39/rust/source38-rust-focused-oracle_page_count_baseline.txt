@@ -1,0 +1,25 @@
+[RustTestSuite] oracle_page_count_baseline -> regression_suite_008::oracle_page_count_baseline
+[RustTestSuite] cargo nextest run --locked --test regression_suite_008 -E test(/(^|::)oracle_page_count_baseline::/) --cargo-profile release-test --target-dir /home/tsjang/rhwp/target/pr-review --features native-skia --test-threads 12 --no-fail-fast
+    Finished `release-test` profile [optimized] target(s) in 0.38s
+────────────
+ Nextest run ID 08b1e461-2cab-4508-9166-a52904431d7c with nextest profile: default
+    Starting 17 tests across 1 binary (359 tests skipped)
+        PASS [   0.022s] ( 1/17) rhwp::regression_suite_008 oracle_page_count_baseline::logical_page_reference::full_page_evidence_rejects_missing_duplicate_low_or_nonfinite_values
+        PASS [   1.071s] ( 2/17) rhwp::regression_suite_008 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_3
+        PASS [   1.242s] ( 3/17) rhwp::regression_suite_008 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_2
+        PASS [   1.507s] ( 4/17) rhwp::regression_suite_008 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_12
+        PASS [   2.314s] ( 5/17) rhwp::regression_suite_008 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_11
+        PASS [   2.810s] ( 6/17) rhwp::regression_suite_008 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_5
+        PASS [   2.992s] ( 7/17) rhwp::regression_suite_008 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_0
+        PASS [   1.597s] ( 8/17) rhwp::regression_suite_008 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_8
+        PASS [   1.879s] ( 9/17) rhwp::regression_suite_008 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_7
+        PASS [   3.460s] (10/17) rhwp::regression_suite_008 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_14
+        PASS [   3.493s] (11/17) rhwp::regression_suite_008 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_4
+        PASS [   3.527s] (12/17) rhwp::regression_suite_008 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_1
+        PASS [   2.789s] (13/17) rhwp::regression_suite_008 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_6
+        PASS [   4.391s] (14/17) rhwp::regression_suite_008 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_13
+        PASS [   4.826s] (15/17) rhwp::regression_suite_008 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_10
+        PASS [   4.114s] (16/17) rhwp::regression_suite_008 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_9
+        PASS [  21.896s] (17/17) rhwp::regression_suite_008 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_15
+────────────
+     Summary [  21.898s] 17 tests run: 17 passed, 359 skipped

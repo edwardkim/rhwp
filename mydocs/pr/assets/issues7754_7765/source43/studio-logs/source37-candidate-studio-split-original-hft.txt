@@ -1,0 +1,6 @@
+3:24:58 PM [vite] (client) Re-optimizing dependencies because vite config has changed
+frozen pkg /home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37 at http://127.0.0.1:45903
+3:24:59 PM [vite] (client) [optimizer] scanning dependencies...
+  [browser] headless Chrome 실행
+3:25:02 PM [vite] (client) [optimizer] bundling dependencies...
+  [wasm-artifact] matched 76f7c64d27fe8fbbd7bd5baa2fdb3d30af9c8014fd16fb6b83afc498907ba7e3

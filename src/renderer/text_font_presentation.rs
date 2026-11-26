@@ -5,8 +5,8 @@
 
 use ttf_parser::{Face, GlyphId, Tag};
 
-const MAX_FONT_BYTES: usize = 32 * 1024 * 1024;
-const MAX_TABLES: usize = (u16::MAX / 16) as usize;
+pub(super) const MAX_FONT_BYTES: usize = 32 * 1024 * 1024;
+pub(super) const MAX_TABLES: usize = (u16::MAX / 16) as usize;
 
 /// 컬러 기본 glyph 모두에 윤곽이 있을 때만 일반 텍스트용 독립 SFNT 사본을 만든다.
 /// 미지원·무효·컬러 전용 프로그램은 `None`을 반환해 기존 공급 경로를 보존한다.
@@ -36,15 +36,23 @@ pub fn ordinary_text_font_program(data: &[u8], face_index: u32) -> Option<Vec<u8
     if color_glyphs == 0 {
         return None;
     }
-    let records: Vec<_> = raw.table_records.into_iter().collect();
-    // 제외할 표의 중복도 수용하지 않는다. 원본 디렉터리 자체를 먼저 검증한다.
-    if records.len() > MAX_TABLES || records.windows(2).any(|pair| pair[0].tag >= pair[1].tag) {
+    let tags = raw.table_records.into_iter().map(|r| r.tag).collect();
+    copy_outline_tables(tags, has_cff, &[*b"COLR", *b"CPAL"], |tag| raw.table(tag))
+}
+
+/// Rebuild a bounded SFNT from the selected face's tables in directory order.
+/// Container checksums must be recalculated after removing any table.
+pub(super) fn copy_outline_tables<T: AsRef<[u8]>>(
+    mut tables: Vec<Tag>,
+    has_cff: bool,
+    omit: &[[u8; 4]],
+    read_table: impl Fn(Tag) -> Option<T>,
+) -> Option<Vec<u8>> {
+    // Validate the original directory, including the records to be omitted.
+    if tables.len() > MAX_TABLES || tables.windows(2).any(|pair| pair[0] >= pair[1]) {
         return None;
     }
-    let tables: Vec<_> = records
-        .into_iter()
-        .filter(|record| !matches!(&record.tag.to_bytes(), b"COLR" | b"CPAL" | b"DSIG"))
-        .collect();
+    tables.retain(|tag| *tag != Tag::from_bytes(b"DSIG") && !omit.contains(&tag.to_bytes()));
     let count = tables.len();
     if count == 0 || count > MAX_TABLES {
         return None;
@@ -58,8 +66,9 @@ pub fn ordinary_text_font_program(data: &[u8], face_index: u32) -> Option<Vec<u8
     result[8..10].copy_from_slice(&(15 - power.leading_zeros() as u16).to_be_bytes());
     result[10..12].copy_from_slice(&((count - power) * 16).to_be_bytes());
     let mut head_adjustment = None;
-    for (index, table) in tables.iter().enumerate() {
-        let bytes = raw.table(table.tag)?;
+    for (index, tag) in tables.into_iter().enumerate() {
+        let data = read_table(tag)?;
+        let bytes = data.as_ref();
         let offset = result.len();
         let end = offset.checked_add(bytes.len())?;
         let padded_end = end.checked_add(3)? & !3;
@@ -68,7 +77,7 @@ pub fn ordinary_text_font_program(data: &[u8], face_index: u32) -> Option<Vec<u8
         }
         result.extend_from_slice(bytes);
         result.resize(padded_end, 0);
-        if table.tag == Tag::from_bytes(b"head") {
+        if tag == Tag::from_bytes(b"head") {
             if bytes.len() < 54 {
                 return None;
             }
@@ -77,7 +86,7 @@ pub fn ordinary_text_font_program(data: &[u8], face_index: u32) -> Option<Vec<u8
         }
         let sum = checksum(&result[offset..end]);
         let record = &mut result[12 + index * 16..28 + index * 16];
-        record[..4].copy_from_slice(&table.tag.to_bytes());
+        record[..4].copy_from_slice(&tag.to_bytes());
         record[4..8].copy_from_slice(&sum.to_be_bytes());
         record[8..12].copy_from_slice(&(offset as u32).to_be_bytes());
         record[12..16].copy_from_slice(&(bytes.len() as u32).to_be_bytes());

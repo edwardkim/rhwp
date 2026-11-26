@@ -1,0 +1,199 @@
+[
+  {
+    "input": {
+      "skewX": 20,
+      "skewY": 10
+    },
+    "result": {
+      "ok": true
+    },
+    "live": {
+      "width": 14912,
+      "height": 10116,
+      "skewX": 20,
+      "skewY": 10
+    },
+    "hwp": {
+      "skewX": 20,
+      "skewY": 10,
+      "width": 14912,
+      "height": 10116
+    },
+    "hwpx": {
+      "skewX": 20,
+      "skewY": 10,
+      "width": 14912,
+      "height": 10116
+    },
+    "reset": {
+      "width": 12000,
+      "height": 8000,
+      "skewX": 0,
+      "skewY": 0
+    },
+    "restoredOriginalDimensions": true
+  },
+  {
+    "input": {
+      "skewX": -20,
+      "skewY": -10
+    },
+    "result": {
+      "ok": true
+    },
+    "live": {
+      "width": 14912,
+      "height": 10116,
+      "skewX": -20,
+      "skewY": -10
+    },
+    "hwp": {
+      "skewX": -20,
+      "skewY": -10,
+      "width": 14912,
+      "height": 10116
+    },
+    "hwpx": {
+      "skewX": -20,
+      "skewY": -10,
+      "width": 14912,
+      "height": 10116
+    },
+    "reset": {
+      "width": 12000,
+      "height": 8000,
+      "skewX": 0,
+      "skewY": 0
+    },
+    "restoredOriginalDimensions": true
+  },
+  {
+    "input": {
+      "skewX": 20
+    },
+    "result": {
+      "ok": true
+    },
+    "live": {
+      "width": 14912,
+      "height": 8000,
+      "skewX": 20,
+      "skewY": 0
+    },
+    "hwp": {
+      "skewX": 20,
+      "skewY": 0,
+      "width": 14912,
+      "height": 8000
+    },
+    "hwpx": {
+      "skewX": 20,
+      "skewY": 0,
+      "width": 14912,
+      "height": 8000
+    },
+    "reset": {
+      "width": 12000,
+      "height": 8000,
+      "skewX": 0,
+      "skewY": 0
+    },
+    "restoredOriginalDimensions": true
+  },
+  {
+    "input": {
+      "skewY": -20
+    },
+    "result": {
+      "ok": true
+    },
+    "live": {
+      "width": 12000,
+      "height": 12368,
+      "skewX": 0,
+      "skewY": -20
+    },
+    "hwp": {
+      "skewX": 0,
+      "skewY": -20,
+      "width": 12000,
+      "height": 12368
+    },
+    "hwpx": {
+      "skewX": 0,
+      "skewY": -20,
+      "width": 12000,
+      "height": 12368
+    },
+    "reset": {
+      "width": 12000,
+      "height": 8000,
+      "skewX": 0,
+      "skewY": 0
+    },
+    "restoredOriginalDimensions": true
+  },
+  {
+    "input": {
+      "skewX": 20
+    },
+    "rotationBefore": 30,
+    "error": "렌더링 오류: 회전하거나 뒤집은 개체는 기울일 수 없습니다",
+    "before": {
+      "width": 14392,
+      "height": 12928,
+      "skewX": 0,
+      "skewY": 0
+    },
+    "live": {
+      "width": 14392,
+      "height": 12928,
+      "skewX": 0,
+      "skewY": 0
+    },
+    "hwp": {
+      "width": 14392,
+      "height": 12928,
+      "skewX": 0,
+      "skewY": 0
+    },
+    "hwpx": {
+      "width": 14392,
+      "height": 12928,
+      "skewX": 0,
+      "skewY": 0
+    }
+  },
+  {
+    "input": {
+      "width": 14600,
+      "skewX": 20
+    },
+    "rotationBefore": 30,
+    "error": "렌더링 오류: 회전하거나 뒤집은 개체는 기울일 수 없습니다",
+    "before": {
+      "width": 14392,
+      "height": 12928,
+      "skewX": 0,
+      "skewY": 0
+    },
+    "live": {
+      "width": 14600,
+      "height": 12928,
+      "skewX": 0,
+      "skewY": 0
+    },
+    "hwp": {
+      "width": 14600,
+      "height": 12928,
+      "skewX": 0,
+      "skewY": 0
+    },
+    "hwpx": {
+      "width": 14600,
+      "height": 12928,
+      "skewX": 0,
+      "skewY": 0
+    }
+  }
+]

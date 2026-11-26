@@ -1,0 +1,51 @@
+{
+  "pr": 9293,
+  "old_head": "b4faa9e6d6633ce0fed56cd0540eea5ea01c3645",
+  "new_head": "83b671c2a63a87b0946d2d2aa3f512ecf38945d2",
+  "branch": "review/integration-9239-planet6897-table-font",
+  "worktree": "/home/tsjang/rhwp-worktrees/pr-9293-font-notice",
+  "changed_files": [
+    "assets/fonts/licenses/font-notices.json",
+    "tests/fixtures/hft_mapped_symbol_program_tracking/LICENSE.txt"
+  ],
+  "all_git_tracked_font_files_exposed": 74,
+  "tests": [
+    {
+      "label": "source40-pr9293-notice-before",
+      "command": [
+        "node",
+        "--test",
+        "--test-name-pattern",
+        "canonical font inventory and license contract|every public repository font has matching bytes and redistribution notices",
+        "scripts/frontend-font-assets.test.mjs"
+      ],
+      "exit_code": 1,
+      "seconds": 0.3661708061117679,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source40-pr9293-notice-before.txt",
+      "sha256": "4634b100e149d6d19c794c6849c1ab0ecaf33cc655c7c5bea2cf1d2afb7aca09",
+      "original_log": {
+        "commit": "c1ead7045fb0bc6793f140c8001410e317d3eb1a",
+        "path": "mydocs/pr/assets/issues7754_7765/source40/source40-pr9293-notice-before.txt",
+        "sha256": "26410445588adf191e735eecdf7ffe36fbb5a793b968a7b6ecd7821134a986a0"
+      }
+    },
+    {
+      "label": "source40-pr9293-notice-after",
+      "command": [
+        "node",
+        "--test",
+        "--test-name-pattern",
+        "canonical font inventory and license contract|every public repository font has matching bytes and redistribution notices",
+        "scripts/frontend-font-assets.test.mjs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.5157116409391165,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source40-pr9293-notice-after.txt",
+      "sha256": "0349febffe67e6e092b9cfb472fdc6548fe9538f68c5cacdc1ee93a1a149a603"
+    }
+  ],
+  "scope": "Only the two approved font notice files. No renderer, fixture font, test expectation or CI changes.",
+  "push_status": "pushed and GitHub PR head verified",
+  "remote_verified": 1795324340.488923,
+  "remote_head": "83b671c2a63a87b0946d2d2aa3f512ecf38945d2"
+}

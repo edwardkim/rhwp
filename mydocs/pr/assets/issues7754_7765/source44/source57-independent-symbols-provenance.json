@@ -1,0 +1,40 @@
+{
+  "job_id": "b656772a-6ed7-45a8-baa7-72aa68a70f4a",
+  "print": {
+    "engine": "2020",
+    "hancom_version": "11.0.0.9136",
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+  },
+  "input_sha256": "79c2714845d7ed0941534bc765665e7f0302dac1333abfce84d21daef3d10592",
+  "pdf_sha256": "b061c2fbd646ecb31ac1b6547fcd0656535b61fa965e19c6ef1442ebf38107e8",
+  "pdf": "/home/tsjang/rhwp/pdf/private-issue7754-independent-font-specimens-20261122/hanyang-junggothic-alphabet-2020.pdf",
+  "family": "RHWP Hancom Independent Symbols",
+  "ps_name": "RHWP-Hancom-Independent-Symbols-Regular",
+  "font": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source57-independent-symbols/independent-symbols-regular.otf",
+  "font_sha256": "72bd3af45659c2f7bc6eafaf7cd859f525089581b89d2136da99fa0ed93b37f2",
+  "independent_sequence_validated": 11187,
+  "independent_glyph_programs_validated": 11187,
+  "glyphs": 14,
+  "rejected": {
+    "2027": "Empty source glyph outline; text mapping and advance alone are not a font source"
+  },
+  "source_glyph_sha256": {
+    "00B7": "b4a4f0a94051530c5ea9a65ae01728ec6e58d7c127645f017969de4b8d3bc4b5",
+    "2022": "2506433f6422778c6963a3dcbf11c311df80b06e75aad7a49a64e9be6c25a16a",
+    "2219": "5e310374e02c09e499e80f353e306dddf4eef2067ee56e854d87bbfa2d6ed38d",
+    "25CB": "fad77514f6f7cd6fff71b55ed68032a52664b0fa8a766bf691eb1c0a30762863",
+    "25E6": "aeb96fbb8f28029864380c8e96bb2ec9632bdecf17869103a169e715da8ae1a7",
+    "2024": "9e0b5d4a648393b1e8142ff7e3903e084815babfa348f17e2a43ea33dac38793",
+    "FF5E": "158708910277eac088fca59d9c2ca7f73c6bd44177005050e8586379b471ea98",
+    "201C": "252bca54841ab763237b02f72620b16826c3c37826c8c748648820529ed8f525",
+    "201D": "f4855d0666ed38eb71d3e98519a9cbba456c2b2365364569e97d8ca6af17f20c",
+    "2190": "0e0ab969a6d696e48f4228f2777c842c0728484b13eb498a49d57a24c8cf4b41",
+    "2191": "c3b12421bc99792a2b0d282c80ba141da9877126069e374665dfef347ee8aa70",
+    "2192": "c2dd0a6cfa880d5f34a58f56a6f1e0319e247f75ff389ef52ff9f0ddde573257",
+    "2193": "7c3a8657b24e37126eabbde2aed8669367c50f40d4f06be348c86abf20f99d1f",
+    "279C": "3fc700edca2ea2bef8f12e40912e4717e3033f3366b1ed536f5e08a1d525912b"
+  },
+  "transformation": "identity outlines and advance; rounded CFF xMin in hmtx. No target-document data, scaling, translation, synthetic stroke, or score selection.",
+  "scope": "Diagnostic private regular symbol subset only. Not recovery of the missing historical font file or its SHA. No U2027 glyph is invented."
+}

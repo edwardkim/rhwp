@@ -1,0 +1,7 @@
+case	print_family	local_filename	local_file_sha256	print_upm	print_hhea_ascent	print_hhea_descent	local_upm	local_hhea_ascent	local_hhea_descent	mapped_chars	equal_outlines	equal_advances	different_or_unavailable
+word_hcr_p100	HCRBatang	HANBatang.ttf	0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014	1000	1070	-230	1000	1070	-230	13	13	13	-
+word_cellparas	HCRBatang	HANBatang.ttf	0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014	1000	1070	-230	1000	1070	-230	33	33	33	-
+word_gulim_ko	Gulim	gulim.ttc	05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12	1024	879	-145	1024	879	-145	13	13	13	-
+word_gulim_en	Gulim	gulim.ttc	05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12	1024	879	-145	1024	879	-145	13	13	13	-
+word_malgun_p160	HCRBatang	HANBatang.ttf	0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014	1000	1070	-230	1000	1070	-230	6	6	6	-
+word_malgun_p160	MalgunGothic	malgun.ttf	7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f	2048	2229	-495	2048	2229	-495	7	7	7	-

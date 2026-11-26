@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/verification/image_divergence_sweep.md
-last_verified: 2026-08-05
+last_verified: 2026-11-22
 ---
 
 # SVG↔studio 이미지 발산 스윕 하네스
@@ -41,7 +41,7 @@ release 로 빌드해야 10k 규모가 실용 시간에 끝난다(12갈래 병�
 cargo build --release --example audit_studio_image_parity --example audit_image_magic
 
 find <코퍼스> -type f \( -name "*.hwp" -o -name "*.hwpx" \) | sort > /tmp/corpus_list.txt
-RHWP_FONT_PATH=ttfs/hwp:ttfs/windows \
+RHWP_FONT_PATH=/path/to/verified-fonts \
   xargs -a /tmp/corpus_list.txt -d '\n' -n 25 -P 12 \
   target/release/examples/audit_studio_image_parity > /tmp/sweep.jsonl 2>/tmp/sweep.err
 ~~~

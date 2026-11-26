@@ -1,0 +1,9 @@
+  ➜  Local:   http://127.0.0.1:7700/
+=== E2E: Canvas legacy/layer visual diff ===
+
+  [browser] headless Chrome 실행
+  PASS: basic/KTX.hwp page 1: 83/891662 pixels differ (0.00931%), max channel delta 84, size 1123x794
+  PASS: biz_plan.hwp page 1: 0/891662 pixels differ (0.00000%), max channel delta 0, size 794x1123
+  PASS: tac-case-001.hwp page 1: 0/891662 pixels differ (0.00000%), max channel delta 0, size 794x1123
+
+📋 HTML 보고서: ../output/e2e/canvas-render-diff-report.html

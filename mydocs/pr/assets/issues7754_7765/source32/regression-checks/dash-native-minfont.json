@@ -1,0 +1,34 @@
+{
+  "source_head": "2f46647df16da00365b22a1364cdc0b28b8344bc",
+  "modules": [
+    "tests/cases/issue_5804_dash_leader_glyphs.rs",
+    "tests/cases/issue_5830_dash_leader_last_line.rs"
+  ],
+  "command": [
+    "rustc",
+    "--edition=2021",
+    "--test",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-dash-regression-minfont-v2/harness.rs",
+    "-o",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-dash-regression-minfont-v2/harness",
+    "--extern",
+    "rhwp=/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-dash-regression-minfont-v2/librhwp-source32.rlib",
+    "-L",
+    "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps",
+    "--extern",
+    "serde_json=/home/tsjang/rhwp/target/pr-review/release-test/deps/libserde_json-6b264a499acbc87b.rlib",
+    "--extern",
+    "image=/home/tsjang/rhwp/target/pr-review/release-test/deps/libimage-23af837ccdfe46d8.rlib",
+    "--extern",
+    "base64=/home/tsjang/rhwp/target/pr-review/release-test/deps/libbase64-e3f94b72ec3fea0f.rlib",
+    "-L",
+    "native=/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-079888cb8874cccd/out/skia",
+    "-L",
+    "native=/home/tsjang/rhwp/target/pr-review/release-test/build/ring-62411559129b98e5/out"
+  ],
+  "library_sha256": "b738f666accb13dee8a78618548747befe7bb667fb783e46f58517da94b13995",
+  "started": 1795284319.3622704,
+  "build_exit": 0,
+  "test_exit": 0,
+  "ended": 1795284327.9994438
+}

@@ -27,7 +27,7 @@ pub(super) fn render(
         canvas.set_width(scaled_canvas_extent(tree.page_width, scale));
         canvas.set_height(scaled_canvas_extent(tree.page_height, scale));
         let mut renderer = WebCanvasRenderer::new(canvas)?;
-        renderer.set_hft_outline_fonts(&document.hft_outline_fonts);
+        renderer.set_hft_outline_fonts(&document.legacy_font_outlines);
         renderer.set_scale(scale);
         renderer.set_strict_glyph_outline_replay(true);
         renderer.render_page(&tree).map_err(JsValue::from)?;

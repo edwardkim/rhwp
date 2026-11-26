@@ -1926,7 +1926,7 @@ fn remap_bfchar_block(block: &mut [u8]) {
             Some(t) => t,
             None => continue,
         };
-        let mapped = crate::renderer::composer::pua_to_text_surface(&text);
+        let mapped = crate::renderer::composer::body_text_surface(&text);
         if mapped.as_ref() == text.as_str() {
             continue;
         }
@@ -2515,7 +2515,8 @@ pub fn layer_trees_to_pdf_with_annotations(
         ..Default::default()
     };
     let renderer = crate::renderer::skia::SkiaLayerRenderer::new()
-        .with_font_paths(options.font_paths.as_slice());
+        .with_font_paths(options.font_paths.as_slice())
+        .for_pdf();
     let mut output = Vec::new();
 
     {

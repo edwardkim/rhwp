@@ -14,7 +14,7 @@ pub(super) fn owns_constrained_row_frame(
         && !crate::renderer::float_placement::unrestricted_cell_float(&child.common)
 }
 
-pub(in crate::renderer::layout) struct ReflowNestedBand {
+pub(crate) struct ReflowNestedBand {
     pub parent_height: f64,
     pub last_row_height: f64,
 }
@@ -30,6 +30,11 @@ impl LayoutEngine {
         height: f64,
         styles: &ResolvedStyleSet,
     ) -> Option<ReflowNestedBand> {
+        if let Some(band) =
+            self.reflow_nested_opening_minimum_band(table, row, start, end, height, styles)
+        {
+            return Some(band);
+        }
         for (slot, index) in self
             .indexed_row_cut_cell_order(table, row)
             .into_iter()

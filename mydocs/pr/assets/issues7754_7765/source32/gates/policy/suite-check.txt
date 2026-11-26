@@ -1,0 +1,1 @@
+[RustTestSuite] 확인 완료: 2457 sources / 10121 static test attrs / 28 suites + 20 exceptions = 48/48 integration targets / nextest 최소 6288 cases / weight 2150776..2155451

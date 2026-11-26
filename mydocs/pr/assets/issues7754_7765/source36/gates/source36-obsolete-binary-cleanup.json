@@ -1,0 +1,176 @@
+{
+  "recorded": 1795304799.0730836,
+  "active_references": [],
+  "removed": [
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source4",
+      "bytes": 88962360,
+      "sha256": "99a7ca868e6ebde29f4aa7bf7c9046a49d12b098791a54077fb51cb3bcf29863",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source5",
+      "bytes": 89054224,
+      "sha256": "06753dd45c2bcf48aed0c1ff855c8f12d0acde77d1aaf4f720ac543d7c8268e0",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source6b",
+      "bytes": 88954488,
+      "sha256": "fac0b0027b47f195150c11e20f89da80034218a9c1268c58c448cd45c2fdf8a0",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source7",
+      "bytes": 88916704,
+      "sha256": "89254cbba9084435ca05bf775e0578fee7a2a17399b364e5be567d7a38ab502c",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source8",
+      "bytes": 88997872,
+      "sha256": "4d4f05cb9aff2cbcd235653553078f16a398060d7ff45842550dd4980a83880c",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source9",
+      "bytes": 89019848,
+      "sha256": "219475b2fb4ca36817fed3c1fa5167b1662ea856a5070e672be36106e0a55fd1",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source10-diag",
+      "bytes": 156651712,
+      "sha256": "7a2d89efde90e3311e5b6b4d788f5cdeb6e728aa0f3c16173240f2538f23e79d",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source11-diag",
+      "bytes": 156658304,
+      "sha256": "d847c6f76e04c39f82d7239aa451a86d2c64a338e34c41accb9330bf1e46f6bb",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source12-diag",
+      "bytes": 156658624,
+      "sha256": "f904a58afb64ae9d41cf63abe854e45c30a0a2a738e4453c41a3a282dde517a6",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source13-candidate",
+      "bytes": 156659592,
+      "sha256": "60b311e6168c5aebaa86e058c37164c505a8a600d2986c7624803b2aaa1d8183",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source14-diag",
+      "bytes": 156708280,
+      "sha256": "65b7179a38b97a44fb7ec9ced06c46dfc3d75f7819adca9b375721486902b80d",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source15-candidate",
+      "bytes": 156712384,
+      "sha256": "d250b86dff3873181e8ad06f5cbaa0cd53b13c2fa8fd466fd04e1c290b454842",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source16-candidate",
+      "bytes": 156714432,
+      "sha256": "901f2cd9af66b36b15af604c68dcf3adddc5017b6d71b2c39127cc7bc2ebba73",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source17-diag",
+      "bytes": 156719072,
+      "sha256": "f2e0e445123bab37da420f8f95f79b56733fe99c85b6ea25e9e8562dab9e2d87",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source18-candidate",
+      "bytes": 156724048,
+      "sha256": "4ef7ca2059d3aeaa83900bf20b82fc4bfd53e55b9498ebaa399f5e85b224fdca",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source19-candidate",
+      "bytes": 156735256,
+      "sha256": "932b03797a4b73df0105c4745fdc733be5360987a9ddaf1261c502521667452e",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source20-candidate",
+      "bytes": 156738536,
+      "sha256": "3cb41c547cd0a045f4e389a3bdfba4dc6e5ea189298bbfb36ec2a0e305a6fed7",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source21-candidate",
+      "bytes": 156688488,
+      "sha256": "719c60f2c84e6752c922c28e13f477f84bbb1f88e2650e2c22ff33d30451ae9c",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source23-candidate",
+      "bytes": 156734424,
+      "sha256": "807eb076d1308851d1b8865379a3eb39ce37d17a778a284390b7aa18135946b4",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source24-candidate",
+      "bytes": 156747912,
+      "sha256": "b9888f6e2ce903aeee610b65d9110b4ab25c697791df16143c44aa0ffccddd49",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source25-candidate",
+      "bytes": 156751264,
+      "sha256": "a017d7a5e6bd9380f789283bf7e3cef6a0b4592ba87ac0b1d2a720766f033cca",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source26-candidate",
+      "bytes": 156767176,
+      "sha256": "fff3fc304c9da9c2482b5234115856f6cb030d9e33fc9a967d92d0f48f4f2cf0",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source27-candidate",
+      "bytes": 156768288,
+      "sha256": "af7e5d2bd26273264037862868051f3f4e717684121106e065cab3582cc018c7",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source28-candidate",
+      "bytes": 156773312,
+      "sha256": "ff1774b239bc36e8eff94fc6833eb860be7a5930b30bce4e6bc1ff62e9739302",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source29-candidate",
+      "bytes": 156773600,
+      "sha256": "6d147eb1f78ff93cf3331e1128e8ec39f89014ce6ca427ecd88bc5c3f59c2701",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source30-candidate",
+      "bytes": 156774448,
+      "sha256": "7675daef1d7eaf1df65048ed244d7029e692dade29503c56768979d6bf31bc6a",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source31-candidate",
+      "bytes": 156782792,
+      "sha256": "bba8eba9b24fdc49190ff62b12ab3986d3b381394a41a7fa48db513c37b61c58",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source32-candidate",
+      "bytes": 156783304,
+      "sha256": "62836c04e2860fff5b10013817341be5a938ab0cc709870cad03b524f2b2819e",
+      "reason": "obsolete task-owned preliminary diagnostic/candidate executable; source33-36, both current bases and optimized source32 retained; input/PDF/TSV/PNG and source commits unchanged"
+    }
+  ],
+  "freed_bytes": 3981930744,
+  "shared_target_touched": false
+}

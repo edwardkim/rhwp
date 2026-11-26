@@ -1,0 +1,5 @@
+
+running 1 test
+test selected_program_identity_does_not_promote_a_logical_hft_family ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s

@@ -122,12 +122,21 @@ export function rulerFixture(t, { initialize = true, context = true, width = 355
     cancelAnimationFrame: id => frames.delete(id),
   });
   const flush = () => {
-    const callbacks = [...frames.values()];
-    frames.clear();
+    const ids = [...frames.keys()];
+    let invoked = 0;
     frame = ++frameNumber;
-    try { callbacks.forEach(callback => callback(frameNumber * 16)); }
-    finally { frame = null; }
-    return callbacks.length;
+    try {
+      for (const id of ids) {
+        const callback = frames.get(id);
+        if (!callback) continue;
+        frames.delete(id);
+        callback(frameNumber * 16);
+        invoked++;
+      }
+    } finally {
+      frame = null;
+    }
+    return invoked;
   };
   const h = new FakeCanvas(20, 0, record('h'));
   const v = new FakeCanvas(0, 20, record('v'));

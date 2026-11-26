@@ -1,0 +1,14 @@
+{
+  "old_source_commit": "436f8629b7f2b9aee520962297b79cdf15c17743",
+  "old_source_path": "tests/cases/issue_7754_split_hft_program_contract.rs",
+  "old_git_blob": "fc04b5f5c51921e96f978b12a9de1c4755eedfb0",
+  "active_path": "tests/cases/issue_8153_print_glyph_geometry.rs",
+  "active_module": "split_hft_original_programs",
+  "assertion_source_equal_ignoring_whitespace_and_redundant_native_cfg": true,
+  "default_native_ci_call": "node scripts/run-rust-test.mjs --cargo-test issue_8153_print_glyph_geometry -- --profile release-test --features native-skia --verbose",
+  "new_workflow_call": false,
+  "actual_prior_three_tests_passed": true,
+  "official_active_module_execution": "pending final Cargo gates",
+  "real_cli_case_body_sha256": "b4f9cce6f3e5b125bb6fe325b5e2b2a5a06db821fa9d8ea5f2fdd2a0866c74ec",
+  "real_cli_case_body_equals_executed_draft": true
+}

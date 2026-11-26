@@ -157,6 +157,7 @@ impl META_DIBBITBLT {
             let (target, c) = crate::wmf::parser::DeviceIndependentBitmap::parse_with_color_usage(
                 buf,
                 crate::wmf::parser::ColorUsage::DIB_RGB_COLORS,
+                Some(record_size.remaining_bytes()),
             )?;
             record_size.consume(c);
 

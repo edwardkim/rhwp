@@ -108,7 +108,7 @@ Rust 86개 함수(기본 78개, Native Skia 전용 1개)와 실제 WASM JPEG 브
 | [issue_8160_footer_border_ownership](../../cases/issue_8160_footer_border_ownership.rs) | 1 |
 | [issue_8160_fullwidth_cjk_quote](../../cases/issue_8160_fullwidth_cjk_quote.rs) | 1 |
 | [issue_8160_gradient_and_font_mapping](../../cases/issue_8160_gradient_and_font_mapping.rs) | 3 |
-| [issue_8160_hft_print_frame](../../cases/issue_8160_hft_print_frame.rs) | 1 |
+| [issue_8160_legacy_font_print_frame](../../cases/issue_8160_legacy_font_print_frame.rs) | 1 |
 | [issue_8160_hwp2022_paragraph_relations](../../cases/issue_8160_hwp2022_paragraph_relations.rs) | 3 |
 | [issue_8160_hwp2024_print_boundaries](../../cases/issue_8160_hwp2024_print_boundaries.rs) | 5 |
 | [issue_8160_hwp3_page_roundtrip](../../cases/issue_8160_hwp3_page_roundtrip.rs) | 2 |

@@ -276,7 +276,10 @@ fn legacy_hwp3_font_declaration_preserves_its_source_program_kind() {
         let doc = rhwp::parser::hwp3::parse_hwp3(&hwp3_doc(&body)).expect("글꼴 선언 파싱");
         for faces in &doc.doc_info.font_faces {
             assert_eq!(faces[0].name, name, "기존 표시 이름 보존");
-            assert_eq!(faces[0].alt_type, expected_type, "원본 HFT 종류 보존");
+            assert_eq!(
+                faces[0].alt_type, expected_type,
+                "원본에 저장된 글꼴 유형을 보존한다"
+            );
         }
         let styles = rhwp::renderer::style_resolver::resolve_styles(&doc.doc_info, 96.0);
         assert_eq!(

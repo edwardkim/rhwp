@@ -1,0 +1,42 @@
+{
+  "id": "verified-original-ttf-programs-wasm",
+  "substitutions": {
+    "HCI Poppy": "Palatino Linotype",
+    "한양중고딕": "HYGothic-Medium",
+    "한양신명조": "HYSinMyeongJo-Medium",
+    "휴먼명조": "휴먼명조"
+  },
+  "trueTypeFaces": [
+    "Palatino Linotype",
+    "HYGothic-Medium",
+    "HYSinMyeongJo-Medium",
+    "휴먼명조"
+  ],
+  "preserveSourceMetrics": true,
+  "replaceSourceMetricsFor": [
+    "HCI Poppy"
+  ],
+  "selectedPrograms": {
+    "한양중고딕": {
+      "query": "HY중고딕",
+      "family": "HYGothic-Medium",
+      "programId": "sweep-febb15c4b79dffd48f7424d656fa8456586575216f007a40d962801d0a5280fd",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "한양신명조": {
+      "query": "HY신명조",
+      "family": "HYSinMyeongJo-Medium",
+      "programId": "c557c382bc27a4948780df998f85cf6493e42a4569cd624327033de7bd52c367",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "휴먼명조": {
+      "query": "휴먼명조",
+      "family": "휴먼명조",
+      "programId": "f44febee110ef64620a17f9e884aac284878aef1bdf3cb3f41bc9efb462e629e",
+      "trueType": true,
+      "openTypeCff": false
+    }
+  }
+}
