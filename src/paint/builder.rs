@@ -55,6 +55,8 @@ pub struct LayerBuilder {
     metafile_catalogue: Option<std::sync::Arc<super::metafile_print::Catalogue>>,
     shape_group_depth: usize,
     print_crop_marks: bool,
+    prior_print_alpha_order: u8,
+    print_alpha_order: u8,
 }
 
 impl LayerBuilder {
@@ -79,6 +81,8 @@ impl LayerBuilder {
             metafile_catalogue: None,
             shape_group_depth: 0,
             print_crop_marks: false,
+            prior_print_alpha_order: 0,
+            print_alpha_order: 0,
         }
     }
 
@@ -133,6 +137,33 @@ impl LayerBuilder {
     pub(crate) fn with_prior_print_solid_fill(mut self, filled: bool) -> Self {
         self.prior_print_solid_fill = filled;
         self
+    }
+
+    pub(crate) fn with_prior_print_alpha_order(mut self, order: u8) -> Self {
+        self.prior_print_alpha_order = order;
+        self
+    }
+
+    pub(crate) fn page_print_alpha_count(tree: &PageRenderTree) -> (u8, bool) {
+        fn visit(node: &RenderNode, count: &mut u8, found: &mut bool) {
+            if !node.visible || node.editor_only {
+                return;
+            }
+            if let RenderNodeType::Image(image) = &node.node_type {
+                if !image.is_nonprinting_picture()
+                    && crate::renderer::image_resolver::print_transparent_png(image)
+                {
+                    *count = count.wrapping_add(1);
+                    *found = true;
+                }
+            }
+            for child in crate::renderer::paint_order::children(node) {
+                visit(child, count, found);
+            }
+        }
+        let (mut count, mut found) = (0, false);
+        visit(&tree.root, &mut count, &mut found);
+        (count, found)
     }
 
     pub(crate) fn with_hangul2024_print(mut self, enabled: bool) -> Self {
@@ -213,6 +244,7 @@ impl LayerBuilder {
         let logical_width = page_width;
         let (page_width, page_height) = context.output_size();
         self.page_context = Some(context);
+        self.print_alpha_order = self.prior_print_alpha_order;
         self.image_frames.clear();
 
         let mut children = self.build_children(&tree.root);
@@ -602,6 +634,11 @@ impl LayerBuilder {
             }
             RenderNodeType::Path(path) => Some(vec![PaintOp::path(node.bbox, path.clone())]),
             RenderNodeType::Image(image) => {
+                let transparent_png = self.profile == RenderProfile::Print
+                    && crate::renderer::image_resolver::print_transparent_png(image);
+                if transparent_png {
+                    self.print_alpha_order = self.print_alpha_order.wrapping_add(1);
+                }
                 let pixel = self
                     .metafile_device_pixel_width
                     .filter(|_| self.hancom2024_print_bitmap);
@@ -684,7 +721,25 @@ impl LayerBuilder {
                         } else {
                             None
                         };
-                        let mut resolved = resolved_effect
+                        let device_alpha = (transparent_png
+                            && self.shape_group_depth == 0
+                            && !soft_edge_prepared)
+                            .then(|| self.page_context?.alpha_device_frame(node, &image))
+                            .flatten()
+                            .and_then(|(device_frame, grid)| {
+                                let payload = grid.payload(&image, self.print_alpha_order)?;
+                                Some((device_frame, payload))
+                            });
+                        let has_device_alpha = device_alpha.is_some();
+                        let mut resolved = device_alpha
+                            .map(|(device_frame, payload)| {
+                                frame = device_frame;
+                                if let Some(owned) = self.image_frames.get_mut(&node.id) {
+                                    owned.paint = frame;
+                                }
+                                payload
+                            })
+                            .or(resolved_effect)
                             .or_else(|| {
                                 (self.profile == RenderProfile::Print)
                                     .then(|| {
@@ -797,7 +852,7 @@ impl LayerBuilder {
                                 frame.attach(&mut payload.data);
                             }
                         }
-                        if self.profile == RenderProfile::Print {
+                        if self.profile == RenderProfile::Print && !has_device_alpha {
                             if let Some((alpha_frame, payload)) =
                                 crate::renderer::print_raster::PrintRasterFrame::new(
                                     self.image_page_size,

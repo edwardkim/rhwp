@@ -497,6 +497,7 @@ impl DocumentCore {
             header_footer_preview_tree_cache: RefCell::new(None),
             layer_tree_json_cache: RefCell::new(Vec::new()),
             page_layer_tree_cache: RefCell::new(Vec::new()),
+            print_alpha_prefix: RefCell::new(Vec::new()),
             bin_data_epoch: 0,
             loaded_unreferenced_bin_data: std::collections::BTreeSet::new(),
             batch_mode: false,

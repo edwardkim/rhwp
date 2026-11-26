@@ -673,6 +673,29 @@ impl PagePaintContext {
         (width.is_finite() && width > 0.0).then_some(width)
     }
 
+    pub(super) fn alpha_device_frame(
+        self,
+        node: &RenderNode,
+        image: &ImageNode,
+    ) -> Option<(BoundingBox, crate::renderer::image_resolver::PrintAlphaDeviceGrid)> {
+        if !self.axis_aligned_graphics {
+            return None;
+        }
+        let context = self.with_hangul2024_print(true);
+        let paper = context.print_paper?;
+        let position = context.raster_image_frame(node, image);
+        let (sx, sy) = paper.device_units;
+        let size = |length| source_device_coordinate(length, 96.0 / 600.0).round();
+        let frame = BoundingBox::new(
+            position.x,
+            position.y,
+            size(node.bbox.width) * sx,
+            size(node.bbox.height) * sy,
+        );
+        let grid = crate::renderer::image_resolver::PrintAlphaDeviceGrid::new(frame, (sx, sy))?;
+        Some((frame, grid))
+    }
+
     /// 회전/affine 아래의 좌표는 최종 장치 좌표가 아니므로 이 계약을 적용하지 않는다.
     pub(crate) fn without_rectangle_mapping(mut self) -> Self {
         self.axis_aligned_graphics = false;

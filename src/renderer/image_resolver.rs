@@ -3,6 +3,8 @@ use std::io::Cursor;
 
 mod print_alpha;
 mod print_alpha_2024;
+mod print_alpha_core;
+mod print_alpha_device;
 mod print_crop;
 mod print_source_codec;
 pub(crate) use print_source_codec::unsupported_picture as nonprinting_source_picture;
@@ -10,6 +12,7 @@ mod print_jpeg_encode;
 mod print_rgb555;
 mod print_tone;
 pub(crate) use print_alpha::print_alpha_payload;
+pub(crate) use print_alpha_device::{print_transparent_png, PrintAlphaDeviceGrid};
 pub(crate) use print_crop::{publish_print_jpeg_crop, resolve_print_jpeg_window};
 pub(crate) use print_jpeg_encode::{encode_print_jpeg, print_jpeg_payload, PrintJpegTransfer};
 mod print_window;
@@ -182,6 +185,10 @@ enum Conversion {
     },
     Hancom2024PrintJpeg {
         quality: u8,
+    },
+    PrintTransparentPng,
+    PrintAlphaDevice {
+        grid: PrintAlphaDeviceGrid,
     },
     Hancom2024PrintAlpha {
         quality: u8,

@@ -28,6 +28,9 @@ pub(crate) fn print_area_sampling(
     image: &ImageNode,
     resolved: Option<&ResolvedImagePayload>,
 ) -> bool {
+    if resolved.is_some_and(|payload| super::png_sampling::print_alpha_device_bands(&payload.data)) {
+        return true;
+    }
     if (resolved.is_some_and(|payload| {
         payload.kind == ResolvedImageKind::OutputDeviceWindow
             && super::png_sampling::print_separate_alpha(&payload.data)
