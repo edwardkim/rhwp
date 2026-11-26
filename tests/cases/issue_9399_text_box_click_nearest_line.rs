@@ -87,6 +87,16 @@ fn click_after_text_in_grouped_text_box_inside_cell_stays_in_that_text_box() {
     assert_eq!(group["cellPath"], json!([owner[0]]));
     assert_eq!(group["parentParaIdx"], 1);
     assert_eq!(group["controlIdx"], owner[1]["controlIndex"]);
+    // 두 글상자는 묶음의 양끝에 놓여 있다. 가운데 빈 곳은 자식 글상자의 편집 주소가 아니다.
+    let mid = |origin: &str, size: &str| {
+        group[origin].as_f64().unwrap() + group[size].as_f64().unwrap() / 2.0
+    };
+    let gap: Value = serde_json::from_str(
+        &doc.hit_test_native(0, mid("x", "w"), mid("y", "h"))
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(gap["cellPath"].as_array().unwrap().len(), 1, "{gap}");
     for (child, len) in [(0usize, 4u32), (1, 5)] {
         let end = caret(&doc, 1, &text_box(child), len);
         for (dx, dy) in [(4.0, 0.5), (20.0, 0.5), (0.0, 1.2)] {

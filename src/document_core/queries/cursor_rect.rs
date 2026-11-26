@@ -2161,6 +2161,22 @@ impl DocumentCore {
             })
         }
 
+        // 같은 칸 또는 글상자의 다른 문단은 허용하되, 자식·형제 컨테이너의 글은 고르지 않는다.
+        fn same_text_container(a: &CellContext, b: &CellContext) -> bool {
+            a.parent_para_index == b.parent_para_index
+                && a.path.len() == b.path.len()
+                && a.path
+                    .iter()
+                    .zip(&b.path)
+                    .enumerate()
+                    .all(|(i, (left, right))| {
+                        left.control_index == right.control_index
+                            && left.cell_index == right.cell_index
+                            && (i + 1 == a.path.len()
+                                || left.cell_para_index == right.cell_para_index)
+                    })
+        }
+
         fn same_cell_context(a: &Option<CellContext>, b: &Option<CellContext>) -> bool {
             match (a, b) {
                 (None, None) => true,
@@ -2787,17 +2803,15 @@ impl DocumentCore {
 
         // 셀 내부 클릭이면: 해당 셀의 run만 검색하여 가장 가까운 위치 반환
         if let Some(cb) = clicked_cell.filter(|_| !textbox_beats_cell) {
-            let cell_runs: Vec<&RunInfo> = runs
-                .iter()
-                .filter(|r| {
-                    r.cell_context.as_ref().is_some_and(|ctx| {
-                        r.table_id == cb.table_id
-                            && ctx.parent_para_index == cb.parent_para_index
-                            && ctx
-                                .innermost()
-                                .is_some_and(|e| e.cell_index == cb.cell_index)
+            let cell_runs: Vec<&RunInfo> = runs.iter().filter(|r| {
+                r.section_index == cb.section_index && r.table_id == cb.table_id
+                    && r.cell_context.as_ref().is_some_and(|ctx| match &cb.cell_context {
+                        Some(owner) => same_text_container(ctx, owner),
+                        None => ctx.parent_para_index == cb.parent_para_index
+                            && matches!(ctx.path.as_slice(), [entry]
+                                if entry.control_index == cb.control_index && entry.cell_index == cb.cell_index),
                     })
-                })
+            })
                 .collect();
 
             if !cell_runs.is_empty() {
@@ -2855,22 +2869,13 @@ impl DocumentCore {
         // 글 끝 뒤·줄 사이·안쪽 여백을 누르면 칸 분기처럼 그 글상자 글의 가장 가까운 줄과
         // 글자로 간다. 글이 없는 글상자만 첫 문단 시작으로 들어간다.
         if let Some(tb) = textbox_hit {
-            let last = tb.context.path.len().saturating_sub(1);
             let textbox_runs: Vec<&RunInfo> = runs
                 .iter()
                 .filter(|r| {
                     r.section_index == tb.section_index
-                        && r.cell_context.as_ref().is_some_and(|ctx| {
-                            ctx.parent_para_index == tb.parent_para_index
-                                && ctx.path.len() == tb.context.path.len()
-                                && ctx.path.iter().zip(&tb.context.path).enumerate().all(
-                                    |(i, (a, b))| {
-                                        a.control_index == b.control_index
-                                            && a.cell_index == b.cell_index
-                                            && (i == last || a.cell_para_index == b.cell_para_index)
-                                    },
-                                )
-                        })
+                        && r.cell_context
+                            .as_ref()
+                            .is_some_and(|ctx| same_text_container(ctx, &tb.context))
                 })
                 .collect();
             if let Some((run, offset)) = nearest_line_hit(&textbox_runs, x, y) {

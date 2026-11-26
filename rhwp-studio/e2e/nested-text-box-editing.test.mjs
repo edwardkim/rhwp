@@ -90,6 +90,9 @@ runTest('#9398·#9399 중첩 글상자 실제 클릭과 편집', async ({ page }
   assert.deepEqual(await paragraphs(page, 1, right), ['둘째 상자']);
 
   const group = await page.evaluate(() => window.__wasm.getPageControlLayout(0).controls.find(c => c.type === 'group'));
+  await clickPage(page, { pageIndex: 0, x: group.x + group.w / 2, y: group.y + group.h / 2 });
+  assert.equal((await selected())?.type, 'group');
+  await page.keyboard.press('Escape');
   await clickPage(page, { pageIndex: 0, x: group.x + 1, y: group.y + group.h / 3 });
   assert.equal((await selected())?.type, 'group');
   assert.deepEqual((await selected()).cellPath, left.slice(0, -1));
