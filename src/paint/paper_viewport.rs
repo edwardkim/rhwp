@@ -800,6 +800,7 @@ impl PagePaintContext {
         rect: &mut RectangleNode,
         pixel: Option<f64>,
         in_shape_group: bool,
+        device_alpha_bands: bool,
     ) {
         let (Some(width_hu), Some(pixel)) = (
             rect.picture_border_width_hu,
@@ -817,12 +818,16 @@ impl PagePaintContext {
         {
             return;
         }
-        if width_hu == 0 && !in_shape_group {
-            // 독립 그림의 폭 0은 600 DPI 한 픽셀의 채움 띠다. 묶음 그림은
-            // 편람 Print 94·163쪽에서 이 띠에 별도 0.120pt 외곽선을 더한다.
+        if width_hu == 0 && device_alpha_bands {
+            // 59043 Print의 알파 장치 띠에는 한 픽셀의 채움 테두리가 붙는다.
             rect.style.stroke_width = pixel;
         } else {
-            let band = (rect.style.stroke_width / pixel).round().max(1.0);
+            // 편람 Print의 독립 불투명 그림은 한 픽셀의 채움과 외곽선을 함께 그린다.
+            let band = if width_hu == 0 && !in_shape_group {
+                1.0
+            } else {
+                (rect.style.stroke_width / pixel).round().max(1.0)
+            };
             rect.print_picture_pen = Some([band * pixel, pixel]);
             rect.style.stroke_width = (band + 1.0) * pixel;
         }

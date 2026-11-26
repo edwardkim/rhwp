@@ -19,6 +19,7 @@ use std::collections::HashMap;
 struct ImagePaintFrame {
     source: BoundingBox,
     paint: BoundingBox,
+    device_alpha_bands: bool,
 }
 
 impl ImagePaintFrame {
@@ -574,6 +575,9 @@ impl LayerBuilder {
                 let pixel = self
                     .metafile_device_pixel_width
                     .filter(|_| self.hancom2024_print_bitmap);
+                let image_owner = rect
+                    .image_frame_owner
+                    .and_then(|owner| self.image_frames.get(&owner));
                 if let Some(context) = self.page_context {
                     // 그림의 물리 띠·외곽 pen은 비트맵 색상 세대와 별개의
                     // Print 계약이다. 독립 2022·2024 Print가 같은 600dpi
@@ -582,11 +586,9 @@ impl LayerBuilder {
                         &mut rect,
                         Some(self.layout_dpi / crate::renderer::print_picture_pen::DEVICE_DPI),
                         self.shape_group_depth > 0,
+                        image_owner.is_some_and(|owner| owner.device_alpha_bands),
                     );
                 }
-                let image_owner = rect
-                    .image_frame_owner
-                    .and_then(|owner| self.image_frames.get(&owner));
                 let image_frame = image_owner.map(|frame| {
                     let source = if rect.picture_border_width_hu == Some(0) {
                         frame.source
@@ -667,6 +669,7 @@ impl LayerBuilder {
                         ImagePaintFrame {
                             source: node.bbox,
                             paint: frame,
+                            device_alpha_bands: false,
                         },
                     );
                 }
@@ -733,9 +736,14 @@ impl LayerBuilder {
                         let mut resolved = device_alpha
                             .map(|(device_frame, payload)| {
                                 frame = device_frame;
-                                if let Some(owned) = self.image_frames.get_mut(&node.id) {
-                                    owned.paint = frame;
-                                }
+                                self.image_frames.insert(
+                                    node.id,
+                                    ImagePaintFrame {
+                                        source: node.bbox,
+                                        paint: frame,
+                                        device_alpha_bands: true,
+                                    },
+                                );
                                 payload
                             })
                             .or(resolved_effect)
