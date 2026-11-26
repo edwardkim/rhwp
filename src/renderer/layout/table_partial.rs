@@ -3746,6 +3746,7 @@ impl LayoutEngine {
                     // 추가 spacing 없이 para_y를 그대로 사용.
                 }
 
+                let mut stored_exclusion_successor = None;
                 // 이 문단의 컨트롤(이미지/도형/중첩테이블) 배치
                 // 제목행 반복 셀에서는 컨트롤을 건너뜀 (이미지/도형 중복 방지)
                 if !is_repeated_header_cell {
@@ -5919,8 +5920,8 @@ impl LayoutEngine {
                                     // 컷 없는 저장 떠 있는 개체는 물리 본문과 여백을
                                     // 이미 확정했다. 배치가 반환한 전체 띠의 여백을
                                     // table_top에서 다시 더하지 않는다.
-                                    let flow_end = stored_float_frame
-                                        .filter(|_| {
+                                    let whole_stored_float_frame =
+                                        stored_float_frame.filter(|_| {
                                             projected_table_anchor.is_none()
                                                 && split_info.as_ref().is_none_or(|split| {
                                                 split.start_row == 0
@@ -5934,8 +5935,9 @@ impl LayoutEngine {
                                                                 && cut.end_cut.is_empty()
                                                         },
                                                     )
-                                            })
-                                        })
+                                                })
+                                        });
+                                    let flow_end = whole_stored_float_frame
                                         .map_or_else(|| {
                                             // 투영한 유닛의 흐름은 종료 호스트와 여백을 이미 소유한다.
                                             // 본체 높이만 받은 경로에서만 같은 원본 종료 슬롯을 더한다.
@@ -5971,6 +5973,13 @@ impl LayoutEngine {
                                             && matches!(nested_table.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
                                     });
                                     if let Some(frame) = exclusion_band {
+                                        // 다음 저장 줄이 표 바깥 상자 끝에서 시작하면 그 끝을
+                                        // 뒤 문단의 앞 간격 계산에도 전달한다.
+                                        if whole_stored_float_frame.is_some()
+                                            && frame.stored_successor_line_origin == Some(flow_end)
+                                        {
+                                            stored_exclusion_successor = Some(flow_end);
+                                        }
                                         // [#8686] 인증된 자리차지 표는 본문 흐름에서 빠진 배제 띠다.
                                         // 흐름은 호스트 문단의 글줄로만 전진하고, 이 조각이 그린
                                         // 표 끝까지를 띠로 남긴다.
@@ -6213,6 +6222,8 @@ impl LayoutEngine {
                                 let absorbed_spacing = if wrap_successor.is_none()
                                     && host_owned_here
                                 {
+                                    let occupied_bottom = stored_exclusion_successor
+                                        .map_or(para_y, |end| para_y.max(end));
                                     self.absorbed_block_host_successor_y(
                                         para,
                                         &composed_store
@@ -6222,7 +6233,7 @@ impl LayoutEngine {
                                         cell.paragraphs.len(),
                                         styles,
                                         para_y_before_compose,
-                                        para_y,
+                                        occupied_bottom,
                                         next_para,
                                     )
                                     .map(|(y, spacing)| {
