@@ -41,6 +41,12 @@
 
 원 PR 브랜치에 제출한 `9d8fb2e2bc9cde8401d9397b3b36269b2ce92413`에서 회귀 Archive A–E, Lint, Build & Test, Rust CodeQL 분석, Adapter 비교와 Proptest가 통과했다. CI Impact Policy도 성공했다. 코드와 검토 자료가 포함된 이 커밋 위에 검토 문서와 오늘할일을 추가한다. [코드 CI](https://github.com/edwardkim/rhwp/actions/runs/45804413619) · [코드 정책 감사](https://github.com/edwardkim/rhwp/actions/runs/45809101356) · [Rust CodeQL](https://github.com/edwardkim/rhwp/actions/runs/45804413547)
 
+## 병합과 연결 이슈 종료
+
+2026년 11월 26일 20시 21분(KST), 원 PR에 추가한 최종 커밋 `033cb40928`을 edwardkim이 승인하고 `devel`에 merge commit으로 병합했다. 이 커밋은 검토 문서·오늘할일만 추가했다. GitHub preflight가 검증된 `9d8fb2e2bc`를 재사용했고 Build & Test와 CI Impact Policy가 통과했다. GitHub의 병합 트리는 로컬에서 확인한 `6a2d16ab91`과 같고 원 기여 `1e9194008e`와 메인테이너 보정 `a37c9cce46`를 포함한다. [승인 리뷰](https://github.com/edwardkim/rhwp/pull/9424#pullrequestreview-6073269287) · [최종 CI](https://github.com/edwardkim/rhwp/actions/runs/45809323676) · [최종 정책 감사](https://github.com/edwardkim/rhwp/actions/runs/45809566032) · [병합 커밋](https://github.com/edwardkim/rhwp/commit/492f398bce48e1e695786d617a18bf9f62d3fc91)
+
+같은 날 20시 21분(KST) `Close Issues on devel Push`가 이슈 #9139를 `completed`로 닫았다. 병합 후 nextest는 원 코드 CI에서 확보한 Archive B·C·D·E의 실행 시간 자료를 확인해 [측정 자료 커밋 `e27e7569cb`](https://github.com/edwardkim/rhwp/commit/e27e7569cb162c0fa9b83c9cd936c5f9c60b9be9)에 게시했다. [자동 종료 기록](https://github.com/edwardkim/rhwp/issues/9139#issuecomment-7190631396) · [병합 후 측정 자료 갱신](https://github.com/edwardkim/rhwp/actions/runs/45809886084)
+
 ## Merge 후 contributor PR comment 계획
 
 cozykbin 님의 첫 기여를 환영하고, 원 기여의 본문·표 셀 자동 줄바꿈과 메인테이너의 본문 수식 선택 보완을 각각 설명한다. 병합 커밋의 실제 화면 두 장과 검증 기록을 연결한다. 연결 이슈에는 원본에서 확인한 16건의 선택·복사 결과와 완료 상태를 기록한다. [본문과 표 셀의 드래그](../assets/pr9424/verified-wrapped.png) · [수식과 다음 글자의 선택](../assets/pr9424/verified-equation.png) · [이슈 #9139](https://github.com/edwardkim/rhwp/issues/9139)
