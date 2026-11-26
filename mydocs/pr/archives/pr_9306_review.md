@@ -2,14 +2,14 @@
 
 ## 최종 판정
 
-**머지 보류.** [#7114](https://github.com/edwardkim/rhwp/issues/7114)의 120자 편집은 HWP와 HWPX의 편집·저장·재열기에서 검증했다. 정본 보호표의 전쪽 하한을 다시 충족하려면 해당 글꼴과 출력 조건을 맞춰야 한다. 같은 조건에서 기준과 후보가 일치한 보호 쪽도 정본 하한에 도달하는지가 별도 병합 조건이다.
+**로컬 검증과 코드 head CI 통과.** [#7114](https://github.com/edwardkim/rhwp/issues/7114)의 120자 편집은 HWP·HWPX의 편집, 두 차례 저장·재열기에서 115쪽과 102·103쪽의 74자·46자 소속을 유지했다. 승인한 보호표의 4,046행이 모두 통과했다.
 
 | 항목 | 확인 결과 |
 | --- | --- |
 | PR·제품 코드 | [#9306](https://github.com/edwardkim/rhwp/pull/9306), `b0f7b0c60c80d8a020d3c15ccbabdfc013b9f5fa` |
-| 검토한 코드 head | `00c61934897e0c7ee2d65760beeac0606fd96854`, 대상 `devel`, collaborator 셀프 리뷰 |
-| 코드 head CI | [CI](https://github.com/edwardkim/rhwp/actions/runs/44946135525), [Build & Test](https://github.com/edwardkim/rhwp/actions/runs/44946135525/job/136981501403), [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/44946135501), [Canvas Render Diff](https://github.com/edwardkim/rhwp/actions/runs/44946135411), [Proptest](https://github.com/edwardkim/rhwp/actions/runs/44946135497), [Adapter inter-diff](https://github.com/edwardkim/rhwp/actions/runs/44946135503), [CI Impact Policy](https://github.com/edwardkim/rhwp/actions/runs/44948678370) 통과 |
-| 기록 head | 문서 변경을 올린 뒤 필수 검사와 코드 head 결과 재사용을 확인해야 한다. |
+| 검토한 코드 head | `f3efcf7fc8d0164a4dc941c68edd5a946cc1bba3`, 대상 `devel`, collaborator 셀프 리뷰 |
+| 코드 head CI | [CI](https://github.com/edwardkim/rhwp/actions/runs/45864409097) · [CI Impact Policy Controller](https://github.com/edwardkim/rhwp/actions/runs/45864401721) · [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/45864408676) · [Adapter inter-diff](https://github.com/edwardkim/rhwp/actions/runs/45864408614) · [Proptest roundtrip](https://github.com/edwardkim/rhwp/actions/runs/45864408730) · [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/45864408512) 통과 |
+| 기록 head | 기록 커밋의 필수 검사 확인 뒤 병합한다. |
 
 ## 원 해결 범위와 남은 저장 경계
 
@@ -32,7 +32,7 @@
 
 로컬 기본 회귀 13,938건과 Native Skia 공식 세 검사 묶음, Native/WASM 및 workspace Clippy, 포맷과 workspace 빌드가 통과했다. 편람 HWPX Native 383쪽 제출 게이트와 공통 보호 문서 4종의 Native/WASM 8개 조건도 통과했다.
 
-## 통합용 정본 보호표
+## 초기 통합용 정본 보호 검토
 
 [정본 4,046행](../assets/visual-protected-baseline/final.tsv)의 입력·Print PDF 해시를 확인했다. #9292의 화학물질 표시 기준과 형식 사양서에 기록된 58개 공급 프로그램 중 41개가 현재 공급본과 SHA-256으로 일치했다. 남은 공급 및 정본 미달은 다음 결과로 확인했다.
 
@@ -54,3 +54,13 @@ HWP 3.0 `sample10`의 Native 정본 환경 JSON을 확인했다. 문서에 명�
 생성 전 기준에는 [#9302](https://github.com/edwardkim/rhwp/pull/9302)가 포함됐다. 병합 시뮬레이션의 Studio에서 실제 120자 입력과 파일 메뉴의 HWP/HWPX 저장·다시 열기·재저장을 실행해 115쪽을 확인했다. PR을 연 뒤 [#9304](https://github.com/edwardkim/rhwp/pull/9304)가 반영된 `ae60986a8d6bbec3d182c0548efe4fb293d31742`를 기준으로 병합 트리 `93d93287608246e2cac8e0aced13ded6a122c0a4`를 확인했다. #9304는 그림 헤더와 구성 요소의 `CTRL_DATA` 소유권을 고쳤다. 두 PR의 생산 소스 변경 경로 교집합은 비어 있다. 이후 [#9300](https://github.com/edwardkim/rhwp/pull/9300)이 반영한 `1a27faacff48ea7329e76ce8eca15aa9ca8aa877`까지의 추가 차이는 Render Diff 증적과 CI 요약 게시다.
 
 같은 작성자의 공개 작업 #9300, #9303은 이 PR 생성 전 병합 시뮬레이션에서 파일이 겹치지 않았다. #9303의 #7910은 머리말·꼬리말과 본문 유동 배치 파일을 다룬다. 별도 #7407 작업은 문단 줄 나눔의 `src/renderer/composer/line_breaking.rs`를 다룬다.
+
+## 11월 27일 최종 검증
+
+최신 devel `ba4f9b8d502472de71068711276d039a425892b0`에서 Native 집중 검사 6건 중 HWP 102쪽의 삽입 글줄 소속 검사 1건이 실패했다. fresh WASM에서 HWP의 120자 입력은 첫 재열기에서 115쪽에서 116쪽이 됐다. 후보에서 Native 6건이 모두 통과했다. Node와 Chrome의 fresh WASM에서 두 형식의 첫 편집과 두 차례 재열기 모두 115쪽이었고, 102·103쪽 74자·46자와 104쪽 중복 0자를 확인했다. 문단 5·오프셋 130의 별도 HWPX 55·56·61·200자 입력은 기준과 후보 양쪽에서 재열기 116쪽이었다.
+
+같은 Mac 공급에서 sample16 384쪽의 devel·후보 PNG 해시가 모두 같았다. 사용자 승인에 따라 HWP 2022 Native의 수식 6쪽은 99.96%, 다른 다섯 조건의 6쪽은 99.97%를 적용했다. 편람 HWP·HWPX WASM 200쪽은 함초롬바탕 공급으로 각각 100.00%가 됐다. sample10은 Native·WASM 각 763쪽을 통과했다. 게이트 단위 검사 30건이 통과했다. [전쪽 보호 결과](../assets/issue_7114/protected-mac-20261127/README.md) · [하한 조정 근거](../assets/issue_7114/sample16-mac-protection-20261127/README.md)
+
+## 병합 후 기록
+
+확정된 병합 SHA와 코드·기록 head CI를 #9306과 #7114에 연결한다. 120자 입력의 쪽수와 102·103쪽 소속, 보호 4,046행 판정, 같은 동작을 보인 별도 HWPX 대조군을 기록한다. HWP 103쪽의 대표 이미지는 원 PR의 Native 확대 증적을 사용한다. [HWP 103쪽](../assets/issue_7114/native-hwp-p103.png) · [수식 6쪽 확대](../assets/issue_7114/sample16-mac-protection-20261127/sample16-hwpx-p6-equation-detail.png)
