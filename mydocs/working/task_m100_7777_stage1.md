@@ -1499,6 +1499,27 @@ Native 및 WASM TSV SHA-256은 각각
 `76076-refined-wasm/7779-overlap-restore/`에 등록 후보 패치와 증거를 보존했다. 복원한 Rust 검사와
 최신 트리의 보호 문서 검증은 별도 실행 결과가 필요하다.
 
+같은 회귀 후보를 `task/7779-split-metadata-nested-rows-9417`에 적용했다. 제품 패치는
+Native·WASM으로 검증한 버전과 바이트 단위로 일치한다. 매니페스트 사전 검사를 통과했고,
+자동 생성기는 겹침 원장을 `regression_suite_001`, 행 소속 검사를 `regression_suite_018`에
+배정했다. 두 suite의 Rust 원본 184개를 읽고 포함 입력 54개의 Git blob을 확인했다. 희소
+체크아웃에서 포함 파일을 복원할 때에는 devel이 아니라 후보 인덱스의 원장 파일을 사용한다.
+
+실제 원장의 수집·분할 함수로 전 코퍼스 1,918개를 확인했다. 복원한 76076 원본은 127개가 든
+**파티션 2**에 한 번 포함된다. 최소 글꼴 환경에서 같은 최신 Native 후보의 6·7쪽을 다시
+검사한 결과, 고정 devel에서 반대 쪽에 있던 3개 문구가 후보에서는 독립 Print와 같은 6쪽에
+한 번씩 나타났다. 표와 글줄이 꼬리말 위에 있고 7쪽 후속 제목이 표 뒤에 있음을 확인했다.
+`minimal-boundary-verification.json`의 SHA-256은
+`93a1e32b25e659e17c51768e966b2dc7afc294e9826bbffd9ba024bd9204a9eb`다.
+해당 파티션과 `issue_1939`의 두 검사를 함께 실행하도록 공유 Cargo 순서에 연결했다.
+
+최신 제품 트리의 편람 Native 전 383쪽 보호 검사는 하락 0건으로 통과했다. 381쪽이
+100.00%이며 최저는 99.97%다. 전쪽 TSV SHA-256은
+`261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590`,
+`required-handbook-8153-gate.json`의 SHA-256은
+`a124c0b9af7f2f948dba0d82ad8e17a2ded2a77a3d73f428a923e48c3dfd5dd4`다.
+기여자 보호 문서 대조는 같은 후보의 Native·WASM으로 실행 중이다.
+
 ### #7779·#7784의 33쪽 줄바꿈과 부모 안여백 대조
 
 #7784와 같은 후보에서 부모 칸 아래 안여백만 없앤 사본을 렌더링했다. 33쪽 부모 칸 하단은
@@ -1667,6 +1688,11 @@ JSON의 SHA-256은 `60cff35f4b754aaad88b7c946950f112865865949f98025b75684d2b739e
 서식과 인덱스 diff를 확인했으며, 기존 76076 WASM 컴파일이 공유 대기열을 지나면
 이 후보의 Native 51·82쪽 빌드와 집중 비교를 실행하도록 등록했다. 정식 Native·WASM과 보호
 대조 결과는 대기 중이다. 패치와 실행 기록은 같은 경로의 `bold-tracking-trial/`에 있다.
+
+별도 자간 후보의 Native 집중 비교는 종료 코드 0이었다. 51·82쪽 PNG가 직전 후보와
+각각 일치했고 raw 값은 **95.87539%**, **90.78084%**로 유지됐다. 이 후보는 두 쪽의 차이를
+줄이지 못했다. 6→7쪽 컷 후보는 새 검토 작업공간을 준비할 때 여유가 409,480 KiB여서
+빌드 전에 멈췄다. `recursive-cut-trial/available-before-checkout.txt`에 확인값이 있다.
 
 두 76076 원본의 최소 글꼴 전 82쪽에서 고정 devel과 Native 후보의 `layout-anomaly` JSON은
 원본별로 바이트가 같다. text-overlap·off-canvas·stored-line-escape는 네 실행에서 모두 0이다.
@@ -1989,3 +2015,9 @@ suite만 실행하는 재개 스크립트가 현재 fresh WASM 실행 뒤의 공
 `7778-reference-audit`가 사용하고 종료한 전용 WASM 캐시만 정리했다. 여유 공간은
 1,274,456 KiB가 됐다. 정리 전후 보존된 JS·WASM과 한컴 2022·2024 대응 전쪽 TSV의
 SHA-256이 일치했다. `7778-reference-audit/cache-release.log`에 실제 경로와 결과가 있다.
+
+고정 라이브러리를 명시한 재시도도 직접 `rustc` 링크에서 `E0463`으로 멈췄다.
+같은 고정 devel의 Cargo 매니페스트에 두 검증 target만 추가한 사본을 준비했다. 격리 환경에서만
+이 매니페스트와 동일 원본 샘플을 읽고, Cargo가 라이브러리·의존성을 선택하도록 했다.
+원래 기준 작업 트리는 깨끗하고 회귀 입력 두 개의 SHA-256을 확인했다.
+`7785-regression-inventory/cargo-managed-baseline/`의 재개 PID 473682가 공유 Cargo를 기다린다.
