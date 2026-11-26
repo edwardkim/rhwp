@@ -4,7 +4,7 @@
 
 아래는 메인테이너 보완 전에 확인한 결과다. 보완본의 수용 판정과 필수 검증 결과는 [세 PR의 최종 검토](hyunmyungjanelee_20261126_review.md)에 기록했다.
 
-세 원 PR의 병합을 보류한다. 최신 `devel` `cbebdbeeca060efe670cb8702355e4d79cb7e70e`에 세 원 head를 순서대로 병합한 로컬 검토 커밋은 `3f09b6d71d0fd66498edf1039cbcc876a32c4b89`다. 기여자의 제출 원본 22개를 한컴 데스크톱에서 다시 인쇄했다. 원본과 같은 버전·PDF 프린터를 사용했고 총 25쪽이 제출된 기준 PDF와 96 DPI에서 픽셀 단위로 일치했다. [원본별 입력·인쇄본·픽셀 해시](assets/hyunmyungjanelee-20261126/reference-reprints.tsv)
+세 원 PR의 병합을 보류한다. 최신 `devel` `cbebdbeeca060efe670cb8702355e4d79cb7e70e`에 세 원 head를 순서대로 병합한 로컬 검토 커밋은 `3f09b6d71d0fd66498edf1039cbcc876a32c4b89`다. 기여자의 제출 원본 22개를 한컴 데스크톱에서 다시 인쇄했다. 원본과 같은 버전·PDF 프린터를 사용했고 총 25쪽이 제출된 기준 PDF와 96 DPI에서 픽셀 단위로 일치했다. [원본별 입력·인쇄본·픽셀 해시](../assets/hyunmyungjanelee-20261126/reference-reprints.tsv)
 
 | 원 PR | 재현한 경계 | 보완 범위 |
 | --- | --- | --- |
@@ -16,11 +16,11 @@
 
 ## 독립 대조
 
-- #9416은 원본 `word_hcr_p100.hwpx`의 `Contents/header.xml`에서 글꼴 이름만 변경했다. Windows `gulim.ttc`의 첫 번째 face에 두 이름이 등록돼 있다. PDF에 실제 사용된 13개 글리프의 윤곽과 전진 폭을 모두 확인했다. 같은 파일의 `hhea` 높이는 1,024/1,024 em이다. 후보의 줄 높이 함수는 한글 이름에 1.4924, 영문 이름에 1.3을 적용한다. [글꼴과 PDF의 대조](assets/hyunmyungjanelee-20261126/font-check.tsv) · [한글 이름 확대](assets/hyunmyungjanelee-20261126/word_gulim_ko-native.png) · [영문 이름 확대](assets/hyunmyungjanelee-20261126/word_gulim_en-native.png)
-- #9418은 `partial_table_following_text.hwpx`의 그림 가로 오프셋만 1,650 HU에서 1,530 HU로 변경했다. 96 DPI에서 그림 위치의 차이는 1.6px다. 한컴은 첫 줄을 왼쪽의 `F O`와 오른쪽의 `L L`로 나눈다. 두 조각의 기준선은 모두 128.04pt다. 후보의 그림 아래 경계와 뒤 글줄 위 경계는 모두 226.6px다. [원본 확대](assets/hyunmyungjanelee-20261126/partial_table_following_text-native.png) · [양쪽 대조본 확대](assets/hyunmyungjanelee-20261126/picture_both_sides-native.png)
-- #9420은 공개 HWP의 세 번째 본문 문단에서 표 뒤 UTF-16 공백을 `X`로 바꿨다. 한컴은 오프셋 3,000 HU와 0 HU에서 모두 제목 다음에 표를 그리고 그 아래에 `X`를 놓는다. Native 후보의 3,000 HU 대조본은 표의 위 경계가 983.7px다. 0 HU 대조본은 109.5px에서 표가 시작되고 뒤 글자는 965.9px에 있다. [표와 뒤 글자 확대](assets/hyunmyungjanelee-20261126/tac_visible_suffix-native.png) · [한컴 텍스트 좌표](assets/hyunmyungjanelee-20261126/reference-text.tsv)
+- #9416은 원본 `word_hcr_p100.hwpx`의 `Contents/header.xml`에서 글꼴 이름만 변경했다. Windows `gulim.ttc`의 첫 번째 face에 두 이름이 등록돼 있다. PDF에 실제 사용된 13개 글리프의 윤곽과 전진 폭을 모두 확인했다. 같은 파일의 `hhea` 높이는 1,024/1,024 em이다. 후보의 줄 높이 함수는 한글 이름에 1.4924, 영문 이름에 1.3을 적용한다. [글꼴과 PDF의 대조](../assets/hyunmyungjanelee-20261126/font-check.tsv) · [한글 이름 확대](../assets/hyunmyungjanelee-20261126/word_gulim_ko-native.png) · [영문 이름 확대](../assets/hyunmyungjanelee-20261126/word_gulim_en-native.png)
+- #9418은 `partial_table_following_text.hwpx`의 그림 가로 오프셋만 1,650 HU에서 1,530 HU로 변경했다. 96 DPI에서 그림 위치의 차이는 1.6px다. 한컴은 첫 줄을 왼쪽의 `F O`와 오른쪽의 `L L`로 나눈다. 두 조각의 기준선은 모두 128.04pt다. 후보의 그림 아래 경계와 뒤 글줄 위 경계는 모두 226.6px다. [원본 확대](../assets/hyunmyungjanelee-20261126/partial_table_following_text-native.png) · [양쪽 대조본 확대](../assets/hyunmyungjanelee-20261126/picture_both_sides-native.png)
+- #9420은 공개 HWP의 세 번째 본문 문단에서 표 뒤 UTF-16 공백을 `X`로 바꿨다. 한컴은 오프셋 3,000 HU와 0 HU에서 모두 제목 다음에 표를 그리고 그 아래에 `X`를 놓는다. Native 후보의 3,000 HU 대조본은 표의 위 경계가 983.7px다. 0 HU 대조본은 109.5px에서 표가 시작되고 뒤 글자는 965.9px에 있다. [표와 뒤 글자 확대](../assets/hyunmyungjanelee-20261126/tac_visible_suffix-native.png) · [한컴 텍스트 좌표](../assets/hyunmyungjanelee-20261126/reference-text.tsv)
 
-공개 원본에서 만든 대조본은 한컴 2020 또는 2024의 PDF 프린터로 각각 인쇄했다. [입력·출력 SHA-256과 한컴 버전](assets/hyunmyungjanelee-20261126/reference-controls.tsv)
+공개 원본에서 만든 대조본은 한컴 2020 또는 2024의 PDF 프린터로 각각 인쇄했다. [입력·출력 SHA-256과 한컴 버전](../assets/hyunmyungjanelee-20261126/reference-controls.tsv)
 
 ## #9416 양방향 저장
 
@@ -30,6 +30,6 @@ HWP 5 표 55의 호환 대상과 표 56의 글자·문단·구역·개체·필�
 
 ## #9420과 기존 누름틀 줄의 소유
 
-전체 회귀에서 #8522의 `field_over19.hwpx`에 표 두 개가 9.7px 겹쳤다. 이 문서는 폭을 넘긴 첫 표를 누름틀 시작 줄 다음 줄에 놓는다. 독립 한컴 2020 인쇄와 비교한 Native 첫 쪽은 기준 `cbebdbeeca`와 세 원 기여의 통합 `3f09b6d71d`에서 각각 100.00%, 중간 보완본 `d034f6602e`에서 53.37%였다. 폭이 맞는 대조군은 세 소스 모두 100.00%였다. [원 해결 PR의 통합 검토와 독립 인쇄](archives/pr_8522_review.md)
+전체 회귀에서 #8522의 `field_over19.hwpx`에 표 두 개가 9.7px 겹쳤다. 이 문서는 폭을 넘긴 첫 표를 누름틀 시작 줄 다음 줄에 놓는다. 독립 한컴 2020 인쇄와 비교한 Native 첫 쪽은 기준 `cbebdbeeca`와 세 원 기여의 통합 `3f09b6d71d`에서 각각 100.00%, 중간 보완본 `d034f6602e`에서 53.37%였다. 폭이 맞는 대조군은 세 소스 모두 100.00%였다. [원 해결 PR의 통합 검토와 독립 인쇄](pr_8522_review.md)
 
 개체만 담은 문단에서는 `composed_empty_host_tac_line_offset`이 제어 슬롯 소속 줄의 원점을 사용하고, `tac_reconcile`이 그 앞 누름틀 줄을 전진에 반영한다. 중간 보완본의 `place_table_with_text`가 이 줄을 일반 본문 조각으로 한 번 더 방출했다. 양수 오프셋 표 앞에 실제 문단 텍스트를 배치하는 분기에서만 소유 줄까지 텍스트를 방출하도록 고쳤다. 누름틀·실제 앞뒤 글자·공백, 2020·2024 인쇄와 저장본을 함께 대조한다.

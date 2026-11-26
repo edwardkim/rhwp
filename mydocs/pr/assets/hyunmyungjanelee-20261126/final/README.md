@@ -43,4 +43,4 @@ Native 2,023쪽과 브라우저 2,023쪽을 23종의 보호 문서에서 비교�
 
 각 소스의 CLI로 `scripts/visual_sweep.py --silhouette-only`를 실행했다. 원본과 한컴 Print는 정본 manifest의 SHA-256으로 확인하고 `--dpi 96`과 문서별 `--compat`를 적용했다. Native에는 해당 CLI를 `--rhwp-bin`으로 지정했다. 브라우저에는 같은 소스의 최적화한 package를 `--wasm-pkg`로 추가했다. 문서의 순서대로 `--font-path`를 지정했고 공급 환경 파일을 사용한 실행은 그 해시도 기록했다.
 
-회귀·배포 빌드·Studio·lint의 종료 상태와 테스트 수를 같은 제품 커밋에 연결했다. [필수 로컬 검사 결과](local-validation.json) · [세 PR의 최종 검토](../../../hyunmyungjanelee_20261126_review.md)
+회귀·배포 빌드·Studio·lint의 종료 상태와 테스트 수를 같은 제품 커밋에 연결했다. [필수 로컬 검사 결과](local-validation.json) · [세 PR의 최종 검토](../../../archives/hyunmyungjanelee_20261126_review.md)
