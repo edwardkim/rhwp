@@ -552,19 +552,19 @@ impl LayerBuilder {
                         self.shape_group_depth > 0,
                     );
                 }
-                let image_frame = rect
+                let image_owner = rect
                     .image_frame_owner
-                    .and_then(|owner| self.image_frames.get(&owner))
-                    .map(|frame| {
-                        let source = if rect.picture_border_width_hu == Some(0) {
-                            frame.source
-                        } else {
-                            node.bbox
-                        };
-                        self.page_context
-                            .and_then(|context| context.picture_border_frame(source, &rect))
-                            .unwrap_or_else(|| frame.border_frame(node.bbox))
-                    });
+                    .and_then(|owner| self.image_frames.get(&owner));
+                let image_frame = image_owner.map(|frame| {
+                    let source = if rect.picture_border_width_hu == Some(0) {
+                        frame.source
+                    } else {
+                        node.bbox
+                    };
+                    self.page_context
+                        .and_then(|context| context.picture_border_frame(source, &rect))
+                        .unwrap_or_else(|| frame.border_frame(node.bbox))
+                });
                 let frame = image_frame.unwrap_or_else(|| {
                     self.page_context.map_or(node.bbox, |context| {
                         context.rectangle_frame(node, &mut rect, pixel)
@@ -583,7 +583,11 @@ impl LayerBuilder {
                         })
                     }
                 };
-                if let Some(fill_frame) = fill_frame {
+                if let Some(ring) = image_owner
+                    .and_then(|owner| super::picture_border::cosmetic_ring(owner.paint, &rect))
+                {
+                    Some(vec![ring])
+                } else if let Some(fill_frame) = fill_frame {
                     let fill = super::rectangle_fill::take_fill(&mut rect);
                     Some(vec![
                         PaintOp::rectangle(map_fill(fill_frame, &fill), fill),

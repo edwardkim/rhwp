@@ -36,6 +36,7 @@ mod paint_bounds;
 pub mod paint_op;
 pub(crate) mod paper_viewport;
 mod parallel_shadow;
+mod picture_border;
 mod print_coordinate;
 mod print_paper;
 pub mod profile;

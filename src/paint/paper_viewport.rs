@@ -812,11 +812,9 @@ impl PagePaintContext {
         rect: &RectangleNode,
     ) -> Option<BoundingBox> {
         let paper = self.print_paper?;
-        let cosmetic_pen = rect.picture_border_width_hu == Some(0)
-            && rect.style.stroke_dash == crate::renderer::StrokeDash::Explicit([0.0; 6]);
         if !self.print
             || !self.axis_aligned_graphics
-            || (rect.print_picture_pen.is_none() && !cosmetic_pen)
+            || rect.print_picture_pen.is_none()
             || rect.transform.has_transform()
             || ![bounds.x, bounds.y, bounds.width, bounds.height]
                 .into_iter()
