@@ -34,3 +34,11 @@
 로컬 원본 크기 OTF로도 같은 두 소스의 Native PNG 15쌍이 모두 같았고 쪽별 하한을 충족했다. 개요 번호의 글꼴 6개는 브라우저의 단일 글꼴 한도인 32 MiB를 초과했다. 브라우저 측정에는 위의 소형 공급본을 사용했다. [원본 크기 공급본의 Native 15쪽 대조](verified-large-native.tsv)
 
 공개 원본에서 파생한 대조본, 형식별 저장본, 독립 인쇄본의 Git 경로와 SHA-256을 보존했다. 실제 Studio 배포 빌드에서 세 대표 문서가 각각 1·2·1쪽으로 열렸고, 브라우저가 사용한 WASM 바이트는 시각 검증에 사용한 빌드와 같았다. [재현 입력과 독립 인쇄본](inputs.tsv) · [Studio 실행 결과](studio-browser.json)
+
+공개 글꼴로 실행하는 기여자 공통 검사도 네 문서의 Native·브라우저 8쪽 모두 100.00%였다. 세 줄의 영문 본문, 좁은 셀의 네 줄과 괄호, 두 그림의 잘린 경계와 테두리, 지도 도형의 외곽·채움 위치를 한컴 인쇄와 대조했다. [공통 검사 원본 TSV와 비교 그림](contributor-gate/README.md)
+
+## 최종 보호 검증
+
+Native 2,023쪽과 브라우저 2,023쪽을 23종의 보호 문서에서 비교했다. 모든 쪽이 공식 하한을 충족했고 같은 환경의 `devel`과 후보 PNG 4,046쌍의 SHA-256이 전부 같았다. 중첩 표 Native 10쪽은 두 버전 모두 100.00%였다. 해당 쪽의 공식값은 별도로 승인한 macOS 글꼴 공급 조건에서 측정한 값이다. [4,046행의 공식값·실측·PNG 해시](protected-pages.tsv) · [92개 실행의 생산 소스·도구·글꼴·원본 TSV 경로](protected-runs.tsv) · [macOS의 쪽별 승인 기록](../../visual-protected-baseline/updates/planet6897-mac-native-20261125.json)
+
+각 소스의 CLI로 `scripts/visual_sweep.py --silhouette-only`를 실행했다. 원본과 한컴 Print는 정본 manifest의 SHA-256으로 확인하고 `--dpi 96`과 문서별 `--compat`를 적용했다. Native에는 해당 CLI를 `--rhwp-bin`으로 지정했다. 브라우저에는 같은 소스의 최적화한 package를 `--wasm-pkg`로 추가했다. 문서의 순서대로 `--font-path`를 지정했고 공급 환경 파일을 사용한 실행은 그 해시도 기록했다.

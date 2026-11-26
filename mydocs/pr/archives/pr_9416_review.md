@@ -1,5 +1,7 @@
 # PR #9416 검토 · Word 호환 문단의 줄 높이와 형식 변환
 
+세 건 중 첫 번째로 원 head를 기준 `devel`에 병합했다(`1536bcad98`). Git의 충돌 없는 병합 결과와 실제 트리가 같았다. 메인테이너는 `2cf02c3e29`에서 글꼴·공백 배치를 보완하고 `02bc510e7d`와 `d034f6602e`에서 양방향 저장과 Word 줄 메트릭 보존을 보완했다.
+
 hyunmyungJaneLee의 원 기여 `ae243b34c1744e68dfbe32ab2866148228b9a53b`와 메인테이너가 보완한 제품 소스 `9e601ad6a862a30b019ad9563a1d597f6a33222b`을 검토했다. 대조 기준은 `devel`의 `cbebdbeeca060efe670cb8702355e4d79cb7e70e`다. [원 PR](https://github.com/edwardkim/rhwp/pull/9416)
 
 같은 `gulim.ttc`를 한글 이름과 영문 이름으로 지정한 한컴 인쇄본은 96 DPI에서 픽셀이 같았다. 세 원 기여만 병합한 Native에서는 한글 이름 63.37%, 영문 이름 99.54%였다. 보완본은 문서의 글꼴 슬롯과 이름이 가리키는 실제 글꼴을 따라 같은 줄 메트릭을 사용한다. 두 이름과 표 안 문단은 Native에서 각각 100.00%다. [글꼴과 인쇄본의 대조](../assets/hyunmyungjanelee-20261126/font-check.tsv)
