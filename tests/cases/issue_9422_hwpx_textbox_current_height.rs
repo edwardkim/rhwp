@@ -1,5 +1,5 @@
 //! 관계형·고정형 — [#9422] 한/글이 저장한 HWPX 의 넘치는 글상자는 바뀌지 않은 폭을 `curSz width="0"` 으로 적어도 저장 현재 높이로 인쇄 경계를 그린다.
-//! 주석 갱신: 2026-11-26 KST_TIME KST (처음 작성)
+//! 주석 갱신: 2026-11-26 23:49 KST (처음 작성)
 //!
 //! 입력: `samples/issue9419/kaf_appendix_2020.hwpx` — `samples/issue9379/kaf_appendix.hwp` 를 한/글 2020(11.0.0.1623)으로
 //! HWPX 로 다시 저장한 파일. 기준 `pdf/issue9419/kaf_appendix_2020-2020.pdf`(54쪽).
@@ -10,7 +10,11 @@
 //! 축의 표지인데도 파서가 남긴 재직렬화 표지(`current_width_was_zero`)를 거절 조건으로 읽어 개체 높이(7855 HU)로 잘랐다.
 //! - 반례: 크기 보호 상자는 선언 높이를 유지한다(같은 파일에서 보호 비트를 켜 확인).
 //!
-//! 측정: MEASURE_NOTE
+//! 측정(2026-11-26, head 5bdce8055b 코드, `scripts/visual_sweep.py` silhouette_raw_match_percent, 96 DPI,
+//! 기준 `pdf/issue9419/kaf_appendix_2020-2020.pdf` 54쪽): 36쪽 Native 100.00 · fresh WASM 100.00(수정 전 Native 95.96).
+//! 전체 54쪽 = PDF 54쪽. 전쪽 최저 Native 94.30 · fresh WASM 92.56(1쪽, 표지 글꼴 대체 NotoSansKRThin-Bold→H2hdrM, 같은 문서
+//! HWP 와 같은 값), 그 밖의 98 미만은 Native 24쪽 97.40(글꼴 대체)뿐. HWP 대조군 `samples/issue9379/kaf_appendix.hwp` 는
+//! Native 전쪽이 수정 전과 같다. 증거: `mydocs/pr/assets/issue_9422/` 의 Native·fresh WASM·수정 전 Native TSV 와 36쪽 PNG.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
