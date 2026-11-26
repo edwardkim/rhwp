@@ -28253,6 +28253,15 @@ impl LayoutEngine {
                 ))
             || end == 0
             || end >= units.len()
+            // 부모가 용량으로 고른 자식의 첫 조각은 저장 줄 슬롯을 함께 소유한다.
+            // 자식에게 독립된 쪽 재시작이 있으면 원본 프레임의 종료 계약을 따른다.
+            || (start == 0
+                && cell.row_span == 1
+                && !units[end].page_frame_reset_before
+                && self
+                    .nested_table_ptrs
+                    .borrow()
+                    .contains(&(std::ptr::from_ref(table) as usize)))
         {
             return 0.0;
         }
