@@ -225,7 +225,7 @@ const fn single(code: u32, widths: &'static [u16]) -> LatinRange {
     }
 }
 
-pub(super) static METRICS: [FontMetric; 8] = [
+pub(super) static METRICS: [FontMetric; 9] = [
     FontMetric {
         name: "신명 디나루 (HFT)",
         bold: false,
@@ -274,6 +274,20 @@ pub(super) static METRICS: [FontMetric; 8] = [
         latin_ranges: &RANGES_5,
         hangul: None,
     },
+    // [#9426] 한/글이 HFT(유형 2)로 저장한 `신명 중명조` 도 표시 대체(HY신명조)가 아니라
+    // 원 프로그램의 폭으로 잰다. 폭은 #7293 이 한/글 2020 Print 의 Type3 `/Widths` 로 잰
+    // 표를 그대로 공유한다 — `germany_law-resaved2020.hwp` 의 한/글 2020·2024 Print 260쪽
+    // 보통(T7)·굵게(T4) 글꼴의 공통 51·65자도 이 표와 1.2% 안에서 같다. 굵게의 원점은
+    // 같은 폭에 TJ 로만 약 0.05em 더 전진하며(비공백, 마지막 줄 `Schulrecht` 포함) 그 간격은
+    // 다른 HFT 표와 같이 문자 측정 walk 가 더한다.
+    FontMetric {
+        name: "신명 중명조 (HFT)",
+        bold: false,
+        italic: false,
+        em_size: 1024,
+        latin_ranges: &super::SINMYEONG_JUNGMYEONGJO_LATIN_RANGES,
+        hangul: None,
+    },
     konghan::METRIC,
     system::METRIC,
 ];
@@ -287,6 +301,7 @@ pub(crate) fn metric_face_name(requested: &str) -> Option<&'static str> {
         "신명 신그래픽" => Some("신명 신그래픽 (HFT)"),
         "신명 중고딕" => Some("신명 중고딕 (HFT)"),
         "신명 순명조" => Some("신명 순명조 (HFT)"),
+        "신명 중명조" => Some("신명 중명조 (HFT)"),
         "중간공한" | "Konghan Normal" => Some("중간공한 (HFT)"),
         "시스템" => Some("시스템 (HFT)"),
         _ => None,
