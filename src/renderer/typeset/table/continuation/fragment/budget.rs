@@ -1898,7 +1898,38 @@ impl TypesetEngine {
             (Some(a), Some(b)) => Some(a.min(b)),
             (a, b) => a.or(b),
         };
-        let avail_for_rows = accepted_frame_bottom.map_or(avail_for_rows, |bottom| {
+        // A floating RowBreak continuation leaves room for its bottom caption
+        // at the page limit, including a stored blank caption line. Only the
+        // terminal fragment places the caption in flow.
+        let continued_caption_bottom = if is_continuation
+            && !input.row_cursor_is_nested
+            && std::ptr::eq(row_geometry_table, table)
+            && !table.common.treat_as_char
+            && table.layout_page_break() == crate::model::table::TablePageBreak::RowBreak
+            && mt.caption_height > 0.0
+        {
+            table
+                .caption
+                .as_ref()
+                .filter(|caption| {
+                    caption.direction == crate::model::shape::CaptionDirection::Bottom
+                })
+                .map(|caption| {
+                    crate::renderer::float_placement::single_cell_page_fragment_bottom(
+                        table,
+                        st.available_height().min(st.inline_flow_column().height),
+                        self.dpi,
+                    ) - mt.caption_height
+                        - hwpunit_to_px(i32::from(caption.spacing), self.dpi)
+                })
+        } else {
+            None
+        };
+        let scan_bottom = match (accepted_frame_bottom, continued_caption_bottom) {
+            (Some(a), Some(b)) => Some(a.min(b)),
+            (a, b) => a.or(b),
+        };
+        let avail_for_rows = scan_bottom.map_or(avail_for_rows, |bottom| {
             let top = fragment_placement.map_or(
                 st.current_height + host_before_overhead + vert_offset_overhead,
                 |placement| placement.table_top,
@@ -1944,9 +1975,9 @@ impl TypesetEngine {
             );
             // 내용 컷이 이미 소비한 원본 하단 inset을 빈 띠 예산에서 되돌리지 않는다.
             // 현재 각주 등으로 좁아진 본문과 인증한 이어받기 프레임의 교집합이다.
-            let bottom = accepted_frame_bottom
+            let bottom = scan_bottom
                 .map_or(bounds.content_bottom, |saved| bounds.content_bottom.min(saved));
-            let blank_bottom = accepted_frame_bottom
+            let blank_bottom = scan_bottom
                 .map_or(bounds.blank_bottom, |saved| bounds.blank_bottom.min(saved));
             let top = fragment_placement.map_or(
                 fragment_flow_origin + host_before_overhead + vert_offset_overhead,
