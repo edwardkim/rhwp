@@ -7,7 +7,7 @@ use super::super::helpers::{
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
-use crate::model::paragraph::Paragraph;
+use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::renderer::render_tree::TextRunNode;
 
 /// 선택 영역이 문단 끝을 넘을 때 글자 끝에 더 칠하는 문단 부호 폭(px, 2.5pt).
@@ -2565,10 +2565,16 @@ impl DocumentCore {
             // 편집한 HWPX는 저장 줄을 생략할 수 있다. 캐럿과 같은 렌더 트리의
             // 실제 TextLine 소유·글자 경계만 사용하며 좌표로 줄을 추정하지 않는다.
             let mut rendered_starts = Vec::new();
-            if para
-                .controls
+            // 저장 줄 없이 가져온 문단에는 재조판용 합성 줄만 남을 수 있다(#9139).
+            // 이 경우 화면의 자동 줄바꿈은 실제로 그려진 TextLine에서 읽는다.
+            let only_generated_lines = para
+                .line_segs
                 .iter()
-                .any(|control| matches!(control, Control::Form(form) if form.common.treat_as_char))
+                .all(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0);
+            if only_generated_lines
+                || para.controls.iter().any(
+                    |control| matches!(control, Control::Form(form) if form.common.treat_as_char),
+                )
             {
                 for (_, tree) in &tree_cache {
                     collect_rendered_line_starts(
