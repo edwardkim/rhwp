@@ -1558,6 +1558,16 @@ Native는 48번까지 수용했다. 한컴의 18쪽 마지막 괘선은 283 HU �
 61,741 HU에 본문 상단과 표 바깥 위 여백을 더한 예상 상단은 900.693px이다. 배율을 걷은
 Print 상단은 900.758px이다. 독립 Print의 수치와 함께 셀의 저장 줄·안여백 계약을 더 확인한다.
 
+첫 그림 칸의 유효 위 여백만 **141→441 HU**로 바꾼 사본을 한컴 2020에서 직접 인쇄했다.
+나머지 안여백, 첫 행의 선언 높이 282 HU, 저장 줄과 그림 레코드는 유지했다. 두 출력 모두
+37쪽이다. 10쪽 빈 조각의 위 괘선은 **901.333px**로 같고, 아래 괘선은 **920→924px**로
+움직였다. 11쪽의 그림 두 장은 모두 같은 쪽에서 **80→84px**로 내려갔다. 두 조각이 같은
+셀의 위 안여백을 각각 적용한다. 사본 SHA-256은
+`0305c257eae9956135c85b93f1daca69e22c12c9348d88273ea7636540c6b2b3`이며 Print 좌표와
+해시는 `p19-table-ownership/opening-picture-top-pad-plus-300.comparison.json`에 있다.
+같은 사본을 기존 Native로 열면 37쪽이 유지되고 10쪽의 빈 조각은 여전히 생기지 않았다.
+첫 행 요구 높이는 257.827→261.827px로 증가했고 그림은 계속 11쪽에 배치된다.
+
 현재 `stored_empty_picture_cell_frame`을 소비하는 `cell_units_uncached`는 그림과 빈 줄을
 높이 254.067px인 단일 유닛으로 묶는다. 첫 행 요구 높이 257.827px가 남은 146.213px를
 넘어 `block/prepare.rs`의 `multirow_clean_defer`가 첫 행을 통째로 이월한다. #7505에
@@ -1566,6 +1576,8 @@ Print 상단은 900.758px이다. 독립 Print의 수치와 함께 셀의 저장 
 구분한다. 이 두 정상 계약을 보존하면서 첫 행의 빈 물리 조각 조건을 확인한다.
 입력 해시, 픽셀 집계와 PDF 괘선은 `p19-table-ownership/picture-table-split-comparison.json`,
 유닛과 이월 추적은 `p19-table-ownership/table-98-cell-units.log`에 있다.
+기존 Native로 경계 검사도 실행했다. 호스트 앞 제목과 11쪽의 그림 여섯 장은 유지됐고 10쪽의
+빈 조각·0 컷·괘선 검사는 실패했다. `empty-picture-opening-baseline.json`에 결과가 있다.
 
 ### #7785의 원본 세 형식과 HML 저장 왕복 Native 재검증
 
