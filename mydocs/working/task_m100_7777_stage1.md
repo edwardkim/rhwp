@@ -1505,6 +1505,13 @@ Native는 48번까지 수용했다. 한컴의 18쪽 마지막 괘선은 283 HU �
 유지됐다. 사본과 Print의 SHA-256, 범위 및 괘선은
 `capacity-probe/host-shape-spacing-100.comparison.json`에 있다.
 
+49번 행의 두 번호 칸에도 같은 대조를 적용했다. 비율 줄간격 필드만 다른 기존 문단 모양
+2(160%)와 223(100%)을 확인하고, 두 칸의 참조를 223으로 바꾸면서 각 저장 줄 뒤 간격도
+660 HU에서 0 HU로 맞췄다. 표 행 높이와 다른 OLE 스트림을 보존했다. 37쪽 한컴 2020 Print의
+17~19쪽 괘선 및 56개 행 소속이 원본과 같았고, Native의 49번 행도 여전히 18쪽에 있었다.
+사본 SHA-256은 `baebf272fce5037327541fb951ab12cb5a26772751c93746486a9efd1171c422`이고
+대조 결과는 `capacity-probe/last-row-controls/last-row-observation.json`에 있다.
+
 ### #7785의 원본 세 형식과 HML 저장 왕복 Native 재검증
 
 트리 `ce21ad0a243822e1bd32138cf79017e6fb6854ae`의 Native 실행 파일 SHA-256은
