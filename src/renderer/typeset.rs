@@ -5268,11 +5268,6 @@ impl TypesetEngine {
             .and_then(|placement| placement.split_host_prefix());
         let pre_table_end_line = if let Some(prefix) = split_host_prefix {
             prefix
-        } else if let Some(line) =
-            tac_table_line_idx.filter(|_| crate::renderer::para_has_no_stored_line_segs(para))
-        {
-            // 재조판한 인라인 표 앞에는 제어 슬롯이 속한 줄보다 앞선 줄만 놓는다.
-            line
         } else if !is_visible_para_float
             && signed_vertical_offset > 0
             && !para.text.is_empty()
@@ -5298,7 +5293,11 @@ impl TypesetEngine {
             && !no_lineseg_host_flows_below
             && fmt.square_host_plan.is_none()
         {
-            total_lines
+            // 오프셋이 있는 표 앞의 글줄만 방출한다. 재조판한 인라인 표는
+            // 소유 줄에서 시작한다. 글자 없는 개체 문단의 앞줄은 개체 배치가 소비한다.
+            tac_table_line_idx
+                .filter(|_| crate::renderer::para_has_no_stored_line_segs(para))
+                .unwrap_or(total_lines)
         } else if table.common.treat_as_char
             && total_lines > 1
             && (has_owned_tac_prefix
