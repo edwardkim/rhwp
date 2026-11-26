@@ -8,6 +8,7 @@ pub mod border_paint;
 pub mod color;
 pub mod control;
 pub mod document;
+pub(crate) mod document_compatibility;
 pub mod event;
 pub mod footnote;
 pub(crate) mod form_script;

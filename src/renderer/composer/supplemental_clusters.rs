@@ -83,7 +83,11 @@ impl<'a> ParagraphMetricScope<'a> {
         if style.literal_figure_space {
             style.literal_figure_space_em = styles.literal_figure_space_em(id, lang);
         }
-        self.1.apply_to_style(&mut style);
+        styles
+            .word_spacing
+            .metric_at(self.2, index)
+            .unwrap_or(self.1)
+            .apply_to_style(&mut style);
         // 이 scope는 새 줄의 채움·분할·투영을 측정한다.
         style.regenerated_font_metrics = true;
         Ok(style)

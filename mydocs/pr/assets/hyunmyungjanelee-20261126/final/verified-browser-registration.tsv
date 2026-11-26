@@ -1,0 +1,13 @@
+document	role	part	worker	given_otfs	registered_hft_hashes	all_registered_hashes	capture_pages
+outline	base	p0001-0001	0	33	19	20	1
+outline	base	p0002-0009	0	33	19	20	2,4,6,8
+outline	base	p0002-0009	1	33	19	20	3,5,7,9
+outline	verified	p0001-0001	0	33	19	20	1
+outline	verified	p0002-0009	0	33	19	20	2,4,6,8
+outline	verified	p0002-0009	1	33	19	20	3,5,7,9
+issue7905	base	p0001-0001	0	12	12	12	1
+issue7905	base	p0002-0006	0	12	12	12	2,4,6
+issue7905	base	p0002-0006	1	12	12	12	3,5
+issue7905	verified	p0001-0001	0	12	12	12	1
+issue7905	verified	p0002-0006	0	12	12	12	2,4,6
+issue7905	verified	p0002-0006	1	12	12	12	3,5

@@ -146,6 +146,12 @@ where
     // 3. Contents/header.xml — Stage 1 동적 생성 (IR 기반)
     let header_xml = header::write_header_with_storage(doc, &ctx, storage)?;
     z.write_deflated("Contents/header.xml", &header_xml)?;
+    use crate::model::document_compatibility::DocumentCompatibility;
+    if let Some(bytes) =
+        DocumentCompatibility::from_records(&doc.doc_info).nonpreset_bytes(&header_xml)
+    {
+        z.write_deflated(DocumentCompatibility::HWPX_ENTRY, &bytes)?;
+    }
     let mut hwp3_page_ownership =
         crate::model::hwp3_page_ownership::PageOwnership::for_document(doc, &header_xml);
     if let Some(bytes) =

@@ -589,6 +589,7 @@ pub struct ResolvedStyleSet {
     /// 문서의 호환 대상이 MS 워드인가(HWP5 `HWPTAG_COMPATIBLE_DOCUMENT` 값 2, HWPX
     /// `targetProgram="MS_WORD"`). 한/글 문서와 다른 흐름 규칙을 고른다.
     pub(crate) word_compat_target: bool,
+    pub(crate) word_spacing: super::word_compat::WordSpacing,
     /// 검증된 원본 프로그램의 줄 소유와 저장 fallback 재현 계약을 구분한다.
     /// 명시적 HWPX TTF의 동적 줄 정책도 전체 글리프·프레임 검증 뒤에만 소비한다.
     pub(crate) source_program_projection_slots:
@@ -653,6 +654,10 @@ pub struct ResolvedStyleSet {
     /// remains dormant until the composition-owner handoff qualifies.
     pub(crate) horizontal_shaping_context:
         Option<std::sync::Arc<crate::renderer::shaping_context::HorizontalShapingContext>>,
+    /// [#8582] 호환 대상이 MS 워드인 문서에서 글자 모양별·언어별 줄 높이 배율.
+    /// `word_compat_target` 이고 워드 줄 높이를 쓰는 문서(HWP5 는 레이아웃 호환 플래그)일 때만
+    /// 채운다. 한글 문서는 `None` 이며 줄 높이 계산이 바뀌지 않는다.
+    pub(crate) word_line_factors: Option<std::sync::Arc<Vec<[f64; 7]>>>,
 }
 
 impl ResolvedStyleSet {
@@ -803,6 +808,6 @@ crate::storage::clone_fields!(ResolvedParaStyle, {alignment, vertical_alignment,
 
 crate::storage::clone_fields!(ResolvedBorderStyle, {borders, fill_color, pattern, gradient, image_fill, diagonal_attr, break_cell_separate_line, diagonal, center_line});
 
-crate::storage::clone_fields!(ResolvedStyleSet, {section_tab_width_bits, script_metrics, source_hwp3_native, legacy_body_symbols, word_compat_target, source_program_projection_slots, native_pua_fonts, display_only_otf_slots, inferred_ttf_requires_selection, unsubstituted_font_slots, char_overlap_size_bounds, source_char_shapes, resolved_dpi, isolated_jamo_font, page_number_char_style_id, page_number_font_is_hft, supplemental_metrics, style_char_shapes, char_styles, para_styles, border_styles, numberings, bullets, hwp3_variant, hft_ascii_halfwidth, kerning_measurement_context, horizontal_shaping_context});
+crate::storage::clone_fields!(ResolvedStyleSet, {section_tab_width_bits, script_metrics, source_hwp3_native, legacy_body_symbols, word_compat_target, word_spacing, source_program_projection_slots, native_pua_fonts, display_only_otf_slots, inferred_ttf_requires_selection, unsubstituted_font_slots, char_overlap_size_bounds, source_char_shapes, resolved_dpi, isolated_jamo_font, page_number_char_style_id, page_number_font_is_hft, supplemental_metrics, style_char_shapes, char_styles, para_styles, border_styles, numberings, bullets, hwp3_variant, hft_ascii_halfwidth, kerning_measurement_context, horizontal_shaping_context, word_line_factors});
 
 crate::storage::clone_fields!(ResolvedImageFill, {bin_data_id, fill_mode, brightness, contrast, effect});

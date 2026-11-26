@@ -191,6 +191,10 @@ fn empty_paragraph_fallback_line_metrics(
     let ls_type = para_style
         .map(|s| s.line_spacing_type)
         .unwrap_or(crate::model::style::LineSpacingType::Percent);
+    // [#8582] 워드 호환 문서의 빈 문단은 끝 표지(영문 슬롯 글꼴)의 배율로 잰 크기다.
+    let font_size =
+        crate::renderer::composer::word_compat_empty_paragraph_font_size(para, styles, ls_type)
+            .map_or(font_size, |scaled| font_size.max(scaled));
     Some(crate::renderer::corrected_line_metrics(
         0.0, 0.0, font_size, ls_type, ls_val,
     ))
@@ -5289,7 +5293,11 @@ impl TypesetEngine {
             && !no_lineseg_host_flows_below
             && fmt.square_host_plan.is_none()
         {
-            total_lines
+            // 오프셋이 있는 표 앞의 글줄만 방출한다. 재조판한 인라인 표는
+            // 소유 줄에서 시작한다. 글자 없는 개체 문단의 앞줄은 개체 배치가 소비한다.
+            tac_table_line_idx
+                .filter(|_| crate::renderer::para_has_no_stored_line_segs(para))
+                .unwrap_or(total_lines)
         } else if table.common.treat_as_char
             && total_lines > 1
             && (has_owned_tac_prefix

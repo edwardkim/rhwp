@@ -1,0 +1,56 @@
+case	page	text	font	origin_x_pt	baseline_y_pt	box_top_pt	box_bottom_pt
+word_gulim_ko	1	TOP	Gulim	85.034	109.201	100.653	110.605
+word_gulim_ko	1	가나다 ABC	Gulim	85.034	131.017	121.543	132.574
+word_gulim_ko	1	가나다 ABC	Gulim	85.034	145.281	135.807	146.838
+word_gulim_ko	1	가나다 ABC	Gulim	85.034	159.546	150.072	161.103
+word_gulim_ko	1	가나다 ABC	Gulim	85.034	173.93	164.456	175.487
+word_gulim_ko	1	가나다 ABC	Gulim	85.034	188.194	178.72	189.751
+word_gulim_ko	1	가나다 ABC	Gulim	85.034	202.459	192.985	204.016
+word_gulim_ko	1	가나다 ABC	Gulim	85.034	216.723	207.249	218.28
+word_gulim_ko	1	가나다 ABC	Gulim	85.034	231.107	221.633	232.664
+word_gulim_ko	1	가나다 ABC	Gulim	85.034	245.372	235.898	246.929
+word_gulim_ko	1	가나다 ABC	Gulim	85.034	259.636	250.162	261.193
+word_gulim_ko	1	가나다 ABC	Gulim	85.034	273.901	264.427	275.458
+word_gulim_ko	1	가나다 ABC	Gulim	85.034	288.285	278.811	289.842
+word_gulim_ko	1	가나다 ABC	Gulim	85.034	302.549	293.075	304.106
+word_gulim_ko	1	가나다 ABC	Gulim	85.034	316.814	307.34	318.371
+word_gulim_ko	1	가나다 ABC	Gulim	85.034	331.078	321.604	332.635
+word_gulim_ko	1	가나다 ABC	Gulim	85.034	345.462	335.988	347.019
+word_gulim_ko	1	END	Gulim	85.034	358.768	350.221	360.173
+word_gulim_en	1	TOP	Gulim	85.034	109.201	100.653	110.605
+word_gulim_en	1	가나다 ABC	Gulim	85.034	131.017	121.543	132.574
+word_gulim_en	1	가나다 ABC	Gulim	85.034	145.281	135.807	146.838
+word_gulim_en	1	가나다 ABC	Gulim	85.034	159.546	150.072	161.103
+word_gulim_en	1	가나다 ABC	Gulim	85.034	173.93	164.456	175.487
+word_gulim_en	1	가나다 ABC	Gulim	85.034	188.194	178.72	189.751
+word_gulim_en	1	가나다 ABC	Gulim	85.034	202.459	192.985	204.016
+word_gulim_en	1	가나다 ABC	Gulim	85.034	216.723	207.249	218.28
+word_gulim_en	1	가나다 ABC	Gulim	85.034	231.107	221.633	232.664
+word_gulim_en	1	가나다 ABC	Gulim	85.034	245.372	235.898	246.929
+word_gulim_en	1	가나다 ABC	Gulim	85.034	259.636	250.162	261.193
+word_gulim_en	1	가나다 ABC	Gulim	85.034	273.901	264.427	275.458
+word_gulim_en	1	가나다 ABC	Gulim	85.034	288.285	278.811	289.842
+word_gulim_en	1	가나다 ABC	Gulim	85.034	302.549	293.075	304.106
+word_gulim_en	1	가나다 ABC	Gulim	85.034	316.814	307.34	318.371
+word_gulim_en	1	가나다 ABC	Gulim	85.034	331.078	321.604	332.635
+word_gulim_en	1	가나다 ABC	Gulim	85.034	345.462	335.988	347.019
+word_gulim_en	1	END	Gulim	85.034	358.768	350.221	360.173
+picture_both_sides	1	F O	HCRBatang	177.96	128.04	119.773	129.733
+picture_both_sides	1	L	HCRBatang	248.4	128.04	119.773	129.733
+picture_both_sides	1	 	HCRBatang	254.426	128.04	119.773	129.733
+picture_both_sides	1	L	HCRBatang	257.76	128.04	119.773	129.733
+picture_both_sides	1	O	HCRBatang	177.96	144.0	135.733	145.693
+picture_both_sides	1	W 	HCRBatang	248.4	144.0	135.733	145.693
+picture_both_sides	1	P	HCRBatang	177.96	159.96	151.693	161.653
+picture_both_sides	1	 	HCRBatang	183.966	159.96	151.693	161.653
+picture_both_sides	1	I	HCRBatang	190.2	159.96	151.693	161.653
+picture_both_sides	1	C T	HCRBatang	248.4	159.96	151.693	161.653
+partial_table_following_text	1	F	HCRBatang	177.96	128.04	119.773	129.733
+partial_table_following_text	1	 	HCRBatang	184.105	128.04	119.773	129.733
+partial_table_following_text	1	O	HCRBatang	187.2	128.04	119.773	129.733
+partial_table_following_text	1	L	HCRBatang	177.96	144.0	135.733	145.693
+partial_table_following_text	1	 	HCRBatang	183.986	144.0	135.733	145.693
+partial_table_following_text	1	L	HCRBatang	188.4	144.0	135.733	145.693
+partial_table_following_text	1	OW 	HCRBatang	177.96	159.96	151.693	161.653
+tac_visible_suffix	1	X	T1	56.609	733.718	721.731	736.116
+tac_visible_zero	1	X	T1	56.609	733.718	721.731	736.116

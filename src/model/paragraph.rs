@@ -256,6 +256,8 @@ pub enum SpaceMetric {
     HalfCell,
     /// KoPub 양쪽 정렬의 공백 압축 측정.
     KoPubJustified,
+    /// Word 호환 서양 낱말 사이 글꼴 공백과 2024 공백 자간 조정.
+    Word { latin: bool, reduced: bool },
 }
 crate::storage::clone_copy!(SpaceMetric);
 

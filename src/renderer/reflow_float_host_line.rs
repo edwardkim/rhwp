@@ -28,6 +28,9 @@ pub(crate) fn neutral_anchor_metrics(
     if let Some(metrics) = hwp_topbottom_band_host_metrics(para, styles, para_style, dpi) {
         return Some(metrics);
     }
+    if let Some(metrics) = word_compat_topbottom_band_host_metrics(para, styles, para_style, dpi) {
+        return Some(metrics);
+    }
     if !para.text.trim().is_empty()
         || para.controls.is_empty()
         || !super::empty_host_controls_are_flow_neutral(para)
@@ -58,9 +61,92 @@ pub(crate) fn neutral_anchor_metrics(
         style.line_spacing_type
     });
     let spacing = para_style.map_or(160.0, |style| style.line_spacing);
+    // [#8582] 워드 호환 문서는 빈 앵커 줄도 빈 문단과 같이 끝 표지 글꼴 배율로 잰다.
+    let font_size =
+        super::composer::word_compat_empty_paragraph_font_size(para, styles, spacing_type)
+            .map_or(font_size, |scaled| font_size.max(scaled));
     let (height, leading) =
         super::corrected_line_metrics(0.0, 0.0, font_size, spacing_type, spacing);
     Some((height, leading, font_size))
+}
+
+/// [#8582] 워드 호환 문서에서 저장 줄 없는 빈 문단이 문단 기준 자리차지 그림·도형만 가지면,
+/// 그 띠에 걸리는 줄을 띠 아래로 민다(앵커 문단의 줄 포함).
+///
+/// 데스크톱 한컴 인쇄(`samples/issue8582/word_band.hwpx`, 높이 120 HU 직선, 줄 1860 HU):
+/// 세로 오프셋 0·600 이면 앵커 줄이 띠에 걸려 띠 아래(120·720)에서 시작하고, 2374 면 앵커 줄
+/// 다음 빈 줄(1860~3720)이 띠에 걸려 띠 아래(2494)로 간다. 이를 앵커 줄의 전진으로 낸다:
+/// 띠가 앵커 줄에 걸리면 `띠 아래 + 줄`, 다음 줄에 걸리면 `띠 아래` 까지. 띠가 더 아래면
+/// 종전 계약에 맡긴다. 한/글 문서는 앵커 줄이 띠를 흡수하는 다른 규칙이라 대상이 아니다.
+fn word_compat_topbottom_band_host_metrics(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    para_style: Option<&ResolvedParaStyle>,
+    dpi: f64,
+) -> Option<(f64, f64, f64)> {
+    if !styles.word_compat_target
+        || !para.text.trim().is_empty()
+        || para.controls.is_empty()
+        || !super::para_has_no_stored_line_segs(para)
+    {
+        return None;
+    }
+    let mut band: Option<(f64, f64)> = None;
+    let mut object_flow = 0.0f64;
+    for control in &para.controls {
+        let common = match control {
+            Control::Shape(shape) => shape.common(),
+            Control::Picture(picture) => &picture.common,
+            _ => return None,
+        };
+        if !is_para_topbottom_float(common) {
+            return None;
+        }
+        let top = super::hwpunit_to_px(signed_hwpunit(common.vertical_offset), dpi);
+        let height_px = super::hwpunit_to_px(common.height as i32, dpi);
+        let bottom = top + height_px;
+        object_flow = object_flow.max(height_px);
+        band = Some(band.map_or((top, bottom), |(t, b)| (t.min(top), b.max(bottom))));
+    }
+    let (band_top, band_bottom) = band?;
+    let shape = para
+        .char_shape_id_at(0)
+        .or_else(|| para.char_shapes.first().map(|shape| shape.char_shape_id))?;
+    let font_size = styles.char_styles.get(shape as usize)?.font_size;
+    if font_size <= 0.0 {
+        return None;
+    }
+    let spacing_type = para_style.map_or(crate::model::style::LineSpacingType::Percent, |style| {
+        style.line_spacing_type
+    });
+    let spacing = para_style.map_or(160.0, |style| style.line_spacing);
+    let font_size =
+        super::composer::word_compat_empty_paragraph_font_size(para, styles, spacing_type)
+            .map_or(font_size, |scaled| font_size.max(scaled));
+    let (height, leading) =
+        super::corrected_line_metrics(0.0, 0.0, font_size, spacing_type, spacing);
+    let advance = height + leading;
+    if band_bottom <= 0.0 {
+        return None;
+    }
+    // 개체 항목이 이미 흐름에 자기 높이를 더하므로(종전 계약) 그만큼 뺀 앵커 줄 전진을 낸다.
+    if band_top < advance {
+        // 앵커 줄이 띠에 걸린다: 줄은 띠 아래에서 시작한다.
+        return Some((
+            (band_bottom + height - object_flow).max(height),
+            leading,
+            font_size,
+        ));
+    }
+    if band_top < advance * 2.0 {
+        // 앵커 줄 다음 줄이 띠에 걸린다: 다음 줄은 띠 아래에서 시작한다.
+        return Some((
+            (band_bottom - leading - object_flow).max(height),
+            leading,
+            font_size,
+        ));
+    }
+    None
 }
 
 /// 한/글 문서(호환 대상이 MS 워드가 아님)에서 저장 줄 없는 빈 문단이 문단 기준 자리차지
@@ -182,7 +268,8 @@ pub(crate) fn trailing_advance(
     // 음수 오프셋 표는 host 원점 위로 올라가 재조판 표 상자 계약(오프셋 ≥ 0) 밖이다.
     let owns_line = signed_hwpunit(table.common.vertical_offset) >= 0
         && para.controls.iter().any(is_non_flow_decoration);
-    if style.indent <= 0.0 && !owns_line {
+    let word_compat = styles.word_compat_target;
+    if style.indent <= 0.0 && !owns_line && !word_compat {
         return Some(0.0);
     }
     // 종단 글자 모양이 빈 줄 상자를 소유한다. 개체 제어 문자의
@@ -197,6 +284,26 @@ pub(crate) fn trailing_advance(
     let font_size = styles.char_styles.get(end_shape as usize)?.font_size;
     if font_size <= 0.0 {
         return None;
+    }
+    // [#8582] 호환 대상이 MS 워드인 문서는 표만 가진 빈 앵커 문단의 줄(문단 끝 표지)을
+    // 들여쓰기와 무관하게 표 **아래**에 한 줄로 놓는다(데스크톱 한컴 인쇄: 7pt 함초롬바탕
+    // 앵커 문단은 표 아래에 1184 HU = 700 × 1.691 이 붙는다. 한/글 문서는 0).
+    // 줄 높이는 빈 문단과 같이 끝 표지 글꼴의 한 줄 높이로 잰다(고정 줄 간격은 배율 없음).
+    if word_compat {
+        let font_size = super::composer::word_compat_empty_paragraph_font_size(
+            para,
+            styles,
+            style.line_spacing_type,
+        )
+        .map_or(font_size, |scaled| font_size.max(scaled));
+        let (height, leading) = super::corrected_line_metrics(
+            0.0,
+            0.0,
+            font_size,
+            style.line_spacing_type,
+            style.line_spacing,
+        );
+        return Some(height + leading);
     }
     let (height, leading) = super::corrected_line_metrics(
         0.0,

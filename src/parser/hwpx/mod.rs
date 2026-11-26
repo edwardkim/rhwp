@@ -600,8 +600,8 @@ fn parse_hwpx_package(
     let _ratio_alpha_guard = utils::RatioAlphaGuard::set(ratio_alpha);
 
     // 3. header.xml → DocInfo, DocProperties
-    let header_xml = reader.read_file("Contents/header.xml")?;
-    let header_xml = canonicalize_bullet_image_refs(&header_xml, &package_info.bin_data_items);
+    let original_header = reader.read_file("Contents/header.xml")?;
+    let header_xml = canonicalize_bullet_image_refs(&original_header, &package_info.bin_data_items);
     let tracking_visibility = tracked_changes::Visibility::from_header(&header_xml)?;
     // 평문 여백의 단위 전환은 header.xml이 아닌 패키지 xmlVersion에 따른다.
     let physical_plain_margin = hwpx_aux_entries
@@ -613,6 +613,13 @@ fn parse_hwpx_package(
         &canonicalize_header_image_refs(&header_xml, &package_info.bin_data_items),
         physical_plain_margin,
     )?;
+    use crate::model::document_compatibility::DocumentCompatibility;
+    if let Ok(bytes) = reader.read_file_bytes_limited(
+        DocumentCompatibility::HWPX_ENTRY,
+        DocumentCompatibility::ENCODED_SIZE,
+    ) {
+        DocumentCompatibility::restore_nonpreset(&mut doc_info, original_header.as_bytes(), &bytes);
+    }
     let default_para_shape_id = u16::try_from(doc_info.para_shapes.len()).ok();
     let default_para_shape_scope = section::DefaultParaShapeScope::enter(default_para_shape_id);
     if let Ok(bytes) = reader.read_file_bytes_limited(
