@@ -201,8 +201,8 @@ pub(in crate::renderer::typeset) struct BlockTableContinuationPreparedState {
     /// Paint와 공유하는 저장 첫 조각 원점(단 위쪽 기준).
     pub(in crate::renderer::typeset) first_fragment_saved_offset: Option<f64>,
     pub(in crate::renderer::typeset) source_text_first_frame_height: Option<f64>,
-    pub(in crate::renderer::typeset) source_single_cell_row_frames:
-        Option<crate::renderer::float_placement::StoredSingleCellRowFrames>,
+    pub(in crate::renderer::typeset) source_row_frames:
+        Option<crate::renderer::float_placement::StoredRowFrames>,
     /// Both stored fragment heights independently prove this whole-row boundary.
     pub(in crate::renderer::typeset) source_cellbreak_row_end: Option<usize>,
     /// [#7095] 표 host 다음 문단 첫 줄의 저장 vpos(HU)와 그 문단의 문단 위 간격(px).

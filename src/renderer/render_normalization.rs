@@ -17,6 +17,7 @@ use std::sync::Arc;
 pub(crate) mod math_table;
 pub(crate) mod math_textbox;
 pub(crate) mod stored_band_crossing_line;
+pub(crate) mod stored_equation_ladder;
 pub(crate) mod stored_text_metrics;
 pub(crate) mod stored_word_tail;
 

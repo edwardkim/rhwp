@@ -1,3 +1,13 @@
+//! 관계형·고정형 회귀 — #7779의 Print 표 행 소속·겹침 방지와 정본 쪽수.
+//! 주석 갱신 2026-11-26T16:42:14+09:00. 직전 변경 bde419f3e927f629bb9c863cc55a448bc4175ca1
+//! (2026-07-13T22:25:38+09:00).
+//! 2026-11-26 한컴 2020 Print(82쪽), 96 DPI, 색상 경계 보정 전 2px 실루엣.
+//! Native 6·7쪽 99.98390%·100.00%, 전쪽 최저 98.52319%.
+//! 브라우저 fresh WASM 6·7쪽 99.98741%·100.00%, 전쪽 최저 98.56858%.
+//! 독립 PDF: pdf/issue1891/76076-exact-input-hwp2020-20261004.pdf.
+//! 로컬 검증 자료: output/pr-review/issues7777-7787/merged-cbebdbeeca/
+//! aggregate-task-worktree/7779-visual-evidence/.
+//!
 //! Issue #1939 — HWP5-in-.hwpx 76076 strict render-diff 구조 안정성.
 //!
 //! #1936으로 페이지 수는 82쪽으로 맞았지만, `render-diff --via hwpx` strict 기준에서
@@ -10,6 +20,8 @@ use std::fs;
 use std::path::Path;
 
 use rhwp::diagnostics::render_geom_diff::{roundtrip_geom, Via};
+use rhwp::document_core::DocumentCore;
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/issue1891/76076_regulatory_analysis.hwpx";
 
@@ -42,5 +54,89 @@ fn issue_1939_hwp5_origin_hwpx_strict_render_diff_is_stable() {
             pg.node_count_a,
             pg.node_count_b
         );
+    }
+}
+
+fn visible_nodes<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
+    if node.visible {
+        out.push(node);
+        for child in &node.children {
+            visible_nodes(child, out);
+        }
+    }
+}
+
+fn normalized_visible_text(node: &RenderNode) -> String {
+    let mut nodes = Vec::new();
+    visible_nodes(node, &mut nodes);
+    nodes
+        .into_iter()
+        .filter_map(|node| match &node.node_type {
+            RenderNodeType::TextRun(run) => Some(run.display_or_text()),
+            _ => None,
+        })
+        .flat_map(str::chars)
+        .filter(|character| !character.is_whitespace())
+        .collect()
+}
+
+#[test]
+fn issue_7779_split_table_keeps_print_rows_above_the_footer() {
+    let bytes = fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE))
+        .expect("read exact HWP5 input for Hancom 2020 Print");
+    let core = DocumentCore::from_bytes(&bytes).expect("parse 76076");
+    assert_eq!(core.page_count(), 82, "Hancom 2020 Print page count");
+
+    let text_owners = [
+        ("구분", 6),
+        ("현행유지안", 6),
+        ("규제비용없음", 6),
+        ("자전거를이용하는배달종사자는", 6),
+        ("사업주의안전조치대상에서제외", 7),
+        ("규제대안", 7),
+        ("규제비용발생", 7),
+    ];
+    for page in [6, 7] {
+        let tree = core.build_page_render_tree(page - 1).expect("render 76076");
+        let mut nodes = Vec::new();
+        visible_nodes(&tree.root, &mut nodes);
+        let fragment = nodes
+            .iter()
+            .copied()
+            .find(|node| {
+                matches!(&node.node_type, RenderNodeType::Table(table) if table.para_index == Some(36))
+            })
+            .expect("rendered outer fragment of source paragraph 36");
+        let footer = tree
+            .root
+            .children
+            .iter()
+            .find(|node| matches!(node.node_type, RenderNodeType::Footer))
+            .expect("page footer");
+        assert_eq!(normalized_visible_text(footer), format!("-{page}-"));
+        let fragment_bottom = fragment.bbox.y + fragment.bbox.height;
+        assert!(
+            fragment_bottom < footer.bbox.y,
+            "page {page} table before footer"
+        );
+        let content = normalized_visible_text(fragment);
+        for (text, owner) in text_owners {
+            assert_eq!(
+                content.matches(text).count(),
+                usize::from(page == owner),
+                "page {page} source table text {text}"
+            );
+        }
+        if page == 7 {
+            let heading = nodes
+                .iter()
+                .copied()
+                .find(|node| {
+                    matches!(&node.node_type, RenderNodeType::TextLine(_))
+                        && normalized_visible_text(node).contains("이해관계자의견수렴")
+                })
+                .expect("following body heading");
+            assert!(fragment_bottom < heading.bbox.y && heading.bbox.y < footer.bbox.y);
+        }
     }
 }

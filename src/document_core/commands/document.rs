@@ -480,7 +480,7 @@ impl DocumentCore {
             debug_overlay: false,
             respect_vpos_reset: false,
             hangul2024_compat: false,
-            print_png_rgb555: false,
+            print_png_rgb555: None,
             print_bmp_full_color: false,
             print_job_context: None,
             measured_tables: Vec::new(),

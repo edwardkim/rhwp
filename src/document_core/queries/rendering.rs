@@ -6443,8 +6443,35 @@ impl DocumentCore {
                     profile.hwpx_container() && !profile.legacy_hwp3_stored_geometry(),
                     storage,
                 )?;
-            let source_paragraphs = cached_frames.as_deref().unwrap_or(&section.paragraphs);
             let pd = &section.section_def.page_def;
+            use crate::renderer::render_normalization::stored_equation_ladder::EquationFlowSource;
+            let equation_flow_source = if self.source_format == crate::parser::FileFormat::Hml {
+                Some(EquationFlowSource::ShapeFreeHml)
+            } else if profile.hwp5_stored_pagination_layout() && !profile.session_edited() {
+                Some(EquationFlowSource::SavedHwp)
+            } else if profile.hwpx_container()
+                && profile.hwpx_stored_layout()
+                && !profile.session_edited()
+            {
+                Some(EquationFlowSource::SavedHwpx)
+            } else {
+                None
+            };
+            let stored_equation_ladder = if let Some(source) = equation_flow_source {
+                crate::renderer::render_normalization::stored_equation_ladder::normalize_with_storage(
+                    cached_frames.as_deref().unwrap_or(&section.paragraphs),
+                    &self.document.doc_info,
+                    pd,
+                    source,
+                    storage,
+                )?
+            } else {
+                None
+            };
+            let source_paragraphs = stored_equation_ladder
+                .as_deref()
+                .or(cached_frames.as_deref())
+                .unwrap_or(&section.paragraphs);
             let body_area = PageAreas::from_page_def(pd).body_area;
             let body_h_hu = body_area.height();
             let body_bottom_hu = body_area.bottom;
@@ -6565,6 +6592,7 @@ impl DocumentCore {
                 None
             };
             let paragraph_geometry_changed = cached_frames.is_some()
+                || stored_equation_ladder.is_some()
                 || stored_word_tails.is_some()
                 || math_textboxes.is_some()
                 || math_tables.is_some();

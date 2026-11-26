@@ -2893,6 +2893,25 @@ pub(crate) fn tac_table_host_line_metrics(
     ))
 }
 
+/// 저장 줄 없이 다시 만드는 제어 전용 문단의 나눔 표시 글자 크기.
+fn unstored_control_paragraph_end_font_size(
+    para: &crate::model::paragraph::Paragraph,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+) -> Option<f64> {
+    if !para.line_segs.is_empty() {
+        return None;
+    }
+    let end = para.char_shapes.last()?;
+    if end.start_pos.checked_add(1) != Some(para.char_count) {
+        return None;
+    }
+    para.empty_control_stream_position(0)?;
+    styles
+        .char_styles
+        .get(end.char_shape_id as usize)
+        .map(|style| style.font_size)
+}
+
 /// [#7079] 합성 TAC 줄의 leading — 호스트 문단의 글자 크기와 문단 줄간격에서 나온다.
 ///
 /// 저장 사다리 둘이 그 값을 못박는다. 156060125 2쪽은 `p[11] vpos=30525 lh=600 ls=0`
@@ -2921,16 +2940,16 @@ pub(crate) fn tac_object_stack_line_leading_px(
     if !para.line_segs.is_empty() {
         return 0.0;
     }
-    let Some(char_shape_id) = para
-        .char_shape_id_at(0)
-        .or_else(|| para.char_shapes.first().map(|shape| shape.char_shape_id))
-    else {
+    // 제어 문자만 있는 완전한 원본 스트림에서는 문단 나눔 표시의
+    // 글자 모양을 줄 뒤 간격에 쓴다. 개체의 물리 높이는 해당 상자에서 나온다.
+    let Some(font_size) = unstored_control_paragraph_end_font_size(para, styles).or_else(|| {
+        para.char_shape_id_at(0)
+            .or_else(|| para.char_shapes.first().map(|shape| shape.char_shape_id))
+            .and_then(|id| styles.char_styles.get(id as usize))
+            .map(|style| style.font_size)
+    }) else {
         return 0.0;
     };
-    let Some(char_style) = styles.char_styles.get(char_shape_id as usize) else {
-        return 0.0;
-    };
-    let font_size = char_style.font_size;
     if font_size <= 0.0 {
         return 0.0;
     }

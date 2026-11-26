@@ -64,6 +64,7 @@ pub(super) fn print() {
     println!("      --render-tree-output <폴더> 같은 문서의 선택 쪽 render tree를 함께 저장");
     println!("      --print-bmp-full-color  Print JPEG에서 24·32비트 BI_RGB의 원본 색을 유지");
     println!("      --print-png-rgb555     Print의 불투명 PNG 압축에 RGB555 장치색을 적용");
+    println!("      --print-png-full-color  Print JPEG에서 불투명 PNG의 원본 색을 유지");
     println!("      --print-job-context <JSON> 자동 인쇄 바닥글용 파일명과 현지 시각");
     println!("      --font-environment <JSON> 조판/출력의 명시적 글꼴 환경 적용");
     println!("      -o, --output <폴더>     출력 폴더 (기본: output/)");

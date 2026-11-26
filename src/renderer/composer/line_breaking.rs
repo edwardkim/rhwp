@@ -262,6 +262,11 @@ fn break_before_text_token(
         return false;
     }
     let previous = text_chars[start_idx - 1];
+    // 독립 한컴 Print는 같은 폭의 연속 하이픈을 번호 뒤에도 채운다.
+    // 이미 분리된 두 하이픈 토큰 사이에 후보를 두어 앞 공백까지 되감지 않는다.
+    if previous == '-' && text_chars[start_idx] == '-' {
+        return true;
+    }
     // UAX #14의 CB(OBJECT REPLACEMENT CHARACTER, LB20)는 개체 앞의
     // 줄바꿈 기회를 갖는다. 이 경계를 빠뜨리면 넓은 인라인 표 앞의
     // 이모지·라틴 글자까지 이전 공백으로 되감겨 빈 줄이 하나 더 생긴다.

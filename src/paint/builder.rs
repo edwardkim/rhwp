@@ -46,7 +46,7 @@ pub struct LayerBuilder {
     image_frames: HashMap<NodeId, ImagePaintFrame>,
     metafile_device_pixel_width: Option<f64>,
     hancom2024_print_bitmap: bool,
-    print_png_rgb555: bool,
+    print_png_rgb555: Option<bool>,
     print_bmp_full_color: bool,
     metafile_fonts: super::metafile_fonts::MetafileFonts,
     prior_print_solid_fill: bool,
@@ -70,7 +70,7 @@ impl LayerBuilder {
             image_frames: HashMap::new(),
             metafile_device_pixel_width: None,
             hancom2024_print_bitmap: false,
-            print_png_rgb555: false,
+            print_png_rgb555: None,
             print_bmp_full_color: false,
             metafile_fonts: Default::default(),
             prior_print_solid_fill: false,
@@ -102,7 +102,7 @@ impl LayerBuilder {
         self
     }
 
-    pub(crate) fn with_print_png_rgb555(mut self, enabled: bool) -> Self {
+    pub(crate) fn with_print_png_rgb555(mut self, enabled: Option<bool>) -> Self {
         self.print_png_rgb555 = enabled;
         self
     }
@@ -199,7 +199,8 @@ impl LayerBuilder {
         };
 
         let context = PagePaintContext::new(self.profile, page_width, page_height)
-            .with_hangul2024_print(self.hangul2024_print);
+            .with_hangul2024_print(self.hangul2024_print)
+            .with_implicit_footer_number(tree.frame.implicit_print_footer_number);
         self.image_page_size = (page_width, page_height);
         fn first_column(node: &RenderNode) -> Option<(f64, f64)> {
             if matches!(node.node_type, RenderNodeType::Column(_)) {
@@ -478,6 +479,14 @@ impl LayerBuilder {
             )]),
             RenderNodeType::TextRun(run) => {
                 let mut run = run.clone();
+                let bbox = self.page_context.map_or(node.bbox, |context| {
+                    context.place_implicit_footer_number(
+                        node.id,
+                        &mut run,
+                        node.bbox,
+                        self.layout_dpi,
+                    )
+                });
                 if run
                     .char_overlap
                     .as_ref()
@@ -512,7 +521,7 @@ impl LayerBuilder {
                             super::dot_leader::prepare(&self.metafile_fonts, node.bbox, &mut run);
                     }
                 }
-                let mut ops = text_run_ops(node.bbox, run, self.output_options, previous_text);
+                let mut ops = text_run_ops(bbox, run, self.output_options, previous_text);
                 ops.extend(
                     leader_paths
                         .into_iter()
@@ -652,6 +661,7 @@ impl LayerBuilder {
                             &image,
                             frame,
                             self.layout_dpi,
+                            self.print_png_rgb555,
                             self.print_bmp_full_color,
                         )
                     })

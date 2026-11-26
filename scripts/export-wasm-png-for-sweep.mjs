@@ -130,6 +130,9 @@ export async function createPrintCaptureCanvas(page) {
 async function main() {
   const pkg = option('--pkg'), input = option('--input'), output = option('--out');
   const settings = JSON.parse(readFileSync(option('--options'), 'utf8'));
+  if (settings.printPngRgb555 === true && settings.printPngFullColor === true) {
+    throw Error('PNG 색상 정책은 하나만 지정합니다.');
+  }
   // 옵션 JSON·명령 인자·증적에는 비밀번호를 저장하지 않는다. 공백은 암호의 일부다.
   const sourcePassword = process.argv.includes('--password-stdin')
     ? readFileSync(0, 'utf8').split(/\r?\n/u, 1)[0] : null;
@@ -207,7 +210,7 @@ async function main() {
         const page = await browser.newPage();
         await page.goto(`http://127.0.0.1:${server.address().port}`);
         const canvasContext = await page.$eval('#page', preparePrintReadbackCanvas);
-        const info = await page.evaluate(async ({compat, printPngRgb555, printBmpFullColor, environmentJson, printJobJson, fonts, observedFontFallbacks, linkedImages, sourcePassword}) => {
+        const info = await page.evaluate(async ({compat, printPngRgb555, printBmpFullColor, printPngFullColor, environmentJson, printJobJson, fonts, observedFontFallbacks, linkedImages, sourcePassword}) => {
           const module = await import('/rhwp.js');
           await module.default({module_or_path: '/rhwp_bg.wasm'});
           const {openSweepDocument} = await import('/font-supply.js');
@@ -216,6 +219,10 @@ async function main() {
           doc.setHangul2024Compat(compat === '2024');
           if (printJobJson !== null) doc.setPrintJobContext(printJobJson);
           if (printPngRgb555) doc.setPrintPngRgb555(true);
+          if (printPngFullColor) {
+            if (typeof doc.setPrintPngFullColor !== 'function') throw Error('PNG 원본 색의 Print 장치 API가 없는 WASM입니다.');
+            doc.setPrintPngFullColor(true);
+          }
           if (printBmpFullColor) {
             if (typeof doc.setPrintBmpFullColor !== 'function') throw Error('BMP 원본 색의 Print 장치 API가 없는 WASM입니다.');
             doc.setPrintBmpFullColor(true);
@@ -285,6 +292,7 @@ async function main() {
           return {pageCount: doc.pageCount(), version: module.version(), nativePuaFonts, hftOtfFonts, observedFonts, fontEnvironment, screenCanvasMetricsActive, canvasMetricsActive};
         }, {compat: settings.compat, printPngRgb555: settings.printPngRgb555 === true,
             printBmpFullColor: settings.printBmpFullColor === true,
+            printPngFullColor: settings.printPngFullColor === true,
             environmentJson, printJobJson, fonts, observedFontFallbacks, linkedImages, sourcePassword});
         const signature = JSON.stringify(info.fontEnvironment);
         if (environmentSignature !== undefined && environmentSignature !== signature) throw Error('WASM 작업자의 실제 글꼴 환경이 다릅니다.');
@@ -558,6 +566,7 @@ async function main() {
       pageCount, layoutGeneration: settings.compat, comparisonProfile: 'print', rasterBackend: 'wasm-canvas2d', protocolTimeoutMs: protocolTimeout,
       printPngRgb555: settings.printPngRgb555 === true,
       printBmpFullColor: settings.printBmpFullColor === true,
+      printPngFullColor: settings.printPngFullColor === true,
       pngBackground: 'opaque-white-print-paper',
       captureCanvasPolicy: 'fresh-per-page-after-font-and-image-preparation',
       fontEnvironment,

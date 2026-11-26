@@ -7,16 +7,18 @@ use crate::model::style::Alignment;
 pub(super) enum RowEnding<'a> {
     Soft(&'a [char]),
     Forced(&'a [char]),
-    /// 문단 끝 줄. 둘째 값은 정렬 폭에서 뺄 줄 끝 공백 상자 수다
-    /// ([`paragraph_end_aligned_trailing_spaces`]).
-    ParagraphEnd(&'a [char], usize),
+    ParagraphEnd {
+        chars: &'a [char],
+        trailing_spaces: usize,
+        mark_font_size: Option<f64>,
+    },
 }
 
 impl<'a> RowEnding<'a> {
     pub(super) fn trimmed_chars(self) -> Option<&'a [char]> {
         match self {
             Self::Soft(chars) | Self::Forced(chars) => Some(chars),
-            Self::ParagraphEnd(..) => None,
+            Self::ParagraphEnd { .. } => None,
         }
     }
 
@@ -24,14 +26,16 @@ impl<'a> RowEnding<'a> {
     /// 가 공백 상자를 모두 걷고, 문단 끝은 호출자가 정한 수만 걷는다.
     pub(super) fn paragraph_end_trimmed_boxes(self) -> usize {
         match self {
-            Self::ParagraphEnd(_, count) => count,
+            Self::ParagraphEnd {
+                trailing_spaces, ..
+            } => trailing_spaces,
             Self::Soft(_) | Self::Forced(_) => 0,
         }
     }
 
     fn chars(self) -> &'a [char] {
         match self {
-            Self::Soft(chars) | Self::Forced(chars) | Self::ParagraphEnd(chars, _) => chars,
+            Self::Soft(chars) | Self::Forced(chars) | Self::ParagraphEnd { chars, .. } => chars,
         }
     }
 }

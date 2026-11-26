@@ -382,6 +382,11 @@ impl LayoutEngine {
         if start >= end || end >= units.len() {
             return (stored, stored);
         }
+        if let Some(spacing) =
+            self.mixed_child_next_paragraph_spacing(table, cell, units, start, end, styles)
+        {
+            return (stored.max(spacing), stored.max(spacing));
+        }
         let original_slot = !last.reflowed_line_slot
             && cell.paragraphs.get(last.para_idx).is_some_and(|para| {
                 !para.stored_text_partition_is_dirty()

@@ -2,6 +2,7 @@ mod body;
 mod error;
 mod fragments;
 mod head;
+mod implicit_equations;
 mod preflight;
 mod raw_fragment;
 mod xml;
@@ -19,7 +20,8 @@ pub fn serialize_hml(
     document: &Document,
     metadata: &HmlImportMetadata,
 ) -> Result<Vec<u8>, HmlExportError> {
-    preflight::validate_document(document, metadata)?;
+    let implicit_equations = implicit_equations::implicit_equation_styles(document);
+    preflight::validate_document(document, metadata, implicit_equations.is_some())?;
     let mut writer = XmlWriter::default();
     writer.declaration();
     let mut root_attributes = vec![("Version", "2.91".to_string())];
@@ -30,7 +32,7 @@ pub fn serialize_hml(
         root_attributes.push(("Style", style.clone()));
     }
     writer.open("HWPML", &root_attributes);
-    head::write_head(&mut writer, document, metadata)?;
+    head::write_head(&mut writer, document, metadata, implicit_equations.as_ref())?;
     body::write_body(&mut writer, document, metadata)?;
     write_tail(&mut writer, metadata);
     writer.close("HWPML");

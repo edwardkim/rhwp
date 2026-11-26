@@ -89,13 +89,13 @@ impl TypesetEngine {
         // The original content cut and the two boxes are one accepted result.
         // A blank band is reserved here, before emit and paint, and never
         // consumed as an extra content unit on the following page.
-        if let Some(frames) = input.prepared.source_single_cell_row_frames.filter(|_| {
+        if let Some(frames) = input.prepared.source_row_frames.as_ref().filter(|_| {
             input.prepared.table_footnotes.is_empty()
                 && std::ptr::eq(table, row_geometry_table)
                 && cursor_row == 0
         }) {
             let opening = !is_continuation && start_cut.is_empty();
-            let closing = is_continuation && start_cut.as_slice() == [frames.opening_end];
+            let closing = is_continuation && start_cut.as_slice() == frames.opening_cut.as_slice();
             let height = if opening {
                 frames.opening_height
             } else {
@@ -112,7 +112,7 @@ impl TypesetEngine {
                     end_row: 1,
                     split_block_start: None,
                     split_end_cut: if opening {
-                        vec![frames.opening_end]
+                        frames.opening_cut.clone()
                     } else {
                         Vec::new()
                     },
@@ -285,6 +285,16 @@ impl TypesetEngine {
             source_first_fragment_row_end,
             start_cut_is_block: input.start.start_cut_is_block,
             start_row_height_override,
+            deferred_opening_row_height: input
+                .prepared
+                .empty_opening_row_frame
+                .filter(|_| {
+                    is_continuation
+                        && cursor_row == 0
+                        && !input.start.start_cut_is_block
+                        && start_cut.as_slice() == [0]
+                })
+                .and_then(|frame| frame.deferred_continuation_height(start_row_height_override)),
             source_terminal_suffix_start: input.prepared.source_terminal_suffix_start,
             opening_block_cuts_after_first_row: input
                 .prepared

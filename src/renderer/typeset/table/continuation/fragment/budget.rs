@@ -109,6 +109,7 @@ impl TypesetEngine {
                     )
                 })
                 .flatten();
+        let closes_blank_source_row = input.closes_blank_source_row();
         let repeat_fragment_outer_margin = !detached_child_fragment && (
             prepared.computed_host_tail.is_some() ||
             crate::renderer::float_placement::stored_empty_offset_rowbreak_fragment_repeats_outer_margin(
@@ -131,6 +132,7 @@ impl TypesetEngine {
                 host_spacing_before,
                 is_continuation,
                 strict_following_plain_text_fit || single_cell_page_fragment
+                    || closes_blank_source_row
                     || repeat_fragment_outer_margin || repeated_header_outer_frame,
                 prepared.computed_host_tail.is_some() || crate::renderer::float_placement::empty_host_cellbreak_fragment_repeats_outer_margin(
                     self.profile.get().hwp5_stored_pagination_layout() || self.profile.get().hwpx_stored_layout(),
@@ -320,7 +322,9 @@ impl TypesetEngine {
                 self.dpi,
             )
         };
-        let mut terminal_outer_bottom_overhead = if single_cell_page_fragment {
+        let mut terminal_outer_bottom_overhead = if closes_blank_source_row {
+            fragment_outer_bottom_overhead
+        } else if single_cell_page_fragment {
             partial_rowbreak_fragment_spacing_px(
                 table,
                 host_spacing_before,
@@ -1143,7 +1147,8 @@ impl TypesetEngine {
         // paint가 문단 오프셋을 다시 적용해 같은 조각이 예약 영역 밖에 놓인다.
         // 유효한 저장/캡션 원점은 그대로 우선하며, 없는 경우에만 예산이 쓰는
         // 현재 프레임의 원점을 확정 배치와 공유한다.
-        if fragment_placement.is_none() && anchor_offset_already_spent {
+        if fragment_placement.is_none() && (anchor_offset_already_spent || closes_blank_source_row)
+        {
             let top = st.current_height + host_before_overhead;
             fragment_placement = Some(crate::renderer::float_placement::ParagraphFloatPlacement {
                 flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
@@ -1535,7 +1540,8 @@ impl TypesetEngine {
                 prepared
                     .source_text_first_frame_height
                     .or(prepared
-                        .source_single_cell_row_frames
+                        .source_row_frames
+                        .as_ref()
                         .map(|frame| frame.opening_height))
                     .map_or(base, |height| {
                         base.min(

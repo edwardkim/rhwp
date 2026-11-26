@@ -6997,6 +6997,16 @@ impl LayoutEngine {
             );
 
             let run_id = tree.next_id();
+            if is_footer
+                && page_number_style_id.is_none()
+                && !styles.source_hwp3_native
+                && !self.profile.get().hangul2024_layout()
+                && layout.page_height - (target_area.y + target_area.height) > 1e-6
+            {
+                // 꼬리말 밴드는 아래쪽 여백만큼 높다. 논리 상자와 별도로
+                // Print의 글자 기준선에 필요한 원본 여백을 전달한다.
+                tree.frame_mut().implicit_print_footer_number = Some((run_id, target_area.height));
+            }
             let run_node = RenderNode::new(
                 run_id,
                 RenderNodeType::TextRun(TextRunNode {
@@ -7658,12 +7668,18 @@ impl LayoutEngine {
         control_index: usize,
         top: f64,
         bottom: f64,
+        accepted_line_top: Option<f64>,
     ) {
         if let Some(ps) = styles
             .para_styles
             .get(composed.map_or(para.para_shape_id as usize, |cp| cp.para_style_id as usize))
             .filter(|ps| ps.border_fill_id > 0)
         {
+            let bottom = accepted_line_top
+                .and_then(|top| {
+                    paragraph_border::standalone_tac_outline_end(para, ps, styles, top, self.dpi)
+                })
+                .map_or(bottom, |outline_end| bottom.max(outline_end));
             let line_index = composed
                 .and_then(|cp| {
                     crate::renderer::composer::composed_tac_line_assignment(para, cp)
@@ -15049,7 +15065,9 @@ impl LayoutEngine {
             }
             // 저장 줄 계획의 pen/advance는 typeset과 동일하다. 표 하단에서 gap을
             // 다시 추측하거나 위아래 여백을 후가산하지 않는다.
-            if let Some(end) = flow_placement.and_then(|placement| placement.advance_end) {
+            if let Some((placement, end)) = flow_placement
+                .and_then(|placement| placement.advance_end.map(|end| (placement, end)))
+            {
                 self.collect_tac_paragraph_fill(
                     para,
                     composed.get(para_index),
@@ -15060,6 +15078,7 @@ impl LayoutEngine {
                     control_index,
                     para_y_for_table,
                     col_area.y + end,
+                    (!self.profile.get().session_edited()).then_some(col_area.y + placement.y),
                 );
                 return TableControlOut {
                     y_offset: col_area.y + end,
@@ -17243,6 +17262,7 @@ impl LayoutEngine {
                     control_index,
                     para_y_for_table,
                     y_offset,
+                    None,
                 );
                 return (y_offset, true);
             }

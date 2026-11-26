@@ -21,4 +21,9 @@ impl HwpDocument {
     pub fn set_print_png_rgb555(&mut self, enabled: bool) {
         self.core.set_print_png_rgb555(enabled);
     }
+
+    #[wasm_bindgen(js_name = setPrintPngFullColor)]
+    pub fn set_print_png_full_color(&mut self, enabled: bool) {
+        self.core.set_print_png_full_color(enabled);
+    }
 }

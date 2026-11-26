@@ -49,6 +49,20 @@ struct FragmentInput<'a> {
 }
 
 impl FragmentInput<'_> {
+    fn closes_blank_source_row(&self) -> bool {
+        self.start.is_continuation
+            && self.start.cursor_row == 0
+            && self
+                .prepared
+                .source_row_frames
+                .as_ref()
+                .is_some_and(|frame| {
+                    frame.closing_is_blank
+                        && self.start.start_cut.as_slice() == frame.opening_cut.as_slice()
+                        && self.start.start_row_height_override == Some(frame.closing_height)
+                })
+    }
+
     /// 내용 컷을 보존하면서 마지막 물리 공간도 현재 수용 높이로 닫았는지 확인한다.
     /// 내용 소진과 물리 종료를 구분하고, 끝 여백 재스캔과 emit이 같은 인증을 쓴다.
     fn closes_terminal_content_cut(

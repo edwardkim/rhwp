@@ -2,12 +2,21 @@
 //! 배치 알고리즘은 기존 엔진 경로를 호출하며 각주 수집·반복 중단은 부모가 소유한다.
 use super::super::paragraph::metrics::FormattedParagraph;
 use super::super::{preceding_stored_vpos, FormattedTable, TypesetEngine, TypesetState};
-use crate::model::{paragraph::Paragraph, table::Table};
+use crate::model::{
+    control::Control,
+    paragraph::{ColumnBreakType, Paragraph},
+    shape::VertAlign,
+    table::{Table, TablePageBreak},
+};
 use crate::renderer::{
     composer::ComposedParagraph,
-    float_placement::{signed_hwpunit, FloatLaneSet},
+    float_placement::{
+        coanchored_float_overlaps_preceding_horizontally, is_para_topbottom_float, signed_hwpunit,
+        FloatLaneSet, ParagraphFloatFlow, ParagraphFloatPlacement,
+    },
     height_measurer::MeasuredTable,
     hwpunit_to_px,
+    pagination::PageItem,
     style_resolver::ResolvedStyleSet,
 };
 
@@ -114,6 +123,110 @@ impl TypesetEngine {
     }
 }
 
+// The page's accepted opening table may be whole or the last part of a split.
+// The sibling's closed box and the host line are consumed in that order.
+#[allow(clippy::too_many_arguments)]
+fn try_place_closed_terminal_sibling(
+    engine: &TypesetEngine,
+    st: &mut TypesetState,
+    para_idx: usize,
+    para: &Paragraph,
+    fmt: &FormattedParagraph,
+    tail_format: &FormattedTable,
+    next: Option<&Paragraph>,
+    styles: &ResolvedStyleSet,
+) -> bool {
+    let [Control::Table(first), Control::Table(tail)] = para.controls.as_slice() else {
+        return false;
+    };
+    let (Some(next), [line]) = (next, para.line_segs.as_slice()) else {
+        return false;
+    };
+    if !st.profile.hwp5_stored_pagination_layout()
+        || st.profile.session_edited()
+        || st.col_count != 1
+        || st.current_zone_y_offset != 0.0
+        || para.empty_control_stream_position(0).is_none()
+        || para.column_type != ColumnBreakType::None
+        || line.vertical_pos <= 0
+        || fmt.computed_host_lines.is_some()
+        || fmt.spacing_before != 0.0
+        || signed_hwpunit(first.common.vertical_offset) <= 0
+        || signed_hwpunit(tail.common.vertical_offset)
+            <= signed_hwpunit(first.common.vertical_offset)
+        || first.row_count <= 1
+        || tail.row_count != 1
+        || tail.cell_spacing != 0
+        || tail.repeat_header
+        || tail_format.external_flow.is_some()
+        || tail_format.table_footnote_count != 0
+        || !coanchored_float_overlaps_preceding_horizontally(para, 1)
+        || [first, tail].iter().any(|table| {
+            !is_para_topbottom_float(&table.common)
+                || !table.common.flow_with_text
+                || table.common.allow_overlap
+                || table.common.vert_align != VertAlign::Top
+                || table.layout_page_break() != TablePageBreak::RowBreak
+                || table.caption.is_some()
+                || table.outer_margin_top < 0
+                || table.outer_margin_bottom < 0
+                || engine.render_normalization.table_text_reflowed(table)
+        })
+    {
+        return false;
+    }
+    let Some(next_style) = styles.para_styles.get(next.para_shape_id as usize) else {
+        return false;
+    };
+    if next_style.page_break_before {
+        return false;
+    }
+    let query = super::deferred::CoanchoredTableQuery::new(para, fmt, engine.tac_flow_query());
+    let Some(advance) = query.stored_host_line_advance(next, next_style.spacing_before) else {
+        return false;
+    };
+    let (_, items) = st.coanchored_table_page();
+    if !matches!(items.last(), Some(PageItem::Table { para_index, control_index: 0 }
+        | PageItem::PartialTable { para_index, control_index: 0, is_continuation: true, .. })
+        if *para_index == para_idx)
+    {
+        return false;
+    }
+    let dpi = engine.dpi;
+    let hu = |value| hwpunit_to_px(value, dpi);
+    let anchor = st.current_height;
+    let top = anchor + hu(i32::from(tail.outer_margin_top));
+    let bottom = top + tail_format.effective_height + hu(i32::from(tail.outer_margin_bottom));
+    let end = bottom + advance;
+    let column_anchor = hu(st.vpos_page_base.unwrap_or(0));
+    if tail_format.effective_height <= 0.0
+        || (bottom - (hu(line.vertical_pos) - column_anchor)).abs() > hu(1)
+        || end + next_style.spacing_before > st.available_height()
+    {
+        return false;
+    }
+
+    st.record_paragraph_float_placement(
+        (para_idx, 1),
+        ParagraphFloatPlacement {
+            flow: ParagraphFloatFlow::NextLine,
+            anchor_y: anchor,
+            stored_host_origin: Some(bottom),
+            stored_successor_line_origin: Some(end + next_style.spacing_before),
+            table_left: None,
+            table_top: top,
+            occupied_bottom: bottom,
+        },
+    );
+    st.append_item(PageItem::Table {
+        para_index: para_idx,
+        control_index: 1,
+    });
+    st.align_flow_to(end);
+    st.record_stored_paragraph_flow_end(para_idx, end);
+    true
+}
+
 pub(in crate::renderer::typeset) fn place(
     engine: &TypesetEngine,
     st: &mut TypesetState,
@@ -189,6 +302,14 @@ pub(in crate::renderer::typeset) fn place(
         .find(|mt| mt.para_index == para_idx && mt.control_index == ctrl_idx);
     let is_first_placed = first_placed_table == Some(ctrl_idx);
     let is_last_placed = last_placed_table == Some(ctrl_idx);
+    if ctrl_idx == 1
+        && is_last_placed
+        && try_place_closed_terminal_sibling(
+            engine, st, para_idx, para, fmt, &ft, next_para, styles,
+        )
+    {
+        return false;
+    }
     if engine.is_effective_tac_table(para, table, fmt) {
         if !engine.render_normalization.table_text_reflowed(table)
             && !engine
@@ -287,6 +408,35 @@ pub(in crate::renderer::typeset) fn place(
                 para_start_height,
             );
             if !deferred.is_empty() {
+                if let ([pending], Some(Control::Table(tail))) =
+                    (deferred.as_slice(), para.controls.get(1))
+                {
+                    if pending.control_index == 1 && pending.is_last_placed {
+                        let tail_format = engine.format_table(
+                            para,
+                            para_idx,
+                            1,
+                            tail,
+                            measured_tables,
+                            styles,
+                            composed,
+                            next_para,
+                            st.flow_table_column_top(),
+                        );
+                        if try_place_closed_terminal_sibling(
+                            engine,
+                            st,
+                            para_idx,
+                            para,
+                            fmt,
+                            &tail_format,
+                            next_para,
+                            styles,
+                        ) {
+                            return true;
+                        }
+                    }
+                }
                 let page = st.stored_tac_page(paragraphs_all);
                 if page.profile.hwp5_stored_pagination_layout() && !page.profile.session_edited() {
                     if let Some(advance) = next_para.and_then(|next| {
@@ -294,7 +444,7 @@ pub(in crate::renderer::typeset) fn place(
                             .para_styles
                             .get(next.para_shape_id as usize)?
                             .spacing_before;
-                        deferred_query.stored_host_advance_after_split(next, before)
+                        deferred_query.stored_host_line_advance(next, before)
                     }) {
                         st.advance_flow_by(advance);
                         st.record_stored_paragraph_flow_end(para_idx, st.current_height);

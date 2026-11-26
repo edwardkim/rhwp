@@ -185,8 +185,25 @@ impl TypesetEngine {
                         .stored_empty_row_frame_height(row_geometry_table, row, styles)
                         .is_some_and(|minimum| height >= minimum)
             });
-        let source_first_row_frame =
-            layout_engine.saved_first_row_opening_frame(table, styles, st.layout.body_area.height);
+        let source_first_row_frame = input
+            .prepared
+            .source_row_frames
+            .as_ref()
+            .filter(|frame| frame.closing_is_blank)
+            .map(|frame| {
+                (
+                    frame.opening_cut.clone(),
+                    frame.opening_height,
+                    frame.closing_height,
+                )
+            })
+            .or_else(|| {
+                layout_engine.saved_first_row_opening_frame(
+                    table,
+                    styles,
+                    st.layout.body_area.height,
+                )
+            });
         let source_opening_row_frame = (!is_continuation
             && cursor_row == 0
             && start_cut.is_empty()
@@ -264,7 +281,7 @@ impl TypesetEngine {
         let mut partial_height: f64 =
             consumed + header_overhead + hwpunit_to_px(table.outer_cell_spacing_hu(), self.dpi);
         if let Some(accepted) = &block_acceptance {
-            partial_height += accepted.extra;
+            partial_height += accepted.height_delta;
         }
         if let Some((height, last_height)) = stored_complete_extent {
             partial_height = height;
@@ -1149,6 +1166,8 @@ impl TypesetEngine {
 
         if end_row >= row_count && split_end_limit == 0.0 {
             let skip_terminal_empty_sliver = is_continuation
+                // 스캔이 인증한 빈 종료 상자는 줄 유닛을 모두 소비한 뒤에도 물리 공간을 소유한다.
+                && !input.closes_blank_source_row()
                 // 재조판한 선언 잔여는 마지막 내용 유닛 뒤에도 실제 물리 공간을 차지한다.
                 // 이 프레임을 작은 빈 조각으로 간주해 지우지 않는다.
                 && !(start_row_height_override.is_some()
@@ -1289,6 +1308,31 @@ impl TypesetEngine {
                     ),
                 }
             } else {
+                // A whole nested row can start a continuation with no content cut.
+                // Use its accepted box so paint cannot fit it back into the first
+                // fragment's declared object height and clip the nested content.
+                if is_continuation
+                    && start_cut.is_empty()
+                    && !start_cut_is_block
+                    && end_row == cursor_row + 1
+                    && std::ptr::eq(table, row_geometry_table)
+                    && table.layout_page_break() == crate::model::table::TablePageBreak::RowBreak
+                    && table.cells.iter().any(|cell| {
+                        usize::from(cell.row) == cursor_row
+                            && cell.row_span == 1
+                            && cell.paragraphs.iter().any(|para| {
+                                para.controls.iter().any(|control| {
+                                    matches!(control, crate::model::control::Control::Table(_))
+                                })
+                            })
+                    })
+                {
+                    end_row_height_override = end_row_height_override.or_else(|| {
+                        accepted_end_row_box
+                            .filter(|&(row, _)| row == cursor_row)
+                            .map(|(_, height)| height)
+                    });
+                }
                 self.record_stored_fragment_rows(
                     st,
                     continuation,
@@ -1900,6 +1944,25 @@ impl TypesetEngine {
                         &accepted_straddle_cells,
                         styles,
                     )));
+        let completed_source_row_frame =
+            input
+                .prepared
+                .source_row_frames
+                .as_ref()
+                .is_some_and(|frame| {
+                    frame.closing_is_blank
+                        && cursor_row == 0
+                        && end_row == 1
+                        && split_block_start.is_none()
+                        && if is_continuation {
+                            start_cut.as_slice() == frame.opening_cut.as_slice()
+                                && split_end_cut.is_empty()
+                                && end_row_height_override == Some(frame.closing_height)
+                        } else {
+                            split_end_cut == frame.opening_cut
+                                && end_row_height_override == Some(frame.opening_height)
+                        }
+                });
         let complete_source_row_frame = split_block_start.is_none()
             && split_end_cut.is_empty()
             && split_end_limit <= 0.0
@@ -1998,7 +2061,8 @@ impl TypesetEngine {
                 || source_single_cell_band.is_some()
                 || (is_continuation && stored_complete_extent.is_some())
                 || span_band_owns_end_row
-                || completed_empty_row_frame,
+                || completed_empty_row_frame
+                || completed_source_row_frame,
         });
         // 저장 호스트 원점이 없는 조각은 흐름 좌표로 같은 상자를 잰다 — 위는 흐름 커서 +
         // 호스트·세로 오프셋, 아래는 비끝 조각 상자 바닥(7062 2~9쪽 996.49 ↔ 정본 996.43).
@@ -2312,9 +2376,9 @@ impl TypesetEngine {
             .as_ref().map(|(_, _, remaining)| *remaining)
             .or(empty_opening_next_height)
             .or_else(|| {
-                let frames = input.prepared.source_single_cell_row_frames?;
+                let frames = input.prepared.source_row_frames.as_ref()?;
                 (!is_continuation
-                    && next_cut.as_slice() == [frames.opening_end]
+                    && next_cut.as_slice() == frames.opening_cut.as_slice()
                     && end_row_height_override == Some(frames.opening_height))
                     .then_some(frames.closing_height)
             })

@@ -209,7 +209,19 @@ pub(crate) fn resolve_styles_with_environment(
                             .primary
                             .iter()
                             .any(|name| name.trim().eq_ignore_ascii_case(target.trim()));
-                        (!original && !env.selects_true_type(target)).then_some((*lang, *id))
+                        let document_substitute = request
+                            .substitute
+                            .iter()
+                            .any(|name| name.trim().eq_ignore_ascii_case(target.trim()));
+                        // 원본 메트릭 보존을 요청한 세션에서 검증된 옛 글꼴의
+                        // 표시용 TrueType은 원본 조판 전진을 유지한다. 문서가
+                        // 직접 지정한 대체 글꼴은 자체 메트릭을 소유한다.
+                        let preserve_legacy_advance = !document_substitute
+                            && metric_widths_verified_face(target)
+                            && super::font_metrics_data::legacy_hft_metric_face(&request.source)
+                                .is_some();
+                        (!original && (!env.selects_true_type(target) || preserve_legacy_advance))
+                            .then_some((*lang, *id))
                     })
                     .collect()
             })

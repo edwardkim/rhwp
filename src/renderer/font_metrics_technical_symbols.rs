@@ -73,6 +73,12 @@ static VERIFIED_TECHNICAL_1_PRESENT: [bool; 256] = [
 ];
 
 fn verified_technical_symbol_entry(metric: &FontMetric, ch: char) -> Option<(bool, u16)> {
+    // HANDotum.ttf(1d043790…)의 hmtx와 76076 독립 Print의 화살표 전진이다.
+    if (metric.name, metric.em_size, metric.bold, metric.italic, ch)
+        == ("HCR Dotum", 1000, false, false, '\u{21B3}')
+    {
+        return Some((true, 970));
+    }
     // 같은 HBATANG 35f84328…의 Arrows 전체 cmap/hmtx: 112개 모두
     // 1024/1024em이다. 독립 편람 Print의 결측 화살표도 이 프로그램을 쓴다.
     // 기존 DB의 미수집 구간만 보충하며 다른 face·굵기·기울임은 추정하지 않는다.

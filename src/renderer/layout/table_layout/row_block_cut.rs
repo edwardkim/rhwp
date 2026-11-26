@@ -15,6 +15,7 @@ pub(super) struct CellCutFrame<'a> {
     padding: f64,
     preserves_line_slots: bool,
     source_page_frame: Option<crate::renderer::float_placement::StoredTextPageFrame>,
+    continued_picture_height: Option<f64>,
 }
 
 impl<'a> CellCutFrame<'a> {
@@ -30,6 +31,9 @@ impl<'a> CellCutFrame<'a> {
         let preserves_line_slots = engine.stored_span_cut_preserves_line_slots(table, cell);
         let source_page_frame =
             engine.stored_page_frame_for_unit(cell, table, units, start, top + bottom);
+        let continued_picture_height = engine
+            .stored_continued_square_picture(cell, table, units, start)
+            .map(|(_, height)| height);
         Self {
             engine,
             cell,
@@ -40,6 +44,7 @@ impl<'a> CellCutFrame<'a> {
             padding: top + bottom,
             preserves_line_slots,
             source_page_frame,
+            continued_picture_height,
         }
     }
 
@@ -93,6 +98,12 @@ impl<'a> CellCutFrame<'a> {
     /// 온전히 선택한 원본 쪽 프레임은 새 글줄이 덜 차지해도 같은 점유 끝을 가진다.
     /// 예약과 실제 정렬은 이 결과를 함께 사용한다. 문단 내부 컷에는 적용하지 않는다.
     pub(super) fn stored_content_height(&self, end: usize, content_advance: f64) -> Option<f64> {
+        if let Some(height) = self
+            .continued_picture_height
+            .filter(|_| end == self.units.len())
+        {
+            return Some(height);
+        }
         let frame = self.source_page_frame?;
         let last = self.units.get(end.checked_sub(1)?)?;
         if end <= self.start
@@ -145,6 +156,9 @@ impl<'a> CellCutFrame<'a> {
     /// 실제 글줄 상자까지 수용하면 뒤 줄간격은 다음 소유자로 넘길 수 있다.
     /// 빈 줄·개체 등 분리한 간격이 없는 유닛은 종전의 전체 슬롯을 예약한다.
     pub(super) fn fitting_height(&self, end: usize, content_advance: f64) -> f64 {
+        if let Some(height) = self.continued_picture_height.filter(|_| end > self.start) {
+            return height + self.padding;
+        }
         let physical = self.height(end, content_advance).max(
             self.engine
                 .stored_complete_cell_slot_capacity(

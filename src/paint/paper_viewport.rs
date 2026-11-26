@@ -7,7 +7,7 @@ use crate::paint::{
 };
 use crate::renderer::image_resolver::detect_image_mime_type;
 use crate::renderer::render_tree::{
-    BoundingBox, ImageNode, RectangleNode, RenderNode, RenderNodeType,
+    BoundingBox, ImageNode, NodeId, RectangleNode, RenderNode, RenderNodeType, TextRunNode,
 };
 use crate::renderer::{hwpunit_to_px, DEFAULT_DPI, HWPUNIT_PER_INCH};
 
@@ -32,6 +32,7 @@ pub(crate) struct PagePaintContext {
     image_column_origin: Option<(f64, f64)>,
     image_column_blocked: bool,
     table_fill_origin: super::table_fill_origin::TableFillOrigin,
+    implicit_footer_number: Option<(NodeId, f64)>,
 }
 
 impl PagePaintContext {
@@ -52,6 +53,7 @@ impl PagePaintContext {
             image_column_origin: None,
             image_column_blocked: false,
             table_fill_origin: Default::default(),
+            implicit_footer_number: None,
         }
     }
 
@@ -68,6 +70,41 @@ impl PagePaintContext {
 
     pub(crate) fn output_size(self) -> (f64, f64) {
         self.output_size
+    }
+
+    pub(super) fn with_implicit_footer_number(mut self, number: Option<(NodeId, f64)>) -> Self {
+        if self.print && self.print_paper.is_none() {
+            self.implicit_footer_number = number;
+        }
+        self
+    }
+
+    pub(super) fn place_implicit_footer_number(
+        self,
+        id: NodeId,
+        run: &mut TextRunNode,
+        mut bbox: BoundingBox,
+        dpi: f64,
+    ) -> BoundingBox {
+        let Some((_, bottom_margin)) = self.implicit_footer_number.filter(|(node, _)| *node == id)
+        else {
+            return bbox;
+        };
+        let Some((baseline, ink_size)) = super::implicit_page_number::project_footer_number(
+            self.logical_size.1,
+            self.output_size.1,
+            bottom_margin,
+            run.style.font_size,
+            dpi,
+        ) else {
+            return bbox;
+        };
+        // 기존 줄의 전진과 소유는 유지하고 원본 글꼴의 인쇄 잉크만 투영한다.
+        run.layout_positions = Some(run.replay_positions_for(run.display_or_text()).into_owned());
+        run.style.font_family = "Haansoft Batang".to_owned();
+        run.style.print_ink_font_size = Some(ink_size);
+        bbox.y = baseline - run.baseline;
+        bbox
     }
 
     /// 글줄 그림은 실제 소유 단의 원점과 상대 위치를 따로 장치 정수로 변환한다.

@@ -95,6 +95,49 @@ fn stored_line(para: &Paragraph) -> Option<i32> {
         .then_some(line.vertical_pos)
 }
 
+/// 본문이 없는 단일 표 호스트에서 다음 저장 줄이 오프셋 없는 바깥 상자를 닫는다.
+/// 음수 오프셋이 위 여백 안에 있고 같은 단의 저장 줄이 전진한 경우에만
+/// 바깥 상자의 위 여백을 표 본체의 시작으로 사용한다.
+pub(super) fn stored_outer_box_owns_negative_offset(
+    host: &Paragraph,
+    successor: &Paragraph,
+    table: &Table,
+    host_vpos: i32,
+    next_vpos: i32,
+) -> bool {
+    let ([anchor], Some(next)) = (host.line_segs.as_slice(), successor.line_segs.first()) else {
+        return false;
+    };
+    let offset = signed_hwpunit(table.common.vertical_offset);
+    let top = i32::from(table.outer_margin_top);
+    let bottom = i32::from(table.outer_margin_bottom);
+    offset < 0
+        && offset >= -top
+        && bottom >= 0
+        && host.text.is_empty()
+        && matches!(host.controls.as_slice(), [Control::Table(_)])
+        && host.column_type == ColumnBreakType::None
+        && successor.column_type == ColumnBreakType::None
+        && is_para_topbottom_float(&table.common)
+        && table.common.flow_with_text
+        && table.common.vert_align == VertAlign::Top
+        && matches!(
+            table.common.horz_rel_to,
+            HorzRelTo::Column | HorzRelTo::Para
+        )
+        && table.caption.is_none()
+        && table.common.height > 0
+        && table.common.height <= i32::MAX as u32
+        && anchor.segment_width == 0
+        && anchor.line_height > 0
+        && next.line_height > 0
+        && next.tag & (LineSeg::TAG_FIRST_LINE_OF_PAGE | LineSeg::TAG_FIRST_LINE_OF_COLUMN) == 0
+        && anchor.column_start == next.column_start
+        && host_vpos >= 0
+        && i64::from(next_vpos) - i64::from(host_vpos)
+            == i64::from(table.common.height) + i64::from(top) + i64::from(bottom)
+}
+
 /// The first coanchored table can precede its own empty host line. A saved
 /// line immediately below its complete outer box authenticates that leading
 /// space; fitting only the table would leave it on the preceding page.
@@ -548,7 +591,6 @@ fn from_ladder(
         || !(is_para_topbottom_float(&table.common) || paragraph_square)
         || next.column_type != ColumnBreakType::None
         || table.common.vert_align != VertAlign::Top
-        || signed_hwpunit(table.common.vertical_offset) < 0
         || !origin.is_finite()
         || !spacing_before.is_finite()
         || spacing_before < 0.0
@@ -567,12 +609,24 @@ fn from_ladder(
     }
     let host_vpos = stored_line(para)?;
     let next_vpos = stored_line(next)?;
-    let physical_hu = i64::from(signed_hwpunit(table.common.vertical_offset))
+    let spacing_before_hu = px_to_hwpunit(spacing_before, dpi) as i64;
+    let offset = signed_hwpunit(table.common.vertical_offset);
+    let positioned_offset = if offset >= 0 {
+        offset
+    } else if !reflowed
+        && spacing_before_hu == 0
+        && px_to_hwpunit(measured_table_height, dpi) as i64 == i64::from(table.common.height)
+        && stored_outer_box_owns_negative_offset(para, next, table, host_vpos, next_vpos)
+    {
+        0
+    } else {
+        return None;
+    };
+    let physical_hu = i64::from(positioned_offset)
         + i64::from(table.outer_margin_top)
         + i64::from(table.common.height.min(i32::MAX as u32))
         + caption_hu
         + i64::from(table.outer_margin_bottom);
-    let spacing_before_hu = px_to_hwpunit(spacing_before, dpi) as i64;
     let delta = i64::from(next_vpos) - i64::from(host_vpos);
     if delta <= 0 {
         return None;
@@ -594,7 +648,7 @@ fn from_ladder(
     // HWP5 앵커의 원점을 HWPX object frame의 위 여백으로 바꾸지 않는다.
     // 저장 등식이 없는 기존 앵커는 이 경로에 들어오지 않는다.
     let table_top = origin
-        + (i64::from(signed_hwpunit(table.common.vertical_offset))
+        + (i64::from(positioned_offset)
             + crate::renderer::stored_float_anchor::stored_outer_box_table_top_hu(table))
             as f64
             * dpi

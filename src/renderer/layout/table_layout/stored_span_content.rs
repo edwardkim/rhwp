@@ -378,6 +378,8 @@ impl LayoutEngine {
             return false;
         }
         let units = self.cell_units(cell, table, styles);
+        // An open-ended fragment cut owns the remaining units of the cell.
+        let end = end.min(units.len());
         let Some(last) = end.checked_sub(1).and_then(|index| units.get(index)) else {
             return false;
         };

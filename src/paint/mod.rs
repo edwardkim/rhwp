@@ -11,6 +11,7 @@ pub(crate) mod automatic_print_footer;
 mod bitmap_fill_frame;
 pub mod builder;
 mod cell_clip;
+mod implicit_page_number;
 use crate::renderer::render_tree;
 pub mod color_glyph;
 pub(crate) mod device_clip;

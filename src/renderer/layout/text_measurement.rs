@@ -2966,6 +2966,15 @@ fn measure_scalar_advance<'a>(
                     0.0
                 }
             } else if source_hft_metric
+                // 9/11/13pt 한컴 Print 굵기 대조의 음절 원점 전진을 유지한다.
+                // 주 TrueType은 한글 음절 U+AC00..U+D7A3 전부를 직접 공급한다.
+                || (latin.is_none()
+                    && ('가'..='힣').contains(&c)
+                    && matches!(
+                        style.metric_font_family.as_deref(),
+                        Some("한양중고딕" | "한양중고딕 (HFT)")
+                    )
+                    && otf_metrics.is_some_and(|font| font.uses_h2gtrm_faux_bold()))
                 || (style.source_font_is_hft && width_source == "heuristicFullwidth")
             {
                 font_size * 0.05

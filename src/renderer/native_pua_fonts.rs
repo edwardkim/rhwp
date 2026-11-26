@@ -308,6 +308,21 @@ impl NativeOtfMetrics {
         self.glyph_metric(character)
             .is_some_and(|(_, faux, _, _)| faux)
     }
+
+    /// 원본 전진을 유지하는 한양중고딕의 검증된 표시용 TrueType이다.
+    pub(crate) fn uses_h2gtrm_faux_bold(&self) -> bool {
+        const H2GTRM_SOURCE_SHA256: [u8; 32] = [
+            0x0b, 0x18, 0xf8, 0x1f, 0x9d, 0x46, 0x3f, 0x6c, 0x49, 0x88, 0x53, 0xaf, 0x3b, 0xda,
+            0xd5, 0x77, 0xe9, 0xc8, 0x81, 0xa5, 0xb5, 0x9d, 0xc7, 0xef, 0x4c, 0x43, 0x28, 0x75,
+            0x88, 0xd6, 0x96, 0xd5,
+        ];
+        self.programs.first().is_some_and(|program| {
+            program.static_truetype
+                && program.faux_bold
+                && program.source_digest == H2GTRM_SOURCE_SHA256
+        })
+    }
+
     pub fn advance_em(&self, character: char) -> Option<f64> {
         self.glyph_metric(character)
             .map(|(advance, _, _, _)| advance)

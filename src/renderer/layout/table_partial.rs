@@ -1131,6 +1131,7 @@ impl LayoutEngine {
         external_frame: Option<super::table_layout::ReflowExternalCutFrame>,
         // 원본 쪽 재시작과 전달된 물리 높이를 함께 확인한 시작/끝 행.
         original_restart_alignment_rows: [Option<usize>; 2],
+        deferred_opening_picture_height: Option<f64>,
         // [#6976] 접기 대상 행(모델 행 인덱스)과 그 행이 남긴 여분의 최솟값 수집기.
         fold_last_row: Option<usize>,
         fold_slack: &mut f64,
@@ -1148,6 +1149,8 @@ impl LayoutEngine {
             }
             let cell_row = cell.row as usize;
             let cell_col = cell.col as usize;
+            let deferred_opening_picture_height =
+                deferred_opening_picture_height.filter(|_| cell_row == start_row);
             if cell_col >= col_count || cell_row >= row_count {
                 continue;
             }
@@ -1953,6 +1956,9 @@ impl LayoutEngine {
             };
             let inner_height = (content_cell_h - pad_top - pad_bottom).max(0.0);
 
+            let continued_square_picture = cut_units.and_then(|(start, end)| {
+                self.stored_continued_square_picture_cut(cell, table, styles, start, end)
+            });
             let reflow_content_height = cut_units.and_then(|(start, end)| {
                 self.reflow_partial_cell_content_height(cell, table, start, end, styles)
             });
@@ -3061,12 +3067,19 @@ impl LayoutEngine {
             });
             for cp_idx in loop_start..loop_end_excl {
                 let para = &cell.paragraphs[cp_idx];
-                let no_overlap_square_stack =
+                let no_overlap_square_stack = if deferred_opening_picture_height.is_some() {
+                    crate::renderer::float_placement::cell_no_overlap_square_stack(
+                        &para.controls,
+                        self.dpi,
+                        true,
+                    )
+                } else {
                     crate::renderer::float_placement::cell_paragraph_no_overlap_square_stack(
                         &cell.paragraphs,
                         cp_idx,
                         self.dpi,
-                    );
+                    )
+                };
                 let mut no_overlap_placer =
                     crate::renderer::float_placement::NoOverlapSquarePlacer::default();
                 let mut no_overlap_topbottom_placer =
@@ -4371,7 +4384,9 @@ impl LayoutEngine {
                                     // 그림 자체 pos vert_align 은 무시한다. compute_object_position
                                     // 은 그림 pos vert_align 을 따르므로 콘텐츠 box·그림 높이 기준
                                     // 셀 valign 위치를 강제한다.
-                                    let pic_y = if fragment_owned_square_flow {
+                                    let pic_y = if continued_square_picture == Some(cp_idx) {
+                                        cell_y + pad_top
+                                    } else if fragment_owned_square_flow {
                                         // 조각의 원점에도 측정이 사용한 양수 흐름 앞 공간을
                                         // 보존한다. 이전 쪽의 음수 offset만 공통 판정으로
                                         // 제거하며 원본의 양수 변위를 함께 버리지 않는다.
@@ -4566,7 +4581,19 @@ impl LayoutEngine {
                                     );
                                     let pic_x =
                                         pic_x + picture_box.map_or(0.0, |frame| frame.margin_left);
-                                    let pic_y = if deferred_band {
+                                    let pic_y = if deferred_opening_picture_height.is_some() {
+                                        let stacked_top = no_overlap_square_stack
+                                            .as_ref()
+                                            .and_then(|stack| {
+                                                stack.members.iter().zip(&stack.boxes).find_map(
+                                                    |(&member, &(_, _, top, _))| {
+                                                        (member == ctrl_idx).then_some(top)
+                                                    },
+                                                )
+                                            })
+                                            .unwrap_or(0.0);
+                                        cell_y + pad_top + stacked_top
+                                    } else if deferred_band {
                                         para_y_before_compose
                                             + hwpunit_to_px(
                                                 i32::from(pic.common.margin.top),
@@ -4623,14 +4650,18 @@ impl LayoutEngine {
                                     // 겹침 허용 안 함인 어울림 그림은 이 조각에 먼저 놓인 같은 문단
                                     // 그림과 겹치면 그 아래로 내린다. 이 경로는 문단 흐름으로 그림을
                                     // 이미 내려 놓기도 하므로 오프셋 이동량 대신 실제 자리로 판정한다.
-                                    let pic_y = no_overlap_placer.place(
-                                        no_overlap_square_stack.as_ref(),
-                                        ctrl_idx,
-                                        &pic.common,
-                                        pic_x,
-                                        pic_y,
-                                        self.dpi,
-                                    );
+                                    let pic_y = if deferred_opening_picture_height.is_some() {
+                                        pic_y
+                                    } else {
+                                        no_overlap_placer.place(
+                                            no_overlap_square_stack.as_ref(),
+                                            ctrl_idx,
+                                            &pic.common,
+                                            pic_x,
+                                            pic_y,
+                                            self.dpi,
+                                        )
+                                    };
                                     let pic_y = no_overlap_topbottom_placer
                                         .place_topbottom_picture(
                                             &cell.paragraphs[cp_idx],
@@ -5968,7 +5999,9 @@ impl LayoutEngine {
                             _ => {}
                         }
                     }
-                    if let Some(height) = self
+                    if let Some(height) = deferred_opening_picture_height {
+                        para_y = cell_y + pad_top + height;
+                    } else if let Some(height) = self
                         .stored_partitioned_picture_fragment_height(cell, table, styles, cut_units)
                     {
                         para_y = cell_y + pad_top + height;
@@ -6986,21 +7019,16 @@ impl LayoutEngine {
         // 여는 규칙은 근거가 없어 최상위 조각으로 좁히고, 중첩 조각은 종전 좌표를 유지한다.
         let single_cell_page_fragment =
             self.single_cell_rowbreak_page_fragment(table) && enclosing_cell_ctx.is_none();
-        let empty_opening_continuation = enclosing_cell_ctx.is_none()
+        let empty_opening_continuation = (enclosing_cell_ctx.is_none()
             && is_continuation
             && start_row == 0
-            && start_cut.iter().copied().eq([0])
-            && paragraphs
-                .get(para_index + 1)
-                .and_then(|next| {
-                    self.saved_picture_row_empty_opening_frame(
-                        &paragraphs[para_index],
-                        next,
-                        table,
-                        styles,
-                    )
-                })
-                .is_some_and(|frame| start_row_height_override == Some(frame.continuation_height));
+            && start_cut.iter().copied().eq([0]))
+        .then(|| {
+            let next = paragraphs.get(para_index + 1)?;
+            self.saved_picture_row_empty_opening_frame(&paragraphs[para_index], next, table, styles)
+        })
+        .flatten()
+        .filter(|frame| start_row_height_override == Some(frame.continuation_height));
         let empty_opening_first_fragment = enclosing_cell_ctx.is_none()
             && !is_continuation
             && start_row == 0
@@ -7155,7 +7183,7 @@ impl LayoutEngine {
             || stored_body_frame_opens_outer_top
             || source_cut_reopens_outer_top
             || native_repeated_header_reopens_outer_top
-            || empty_opening_continuation
+            || empty_opening_continuation.is_some()
             || parallel_picture_opening_continuation
             || empty_opening_first_fragment)
             && stored_reset_paint_geometry.is_none()
@@ -7540,6 +7568,15 @@ impl LayoutEngine {
             }
         }
 
+        // 이월 그림 띠가 온전히 들어간 시작 행은 scan에서 수용한 높이를 쓴다.
+        // 일반 행의 최소 높이 재계산은 원래 문단의 오프셋을 다시 더할 수 있다.
+        if let Some(height) = empty_opening_continuation
+            .filter(|_| end_row > start_row + 1 || end_cut.is_empty())
+            .and_then(|frame| frame.deferred_continuation_height(start_row_height_override))
+        {
+            row_heights[start_row] = height;
+        }
+
         // [#3820 Stage 76] RowBreak 표의 rowspan-연속 밴드에서 실제 셀 내용은
         // 현재 쪽에 모두 들어가지만, 원본 선언 행 높이만 남은 공간보다 큰 경우가
         // 있다. 페이지네이터는 다음 조각을 다음 행부터 재개하고 이 조각의 마지막
@@ -7653,16 +7690,19 @@ impl LayoutEngine {
         // `valign` 을 조각 내용으로 적용한다 — 정본 10쪽 첫 줄은 상자 위에서 9.8px 아래다.
         // [#7063 레인②] 상자를 쪽이 정할 때 **내용이 쓸 높이**(예산이 자른 값)를 따로 든다.
         let mut budget_row_height_0: Option<f64> = None;
-        let source_single_cell_row_frames = paragraphs
+        let source_row_frames = paragraphs
             .get(para_index)
             .zip(paragraphs.get(para_index + 1))
             .and_then(|(host, next)| {
-                self.native_single_cell_source_row_frames(host, next, table, styles)
+                self.stored_completed_row_frames(host, next, table, styles, col_area.height)
+                    .or_else(|| {
+                        self.native_single_cell_source_row_frames(host, next, table, styles)
+                    })
             });
-        let source_single_cell_closing_frame = is_continuation
+        let source_row_closing_frame = is_continuation
             && end_cut.is_empty()
-            && source_single_cell_row_frames.is_some_and(|frame| {
-                start_cut == [frame.opening_end]
+            && source_row_frames.as_ref().is_some_and(|frame| {
+                start_cut == frame.opening_cut.as_slice()
                     && end_row_height_override == Some(frame.closing_height)
             });
         // 종료 원점으로 입증된 마지막 저장 행은 컷 이후 내용의 정렬 프레임이다.
@@ -7689,7 +7729,7 @@ impl LayoutEngine {
                     end_row_height_override.is_some_and(|limit| (limit - height).abs() < 0.01)
                 });
         let mut center_pinned_single_cell = stored_terminal_frame
-            || source_single_cell_closing_frame
+            || source_row_closing_frame
             || (single_cell_page_fragment
                 && row_count == 1
                 && is_continuation
@@ -8158,9 +8198,10 @@ impl LayoutEngine {
                     .map(|(_, opening, _)| *opening)
             })
             .or_else(|| {
-                source_single_cell_row_frames
+                source_row_frames
+                    .as_ref()
                     .filter(|frame| {
-                        end_cut == [frame.opening_end]
+                        end_cut == frame.opening_cut.as_slice()
                             && end_row_height_override == Some(frame.opening_height)
                     })
                     .map(|frame| frame.opening_height)
@@ -8467,6 +8508,7 @@ impl LayoutEngine {
             computed_fragment_frame,
             external_frame,
             original_restart_alignment_rows,
+            empty_opening_continuation.and_then(|frame| frame.deferred_picture_band_height),
             fold_last_row,
             &mut fold_slack,
         );
@@ -9234,7 +9276,7 @@ impl LayoutEngine {
         // 후속 흐름을 이동하거나 PageItem 소유를 바꾸지 않는다. Stage 120은 그리는 프레임과 클립만 바꾼다.
         // 쪽 나누기는 원래 구성한 컷 높이를 소비했다.
         let caption_outer_bottom =
-            if empty_opening_continuation && end_row >= row_count && end_cut.is_empty() {
+            if empty_opening_continuation.is_some() && end_row >= row_count && end_cut.is_empty() {
                 hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
             } else if rowbreak_reopens_outer_top && end_row >= row_count && end_cut.is_empty() {
                 crate::renderer::float_placement::column_rowbreak_caption_outer_spacing_px(
