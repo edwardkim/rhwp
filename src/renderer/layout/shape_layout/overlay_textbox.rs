@@ -32,6 +32,11 @@ fn refreshed_line_box_content_height(shape: &ShapeObject, dpi: f64) -> Option<f6
 /// 재저장된 글상자는 CTRL_HEADER에 이전 크기를 남길 수 있다. 저장한
 /// 글줄과 안 여백이 현재 요소 높이에 들어가고 종축 배율도 그 높이를
 /// 가리키면 테두리와 클립에 현재 높이를 사용한다. 글줄은 이미 저장된 좌표를 쓴다.
+///
+/// [#9422] 한/글이 저장한 HWPX 는 바뀌지 않은 축의 현재 크기를 `curSz width="0"` 으로
+/// 적는다. 파서가 그 축을 원래 폭으로 채우므로(#2017 `current_width_was_zero` 는 재직렬화용
+/// 표지) 폭이 그대로라는 사실은 위 원래·현재·선언 폭 비교가 이미 판정한다. 높이는 저장된
+/// 현재 높이만 증언이 되므로 `current_height_was_zero` 는 계속 거절한다.
 pub(super) fn saved_line_box_height(shape: &ShapeObject, dpi: f64) -> Option<f64> {
     let common = shape.common();
     let attr = shape.shape_attr();
@@ -48,7 +53,6 @@ pub(super) fn saved_line_box_height(shape: &ShapeObject, dpi: f64) -> Option<f64
         || attr.original_height != common.height
         || attr.current_height <= common.height
         || attr.current_height_was_zero
-        || attr.current_width_was_zero
         || attr.render_sx != 1.0
         || attr.render_tx != 0.0
         || attr.render_ty != 0.0
