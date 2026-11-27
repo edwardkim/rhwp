@@ -4709,8 +4709,28 @@ let body_height=match nested_body_heights
                 } else {
                     None
                 };
+                // [#8506] 저장 호스트 줄이 표 위에서 끝나고 표가 문단 오프셋 아래에 놓이는
+                // 프레임이 증명되면 "줄이 표를 흡수하지 않았다"는 압축 가정이 아니라 그
+                // 프레임(앵커 + 오프셋 + 바깥 여백 + 본체)이 내용 끝이다. 가산 경로로 보내면
+                // 오프셋이 빠진다(결재 표지: 가산 198.6px ↔ 프레임 240.3px, 한/글 표 상자
+                // 높이가 이 프레임으로 자란 행을 증명한다).
+                let stored_host_frame_cell = has_nested_table_in_cell
+                    && !self.session_edited
+                    && (self.is_native_hwp5 || self.hwpx_stored_layout)
+                    && !self.render_normalization.table_text_reflowed(table)
+                    && cell.paragraphs.iter().any(|p| {
+                        p.controls.iter().enumerate().any(|(index, control)| {
+                            matches!(control, Control::Table(nested)
+                                if !self.render_normalization.table_text_reflowed(nested)
+                                    && crate::renderer::float_placement::stored_nested_host_frame(
+                                        p, nested, index, 0.0, 0.0, self.dpi,
+                                    )
+                                    .is_some())
+                        })
+                    });
                 let compressed_monotonic_ladder = has_nested_table_in_cell
                     && stored_block_flow.is_none()
+                    && !stored_host_frame_cell
                     && !self.is_native_hwp5
                     && !cell_all_no_ls
                     && ladder_intact
