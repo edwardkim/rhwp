@@ -225,11 +225,17 @@ CLI/test 전용 wait/wait_closed를 구분한다. 실제 OS별 thread 종료·ar
 moveUp/moveDown, deleteBackward/deleteForward, splitParagraph/joinPreviousParagraph/selectAll을
 지원한다. 주소는 scalar지만 collapsed caret의 이동·삭제는 extended grapheme 경계를 따른다.
 Home/End는 현재 문단 경계, selectAll은 현재 본문 구역이다. 좌우는 논리 문자열 순서다.
-셀·inline-control affinity·탭 삽입은 이 계약에 포함되지 않는다.
+`tableCellParagraphCommands`가 활성화되어 있으면 표 셀에서도 `splitParagraph`와
+`joinPreviousParagraph`를 사용할 수 있다. 중첩 표에서는 가장 안쪽 셀 안에서 처리한다.
 
 문단 split/join과 선택 삭제는 한 revision/한 undo 단위이며 실패하면 문서·선택·history를 복원한다.
 IME 조합 중 일반 명령은 commit/cancel을 먼저 요구한다. vertical 응답의 preferredX를 다음
 vertical 입력에 전달하고 다른 명령 뒤에는 초기화한다.
+
+셀 안에서 `splitParagraph`는 한 문단에 속한 선택을 지운 뒤 그 자리를 나누고 새 문단의
+시작에 커서를 둔다. `joinPreviousParagraph`는 커서가 속한 문단을 같은 셀의 바로 앞 문단과
+합친 뒤 접합점에 커서를 둔다. 셀의 첫 문단에서 합치기를 요청하면 현재 선택을 반환한다.
+편집 대상은 보호되지 않은 셀 안에 있으며, 컨트롤이나 필드 경계가 없는 문단이어야 한다.
 
 `imeContext`는 조합 중에도 읽을 수 있는 최대4096 scalar 주변 문맥과 scalar cursor/anchor,
 선택 텍스트 및 truncation 정보를 반환한다. worker는 target, 동기 세션은 expectedRevision을
