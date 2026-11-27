@@ -80,6 +80,7 @@ impl NativeEditor {
         command: NativeEditCommand,
     ) -> Result<NativeCommandOutcome, NativeHostError> {
         self.check_edit_ready(expected_revision)?;
+        self.require_body_selection("keyboard commands")?;
         let mut preferred_x = None;
         let outcome = match command {
             NativeEditCommand::MoveLeft { extend_selection } => {
@@ -353,6 +354,7 @@ impl NativeEditor {
         self.session().check_revision(expected_revision)?;
         let selection = self.selection();
         Self::validate_selection(self.session().document(), selection)?;
+        self.require_body_selection("IME context")?;
         let focus = &selection.focus;
         let document = self.session().document().document();
         let paragraph =
