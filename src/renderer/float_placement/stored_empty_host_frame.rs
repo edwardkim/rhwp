@@ -383,10 +383,7 @@ impl ParagraphFloatPlacement {
                 if blank(tail)
                     && is_para_topbottom_float(&table.common)
                     && table.common.vert_rel_to == VertRelTo::Para
-                    && table.common.vert_align == VertAlign::Top =>
-            {
-                ()
-            }
+                    && table.common.vert_align == VertAlign::Top => {}
             _ => return None,
         }
 
