@@ -11,6 +11,10 @@ use crate::renderer::typeset::{
 
 use super::super::TableContinuationCursor;
 use super::{FragmentBudget, FragmentInput, FragmentProfile};
+use crate::model::shape::{HorzAlign, HorzRelTo};
+use crate::renderer::float_placement::{
+    signed_hwpunit, ParagraphFloatFlow, ParagraphFloatPlacement,
+};
 
 impl TypesetEngine {
     pub(super) fn prepare_table_fragment_budget(
@@ -126,6 +130,37 @@ impl TypesetEngine {
         let empty_square_outer_top =
             crate::renderer::float_placement::square_float_outer_margin_top_hu(table)
                 .filter(|_| !crate::renderer::typeset::para_has_visible_text(para));
+        // 저장 HWPX의 독립 호스트 줄 아래에서 흐름을 따르는 어울림 표는
+        // 첫 조각과 이어받기 모두 단의 바깥 상자를 기준으로 연다.
+        let stored_square_fragment_margins =
+            crate::renderer::float_placement::square_float_outer_margin_top_hu(table)
+                .filter(|_| {
+                    st.profile.hwpx_stored_layout()
+                        && !st.profile.session_edited()
+                        && !detached_child_fragment
+                        && std::ptr::eq(row_geometry_table, table)
+                        && prepared.host_placement.is_none()
+                        && table.common.flow_with_text
+                        && !table.common.allow_overlap
+                        && table.common.horz_rel_to == HorzRelTo::Column
+                        && table.common.horz_align == HorzAlign::Left
+                        && table.caption.is_none()
+                        && total_rows_h > base_available
+                        && para_has_visible_text(para)
+                        && !para.stored_text_partition_is_dirty()
+                        && !para.cell_format_vpos_dirty
+                        && matches!(para.line_segs.as_slice(), [line]
+                            if !is_synthetic_line_seg(line) && line.line_height > 0
+                            && signed_hwpunit(table.common.vertical_offset) >= line.line_height)
+                })
+                .map(|top| {
+                    let left = f64::from(signed_hwpunit(table.common.horizontal_offset))
+                        + f64::from(table.outer_margin_left);
+                    (
+                        left * self.dpi / 7200.0,
+                        hwpunit_to_px(top, self.dpi),
+                    )
+                });
         let (host_before_overhead, fragment_outer_bottom_overhead) =
             partial_rowbreak_fragment_spacing_px(
                 table,
@@ -230,6 +265,7 @@ impl TypesetEngine {
                 start_cut,
             );
         let host_before_overhead = host_before_overhead
+            + stored_square_fragment_margins.map_or(0.0, |(_, top)| top)
             + if is_continuation {
                 empty_square_outer_top.map_or(0.0, |margin| hwpunit_to_px(margin, self.dpi))
             } else {
@@ -1156,6 +1192,18 @@ impl TypesetEngine {
                 stored_host_origin: None,
                 stored_successor_line_origin: None,
                 table_left: None,
+                table_top: top,
+                occupied_bottom: top,
+            });
+        }
+        if let Some((left, _)) = stored_square_fragment_margins {
+            let top = st.current_height + host_before_overhead + vert_offset_overhead;
+            fragment_placement.get_or_insert(ParagraphFloatPlacement {
+                flow: ParagraphFloatFlow::Exclusion,
+                anchor_y: st.current_height,
+                stored_host_origin: None,
+                stored_successor_line_origin: None,
+                table_left: Some(left),
                 table_top: top,
                 occupied_bottom: top,
             });

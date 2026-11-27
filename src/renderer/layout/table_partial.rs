@@ -6614,6 +6614,7 @@ impl LayoutEngine {
         clamp_header_negative_para_offset: bool,
         probe: Option<&PartialTableCellProbe>,
         resolved_table_top: Option<f64>,
+        resolved_table_left: Option<f64>,
         predecessor_flow_bottom: Option<f64>,
     ) -> f64 {
         let para = match paragraphs.get(para_index) {
@@ -6680,7 +6681,7 @@ impl LayoutEngine {
                 pre_emitted_host_content_height,
                 host_line_spacing,
                 resolved_table_top,
-                resolved_table_left: None,
+                resolved_table_left,
                 predecessor_flow_bottom,
                 end_row_owns_stored_frame,
                 computed_fragment_frame,

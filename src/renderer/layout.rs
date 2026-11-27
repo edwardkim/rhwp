@@ -17725,6 +17725,10 @@ impl LayoutEngine {
             ctx.paragraph_float_placements
                 .get(&(para_index, control_index))
                 .map(|p| col_area.y + p.table_top),
+            ctx.paragraph_float_placements
+                .get(&(para_index, control_index))
+                .and_then(|p| p.table_left)
+                .map(|left| col_area.x + left),
             crate::renderer::float_placement::preceding_control_flow_bottom_px(
                 ctx.paragraph_float_placements,
                 ctx.inline_placements,
@@ -18442,6 +18446,7 @@ impl LayoutEngine {
                             None,
                             None,
                             false,
+                            None,
                             None,
                             None,
                             None,
