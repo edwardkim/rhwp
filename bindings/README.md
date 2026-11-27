@@ -37,6 +37,24 @@ profile 또는 compatibility backend 선택 옵션을 노출하지 않는다.
 Linux에서 native ABI를 검증해도 Apple XCFramework build/link가 검증된 것은 아니다.
 Apple 산출물과 독립 한컴 PDF 출력 대조는 별도 검증 대상이다.
 
+### 전용 worker에서 PDF 내보내기
+
+`workerSubmit`의 `exportPdf`는 열려 있는 문서의 저장 전 편집을 포함해 지정한 revision을
+Print profile로 출력한다. `target`과 `fontGeneration`을 전달하고 `firstPage`는 0부터,
+`pageCount`는 1부터 32까지 지정한다. `maxOutputBytes`는 1부터 32 MiB까지 지정한다.
+요청을 받으면 이 크기를 worker의 `maxPendingBytes`에서 예약하며, 완료를 poll하면 예약을
+반납한다. 활성 IME 조합이 있으면 `unsupported`를 반환한다.
+
+성공 완료의 `kind`는 `exportedPdf`이며 `target`, `fontGeneration`, `firstPage`,
+`pageCount`, `buffer`, `byteLength`를 포함한다. 호스트는 `sessionBufferCopy/Release`로
+PDF를 가져와 미리보기나 파일 출력에 사용한다. 미리보기를 현재 문서에 표시할 때는 완료의
+target 및 font generation을 현재 값과 비교한다. Worker는 출력 파일을 만들거나 문서의
+저장 상태를 변경하지 않는다. 대기 중 요청만 취소할 수 있으며 실행을 시작한 요청은
+`tooLate`를 반환한다. Worker를 닫으면 아직 받지 않은 완료를 폐기한다.
+
+`livePdfExport`가 활성화된 `native-skia` 빌드에서 실행할 수 있다. 상한은 capabilities의
+`maxLivePdfPages`와 `maxLivePdfBytes`로 조회한다.
+
 ## 지속 문서 세션 (P51)
 
 Rust의 `native_host::NativeDocumentSession`은 `DocumentCore`와 Skia renderer를 소유한다.

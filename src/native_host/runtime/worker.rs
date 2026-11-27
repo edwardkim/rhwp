@@ -293,6 +293,43 @@ fn execute(
                 snapshot: Arc::new(snapshot),
             })
         }
+        C::ExportPdf {
+            target,
+            font_generation,
+            first_page,
+            page_count,
+            max_output_bytes,
+        } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            if doc.session().font_generation() != font_generation {
+                return Err(invalid("stale font generation"));
+            }
+            #[cfg(feature = "native-skia")]
+            {
+                if matches!(&doc.owner, DocumentOwner::Editor(editor) if editor.composition_id().is_some())
+                {
+                    return Err(NativeHostError::Unsupported(
+                        "complete the active composition before exporting PDF".into(),
+                    ));
+                }
+                let bytes = doc
+                    .session()
+                    .export_pdf(first_page, page_count, max_output_bytes)?;
+                Ok(O::ExportedPdf {
+                    target,
+                    font_generation,
+                    first_page,
+                    page_count,
+                    bytes,
+                })
+            }
+            #[cfg(not(feature = "native-skia"))]
+            {
+                let _ = (first_page, page_count, max_output_bytes);
+                Err(NativeHostError::FeatureDisabled)
+            }
+        }
         C::RenderRegion {
             target,
             font_generation,
@@ -633,6 +670,7 @@ pub(super) fn worker_loop(
                 .capacity()
                 .saturating_add(context.context.selected_text.capacity()),
             Ok(NativeRuntimeOutput::Frame { frame, .. }) => frame.pixels.bytes.capacity(),
+            Ok(NativeRuntimeOutput::ExportedPdf { bytes, .. }) => bytes.len(),
             Ok(NativeRuntimeOutput::PreparedSave { prepared, .. }) => prepared.bytes.len(),
             Ok(NativeRuntimeOutput::SelectionRects { rects, .. }) => rects
                 .capacity()

@@ -661,6 +661,18 @@ fn worker_output(host: &mut Host, worker: u64, output: NativeRuntimeOutput) -> V
             NativeRuntimeOutput::Edited(outcome) => {
                 json!({"ok":true,"kind":"edited","outcome":outcome})
             }
+            NativeRuntimeOutput::ExportedPdf {
+                target,
+                font_generation,
+                first_page,
+                page_count,
+                bytes,
+            } => {
+                let byte_length = bytes.len();
+                let buffer = retain_buffer(host, bytes.into_vec())?;
+                json!({"ok":true,"kind":"exportedPdf","buffer":buffer,"byteLength":byte_length,
+                "target":target,"fontGeneration":font_generation,"firstPage":first_page,"pageCount":page_count})
+            }
             NativeRuntimeOutput::Frame { document_id, frame } => {
                 let mut value = frame_result(host, frame)?;
                 value["kind"] = json!("frame");
@@ -819,6 +831,9 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
         "accessibilityCellLayout":true,
         "worker":true,"maxWorkers":4,"hostRequests":true,"viewState":true,"accessibilitySnapshots":true,"threadAffine":true,"maxSessions":MAX_SESSIONS,"maxDocumentBytes":MAX_DOCUMENT_BYTES,
         "maxRequestBytes":MAX_REQUEST_BYTES,"maxBufferBytes":MAX_BUFFER_BYTES,
+        "livePdfExport":cfg!(feature="native-skia"),
+        "maxLivePdfPages":rhwp_core::native_host::runtime::MAX_LIVE_PDF_PAGES,
+        "maxLivePdfBytes":rhwp_core::native_host::runtime::MAX_LIVE_PDF_BYTES,
         "pixelFormat":"rgba8Premultiplied","colorSpace":"srgb"}),
         )
     })
