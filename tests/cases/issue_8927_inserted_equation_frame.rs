@@ -29,13 +29,15 @@
 //!
 //! # 남은 차이(검사하지 않는 축)
 //!
-//! - `prod _{i} x`의 폭: ∏ 글리프의 한컴 전진폭 표가 없어 10pt에서 HYhwpEQ 66HU·HancomEQN 141HU
-//!   넓다. 높이·기준선만 검사한다.
+//! - HancomEQN `prod _{i} x`의 폭: 75HU 넓다(HYhwpEQ는 같다). 곱 뒤 `x`까지의 HancomEQN GDI
+//!   전진이 확인되지 않았다. 높이·기준선만 검사한다.
 //! - HancomEQN `a ^{2} + b ^{2} = c ^{2}`의 폭: 위첨자 숫자의 한컴 전진폭이 같은 논리 글자 크기에서도
 //!   글자 크기마다 달라(10pt 5px, 10.5~11.5pt 6px) 225HU 넓다. 높이·기준선만 검사한다.
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::{Control, Equation};
+use rhwp::renderer::equation::layout::{LayoutBox, LayoutKind};
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 /// (문단, 글자 위치, script). 이슈의 재현 순서와 첨부 결과 파일의 배치다.
 const CASES: [(usize, usize, &str); 7] = [
@@ -120,11 +122,7 @@ fn assert_matches_reference(doc: &DocumentCore, reference: &str, width_unresolve
 
 #[test]
 fn inserted_hyhwpeq_frames_match_hancom_relayout() {
-    assert_matches_reference(
-        &inserted(None),
-        "rhwp-HYhwpEQ.hancom-relayout.hwp",
-        &["prod _{i} x"],
-    );
+    assert_matches_reference(&inserted(None), "rhwp-HYhwpEQ.hancom-relayout.hwp", &[]);
 }
 
 #[test]
@@ -236,4 +234,109 @@ fn property_bag_owns_explicit_axes() {
     )
     .unwrap();
     assert_eq!(frame(&equation_in(&doc, 0).1), (5000, 4000, 70));
+}
+
+fn equation_layouts<'a>(node: &'a RenderNode, out: &mut Vec<(&'a str, &'a LayoutBox)>) {
+    if let RenderNodeType::Equation(equation) = &node.node_type {
+        out.push((equation.script.as_str(), &equation.layout_box));
+    }
+    for child in &node.children {
+        equation_layouts(child, out);
+    }
+}
+
+fn big_operator(layout: &LayoutBox) -> Option<&LayoutBox> {
+    match &layout.kind {
+        LayoutKind::BigOp { .. } => Some(layout),
+        LayoutKind::Row(children) => children.iter().find_map(big_operator),
+        _ => None,
+    }
+}
+
+/// 큰 합·곱의 위·아래 한계값은 연산자 글리프의 잉크와 겹치지 않는다. 표시 글리프인
+/// Latin Modern Math의 ∑·∏(`assets/fonts/LatinModernMath-Regular.woff2`)는 잉크가 둘 다
+/// -0.25..0.75em이다. 한글 2022 4645 Print에서도 곱의 잉크(352.0~368.7px)와 아래 한계값
+/// `i`(370.9px부터)는 떨어져 있다. 한컴 합·곱 프레임의 한계값 칸과 원본 face 연산자
+/// 글리프가 다른 조건을 쓰면 아래 한계값이 곱의 다리에 걸린다.
+#[test]
+fn big_operator_limits_clear_the_operator_ink() {
+    const SCRIPTS: [&str; 4] = [
+        "prod _{i} x",
+        "prod _{i=1} ^{n} x",
+        "sum _{i} x",
+        "sum _{i=1} ^{n} x",
+    ];
+    for font in [None, Some("HancomEQN")] {
+        let mut doc = DocumentCore::new_empty();
+        doc.create_blank_document_native().unwrap();
+        doc.insert_text_native(0, 0, 0, "끝").unwrap();
+        for script in SCRIPTS {
+            doc.insert_equation_native(0, 0, 0, script, 1000, 0)
+                .unwrap();
+        }
+        if let Some(font) = font {
+            let indices: Vec<usize> = doc.document().sections[0].paragraphs[0]
+                .controls
+                .iter()
+                .enumerate()
+                .filter_map(|(index, control)| {
+                    matches!(control, Control::Equation(_)).then_some(index)
+                })
+                .collect();
+            for index in indices {
+                doc.set_equation_properties_native(
+                    0,
+                    0,
+                    index,
+                    None,
+                    None,
+                    &format!(r#"{{"fontName":"{font}"}}"#),
+                )
+                .unwrap();
+            }
+        }
+        let page = doc.build_page_render_tree(0).unwrap();
+        let mut layouts = Vec::new();
+        equation_layouts(&page.root, &mut layouts);
+        assert_eq!(
+            layouts
+                .iter()
+                .map(|(script, _)| *script)
+                .collect::<Vec<_>>(),
+            SCRIPTS,
+            "{font:?} 수식 순서·누락·중복"
+        );
+        for (script, layout) in layouts {
+            let Some(op) = big_operator(layout) else {
+                // HancomEQN의 두 한계값 합은 한컴 PUA 글리프와 실측 오프셋으로 따로 배치한다.
+                assert_eq!((font, script), (Some("HancomEQN"), "sum _{i=1} ^{n} x"));
+                continue;
+            };
+            let LayoutKind::BigOp {
+                op_font_size,
+                op_baseline,
+                sub,
+                sup,
+                ..
+            } = &op.kind
+            else {
+                unreachable!()
+            };
+            let ink_top = op_baseline - 0.75 * op_font_size;
+            let ink_bottom = op_baseline + 0.25 * op_font_size;
+            if let Some(sup) = sup {
+                assert!(
+                    sup.y + sup.height <= ink_top + 1e-6,
+                    "{font:?} {script}: 위 한계값 끝 {} > 연산자 잉크 위 {ink_top}",
+                    sup.y + sup.height
+                );
+            }
+            let sub = sub.as_ref().expect("아래 한계값");
+            assert!(
+                sub.y >= ink_bottom - 1e-6,
+                "{font:?} {script}: 아래 한계값 시작 {} < 연산자 잉크 아래 {ink_bottom}",
+                sub.y
+            );
+        }
+    }
 }
