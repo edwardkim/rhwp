@@ -163,18 +163,19 @@ impl NativeEditor {
         self.session.set_font_sources(paths, environment)
     }
 
-    /// Save without committing an unfinished IME preview. HWP stores current
-    /// body focus; HWPX retains its existing source-settings/default policy.
+    /// Save only after IME composition ends. HWP stamps a body focus or
+    /// retains the stored caret when a cell has focus. HWPX uses its source
+    /// settings or the serializer default.
     pub fn prepare_save(
         &mut self,
         format: super::save::NativeSaveFormat,
     ) -> Result<super::save::PreparedSave, NativeHostError> {
         self.require_no_composition()?;
         match format {
-            super::save::NativeSaveFormat::Hwp => self
+            super::save::NativeSaveFormat::Hwp if self.selection.focus.cell_path.is_empty() => self
                 .session
                 .prepare_save_with_caret(format, &self.selection.focus),
-            super::save::NativeSaveFormat::Hwpx => self.session.prepare_save(format),
+            _ => self.session.prepare_save(format),
         }
     }
 
