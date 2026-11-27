@@ -1100,27 +1100,46 @@ impl TypesetEngine {
                 // (`stored_successor_line_origin`)으로 남겨, paint 도 호스트 아래 간격을 더하지 않고
                 // 그 문단 위 간격을 한 번만 쓰게 한다(1613000 125쪽: 빈 호스트 표 끝 조각·캡션 아래
                 // 156.08 = 다음 빈 줄 vpos 11706). typeset 흐름 끝은 위 `successor_flow_end` 그대로다.
-                if matches!(
-                    placement.flow,
-                    crate::renderer::float_placement::ParagraphFloatFlow::NextLine
-                ) {
-                    if let Some(end) = successor_flow_end {
-                        let successor_before = st
-                            .table_flow_successor(para_idx, input.source.paragraphs_all)
-                            .and_then(|(_, next)| {
-                                styles.para_styles.get(next.para_shape_id as usize)
-                            })
-                            .map_or(0.0, |style| style.spacing_before);
-                        // 뒤 문단의 저장 줄 윗변(= 흐름 끝 + 그 문단 위 간격)이 상자 아래 이하에
-                        // 있으면 그 줄이 문단을 닫는다. 위 간격이 바깥 아래 여백과 겹쳐도 같다
-                        // (1613000 59쪽: 상자 아래 226.93, 뒤 빈 줄 vpos 17444 = 232.59).
-                        // 위 간격이 없는 뒤 문단도 같다 — 저장 줄이 상자 아래에서 시작한다고 증언했다
-                        // (1790387 57쪽: 글자처럼 표 문단 pi238 vpos 15555 = 상자 아래 207.4).
-                        let successor_line = end + successor_before;
-                        if successor_line >= placement.occupied_bottom - 0.5 {
-                            placement.stored_successor_line_origin =
-                                Some(successor_line.max(placement.occupied_bottom));
-                        }
+                if let Some(end) = successor_flow_end {
+                    let successor = st
+                        .table_flow_successor(para_idx, input.source.paragraphs_all)
+                        .map(|(_, next)| next);
+                    let before = successor
+                        .and_then(|next| styles.para_styles.get(next.para_shape_id as usize))
+                        .map_or(0.0, |style| style.spacing_before);
+                    let successor_line = end + before;
+                    // 행 단위 이월에서 반복 제목행을 포함한 실제 표 상자가
+                    // 뒤 빈 저장 줄의 시작을 정확히 닫으면 그 줄이 단 원점을 잇는다.
+                    let unit = hwpunit_to_px(1, self.dpi);
+                    let repeated_header_closes_at_successor = is_continuation
+                        && start_cut.is_empty()
+                        && header_overhead > 0.0
+                        && st.profile.hwp5_stored_pagination_layout()
+                        && !st.profile.session_edited()
+                        && !crate::renderer::typeset::para_has_visible_text(input.source.paragraph)
+                        && (successor_line - placement.occupied_bottom).abs() <= unit
+                        && successor.is_some_and(|next| {
+                            let [line] = next.line_segs.as_slice() else {
+                                return false;
+                            };
+                            next.text.trim().is_empty()
+                                && next.controls.is_empty()
+                                && !next.stored_text_partition_is_dirty()
+                                && !next.cell_format_vpos_dirty
+                                && !is_synthetic_line_seg(line)
+                                && line.line_height > 0
+                                && (hwpunit_to_px(line.vertical_pos, self.dpi) - successor_line)
+                                    .abs()
+                                    <= unit
+                        });
+                    if (matches!(
+                        placement.flow,
+                        crate::renderer::float_placement::ParagraphFloatFlow::NextLine
+                    ) || repeated_header_closes_at_successor)
+                        && successor_line >= placement.occupied_bottom - 0.5
+                    {
+                        placement.stored_successor_line_origin =
+                            Some(successor_line.max(placement.occupied_bottom));
                     }
                 }
                 if let Some((top, end)) = stored_successor {
