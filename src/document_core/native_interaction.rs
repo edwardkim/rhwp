@@ -514,19 +514,20 @@ fn same_container(a: &NativeTextPosition, b: &NativeTextPosition) -> bool {
         }
 }
 
+pub(crate) fn legacy_cell_path(path: &[NativeCellPathEntry]) -> Vec<(usize, usize, usize)> {
+    path.iter()
+        .map(|entry| {
+            (
+                entry.control as usize,
+                entry.cell as usize,
+                entry.paragraph as usize,
+            )
+        })
+        .collect()
+}
+
 fn legacy_path_json(path: &[NativeCellPathEntry]) -> String {
-    DocumentCore::format_path_json(
-        &path
-            .iter()
-            .map(|entry| {
-                (
-                    entry.control as usize,
-                    entry.cell as usize,
-                    entry.paragraph as usize,
-                )
-            })
-            .collect::<Vec<_>>(),
-    )
+    DocumentCore::format_path_json(&legacy_cell_path(path))
 }
 
 fn validate_bounds(bounds: NativeInteractionBounds) -> Result<(), NativeInteractionError> {

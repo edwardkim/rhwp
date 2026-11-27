@@ -1,4 +1,4 @@
-//! Body editing commands over scalar addresses and extended Unicode graphemes.
+//! Editing commands over scalar addresses and extended Unicode graphemes.
 //!
 //! Left/right are logical text order, not visual bidi navigation. Home/End mean
 //! paragraph boundaries; Up/Down consume the existing core visual-line query.
@@ -14,6 +14,9 @@ use crate::document_core::native_interaction::{
 
 use super::editor::{NativeEditOutcome, NativeEditor};
 use super::NativeHostError;
+
+#[path = "cell_paragraph_commands.rs"]
+mod cell_paragraph_commands;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(
@@ -80,7 +83,12 @@ impl NativeEditor {
         command: NativeEditCommand,
     ) -> Result<NativeCommandOutcome, NativeHostError> {
         self.check_edit_ready(expected_revision)?;
-        self.require_body_selection("keyboard commands")?;
+        if !matches!(
+            &command,
+            NativeEditCommand::SplitParagraph {} | NativeEditCommand::JoinPreviousParagraph {}
+        ) {
+            self.require_body_selection("keyboard commands")?;
+        }
         let mut preferred_x = None;
         let outcome = match command {
             NativeEditCommand::MoveLeft { extend_selection } => {
@@ -135,7 +143,11 @@ impl NativeEditor {
                         "joinPreviousParagraph requires a collapsed selection".into(),
                     ));
                 }
-                self.join_at(expected_revision, self.selection().focus.paragraph)?
+                if self.selection().focus.cell_path.is_empty() {
+                    self.join_at(expected_revision, self.selection().focus.paragraph)?
+                } else {
+                    self.join_previous_cell_paragraph(expected_revision)?
+                }
             }
             NativeEditCommand::SelectAll {} => {
                 let mut start = self.selection().focus.clone();
@@ -256,6 +268,9 @@ impl NativeEditor {
 
     fn split_selection(&mut self, revision: u64) -> Result<NativeEditOutcome, NativeHostError> {
         let selection = self.selection().clone();
+        if !selection.focus.cell_path.is_empty() {
+            return self.split_cell_selection(revision, selection);
+        }
         let (start, end) = Self::ordered(&selection);
         let mut after = start.clone();
         after.paragraph = after.paragraph.checked_add(1).ok_or_else(|| {

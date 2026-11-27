@@ -3,12 +3,14 @@
 //! Offsets are Unicode scalar indices. Plain-text replacement supports body
 //! ranges and a single paragraph of a table cell, including nested tables. Object-bearing
 //! paragraph mutations, inline-control affinity and tabs are rejected explicitly.
-//! Composition also supports one editable cell paragraph. Paragraph split/join
-//! and keyboard commands use body positions.
+//! Composition and explicit paragraph split/join also support editable cell
+//! paragraphs. The selection addresses one leaf paragraph at a time.
 
 use std::collections::VecDeque;
 
-use crate::document_core::native_interaction::{NativeTextPosition, NativeTextSelection};
+use crate::document_core::native_interaction::{
+    legacy_cell_path, NativeTextPosition, NativeTextSelection,
+};
 use crate::model::control::Control;
 use crate::DocumentCore;
 
@@ -722,17 +724,7 @@ impl NativeEditor {
         Self::check_editable_text_span(core, selection)?;
         let (start, end) = Self::ordered(selection);
         if !start.cell_path.is_empty() {
-            let path: Vec<_> = start
-                .cell_path
-                .iter()
-                .map(|part| {
-                    (
-                        part.control as usize,
-                        part.cell as usize,
-                        part.paragraph as usize,
-                    )
-                })
-                .collect();
+            let path = legacy_cell_path(&start.cell_path);
             core.replace_text_in_cell_by_path(
                 start.section as usize,
                 start.paragraph as usize,
