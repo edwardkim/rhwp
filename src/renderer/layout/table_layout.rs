@@ -91,6 +91,14 @@ use crate::renderer::float_placement::{
 };
 
 const ROWBREAK_OBJECT_BOTTOM_BLEED_TOLERANCE_PX: f64 = 64.0;
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum StoredPlainRestartCut {
+    OriginalFrame,
+    ContentFit,
+    PageCapacity,
+}
+
 /// [#3738 Stage 19] native HWP5가 빈 1×1 RowBreak picture table에 남기는 stale page
 /// origin은 일반적인 local offset보다 한 페이지 단위로 크다. 이 값보다 작은 음수는
 /// 일반 그림 위치일 수 있으므로 절대 보정하지 않는다.
@@ -18533,7 +18541,14 @@ impl LayoutEngine {
                             });
                             // 재시작 컷 후보와 원본의 물리 쪽 프레임 인증을 구분한다.
                             let row_has_plain_restart_cut = self
-                                .stored_plain_restart_cut(nt, ri, &[], styles, false, None)
+                                .stored_plain_restart_cut(
+                                    nt,
+                                    ri,
+                                    &[],
+                                    styles,
+                                    StoredPlainRestartCut::ContentFit,
+                                    None,
+                                )
                                 .is_some();
                             let parent_keeps_child_source_frame =
                                 !reflow_child_frames
@@ -22314,7 +22329,7 @@ impl LayoutEngine {
                                     usize::from(cell.row),
                                     &[],
                                     styles,
-                                    false,
+                                    StoredPlainRestartCut::ContentFit,
                                     Some((cell, start_cut)),
                                 )
                                 .is_some_and(|cut| {
@@ -25022,7 +25037,14 @@ impl LayoutEngine {
         row: usize,
         styles: &ResolvedStyleSet,
     ) -> Option<Vec<usize>> {
-        self.stored_plain_restart_cut(table, row, &[], styles, true, None)
+        self.stored_plain_restart_cut(
+            table,
+            row,
+            &[],
+            styles,
+            StoredPlainRestartCut::OriginalFrame,
+            None,
+        )
     }
 
     /// 셀 저장 줄의 새 원점 재시작에서 자른 쪽 끝 행 상자: max(행 선언 높이, 그 컷까지의 내용 높이).
@@ -25066,7 +25088,14 @@ impl LayoutEngine {
         // The capacity-selected cut, not the number of remaining lines,
         // identifies ownership. A restart may leave a complete multi-line
         // suffix; its actual physical height is still checked by the scanner.
-        self.stored_plain_restart_cut(table, row, &[], styles, false, None)
+        self.stored_plain_restart_cut(
+            table,
+            row,
+            &[],
+            styles,
+            StoredPlainRestartCut::PageCapacity,
+            None,
+        )
     }
 
     /// 이미 시작 컷에서 이어받은 행의 다음 저장 재시작 컷. 셀마다 시작 컷 뒤 첫 새 원점
@@ -25083,7 +25112,14 @@ impl LayoutEngine {
         if start_cut.is_empty() {
             return None;
         }
-        self.stored_plain_restart_cut(table, row, start_cut, styles, false, None)
+        self.stored_plain_restart_cut(
+            table,
+            row,
+            start_cut,
+            styles,
+            StoredPlainRestartCut::ContentFit,
+            None,
+        )
     }
 
     /// 문단 첫 줄의 새 원점이 셀 좌표 재시작인가. 앞 문단도 같은 셀 좌표(첫 줄 양수
@@ -25164,9 +25200,14 @@ impl LayoutEngine {
         row: usize,
         start_cut: &[usize],
         styles: &ResolvedStyleSet,
-        source_owned: bool,
+        mode: StoredPlainRestartCut,
         capacity_cell_start: Option<(&crate::model::table::Cell, usize)>,
     ) -> Option<Vec<usize>> {
+        let source_owned = mode == StoredPlainRestartCut::OriginalFrame;
+        // At an independently selected page boundary, retain the restart
+        // already recorded by HWPX cell measurement, including equal origins.
+        let use_measured_page_reset =
+            mode == StoredPlainRestartCut::PageCapacity && self.profile.get().hwpx_stored_layout();
         let mut cells: Vec<_> = table
             .cells
             .iter()
@@ -25224,7 +25265,9 @@ impl LayoutEngine {
                         table,
                         &cell.paragraphs[unit.para_idx - 1],
                         &cell.paragraphs[unit.para_idx],
-                    );
+                    ) || (use_measured_page_reset
+                        && unit.hard_break_before
+                        && unit.page_frame_reset_before);
                 }
                 cell.paragraphs.get(unit.para_idx).is_some_and(|para| {
                     if source_owned {
@@ -25338,7 +25381,7 @@ impl LayoutEngine {
     ) -> Option<f64> {
         if start_cut.iter().any(|cut| *cut > 0)
             || self
-                .stored_plain_restart_cut(table, row, &[], styles, true, None)?
+                .row_stored_zero_origin_cut(table, row, styles)?
                 .as_slice()
                 != end_cut
         {
