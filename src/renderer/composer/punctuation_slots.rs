@@ -122,7 +122,22 @@ fn slot(
     // 일반 한글 뒤 구두점의 기존 프로그램 계약과 HWP3 cmap 공급 규칙은 유지한다.
     let hanja_latin_punctuation =
         !styles.source_hwp3_native && inherited == 2 && ch.is_ascii_punctuation();
-    if supplied_latin_punctuation || hanja_latin_punctuation {
+    // 한글 HFT가 다른 자리에 선언한 영문 전용 HFT의 확인된 구두점을
+    // 상속하지 않는다. 원본 폭 근거가 없는 글자와 실제 TTF 치환은 기존 경로를 탄다.
+    let measured_latin_punctuation = inherited == 0
+        && ch.is_ascii_punctuation()
+        && style.source_hft_for_lang(0)
+        && style.source_hft_for_lang(1)
+        && style.original_glyph_metric_face_for_lang(1).is_some_and(|face| {
+            use crate::renderer::font_metrics_data::{
+                declared_original_glyph_advance_em, find_metric,
+            };
+            find_metric(face, style.bold, style.italic)
+                .is_some_and(|metric| metric.metric.hangul.is_none())
+                && declared_original_glyph_advance_em(face, style.bold, style.italic, ch)
+                    .is_some()
+        });
+    if supplied_latin_punctuation || hanja_latin_punctuation || measured_latin_punctuation {
         1
     } else if style.explicit_latin_slot && super::is_latin_slot_punct(ch) {
         1

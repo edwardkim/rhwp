@@ -5575,6 +5575,10 @@ fn ensure_hwp3_default_outline_numbering(
     for (head, number_format) in numbering.heads.iter_mut().zip(formats) {
         *head = NumberingHead {
             number_format,
+            // HWP3 개요 번호(표 62)는 실제 번호 뒤에서 본문이 이어진다.
+            // 한컴 변환본도 번호를 본문 앞의 문자로 저장한다. 변환한 번호 정의는
+            // 참조 한 자리 칸이 아닌 현재 번호의 전진을 공통 조판에서 소비한다.
+            attr: 1 << 2,
             // HWP3 기본 개요는 문단 글자 모양을 따르며 문서의 0번을 참조하지 않는다.
             char_shape_id: u32::MAX,
             ..Default::default()
