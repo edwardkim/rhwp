@@ -57,7 +57,6 @@ const DEDICATED_SLOW_FIXTURES: &[&str] = &["issue2063_huge_cellbreak_table.hwp"]
 const DEFERRED_CELL_OVERFLOW_FIXTURES: &[&str] = &[
     // 사용자 요청: 아래 세 HWPX의 조판 보정은 다른 브랜치에서 진행한다.
     "table_giant_cell_overfill.hwpx",
-    "issue5792/2700727_animal_facility_standards.hwpx",
     "issue6035/cgmp_evaluation_table.hwpx",
 ];
 
