@@ -115,6 +115,40 @@ pub(super) fn line_at_dpi(fs: f64, dpi: f64) -> Option<(f64, f64)> {
     Some((height, height * 0.86))
 }
 
+/// 원본 face의 큰 연산자 상자처럼 em 상자를 세로 가운데에 둔 상자의 기준선 높이.
+/// em 상자의 올림은 0.855em이다. #8927 첨부 한컴 2020 실측의 한계값 없는 `{sum}`
+/// 32개 글자 크기와 한계값이 붙은 `sum`·`prod` 17건의 기준선에서 확인했다.
+pub(super) fn centered_line_ascent(height: f64, fs: f64) -> f64 {
+    (height - fs) / 2.0 + fs * 0.855
+}
+
+/// 같은 기준선에 놓인 가로 글줄의 자식 프레임을 합친다.
+///
+/// 저장 프레임의 기준선은 높이의 정수 %라서, 표에서 복원한 올림·내림에는 각 프레임 높이의
+/// 0.5%까지 양자화 오차가 있다. 가장 높은 프레임이 다른 자식을 이 오차 안에서 모두 품으면
+/// 그 프레임을 그대로 쓴다. 오차를 각자 최댓값으로 더하면 한컴보다 높아진다
+/// (#8927 첨부 실측, 10pt `a ^{2} + b ^{2} = c ^{2}`: 1172HU, 한컴 1163HU = 단일 위첨자 프레임).
+/// 품지 못하면 종전처럼 올림·내림의 최댓값을 더한다.
+pub(super) fn combine_row_frames(frames: &[(f64, f64)]) -> (f64, f64) {
+    let Some(&(height, baseline)) = frames.iter().max_by(|a, b| a.0.total_cmp(&b.0)) else {
+        return (0.0, 0.0);
+    };
+    let absorbed = frames.iter().all(|&(h, b)| {
+        let tolerance = (h + height) * 0.005 + 1e-6;
+        b <= baseline + tolerance && h - b <= height - baseline + tolerance
+    });
+    if absorbed {
+        return (height, baseline);
+    }
+    let mut ascent = 0.0_f64;
+    let mut descent = 0.0_f64;
+    for &(h, b) in frames {
+        ascent = ascent.max(b);
+        descent = descent.max(h - b);
+    }
+    (ascent + descent, ascent)
+}
+
 /// 일반 글자 분수의 독립 프레임. 22pt는 정상 저장/Print에서 추가 확인했다.
 pub(super) fn fraction_at_dpi(fs: f64, dpi: f64) -> Option<(f64, f64)> {
     if let Some(metrics) = for_size_at_dpi(fs, dpi) {

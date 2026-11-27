@@ -126,7 +126,11 @@ fn insert_equation_adds_control() {
     assert_ne!(equation.common.instance_id & 0x4000_0000, 0);
     assert_eq!(equation.common.instance_id & 0x8000_0000, 0);
     assert_eq!(equation.common.description, "수식입니다.");
-    assert_eq!(equation.baseline, 85);
+    // [#8927] 기준선은 상수 85가 아니라 한컴이 조판하는 값이다. 10pt 한 줄 수식의 한컴 프레임은
+    // 높이 975HU·기준선 86%다(이슈 첨부 한글 2020 재조판본의 `a times b`, 두 수식 글꼴 공통;
+    // 같은 첨부 실측 CSV의 `a+b` 10pt도 975HU·86%). 폭은 글꼴별 전진폭이라 여기서 고정하지 않는다.
+    assert_eq!(equation.common.height, 975);
+    assert_eq!(equation.baseline, 86);
     assert_eq!(equation.version_info, "Equation Version 60");
     assert_eq!(equation.font_name, "HYhwpEQ");
     let _ = std::fs::remove_file(&out);

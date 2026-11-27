@@ -681,6 +681,14 @@ impl EqLayout {
     }
 
     fn layout_math_symbol(&self, text: &str, fs: f64) -> LayoutBox {
+        if (self.hancom_math_face || self.hancom_eqn)
+            && !self.legacy_math_face
+            && !self.legacy_hft_metrics
+        {
+            if let Some(slot) = delimiter_advance::floor_ceil(text, fs, self.dpi) {
+                return self.centered_symbol(text, fs, slot);
+            }
+        }
         if let Some(layout) =
             self.layout_hancom_glyphs(text, super::hancom_glyphs::Role::SmallOperator, fs, 0.0)
         {
@@ -800,6 +808,42 @@ impl EqLayout {
             }
         } else {
             symbol
+        }
+    }
+
+    /// 표시 글리프는 그대로 두고 논리 전진 칸의 가운데에 놓는다.
+    /// 칸 양쪽의 여백은 관계 기호와 같은 방식으로 공통 배치 결과에 보존한다.
+    fn centered_symbol(&self, text: &str, fs: f64, slot: f64) -> LayoutBox {
+        let glyph_width = glyph_advances::text_width(text, fs)
+            .unwrap_or_else(|| estimate_text_width(text, fs, false))
+            .min(slot);
+        let side = (slot - glyph_width) / 2.0;
+        let space = |x| LayoutBox {
+            font_size: fs,
+            x,
+            y: 0.0,
+            width: side,
+            height: fs,
+            baseline: fs * TEXT_BASELINE,
+            kind: LayoutKind::Space(side),
+        };
+        let glyph = LayoutBox {
+            font_size: fs,
+            x: side,
+            y: 0.0,
+            width: glyph_width,
+            height: fs,
+            baseline: fs * TEXT_BASELINE,
+            kind: LayoutKind::MathSymbol(text.to_string()),
+        };
+        LayoutBox {
+            font_size: fs,
+            x: 0.0,
+            y: 0.0,
+            width: slot,
+            height: fs,
+            baseline: fs * TEXT_BASELINE,
+            kind: LayoutKind::Row(vec![space(0.0), glyph, space(side + glyph_width)]),
         }
     }
 
