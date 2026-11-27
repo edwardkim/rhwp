@@ -1,12 +1,24 @@
 //! 검사 유형: 관계형(저장 위치·중첩 표 소속·호스트 외곽선과 전진).
-//! 주석 갱신: 2026-11-26 10:37:45 KST. 직전 변경: 2026-10-11 22:35:43 +0900, 4c9026ccb9b25481a01f338ea28649faf7934e65.
-//! 측정: 2026-11-26, 한컴 2020 Print PDFium 96dpi, compat2022, 색상 경계 보정 전 2px raw.
-//! overlay-top.hwpx 전 1쪽의 Native 최저 98.26654%, fresh WASM 최저 98.26675%.
-//! overlay-center.hwpx와 overlay-bottom.hwpx는 각각 전 1쪽이고 두 경로가 모두 100.00%다.
-//! 원본은 samples/stored-nested-content-flow/overlay-*.hwpx이고 기준은 pdf/pr7200/pr7200-overlay-*-2020.pdf다.
-//! Top 전쪽 TSV SHA-256은 양 경로 모두 cb13a0a74f0e149dc35c2f202b4eb735757596c664e2b0a73afff14cbd2f8ec3이다.
-//! 증거는 mydocs/working/task_m100_7777_stage1.md의 #7787 기록과
-//! output/pr-review/issues7777-7787/merged-cbebdbeeca/7787-candidate/{native,wasm}-host-placement.json에 있다.
+//! 주석 갱신: 2026-11-27 17:57:02 KST. 직전 변경: 2026-10-11 22:35:43 +0900, 4c9026ccb9b25481a01f338ea28649faf7934e65.
+//! 측정: 2026-11-27, 한컴 2020 Print PDFium 96dpi, compat2022, 색상 경계 보정 전 2px raw.
+//! 7787-top 전 1쪽 최저는 Native 98.27%, fresh WASM 98.27%였다.
+//! 1쪽은 Native 98.27%, fresh WASM 98.27%였다.
+//! 원본은 samples/stored-nested-content-flow/overlay-top.hwpx이다.
+//! 독립 Print PDF는 pdf/pr7200/pr7200-overlay-top-2020.pdf다.
+//! 전쪽 TSV는 mydocs/pr/assets/issues7777_7787/native/7787-top/silhouette.tsv에 있다.
+//! 전쪽 TSV는 mydocs/pr/assets/issues7777_7787/wasm/7787-top/silhouette.tsv에 있다.
+//! 7787-center 전 1쪽 최저는 Native 100.00%, fresh WASM 100.00%였다.
+//! 1쪽은 Native 100.00%, fresh WASM 100.00%였다.
+//! 원본은 samples/stored-nested-content-flow/overlay-center.hwpx이다.
+//! 독립 Print PDF는 pdf/pr7200/pr7200-overlay-center-2020.pdf다.
+//! 전쪽 TSV는 mydocs/pr/assets/issues7777_7787/native/7787-center/silhouette.tsv에 있다.
+//! 전쪽 TSV는 mydocs/pr/assets/issues7777_7787/wasm/7787-center/silhouette.tsv에 있다.
+//! 7787-bottom 전 1쪽 최저는 Native 100.00%, fresh WASM 100.00%였다.
+//! 1쪽은 Native 100.00%, fresh WASM 100.00%였다.
+//! 원본은 samples/stored-nested-content-flow/overlay-bottom.hwpx이다.
+//! 독립 Print PDF는 pdf/pr7200/pr7200-overlay-bottom-2020.pdf다.
+//! 전쪽 TSV는 mydocs/pr/assets/issues7777_7787/native/7787-bottom/silhouette.tsv에 있다.
+//! 전쪽 TSV는 mydocs/pr/assets/issues7777_7787/wasm/7787-bottom/silhouette.tsv에 있다.
 //!
 //! 저장 위치가 없는 셀의 세로 정렬과 본문 표 뒤 흐름의 독립 합성 계약.
 //!

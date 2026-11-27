@@ -1,12 +1,13 @@
 //! 검사 유형: 관계형(수식과 본문의 문단 소속·순서, 수식 프레임과 클릭 소유·편집·저장 왕복).
-//! 주석 갱신: 2026-11-27 09:19:20 KST. 직전 변경: 2026-11-27 08:29:03 +0900, 397546258e81783af0f325a1aa5c3f7838a11882.
-//! 측정: 2026-11-26, 한컴 2024 Print PDFium 96dpi, compat2024, 색상 경계 보정 전 2px raw.
-//! 원본 HML 전 1쪽에서 Native와 fresh WASM 모두 최저 100.00%. 수식 네 개를 독립 Print와 확대 대조했다.
-//! 원본은 samples/hml/exambank_math_equations_min.hml, 독립 PDF는
-//! samples/hml/exambank_math_equations_min-2024.pdf다.
-//! Native·fresh WASM 전쪽 TSV SHA-256: 75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466.
-//! 근거: mydocs/working/task_m100_7777_stage1.md의 #7785 Native·WASM 검증과
-//! output/pr-review/issues7777-7787/merged-cbebdbeeca/7785-verified-{native,wasm}/hml/.
+//! 주석 갱신: 2026-11-27 17:57:02 KST. 직전 변경: 2026-11-27 08:29:03 +0900, 397546258e81783af0f325a1aa5c3f7838a11882.
+//! 측정: 2026-11-27, 한컴 2024 Print PDFium 96dpi, compat2024, 색상 경계 보정 전 2px raw.
+//! 7785-hml 전 1쪽 최저는 Native 100.00%, fresh WASM 100.00%였다.
+//! 1쪽은 Native 100.00%, fresh WASM 100.00%였다.
+//! 원본은 samples/hml/exambank_math_equations_min.hml이다.
+//! 독립 Print PDF는 samples/hml/exambank_math_equations_min-2024.pdf다.
+//! 전쪽 TSV는 mydocs/pr/assets/issues7777_7787/native/7785-hml/silhouette.tsv에 있다.
+//! 전쪽 TSV는 mydocs/pr/assets/issues7777_7787/wasm/7785-hml/silhouette.tsv에 있다.
+//! 수식 네 개를 독립 Print와 확대 대조했다.
 
 #![cfg(not(target_arch = "wasm32"))]
 

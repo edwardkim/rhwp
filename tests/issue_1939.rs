@@ -1,12 +1,14 @@
 //! 관계형·고정형 회귀 — #7779의 Print 표 행 소속·겹침 방지와 정본 쪽수.
-//! 주석 갱신 2026-11-26T16:42:14+09:00. 직전 변경 bde419f3e927f629bb9c863cc55a448bc4175ca1
+//! 주석 갱신: 2026-11-27 17:57:02 KST. 직전 변경 bde419f3e927f629bb9c863cc55a448bc4175ca1
 //! (2026-07-13T22:25:38+09:00).
-//! 2026-11-26 한컴 2020 Print(82쪽), 96 DPI, 색상 경계 보정 전 2px 실루엣.
-//! Native 6·7쪽 99.98390%·100.00%, 전쪽 최저 98.52319%.
-//! 브라우저 fresh WASM 6·7쪽 99.98741%·100.00%, 전쪽 최저 98.56858%.
-//! 독립 PDF: pdf/issue1891/76076-exact-input-hwp2020-20261004.pdf.
-//! 로컬 검증 자료: output/pr-review/issues7777-7787/merged-cbebdbeeca/
-//! aggregate-task-worktree/7779-visual-evidence/.
+//! 2026-11-27 한컴 2020 Print(82쪽), 96 DPI, 색상 경계 보정 전 2px 실루엣.
+//! 7779-76076-hwpx 전 82쪽 최저는 Native 98.52%, fresh WASM 98.53%였다.
+//! 6쪽은 Native 99.98%, fresh WASM 99.99%였다.
+//! 7쪽은 Native 100.00%, fresh WASM 100.00%였다.
+//! 원본은 samples/issue1891/76076_regulatory_analysis.hwpx이다.
+//! 독립 Print PDF는 pdf/issue1891/76076-exact-input-hwp2020-20261004.pdf다.
+//! 전쪽 TSV는 mydocs/pr/assets/issues7777_7787/native/7779-76076-hwpx/silhouette.tsv에 있다.
+//! 전쪽 TSV는 mydocs/pr/assets/issues7777_7787/wasm/7779-76076-hwpx/silhouette.tsv에 있다.
 //!
 //! Issue #1939 — HWP5-in-.hwpx 76076 strict render-diff 구조 안정성.
 //!

@@ -1,15 +1,14 @@
 //! 관계형: #2308 · #7784의 저장 중첩 표 폭과 33·34쪽 이어받기 소속을 검사한다.
-//! 주석 갱신: 2026-11-27 08:52:59 KST.
+//! 주석 갱신: 2026-11-27 17:57:02 KST.
 //! 직전 파일 변경: 2026-10-11T22:38:27+09:00 376e044028796a1c65d8f2b8923576b58bd7df60.
 //! 측정: 2026-11-27, 한컴 2024 Print PDFium 96 DPI, 색상 경계 보정 전 2px raw.
-//! 33·34쪽은 Native 99.99%·99.93%, fresh WASM 99.99%·99.93%였다.
-//! 전 82쪽 최저값은 Native 98.91%, fresh WASM 98.94%였다.
-//! 원본은 samples/76076_regulatory_analysis.hwp, 독립 PDF는
-//! pdf/issue1891/76076-original-hwp-exact-2024-20261005.pdf다.
-//! 전쪽 TSV SHA-256: Native 554c7d16163bb57b4a671b2bf89d9db23d8d028932eac84c71e5c0b865fe0c18,
-//! fresh WASM de078bee1e8068e55c703ec1b2330c9be9fed5a6e946f1329aa2976325196c7f.
-//! 확대 판독·쪽 소속 결과는 output/pr-review/issues7777-7787/rebase-3fdaa04258/
-//! rebase-preview-28541762d2/76076-owned-line-audit의 7784 33·34쪽 비교 JSON에 있다.
+//! 7784-76076-hwp 전 82쪽 최저는 Native 98.91%, fresh WASM 98.94%였다.
+//! 33쪽은 Native 99.99%, fresh WASM 99.99%였다.
+//! 34쪽은 Native 99.93%, fresh WASM 99.93%였다.
+//! 원본은 samples/76076_regulatory_analysis.hwp이다.
+//! 독립 Print PDF는 pdf/issue1891/76076-original-hwp-exact-2024-20261005.pdf다.
+//! 전쪽 TSV는 mydocs/pr/assets/issues7777_7787/native/7784-76076-hwp/silhouette.tsv에 있다.
+//! 전쪽 TSV는 mydocs/pr/assets/issues7777_7787/wasm/7784-76076-hwp/silhouette.tsv에 있다.
 
 use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};

@@ -1,14 +1,14 @@
 //! 검사 유형: 관계형(본문·표·꼬리말 소속과 순서), 고정형(독립 Print 쪽수·꼬리말 기준선).
-//! 주석 갱신: 2026-11-26 10:26:12 KST.
-//! 측정: 2026-11-26, 한컴 2020 Print PDFium 96dpi, compat2022, 색상 경계 보정 전 2px raw.
-//! 37787 원본 전 49쪽에서 Native 최저 99.21195%, fresh WASM 최저 99.14043%.
-//! 14·27쪽은 Native/fresh WASM 각각 100.00%이며 독립 PDF 꼬리말 기준선은 두 쪽 1081.69784px.
-//! 원본은 samples/issue5699/37787_regulatory_impact.hwp, 독립 PDF는
-//! pdf/issue5699/37787_regulatory_impact-2020.pdf다.
-//! 전쪽 TSV SHA-256: Native 66cf7ddc746b6dab6d407e2ad92b377a62c9bbda248a5073f7dac9f22443262f,
-//! fresh WASM 3c3aa9e42d00900705b2b11b13a36d34c6637af831afa60013f1620f2ddf0679.
-//! 증거는 mydocs/working/task_m100_7777_stage1.md의 #7777 둘째 후보 측정과
-//! output/pr-review/issues7777-7787/merged-cbebdbeeca/7777-v2-candidate/{native,wasm,native-review,wasm-review}에 있다.
+//! 주석 갱신: 2026-11-27 17:57:02 KST.
+//! 측정: 2026-11-27, 한컴 2020 Print PDFium 96dpi, compat2022, 색상 경계 보정 전 2px raw.
+//! 7777-37787 전 49쪽 최저는 Native 99.21%, fresh WASM 99.14%였다.
+//! 14쪽은 Native 100.00%, fresh WASM 100.00%였다.
+//! 27쪽은 Native 100.00%, fresh WASM 100.00%였다.
+//! 원본은 samples/issue5699/37787_regulatory_impact.hwp이다.
+//! 독립 Print PDF는 pdf/issue5699/37787_regulatory_impact-2020.pdf다.
+//! 전쪽 TSV는 mydocs/pr/assets/issues7777_7787/native/7777-37787/silhouette.tsv에 있다.
+//! 전쪽 TSV는 mydocs/pr/assets/issues7777_7787/wasm/7777-37787/silhouette.tsv에 있다.
+//! 독립 PDF 꼬리말 기준선은 14·27쪽에서 1081.69784px였다.
 
 #![cfg(not(target_arch = "wasm32"))]
 

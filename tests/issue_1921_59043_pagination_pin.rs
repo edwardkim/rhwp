@@ -1,18 +1,23 @@
 //! 관계형(표·본문·제목의 쪽 소속과 배치 순서)·고정형(독립 Print의 전체 쪽수).
-//! 주석 갱신 2026-11-27 02:34:41 KST. 직전 변경 2026-10-04 19:03:36 KST, 731de9e1b4bb946d76f35108ed7e186ebe4ebecb.
+//! 주석 갱신: 2026-11-27 17:57:02 KST. 직전 변경 2026-10-04 19:03:36 KST, 731de9e1b4bb946d76f35108ed7e186ebe4ebecb.
 //!
-//! #7778의 35–37쪽 검사는 후보 55c221abd1의 한컴 Print PDF를 기준으로 복원했다.
+//! #7778에서 35–37쪽의 중첩 표와 후속 본문의 순서를 확인했다.
 //! 2026-11-27, 96 DPI, 색상 경계 보정 전 2px 실루엣.
-//! 전 37쪽 최저 Native / fresh WASM은 한컴 2022에서 98.48% / 98.44%,
-//! 한컴 2024에서 98.16% / 98.16%였다. 36·37쪽은 두 쪽 모두 한컴 2022에서
-//! 100.00% / 99.99%, 한컴 2024에서 99.96% / 99.96%였다.
-//! 확대 대조에서 36쪽의 두 제목과 37쪽 본문 표의 순서를 확인했다.
+//! 7778-2022-print 전 37쪽 최저는 Native 98.48%, fresh WASM 98.44%였다.
+//! 36쪽은 Native 100.00%, fresh WASM 99.99%였다.
+//! 37쪽은 Native 100.00%, fresh WASM 99.99%였다.
 //! 원본은 samples/issue1921/59043_regulatory_analysis.hwp이다.
-//! 기준 PDF는 pdf/issue1921/59043_regulatory_analysis-2022.pdf와
-//! pdf/semanticist21-20261123/59043_regulatory_analysis-2024.pdf이다.
-//! 결과는 output/pr-review/issues7777-7787/rebase-3fdaa04258 아래에 있다.
-//! Native TSV는 7778-p15-isolation/integrated-55c221abd1, WASM TSV는 fresh-wasm-55c221abd1,
-//! 확대 비교는 7778-review-55c221abd1에서 확인할 수 있다.
+//! 독립 Print PDF는 pdf/issue1921/59043_regulatory_analysis-2022.pdf다.
+//! 전쪽 TSV는 mydocs/pr/assets/issues7777_7787/native/7778-2022-print/silhouette.tsv에 있다.
+//! 전쪽 TSV는 mydocs/pr/assets/issues7777_7787/wasm/7778-2022-print/silhouette.tsv에 있다.
+//! 7778-2024-print 전 37쪽 최저는 Native 98.16%, fresh WASM 98.16%였다.
+//! 36쪽은 Native 99.96%, fresh WASM 99.96%였다.
+//! 37쪽은 Native 99.96%, fresh WASM 99.96%였다.
+//! 원본은 samples/issue1921/59043_regulatory_analysis.hwp이다.
+//! 독립 Print PDF는 pdf/semanticist21-20261123/59043_regulatory_analysis-2024.pdf다.
+//! 전쪽 TSV는 mydocs/pr/assets/issues7777_7787/native/7778-2024-print/silhouette.tsv에 있다.
+//! 전쪽 TSV는 mydocs/pr/assets/issues7777_7787/wasm/7778-2024-print/silhouette.tsv에 있다.
+//! 확대 대조에서 36쪽의 두 제목과 37쪽 본문 표의 순서를 확인했다.
 //!
 //! Issue #1921 — 59043 규제영향분석서 페이지네이션 드리프트 핀.
 //!
