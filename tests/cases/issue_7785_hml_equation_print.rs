@@ -1,5 +1,5 @@
-//! 검사 유형: 관계형(수식과 본문의 문단 소속·순서, 수식 프레임과 편집·저장 왕복).
-//! 주석 갱신: 2026-11-26 11:24:47 KST.
+//! 검사 유형: 관계형(수식과 본문의 문단 소속·순서, 수식 프레임과 클릭 소유·편집·저장 왕복).
+//! 주석 갱신: 2026-11-27 09:19:20 KST. 직전 변경: 2026-11-27 08:29:03 +0900, 397546258e81783af0f325a1aa5c3f7838a11882.
 //! 측정: 2026-11-26, 한컴 2024 Print PDFium 96dpi, compat2024, 색상 경계 보정 전 2px raw.
 //! 원본 HML 전 1쪽에서 Native와 fresh WASM 모두 최저 100.00%. 수식 네 개를 독립 Print와 확대 대조했다.
 //! 원본은 samples/hml/exambank_math_equations_min.hml, 독립 PDF는
@@ -157,7 +157,13 @@ fn print_retains_equation_order_and_body_ownership() {
     for (control, (owner, _)) in selectable.into_iter().zip(SOURCE_OWNERS) {
         assert_eq!(control["paraIdx"].as_u64(), Some(owner as u64));
         assert_eq!(control["controlIdx"].as_u64(), Some(0));
-        assert!(control["w"].as_f64().unwrap() > 0.0 && control["h"].as_f64().unwrap() > 0.0);
+        let width = control["w"].as_f64().unwrap();
+        let height = control["h"].as_f64().unwrap();
+        assert!(width > 0.0 && height > 0.0);
+        let x = control["x"].as_f64().unwrap() + width / 2.0;
+        let y = control["y"].as_f64().unwrap() + height / 2.0;
+        let hit: Value = serde_json::from_str(&core.hit_test_native(0, x, y).unwrap()).unwrap();
+        assert_eq!(hit["paragraphIndex"].as_u64(), Some(owner as u64), "{hit}");
     }
 }
 

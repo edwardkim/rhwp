@@ -1640,6 +1640,10 @@ impl DocumentCore {
         if let Some(hit) = super::transformed_text::hit(&tree.root, page_num, x, y) {
             return Ok(hit);
         }
+        if let Some(hit) = super::flow_equation_hit::hit(&self.document, &tree.root, page_num, x, y)
+        {
+            return Ok(hit);
+        }
 
         // 문자 위치를 미리 계산한 TextRun 정보
         struct RunInfo {
