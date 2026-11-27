@@ -800,6 +800,23 @@ impl LayerBuilder {
                             .or_else(|| {
                                 if self.profile != RenderProfile::Print
                                     || self.hancom2024_print_bitmap
+                                    || self.shape_group_depth > 0
+                                    || image_fill_clip.is_some()
+                                    || image.source_rect.is_some()
+                                {
+                                    return None;
+                                }
+                                let width =
+                                    self.page_context?.image_codec_width_points(&image, frame)?;
+                                crate::renderer::image_resolver::print_resampled_bitmap_window(
+                                    &image,
+                                    width,
+                                    self.print_png_rgb555,
+                                )
+                            })
+                            .or_else(|| {
+                                if self.profile != RenderProfile::Print
+                                    || self.hancom2024_print_bitmap
                                 {
                                     return None;
                                 }
@@ -827,7 +844,6 @@ impl LayerBuilder {
                                                 node.bbox.height * 72.0 / self.layout_dpi,
                                             ),
                                             self.shape_group_depth > 0,
-                                            self.print_png_rgb555,
                                         )
                                     })
                             })

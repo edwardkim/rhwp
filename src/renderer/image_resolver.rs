@@ -22,6 +22,7 @@ mod print_window;
 pub(crate) use print_tone::decode_print_jpeg_replay;
 pub(crate) use print_tone::print_bitmap_payload;
 mod print_bitmap_window;
+pub(crate) use print_bitmap_window::payload as print_resampled_bitmap_window;
 mod print_codec;
 mod print_fill_jpeg;
 mod print_picture_resample;

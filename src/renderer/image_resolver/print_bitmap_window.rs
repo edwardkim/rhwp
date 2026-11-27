@@ -10,7 +10,7 @@ use crate::renderer::render_tree::ImageNode;
 
 /// 창의 정수 경계와 출력 크기는 각각 원본 좌표와 창의 길이에서 구한다.
 /// 재표본화 필터는 실제 원본 안에 있는 창 바깥 픽셀도 소비한다.
-pub(super) fn payload(
+pub(crate) fn payload(
     image: &ImageNode,
     width_points: f64,
     print_png_rgb555: Option<bool>,
