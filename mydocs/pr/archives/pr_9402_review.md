@@ -37,14 +37,14 @@ fresh 브라우저 WASM의 실제 편집 API에서 HWP·HWPX 각각을 두 번 �
 Native·WASM 각 3쪽 모두 96 DPI 실루엣 raw 100.00%였다. 확대 비교에서도 새 행의 분할선과
 기존 텍스트의 행 소속을 확인했다.
 
-[한컴 위 삽입 저장본](assets/pr9402/hancom-above.hwpx) ·
-[한컴 위 삽입 Print](../../pdf/pr9402/hancom-above-2020.pdf) ·
-[인쇄 영수증](assets/pr9402/print-receipts.tsv) ·
-[전쪽 TSV](assets/pr9402/focused-print.tsv) ·
-[위 삽입 Native](assets/pr9402/above-native-direct.png) ·
-[위 삽입 브라우저](assets/pr9402/above-wasm-direct.png) ·
-[아래 삽입 Native](assets/pr9402/below-native-direct.png) ·
-[아래 삽입 브라우저](assets/pr9402/below-wasm-direct.png)
+[한컴 위 삽입 저장본](../assets/pr9402/hancom-above.hwpx) ·
+[한컴 위 삽입 Print](../../../pdf/pr9402/hancom-above-2020.pdf) ·
+[인쇄 영수증](../assets/pr9402/print-receipts.tsv) ·
+[전쪽 TSV](../assets/pr9402/focused-print.tsv) ·
+[위 삽입 Native](../assets/pr9402/above-native-direct.png) ·
+[위 삽입 브라우저](../assets/pr9402/above-wasm-direct.png) ·
+[아래 삽입 Native](../assets/pr9402/below-native-direct.png) ·
+[아래 삽입 브라우저](../assets/pr9402/below-wasm-direct.png)
 
 ### 최신 devel의 Studio 기능 확인
 
@@ -70,8 +70,32 @@ CI 통합 모듈 21개에서 총 4,227건이 통과했다. Rust fmt, Native·WAS
 | Native | 2,023 | 2,023 | 180 |
 | fresh WASM | 2,023 | 2,023 | 23 |
 
-[공식 하한 미달 203행](assets/pr9402/protected-existing-below.tsv)은 #9444에서 확인한
+[공식 하한 미달 203행](../assets/pr9402/protected-existing-below.tsv)은 #9444에서 확인한
 키·쪽·하한·표시값과 동일하다. 정본 하한과 허용치는 유지한다.
+
+## 병합 및 후속 기록
+
+수용 [PR #9457](https://github.com/edwardkim/rhwp/pull/9457)의 제출 head
+`3daba3871d0cfa508ddaca4cefd8f7ec6d370a5b`에서 [Build & Test](https://github.com/edwardkim/rhwp/actions/runs/46007155639),
+[Render Diff](https://github.com/edwardkim/rhwp/actions/runs/46007155407),
+[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/46007155315),
+[Adapter inter-diff](https://github.com/edwardkim/rhwp/actions/runs/46007155512),
+[Proptest roundtrip](https://github.com/edwardkim/rhwp/actions/runs/46007155389)과
+[CI Impact Policy](https://github.com/edwardkim/rhwp/actions/runs/46012340294)가 모두 성공했다.
+[셀프 리뷰](https://github.com/edwardkim/rhwp/pull/9457#pullrequestreview-6089310802) 뒤 일반 merge commit으로 병합했다.
+
+병합 커밋 `dda4affdb01d776e2dd2634930849a9d30009947`의 트리는 제출본과 같다.
+원 기여 커밋은 병합 이력에 포함됐고 [원 PR #9402](https://github.com/edwardkim/rhwp/pull/9402)는
+GitHub에서 MERGED로 반영됐다. 두 PR의 종료 대상 이슈 목록에는 연결된 이슈가 없다.
+[병합 후 nextest 갱신 실행](https://github.com/edwardkim/rhwp/actions/runs/46012584763)
+
+## Merge 후 contributor PR comment 계획
+
+원 PR #9402에 원 기여 수용, 테스트 이관 이유, 확인한 CI·로컬 회귀 수치를 한국어 존댓말로 남긴다.
+한컴 2020의 동일 표본에서 위·아래 삽입 결과를 검증한 Native·브라우저 확대 비교 4장을
+병합 SHA `dda4affdb01d776e2dd2634930849a9d30009947`의 raw URL로 고정한다. 원본을 포함한 양쪽 각 3쪽의 raw 100.00%를
+[전쪽 TSV](../assets/pr9402/focused-print.tsv)에 연결한다. 기준 보호 4,046쪽은 직전과 같았고,
+기존 하한 미달 203쪽을 이번 건에 한해 수용한 사실을 검토 기록에 보존한다.
 
 ## 최초 검토
 
