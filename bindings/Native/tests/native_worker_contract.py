@@ -124,15 +124,38 @@ def cell_edit_contract(library):
 
         edit("undo")
         assert_cell_text("1한글0")
+        cell_caret = select_cell(3, 3)
+        edit("setSelection", selection=cell_caret)
         expected = contents(snapshot())
 
-        def verify_save(format, signature, caret_policy):
-            saved = accepted(worker, {"op": "prepareSave", "target": target, "format": format})
-            data = worker.copy_buffer(saved)
-            assert data.startswith(signature) and saved["report"]["count"] == 0, saved
-            assert saved["caretPolicy"] == caret_policy, saved
-            accepted(worker, {"op": "acknowledgeSave", "documentId": target["documentId"],
-                              "token": saved["token"]})
+        hwp_signature = bytes.fromhex("d0cf11e0a1b11ae1")
+
+        def verify_save(file_format, signature, caret_policy, caret_saved, selection):
+            def prepare_and_acknowledge(save_worker, save_target):
+                before_save = accepted(save_worker, {"op": "info"})["info"]
+                assert before_save["selection"] == selection, before_save
+                saved = accepted(save_worker, {"op": "prepareSave", "target": save_target,
+                                               "format": file_format})
+                data = save_worker.copy_buffer(saved)
+                assert data.startswith(signature) and saved["report"]["count"] == 0, saved
+                assert saved["revision"] == save_target["revision"], saved
+                assert saved["caretPolicy"] == caret_policy, saved
+                assert saved["caretSaved"] is caret_saved, saved
+                assert accepted(save_worker, {"op": "info"})["info"] == before_save
+
+                status = accepted(save_worker, {"op": "acknowledgeSave",
+                                                  "documentId": save_target["documentId"],
+                                                  "token": saved["token"]})
+                assert status["status"] == {
+                    "revision": save_target["revision"], "savedRevision": save_target["revision"],
+                    "dirty": False,
+                }, status
+                assert accepted(save_worker, {"op": "info"})["info"] == {
+                    **before_save, "isDirty": False,
+                }
+                return data
+
+            data = prepare_and_acknowledge(worker, target)
             with NativeWorker(library) as verifier:
                 for pass_number in range(2):
                     reopened = verifier.wait(verifier.open_bytes(data))
@@ -142,24 +165,19 @@ def cell_edit_contract(library):
                                                   "request": {}})["snapshot"]
                     assert contents(receipt) == expected
                     if pass_number == 0:
-                        resaved = accepted(verifier, {"op": "prepareSave", "target": reopened_target,
-                                                       "format": format})
-                        data = verifier.copy_buffer(resaved)
-                        assert resaved["report"]["count"] == 0, resaved
+                        accepted(verifier, {"op": "beginEdit", "target": reopened_target,
+                                            "selection": selection})
+                        data = prepare_and_acknowledge(verifier, reopened_target)
                         accepted(verifier, {"op": "closeDocument", "target": reopened_target})
 
-        # HWP can save the edited cell content after the cursor moves to body text.
-        # HWP active-cell cursor persistence has its own format contract.
-        before_save = accepted(worker, {"op": "info"})["info"]
-        hwp = worker.wait(worker.submit({"op": "prepareSave", "target": target, "format": "hwp"}))
-        assert hwp["ok"] is False and hwp["code"] == "unsupported", hwp
-        assert accepted(worker, {"op": "info"})["info"] == before_save
-        verify_save("hwpx", b"PK", "hwpxSourceSettings")
+        verify_save("hwp", hwp_signature, "storedCore", False, cell_caret)
+        verify_save("hwpx", b"PK", "hwpxSourceSettings", False, cell_caret)
 
         body = before["nodes"][-1]
         assert body["role"] == "bodyParagraph" and body["text"] == "", body
-        edit("setSelection", selection={"anchor": body["start"], "focus": body["end"]})
-        verify_save("hwp", bytes.fromhex("d0cf11e0a1b11ae1"), "currentFocus")
+        body_caret = {"anchor": body["start"], "focus": body["end"]}
+        edit("setSelection", selection=body_caret)
+        verify_save("hwp", hwp_signature, "currentFocus", True, body_caret)
 
 
 def cell_ime_contract(library):

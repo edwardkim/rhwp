@@ -154,8 +154,10 @@ content-loss `report`, revision과 일회용 token을 반환한다. host가 보�
 보관 한도로 buffer를 반환하지 못하면 새 checkpoint를 취소하며 이전 superseded token은 복원하지 않는다.
 
 편집 세션은 활성 IME를 먼저 commit/cancel해야 저장할 수 있다. HWP는 현재 본문 focus를 export
-snapshot에만 기록한다. HWPX는 기존 serializer의 source settings.xml 또는 기본값 정책을 유지하며
-현재 focus 저장을 보장하지 않는다. `caretSaved`, `caretPreservedFromSource`, `caretPolicy`로
+snapshot에만 기록한다. 셀에 focus가 있으면 현재 셀 내용과 기존 HWP 커서 메타데이터를 저장하며,
+`caretPolicy: "storedCore"`와 `caretSaved: false`를 반환한다. 편집기의 라이브 선택은 유지된다.
+HWPX는 기존 serializer의 source settings.xml 또는 기본값 정책을 유지한다.
+`caretSaved`, `caretPreservedFromSource`, `caretPolicy`로
 실제 경로를 확인한다. caretPreservedFromSource는 원본 settings.xml 바이트가 있을 때만 true이며,
 그 안의 CaretPosition 존재나 현재 focus 저장까지 증명하지 않는다. 저장 확인은 편집 history를 지우지 않으며 undo 후에는 revision 기준 dirty다.
 
