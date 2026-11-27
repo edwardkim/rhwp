@@ -1,7 +1,6 @@
 use crate::model::control::Control;
 use crate::model::document::Document;
 use crate::model::shape::{TextWrap, VertRelTo};
-use crate::renderer::layout::LayoutEngine;
 use crate::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
 
 pub(super) fn hit(
@@ -12,17 +11,17 @@ pub(super) fn hit(
     y: f64,
 ) -> Option<String> {
     let point = BoundingBox::new(x, y, 0.0, 0.0);
-    let mut matches = Vec::new();
-    for body in &page.children {
-        if let RenderNodeType::Body { clip_rect } = &body.node_type {
-            if clip_rect.is_none_or(|clip| clip.contains(&point)) {
-                collect(document, body, &point, &mut matches);
-            }
-        }
-    }
-    let (node, section, paragraph, offset) = matches
-        .into_iter()
-        .max_by_key(|(node, ..)| LayoutEngine::paper_node_sort_key(node))?;
+    // Floating body equations are promoted to the page's paper layer.
+    // The layout already sorts its children from back to front.
+    let (node, section, paragraph, offset) = page
+        .children
+        .iter()
+        .rev()
+        .filter(|node| node.visible)
+        .find_map(|node| {
+            flow_anchor(document, node, &point)
+                .map(|(section, paragraph, offset)| (node, section, paragraph, offset))
+        })?;
     let frame = node.bbox;
     Some(
         serde_json::json!({
@@ -38,31 +37,6 @@ pub(super) fn hit(
         })
         .to_string(),
     )
-}
-
-fn collect<'a>(
-    document: &Document,
-    node: &'a RenderNode,
-    point: &BoundingBox,
-    matches: &mut Vec<(&'a RenderNode, usize, usize, usize)>,
-) {
-    if !node.visible
-        || matches!(
-            node.node_type,
-            RenderNodeType::Table(_)
-                | RenderNodeType::TableCell(_)
-                | RenderNodeType::TextBox
-                | RenderNodeType::Group(_)
-        )
-    {
-        return;
-    }
-    if let Some((section, paragraph, offset)) = flow_anchor(document, node, point) {
-        matches.push((node, section, paragraph, offset));
-    }
-    for child in &node.children {
-        collect(document, child, point, matches);
-    }
 }
 
 fn flow_anchor(
