@@ -1,7 +1,7 @@
-//! [#8506] 관계형 회귀 — 칸의 빈 호스트 문단(`[단 정의][제목 표][빈 글자처럼 취급 그림]`)에
+//! [#8506] 관계형·고정형 회귀 — 칸의 빈 호스트 문단(`[단 정의][제목 표][빈 글자처럼 취급 그림]`)에
 //! 문단 기준 자리차지로 놓인 제목 표는 저장 오프셋 프레임으로 칸 내용과 행 높이를 정한다.
 //!
-//! 주석 갱신: 2026-11-27 18:30 KST(+09:00), 새 파일.
+//! 주석 갱신 2026-11-28T07:34:34+09:00. 직전 파일 커밋 2026-11-28T07:20:22+09:00 34d8ed2f9b38479d2ae91de4e9e47f3dae47bc28.
 //!
 //! - 입력: `samples/issue8506/36410942_approval_cover_title.hwpx` — 공개 결재문서 36410942
 //!   (한/글 2020 11.0.0.8227 저장 HWPX, 2쪽). 1쪽 바깥 4×1 글자처럼 취급 표의 r=1 칸(세로 가운데,
@@ -12,7 +12,7 @@
 //!   바깥 표 상자 `sz height` 74706HU = 선언 행 합 + 533HU — r=1 칸이 표 띠(오프셋 + 바깥 여백
 //!   위·아래 + 본체 + 안 여백 = 18304HU)로 자란 만큼이다.
 //!
-//! 측정: 2026-11-27, `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96`
+//! 원 PR 측정: 2026-11-27, `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96`
 //! (`silhouette_raw_match_percent`, 색상 경계 보정 전 2px 실루엣), base devel `3e97980785`.
 //!
 //! | 쪽 | Native base | Native head | fresh WASM base | fresh WASM head |
@@ -22,11 +22,12 @@
 //!
 //! 전체 2쪽 = PDF 2쪽. head 전쪽 최저 Native 97.65(2쪽)·fresh WASM 98.20(2쪽). Native 2쪽은 수정 전후
 //! 같은 값이며 배치·줄바꿈 일치, 글꼴(`HY신명조`·`HY견고딕`·`HY중고딕`·`휴먼명조` 미공급) 차이만 남는다.
-//! 증거: `mydocs/pr/assets/issue_8506/{native,wasm,base-native,base-wasm}/`.
+//! 증거: `mydocs/pr/assets/issue_8506/{native,wasm,native-base,wasm-base}/`.
 //!
 //! 검사(관계형): 제목 표 위끝 = 칸 위 + 안 위 여백 + 오프셋 + 바깥 위 여백, 제목 표 높이 = 선언,
 //! 제목 표와 바깥 여백·안 아래 여백이 칸 안에 담김, 다음 칸은 r=1 칸 바로 뒤, 바깥 표 높이 = 저장
 //! 표 상자 높이, 제목 두 줄이 제목 표 안에 차례로 놓임.
+//! 검사(고정형): 독립 한/글 2020 Print와 동일한 총 2쪽.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;

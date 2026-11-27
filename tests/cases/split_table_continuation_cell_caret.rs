@@ -1,5 +1,7 @@
-//! 쪽에서 나뉜 표의 뒤쪽 조각에만 놓인 칸은 첫 문단이 글자처럼 둔 중첩 표만 품어도 캐럿 자리가 있다.
-//! 전에는 빈 칸 대체 경로가 표 첫 쪽만 뒤져 "셀 커서 위치를 찾을 수 없습니다"로 실패했다.
+//! 관계형 회귀 — 뒤쪽 조각에만 있는 표 셀의 캐럿은 앞쪽 셀보다 뒤쪽에 놓인다.
+//! 주석 갱신 2026-11-28T07:34:34+09:00. 직전 파일 커밋 2026-11-28T07:20:14+09:00 7664a3ea5ccb01e57b31352d2f484f4e78c6a0cf.
+//! 입력: tests/fixtures/issue7419-boundaries/partial-nested-wrapper.hwpx. 캐럿 조회 API의 쪽 소속을 검증한다.
+//! 검사 대상은 캐럿의 쪽 인덱스이며 시각 일치율 측정은 해당하지 않는다. 근거: mydocs/pr/archives/pr_9474_review.md.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::wasm_api::HwpDocument;
