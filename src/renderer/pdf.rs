@@ -2475,6 +2475,31 @@ pub fn layer_trees_to_pdf_with_annotations(
     destinations: &[Vec<super::hyperlinks::PdfNamedDestination>],
     options: &DirectPdfExportOptions,
 ) -> Result<Vec<u8>, String> {
+    let mut output = Vec::new();
+    write_layer_trees_pdf_with_annotations(
+        layer_trees,
+        links,
+        destinations,
+        options,
+        &mut output,
+        || {
+            crate::renderer::skia::SkiaLayerRenderer::new()
+                .with_font_paths(options.font_paths.as_slice())
+        },
+    )?;
+    check_complete_pdf(&output)?;
+    Ok(output)
+}
+
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+pub(crate) fn write_layer_trees_pdf_with_annotations(
+    layer_trees: &[impl std::borrow::Borrow<crate::paint::PageLayerTree>],
+    links: &[Vec<super::hyperlinks::PdfLink>],
+    destinations: &[Vec<super::hyperlinks::PdfNamedDestination>],
+    options: &DirectPdfExportOptions,
+    output: &mut impl std::io::Write,
+    create_renderer: impl FnOnce() -> crate::renderer::skia::SkiaLayerRenderer,
+) -> Result<(), String> {
     if links.len() != layer_trees.len() {
         return Err("PDF 페이지와 링크 목록의 길이가 다릅니다".into());
     }
@@ -2494,6 +2519,7 @@ pub fn layer_trees_to_pdf_with_annotations(
         .iter()
         .enumerate()
         .map(|(page_index, tree)| {
+            let tree = tree.borrow();
             validate_direct_pdf_tree(tree, page_index)?;
             Ok((
                 direct_pdf_validation::page_dimension(tree.page_width, true)
@@ -2514,19 +2540,16 @@ pub fn layer_trees_to_pdf_with_annotations(
         raster_dpi: Some(options.raster_dpi),
         ..Default::default()
     };
-    let renderer = crate::renderer::skia::SkiaLayerRenderer::new()
-        .with_font_paths(options.font_paths.as_slice())
-        .for_pdf();
-    let mut output = Vec::new();
-
+    let renderer = create_renderer().for_pdf();
     {
-        let mut document = skia_safe::pdf::new_document(&mut output, Some(&metadata));
+        let mut document = skia_safe::pdf::new_document(output, Some(&metadata));
         for (page_index, ((tree, &(width, height)), links)) in layer_trees
             .iter()
             .zip(page_sizes.iter())
             .zip(links)
             .enumerate()
         {
+            let tree = tree.borrow();
             let mut page = document.begin_page((width, height), None);
             let canvas = page.canvas();
             canvas.clear(skia_safe::Color::WHITE);
@@ -2570,11 +2593,15 @@ pub fn layer_trees_to_pdf_with_annotations(
         }
         document.close();
     }
+    Ok(())
+}
 
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+pub(crate) fn check_complete_pdf(output: &[u8]) -> Result<(), String> {
     if !output.starts_with(b"%PDF-") || !output.windows(5).any(|window| window == b"%%EOF") {
         return Err("Skia direct PDF writer returned an incomplete document".to_string());
     }
-    Ok(output)
+    Ok(())
 }
 
 #[cfg(all(test, not(target_arch = "wasm32")))]
