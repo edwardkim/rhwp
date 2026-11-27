@@ -1,19 +1,29 @@
 using Microsoft.UI.Xaml;
+using Microsoft.Windows.AppLifecycle;
+using Windows.ApplicationModel.Activation;
+using Windows.Storage;
 
 namespace Rhwp.WinUI;
 
 public partial class App : Application
 {
-    private Window? window;
+    private MainWindow? window;
 
     public App()
     {
         InitializeComponent();
     }
 
-    protected override void OnLaunched(LaunchActivatedEventArgs args)
+    protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
-        window ??= new MainWindow();
-        window.Activate();
+        MainWindow current = window ??= new MainWindow();
+        current.Activate();
+
+        var activation = AppInstance.GetCurrent().GetActivatedEventArgs();
+        string? path = activation?.Data is IFileActivatedEventArgs files
+            ? FileActivation.FirstDocumentPath(files.Files.OfType<StorageFile>().Select(file => file.Path))
+            : FileActivation.FirstDocumentPath(Environment.GetCommandLineArgs().Skip(1));
+        if (path is not null)
+            await current.OpenFileAsync(path);
     }
 }

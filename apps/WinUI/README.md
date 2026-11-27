@@ -39,6 +39,14 @@ ID·revision·글꼴 세대와 픽셀 원점을 확인한 후 RGBA를 BGRA premu
 창을 닫을 때는 native worker 종료를 확인하고 handle을 해제합니다.
 [WinUI 비트맵 형식](https://learn.microsoft.com/en-us/windows/apps/develop/media-authoring-processing/imaging)
 
+앱 창에 HWP/HWPX 파일을 놓거나 실행 파일에 경로를 인수로 넘겨도 같은 열기 경로를 사용합니다.
+파일 연결을 이미 설정한 Windows에서는 전달받은 파일 활성화도 처리합니다.
+[Windows 파일 활성화](https://learn.microsoft.com/en-us/windows/apps/develop/launch/app-lifecycle)
+
+```powershell
+& (Join-Path $out "Rhwp.WinUI.exe") (Resolve-Path ".\문서.hwpx").Path
+```
+
 ## 검증
 
 기존 Skia 공유 라이브러리 경로를 지정해 관리 디스패처를 검사할 수 있습니다. 예시는 Linux입니다.

@@ -5,8 +5,10 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Windows.Storage.Pickers;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Graphics.Imaging;
 using Windows.Security.Cryptography;
+using Windows.Storage;
 
 namespace Rhwp.WinUI;
 
@@ -66,9 +68,48 @@ public sealed partial class MainWindow : Window
             await OpenFileAsync(path);
     }
 
-    internal Task OpenFileAsync(string path) =>
-        ChangeDocumentAsync(token => worker.OpenAsync(path, token),
+    internal Task OpenFileAsync(string path) => closing
+        ? Task.CompletedTask
+        : ChangeDocumentAsync(token => worker.OpenAsync(path, token),
             Path.GetFileName(path), resetZoom: true);
+
+    private void OnFilesDragOver(object sender, DragEventArgs args)
+    {
+        if (!closing && args.DataView.Contains(StandardDataFormats.StorageItems))
+        {
+            args.AcceptedOperation = DataPackageOperation.Copy;
+            args.Handled = true;
+        }
+    }
+
+    private async void OnFilesDropped(object sender, DragEventArgs args)
+    {
+        if (closing || !args.DataView.Contains(StandardDataFormats.StorageItems))
+            return;
+
+        args.Handled = true;
+        var deferral = args.GetDeferral();
+        string? path = null;
+        try
+        {
+            var files = await args.DataView.GetStorageItemsAsync();
+            path = FileActivation.FirstDocumentPath(files.OfType<StorageFile>().Select(file => file.Path));
+            if (path is null && !closing)
+                StatusText.Text = "HWP 또는 HWPX 파일을 놓으세요.";
+        }
+        catch (Exception error)
+        {
+            if (!closing)
+                StatusText.Text = "놓은 파일을 읽을 수 없습니다. " + error.Message;
+        }
+        finally
+        {
+            deferral.Complete();
+        }
+
+        if (path is not null)
+            await OpenFileAsync(path);
+    }
 
     private async void OnCloseClicked(object sender, RoutedEventArgs args)
     {
