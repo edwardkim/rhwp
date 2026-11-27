@@ -1,0 +1,7 @@
+backend	case	page	silhouette_raw_match_percent
+native	source	1	100.00
+native	above	1	100.00
+native	below	1	100.00
+wasm	source	1	100.00
+wasm	above	1	100.00
+wasm	below	1	100.00
