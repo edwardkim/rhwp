@@ -84,6 +84,13 @@ PDF를 교체하기 전에 실패한다. 기존 PDF를 건너뛴 경우에는 �
 PDF 게시와 영수증 게시 사이에 중단된 경우 새 영수증 유무를 확인하고, 필요하면 해당
 `--source`만 `--refresh-existing`으로 다시 인쇄한다.
 
+한컴 2024 일반 인쇄는 `hancom2024_pdf_driver_one_up`과 `input_preprocess: "none"`을
+기록한다. 갱신기는 제공 client가 시작 요청에 전달한 옵션(시간 제한)을 남기고, 성공 상태와
+다운로드의 서버 기록에서 job ID, 제품 빌드, method 0, 모드, 전처리 표식, 쪽수를 대조한다.
+감사기는 원본 전처리 옵션이 사용됐거나 서버 표식·다운로드 근거가 빠진 영수증을 후보로 둔다.
+이전 2024 `frame_print_to_pdf_ex_one_up` 영수증은 기록된 `preprocess: null`로 판독한다.
+두 모드는 별도의 인쇄 경로다. [서버 응답과 동일 원본 대조](https://github.com/edwardkim/rhwp/issues/9370#issuecomment-7106131512)
+
 기여자는 PR에 실제 영수증의 저장소 상대 경로를 연결한다. 리뷰어는 그 경로를 셸 변수
 `receipt_path`에 지정하고 다음 명령을 실행한 뒤
 `pairs`에서 같은 원본·PDF 경로의 `status`, `sampleHash`, `pdfHash`, `print`를 대조한다.
