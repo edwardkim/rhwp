@@ -177,7 +177,7 @@ fn issue_536_native_editor_replaces_one_cell_paragraph_and_restores_it() {
 }
 
 #[test]
-fn issue_536_native_editor_keeps_body_commands_and_protected_cells_read_only() {
+fn issue_536_native_editor_keeps_protected_cells_read_only() {
     let (mut editor, selection) = cell_editor(true);
     let mut sibling = selection.focus.clone();
     sibling.cell_path[0].cell = 1;
@@ -228,13 +228,17 @@ fn issue_536_native_editor_keeps_body_commands_and_protected_cells_read_only() {
             .execute_command(0, NativeEditCommand::SplitParagraph {})
             .map(|result| result.outcome),
         editor.begin_composition(0),
+        editor.paste_text(0, "새 내용"),
         editor.paste_text(0, "새\n내용"),
         editor.paste_html(0, "<p>새 내용</p>"),
     ] {
         assert!(matches!(result, Err(NativeHostError::Unsupported(_))));
     }
+    let copied = editor.copy_selection(0).unwrap();
+    assert_eq!(copied.plain_text, "😀");
+    assert_eq!(copied.html, None);
     assert!(matches!(
-        editor.copy_selection(0),
+        editor.cut_selection(0),
         Err(NativeHostError::Unsupported(_))
     ));
     assert!(matches!(
