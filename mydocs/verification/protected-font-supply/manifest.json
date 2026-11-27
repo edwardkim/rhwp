@@ -6,11 +6,11 @@
   "baseline": {
     "manifest": {
       "path": "mydocs/pr/assets/visual-protected-baseline/manifest.json",
-      "sha256": "e2f09e22730d879031a1ac07c8c6a04b394c8f66a1fd717735deaa362ef00d1a"
+      "sha256": "164881c9ecf65a66ede3455f5b5caa9300fa1aa27eb86132c9656bd03c9ca6c1"
     },
     "table": {
       "path": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
-      "sha256": "8141acb297ce2f39148f9014e463986431d266120629e8f368665e5917138f9d"
+      "sha256": "3c727506bc3a94f60d4c5dfefaaec3f512f49c0e193d17f0c1846c300a3f9f45"
     }
   },
   "accepted_sha256_pairs": {
@@ -14713,8 +14713,8 @@
           },
           "supply_mode": "explicit_files",
           "reproduction_validation": {
-            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
-            "sha256": "c8b1b7dc98d3e0ccb0981c6650b1f2e53500f25bd9a08a01a0f4c431e61ca69c",
+            "path": "mydocs/pr/assets/visual-protected-baseline/updates/sample16-legacy-equation-20261127/conditions.json",
+            "sha256": "787de0963ed6c9559358ec97d56eaac37b2c406390285989f00e35b339bf34ce",
             "selector": {
               "key": "sample16-hwpx",
               "backend": "native"
@@ -14807,8 +14807,8 @@
           },
           "supply_mode": "explicit_files",
           "reproduction_validation": {
-            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
-            "sha256": "c8b1b7dc98d3e0ccb0981c6650b1f2e53500f25bd9a08a01a0f4c431e61ca69c",
+            "path": "mydocs/pr/assets/visual-protected-baseline/updates/sample16-legacy-equation-20261127/conditions.json",
+            "sha256": "787de0963ed6c9559358ec97d56eaac37b2c406390285989f00e35b339bf34ce",
             "selector": {
               "key": "sample16-hwpx",
               "backend": "wasm"
@@ -14955,8 +14955,8 @@
           },
           "supply_mode": "explicit_files",
           "reproduction_validation": {
-            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
-            "sha256": "c8b1b7dc98d3e0ccb0981c6650b1f2e53500f25bd9a08a01a0f4c431e61ca69c",
+            "path": "mydocs/pr/assets/visual-protected-baseline/updates/sample16-legacy-equation-20261127/conditions.json",
+            "sha256": "787de0963ed6c9559358ec97d56eaac37b2c406390285989f00e35b339bf34ce",
             "selector": {
               "key": "sample16-hwp2022",
               "backend": "native"
@@ -15049,8 +15049,8 @@
           },
           "supply_mode": "explicit_files",
           "reproduction_validation": {
-            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
-            "sha256": "c8b1b7dc98d3e0ccb0981c6650b1f2e53500f25bd9a08a01a0f4c431e61ca69c",
+            "path": "mydocs/pr/assets/visual-protected-baseline/updates/sample16-legacy-equation-20261127/conditions.json",
+            "sha256": "787de0963ed6c9559358ec97d56eaac37b2c406390285989f00e35b339bf34ce",
             "selector": {
               "key": "sample16-hwp2022",
               "backend": "wasm"
@@ -16151,8 +16151,8 @@
           },
           "supply_mode": "explicit_files",
           "reproduction_validation": {
-            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
-            "sha256": "c8b1b7dc98d3e0ccb0981c6650b1f2e53500f25bd9a08a01a0f4c431e61ca69c",
+            "path": "mydocs/pr/assets/visual-protected-baseline/updates/sample16-legacy-equation-20261127/conditions.json",
+            "sha256": "787de0963ed6c9559358ec97d56eaac37b2c406390285989f00e35b339bf34ce",
             "selector": {
               "key": "sample16-hwp2024",
               "backend": "native"
@@ -16245,8 +16245,8 @@
           },
           "supply_mode": "explicit_files",
           "reproduction_validation": {
-            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
-            "sha256": "c8b1b7dc98d3e0ccb0981c6650b1f2e53500f25bd9a08a01a0f4c431e61ca69c",
+            "path": "mydocs/pr/assets/visual-protected-baseline/updates/sample16-legacy-equation-20261127/conditions.json",
+            "sha256": "787de0963ed6c9559358ec97d56eaac37b2c406390285989f00e35b339bf34ce",
             "selector": {
               "key": "sample16-hwp2024",
               "backend": "wasm"

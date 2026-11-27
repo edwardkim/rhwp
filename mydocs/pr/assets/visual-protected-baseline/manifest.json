@@ -3,7 +3,7 @@
   "created_at": "2026-11-08T22:37:56.286882+09:00",
   "baseline_kind": "수용된 전쪽 검증과 개별 승인 조정을 반영한 보호 하한. CI·병합 상태는 별도 기록한다.",
   "table": "final.tsv",
-  "table_sha256": "8141acb297ce2f39148f9014e463986431d266120629e8f368665e5917138f9d",
+  "table_sha256": "3c727506bc3a94f60d4c5dfefaaec3f512f49c0e193d17f0c1846c300a3f9f45",
   "row_count": 4046,
   "document_count": 23,
   "dataset_count": 46,
@@ -928,8 +928,25 @@
         "radius_px": 2
       },
       "page_count": 64,
-      "accepted_at": "2026-11-27T07:27:30+09:00",
+      "accepted_at": "2026-11-27T23:06:55+09:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "d88a1c4bb519dd2a54434e4ed7bac331987de115",
+        "code_commit": "3749b19583c8d3005c3a6c8f1e310b36a697b8d9",
+        "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/sample16-legacy-equation-20261127/conditions.json",
+        "condition_evidence_sha256": "787de0963ed6c9559358ec97d56eaac37b2c406390285989f00e35b339bf34ce",
+        "path": "mydocs/pr/assets/visual-protected-baseline/updates/sample16-legacy-equation-20261127/page-floors.tsv",
+        "sha256": "303af1a8e8e63154d56dbfeb31e476375dde152af7fda8f7ab9121758742f702",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": {
+          "document_id": "43c0a207f6daa0bb",
+          "backend": "native"
+        },
+        "precision": "전쪽 실측에서 기존 하한을 충족했고 6쪽만 100.00%로 복원"
+      },
+      "minimum_display": "100.00",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "4bfe028b7b8cb670360dc7b86ad7e78d00c60492",
         "code_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
@@ -944,20 +961,6 @@
           "backend": "native"
         },
         "precision": "기존 공식 하한과 교차 OS 두 자리 표시값의 최솟값"
-      },
-      "minimum_display": "99.43",
-      "previous_source": {
-        "pr": 9306,
-        "evidence_commit": "ffd25475b61f59928403d8f4e8ef0ebdba32c587",
-        "code_commit": "a782a31267e70ad5f3c0188e7a997de0c0dfb676",
-        "path": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/sample16-hwpx-native-floor.tsv",
-        "sha256": "eed6745a765410df0f7f11ca6d942802b29d493acdccb807dff8a32400ecfea4",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
-        "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
-        "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
       },
       "source_history": [
         {
@@ -1036,6 +1039,22 @@
           "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
           "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
           "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "4bfe028b7b8cb670360dc7b86ad7e78d00c60492",
+          "code_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+          "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/conditions.json",
+          "condition_evidence_sha256": "c5686a602a77e16322cb05fe20a9137773f46a540647b44f33ea9c13dddcfbe1",
+          "path": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/page-floors.tsv",
+          "sha256": "c89d7bef4170053f825870f2c7b19014c13c54d8e81e61c7467e0b9076fe2559",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": {
+            "document_id": "43c0a207f6daa0bb",
+            "backend": "native"
+          },
+          "precision": "기존 공식 하한과 교차 OS 두 자리 표시값의 최솟값"
         }
       ]
     },
@@ -1063,8 +1082,25 @@
         "radius_px": 2
       },
       "page_count": 64,
-      "accepted_at": "2026-11-27T01:38:48+09:00",
+      "accepted_at": "2026-11-27T23:06:55+09:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "d88a1c4bb519dd2a54434e4ed7bac331987de115",
+        "code_commit": "3749b19583c8d3005c3a6c8f1e310b36a697b8d9",
+        "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/sample16-legacy-equation-20261127/conditions.json",
+        "condition_evidence_sha256": "787de0963ed6c9559358ec97d56eaac37b2c406390285989f00e35b339bf34ce",
+        "path": "mydocs/pr/assets/visual-protected-baseline/updates/sample16-legacy-equation-20261127/page-floors.tsv",
+        "sha256": "303af1a8e8e63154d56dbfeb31e476375dde152af7fda8f7ab9121758742f702",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": {
+          "document_id": "43c0a207f6daa0bb",
+          "backend": "wasm"
+        },
+        "precision": "전쪽 실측에서 기존 하한을 충족했고 6쪽만 100.00%로 복원"
+      },
+      "minimum_display": "100.00",
+      "previous_source": {
         "pr": 9306,
         "evidence_commit": "ffd25475b61f59928403d8f4e8ef0ebdba32c587",
         "code_commit": "a782a31267e70ad5f3c0188e7a997de0c0dfb676",
@@ -1076,20 +1112,6 @@
         "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
         "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
         "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
-      },
-      "minimum_display": "99.97",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
-        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
-        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/sample16-hwpx.tsv",
-        "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
-        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
         {
@@ -1155,6 +1177,19 @@
           "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
           "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": 9306,
+          "evidence_commit": "ffd25475b61f59928403d8f4e8ef0ebdba32c587",
+          "code_commit": "a782a31267e70ad5f3c0188e7a997de0c0dfb676",
+          "path": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/sample16-hwpx-wasm-floor.tsv",
+          "sha256": "eed6745a765410df0f7f11ca6d942802b29d493acdccb807dff8a32400ecfea4",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
+          "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
+          "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
         }
       ]
     },
@@ -1182,8 +1217,25 @@
         "radius_px": 2
       },
       "page_count": 64,
-      "accepted_at": "2026-11-27T07:27:30+09:00",
+      "accepted_at": "2026-11-27T23:06:55+09:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "d88a1c4bb519dd2a54434e4ed7bac331987de115",
+        "code_commit": "3749b19583c8d3005c3a6c8f1e310b36a697b8d9",
+        "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/sample16-legacy-equation-20261127/conditions.json",
+        "condition_evidence_sha256": "787de0963ed6c9559358ec97d56eaac37b2c406390285989f00e35b339bf34ce",
+        "path": "mydocs/pr/assets/visual-protected-baseline/updates/sample16-legacy-equation-20261127/page-floors.tsv",
+        "sha256": "303af1a8e8e63154d56dbfeb31e476375dde152af7fda8f7ab9121758742f702",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": {
+          "document_id": "4bac5a5d1702df5f",
+          "backend": "native"
+        },
+        "precision": "전쪽 실측에서 기존 하한을 충족했고 6쪽만 100.00%로 복원"
+      },
+      "minimum_display": "100.00",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "4bfe028b7b8cb670360dc7b86ad7e78d00c60492",
         "code_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
@@ -1198,20 +1250,6 @@
           "backend": "native"
         },
         "precision": "기존 공식 하한과 교차 OS 두 자리 표시값의 최솟값"
-      },
-      "minimum_display": "99.44",
-      "previous_source": {
-        "pr": 9306,
-        "evidence_commit": "ffd25475b61f59928403d8f4e8ef0ebdba32c587",
-        "code_commit": "a782a31267e70ad5f3c0188e7a997de0c0dfb676",
-        "path": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/sample16-hwp2022-native-floor.tsv",
-        "sha256": "19fe25c667fc9bbb44a3338cad7ff1e1e9e028a32a319982e5c58ca45d0a6513",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
-        "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
-        "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
       },
       "source_history": [
         {
@@ -1290,6 +1328,22 @@
           "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
           "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
           "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "4bfe028b7b8cb670360dc7b86ad7e78d00c60492",
+          "code_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+          "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/conditions.json",
+          "condition_evidence_sha256": "c5686a602a77e16322cb05fe20a9137773f46a540647b44f33ea9c13dddcfbe1",
+          "path": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/page-floors.tsv",
+          "sha256": "c89d7bef4170053f825870f2c7b19014c13c54d8e81e61c7467e0b9076fe2559",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": {
+            "document_id": "4bac5a5d1702df5f",
+            "backend": "native"
+          },
+          "precision": "기존 공식 하한과 교차 OS 두 자리 표시값의 최솟값"
         }
       ]
     },
@@ -1317,8 +1371,25 @@
         "radius_px": 2
       },
       "page_count": 64,
-      "accepted_at": "2026-11-27T01:38:48+09:00",
+      "accepted_at": "2026-11-27T23:06:55+09:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "d88a1c4bb519dd2a54434e4ed7bac331987de115",
+        "code_commit": "3749b19583c8d3005c3a6c8f1e310b36a697b8d9",
+        "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/sample16-legacy-equation-20261127/conditions.json",
+        "condition_evidence_sha256": "787de0963ed6c9559358ec97d56eaac37b2c406390285989f00e35b339bf34ce",
+        "path": "mydocs/pr/assets/visual-protected-baseline/updates/sample16-legacy-equation-20261127/page-floors.tsv",
+        "sha256": "303af1a8e8e63154d56dbfeb31e476375dde152af7fda8f7ab9121758742f702",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": {
+          "document_id": "4bac5a5d1702df5f",
+          "backend": "wasm"
+        },
+        "precision": "전쪽 실측에서 기존 하한을 충족했고 6쪽만 100.00%로 복원"
+      },
+      "minimum_display": "100.00",
+      "previous_source": {
         "pr": 9306,
         "evidence_commit": "ffd25475b61f59928403d8f4e8ef0ebdba32c587",
         "code_commit": "a782a31267e70ad5f3c0188e7a997de0c0dfb676",
@@ -1330,20 +1401,6 @@
         "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
         "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
         "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
-      },
-      "minimum_display": "99.97",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
-        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
-        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/sample16-hwp2022.tsv",
-        "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
-        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
         {
@@ -1409,6 +1466,19 @@
           "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
           "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": 9306,
+          "evidence_commit": "ffd25475b61f59928403d8f4e8ef0ebdba32c587",
+          "code_commit": "a782a31267e70ad5f3c0188e7a997de0c0dfb676",
+          "path": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/sample16-hwp2022-wasm-floor.tsv",
+          "sha256": "a98bfe0b8341d29847527beb1d2e8a432662813d16822a35a1d6965a56c541f4",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
+          "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
+          "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
         }
       ]
     },
@@ -2619,8 +2689,25 @@
         "radius_px": 2
       },
       "page_count": 64,
-      "accepted_at": "2026-11-27T07:27:30+09:00",
+      "accepted_at": "2026-11-27T23:06:55+09:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "d88a1c4bb519dd2a54434e4ed7bac331987de115",
+        "code_commit": "3749b19583c8d3005c3a6c8f1e310b36a697b8d9",
+        "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/sample16-legacy-equation-20261127/conditions.json",
+        "condition_evidence_sha256": "787de0963ed6c9559358ec97d56eaac37b2c406390285989f00e35b339bf34ce",
+        "path": "mydocs/pr/assets/visual-protected-baseline/updates/sample16-legacy-equation-20261127/page-floors.tsv",
+        "sha256": "303af1a8e8e63154d56dbfeb31e476375dde152af7fda8f7ab9121758742f702",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": {
+          "document_id": "7df4af8174abd82a",
+          "backend": "native"
+        },
+        "precision": "전쪽 실측에서 기존 하한을 충족했고 6쪽만 100.00%로 복원"
+      },
+      "minimum_display": "100.00",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "4bfe028b7b8cb670360dc7b86ad7e78d00c60492",
         "code_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
@@ -2635,20 +2722,6 @@
           "backend": "native"
         },
         "precision": "기존 공식 하한과 교차 OS 두 자리 표시값의 최솟값"
-      },
-      "minimum_display": "99.43",
-      "previous_source": {
-        "pr": 9306,
-        "evidence_commit": "ffd25475b61f59928403d8f4e8ef0ebdba32c587",
-        "code_commit": "a782a31267e70ad5f3c0188e7a997de0c0dfb676",
-        "path": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/sample16-hwp2024-native-floor.tsv",
-        "sha256": "eed6745a765410df0f7f11ca6d942802b29d493acdccb807dff8a32400ecfea4",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
-        "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
-        "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
       },
       "source_history": [
         {
@@ -2727,6 +2800,22 @@
           "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
           "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
           "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "4bfe028b7b8cb670360dc7b86ad7e78d00c60492",
+          "code_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+          "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/conditions.json",
+          "condition_evidence_sha256": "c5686a602a77e16322cb05fe20a9137773f46a540647b44f33ea9c13dddcfbe1",
+          "path": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/page-floors.tsv",
+          "sha256": "c89d7bef4170053f825870f2c7b19014c13c54d8e81e61c7467e0b9076fe2559",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": {
+            "document_id": "7df4af8174abd82a",
+            "backend": "native"
+          },
+          "precision": "기존 공식 하한과 교차 OS 두 자리 표시값의 최솟값"
         }
       ]
     },
@@ -2754,8 +2843,25 @@
         "radius_px": 2
       },
       "page_count": 64,
-      "accepted_at": "2026-11-27T01:38:48+09:00",
+      "accepted_at": "2026-11-27T23:06:55+09:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "d88a1c4bb519dd2a54434e4ed7bac331987de115",
+        "code_commit": "3749b19583c8d3005c3a6c8f1e310b36a697b8d9",
+        "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/sample16-legacy-equation-20261127/conditions.json",
+        "condition_evidence_sha256": "787de0963ed6c9559358ec97d56eaac37b2c406390285989f00e35b339bf34ce",
+        "path": "mydocs/pr/assets/visual-protected-baseline/updates/sample16-legacy-equation-20261127/page-floors.tsv",
+        "sha256": "303af1a8e8e63154d56dbfeb31e476375dde152af7fda8f7ab9121758742f702",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": {
+          "document_id": "7df4af8174abd82a",
+          "backend": "wasm"
+        },
+        "precision": "전쪽 실측에서 기존 하한을 충족했고 6쪽만 100.00%로 복원"
+      },
+      "minimum_display": "100.00",
+      "previous_source": {
         "pr": 9306,
         "evidence_commit": "ffd25475b61f59928403d8f4e8ef0ebdba32c587",
         "code_commit": "a782a31267e70ad5f3c0188e7a997de0c0dfb676",
@@ -2767,20 +2873,6 @@
         "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
         "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
         "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
-      },
-      "minimum_display": "99.97",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
-        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
-        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/sample16-hwp2024.tsv",
-        "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
-        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
         {
@@ -2846,6 +2938,19 @@
           "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
           "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": 9306,
+          "evidence_commit": "ffd25475b61f59928403d8f4e8ef0ebdba32c587",
+          "code_commit": "a782a31267e70ad5f3c0188e7a997de0c0dfb676",
+          "path": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/sample16-hwp2024-wasm-floor.tsv",
+          "sha256": "eed6745a765410df0f7f11ca6d942802b29d493acdccb807dff8a32400ecfea4",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
+          "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
+          "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
         }
       ]
     },
@@ -5877,9 +5982,21 @@
       "decreased_row_count": 193,
       "evaluated_row_count": 4046,
       "cross_os_observation_count": 12138
+    },
+    {
+      "pr": null,
+      "evidence_commit": "d88a1c4bb519dd2a54434e4ed7bac331987de115",
+      "code_commit": "3749b19583c8d3005c3a6c8f1e310b36a697b8d9",
+      "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/sample16-legacy-equation-20261127/conditions.json",
+      "condition_evidence_sha256": "787de0963ed6c9559358ec97d56eaac37b2c406390285989f00e35b339bf34ce",
+      "accepted_at": "2026-11-27T23:06:55+09:00",
+      "acceptance_basis": "구형 Type 3 수식의 윤곽과 전진폭과 일치하는 OTF를 공급해 sample16 세 형식의 6쪽을 재측정했다.",
+      "increased_row_count": 6,
+      "decreased_row_count": 0,
+      "evaluated_row_count": 384
     }
   ],
-  "updated_at": "2026-11-27T07:27:30+09:00",
-  "previous_table_sha256": "5eadaea8bca4b2bdb0ed5795933e203d12cdaa83e0436e29bd9e0e65954db57d",
+  "updated_at": "2026-11-27T23:06:55+09:00",
+  "previous_table_sha256": "8141acb297ce2f39148f9014e463986431d266120629e8f368665e5917138f9d",
   "deduplication_scope": "source_dataset_count·removed_duplicate_datasets·deduplicated_sources는 최초 통합의 이력이다. 현행 46개 데이터셋은 기존 18문서·36개 데이터셋의 수용 출처와 후속 상승 기록을 보존하고, 2026-11-18의 동일 최종 전쪽 실행에서 다섯 원본·10개 데이터셋을 추가한 결과다. 각 데이터셋의 source와 source_history를 따른다."
 }
