@@ -1,0 +1,112 @@
+{
+  "code_head": "b25bbad4f477a5f6c9bfc212f58b6f03e2a090dc",
+  "base_head": "77e4c3d1369623818e8cf3213e3fdc21d8e6502e",
+  "platform": "macOS arm64",
+  "nextest": {
+    "passed": 14261,
+    "failed": 0,
+    "skipped": 45
+  },
+  "native_skia": {
+    "library_binaries": 4,
+    "library_passed": 4032,
+    "library_ignored": 12,
+    "integration_modules": 21,
+    "integration_passed": 193,
+    "module_results": {
+      "cli_exit_codes_native": 2,
+      "issue_1144_native": 1,
+      "issue_2225_missing_picture_placeholder": 2,
+      "render_p37_direct_pdf_export": 37,
+      "issue_7950_pdf_paint": 4,
+      "issue_2083_hide_fill_page_background": 1,
+      "issue_2292_chart_png_clip": 1,
+      "issue_2293_chart_png_text": 2,
+      "issue_7820_sixel_contract": 7,
+      "issue_8150_kitty_contract": 8,
+      "issue_4961_font_decision_trace": 12,
+      "issue_7902_original_frame_and_content": 7,
+      "issue_8160_hwp2022_paragraph_relations": 3,
+      "native_fractional_glyph_origin": 7,
+      "skia_native_glyph_replay": 24,
+      "issue_8153_opaque_mixed_axis_image_sampling": 2,
+      "issue_8153_print_glyph_geometry": 9,
+      "issue_8153_symbol_fallback": 2,
+      "issue_536_native_region_cache": 39,
+      "skia_region_plan": 10,
+      "skia_host_surface": 13
+    }
+  },
+  "protected_pages": {
+    "documents": 23,
+    "native": 2023,
+    "wasm": 2023,
+    "below_floor": 0,
+    "identical_devel_png": 4046,
+    "report": "protected-page-comparison.tsv",
+    "report_sha256": "d70df761a322f56cfdda1122b1880079c69d21ca441ad5efd161be223517a60d",
+    "baseline_sha256": "8141acb297ce2f39148f9014e463986431d266120629e8f368665e5917138f9d",
+    "wasm_artifacts": {
+      "rhwp.js": "2608f94b372d15aff7d7894f7c0878192da3d17c9b5288367b1a44bc808af733",
+      "rhwp_bg.wasm": "40b3c8f85627907ce098bd1d3ed2978f07cd5be1f51f5993c3e7c3b54cd8e0f3"
+    }
+  },
+  "same_environment_source_comparisons": {
+    "9414": {
+      "original_head": "dbb281275371765eeaf4e0996b6cbe1c293fd94f",
+      "backend": "wasm",
+      "pages": 11,
+      "decreased_pages": 0,
+      "identical_png": 11,
+      "report": "source-9414-wasm-page-comparison.tsv",
+      "report_sha256": "929829b7982f982aa36d47fa5b821db254fe5f1fb652b8b9ecdb45eae12aedc4",
+      "source_wasm_sha256": "6a5257fcdf59411877ca3bfca51512361f36ed28ebfc527e0a289a00dacd38fb",
+      "candidate_wasm_sha256": "40b3c8f85627907ce098bd1d3ed2978f07cd5be1f51f5993c3e7c3b54cd8e0f3"
+    },
+    "9441": {
+      "original_head": "ad5db4fb45c17ebc8fbdd5e851369c304779e016",
+      "backend": "native",
+      "pages": 11,
+      "decreased_pages": 0,
+      "identical_png": 10,
+      "improved_pages": [
+        9
+      ],
+      "report": "source-9441-native-page-comparison.tsv",
+      "report_sha256": "1183d025996ef9053f7ea7548461a0bcee34b42f27f5fb9aac2458ee1e2bef74",
+      "source_native_sha256": "0c950185d19bb9ef878cf27b571c8ee79531ecc8b6ef732efc006ea7fd91c46d",
+      "candidate_native_sha256": "c3c4541fea32542a5f665d45923ba660e2c32cf8edfb620104f76776a07c0d1c"
+    },
+    "9467": {
+      "original_head": "e1b1b7d51259524c9879f41cd1bbfd0c033665f2",
+      "native_pages": 11,
+      "wasm_pages": 11,
+      "decreased_pages": 0,
+      "identical_png": 22,
+      "report": "source-9467-native-wasm-raster-comparison.tsv",
+      "report_sha256": "3df9ffc8f3ccd7f11aa1a0104d4cf2d8d02709cf22572ae9de75d5ec7396145b"
+    }
+  },
+  "issue_9426_bibliography": {
+    "pages": [
+      256,
+      257,
+      258,
+      259,
+      260,
+      261,
+      262,
+      263,
+      264
+    ],
+    "rows": 36,
+    "minimum_by_input_and_backend": {
+      "hwp3-direct/native": "98.60",
+      "hwp3-direct/wasm": "98.62",
+      "hancom-resaved/native": "98.73",
+      "hancom-resaved/wasm": "98.74"
+    },
+    "report": "issue-9426-bibliography-page-comparison.tsv",
+    "report_sha256": "5eaaa13df178193076e521b6fc879648ed2bc411be9c734bedae28d9c27a2892"
+  }
+}
