@@ -24,6 +24,16 @@
   `yeongwol`과 `sample16` 저장본 3종은 설치본 `HYHWPEQ.TTF`(`a3a3cd992a89…`)를 기준으로 사용한다.
   이전 해시 `c4f768c176ce…`는 같은 문서의 검증된 공급 파일에서만 허용한다. 수식 글꼴은 다운로드
   폴더에서 직접 공급하지 않고 사용자·시스템 설치 경로나 해시를 확인한 검증용 사본을 사용한다.
+- `sample16-hwp2022`, `sample16-hwp2024`, `sample16-hwpx`의 Native·WASM 정본 검증에는
+  `RHWPLegacyEquation-Original.otf`를 공급 목록의 첫 파일로 추가한다. 내부 가족 이름은
+  `RHWP Legacy Equation`, SHA-256은
+  `f92ff78fe7eaf2914e9879966e6a8383d3c525242339b781a117b755df70034a`이다.
+  세 한컴 Print PDF 6쪽의 Type 3 수식 기호 13종과 윤곽·전진폭이 일치한다.
+  현대 수식과 대체 경로에 쓰이는 `HYHWPEQ.TTF`도 매니페스트에 지정된 위치에 공급한다.
+  Mac Native 전쪽 측정에는 #9306에서 확인한 `SPMJ.otf`·`SPSMJ.otf`의 프로세스 등록과
+  HWP 2022의 한양신명조 대체 설정을 재사용했다.
+  [전쪽 수치와 공급 조건](../../pr/assets/visual-protected-baseline/updates/sample16-legacy-equation-20261127/conditions.json) ·
+  [6쪽 수식 확대](../../pr/assets/visual-protected-baseline/updates/sample16-legacy-equation-20261127/sample16-hwpx-page6-equation.png)
 - 시행령(`decree`)과 중첩 표(`nested`)의 Native·WASM은 Mac 사용자 설치본과 같은
   Palatino Linotype Regular(`pala.ttf`, SHA-256 `e47d594e2e2b…`)를 공급한다.
   시행령의 휴먼고딕 `HMKMG.TTF`와 휴먼명조 `HMKMM.TTF`는 각각 사용자 글꼴 폴더의

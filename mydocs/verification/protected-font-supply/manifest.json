@@ -11612,8 +11612,12 @@
         }
       ]
     },
-    "89ef2bbf36b53b41": {
+    "005d81fdd7d1f618": {
       "files": [
+        {
+          "filename": "RHWPLegacyEquation-Original.otf",
+          "sha256": "f92ff78fe7eaf2914e9879966e6a8383d3c525242339b781a117b755df70034a"
+        },
         {
           "filename": "ENGGT.otf",
           "sha256": "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9"
@@ -14622,7 +14626,7 @@
       },
       "backends": {
         "native": {
-          "font_set": "89ef2bbf36b53b41",
+          "font_set": "005d81fdd7d1f618",
           "inventory_kind": "recorded_supply",
           "inventory_source": {
             "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-accepted-validation.json",
@@ -14718,7 +14722,7 @@
           }
         },
         "wasm": {
-          "font_set": "89ef2bbf36b53b41",
+          "font_set": "005d81fdd7d1f618",
           "inventory_kind": "recorded_supply",
           "inventory_source": {
             "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-accepted-validation.json",
@@ -14864,7 +14868,7 @@
       },
       "backends": {
         "native": {
-          "font_set": "89ef2bbf36b53b41",
+          "font_set": "005d81fdd7d1f618",
           "inventory_kind": "recorded_supply",
           "inventory_source": {
             "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-accepted-validation.json",
@@ -14960,7 +14964,7 @@
           }
         },
         "wasm": {
-          "font_set": "89ef2bbf36b53b41",
+          "font_set": "005d81fdd7d1f618",
           "inventory_kind": "recorded_supply",
           "inventory_source": {
             "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-accepted-validation.json",
@@ -16060,7 +16064,7 @@
       },
       "backends": {
         "native": {
-          "font_set": "89ef2bbf36b53b41",
+          "font_set": "005d81fdd7d1f618",
           "inventory_kind": "recorded_supply",
           "inventory_source": {
             "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-accepted-validation.json",
@@ -16156,7 +16160,7 @@
           }
         },
         "wasm": {
-          "font_set": "89ef2bbf36b53b41",
+          "font_set": "005d81fdd7d1f618",
           "inventory_kind": "recorded_supply",
           "inventory_source": {
             "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-accepted-validation.json",
