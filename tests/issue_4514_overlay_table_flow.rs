@@ -1,7 +1,7 @@
 //! 관계형·고정형 — #7808 이어받기 표의 내용 소속·중복·누락과 마지막 글줄 포함.
-//! 주석 갱신 2026-11-28T03:36:12+09:00. 직전 파일 커밋 2913e31a9ad9218fadd09109ee0d47a496c2cbd7 2026-10-13T05:02:11+09:00.
+//! 주석 갱신 2026-11-28T04:50:06+09:00. 직전 파일 커밋 1c5b9928b96c1aba5654d62029a9f9aabd75efba 2026-11-28T03:38:16+09:00.
 //! Native Skia·fresh WASM Print를 독립 한컴 PDF에 96 DPI·PDFium·2px raw 실루엣으로 대조했다.
-//! 측정 코드 f3dae4a6483f62e5854417ef73cac111ec5dde10.
+//! 측정 코드 1e773b0314979e9198435eb4a6249e00430c6f58.
 //! sample1-repro · 기준 pdf/issue4514/sample1-repro-hwp-2020.pdf · 전체 46쪽.
 //! 전쪽 최저 Native 98.26% / fresh WASM 98.35%.
 //! 9쪽 Native 99.97% / fresh WASM 99.97%.

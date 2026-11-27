@@ -1,12 +1,14 @@
 //! 관계형·고정형 — #7811 자리차지에 참여하는 글 앞으로 표의 행 소유와 후속 본문 쪽을 보호한다.
-//! 주석 갱신 2026-11-27 20:46 KST (+09:00), 새 파일.
-//!
-//! 독립 정본은 `pdf/pr_open_20260821/2700727_animal_facility_standards-2020.pdf`다.
-//! 2·3쪽에 42행이 나뉘고 4쪽에서 곤충이용 본문이 시작한다. 표나 본문 줄의 절대 좌표는 고정하지 않는다.
-//! 2026-11-27 Print 96 DPI의 2px raw 실루엣 비교에서 Native `3a54fd4d5e`와
-//! fresh WASM `309899c7c4`는 각 6쪽을 출력했다. 2·3·4쪽 Native 99.93·100.00·99.89%,
-//! fresh WASM 99.95·100.00·99.89%, 전쪽 최저 Native 99.78%, fresh WASM 99.87%다.
-//! 전쪽 TSV와 2·3·4쪽 비교 PNG는 `output/pr-review/issues7789-7812/exploratory/7811-original-reference/`에 있다.
+//! 주석 갱신 2026-11-28T04:50:06+09:00. 직전 파일 커밋 04cad5f526c6610ad83814649926c93d670bc48e 2026-11-27T20:53:01+09:00.
+//! Native Skia·fresh WASM Print를 독립 한컴 PDF에 96 DPI·PDFium·2px raw 실루엣으로 대조했다.
+//! 측정 코드 1e773b0314979e9198435eb4a6249e00430c6f58.
+//! animal-facility · 기준 pdf/issue5792/2700727_animal_facility_standards-hwpx-2020.pdf · 전체 6쪽.
+//! 전쪽 최저 Native 99.99% / fresh WASM 100.00%.
+//! 2쪽 Native 100.00% / fresh WASM 100.00%.
+//! 3쪽 Native 100.00% / fresh WASM 100.00%.
+//! 4쪽 Native 100.00% / fresh WASM 100.00%.
+//! 전쪽 TSV와 대표 PNG는 mydocs/pr/assets/issues7789_7812/animal-facility/에 있다.
+//! 2·3쪽에 42행이 나뉘고 4쪽에서 곤충이용 본문이 시작한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::collections::BTreeSet;

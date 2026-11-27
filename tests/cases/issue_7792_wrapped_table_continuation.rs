@@ -1,7 +1,7 @@
 //! 관계형·고정형 — #7792 분할 표의 3쪽 소속, 컷의 열린 변과 닫힌 변, 내용 순서와 보존.
-//! 주석 갱신 2026-11-28T03:36:12+09:00.
+//! 주석 갱신 2026-11-28T04:50:06+09:00. 직전 파일 커밋 1c5b9928b96c1aba5654d62029a9f9aabd75efba 2026-11-28T03:38:16+09:00.
 //! Native Skia·fresh WASM Print를 독립 한컴 PDF에 96 DPI·PDFium·2px raw 실루엣으로 대조했다.
-//! 측정 코드 f3dae4a6483f62e5854417ef73cac111ec5dde10.
+//! 측정 코드 1e773b0314979e9198435eb4a6249e00430c6f58.
 //! table-text-anchor-wrap · 기준 mydocs/pr/assets/issue7445/table-text-anchor-wrap/table_text_anchor_wrap-fresh-2024.pdf · 전체 3쪽.
 //! 전쪽 최저 Native 99.74% / fresh WASM 100.00%.
 //! 1쪽 Native 99.74% / fresh WASM 100.00%.

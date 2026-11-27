@@ -1,5 +1,5 @@
 {
-  "code_head": "f3dae4a6483f62e5854417ef73cac111ec5dde10",
+  "code_head": "1e773b0314979e9198435eb4a6249e00430c6f58",
   "cases": {
     "chinese-newsletter": {
       "native": {
@@ -441,12 +441,21 @@
           5
         ],
         "focus": {
+          "2": 100.0,
+          "3": 100.0,
+          "4": 100.0,
           "5": 99.99,
           "6": 100.0
         },
         "files": {
+          "overlay_002.png": "86d63e36edabeb13385c5af727027298065b36cf0c6416f4f4f2d0400c9206d6",
+          "overlay_003.png": "3cd12a8aacd7d985e3e1e33ad2e6dadcba0867f77bccdae03cbf44594dd548e4",
+          "overlay_004.png": "c831d88021b4b0cfdbc29aec4141e283cd4e007889a529b79fa09688cea13ea1",
           "overlay_005.png": "9356b4a42e6b266687b357991781b364afbda8cdd45766d0342d5173c556fb97",
           "overlay_006.png": "677df68a929f3c3b8ce7b17ae01b91412da11c6642306fe7785c9ef1bcb455e5",
+          "review_002.png": "ab69761829ccf52973ee3f227766863b930f02421e07782057ca2bba1170673a",
+          "review_003.png": "4b88776fd0098044dad79d0052c73afc2633154aecdcf7615a2aa5b7d9e0086e",
+          "review_004.png": "32012721389dbf9043ad9e12271c4534495143eaf11eece8545336dfb4e14fab",
           "review_005.png": "b59271adebc683ebcadabdc7c6fc5c3d9af37db3af68ba8b309a8c7a37ff275b",
           "review_006.png": "4774c953c3880e21f53a4132aab20fbf458f2bcc56a1e368a96c7588209e9f30",
           "silhouette.tsv": "80197e064ccdcda8030b0d21aa5110072b6b8e5bfc3a444e047b394c2e6c3b0b"
@@ -459,12 +468,21 @@
           1
         ],
         "focus": {
+          "2": 100.0,
+          "3": 100.0,
+          "4": 100.0,
           "5": 100.0,
           "6": 100.0
         },
         "files": {
+          "overlay_002.png": "ef42c50c1433705458640e5864cbee5908f8e90838ee374e69a62493d3883f57",
+          "overlay_003.png": "251fcb2e7ec104b510e67e6873c73206b5d89947e10f5a40e4afe2d0927bc409",
+          "overlay_004.png": "5707c2ed3ba34acae12c0e0cc6dbc70a163d115221e4d4a7a442b83dc51e02dd",
           "overlay_005.png": "8cbf239fb6d84a8df0fa6bef7d892e904355116d458ec87a856b0c403f9f66cf",
           "overlay_006.png": "91797c04c1eb3df65b33c26e9eae003bf21088fa7a072b041dc60c7735d692db",
+          "review_002.png": "346bea851c36935abd8a0f88e3a2a6f932a220087913762f70a483dc682717ab",
+          "review_003.png": "436cbdd6f80c66d8d336a3a19664157ae67f510718647bc04beb750d6f112823",
+          "review_004.png": "702cbdee72d9ed42e61d0f0be1db54e33561d06bb033893f00e064714bb52a0f",
           "review_005.png": "aee5041f4aa7b024849af06b2452868ff7f86341fc75f93f10787906ea773c49",
           "review_006.png": "6b5a353e6072cab3675b43defcbb0fafb5eaf4263cc008d2b6875db603000f10",
           "silhouette.tsv": "cdcf3e026b8de27abee1649a14fc0767bd3b6d02806046e34dcc9164c24df91f"
@@ -516,7 +534,7 @@
       }
     }
   },
-  "base": "77e4c3d1369623818e8cf3213e3fdc21d8e6502e",
+  "base": "3a6b7d2b318287361f443b0814702783eb973533",
   "inputs": {
     "chinese-newsletter": {
       "issue": 7789,
