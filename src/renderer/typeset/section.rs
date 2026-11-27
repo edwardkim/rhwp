@@ -384,6 +384,10 @@ impl TypesetEngine {
                 &mut st, para_idx, para, paragraphs, storage,
             )?;
 
+            let absorbed_opening_blank =
+                super::paragraph::stored_lines::stored_blank_prefix_fits_reduced_frame(
+                    &st, paragraphs, para_idx, styles,
+                );
             let picture_host_origin = (
                 st.pages.len(),
                 st.current_column,
@@ -432,6 +436,14 @@ impl TypesetEngine {
                 native_hwp5_footnote_break,
                 storage,
             )?;
+
+            if absorbed_opening_blank
+                && st.pages.len() == picture_host_origin.0
+                && matches!(st.current_items.last(), Some(super::PageItem::FullParagraph { para_index })
+                    if *para_index == para_idx)
+            {
+                st.advance_column_or_new_page_with_storage(storage)?;
+            }
 
             // [Task #1007] variant vpos reset 감지용 prev_para_idx 갱신
             variant_prev_para_idx = Some(para_idx);

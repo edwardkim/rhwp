@@ -517,6 +517,9 @@ impl TypesetEngine {
                     && !st.stored_paragraph_boundary_already_open(paragraphs, para_idx)
                     && !st.stored_boundary_crossed_by_overflow(paragraphs, para_idx, self.dpi)
                     && !stored_boundary_invalidated_by_reflow
+                    && !crate::renderer::typeset::paragraph::stored_lines::stored_blank_prefix_fits_reduced_frame(
+                        st, paragraphs, para_idx, styles,
+                    )
                     && !omit_pushed_empty_page
                     && !hangul2024_refit
                     && !overlay_columndef_separator_break
