@@ -1,7 +1,9 @@
 //! Native clipboard content/history contracts; no OS clipboard or visual claim.
 #![cfg(not(target_arch = "wasm32"))]
 
-use rhwp::document_core::native_interaction::{NativeTextPosition, NativeTextSelection};
+use rhwp::document_core::native_interaction::{
+    NativeCellPathEntry, NativeTextPosition, NativeTextSelection,
+};
 use rhwp::model::control::Control;
 use rhwp::model::table::Table;
 use rhwp::native_host::clipboard::{
@@ -54,6 +56,116 @@ fn texts(editor: &NativeEditor) -> Vec<&str> {
 
 fn document(editor: &NativeEditor) -> String {
     format!("{:?}", editor.session().document().document())
+}
+
+fn cell_editor(protected: bool, bookmark: bool) -> (NativeEditor, NativeTextSelection) {
+    let mut core = core(&[""]);
+    core.paste_html_native(0, 0, 0, "<table><tr><td><p>가😀나</p></td></tr></table>")
+        .unwrap();
+    let mut document = core.document().clone();
+    let (paragraph, control, table) = document.sections[0]
+        .paragraphs
+        .iter_mut()
+        .enumerate()
+        .find_map(|(paragraph, host)| {
+            host.controls
+                .iter_mut()
+                .enumerate()
+                .find_map(|(control, value)| match value {
+                    Control::Table(table) => Some((paragraph as u32, control as u32, table)),
+                    _ => None,
+                })
+        })
+        .unwrap();
+    table.cells[0].set_cell_protect(protected);
+    if bookmark {
+        table.cells[0].paragraphs[0]
+            .controls
+            .push(Control::Bookmark(Default::default()));
+    }
+    core.set_document(document);
+    let mut anchor = position(paragraph, 2);
+    anchor.cell_path.push(NativeCellPathEntry {
+        control,
+        cell: 0,
+        paragraph: 0,
+    });
+    let mut focus = anchor.clone();
+    focus.scalar_offset = 1;
+    let selection = NativeTextSelection { anchor, focus };
+    let editor = NativeEditor::new(NativeDocumentSession::from_core(core), selection.clone())
+        .expect("cell permits read-only selection");
+    (editor, selection)
+}
+
+#[test]
+fn native_clipboard_cell_text_is_read_only_or_one_undoable_edit() {
+    let (mut editor, range) = cell_editor(false, false);
+    let before = document(&editor);
+    let payload = editor.copy_selection(0).unwrap();
+    assert_eq!(payload.plain_text, "😀");
+    assert_eq!(payload.html, None);
+    assert_eq!(document(&editor), before);
+    assert_eq!(editor.selection(), &range);
+    assert_eq!(editor.session().revision(), 0);
+    assert!(!editor.can_undo());
+
+    for text in ["가\r나", "가\r\n나", "가\n나"] {
+        assert!(matches!(
+            editor.paste_text(0, text),
+            Err(NativeHostError::Unsupported(_))
+        ));
+    }
+    assert!(matches!(
+        editor.paste_html(0, "<p><b>나</b></p>"),
+        Err(NativeHostError::Unsupported(_))
+    ));
+    assert_eq!(editor.selection(), &range);
+    assert_eq!(document(&editor), before);
+    assert_eq!(editor.session().revision(), 0);
+    assert!(!editor.can_undo());
+
+    let (cut_payload, cut) = editor.cut_selection(0).unwrap();
+    assert_eq!(cut_payload, payload);
+    assert_eq!(cut.revision, 1);
+    assert_eq!(cut.selection.anchor, range.focus);
+    assert_eq!(cut.selection.focus, range.focus);
+    let pasted = editor.paste_text(cut.revision, "각😀").unwrap();
+    assert_eq!(pasted.revision, 2);
+    assert_eq!(pasted.selection.anchor.cell_path, range.focus.cell_path);
+    assert_eq!(pasted.selection.anchor.scalar_offset, 3);
+    let undo_paste = editor.undo(pasted.revision).unwrap();
+    assert_eq!(undo_paste.selection, cut.selection);
+    editor.undo(undo_paste.revision).unwrap();
+    assert_eq!(document(&editor), before);
+    assert_eq!(editor.selection(), &range);
+    assert!(!editor.can_undo());
+}
+
+#[test]
+fn native_clipboard_protected_cell_allows_copy_and_cell_controls_refuse_copy() {
+    for (protected, bookmark) in [(true, false), (false, true)] {
+        let (mut editor, range) = cell_editor(protected, bookmark);
+        let before = document(&editor);
+        let copied = editor.copy_selection(0);
+        if protected {
+            assert_eq!(copied.unwrap().plain_text, "😀");
+        } else {
+            assert!(matches!(copied, Err(NativeHostError::Unsupported(_))));
+        }
+        assert!(matches!(
+            editor.cut_selection(0),
+            Err(NativeHostError::Unsupported(_))
+        ));
+        assert!(matches!(
+            editor.paste_text(0, "replacement"),
+            Err(NativeHostError::Unsupported(_))
+        ));
+        assert_eq!(editor.selection(), &range);
+        assert_eq!(document(&editor), before);
+        assert_eq!(editor.session().revision(), 0);
+        assert!(!editor.can_undo());
+    }
 }
 
 #[test]
