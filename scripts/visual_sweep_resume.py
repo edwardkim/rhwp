@@ -10,7 +10,8 @@ BATCH_PAGES = 64
 
 def prepare_target_plan(vs, root, out_root, targets, selected_pages, *, resume,
                         rhwp_bin, dpi, compat, rasterizer, wasm_pkg, linked_images,
-                        print_job_context=None, print_bmp_full_color=False):
+                        print_job_context=None, print_bmp_full_color=False,
+                        print_png_full_color=False):
     """다중 대상의 시작 전·중단 후 목록과 입력을 고정한다."""
     plan = {
         'version': 1,
@@ -36,6 +37,8 @@ def prepare_target_plan(vs, root, out_root, targets, selected_pages, *, resume,
         plan['print_job_context'] = {'path': str(context), 'sha256': vs.sha256_file(context)}
     if print_bmp_full_color:
         plan['print_bmp_full_color'] = True
+    if print_png_full_color:
+        plan['print_png_full_color'] = True
     path = out_root / 'silhouette-target-plan.json'
     if resume:
         if not path.is_file() or vs.load_json_object(path, '실루엣 대상 목록') != plan:
@@ -68,6 +71,8 @@ def render_silhouette_resumable(vs, root, target, out_root, rhwp_bin, dpi,
     }
     if kwargs.get('print_bmp_full_color'):
         identity['print_bmp_full_color'] = True
+    if kwargs.get('print_png_full_color'):
+        identity['print_png_full_color'] = True
     if kwargs.get('print_job_context') is not None:
         context = vs.resolve_input_path(root, kwargs['print_job_context'])
         identity['print_job_context'] = {'path': str(context), 'sha256': vs.sha256_file(context)}

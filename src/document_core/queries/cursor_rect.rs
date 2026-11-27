@@ -1640,6 +1640,10 @@ impl DocumentCore {
         if let Some(hit) = super::transformed_text::hit(&tree.root, page_num, x, y) {
             return Ok(hit);
         }
+        if let Some(hit) = super::flow_equation_hit::hit(&self.document, &tree.root, page_num, x, y)
+        {
+            return Ok(hit);
+        }
 
         // 문자 위치를 미리 계산한 TextRun 정보
         struct RunInfo {
@@ -3479,6 +3483,7 @@ impl DocumentCore {
             row_cursor_is_nested,
             end_row_height_override,
             start_row_height_override,
+            remaining_child_row,
             straddle_row_relief,
             straddle_page_bands,
             fragment_row_heights,
@@ -3776,6 +3781,7 @@ impl DocumentCore {
                 .is_some_and(|placement| placement.split_host_prefix().is_some()),
             *end_row_height_override,
             *start_row_height_override,
+            remaining_child_row.as_deref().copied(),
             straddle_row_relief,
             straddle_page_bands,
             pt_margin_left,

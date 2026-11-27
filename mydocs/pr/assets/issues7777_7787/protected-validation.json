@@ -1,0 +1,29 @@
+{
+  "head": "930e6f77a5433d6b254969acda078cd73f8b5597",
+  "baseline_path": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+  "baseline_sha256": "8141acb297ce2f39148f9014e463986431d266120629e8f368665e5917138f9d",
+  "comparison_sha256": "44ec4a7bc447826270aed08fdd2d716c70e88bca9f91574afa26b9603932d6b7",
+  "conditions": 46,
+  "verified_font_files": 331,
+  "producers": {
+    "native_sha256": "3198f9fd3e6413e45042360139c8a81111ae7ba2ddae16ef5b3d6a67778f5095",
+    "wasm_sha256": {
+      "rhwp.js": "2608f94b372d15aff7d7894f7c0878192da3d17c9b5288367b1a44bc808af733",
+      "rhwp_bg.wasm": "822f0a3f55e1f153a3165edbc14c9b44257076b5982ea02788424d03a4f4cf18"
+    }
+  },
+  "totals": {
+    "native": {
+      "conditions": 23,
+      "pages": 2023,
+      "declines": 0,
+      "improvements": 55
+    },
+    "wasm": {
+      "conditions": 23,
+      "pages": 2023,
+      "declines": 0,
+      "improvements": 119
+    }
+  }
+}

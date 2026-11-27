@@ -282,10 +282,6 @@ const DEFERRED_TEXT_OVERLAP_FIXTURES: &[&str] = &[
     "issue5792/2700727_animal_facility_standards.hwpx",
     // #7445: CGMP 48쪽은 다른 작업이 보정한다. 사용자 요청으로 이 입력의 회귀를 제거한다.
     "issue6035/cgmp_evaluation_table.hwpx",
-    // #7445: 정확한 한컴2020 정본 전82쪽 중43쪽 미달, 최저14.15%; 6쪽 쪽번호 겹침.
-    "issue1891/76076_regulatory_analysis.hwpx",
-    // #7445: PDF49쪽/Native47쪽, 공통47쪽 최저0.22%로 렌더링 회귀 보류.
-    "issue5699/37787_regulatory_impact.hwp",
     "issue1937_rowbreak_footnote_overpagination.hwp",
     "task1749/saved_bounds_cumulative_page_break.hwpx",
 ];

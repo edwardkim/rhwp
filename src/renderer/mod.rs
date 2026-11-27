@@ -425,6 +425,9 @@ pub struct TextStyle {
     /// HWP3 원본의 HFT 굵기 전진 계약을 적용한다.
     #[serde(skip_serializing)]
     pub source_hwp3_hft_bold: bool,
+    /// 실제 공급 글꼴에서 확인한 합성 굵기 전진. 출력 세션 안에서만 사용한다.
+    #[serde(skip_serializing)]
+    pub h2gtrm_faux_bold_tracking: bool,
     /// 원본 글자 스타일에서 크기를 해소했는지. 명시적인 0과 미지정을 구별한다.
     #[serde(skip_serializing)]
     pub resolved_font_size: bool,
@@ -640,7 +643,7 @@ pub struct TextStyle {
     #[serde(skip_serializing)]
     pub ascii_punct_latin: Option<Box<LatinSlotMetrics>>,
 }
-crate::storage::clone_fields!(TextStyle, {literal_soft_hyphen, text_paint, continuous_shadow, inherited_half_space_em, script_metrics, shadow_offset_percent, space_compression, literal_figure_space, literal_figure_space_em, native_pua_metrics, native_otf_metrics, bidi_layout, emphasis_skip_first_cluster, top_underline_font_size, top_underline_phase, supplemental_metrics, isolated_jamo_font, font_family, font_size, fixed_glyph_advances, source_font_is_hft, source_font_is_ttf, selected_primary_font_program, source_verified_hft_bold_tracking, source_hwp3_hft_bold, resolved_font_size, print_ink_font_size, font_position, hft_print_frame, print_text_device_frame, source_dc_frame, preserve_glyph_ink, natural_program_metrics, latin_decimal_halfwidth, color, bold, italic, underline, strikethrough, kerning, letter_spacing, ratio, default_tab_width, tab_stops, auto_tab_right, auto_left_tab_position, available_width, line_x_offset, text_start_offset, right_tab_block_width_override, tab_leaders, inline_tabs, extra_word_spacing, unjustified_leading_spaces, extra_char_spacing, cell_advance_scale, extra_dash_advance, outline_type, shadow_type, shadow_color, shadow_offset_x, shadow_offset_y, emboss, engrave, superscript, subscript, emphasis_dot, underline_shape, strike_shape, underline_color, strike_color, shade_color, font_metric_trusted, glyph_fallback_advance_explicit, metric_font_family, original_glyph_metric_family, font_space_em, layout_half_space, layout_half_space_em, regenerated_font_metrics, hft_hangul_face, hft_font_face, hft_fullwidth_dot, ascii_punct_latin});
+crate::storage::clone_fields!(TextStyle, {literal_soft_hyphen, text_paint, continuous_shadow, inherited_half_space_em, script_metrics, shadow_offset_percent, space_compression, literal_figure_space, literal_figure_space_em, native_pua_metrics, native_otf_metrics, bidi_layout, emphasis_skip_first_cluster, top_underline_font_size, top_underline_phase, supplemental_metrics, isolated_jamo_font, font_family, font_size, fixed_glyph_advances, source_font_is_hft, source_font_is_ttf, selected_primary_font_program, source_verified_hft_bold_tracking, source_hwp3_hft_bold, h2gtrm_faux_bold_tracking, resolved_font_size, print_ink_font_size, font_position, hft_print_frame, print_text_device_frame, source_dc_frame, preserve_glyph_ink, natural_program_metrics, latin_decimal_halfwidth, color, bold, italic, underline, strikethrough, kerning, letter_spacing, ratio, default_tab_width, tab_stops, auto_tab_right, auto_left_tab_position, available_width, line_x_offset, text_start_offset, right_tab_block_width_override, tab_leaders, inline_tabs, extra_word_spacing, unjustified_leading_spaces, extra_char_spacing, cell_advance_scale, extra_dash_advance, outline_type, shadow_type, shadow_color, shadow_offset_x, shadow_offset_y, emboss, engrave, superscript, subscript, emphasis_dot, underline_shape, strike_shape, underline_color, strike_color, shade_color, font_metric_trusted, glyph_fallback_advance_explicit, metric_font_family, original_glyph_metric_family, font_space_em, layout_half_space, layout_half_space_em, regenerated_font_metrics, hft_hangul_face, hft_font_face, hft_fullwidth_dot, ascii_punct_latin});
 
 /// [#7418] 영문 슬롯의 기본 메트릭 — [`TextStyle::ascii_punct_latin`] 참조.
 #[derive(Debug, Clone, PartialEq)]
@@ -861,6 +864,7 @@ impl Default for TextStyle {
             selected_primary_font_program: None,
             source_verified_hft_bold_tracking: false,
             source_hwp3_hft_bold: false,
+            h2gtrm_faux_bold_tracking: false,
             resolved_font_size: false,
             print_ink_font_size: None,
             font_position: None,
@@ -2893,6 +2897,25 @@ pub(crate) fn tac_table_host_line_metrics(
     ))
 }
 
+/// 저장 줄 없이 다시 만드는 제어 전용 문단의 나눔 표시 글자 크기.
+fn unstored_control_paragraph_end_font_size(
+    para: &crate::model::paragraph::Paragraph,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+) -> Option<f64> {
+    if !para.line_segs.is_empty() {
+        return None;
+    }
+    let end = para.char_shapes.last()?;
+    if end.start_pos.checked_add(1) != Some(para.char_count) {
+        return None;
+    }
+    para.empty_control_stream_position(0)?;
+    styles
+        .char_styles
+        .get(end.char_shape_id as usize)
+        .map(|style| style.font_size)
+}
+
 /// [#7079] 합성 TAC 줄의 leading — 호스트 문단의 글자 크기와 문단 줄간격에서 나온다.
 ///
 /// 저장 사다리 둘이 그 값을 못박는다. 156060125 2쪽은 `p[11] vpos=30525 lh=600 ls=0`
@@ -2921,16 +2944,16 @@ pub(crate) fn tac_object_stack_line_leading_px(
     if !para.line_segs.is_empty() {
         return 0.0;
     }
-    let Some(char_shape_id) = para
-        .char_shape_id_at(0)
-        .or_else(|| para.char_shapes.first().map(|shape| shape.char_shape_id))
-    else {
+    // 제어 문자만 있는 완전한 원본 스트림에서는 문단 나눔 표시의
+    // 글자 모양을 줄 뒤 간격에 쓴다. 개체의 물리 높이는 해당 상자에서 나온다.
+    let Some(font_size) = unstored_control_paragraph_end_font_size(para, styles).or_else(|| {
+        para.char_shape_id_at(0)
+            .or_else(|| para.char_shapes.first().map(|shape| shape.char_shape_id))
+            .and_then(|id| styles.char_styles.get(id as usize))
+            .map(|style| style.font_size)
+    }) else {
         return 0.0;
     };
-    let Some(char_style) = styles.char_styles.get(char_shape_id as usize) else {
-        return 0.0;
-    };
-    let font_size = char_style.font_size;
     if font_size <= 0.0 {
         return 0.0;
     }

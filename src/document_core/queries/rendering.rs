@@ -1512,6 +1512,28 @@ impl DocumentCore {
         self.build_page_layer_tree_with_paint_fonts(page_num, profile, None)
     }
 
+    fn print_alpha_order_before(&self, page: u32) -> Result<u8, HwpError> {
+        if self.print_alpha_prefix.borrow().is_empty() {
+            self.print_alpha_prefix.borrow_mut().push(0);
+        }
+        loop {
+            let (previous, order) = {
+                let prefix = self.print_alpha_prefix.borrow();
+                if let Some(&order) = prefix.get(page as usize) {
+                    return Ok(order);
+                }
+                (prefix.len() - 1, prefix.last().copied().unwrap_or(0))
+            };
+            let (count, _) =
+                self.with_profile_page_tree(previous as u32, RenderProfile::Print, |tree| {
+                    Ok(LayerBuilder::page_print_alpha_count(tree))
+                })?;
+            self.print_alpha_prefix
+                .borrow_mut()
+                .push(order.wrapping_add(count));
+        }
+    }
+
     pub(super) fn build_page_layer_tree_with_paint_fonts(
         &self,
         page_num: u32,
@@ -1575,6 +1597,15 @@ impl DocumentCore {
                 }
             }
         }
+        let prior_print_alpha_order = if profile == RenderProfile::Print
+            && page_num != 0
+            && self.with_profile_page_tree(page_num, profile, |tree| {
+                Ok(LayerBuilder::page_print_alpha_count(tree).1)
+            })? {
+            self.print_alpha_order_before(page_num)?
+        } else {
+            0
+        };
         let show_editor_visuals = profile.shows_editor_visuals();
         let output_options = LayerOutputOptions {
             show_paragraph_marks: show_editor_visuals && self.show_paragraph_marks,
@@ -1773,6 +1804,7 @@ impl DocumentCore {
                 .with_output_options(output_options)
                 .with_bin_data_epoch(self.bin_data_epoch)
                 .with_prior_print_solid_fill(prior_print_solid_fill)
+                .with_prior_print_alpha_order(prior_print_alpha_order)
                 .with_hangul2024_print(hangul2024_print)
                 .with_print_crop_marks(self.document.print_crop_marks());
             Ok(builder.build_with_print_footer(tree, &embedded_fonts, print_footer))
@@ -6443,8 +6475,35 @@ impl DocumentCore {
                     profile.hwpx_container() && !profile.legacy_hwp3_stored_geometry(),
                     storage,
                 )?;
-            let source_paragraphs = cached_frames.as_deref().unwrap_or(&section.paragraphs);
             let pd = &section.section_def.page_def;
+            use crate::renderer::render_normalization::stored_equation_ladder::EquationFlowSource;
+            let equation_flow_source = if self.source_format == crate::parser::FileFormat::Hml {
+                Some(EquationFlowSource::ShapeFreeHml)
+            } else if profile.hwp5_stored_pagination_layout() && !profile.session_edited() {
+                Some(EquationFlowSource::SavedHwp)
+            } else if profile.hwpx_container()
+                && profile.hwpx_stored_layout()
+                && !profile.session_edited()
+            {
+                Some(EquationFlowSource::SavedHwpx)
+            } else {
+                None
+            };
+            let stored_equation_ladder = if let Some(source) = equation_flow_source {
+                crate::renderer::render_normalization::stored_equation_ladder::normalize_with_storage(
+                    cached_frames.as_deref().unwrap_or(&section.paragraphs),
+                    &self.document.doc_info,
+                    pd,
+                    source,
+                    storage,
+                )?
+            } else {
+                None
+            };
+            let source_paragraphs = stored_equation_ladder
+                .as_deref()
+                .or(cached_frames.as_deref())
+                .unwrap_or(&section.paragraphs);
             let body_area = PageAreas::from_page_def(pd).body_area;
             let body_h_hu = body_area.height();
             let body_bottom_hu = body_area.bottom;
@@ -6565,6 +6624,7 @@ impl DocumentCore {
                 None
             };
             let paragraph_geometry_changed = cached_frames.is_some()
+                || stored_equation_ladder.is_some()
                 || stored_word_tails.is_some()
                 || math_textboxes.is_some()
                 || math_tables.is_some();
@@ -8034,6 +8094,9 @@ impl DocumentCore {
     pub(crate) fn invalidate_page_tree_cache_from(&self, from_page: u32) {
         let mut cache = self.page_tree_cache.borrow_mut();
         let from = from_page as usize;
+        self.print_alpha_prefix
+            .borrow_mut()
+            .truncate(from.saturating_add(1));
         for i in from..cache.len() {
             cache[i] = None;
         }
@@ -8054,6 +8117,9 @@ impl DocumentCore {
     /// 한 페이지의 렌더 트리와 그 파생 표현을 함께 무효화한다.
     pub(crate) fn invalidate_page_tree_cache_page(&self, page_num: u32) {
         let idx = page_num as usize;
+        self.print_alpha_prefix
+            .borrow_mut()
+            .truncate(idx.saturating_add(1));
         if let Some(slot) = self.page_tree_cache.borrow_mut().get_mut(idx) {
             *slot = None;
         }
@@ -8342,6 +8408,7 @@ impl DocumentCore {
     /// 페이지 렌더 트리 캐시 전체 무효화.
     pub(crate) fn invalidate_page_tree_cache(&self) {
         self.page_tree_cache.borrow_mut().clear();
+        self.print_alpha_prefix.borrow_mut().clear();
         self.header_footer_preview_tree_cache.borrow_mut().take();
         self.layer_tree_json_cache.borrow_mut().clear();
         self.page_layer_tree_cache.borrow_mut().clear();

@@ -5,6 +5,7 @@ use super::super::paragraph::metrics::FormattedParagraph;
 use super::super::{is_para_topbottom_float, signed_hwpunit};
 use super::tac_flow::TacFlowQuery;
 use crate::model::{control::Control, paragraph::Paragraph};
+use crate::renderer::{height_measurer::MeasuredTable, hwpunit_to_px};
 
 /// 저장 줄의 분할 불가 흐름 표가 초기 오프셋 상자로 한 단을 넘는지 조회한다.
 /// 한 줄의 공동 앵커를 유지하며, 편집·합성 줄·겹침·절대 배치는 제외한다.
@@ -70,6 +71,94 @@ pub(in crate::renderer::typeset) struct ControlPlacementOrder {
     pub last_placed_table: Option<usize>,
 }
 
+/// 이월한 첫 표의 잔여 행과 두 번째 표가 같은 새 쪽에서 host 줄을 닫는지 확인한다.
+/// 줄의 저장 좌표가 새 쪽의 합을 증언하면 두 표의 오프셋은 같은 축의 정렬 키가 아니다.
+pub(super) fn stored_split_float_pair_closes_host(
+    para: &Paragraph,
+    para_index: usize,
+    measured: &[MeasuredTable],
+    available: f64,
+    dpi: f64,
+) -> bool {
+    use crate::model::{shape::VertAlign, table::TablePageBreak};
+    let [Control::Table(first), Control::Table(second)] = para.controls.as_slice() else {
+        return false;
+    };
+    let [line] = para.line_segs.as_slice() else {
+        return false;
+    };
+    if para.empty_control_stream_position(0).is_none()
+        || para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+        || line.vertical_pos <= 0
+        || super::super::is_synthetic_line_seg(line)
+        || first.common.width != second.common.width
+        || first.common.vertical_offset as i32 <= 0
+        || second.common.vertical_offset != 0
+        || first.row_count <= 1
+        || [first, second].iter().any(|table| {
+            !is_para_topbottom_float(&table.common)
+                || !table.common.flow_with_text
+                || table.common.allow_overlap
+                || table.common.vert_align != VertAlign::Top
+                || table.layout_page_break() != TablePageBreak::RowBreak
+                || table.caption.is_some()
+                || table.repeat_header
+                || table.cell_spacing != 0
+                || table.outer_margin_top < 0
+                || table.outer_margin_bottom < 0
+                || table.common.height == 0
+                || table.common.height > i32::MAX as u32
+                || table
+                    .cells
+                    .iter()
+                    .any(|cell| cell.dirty_flag || cell.row_span != 1)
+        })
+    {
+        return false;
+    }
+
+    let rows = |index| {
+        measured
+            .iter()
+            .find(|table| table.para_index == para_index && table.control_index == index)
+            .map(|table| table.row_heights.as_slice())
+    };
+    let (Some(first_rows), Some(second_rows)) = (rows(0), rows(1)) else {
+        return false;
+    };
+    if first_rows.len() != usize::from(first.row_count)
+        || second_rows.len() != usize::from(second.row_count)
+    {
+        return false;
+    }
+    let px = |hu| hwpunit_to_px(hu, dpi);
+    let margins = |table: &crate::model::table::Table| {
+        px(i32::from(table.outer_margin_top) + i32::from(table.outer_margin_bottom))
+    };
+    let opening = px(first.common.height as i32);
+    let head_offset = px(first.common.vertical_offset as i32);
+    let first_height: f64 = first_rows.iter().sum();
+    let second_height: f64 = second_rows.iter().sum();
+    let roundoff = f64::EPSILON
+        * first_height.max(second_height)
+        * (first_rows.len() + second_rows.len() + 6) as f64;
+    let opening_follows_row = first_rows
+        .iter()
+        .take(first_rows.len() - 1)
+        .scan(0.0, |height, &row| {
+            *height += row;
+            Some(*height)
+        })
+        .any(|height| (height - opening).abs() <= roundoff);
+    let closing_host = first_height - opening + margins(first) + second_height + margins(second);
+    opening_follows_row
+        && (second_height - px(second.common.height as i32)).abs() <= roundoff
+        && opening + head_offset + margins(first) <= available + roundoff
+        && first_height + head_offset + margins(first) > available + roundoff
+        && (closing_host - px(line.vertical_pos)).abs() <= roundoff
+}
+
 /// 공백과 표의 원시 슬롯이 문단을 빠짐없이 소유할 때만 저장 줄 순서를 쓴다.
 pub(in crate::renderer::typeset) fn complete_whitespace_table_stream(para: &Paragraph) -> bool {
     match complete_whitespace_table_stream_with_storage(para, &crate::storage::Unbounded) {
@@ -130,7 +219,14 @@ pub(in crate::renderer::typeset) fn for_paragraph(
     flow: TacFlowQuery<'_>,
     column_height: f64,
 ) -> ControlPlacementOrder {
-    match for_paragraph_with_storage(para, fmt, flow, column_height, &crate::storage::Unbounded) {
+    match for_paragraph_with_storage(
+        para,
+        fmt,
+        flow,
+        column_height,
+        false,
+        &crate::storage::Unbounded,
+    ) {
         Ok(value) => value,
         Err(never) => match never {},
     }
@@ -141,6 +237,7 @@ pub(in crate::renderer::typeset) fn for_paragraph_with_storage<S: crate::storage
     fmt: &FormattedParagraph,
     flow: TacFlowQuery<'_>,
     column_height: f64,
+    preserve_split_pair_order: bool,
     storage: &S,
 ) -> Result<ControlPlacementOrder, S::Error> {
     // 각 컨트롤에 대해 format → fits → place/split
@@ -260,6 +357,7 @@ pub(in crate::renderer::typeset) fn for_paragraph_with_storage<S: crate::storage
         .chars()
         .any(|c| c > '\u{001F}' && c != '\u{FFFC}' && !c.is_whitespace());
     let should_sort_para_float_tables = !host_has_real_text
+        && !preserve_split_pair_order
         && !has_negative_para_float
         && !has_mid_para_vpos_reset
         && !has_tac_overlapped_by_positive_float

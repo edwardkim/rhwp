@@ -1,5 +1,6 @@
 use quick_xml::events::{BytesStart, Event};
 use quick_xml::Reader;
+use std::collections::BTreeMap;
 
 use crate::model::page::{ColumnDef, ColumnDirection, ColumnType, PageDef};
 use crate::model::paragraph::{CharShapeRef, ColumnBreakType};
@@ -83,9 +84,17 @@ pub(crate) struct HmlSource {
     pub border_fills: Vec<BorderFill>,
     pub char_shapes: Vec<CharShape>,
     pub para_shapes: Vec<ParaShape>,
+    pub char_layout_elements: BTreeMap<usize, CharLayoutElements>,
+    pub para_margin_elements: BTreeMap<usize, bool>,
     pub tab_defs: Vec<TabDef>,
     pub styles: Vec<Style>,
     pub sections: Vec<HmlSection>,
+}
+
+#[derive(Debug, Default)]
+pub(crate) struct CharLayoutElements {
+    pub ratio: bool,
+    pub relative_size: bool,
 }
 
 #[derive(Debug, Default)]
@@ -123,6 +132,8 @@ pub(crate) struct HmlEquation {
     pub baseline: i16,
     pub version_info: String,
     pub font_name: String,
+    pub declares_shape_object: bool,
+    pub implicit_float: Option<CommonObjAttr>,
     script_count: usize,
 }
 
@@ -629,6 +640,9 @@ impl<'a> ReadState<'a> {
             self.current_char_shape = None;
             return Ok(());
         }
+        self.source
+            .char_layout_elements
+            .insert(id, CharLayoutElements::default());
         self.current_char_shape = Some(id);
         Ok(())
     }
@@ -638,17 +652,25 @@ impl<'a> ReadState<'a> {
         name: &str,
         element: &BytesStart<'_>,
     ) -> Result<(), HmlError> {
-        let Some(shape) = self
-            .current_char_shape
-            .and_then(|index| self.source.char_shapes.get_mut(index))
-        else {
+        let Some(index) = self.current_char_shape else {
             return Ok(());
         };
+        let shape = &mut self.source.char_shapes[index];
         match name {
             "FONTID" => shape.font_ids = language_array(element)?,
-            "RATIO" => shape.ratios = language_array(element)?,
+            "RATIO" => {
+                shape.ratios = language_array(element)?;
+                if let Some(layout) = self.source.char_layout_elements.get_mut(&index) {
+                    layout.ratio = true;
+                }
+            }
             "CHARSPACING" => shape.spacings = language_array(element)?,
-            "RELSIZE" => shape.relative_sizes = language_array(element)?,
+            "RELSIZE" => {
+                shape.relative_sizes = language_array(element)?;
+                if let Some(layout) = self.source.char_layout_elements.get_mut(&index) {
+                    layout.relative_size = true;
+                }
+            }
             "CHAROFFSET" => shape.char_offsets = language_array(element)?,
             _ => {}
         }
@@ -682,17 +704,16 @@ impl<'a> ReadState<'a> {
             self.current_para_shape = None;
             return Ok(());
         }
+        self.source.para_margin_elements.insert(id, false);
         self.current_para_shape = Some(id);
         Ok(())
     }
 
     fn capture_para_margin(&mut self, element: &BytesStart<'_>) -> Result<(), HmlError> {
-        let Some(shape) = self
-            .current_para_shape
-            .and_then(|index| self.source.para_shapes.get_mut(index))
-        else {
+        let Some(index) = self.current_para_shape else {
             return Ok(());
         };
+        let shape = &mut self.source.para_shapes[index];
         shape.margin_left = parse_attribute(element, b"Left")?.unwrap_or(0);
         shape.margin_right = parse_attribute(element, b"Right")?.unwrap_or(0);
         shape.indent = parse_attribute(element, b"Indent")?.unwrap_or(0);
@@ -705,6 +726,7 @@ impl<'a> ReadState<'a> {
             Some("AtLeast") => LineSpacingType::Minimum,
             _ => LineSpacingType::Percent,
         };
+        self.source.para_margin_elements.insert(index, true);
         Ok(())
     }
 
@@ -1330,6 +1352,11 @@ impl<'a> ReadState<'a> {
         let unsupported_control = self.is_unsupported_inline(name);
         let unsupported_equation_child = self.stack.iter().any(|item| item == "EQUATION")
             && !(parent == Some("EQUATION") && name == "SCRIPT");
+        if parent == Some("EQUATION") && name == "SHAPEOBJECT" {
+            if let Some(equation) = self.equations.last_mut() {
+                equation.declares_shape_object = true;
+            }
+        }
         let explicitly_unsupported = matches!(name, "PICTURE" | "BINDATA");
         if unknown_document_child
             || name == "SCRIPTCODE"

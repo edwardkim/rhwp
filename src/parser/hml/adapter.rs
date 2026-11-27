@@ -9,6 +9,7 @@ use super::error::HmlError;
 use super::reader::{HmlControl, HmlEquation, HmlParagraph, HmlRectangle, HmlSource, HmlTable};
 
 pub(crate) fn into_document(mut source: HmlSource) -> Result<Document, HmlError> {
+    super::implicit_equation_print::apply(&mut source);
     let mut document = Document {
         header: FileHeader {
             version: HwpVersion {
@@ -139,16 +140,19 @@ fn into_control(source: HmlControl) -> Result<Control, HmlError> {
 }
 
 fn into_equation(source: HmlEquation) -> Control {
-    let (width, height) =
-        crate::renderer::equation::intrinsic_size_hwp(&source.script, source.font_size);
-    Control::Equation(Box::new(Equation {
-        common: CommonObjAttr {
+    let common = source.implicit_float.unwrap_or_else(|| {
+        let (width, height) =
+            crate::renderer::equation::intrinsic_size_hwp(&source.script, source.font_size);
+        CommonObjAttr {
             ctrl_id: crate::parser::tags::CTRL_EQUATION,
             treat_as_char: true,
             width,
             height,
             ..Default::default()
-        },
+        }
+    });
+    Control::Equation(Box::new(Equation {
+        common,
         script: source.script,
         font_size: source.font_size,
         color: source.color,

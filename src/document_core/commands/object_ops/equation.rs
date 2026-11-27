@@ -358,7 +358,13 @@ impl DocumentCore {
         cell_para_idx: Option<usize>,
         props_json: &str,
     ) -> Result<String, HwpError> {
+        use crate::document_core::helpers::json_u32;
+        use crate::parser::hml::implicit_equation_print::{
+            fallback_frame, uses_fallback_placement,
+        };
+
         let dpi = self.dpi;
+        let hml_frame = (self.source_format == crate::parser::FileFormat::Hml).then(fallback_frame);
         let eq = self.find_equation_mut(
             section_idx,
             parent_para_idx,
@@ -377,7 +383,21 @@ impl DocumentCore {
             ),
             eq.common.affect_line_spacing,
         );
+        let implicit_frame = hml_frame.filter(|frame| {
+            (eq.common.width, eq.common.height) == (frame.width, frame.height)
+                && uses_fallback_placement(&eq.common)
+        });
         Self::apply_equation_properties(eq, dpi, props_json);
+        // HML의 생략된 상자는 스크립트 잉크와 독립적이다. 요청에서 지정하지
+        // 않은 축은 기존 프레임으로 두어 저장한 HML도 같은 위치로 열린다.
+        if let Some(frame) = implicit_frame.filter(|_| uses_fallback_placement(&eq.common)) {
+            if json_u32(props_json, "width").is_none() {
+                eq.common.width = frame.width;
+            }
+            if json_u32(props_json, "height").is_none() {
+                eq.common.height = frame.height;
+            }
+        }
         let current_flow = (
             eq.common.treat_as_char,
             crate::renderer::equation::flow_metrics_hwp(eq),

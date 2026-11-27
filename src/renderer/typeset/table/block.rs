@@ -58,6 +58,7 @@ struct SplitTableEntry<'a> {
     mt: &'a MeasuredTable,
     row_geometry_table: &'a crate::model::table::Table,
     declared_table_height: f64,
+    stored_completed_row_frames: Option<crate::renderer::float_placement::StoredRowFrames>,
 }
 
 impl TypesetEngine {

@@ -376,6 +376,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     ),
     (
         "mod.rs",
+        "set_print_png_full_color",
+        Exempt::SessionState,
+        "인쇄용 PNG의 색상 정책과 출력 캐시만 갱신한다. 저장 문서의 IR과 원본 스트림은 유지한다.",
+    ),
+    (
+        "mod.rs",
         "set_print_job_context",
         Exempt::SessionState,
         "인쇄 작업의 파일명·현지 시각과 출력 레이어 캐시만 갱신한다. 원본 DocInfo와 본문 스트림은 유지한다.",

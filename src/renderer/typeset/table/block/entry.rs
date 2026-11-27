@@ -2823,8 +2823,33 @@ impl TypesetEngine {
             && total_footnote <= 0.0
             && st.current_height + (table_total - host_spacing_total).max(0.0)
                 > available + below_body_slack + 0.5;
-        let stored_cell_frames_require_split =
-            self.stored_cell_page_frames_require_split(table, styles);
+        let stored_completed_row_frames = (st.col_count == 1
+            && st.profile.hwp5_stored_pagination_layout()
+            && table.row_count == 1
+            && table
+                .cells
+                .iter()
+                .any(|cell| cell.height > table.common.height)
+            && ft.table_footnotes.is_empty())
+        .then(|| paragraphs_all.get(para_idx + 1))
+        .flatten()
+        .and_then(|next| {
+            let engine = crate::renderer::layout::LayoutEngine::new(self.dpi);
+            self.prime_section_cell_context(&engine);
+            engine.set_layout_profile(st.profile);
+            engine.set_render_normalization_overlay(std::sync::Arc::clone(
+                &self.render_normalization,
+            ));
+            engine.stored_completed_row_frames(
+                para,
+                next,
+                table,
+                styles,
+                st.layout.body_area.height,
+            )
+        });
+        let stored_cell_frames_require_split = stored_completed_row_frames.is_some()
+            || self.stored_cell_page_frames_require_split(table, styles);
         let legacy_whole_fits = !painted_rowbreak_exceeds_paper
             && !stored_cell_frames_require_split
             && (st.current_height + whole_fit_table_total <= available
@@ -3306,6 +3331,7 @@ impl TypesetEngine {
             mt,
             row_geometry_table,
             declared_table_height,
+            stored_completed_row_frames,
         })
     }
 }

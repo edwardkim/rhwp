@@ -24,7 +24,7 @@ pub(crate) fn print_jpeg_payload(
     image: &ImageNode,
     bbox: BoundingBox,
     dpi: f64,
-    print_png_rgb555: bool,
+    print_png_rgb555: Option<bool>,
     print_bmp_full_color: bool,
 ) -> Option<ResolvedImagePayload> {
     if image.effect != ImageEffect::RealPic
@@ -108,9 +108,14 @@ pub(crate) fn print_jpeg_payload(
     };
     // 한컴 PDF 1-up 장치는 이 DIB의 RGB를 보존하면서 같은 팔레트별 JPEG 품질을 쓴다.
     // RGB555 장치의 Bayer 재구성과 JPEG 양자화 품질은 별도 단계다.
+    let expand_rgb555 = if mime == "image/png" {
+        print_png_rgb555.unwrap_or(image.hancom2024_print_bitmap)
+    } else {
+        dib32 || image.hancom2024_print_bitmap
+    };
     let transfer = if retain_rgb {
         PrintJpegTransfer::PaletteQuality
-    } else if dib32 || image.hancom2024_print_bitmap || (print_png_rgb555 && mime == "image/png") {
+    } else if expand_rgb555 {
         PrintJpegTransfer::Rgb555
     } else {
         PrintJpegTransfer::Direct

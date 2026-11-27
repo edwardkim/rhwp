@@ -279,7 +279,7 @@ pub struct DocumentCore {
     /// 문서 출처가 아니므로 provenance 가 아닌 여기서 들고,
     /// [`Self::effective_layout_profile`] 이 profile 에 합성한다.
     pub(crate) hangul2024_compat: bool,
-    pub(crate) print_png_rgb555: bool,
+    pub(crate) print_png_rgb555: Option<bool>,
     pub(crate) print_bmp_full_color: bool,
     print_job_context: Option<PrintJobContext>,
     /// 구역별 표 측정 데이터 (페이지네이션 결과 보존)
@@ -319,6 +319,8 @@ pub struct DocumentCore {
     /// Native의 공유 조회는 node·text·image payload를 깊게 복제하지 않는다.
     /// 기존 소유값 조회는 호출자가 독립적으로 수정할 수 있는 clone을 반환한다.
     pub(crate) page_layer_tree_cache: RefCell<Vec<Vec<(u16, Arc<PageLayerTree>)>>>,
+    /// 페이지 시작 전까지 인쇄된 투명 PNG의 순번. 의미 트리와 함께 무효화한다.
+    pub(crate) print_alpha_prefix: RefCell<Vec<u8>>,
     /// 그림 신원 키(`imageKey`)의 문서 단위 세대 번호 (Task #3315).
     ///
     /// `bin_data_id` 는 append-only 라 세션 중 id→바이트가 안정하지만, undo 스냅샷
@@ -613,8 +615,17 @@ impl DocumentCore {
 
     /// 한컴 Print 장치의 PNG 압축 전 색상 변환을 조판 세대와 별도로 지정한다.
     pub fn set_print_png_rgb555(&mut self, enabled: bool) {
-        if self.print_png_rgb555 != enabled {
-            self.print_png_rgb555 = enabled;
+        self.set_print_png_color_policy(enabled.then_some(true));
+    }
+
+    /// Print JPEG 전달 시 불투명 PNG의 원본 RGB를 유지한다.
+    pub fn set_print_png_full_color(&mut self, enabled: bool) {
+        self.set_print_png_color_policy(enabled.then_some(false));
+    }
+
+    fn set_print_png_color_policy(&mut self, rgb555: Option<bool>) {
+        if self.print_png_rgb555 != rgb555 {
+            self.print_png_rgb555 = rgb555;
             self.invalidate_page_tree_cache();
         }
     }
@@ -666,7 +677,7 @@ impl DocumentCore {
             debug_overlay: false,
             respect_vpos_reset: false,
             hangul2024_compat: false,
-            print_png_rgb555: false,
+            print_png_rgb555: None,
             print_bmp_full_color: false,
             print_job_context: None,
             measured_tables: Vec::new(),
@@ -681,6 +692,7 @@ impl DocumentCore {
             header_footer_preview_tree_cache: RefCell::new(None),
             layer_tree_json_cache: RefCell::new(Vec::new()),
             page_layer_tree_cache: RefCell::new(Vec::new()),
+            print_alpha_prefix: RefCell::new(Vec::new()),
             bin_data_epoch: 0,
             loaded_unreferenced_bin_data: std::collections::BTreeSet::new(),
             batch_mode: false,

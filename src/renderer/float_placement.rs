@@ -17,10 +17,14 @@ mod stored_float_rows;
 mod stored_nested_host;
 mod stored_opening_row_frame;
 mod stored_row_grid;
+mod stored_table_source;
 pub(crate) use column_ole::column_ole_placement;
 pub(crate) use stored_float_rows::{owns_embedded_float_bands, stored_float_row_span_hu};
 pub(crate) use stored_nested_host::{stored_nested_host_content_bottom, stored_nested_host_frame};
 pub(crate) use stored_opening_row_frame::{stored_plain_opening_row_frame, StoredOpeningRowFrame};
+pub(crate) use stored_table_source::{
+    stored_complete_table_source_is_current, stored_plain_table_source_is_current,
+};
 mod overlay_outer_frame;
 pub(crate) use overlay_outer_frame::overlay_table_outer_margin_left_hu;
 pub(crate) use stored_column_spacing::stored_column_top_spacing_before;
@@ -1708,7 +1712,7 @@ pub(crate) fn cell_paragraph_no_overlap_square_stack(
     if !host.text.trim().is_empty() {
         return None;
     }
-    cell_no_overlap_square_stack(&host.controls, dpi)
+    cell_no_overlap_square_stack(&host.controls, dpi, false)
 }
 
 /// 저장 줄 없는 칸 호스트 문단의 어울림 그림이 음수 세로 오프셋으로 문단 원점 위로
@@ -1747,7 +1751,7 @@ pub(crate) fn cell_paragraph_square_text_obstacles(
     if !host.text.trim().is_empty() {
         return None;
     }
-    let stack = cell_no_overlap_square_stack(&host.controls, dpi);
+    let stack = cell_no_overlap_square_stack(&host.controls, dpi, false);
     let mut boxes = Vec::new();
     let mut horz_rel_to = None;
     for (control_idx, control) in host.controls.iter().enumerate() {
@@ -1807,6 +1811,7 @@ pub(crate) fn cell_paragraph_square_text_obstacles(
 pub(crate) fn cell_no_overlap_square_stack(
     controls: &[Control],
     dpi: f64,
+    restart_at_fragment_origin: bool,
 ) -> Option<CellNoOverlapSquareStack> {
     struct StackBox {
         control_idx: usize,
@@ -1838,10 +1843,14 @@ pub(crate) fn cell_no_overlap_square_stack(
             return None;
         }
         let x0 = i64::from(signed_hwpunit(common.horizontal_offset));
-        let outer_w = i64::from(signed_hwpunit(common.width))
-            + i64::from(common.margin.left)
-            + i64::from(common.margin.right);
-        let visual_h = i64::from(signed_hwpunit(common.height));
+        let (width, height) = if restart_at_fragment_origin {
+            picture_flow_frame_size_hu(picture)
+        } else {
+            (signed_hwpunit(common.width), signed_hwpunit(common.height))
+        };
+        let outer_w =
+            i64::from(width) + i64::from(common.margin.left) + i64::from(common.margin.right);
+        let visual_h = i64::from(height);
         let outer_h = visual_h + i64::from(common.margin.top) + i64::from(common.margin.bottom);
         if outer_w <= 0 || visual_h <= 0 {
             return None;
@@ -1850,7 +1859,11 @@ pub(crate) fn cell_no_overlap_square_stack(
             control_idx,
             x0,
             x1: x0 + outer_w,
-            y: i64::from(signed_hwpunit(common.vertical_offset).max(0)),
+            y: if restart_at_fragment_origin {
+                0
+            } else {
+                i64::from(signed_hwpunit(common.vertical_offset).max(0))
+            },
             outer_h,
             visual_h: visual_h + i64::from(common.margin.top),
         });
@@ -2864,6 +2877,15 @@ pub(crate) fn stored_empty_picture_cell_frame(
 pub(crate) struct StoredEmptyOpeningRowFrame {
     pub opening_height: f64,
     pub continuation_height: f64,
+    /// 다음 조각의 셀 위 안여백에서 시작하는 그림 띠 자체의 높이.
+    pub deferred_picture_band_height: Option<f64>,
+}
+
+impl StoredEmptyOpeningRowFrame {
+    pub(crate) fn deferred_continuation_height(self, start_row_height: Option<f64>) -> Option<f64> {
+        self.deferred_picture_band_height?;
+        (start_row_height == Some(self.continuation_height)).then_some(self.continuation_height)
+    }
 }
 
 /// 앞 내용이 모두 끝난 행도 두 저장 상자 사이에 빈 물리 잔여를 남길 수 있다.
@@ -2879,13 +2901,14 @@ pub(crate) struct StoredCompletePrefixFrame {
 
 /// A source cut and the physical boxes on either side, closed independently
 /// by the following paragraph's stored origin.
-#[derive(Debug, Clone, Copy)]
-pub(crate) struct StoredSingleCellRowFrames {
+#[derive(Debug, Clone)]
+pub(crate) struct StoredRowFrames {
     pub opening_anchor_hu: i32,
     pub opening_table_top_hu: i32,
-    pub opening_end: usize,
+    pub opening_cut: Vec<usize>,
     pub opening_height: f64,
     pub closing_height: f64,
+    pub closing_is_blank: bool,
 }
 
 /// 빈 문단의 원본 어울림 형제 표가 공유하는 저장 호스트 프레임.
@@ -3633,44 +3656,6 @@ pub(crate) fn stored_float_frame_before_tac_line(
     })
 }
 
-/// 편집 세션에서도 원본 일반 셀의 저장 줄을 재사용할 자격만 확인한다.
-/// 원점·높이·분할 경계의 인증은 각 배치 계획이 별도로 수행한다.
-pub(crate) fn stored_plain_table_source_is_current(table: &Table) -> bool {
-    table
-        .raw_ctrl_seal
-        .is_some_and(|sealed| sealed == crate::model::raw_provenance::record_digest(&table.common))
-        && table.caption.is_none()
-        && !table.cells.is_empty()
-        && table.cells.iter().all(|cell| {
-            !cell.dirty_flag
-                && !cell.paragraphs.is_empty()
-                && cell.paragraphs.iter().all(|para| {
-                    !para.stored_text_partition_is_dirty()
-                        && !para.cell_format_vpos_dirty
-                        // 하이퍼링크 필드는 본문 글줄을 꾸미며 별도 배치 상자를 만들지 않는다.
-                        && para.controls.iter().all(|control| matches!(control,
-                            Control::Field(field) if field.field_type == crate::model::control::FieldType::Hyperlink))
-                        && !para.line_segs.is_empty()
-                        && para.line_segs.iter().all(|line| {
-                            line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
-                                == 0
-                                && line.vertical_pos >= 0
-                                && line.line_height > 0
-                                && line.line_spacing >= 0
-                        })
-                        && para
-                            .source_line_seg_vertical_pos
-                            .as_ref()
-                            .is_none_or(|source| {
-                                source
-                                    .iter()
-                                    .copied()
-                                    .eq(para.line_segs.iter().map(|line| line.vertical_pos))
-                            })
-                })
-        })
-}
-
 /// 빈 호스트와 다음 저장 줄이 전체 개체 바깥 상자를 정확히 닫는다.
 /// 실측 본체·수직 캡션이 전체 선언 프레임과 같을 때 오프셋·양쪽 여백을 한 번 소비한다.
 /// 분할 조각의 선언 높이, 편집 뒤 캐시, 합성 줄은 이 원점의 증거가 아니다.
@@ -3734,7 +3719,6 @@ pub(crate) fn stored_empty_control_table_frame(
             HorzRelTo::Column | HorzRelTo::Para
         )
         || !matches!(table.common.vert_align, VertAlign::Top | VertAlign::Inside)
-        || offset < 0
         || table.common.height == 0
         || table.common.height > i32::MAX as u32
         || !measured_height.is_finite()
@@ -3791,7 +3775,21 @@ pub(crate) fn stored_empty_control_table_frame(
         && next_vpos > 0
         && next_vpos < anchor_vpos
         && unpositioned_extent == i64::from(next_vpos);
-    let positioned_offset = if offset_consumed {
+    let leading_band = (host_spacing_before * 7200.0 / dpi).round() as i64;
+    let positioned_offset = if offset < 0 {
+        if leading_band != 0
+            || !stored_empty_host_frame::stored_outer_box_owns_negative_offset(
+                host,
+                successor,
+                table,
+                anchor_vpos,
+                next_vpos,
+            )
+        {
+            return None;
+        }
+        0
+    } else if offset_consumed {
         0
     } else {
         i64::from(offset)
@@ -3799,7 +3797,6 @@ pub(crate) fn stored_empty_control_table_frame(
     let object_extent = positioned_offset + unpositioned_extent;
     // 명시적 쪽 나눔이나 양수 되감김이 전체 실측 바깥 상자를 정확히 닫으면
     // 새 쪽 원점을 공유한다. 되감김 자체나 첫 조각의 선언 높이만으로 판단하지 않는다.
-    let leading_band = (host_spacing_before * 7200.0 / dpi).round() as i64;
     let complete_rewound_frame = frame_vpos == 0
         && next_vpos > 0
         && next_vpos < anchor_vpos

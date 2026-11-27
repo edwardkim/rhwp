@@ -295,6 +295,9 @@ pub(crate) fn verified_missing_glyph_supplier(
         // 한컴 Print에서 함초롬돋움의 288/1000em으로 전진한다. 이 공급은
         // 맑은 고딕에만 적용한다. KoPub돋움체 Light의 한컴 Print는 한컴바탕을 쓴다.
         ("Malgun Gothic", 2048, false, false, '\u{2024}') => Some("HCR Dotum"),
+        // 맑은 고딕 Regular에는 U+21B3가 없다. 76076의 독립 한컴 2020·2024
+        // Print는 모두 함초롬돋움의 화살표를 사용하고 970/1000em으로 전진한다.
+        ("Malgun Gothic", 2048, false, false, '\u{21B3}') => Some("HCR Dotum"),
         // 기호 슬롯을 HY신명조 TTF로 지정한 독립2020 Print의 두 점은
         // HBATANG이다. HFT 한양신명조의 전진은 해당 overlay가 보존한다.
         ("HYSinMyeongJo-Medium", 1024, false, false, '\u{2024}' | '\u{2027}') => {

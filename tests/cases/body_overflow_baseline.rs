@@ -116,8 +116,6 @@ const DEFERRED_BODY_OVERFLOW_FIXTURES: &[&str] = &[
     "issue5792/2700727_animal_facility_standards.hwpx",
     // #7445: CGMP 48쪽은 다른 작업이 보정한다. 사용자 요청으로 이 입력의 회귀를 제거한다.
     "issue6035/cgmp_evaluation_table.hwpx",
-    // #7445: PDF49쪽/Native47쪽, 공통47쪽 최저0.22%로 렌더링 회귀 보류.
-    "issue5699/37787_regulatory_impact.hwp",
     "issue3637/press_release_split_cell_nested_table.hwpx",
     "issue6031/3249937_asset_management_rules.hwpx",
     "hwpctl_API_v2.4.hwp",

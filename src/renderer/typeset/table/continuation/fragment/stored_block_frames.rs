@@ -9,7 +9,7 @@ pub(super) struct StoredBlockAcceptance {
     pub(super) frame: Option<StoredBlockPhysicalFrame>,
     pub(super) range: (usize, usize),
     pub(super) rows: Vec<f64>,
-    pub(super) extra: f64,
+    pub(super) height_delta: f64,
 }
 
 impl TypesetEngine {
@@ -89,7 +89,7 @@ impl TypesetEngine {
             frame: None,
             range: (first, end),
             rows,
-            extra: height - occupied,
+            height_delta: height - occupied,
         })
     }
 
@@ -135,10 +135,38 @@ impl TypesetEngine {
             return None;
         }
         let before = scan.consumed - occupied;
+        let room = budget.avail_for_rows - before;
+        // 원본이 별도로 인증한 빈 띠가 있으면 그 물리 하단이 권위다.
+        let has_explicit_bottom = budget.source_frame_bottom.is_some()
+            || input.start.stored_fragment_body_bottom_inset.is_some();
+        let closing_height = if has_explicit_bottom {
+            None
+        } else {
+            layout.stored_text_block_closing_height(
+                table,
+                (first, end),
+                &input.start.start_cut,
+                &scan.split_end_cut,
+                input.source.styles,
+            )
+        };
+        if let Some(height) = closing_height {
+            if height > room {
+                return None;
+            }
+            let mut rows = input.source.measured_table.row_heights.clone();
+            rows[first..end - 1].fill(0.0);
+            rows[end - 1] = height;
+            return Some(StoredBlockAcceptance {
+                frame: None,
+                range: (first, end),
+                rows,
+                height_delta: height - occupied,
+            });
+        }
         // 같은 열·각주·프레임 원점에서 이미 계산한 빈 띠를 현재 블록이 수용한다.
         // 일반 행에만 생성되는 source_frame_bottom을 새로 추정하지 않는다.
         let height = budget.reflow_blank_avail_for_rows? - before;
-        let room = budget.avail_for_rows - before;
         if !height.is_finite() || height < occupied || height > room {
             return None;
         }
@@ -170,7 +198,7 @@ impl TypesetEngine {
             frame: None,
             range: (first, end),
             rows,
-            extra: height - occupied,
+            height_delta: height - occupied,
         })
     }
 
@@ -257,7 +285,7 @@ impl TypesetEngine {
             frame: Some(frame),
             range: (first, end),
             rows,
-            extra: height - occupied,
+            height_delta: height - occupied,
         })
     }
 }

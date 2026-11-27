@@ -3,20 +3,19 @@
 //! 원본 PNG의 straight RGB를 보존한다. 색·마스크는 각각 장치 표본을 낸 뒤
 //! 합성하므로, backend의 PNG 디코딩으로 투명 픽셀 아래 색을 먼저 잃지 않는다.
 
-#[path = "print_alpha_core.rs"]
-mod core;
-use core::{bayer_rank, print_color};
-
 use std::io::Cursor;
 
-use super::{memoized, print_codec, print_tone, Conversion};
+use super::{
+    memoized,
+    print_alpha_core::{bayer_rank, print_color},
+    print_codec, print_tone, Conversion,
+};
 use crate::model::image::ImageEffect;
 use crate::paint::{ResolvedImageKind, ResolvedImagePayload};
 use crate::renderer::render_tree::ImageNode;
 
-pub(super) fn eligible(image: &ImageNode) -> bool {
-    image.hancom2024_print_bitmap
-        && image.effect == ImageEffect::RealPic
+pub(super) fn eligible_picture(image: &ImageNode) -> bool {
+    image.effect == ImageEffect::RealPic
         && image.brightness == 0
         && image.contrast == 0
         && image.opacity == 1.0
@@ -33,6 +32,10 @@ pub(super) fn eligible(image: &ImageNode) -> bool {
         && image.data.as_deref().is_some_and(|data| {
             data.starts_with(b"\x89PNG\r\n\x1a\n") && !super::png_sampling::pdf_source(data)
         })
+}
+
+pub(super) fn eligible(image: &ImageNode) -> bool {
+    image.hancom2024_print_bitmap && eligible_picture(image)
 }
 
 pub(super) fn payload(image: &ImageNode, width_points: f64) -> Option<ResolvedImagePayload> {

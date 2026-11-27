@@ -1,0 +1,133 @@
+{
+  "source_commit": "32014de6e0ade1a3baea8852c02270e40b27b345",
+  "dpi": 96,
+  "tolerance_px": 2,
+  "input": {
+    "issue": 7786,
+    "key": "ktx-toc",
+    "source": "mydocs/pr/assets/issue7445/ktx-toc27/KTX.hwp",
+    "pdf": "mydocs/pr/assets/issue7445/ktx-toc27/KTX-hwp-2020.pdf",
+    "compat": "2022",
+    "source_sha256": "b6c1492152f53e8dd7d4bbbb4faca88866bb8458e9018c70c936cd469ea6fab3",
+    "source_bytes": 163840,
+    "pdf_sha256": "2b1c78d2a0b7c86b9c7071a491c7c70c3bb435bfef24441b2d929f1c7796f86a",
+    "pdf_bytes": 718310,
+    "pdf_metadata": {
+      "Author": "          SYSTEM",
+      "Creator": "         Hwp 2020 0.0.0.0",
+      "Producer": "        Hancom PDF 1.3.0.550",
+      "CreationDate": "    Sat Oct 10 05:44:10 2026 KST",
+      "ModDate": "         Sat Oct 10 05:44:10 2026 KST",
+      "Custom Metadata": " yes",
+      "Metadata Stream": " yes",
+      "Tagged": "          no",
+      "UserProperties": "  no",
+      "Suspects": "        no",
+      "Form": "            none",
+      "JavaScript": "      no",
+      "Pages": "           27",
+      "Encrypted": "       no",
+      "Page size": "       595 x 841 pts (A4)",
+      "Page rot": "        0",
+      "File size": "       718310 bytes",
+      "Optimized": "       no",
+      "PDF version": "     1.4"
+    },
+    "source_identity": "Matches Git 74f9b71b15a2db18b17c37ceab6cf2b3c20c03c3:samples/KTX.hwp; basic/KTX.hwp is a different 1-page input.",
+    "reference_status": "selected_for_baseline"
+  },
+  "outputs": {
+    "native": {
+      "producer_sha256": [
+        "7b92f1ce0e8e60cb15f9c6419cc9df63984b808144891f27d54e5c6229d000d1  /home/tsjang/rhwp/output/pr-review/issues7777-7787/base-tools/rhwp"
+      ],
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--key",
+        "ktx-toc",
+        "--hwp",
+        "mydocs/pr/assets/issue7445/ktx-toc27/KTX.hwp",
+        "--pdf",
+        "mydocs/pr/assets/issue7445/ktx-toc27/KTX-hwp-2020.pdf",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/issues7777-7787/base-tools/rhwp",
+        "--page-workers",
+        "2",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issues7777-7787/current-base/native/7786",
+        "--font-path",
+        "/usr/local/share/fonts/hancom-office-2020",
+        "--font-path",
+        "/usr/local/share/fonts/windows-system",
+        "--font-path",
+        "/home/tsjang/rhwp/ttfs/opensource"
+      ],
+      "geometry": {
+        "backend": "native",
+        "complete_pages": 27,
+        "worst_page": 1,
+        "min_raw": 99.98792,
+        "page_2_raw": 100.0,
+        "page_26_raw": 100.0,
+        "page_number_count": 17,
+        "page_number_right_edges_spread_px": 0.10000000000002274,
+        "page_number_max_abs_print_right_edge_error_px": 0.057910156250045475
+      },
+      "tsv_sha256": "b5f90b413a6a1cdfbc7338716862ba3b1aa77f1e9e743e001b364a705a6bee1e"
+    },
+    "wasm": {
+      "producer_sha256": [
+        "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d  /home/tsjang/rhwp/output/pr-review/issues7777-7787/base-tools/pkg/rhwp.js",
+        "df8776dc8a73c079282558239600764da34f9aec660980a56e58e0f36a7010ae  /home/tsjang/rhwp/output/pr-review/issues7777-7787/base-tools/pkg/rhwp_bg.wasm",
+        "d4d58453e79b115c23d643d2f354b9d4710b26fe393549b5a8bb2f636d7903e3  /home/tsjang/rhwp/output/pr-review/issues7777-7787/base-tools/pkg/package.json"
+      ],
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--key",
+        "ktx-toc",
+        "--hwp",
+        "mydocs/pr/assets/issue7445/ktx-toc27/KTX.hwp",
+        "--pdf",
+        "mydocs/pr/assets/issue7445/ktx-toc27/KTX-hwp-2020.pdf",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/issues7777-7787/base-tools/rhwp",
+        "--page-workers",
+        "2",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issues7777-7787/current-base/wasm/7786",
+        "--font-path",
+        "/usr/local/share/fonts/hancom-office-2020",
+        "--font-path",
+        "/usr/local/share/fonts/windows-system",
+        "--font-path",
+        "/home/tsjang/rhwp/ttfs/opensource",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/issues7777-7787/base-tools/pkg"
+      ],
+      "geometry": {
+        "backend": "wasm",
+        "complete_pages": 27,
+        "worst_page": 8,
+        "min_raw": 99.87075,
+        "page_2_raw": 100.0,
+        "page_26_raw": 99.99701,
+        "page_number_count": 17,
+        "page_number_right_edges_spread_px": 0.10000000000002274,
+        "page_number_max_abs_print_right_edge_error_px": 0.057910156250045475
+      },
+      "tsv_sha256": "ddb72c9fa1819f5ed63cc05f2b26871a4fee2886dd29af5242d665ccbd46f138"
+    }
+  }
+}

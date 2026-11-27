@@ -17,6 +17,7 @@ mod heading;
 mod post_flow;
 mod stored_reset;
 mod tail;
+mod trailing_float_prefix;
 mod vpos;
 impl TypesetEngine {
     pub(in crate::renderer::typeset) fn run_section_with_storage<S: crate::storage::Storage>(
@@ -160,13 +161,30 @@ impl TypesetEngine {
         }
         let issue2424_loop_started = issue2424_ts_enabled.then(std::time::Instant::now);
 
+        let mut placed_through = None;
         for (para_idx, para) in paragraphs.iter().enumerate() {
+            if placed_through.is_some_and(|last| para_idx <= last) {
+                continue;
+            }
             // [Task #1753] 지연 이월 표 직전에 선행 채움(prefill)으로 이미 배치된 문단 스킵.
             if st.prefilled_paras.contains(&para_idx) {
                 continue;
             }
             st.apply_deferred_source_frame_body_page_with_storage(para_idx, storage)?;
             st.consume_pending_table_terminal_gap(para_idx, paragraphs, styles, self.dpi);
+            if let Some(last) = self.try_place_trailing_float_prefix(
+                &mut st,
+                paragraphs,
+                para_idx,
+                styles,
+                measured_tables,
+                force_break_before,
+                storage,
+            )? {
+                placed_through = Some(last);
+                variant_prev_para_idx = Some(last);
+                continue;
+            }
             // 후속 본문이 사이에 없는 새 표 문단은 이전 묶음의 일부가 아니다.
             // 이전 문단의 후행 표를 먼저 완료한다. 새 문단의 명시적 쪽/단 나눔과
             // 저장 vpos를 적용하기 전이어야 이전 표가 새 문단 뒤로 밀리지 않는다.

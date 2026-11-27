@@ -44,7 +44,7 @@ samples/hwpctl_API_v2.4.hwp	body,off_canvas,oracle,overflow_cell,render_page,tex
 samples/hwpspec.hwp	body,overflow_cell,render_page,text_overlap	7772
 samples/hwpx/156160455-social-pig-farm-income.hwpx	oracle,overflow_cell,render_page	7770,7775
 samples/hwpx_sample2.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7830
-samples/issue1891/76076_regulatory_analysis.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7779
+samples/issue1891/76076_regulatory_analysis.hwpx	body,off_canvas,oracle,overflow_cell,render_page	7779
 samples/issue1891/80168_regulatory_analysis.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7783
 samples/issue1921/59043_regulatory_analysis.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7778
 samples/issue1937_rowbreak_footnote_overpagination.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7732
@@ -54,7 +54,7 @@ samples/issue2006/1790387_prep_final_report.hwpx	body,off_canvas,oracle,overflow
 samples/issue2439/issue2439_repeat_table_overlap.hwp	body,off_canvas,oracle,overflow_cell,render_page	7739,7780,7781
 samples/issue4514/sample1-repro.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7808
 samples/issue5584/3232693_employment_support_criteria.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7822
-samples/issue5699/37787_regulatory_impact.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7777
+samples/issue5699/37787_regulatory_impact.hwp	oracle,overflow_cell,render_page	7777
 samples/issue5792/2700727_animal_facility_standards.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7811
 samples/issue5807/coanchored_float_tac_order.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7821
 samples/issue5833/cell_multi_para_float_pics.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7863

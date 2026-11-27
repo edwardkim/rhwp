@@ -2210,6 +2210,8 @@ pub struct PageLayoutContext {
     vertical_shaping_sidecars: VerticalShapingPageSidecars,
     /// 칸 clip 밖에 놓이는 개체와 원본의 앞뒤 배치.
     cell_overlay_nodes: std::collections::HashMap<NodeId, crate::model::shape::TextWrap>,
+    /// 기본 글꼴을 쓰는 2020 꼬리말 쪽번호와 논리 아래쪽 여백.
+    pub(crate) implicit_print_footer_number: Option<(NodeId, f64)>,
 }
 
 impl PageLayoutContext {
@@ -2224,6 +2226,7 @@ impl PageLayoutContext {
             horizontal_shaping_sidecars: HorizontalShapingPageSidecars::default(),
             vertical_shaping_sidecars: VerticalShapingPageSidecars::default(),
             cell_overlay_nodes: std::collections::HashMap::new(),
+            implicit_print_footer_number: None,
         }
     }
 
