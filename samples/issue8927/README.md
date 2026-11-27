@@ -6,7 +6,7 @@
 | `rhwp-HYhwpEQ.hancom-relayout.hwp` | 이슈 첨부. 같은 수식 7개를 한글 2020(11.0.0.9166)이 다시 조판해 저장 | `3f74388395da` |
 | `rhwp-HancomEQN.hancom-relayout.hwp` | 이슈 첨부. 위와 같고 수식 글꼴만 HancomEQN | `50af1f33b658` |
 | `base-a4.hwp` | `base.hwp`를 한글 2022(12.0.0.4645)에서 열어 편집 용지만 A4로 바꿔 저장 | `66d2351a7768` |
-| `a4-inserted-HYhwpEQ.hwp` | `base-a4.hwp`에 `rhwp edit insert-equation`으로 이슈의 수식 7개를 넣음(fd008abb42) | `d51e2042e767` |
+| `a4-inserted-HYhwpEQ.hwp` | `base-a4.hwp`에 `rhwp edit insert-equation`으로 이슈의 수식 7개를 넣음(27590b98b3) | `d51e2042e767` |
 | `a4-inserted-HancomEQN.hwp` | 위 파일의 수식 7개를 `rhwp edit set-equation-properties --props '{"fontName":"HancomEQN"}'`로 바꿈 | `71088a5cb141` |
 
 `pdf/issue-8927/a4-inserted-*-2022.pdf`는 위 두 `a4-inserted-*.hwp`를 한글 2022 12.0.0.4645에서

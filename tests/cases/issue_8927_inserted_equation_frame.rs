@@ -2,7 +2,7 @@
 //! 세로 위치와의 일치, 관계형은 비적용 경로의 기존 추정 크기 유지·문단 사이 간격 보존·큰 합·곱
 //! 한계값과 연산자 잉크의 분리다.
 //! 주석 갱신: 2026-11-27T12:28:12+09:00, 새 파일.
-//! 측정: 2026-11-27, source c0672ca3d3(대조 devel 3fdaa04258). 96 DPI·Print·2px raw 실루엣
+//! 측정: 2026-11-27, source 82d7439a98(대조 devel a165c6c7d2). 96 DPI·Print·2px raw 실루엣
 //! (threshold_boundary_color_support_v1, 색상 허용 32, 경계 보정 0px). 입력은 `base-a4.hwp`에 CLI로
 //! 수식 7개를 넣은 `a4-inserted-*.hwp`, 기준은 한글 2022 12.0.0.4645 Print(Hancom PDF, A4, 본문
 //! KoPubWorld바탕체 Light 설치) `pdf/issue-8927/a4-inserted-*-2022.pdf`. 수식 원 글꼴(HyhwpEQ·
