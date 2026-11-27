@@ -8,8 +8,9 @@ use std::path::Path;
 use rhwp::parse_document_with_password;
 use rhwp::parser::{parse_document, ParseError};
 use rhwp::password_crypto::{
-    decrypt_hwp3_password_document, decrypt_hwpx_package, encrypt_hwp3_password_document,
-    encrypt_hwpx_package, is_hwp3_password_protected, PasswordCryptoError,
+    decrypt_hwp3_password_document, decrypt_hwp5_stream, decrypt_hwpx_package,
+    encrypt_hwp3_password_document, encrypt_hwp5_stream, encrypt_hwpx_package,
+    is_hwp3_password_protected, PasswordCryptoError,
 };
 use rhwp::serializer::serialize_hwpx_with_password;
 use zip::{CompressionMethod, ZipArchive};
@@ -103,4 +104,23 @@ fn hwpx_common_module_and_serializer_write_password_packages() {
     let reparsed =
         parse_document_with_password(&serialized, PASSWORD).expect("serializer HWPX 재열기");
     assert_eq!(document_shape(&reparsed), document_shape(&original));
+}
+
+/// 같은 키·평문의 HWP5 암호문은 늘 같다. 연 문서에서 푼 큰 stream과 앞서 저장한 stream은
+/// 그 암호문을 다시 써서 저장마다 1비트 CFB를 다시 돌리지 않는다. 결과 바이트는 그대로다.
+#[test]
+fn hwp5_large_streams_keep_their_ciphertext_across_open_and_save() {
+    let picture: Vec<u8> = (0..16 * 1024)
+        .map(|index| (index * 31 % 251) as u8)
+        .collect();
+    let first = encrypt_hwp5_stream(&picture, PASSWORD);
+    assert_eq!(encrypt_hwp5_stream(&picture, PASSWORD), first);
+    assert_eq!(decrypt_hwp5_stream(&first, PASSWORD), picture);
+    assert_ne!(encrypt_hwp5_stream(&picture, b"other"), first);
+
+    let opened: Vec<u8> = (0..4 * 1024 + 5)
+        .map(|index| (index * 7 % 256) as u8)
+        .collect();
+    let plaintext = decrypt_hwp5_stream(&opened, PASSWORD);
+    assert_eq!(encrypt_hwp5_stream(&plaintext, PASSWORD), opened);
 }
