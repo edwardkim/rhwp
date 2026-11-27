@@ -36,6 +36,7 @@ pub(super) fn query(
     if let Some(opening_height) = layout.stored_overlay_opening_closing_row(
         table,
         row,
+        &[],
         &formatted.row_heights,
         available,
         styles,
@@ -60,7 +61,17 @@ pub(super) fn query(
     let overlay_used = overlay_frame.map(|frame| frame.min(content_height.max(declared)));
     let source_frame = layout
         .stored_inline_opening_row_frame(table, row, &cut.end_cut, &formatted.row_heights, styles)
-        .filter(|height| *height <= available);
+        .filter(|height| *height <= available)
+        .or_else(|| {
+            layout.stored_overlay_opening_closing_row(
+                table,
+                row,
+                &cut.end_cut,
+                &formatted.row_heights,
+                available,
+                styles,
+            )
+        });
     let opening_height = source_frame.or(overlay_used).unwrap_or(content_height);
     if opening_height <= 0.0 || opening_height > available {
         return None;

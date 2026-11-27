@@ -418,20 +418,30 @@ impl LayoutEngine {
         (required <= height).then_some(height)
     }
 
-    /// The opening overlay frame can end after a complete row inside its
-    /// stored empty band. Use the same physical row for fit and paint.
+    /// 표 외곽의 첫 저장 상자는 완결 행이나 원본 재시작 컷의 빈 띠도 소유한다.
+    /// 두 경계 모두 수용된 상자에서 보이는 칸 내용을 정렬한다.
     pub(crate) fn stored_overlay_opening_closing_row(
         &self,
         table: &Table,
         row: usize,
+        end_cut: &[usize],
         measured_rows: &[f64],
         available: f64,
         styles: &ResolvedStyleSet,
     ) -> Option<f64> {
-        if table.caption.is_some()
+        if self.profile.get().session_edited()
+            || table.caption.is_some()
             || table.cell_spacing != 0
             || row == 0
-            || row + 1 >= usize::from(table.row_count)
+            || (end_cut.is_empty() && row + 1 >= usize::from(table.row_count))
+            || (!end_cut.is_empty()
+                && !self.row_cut_ends_at_original_plain_text_reset(
+                    table,
+                    row,
+                    &[],
+                    end_cut,
+                    styles,
+                ))
             || !self.stored_row_boxes_exceed_first_frame(table)
             || !crate::renderer::float_placement::complete_declared_column_grid(table)
             || table.cells.iter().any(|cell| {
@@ -457,7 +467,11 @@ impl LayoutEngine {
         if band <= 0.0 || band >= declared || band > available {
             return None;
         }
-        let content = self.row_complete_cut_content_height(table, row, styles);
+        let content = if end_cut.is_empty() {
+            self.row_complete_cut_content_height(table, row, styles)
+        } else {
+            self.row_cut_content_height(table, row, &[], end_cut, styles)
+        };
         (content > 0.0
             && self.row_aligned_content_bottom(table, row, content, band, styles) <= band)
             .then_some(band)
