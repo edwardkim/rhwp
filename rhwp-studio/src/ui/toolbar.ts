@@ -55,6 +55,8 @@ export class Toolbar {
 
   private enabled = false;
   private styleDropdownInitialized = false;
+  private styleMenu: HTMLElement | null = null;
+  private styleMenuIndex = 0;
   /** 한컴형 글꼴 메뉴. native select는 선택값/접근성 호환 상태로 유지한다. */
   private fontMenu: HTMLElement | null = null;
   private fontMenuCategory: FontMenuCategory = 'document';
@@ -549,14 +551,123 @@ export class Toolbar {
     });
   }
 
-  /** 스타일 드롭다운 change 이벤트 → 커맨드 디스패치 */
+  /** 스타일 콤보의 목록 표시와 기존 스타일 적용 경로를 연결한다. */
   private setupStyleDropdown(): void {
+    const select = this.styleName;
+    select.setAttribute('aria-controls', 'style-picker-list');
+    select.setAttribute('aria-expanded', 'false');
+    select.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0) return;
+      event.preventDefault();
+      if (this.styleMenu) this.closeStyleMenu();
+      else this.openStyleMenu();
+    });
+    select.addEventListener('keydown', (event) => {
+      const { key } = event;
+      const menu = this.styleMenu;
+      if (!menu) {
+        if (['ArrowDown', 'ArrowUp', 'Enter', ' ', 'F4'].includes(key)) {
+          event.preventDefault();
+          this.openStyleMenu();
+        }
+        return;
+      }
+      if (key === 'Tab') {
+        this.closeStyleMenu();
+        return;
+      }
+      const page = Math.max(1, Math.floor(menu.clientHeight / (menu.firstElementChild as HTMLElement).offsetHeight));
+      const positions: Record<string, number> = {
+        ArrowDown: this.styleMenuIndex + 1,
+        ArrowUp: this.styleMenuIndex - 1,
+        PageDown: this.styleMenuIndex + page,
+        PageUp: this.styleMenuIndex - page,
+        Home: 0,
+        End: menu.children.length - 1,
+      };
+      if (Object.hasOwn(positions, key)) {
+        this.highlightStyle(positions[key]);
+      } else if (key === 'Escape' || key === 'F4') {
+        this.closeStyleMenu();
+      } else if (key === 'Enter' || key === ' ') {
+        this.chooseStyle(this.styleMenuIndex);
+      } else if (key.length !== 1 || event.ctrlKey || event.metaKey) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+    });
+    document.addEventListener('pointerdown', (event) => {
+      const target = event.target;
+      if (target instanceof Node && !select.contains(target) && !this.styleMenu?.contains(target)) {
+        this.closeStyleMenu();
+      }
+    }, true);
+    window.addEventListener('resize', () => this.closeStyleMenu());
     this.styleName.addEventListener('change', () => {
       const styleId = parseInt(this.styleName.value);
       if (!isNaN(styleId)) {
         this.dispatcher.dispatch('format:apply-style', { styleId });
       }
     });
+  }
+
+  private openStyleMenu(): void {
+    const select = this.styleName;
+    if (select.disabled || select.length === 0) return;
+    const menu = document.createElement('div');
+    menu.id = 'style-picker-list';
+    menu.className = 'style-picker-list';
+    menu.setAttribute('role', 'listbox');
+    menu.setAttribute('aria-label', select.title);
+    const rect = select.getBoundingClientRect();
+    menu.style.left = `${rect.left}px`;
+    menu.style.top = `${rect.bottom + 2}px`;
+    menu.style.minWidth = `${rect.width}px`;
+    menu.style.maxWidth = `${window.innerWidth - rect.left - 4}px`;
+    menu.style.maxHeight = `min(26rem, ${window.innerHeight - rect.bottom - 6}px)`;
+    Array.from(select.options).forEach((option, index) => {
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.id = `style-picker-option-${index}`;
+      item.tabIndex = -1;
+      item.setAttribute('role', 'option');
+      item.setAttribute('aria-selected', String(option.selected));
+      item.textContent = option.text;
+      item.addEventListener('mousedown', (event) => event.preventDefault());
+      item.addEventListener('click', () => this.chooseStyle(index));
+      menu.appendChild(item);
+    });
+    document.body.appendChild(menu);
+    this.styleMenu = menu;
+    select.setAttribute('aria-expanded', 'true');
+    select.focus({ preventScroll: true });
+    this.highlightStyle(select.selectedIndex);
+  }
+
+  private highlightStyle(index: number): void {
+    const menu = this.styleMenu!;
+    this.styleMenuIndex = Math.min(Math.max(0, index), menu.children.length - 1);
+    menu.querySelector('.active')?.classList.remove('active');
+    const item = menu.children[this.styleMenuIndex];
+    item.classList.add('active');
+    this.styleName.setAttribute('aria-activedescendant', item.id);
+    item.scrollIntoView({ block: 'nearest' });
+  }
+
+  private chooseStyle(index: number): void {
+    this.closeStyleMenu();
+    if (this.styleName.selectedIndex === index) return;
+    this.styleName.selectedIndex = index;
+    this.styleName.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
+  private closeStyleMenu(): void {
+    if (!this.styleMenu) return;
+    this.styleMenu.remove();
+    this.styleMenu = null;
+    this.styleName.setAttribute('aria-expanded', 'false');
+    this.styleName.removeAttribute('aria-activedescendant');
   }
 
   /** 문서 로드 시 글꼴 드롭다운을 초기화한다 (기본 글꼴 + 문서 글꼴 + 대표/로컬) */
@@ -588,6 +699,7 @@ export class Toolbar {
 
   /** 문서 로드 시 스타일 목록으로 드롭다운을 채운다 */
   initStyleDropdown(): void {
+    this.closeStyleMenu();
     try {
       const styles = this.wasm.getStyleList();
       this.styleName.replaceChildren();
@@ -626,6 +738,11 @@ export class Toolbar {
   private updateStyleState(info: { id: number; name: string }): void {
     if (!this.styleDropdownInitialized) return;
     this.styleName.value = String(info.id);
+    if (this.styleMenu) {
+      for (const [index, item] of Array.from(this.styleMenu.children).entries()) {
+        item.setAttribute('aria-selected', String(index === this.styleName.selectedIndex));
+      }
+    }
   }
 
   /** 커서 위치의 서식을 도구 모음에 반영한다 */
@@ -686,6 +803,7 @@ export class Toolbar {
   /** 문서 로드 상태에 따라 활성화/비활성화 */
   setEnabled(enabled: boolean): void {
     this.enabled = enabled;
+    if (!enabled) this.closeStyleMenu();
     const opacity = enabled ? '1' : '0.5';
     this.container.style.opacity = opacity;
     this.container.style.pointerEvents = enabled ? 'auto' : 'none';

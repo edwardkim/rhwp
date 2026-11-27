@@ -190,6 +190,35 @@
 .sb-combo:focus { border-color: var(--color-focus-border); }
 
 #style-name { width: 88px; max-width: 100%; }
+
+.style-picker-list {
+  position: fixed;
+  z-index: 1200;
+  box-sizing: border-box;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--ui-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-dropdown);
+}
+
+.style-picker-list button {
+  display: block;
+  width: 100%;
+  padding: 4px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  text-align: start;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.style-picker-list button:hover,
+.style-picker-list button.active { background: var(--color-accent-bg); }
+
 .sb-font-lang { width: 64px; font-size: var(--font-size-sm); }
 .sb-font {
   width: 136px;
