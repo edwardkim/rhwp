@@ -1,5 +1,5 @@
 //! 관계형 — [#9426] 줄 끝 소프트 하이픈은 그 저장 줄의 auto-hyphenation 표지(LineSeg bit 19)가 있을 때만 보인다.
-//! 주석 갱신: 2026-11-27 06:10 KST (처음 작성)
+//! 주석 갱신: 2026-11-27 23:25 KST (직전 파일 커밋 9a81140ebf, 2026-11-27 22:03 KST — #9441 위 리베이스)
 //!
 //! 한/글은 하이픈(HWP5 코드 24, HWP3 특수 문자 24) 자리에서 나눈 세그먼트에만 bit 19 를 세우고,
 //! 그 비트가 있는 줄 끝에서만 `-` 를 그린다. 근거(모두 이 저장소 밖 실물 대조, 측정 2026-11-27):
@@ -9,11 +9,17 @@
 //!   나눔에서 하이픈을 그리지 않고, bit 19 를 세운 변환본은 한/글 HWP3 Print 와 같게 하이픈을 그린다.
 //! - 저장소 fixture `samples/issue8482/germany_law_ch3_resaved2020.hwp` 와 한/글 2020 Print
 //!   `pdf/issue8482/germany_law_ch3-2020.pdf`: bit 19 가 선 각주 줄은 `Demo-`·`Gesetz-` 로, 비트 없는 본문
-//!   9쪽 줄은 `inneres Ge` 로 끝난다(하이픈 없음).
+//!   9쪽 줄은 `inneres Ge` 로 끝난다(하이픈 없음). 같은 fixture 를 한/글 2024(13.0.0.4225) Print 로
+//!   뽑아도 같다(각주 4줄 하이픈, 본문 `inneres Ge` 하이픈 없음) — 판본 차이가 아니라 표지 차이다.
 //!
-//! 측정(2026-11-27, devel e46501863d 위 수정 코드, `scripts/visual_sweep.py` silhouette_raw_match_percent, 96 DPI,
-//! 기준 `pdf/issue8482/germany_law_ch3-2020.pdf` 11쪽): 결과는 PR 본문과 `mydocs/pr/assets/issue_9426/` 의
-//! Native·fresh WASM 전쪽 TSV 에 있다.
+//! 측정(2026-11-27, PR #9441 head ad5db4fb45 위 이 수정, `scripts/visual_sweep.py --silhouette-only`
+//! silhouette_raw_match_percent, 96 DPI, compat 2022, 11쪽 = 한/글 11쪽):
+//! - 기준 `pdf/issue8482/germany_law_ch3-2020.pdf`(한/글 2020 Print): Native 전쪽 최저 99.12(11쪽), 9쪽 99.64;
+//!   fresh WASM 전쪽 최저 98.99(11쪽), 9쪽 99.27. (#9441 head 9쪽: Native 99.22, WASM 98.86)
+//! - 기준 한/글 2024 Print(13.0.0.4225, sha256 4e5ea22c…): Native 최저 98.87(11쪽), 9쪽 99.54;
+//!   fresh WASM 최저 98.95(11쪽), 9쪽 99.22.
+//! - 9쪽 `(inneres Ge` 줄 끝은 한/글·Native·WASM 셋 다 하이픈 없음(확대 판독).
+//! - 전쪽 TSV: `mydocs/pr/assets/issue_9426/hyphen/{native,wasm}/`.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
