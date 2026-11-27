@@ -81,3 +81,95 @@ fn insert_column_keeps_merged_only_column_width() {
         .collect();
     assert!(new_col.iter().all(|width| *width == B), "{new_col:?}");
 }
+
+/// 5행 4열. 1~2행 0열은 세로 병합, 2행 2~3열은 가로 병합(한컴 12.30 Mac 대조 표).
+fn mixed_merge_table() -> Table {
+    let mut cells = Vec::new();
+    for r in 0..5u16 {
+        for c in 0..4u16 {
+            if (r, c) == (2, 0) || (r, c) == (2, 3) {
+                continue;
+            }
+            let mut cell = Cell::new_empty(c, r, 3600, 1000, 1);
+            if (r, c) == (1, 0) {
+                cell.row_span = 2;
+                cell.height = 2000;
+            }
+            if (r, c) == (2, 2) {
+                cell.col_span = 2;
+                cell.width = 7200;
+            }
+            cells.push(cell);
+        }
+    }
+    let mut table = Table {
+        row_count: 5,
+        col_count: 4,
+        row_sizes: vec![4, 4, 2, 4, 4],
+        border_fill_id: 1,
+        cells,
+        ..Default::default()
+    };
+    table.rebuild_grid();
+    table
+}
+
+fn row_shape(table: &Table, row: u16) -> Vec<(u16, u16, u16)> {
+    table
+        .cells
+        .iter()
+        .filter(|c| c.row == row)
+        .map(|c| (c.col, c.col_span, c.row_span))
+        .collect()
+}
+
+#[test]
+fn insert_row_copies_the_base_rows_horizontal_merges() {
+    // 세로 병합이 끝나는 행 아래: 가로 병합만 따르고 세로 병합은 늘리지 않는다.
+    let mut table = mixed_merge_table();
+    table.insert_row(2, true).unwrap();
+    assert_eq!(row_shape(&table, 3), vec![(0, 1, 1), (1, 1, 1), (2, 2, 1)]);
+    assert_eq!(
+        table
+            .cells
+            .iter()
+            .find(|c| (c.row, c.col) == (1, 0))
+            .unwrap()
+            .row_span,
+        2
+    );
+    let merged = table
+        .cells
+        .iter()
+        .find(|c| (c.row, c.col) == (3, 2))
+        .unwrap();
+    assert_eq!(merged.width, 7200);
+
+    // 세로 병합 가운데: 걸친 셀만 늘고 나머지는 기준 행 모양이다.
+    let mut table = mixed_merge_table();
+    table.insert_row(1, true).unwrap();
+    assert_eq!(row_shape(&table, 2), vec![(1, 1, 1), (2, 1, 1), (3, 1, 1)]);
+    assert_eq!(
+        table
+            .cells
+            .iter()
+            .find(|c| (c.row, c.col) == (1, 0))
+            .unwrap()
+            .row_span,
+        3
+    );
+
+    // 위에 넣어도 기준 행의 가로 병합을 따른다.
+    let mut table = mixed_merge_table();
+    table.insert_row(2, false).unwrap();
+    assert_eq!(row_shape(&table, 2), vec![(1, 1, 1), (2, 2, 1)]);
+    assert_eq!(
+        table
+            .cells
+            .iter()
+            .find(|c| (c.row, c.col) == (1, 0))
+            .unwrap()
+            .row_span,
+        3
+    );
+}
