@@ -2480,6 +2480,9 @@ fn parse_table(
     // 표 내용 파싱 (행/셀)
     let mut buf = Vec::new();
     let mut current_row: u16 = 0;
+    let mut physical_rows = 0usize;
+    let mut inside_row = false;
+    let mut all_cells_inside_rows = true;
 
     loop {
         match reader.read_event_into(&mut buf) {
@@ -2488,10 +2491,12 @@ fn parse_table(
                 let local = local_name(cname.as_ref());
                 match local {
                     b"tr" => {
-                        // 새 행
+                        physical_rows += 1;
+                        inside_row = true;
                     }
                     b"tc" => {
                         // 셀 파싱
+                        all_cells_inside_rows &= inside_row;
                         let cell = parse_table_cell(ce, reader, current_row)?;
                         table.cells.push(cell);
                     }
@@ -2506,6 +2511,8 @@ fn parse_table(
                 let cname = ce.name();
                 let local = local_name(cname.as_ref());
                 match local {
+                    b"tr" => physical_rows += 1,
+                    b"tc" => all_cells_inside_rows = false,
                     b"sz" => {
                         for attr in ce.attributes().flatten() {
                             match attr.key.as_ref().as_bytes() {
@@ -2638,8 +2645,16 @@ fn parse_table(
                 let eename = ee.name();
                 let local = local_name(eename.as_ref());
                 match local {
-                    b"tr" => current_row += 1,
-                    b"tbl" => break,
+                    b"tr" => {
+                        current_row += 1;
+                        inside_row = false;
+                    }
+                    b"tbl" => {
+                        if physical_rows == 1 && current_row == 1 && all_cells_inside_rows {
+                            normalize_shifted_single_table_row(&mut table);
+                        }
+                        break;
+                    }
                     _ => {}
                 }
             }
@@ -2670,6 +2685,43 @@ fn parse_table(
     materialize_hwpx_table_attrs(&mut table, table_record_flags);
     table.rebuild_grid();
     Ok(table)
+}
+
+/// Recover a sole HWPX row whose addresses include nonexistent leading rows.
+fn normalize_shifted_single_table_row(table: &mut Table) {
+    let Some(row) = table.row_count.checked_sub(1).filter(|row| *row > 0) else {
+        return;
+    };
+    if table.col_count == 0
+        || table.zones.iter().any(|zone| {
+            zone.start_row != row
+                || zone.end_row != row
+                || zone.start_col > zone.end_col
+                || zone.end_col >= table.col_count
+        })
+    {
+        return;
+    }
+
+    // The only serialized row must already have complete, disjoint ownership.
+    let covered_columns = table.cells.iter().try_fold(0u16, |next_column, cell| {
+        if cell.row != row || cell.row_span != 1 || cell.col != next_column || cell.col_span == 0 {
+            return None;
+        }
+        next_column.checked_add(cell.col_span)
+    });
+    if covered_columns != Some(table.col_count) {
+        return;
+    }
+
+    table.row_count = 1;
+    for cell in &mut table.cells {
+        cell.row = 0;
+    }
+    for zone in &mut table.zones {
+        zone.start_row = 0;
+        zone.end_row = 0;
+    }
 }
 
 fn parse_size_criterion(value: &str, allow_column_para: bool) -> SizeCriterion {
