@@ -1,0 +1,15 @@
+font	equation	font_size_hu	observed_width_hu	hancom_width_hu	observed_height_hu	hancom_height_hu	observed_baseline_pct	hancom_baseline_pct	hwp_repeat_frame_equal	hwpx_repeat_frame_equal
+HYhwpEQ	a ^{2} + b ^{2} = c ^{2}	1000	5050	5050	1163	1163	89	89	1	1
+HYhwpEQ	alpha + beta LEQ gamma	1000	4375	4375	975	975	86	86	1	1
+HYhwpEQ	a times b	1000	2080	2080	975	975	86	86	1	1
+HYhwpEQ	e ^{i pi} + 1 = 0	1000	4660	4660	1163	1163	89	89	1	1
+HYhwpEQ	LFLOOR a RFLOOR	1000	2625	2625	975	975	86	86	1	1
+HYhwpEQ	1 over {2 over 3}	1000	1525	1525	3525	3525	42	42	1	1
+HYhwpEQ	prod _{i} x	1000	1950	1950	2025	2025	51	51	1	1
+HancomEQN	a ^{2} + b ^{2} = c ^{2}	1000	5275	5050	1163	1163	89	89	1	1
+HancomEQN	alpha + beta LEQ gamma	1000	4300	4300	975	975	86	86	1	1
+HancomEQN	a times b	1000	2080	2080	975	975	86	86	1	1
+HancomEQN	e ^{i pi} + 1 = 0	1000	4585	4585	1163	1163	89	89	1	1
+HancomEQN	LFLOOR a RFLOOR	1000	2625	2625	975	975	86	86	1	1
+HancomEQN	1 over {2 over 3}	1000	1525	1525	3525	3525	42	42	1	1
+HancomEQN	prod _{i} x	1000	1950	1875	2025	2025	51	51	1	1
