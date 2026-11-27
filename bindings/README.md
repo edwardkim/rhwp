@@ -274,6 +274,19 @@ vertical 입력에 전달하고 다른 명령 뒤에는 초기화한다.
 이 조회 자체는 문서·선택·revision을 바꾸지 않는다.
 
 
+### Native 텍스트 서식
+
+호스트 기능 목록의 `basicTextFormatting`으로 지원을 확인할 수 있다.
+`executeCommand`에서 `{command:"formatCharacters",bold:true,fontSize:1500}`은 선택한 글자의 서식을
+바꾼다. `bold`와 `fontSize`는 각각 생략할 수 있으며 하나 이상 필요하다. 크기는
+HWPUNIT 단위(1pt = 100 HWPUNIT, 범위 1–409600)다.
+`{command:"setParagraphAlignment",alignment:"right"}`는 선택 또는 캐럿이 있는 문단을 정렬한다.
+정렬값은 `justify`, `left`, `right`, `center`, `distribute`, `split`이다.
+
+두 명령은 본문 또는 중첩 표의 단일 텍스트 문단을 대상으로 한다. 글자 서식은 비어 있지 않은
+선택이 필요하다. 보호된 셀과 편집할 수 없는 컨트롤이 있는 문단은 거부한다. 변경 시 선택을
+유지하면서 revision과 undo를 한 번 갱신하며, 현재 서식과 같은 값은 history를 유지한다.
+
 ### Native clipboard (P61)
 
 동기 session의 `copySelection`/`cutSelection`/`pasteText`/`pasteHtml`은 `expectedRevision`을 필수로 받습니다. worker에서는 같은 이름에 `target`을 전달합니다. 복사/잘라내기 응답의 `payload`는 `{plainText, html}`이며 `outcome`은 복사 시 null, 잘라내기 시 편집 결과입니다. 붙여넣기는 기존 편집 결과를 반환합니다. OS clipboard 소유권은 host가 관리합니다.
