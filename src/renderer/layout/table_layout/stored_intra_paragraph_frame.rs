@@ -78,6 +78,57 @@ impl LayoutEngine {
             && current.text_start > previous.text_start
     }
 
+    /// 단일 셀의 원본 쪽을 온전히 소유할 때는 저장 마지막 줄의 끝까지 점유한다.
+    /// 문단 안의 쪽 재시작으로 컷을 인증하고 빈 마지막 줄 상자도 포함한다.
+    pub(super) fn stored_single_cell_restart_content_height(
+        &self,
+        table: &Table,
+        cell: &Cell,
+        units: &[CellUnit],
+        start: usize,
+        end: usize,
+    ) -> Option<f64> {
+        if table.row_count != 1
+            || table.col_count != 1
+            || table.cells.len() != 1
+            || matches!(cell.vertical_align, crate::model::table::VerticalAlign::Top)
+        {
+            return None;
+        }
+        let selected = units.get(start..end)?;
+        let (first, rest) = selected.split_first()?;
+        let is_restart =
+            |unit: &CellUnit| self.stored_in_paragraph_unit_is_original_restart(table, cell, unit);
+        let starts_at_restart = is_restart(first);
+        let ends_at_restart = units.get(end).is_some_and(is_restart);
+        if (!starts_at_restart && !ends_at_restart)
+            || (start != 0 && !starts_at_restart)
+            || (end != units.len() && !ends_at_restart)
+            || rest.iter().any(|unit| unit.page_frame_reset_before)
+            || !self.stored_plain_text_cell_frame(table, cell)
+        {
+            return None;
+        }
+        let mut ink_end = 0;
+        for unit in selected {
+            let para = cell.paragraphs.get(unit.para_idx)?;
+            let empty_line = unit.empty_spacer
+                && unit.vis_start == 0
+                && unit.vis_end == 0
+                && para.text.trim().is_empty()
+                && para.line_segs.len() == 1;
+            if unit.reflowed_line_slot || (!empty_line && unit.vis_end != unit.vis_start + 1) {
+                return None;
+            }
+            let line = para.line_segs.get(unit.vis_start)?;
+            if line.vertical_pos < ink_end {
+                return None;
+            }
+            ink_end = line.vertical_pos.checked_add(line.line_height)?;
+        }
+        Some(hwpunit_to_px(ink_end, self.dpi))
+    }
+
     /// Normalize the original opening box into the ordinary source row. This
     /// only supplies the existing saved-cut tail calculation; accepted physical
     /// rows and the table's occupied extent remain in their original ledger.
