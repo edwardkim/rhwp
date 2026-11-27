@@ -310,8 +310,8 @@ export class Ruler {
   /** 커서가 위치한 문단 속성이 변경되었을 때 호출 */
   private onParaChanged(props: ParaProperties): void {
     // WASM API는 ResolvedParaStyle 기반 — 이미 px (96dpi, zoom=1) 단위
-    const ml = props.marginLeft ?? 0;
-    const ind = props.indent ?? 0;
+    const ml = props.marginLeftPx ?? props.marginLeft ?? 0;
+    const ind = props.indentPx ?? props.indent ?? 0;
     if (this.hasParaInfo && ml === this.paraMarginLeftPx && ind === this.paraIndentPx) return;
     this.paraMarginLeftPx = ml;
     this.paraIndentPx = ind;

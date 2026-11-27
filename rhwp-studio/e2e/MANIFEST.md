@@ -145,7 +145,8 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `merged-cell-row-boundary-drag.test.mjs` | 상시 | active | #6557 가로 병합 셀 표의 행 경계 드래그 — 병합 셀이 걸친 모든 열의 아래 이웃이 보상을 받아 표 전체 높이가 보존되는지 검증 | — | npm e2e:issue-6557-merged-row | dev server 필요 — run-with-vite.mjs 경유 · 증적 [assets/merged-cell-resize-evidence](https://github.com/jeong-sik/rhwp/tree/assets/merged-cell-resize-evidence) |
 | `navigation-shortcuts.test.mjs` | 상시 | active | 플랫폼별 navigation shortcut | — | 수동 |  |
 | `overwrite-mode-issue7489.test.mjs` | 상시 | active | #7489 수정 모드 😀 뒤 캐럿·병합·Undo/Redo(삽입 모드 포함), IME 😀 확정 뒤 조합, 덮은 IME 조합 중 새 문서·문서 열기의 문단 조각 해제 | para-001.hwp | 수동 | fresh WASM · CDP IME, run-with-vite.mjs 경유 |
-| `edited-indent-issue7490.test.mjs` | 상시 | active | #7490 문단 모양 대화창·입력·undo/redo·병합 복원·저장 좌표 | 새 문서 | 수동 | 실제 Studio 키/문단 대화창과 fresh WASM |
+| `edited-indent-issue7490.test.mjs` | 상시 | active | #7490 문단 모양·입력·실행 취소·병합 복원·저장 좌표와 단 정의 보존 | 새 문서, issue6190/center_align_first_line_indent.hwp, semanticist21-20261124-rework/b5-no-column.hwpx | 수동 | 실제 Studio 키와 새 WASM |
+| `paragraph-length-units-issue8860.test.mjs` | 상시 | active | #8860 절대 들여쓰기·여백 입력과 기존 CHAR 서식 보존, 본문·표 셀의 모양 복사와 저장·재열기 | 새 문서의 본문과 표 셀 | 수동 | 실제 Studio 대화창·단축키와 HWP·HWPX 2회 저장 |
 | `page-border-toggle.test.mjs` | 상시 | active | 쪽 테두리/배경 미리보기 버튼 토글 | — | 수동 |  |
 | `page-break.test.mjs` | 상시 | active | biz_plan.hwp 강제 쪽 나누기 / "5. 사업추진조직" 문단 앞에 쪽 나누기 삽입 후 페이지 재배치 확인 | biz_plan.hwp | 수동 |  |
 | `page-break-caret-reveal.test.mjs` | 상시 | active | Cmd+Enter 쪽 나누기 뒤 새 쪽 캐럿 DOM 재배치와 편집 영역 viewport 자동 스크롤 | — | npm e2e:page-break-caret | dev server 필요 — run-with-vite.mjs 경유 |

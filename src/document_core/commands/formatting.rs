@@ -987,18 +987,31 @@ impl DocumentCore {
                 let korean_break_unit = (a1 >> 7) & 0x01;
                 let border_connect = (a1 >> 28) & 1 != 0;
                 let border_ignore_margin = (a1 >> 29) & 1 != 0;
-                let raw_spacing = raw_ps.map_or_else(String::new, |raw| {
+                let raw_lengths = raw_ps.map_or_else(String::new, |raw| {
                     format!(
-                        r#""spacingBeforeRaw":{},"spacingAfterRaw":{},"#,
-                        raw.spacing_before, raw.spacing_after
+                        concat!(
+                            r#""marginLeftRaw":{},"marginRightRaw":{},"indentRaw":{},"#,
+                            r#""spacingBeforeRaw":{},"spacingAfterRaw":{},"#
+                        ),
+                        raw.margin_left,
+                        raw.margin_right,
+                        raw.indent,
+                        raw.spacing_before,
+                        raw.spacing_after
                     )
                 });
+                let resolved_left = if is_hwp3_native {
+                    ps.margin_left + ps.indent.min(0.0)
+                } else {
+                    ps.margin_left
+                };
                 format!(
                     concat!(
                         "{{\"alignment\":\"{}\",\"lineSpacing\":{:.1},\"lineSpacingType\":\"{:?}\",",
                         "\"marginLeft\":{:.1},\"marginRight\":{:.1},\"indent\":{:.1},",
                         "\"spacingBefore\":{:.1},\"spacingAfter\":{:.1},\"paraShapeId\":{},",
-                        "{}\"spacingBeforePx\":{},\"spacingAfterPx\":{},",
+                        "{}\"marginLeftPx\":{},\"marginRightPx\":{},\"indentPx\":{},",
+                        "\"spacingBeforePx\":{},\"spacingAfterPx\":{},",
                         "\"headType\":\"{}\",\"paraLevel\":{},\"numberingId\":{},",
                         "\"widowOrphan\":{},\"keepWithNext\":{},\"keepLines\":{},\"pageBreakBefore\":{},",
                         "\"fontLineHeight\":{},\"singleLine\":{},",
@@ -1016,7 +1029,8 @@ impl DocumentCore {
                     raw_ps.map(|r| crate::renderer::hwpunit_to_px(r.spacing_before, self.dpi)).unwrap_or(ps.spacing_before),
                     raw_ps.map(|r| crate::renderer::hwpunit_to_px(r.spacing_after, self.dpi)).unwrap_or(ps.spacing_after),
                     para_shape_id,
-                    raw_spacing, ps.spacing_before, ps.spacing_after,
+                    raw_lengths, resolved_left, ps.margin_right, ps.indent,
+                    ps.spacing_before, ps.spacing_after,
                     head_str, ps.para_level, ps.numbering_id,
                     widow_orphan, keep_with_next, keep_lines, page_break_before,
                     font_line_height, single_line,

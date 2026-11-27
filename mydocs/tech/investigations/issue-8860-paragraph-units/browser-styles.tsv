@@ -1,0 +1,7 @@
+style_pt	action	devel_raw	candidate_raw	devel_advance_pt	candidate_advance_pt
+10	absolute-coarse	-202	-202	1.010	1.010
+10	absolute-fine	-201	-202	5.050	1.010
+10	existing-char	-201	-201	5.050	5.050
+20	absolute-coarse	-202	-202	1.010	1.010
+20	absolute-fine	-201	-202	10.100	1.010
+20	existing-char	-201	-201	10.100	10.100

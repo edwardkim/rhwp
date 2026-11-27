@@ -3366,28 +3366,39 @@ export class WasmBridge {
   private withLegacyParaSpacing(props: ParaProperties, listId: number, para: number): ParaProperties {
     const doc = this.doc;
     if (!doc || typeof doc.getParaShapeSet !== 'function') return props;
-    const { PrevSpacing, NextSpacing } = JSON.parse(doc.getParaShapeSet(listId, para));
+    const { LeftMargin, RightMargin, Indentation, PrevSpacing, NextSpacing } =
+      JSON.parse(doc.getParaShapeSet(listId, para));
     if (!Number.isInteger(PrevSpacing) || !Number.isInteger(NextSpacing)) return props;
-    const usesChar = PrevSpacing % 2 !== 0 || NextSpacing % 2 !== 0;
+    const usesChar = [LeftMargin, RightMargin, Indentation, PrevSpacing, NextSpacing]
+      .some(raw => Number.isInteger(raw) && raw % 2 !== 0);
     const base = usesChar ? JSON.parse(doc.getStyleDetail(0)).charProps?.fontSize : undefined;
     const charUnit = (base > 0 ? base : 1000) / 200;
     const toPx = (raw: number) => {
       const hu = raw % 2 === 0 ? raw / 2 : (raw - 1) / 2 * charUnit;
       return hu / 75;
     };
-    return {
+    const lengths = {
       ...props,
       spacingBeforeRaw: PrevSpacing,
       spacingAfterRaw: NextSpacing,
       spacingBeforePx: toPx(PrevSpacing),
       spacingAfterPx: toPx(NextSpacing),
     };
+    if ([LeftMargin, RightMargin, Indentation].every(Number.isInteger)) {
+      lengths.marginLeftRaw = LeftMargin;
+      lengths.marginRightRaw = RightMargin;
+      lengths.indentRaw = Indentation;
+      lengths.marginLeftPx = toPx(LeftMargin) + (this._loadedHwp3 ? Math.min(toPx(Indentation), 0) : 0);
+      lengths.marginRightPx = toPx(RightMargin);
+      lengths.indentPx = toPx(Indentation);
+    }
+    return lengths;
   }
 
   getParaPropertiesAt(sec: number, para: number, detail?: 'spacing'): ParaProperties {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const props = JSON.parse(this.doc.getParaPropertiesAt(sec, para));
-    if (detail !== 'spacing' || props.spacingBeforePx !== undefined) return props;
+    if (detail !== 'spacing' || (props.spacingBeforePx !== undefined && props.indentRaw !== undefined)) return props;
     let rootPara = para;
     for (let i = 0; i < sec; i++) rootPara += this.doc.getParagraphCount(i);
     return this.withLegacyParaSpacing(props, 0, rootPara);
@@ -3415,7 +3426,7 @@ export class WasmBridge {
   getCellParaPropertiesAt(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number, detail?: 'spacing'): ParaProperties {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const props = JSON.parse(this.doc.getCellParaPropertiesAt(sec, parentPara, controlIdx, cellIdx, cellParaIdx));
-    if (detail !== 'spacing' || props.spacingBeforePx !== undefined) return props;
+    if (detail !== 'spacing' || (props.spacingBeforePx !== undefined && props.indentRaw !== undefined)) return props;
     return this.legacyCellParaSpacing(props, sec, parentPara, [
       { controlIndex: controlIdx, cellIndex: cellIdx, cellParaIndex: cellParaIdx },
     ]);
@@ -3429,7 +3440,7 @@ export class WasmBridge {
   getCellParaPropertiesAtByPath(sec: number, parentPara: number, pathJson: string, detail?: 'spacing'): ParaProperties {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const props = JSON.parse(this.doc.getCellParaPropertiesAtByPath(sec, parentPara, pathJson));
-    if (detail !== 'spacing' || props.spacingBeforePx !== undefined) return props;
+    if (detail !== 'spacing' || (props.spacingBeforePx !== undefined && props.indentRaw !== undefined)) return props;
     return this.legacyCellParaSpacing(props, sec, parentPara, JSON.parse(pathJson));
   }
 

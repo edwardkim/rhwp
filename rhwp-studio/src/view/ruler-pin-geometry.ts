@@ -1,4 +1,5 @@
 import type { ParaProperties } from '@/core/types';
+import { paragraphLengthFromHwpunit, paragraphLengthFromPx } from '../core/paragraph-spacing.ts';
 
 /**
  * 가로 눈금자 핀의 화면 좌표 ↔ 문서 값 변환, 그리고 각 핀이 무엇을 소유하는지의 판정.
@@ -49,11 +50,7 @@ export function pxToHwpunit(px: number): number {
   return Math.round((px * HWPUNIT_PER_INCH) / dpi);
 }
 
-/** px (zoom=1, 96dpi) → ParaShape 여백/들여쓰기 저장 단위 (2x HWPUNIT). PageDef 여백과
- * 스케일이 다르다 — para-shape-dialog.ts의 pxToRaw2x(px*150)와 동일 공식. */
-export function pxToParaRaw(px: number): number {
-  return Math.round(px * 150);
-}
+export { paragraphLengthFromPx as pxToParaRaw };
 
 /** △ 핀 x — 쪽 여백 안쪽 경계(본문 시작/끝) */
 export function pageMarginPinX(
@@ -118,5 +115,10 @@ export function horizontalPinCommit(
   // 0 이상으로 clamp — 첫 줄은 marginLeft 왼쪽으로 갈 수 없다. indent<0(내어쓰기)은
   // 첫 줄이 아니라 둘째 줄부터를 밀어내므로 첫 줄 핀으로는 만들 수 없다.
   const indentPx = Math.max(0, (dropX - ctx.refLeft) / ctx.zoom - ctx.paraMarginLeftPx);
-  return { kind: 'paraProps', props: { indent: pxToParaRaw(indentPx) } };
+  // 역변환의 나눗셈이 정확히 절반인 위치를 1 ulp 아래로 옮길 수 있다.
+  // 핀을 그릴 때와 같은 화면 좌표에서 반 HWPUNIT의 경계를 비교한다.
+  const lower = Math.floor(indentPx * 75);
+  const midpointX = paraIndentPinX(ctx.refLeft, ctx.paraMarginLeftPx, (lower + 0.5) / 75, ctx.zoom);
+  const hu = dropX >= midpointX ? lower + 1 : lower;
+  return { kind: 'paraProps', props: { indent: paragraphLengthFromHwpunit(hu) } };
 }

@@ -34,7 +34,7 @@ import {
 } from './para-shape-tab-builders';
 import { enableDialogDrag } from './dialog-drag';
 import { populateFillSelection, updateFillControls } from './fill-selection';
-import { paragraphSpacingFromPt } from '@/core/paragraph-spacing';
+import { paragraphLengthFromPt } from '@/core/paragraph-spacing';
 import { tabUnitsToPt } from '@/core/tab-units';
 
 import { t as i18nText } from '../i18n/index.ts';
@@ -67,9 +67,8 @@ function pxToPt(px: number): number {
   return px * 72 / 96;
 }
 
-/** pt → raw HWPUNIT (2x 저장값) — 여백/들여쓰기 적용용 */
-function ptToRaw2x(pt: number): number {
-  return Math.round(pt * HWPUNIT_PER_PT * 2);
+function lengthInputValue(px: number): string {
+  return pxToPt(px).toFixed(2).replace(/0$/, '');
 }
 
 /** pt → raw HWPUNIT (1x) — 줄 간격 적용용 */
@@ -80,11 +79,6 @@ function ptToRaw(pt: number): number {
 /** 줄 간격 입력값을 lineSpacingInput의 min/max(0~9999)로 클램프 */
 function clampLineSpacing(value: number): number {
   return Math.max(0, Math.min(9999, value));
-}
-
-/** px → raw HWPUNIT (2x) — 비교용 */
-function pxToRaw2x(px: number): number {
-  return Math.round(px * 150);  // px * 72/96 * 100 * 2
 }
 
 /** px → raw HWPUNIT (1x) — 비교용 */
@@ -113,6 +107,7 @@ export class ParaShapeDialog {
   private marginRightInput!: HTMLInputElement;
   private firstLineRadios!: HTMLInputElement[];   // 보통/들여쓰기/내어쓰기
   private indentInput!: HTMLInputElement;
+  private editedLengths = new Set<HTMLInputElement>();
   private lineSpacingTypeSelect!: HTMLSelectElement;
   private lineSpacingInput!: HTMLInputElement;
   private lineSpacingUnitLabel!: HTMLSpanElement;
@@ -380,6 +375,11 @@ export class ParaShapeDialog {
     hangRow.appendChild(hangLabel);
     firstLineFs.appendChild(hangRow);
 
+    // 같은 표시값을 다시 입력하면 CHAR 길이도 명시적인 pt 입력으로 바꾼다.
+    for (const input of [this.marginLeftInput, this.marginRightInput, this.indentInput]) {
+      input.addEventListener('input', () => this.editedLengths.add(input));
+    }
+
     // 라디오 변경 시 indentInput 활성/비활성
     this.firstLineRadios.forEach(r => {
       r.addEventListener('change', () => {
@@ -636,18 +636,19 @@ export class ParaShapeDialog {
     if (this.alignBtns[align]) this.alignBtns[align].classList.add('active');
 
     // 여백 (px → pt)
-    this.marginLeftInput.value = pxToPt(p.marginLeft ?? 0).toFixed(1);
-    this.marginRightInput.value = pxToPt(p.marginRight ?? 0).toFixed(1);
+    this.editedLengths.clear();
+    this.marginLeftInput.value = lengthInputValue(p.marginLeftPx ?? p.marginLeft ?? 0);
+    this.marginRightInput.value = lengthInputValue(p.marginRightPx ?? p.marginRight ?? 0);
 
     // 첫 줄 (indent)
-    const indent = p.indent ?? 0;
+    const indent = p.indentPx ?? p.indent ?? 0;
     if (indent > 0) {
       this.firstLineRadios[1].checked = true; // 들여쓰기
-      this.indentInput.value = pxToPt(indent).toFixed(1);
+      this.indentInput.value = lengthInputValue(indent);
       this.indentInput.disabled = false;
     } else if (indent < 0) {
       this.firstLineRadios[2].checked = true; // 내어쓰기
-      this.indentInput.value = pxToPt(Math.abs(indent)).toFixed(1);
+      this.indentInput.value = lengthInputValue(Math.abs(indent));
       this.indentInput.disabled = false;
     } else {
       this.firstLineRadios[0].checked = true; // 보통
@@ -794,22 +795,20 @@ export class ParaShapeDialog {
       mods.alignment = newAlign;
     }
 
-    // 여백 (비교: 원본 px → HWPUNIT 2x 변환 후 비교)
-    const newML = ptToRaw2x(parseFloat(this.marginLeftInput.value) || 0);
-    if (newML !== pxToRaw2x(p.marginLeft ?? 0)) mods.marginLeft = newML;
-
-    const newMR = ptToRaw2x(parseFloat(this.marginRightInput.value) || 0);
-    if (newMR !== pxToRaw2x(p.marginRight ?? 0)) mods.marginRight = newMR;
-
-    // 첫 줄 (indent)
-    let newIndent = 0;
-    const checkedRadio = this.firstLineRadios.find(r => r.checked);
-    if (checkedRadio?.value === 'indent') {
-      newIndent = ptToRaw2x(parseFloat(this.indentInput.value) || 0);
-    } else if (checkedRadio?.value === 'hanging') {
-      newIndent = -ptToRaw2x(parseFloat(this.indentInput.value) || 0);
+    const firstLine = this.firstLineRadios.find(r => r.checked)?.value;
+    const indentSign = firstLine === 'normal' ? 0 : firstLine === 'hanging' ? -1 : 1;
+    for (const [key, input, originalPx, originalRaw, sign] of [
+      ['marginLeft', this.marginLeftInput, p.marginLeftPx ?? p.marginLeft, p.marginLeftRaw, 1],
+      ['marginRight', this.marginRightInput, p.marginRightPx ?? p.marginRight, p.marginRightRaw, 1],
+      ['indent', this.indentInput, p.indentPx ?? p.indent, p.indentRaw, indentSign],
+    ] as const) {
+      const pt = sign === 0 ? 0 : sign * input.valueAsNumber;
+      if (!Number.isFinite(pt)) continue;
+      const directionChanged = key === 'indent' && sign !== Math.sign(originalPx ?? 0);
+      if (!directionChanged && !this.editedLengths.has(input) && pt === Number(lengthInputValue(originalPx ?? 0))) continue;
+      const raw = paragraphLengthFromPt(pt);
+      if (raw !== originalRaw) mods[key] = raw;
     }
-    if (newIndent !== pxToRaw2x(p.indent ?? 0)) mods.indent = newIndent;
 
     // 줄 간격
     const newLSType = this.lineSpacingTypeSelect.value;
@@ -837,7 +836,7 @@ export class ParaShapeDialog {
       const original = spacingInputValue(resolvedPx, p[key]);
       const pt = input.valueAsNumber;
       if (Number.isFinite(pt) && (original === '' || pt !== Number(original))) {
-        mods[key] = paragraphSpacingFromPt(pt);
+        mods[key] = paragraphLengthFromPt(pt);
       }
     }
 
