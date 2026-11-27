@@ -168,8 +168,79 @@ pub fn encrypt_hwp5_stream(plaintext: &[u8], password: &[u8]) -> Vec<u8> {
     hwp5_transform(plaintext, password, true)
 }
 
+/// 이 크기보다 작은 stream은 다시 암호화해도 빠르므로 기억하지 않는다.
+const HWP5_MEMO_MIN_BYTES: usize = 4 * 1024;
+/// 기억해 두는 암호문의 합계 상한. 넘치면 오래된 것부터 버린다.
+const HWP5_MEMO_MAX_BYTES: usize = 256 * 1024 * 1024;
+
+/// 같은 키·평문의 암호문 기억. 키는 SHA-1(유도 키, 길이, 평문)이라 키 자체는 남기지 않는다.
+#[derive(Default)]
+struct Hwp5Memo {
+    ciphertexts: HashMap<[u8; 20], Vec<u8>>,
+    order: std::collections::VecDeque<[u8; 20]>,
+    bytes: usize,
+}
+
+thread_local! {
+    static HWP5_MEMO: std::cell::RefCell<Hwp5Memo> = std::cell::RefCell::default();
+}
+
+fn hwp5_memo_id(key: &[u8; 16], plaintext: &[u8]) -> [u8; 20] {
+    let mut hasher = Sha1::new();
+    hasher.update(key);
+    hasher.update((plaintext.len() as u64).to_le_bytes());
+    hasher.update(plaintext);
+    let mut id = [0_u8; 20];
+    id.copy_from_slice(&hasher.finalize());
+    id
+}
+
+fn hwp5_memo_remember(id: [u8; 20], ciphertext: &[u8]) {
+    if ciphertext.len() > HWP5_MEMO_MAX_BYTES {
+        return;
+    }
+    HWP5_MEMO.with(|memo| {
+        let mut memo = memo.borrow_mut();
+        if memo.ciphertexts.contains_key(&id) {
+            return;
+        }
+        while memo.bytes + ciphertext.len() > HWP5_MEMO_MAX_BYTES {
+            let Some(oldest) = memo.order.pop_front() else {
+                break;
+            };
+            if let Some(evicted) = memo.ciphertexts.remove(&oldest) {
+                memo.bytes -= evicted.len();
+            }
+        }
+        memo.bytes += ciphertext.len();
+        memo.order.push_back(id);
+        memo.ciphertexts.insert(id, ciphertext.to_vec());
+    });
+}
+
 fn hwp5_transform(input: &[u8], password: &[u8], encrypt: bool) -> Vec<u8> {
-    let cipher = Aes128::new_from_slice(&derive_hwp5_key(password)).expect("AES-128 key size");
+    // 영 IV의 1비트 CFB는 앞 암호문 비트마다 AES 한 블록을 돌려 병렬로 풀 수 없다. 대신 같은 키·평문의
+    // 암호문은 늘 같으므로, 연 문서에서 풀었거나 앞서 저장한 큰 stream(그림 등)은 그 암호문을 다시 쓴다.
+    let key = derive_hwp5_key(password);
+    let memo_id =
+        (encrypt && input.len() >= HWP5_MEMO_MIN_BYTES).then(|| hwp5_memo_id(&key, input));
+    if let Some(id) = &memo_id {
+        if let Some(hit) = HWP5_MEMO.with(|memo| memo.borrow().ciphertexts.get(id).cloned()) {
+            return hit;
+        }
+    }
+    let output = hwp5_transform_bits(input, &key, encrypt);
+    if input.len() >= HWP5_MEMO_MIN_BYTES {
+        match memo_id {
+            Some(id) => hwp5_memo_remember(id, &output),
+            None => hwp5_memo_remember(hwp5_memo_id(&key, &output), input),
+        }
+    }
+    output
+}
+
+fn hwp5_transform_bits(input: &[u8], key: &[u8; 16], encrypt: bool) -> Vec<u8> {
+    let cipher = Aes128::new_from_slice(key).expect("AES-128 key size");
     let padded = hwp5_padded(input);
     let mut register = [0_u8; 16];
     let mut output = Vec::with_capacity(input.len());
