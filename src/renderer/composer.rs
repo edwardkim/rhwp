@@ -50,6 +50,7 @@ pub(crate) use inline_picture_metrics::{
     inline_picture_ascent_ratio, inline_picture_occupied_size_hu, inline_picture_size_hu,
 };
 pub(crate) use stored_tac_host_frame::stored_tac_host_frame;
+pub(crate) use stored_word_tail::hidden_field_guide_fits_one_row;
 pub(crate) use stored_word_tail::{
     project_current_body_box_rows, project_current_body_box_rows_with_storage,
     project_current_marker_geometry_rows, project_current_marker_geometry_rows_with_storage,

@@ -172,6 +172,60 @@ pub(crate) fn project_current_body_box_rows(
         Err(never) => match never {},
     }
 }
+/// 미기입 필드의 안내문이 사라진 뒤 보이는 글자 없이 남은 줄 상자를 확인한다.
+/// 실제 폭에서 한 줄에 들어가면 저장한 첫 줄 메트릭을 유지할 수 있다.
+pub(crate) fn hidden_field_guide_fits_one_row<S: crate::storage::Storage>(
+    para: &Paragraph,
+    box_: &ParagraphBox,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    storage: &S,
+) -> Result<bool, S::Error> {
+    if para.line_segs.len() < 2
+        || !box_.is_usable()
+        || !para.stored_rows_include_hidden_guide()
+        || para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+        || !para.text.chars().all(|ch| ch.is_whitespace() && !ch.is_control())
+        || !crate::renderer::cell_paragraph_has_only_text_metadata(para)
+    {
+        return Ok(false);
+    }
+    let first = &para.line_segs[0];
+    if first.text_start != 0
+        || first.vertical_pos < 0
+        || first.segment_width <= 0
+        || para.line_segs.iter().any(|line| {
+            line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                || !line.is_first_segment()
+                || !line.is_last_segment()
+                || line.line_height <= 0
+                || line.line_spacing < 0
+                || line.column_start != first.column_start
+                || line.segment_width != first.segment_width
+        })
+        || para.line_segs.windows(2).any(|pair| {
+            let [previous, next] = pair else {
+                unreachable!();
+            };
+            next.is_first_line_of_page()
+                || next.is_first_line_of_column()
+                || previous.text_start >= next.text_start
+                || i64::from(previous.vertical_pos)
+                    + i64::from(previous.line_height)
+                    + i64::from(previous.line_spacing)
+                    != i64::from(next.vertical_pos)
+        })
+    {
+        return Ok(false);
+    }
+    let mut frame = box_.frame(first.vertical_pos);
+    let rows = line_breaking::layout_paragraph_in_frame_with_storage(
+        para, &mut frame, styles, dpi, storage,
+    )?;
+    Ok(rows.is_some_and(|rows| rows.len() == 1))
+}
+
 pub(crate) fn project_current_body_box_rows_with_storage<S: crate::storage::Storage>(
     para: &Paragraph,
     box_: &ParagraphBox,
