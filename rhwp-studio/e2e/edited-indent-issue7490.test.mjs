@@ -38,10 +38,37 @@ await runTest('edited indent final coordinates through Studio history',async({pa
  const savedFirst=await state(page);const savedSecond=await state(page,1);near(savedFirst.starts[0].x,beforeSave.starts[0].x,'saved first line');near(savedFirst.starts[1].x,beforeSave.starts[1].x,'saved hanging continuation');near(savedSecond.starts[0].x,beforeMerge.starts[0].x,'saved restored first-line indent');
  await screenshot(page,'issue-7490-merge-undo-saved');
  await loadHwpFile(page,'issue6190/center_align_first_line_indent.hwp');await moveCursorTo(page,0,7,0);await page.evaluate(()=>window.__inputHandler.textarea.focus());
- assert.equal(await page.evaluate(()=>JSON.parse(window.__wasm.doc.getColumnDef(0)).columnCount),0,'real source has no column definition');
+ const explicitColumns = await page.evaluate(() => {
+   const doc = window.__wasm.doc;
+   const controls = JSON.parse(doc.getControls());
+   return {
+     definitions: controls.filter(c => c.ctrlId === 'cold' && c.list === 0 && c.para === 0).length,
+     columns: JSON.parse(doc.getColumnDef(0)).columnCount,
+   };
+ });
+ assert.deepEqual(explicitColumns, { definitions: 1, columns: 1 }, '#6190 source explicitly defines one column');
  await page.keyboard.type('가');await pause(page);
  const tacSave=await page.evaluate(async()=>{const w=window.__wasm;const prefix=()=>JSON.parse(w.doc.getPageTextLayout(0)).runs.find(r=>r.paraIdx===7&&r.parentParaIdx===undefined&&r.text==='가');const before=prefix();const paper=w.doc.getPageDef(0);const bytes=w.exportHwp();const modelColumns=JSON.parse(w.doc.getColumnDef(0)).columnCount;w.loadDocument(bytes,'issue7490-tac-saved.hwp');await window.__canvasView.loadDocument();return {before,after:prefix(),paper,savedPaper:w.doc.getPageDef(0),modelColumns,savedColumns:JSON.parse(w.doc.getColumnDef(0)).columnCount};});
- assert.ok(tacSave.before&&tacSave.after,'actual keyboard prefix remains visible before/after save');assert.equal(tacSave.modelColumns,0,'save leaves model unchanged');assert.equal(tacSave.savedColumns,1,'saved WASM HWP carries default column');assert.equal(tacSave.savedPaper,tacSave.paper,'paper geometry is preserved');near(tacSave.after.x,tacSave.before.x,'saved TAC prefix x');near(tacSave.after.y,tacSave.before.y,'saved TAC prefix y');
+ assert.ok(tacSave.before&&tacSave.after,'actual keyboard prefix remains visible before/after save');assert.equal(tacSave.modelColumns,1,'save preserves the explicit column in the model');assert.equal(tacSave.savedColumns,1,'saved HWP preserves the explicit column');assert.equal(tacSave.savedPaper,tacSave.paper,'paper geometry is preserved');near(tacSave.after.x,tacSave.before.x,'saved TAC prefix x');near(tacSave.after.y,tacSave.before.y,'saved TAC prefix y');
  await screenshot(page,'issue-7490-tac-save');
+ await loadHwpFile(page, 'semanticist21-20261124-rework/b5-no-column.hwpx');
+ const missingColumns = await page.evaluate(() => {
+   const doc = window.__wasm.doc;
+   const countDefinitions = d => JSON.parse(d.getControls())
+     .filter(c => c.ctrlId === 'cold' && c.list === 0 && c.para === 0).length;
+   const before = countDefinitions(doc);
+   doc.insertText(0, 0, 0, 'A');
+   const saved = new doc.constructor(doc.exportHwp());
+   try {
+     return {
+       before, after: countDefinitions(doc), saved: countDefinitions(saved),
+       columns: JSON.parse(saved.getColumnDef(0)).columnCount, prefix: saved.getTextRange(0, 0, 0, 1),
+     };
+   } finally {
+     saved.free();
+   }
+ });
+ assert.deepEqual(missingColumns, { before: 0, after: 0, saved: 1, columns: 1, prefix: 'A' },
+   'an HWP save supplies the default column while preserving the source model and edited text');
  console.log('PASS: dialog first/hanging + edit + repeated undo/redo + merge undo + saved final coordinates + real TAC typing/default-column save');
 });
