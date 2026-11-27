@@ -1,0 +1,17 @@
+input	stage	raw_percent	paragraph_5_ga	png_sha256
+rhwp-table-cell-minimal-repro.hwp	160-initial	100.00	44,1	e40cc4d76f237e53e26cf4decf9f411e4829304f66bf67f6fd4d05ca9c4019cf
+rhwp-table-cell-minimal-repro.hwp	140-batch	100.00	44,1	3dc45962bb6e3d359d1de6dfe0add289b78a96e74764f9c7fadf49627d01dc22
+rhwp-table-cell-minimal-repro.hwp	140-hwp-reopen-1	100.00	44,1	3dc45962bb6e3d359d1de6dfe0add289b78a96e74764f9c7fadf49627d01dc22
+rhwp-table-cell-minimal-repro.hwp	140-hwp-reopen-2	100.00	44,1	3dc45962bb6e3d359d1de6dfe0add289b78a96e74764f9c7fadf49627d01dc22
+rhwp-table-cell-minimal-repro.hwp	140-hwpx-reopen-1	100.00	44,1	3dc45962bb6e3d359d1de6dfe0add289b78a96e74764f9c7fadf49627d01dc22
+rhwp-table-cell-minimal-repro.hwp	140-hwpx-reopen-2	100.00	44,1	3dc45962bb6e3d359d1de6dfe0add289b78a96e74764f9c7fadf49627d01dc22
+rhwp-table-cell-minimal-repro.hwp	160-restored-ids	100.00	44,1	e40cc4d76f237e53e26cf4decf9f411e4829304f66bf67f6fd4d05ca9c4019cf
+rhwp-table-cell-minimal-repro.hwp	160-restored-snapshot	100.00	44,1	e40cc4d76f237e53e26cf4decf9f411e4829304f66bf67f6fd4d05ca9c4019cf
+issue6639-hancom-160.hwpx	160-initial	100.00	44,1	e40cc4d76f237e53e26cf4decf9f411e4829304f66bf67f6fd4d05ca9c4019cf
+issue6639-hancom-160.hwpx	140-batch	100.00	44,1	3dc45962bb6e3d359d1de6dfe0add289b78a96e74764f9c7fadf49627d01dc22
+issue6639-hancom-160.hwpx	140-hwp-reopen-1	100.00	44,1	3dc45962bb6e3d359d1de6dfe0add289b78a96e74764f9c7fadf49627d01dc22
+issue6639-hancom-160.hwpx	140-hwp-reopen-2	100.00	44,1	3dc45962bb6e3d359d1de6dfe0add289b78a96e74764f9c7fadf49627d01dc22
+issue6639-hancom-160.hwpx	140-hwpx-reopen-1	100.00	44,1	3dc45962bb6e3d359d1de6dfe0add289b78a96e74764f9c7fadf49627d01dc22
+issue6639-hancom-160.hwpx	140-hwpx-reopen-2	100.00	44,1	3dc45962bb6e3d359d1de6dfe0add289b78a96e74764f9c7fadf49627d01dc22
+issue6639-hancom-160.hwpx	160-restored-ids	100.00	44,1	e40cc4d76f237e53e26cf4decf9f411e4829304f66bf67f6fd4d05ca9c4019cf
+issue6639-hancom-160.hwpx	160-restored-snapshot	100.00	44,1	e40cc4d76f237e53e26cf4decf9f411e4829304f66bf67f6fd4d05ca9c4019cf

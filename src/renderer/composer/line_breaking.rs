@@ -4786,7 +4786,7 @@ pub(crate) fn frame_metrics_for_line(
 /// 발행하면 편집한 문단의 들여쓰기·내어쓰기가 그려지지 않는다.
 ///
 /// 기준은 문단 모양의 `indent` 다. 렌더러가 비트를 보고 얹는 값이 이것이므로, 조판용
-/// 지역 `indent_px` 를 넘겨받지 않는다. 한글 기록(`stored`, 조판 전 저장 줄)이 이 규칙과
+/// 지역 `indent_px` 를 넘겨받지 않는다. 유효한 한글 기록(`stored`)이 이 규칙과
 /// 다르면 기록을 따른다.
 /// - 들여쓰기가 있는데 저장 줄의 비트가 모두 꺼져 있으면, 한글이 이 문단에 들여쓰기를
 ///   적용하지 않은 것이다(#6190 표본). 새 줄도 끈다. 내어쓰기는 둘째 줄이 있어야 이
@@ -4843,23 +4843,30 @@ fn reflow_indentation_pattern(
     line_width_hwp: i32,
 ) -> (bool, bool) {
     let indent = para_style.map_or(0.0, |style| style.indent);
-    let indented = |line: &LineSeg| line.tag & LineSeg::TAG_INDENTATION != 0;
-    let hancom_record = !stored.is_empty()
-        && stored
-            .iter()
-            .all(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0);
-    if hancom_record
-        && (indent > 0.0 || (indent < 0.0 && stored.len() > 1))
-        && !stored.iter().any(indented)
-    {
+    if stored_rows_suppress_indentation(stored, indent) {
         (false, false)
     } else if indent == 0.0 && para_style.is_some_and(|style| style.head_type != HeadType::None) {
-        (false, hancom_record && stored.iter().skip(1).any(indented))
+        let hancom_record = stored
+            .iter()
+            .all(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0);
+        let continuation_indented = stored
+            .iter()
+            .skip(1)
+            .any(|line| line.tag & LineSeg::TAG_INDENTATION != 0);
+        (false, hancom_record && continuation_indented)
     } else if !indent_leaves_line_room_hwp(to_hwp(indent), line_width_hwp) {
         (false, false)
     } else {
         (indent > 0.0, indent < 0.0)
     }
+}
+
+fn stored_rows_suppress_indentation(stored: &[LineSeg], indent: f64) -> bool {
+    !stored.is_empty()
+        && (indent > 0.0 || (indent < 0.0 && stored.len() > 1))
+        && stored.iter().all(|line| {
+            line.tag & (LineSeg::TAG_IMPLEMENTATION_PROPERTY | LineSeg::TAG_INDENTATION) == 0
+        })
 }
 
 /// [#7490] 문단 모양이 바뀌어 들여쓰기가 달라졌으면 저장 줄의 bit 20 을 새 들여쓰기로
@@ -6129,35 +6136,8 @@ pub(crate) fn resolve_stored_line_segs_in_frame_with_storage<S: crate::storage::
                 report_stored_row_key_mismatch_with_storage(para, frame, styles, dpi, storage)?;
             }
 
-            let mut reflow_input = storage.clone_paragraph(para)?;
-            // A rejected row cannot remain the provenance template for fresh rows:
-            // placement/empty flags describe the stored physical rows, not this
-            // frame's newly carved projection.
-            // 같은 목록 상자의 마지막 자동 줄이라는 증거는 행 플래그와 별개다.
-            // 캐시를 지우기 전에 폭 판정에 필요한 이 사실만 보존해, 탐색과
-            // 실제 발행이 같은 글줄 경계를 사용하도록 한다.
-            let purpose = if !frame.models_exclusions()
-                && saved_marker_tail_owns_terminal_ink(
-                    para,
-                    &ParagraphBox::content(frame.horizontal.clone()),
-                    styles,
-                ) {
-                FramePurpose::StoredMarkerTailReflow
-            } else {
-                FramePurpose::Body
-            };
-            reflow_input.line_segs.clear();
-            try_layout_paragraph_in_frame_impl(
-                &reflow_input,
-                frame,
-                styles,
-                dpi,
-                true,
-                FrameStart::Scalar(0),
-                purpose,
-                storage,
-            )?
-            .map(|_| StoredRowResolution::Reflowed)
+            try_fill_frame_after_discarding_stored_rows(para, frame, styles, dpi, storage)?
+                .map(|_| StoredRowResolution::Reflowed)
         })
     })();
     if resolved.is_err() {
@@ -6166,6 +6146,39 @@ pub(crate) fn resolve_stored_line_segs_in_frame_with_storage<S: crate::storage::
         }
     }
     resolved
+}
+
+fn try_fill_frame_after_discarding_stored_rows<S: Storage>(
+    para: &Paragraph,
+    frame: &mut LayoutFrame,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    storage: &S,
+) -> Result<Option<Vec<LineSeg>>, S::Error> {
+    // 확정된 목록 상자의 마지막 자동 줄이라는 증거만 폭 판정에 전달한다.
+    // 나머지 플래그는 거절한 저장 줄의 기록이므로 새 줄의 기하에 쓰지 않는다.
+    let purpose = if !frame.models_exclusions()
+        && saved_marker_tail_owns_terminal_ink(
+            para,
+            &ParagraphBox::content(frame.horizontal.clone()),
+            styles,
+        ) {
+        FramePurpose::StoredMarkerTailReflow
+    } else {
+        FramePurpose::Body
+    };
+    let mut input = storage.clone_paragraph(para)?;
+    input.line_segs.clear();
+    try_layout_paragraph_in_frame_impl(
+        &input,
+        frame,
+        styles,
+        dpi,
+        true,
+        FrameStart::Scalar(0),
+        purpose,
+        storage,
+    )
 }
 
 /// [#6175] 저장 행의 결손 폭이 어울림 개체의 흐름 폭과 같다고 볼 허용 오차(HWPUNIT).
@@ -7113,16 +7126,46 @@ fn try_reflow_line_segs_impl<S: Storage>(
         // `0..seg_width_hwp`(문단 기준, 미스냅)라 열 기준 렌더 프레임과 어긋났다.
         let mut frame =
             paragraph_box.frame(orig.as_ref().map(|line| line.vertical_pos).unwrap_or(0));
-        if let Some(projected) = try_layout_paragraph_in_frame_impl(
-            para,
-            &mut frame,
-            styles,
-            dpi,
-            true,
-            FrameStart::Scalar(0),
-            FramePurpose::Body,
-            storage,
-        )? {
+        // [#7407] 읽기 경로가 #7416의 과소충전으로 거절하는 저장 줄은 내어쓰기
+        // 비트도 재사용할 수 없다. 같은 프레임에 현재 문단 모양으로 새 줄을 낸다.
+        let discard_stored_rows = if stored_rows_suppress_indentation(
+            &para.line_segs,
+            para_style.map_or(0.0, |style| style.indent),
+        ) && !para.stored_text_partition_is_dirty()
+            && !stored_rows_require_external_geometry(para, &frame, &[], false)
+        {
+            let composed = super::try_compose_paragraph_scoped(
+                para,
+                styles.supplemental_metrics.is_some(),
+                Some(styles),
+                storage,
+            )?;
+            composed.lines.len() == para.line_segs.len()
+                && super::stored_rows_underfill_inside_token_with_storage(
+                    &composed,
+                    para,
+                    paragraph_box.width_px(dpi),
+                    styles,
+                    storage,
+                )?
+        } else {
+            false
+        };
+        let projected = if discard_stored_rows {
+            try_fill_frame_after_discarding_stored_rows(para, &mut frame, styles, dpi, storage)?
+        } else {
+            try_layout_paragraph_in_frame_impl(
+                para,
+                &mut frame,
+                styles,
+                dpi,
+                true,
+                FrameStart::Scalar(0),
+                FramePurpose::Body,
+                storage,
+            )?
+        };
+        if let Some(projected) = projected {
             para.replace_line_segs_with_space_metrics(
                 projected,
                 frame.try_project_space_metrics_since(0, storage)?,
