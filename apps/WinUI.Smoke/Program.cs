@@ -1,8 +1,15 @@
 using System.Security.Cryptography;
 using Rhwp.WinUI;
 
-if (args.Length != 2)
-    throw new ArgumentException("Pass a multipage HWP and a second HWPX path.");
+if (args is ["--pdf-contract-only"])
+{
+    await LivePdfSmoke.RunAsync(expectExport: false);
+    return;
+}
+
+bool testLivePdf = args.Length == 3 && args[2] == "--live-pdf";
+if (args.Length != 2 && !testLivePdf)
+    throw new ArgumentException("Pass a multipage HWP and a second HWPX path, optionally followed by --live-pdf.");
 
 var dispatcher = new NativeWorkerDispatcher();
 try
@@ -113,6 +120,8 @@ catch (OperationCanceledException)
 
 await EditorSmoke.RunAsync(args[1]);
 await SaveCopySmoke.RunAsync(args[1]);
+if (testLivePdf)
+    await LivePdfSmoke.RunAsync(expectExport: true, multipageDocument: args[0]);
 
 static PageViewport Visible(PageInfo page, double x, double y, double width, double height, double zoom, double scale) =>
     PageViewport.Visible(page, x, y, width, height, zoom, scale) ?? throw new Exception("No visible page.");

@@ -1,4 +1,4 @@
-# RHWP WinUI 3 문서 보기
+# RHWP WinUI 3 편집기
 
 Windows x64에서 **파일 열기** 또는 Ctrl+O로 HWP/HWPX 파일을 선택합니다. 첫 쪽부터 이전·다음
 쪽 버튼으로 이동하고 50%에서 400%까지 확대하거나 축소할 수 있습니다. 창보다 큰 쪽은
@@ -62,6 +62,17 @@ ID·revision·글꼴 세대와 픽셀 원점을 확인한 후 RGBA를 BGRA premu
 앱은 준비된 바이트를 작성하고 파일 내용을 확인한 뒤 같은 Native 저장 토큰을 승인합니다.
 손실 승인 취소나 게시 실패 시 토큰을 취소하고 편집본을 유지합니다.
 
+## 현재 쪽 PDF 저장
+
+PDF 출력을 지원하는 Native 라이브러리에서는 **현재 쪽 PDF 저장**으로 미저장 편집을
+포함한 한 쪽을 새 PDF 파일에 쓸 수 있습니다. 앱은 Native Print 출력의 문서 ID·revision·글꼴
+세대와 쪽 번호를 확인하고, 받은 바이트를 검증한 후 파일을 게시합니다. 문서 저장 상태와
+실행 취소 기록은 유지됩니다. 기존 PDF는 덮어쓰지 않습니다.
+
+**PDF 내보내기 취소**는 대기 작업을 취소하거나 완료된 바이트가 파일에 쓰이지 않게 합니다.
+Native에서 이미 실행 중인 작업은 그 작업의 완료를 기다립니다. Windows 인쇄 대화상자와
+인쇄 미리보기는 별도 연결과 Windows 검증이 필요합니다.
+
 ## 검증
 
 기존 Skia 공유 라이브러리 경로를 지정해 관리 디스패처를 검사할 수 있습니다. 예시는 Linux입니다.
@@ -71,6 +82,16 @@ LD_LIBRARY_PATH=/path/to/skia-library-dir dotnet run --project apps/WinUI.Smoke 
   samples/basic/issue2007_nested_cell_pagination_42065.hwp \
   samples/issue5599_oracle/3191107_leave_request_form.hwpx
 ```
+
+PDF 기능을 제공하지 않는 라이브러리의 capability 및 검증기만 검사할 수 있습니다.
+
+```sh
+LD_LIBRARY_PATH=/path/to/library-dir dotnet run --project apps/WinUI.Smoke -- --pdf-contract-only
+```
+
+`livePdfExport`를 제공하는 같은 리비전의 Native Skia 라이브러리를 사용한다면 두 문서 경로
+뒤에 `--live-pdf`를 추가합니다. 현재 둘째 쪽의 출력, 잘못된 revision·글꼴 세대·출력 한도 거부,
+PDF 사본 게시, 미저장 편집과 기존 문서 저장 토큰의 보존을 함께 검사합니다.
 
 Windows 창에서 다음 동작을 확인합니다.
 
@@ -85,6 +106,8 @@ Windows 창에서 다음 동작을 확인합니다.
   문서와 변경 내용을 유지합니다.
 - 편집 후 새 이름으로 HWP와 HWPX를 저장하고 앱에서 다시 엽니다. 기존 이름에 저장을 시도하면
   기존 파일과 편집 상태가 보존됩니다.
+- 편집한 상태에서 현재 쪽을 PDF로 저장해 내용을 확인합니다. 취소 후 미저장 표시와 실행 취소
+  동작이 유지되는지 확인합니다.
 
 관리 디스패처와 UTF-16 변환은 Linux의 실제 Skia 라이브러리로 검증했습니다. 이 환경의
 .NET 9 SDK는 Windows 프로젝트의 .NET 10 대상을 빌드하지 못했습니다(`NETSDK1045`).

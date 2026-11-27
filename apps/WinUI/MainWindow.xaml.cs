@@ -280,6 +280,7 @@ public sealed partial class MainWindow : Window
     {
         if (Root.XamlRoot is XamlRoot root)
             root.Changed += OnXamlRootChanged;
+        _ = LoadPdfCapabilityAsync();
         QueueRender();
     }
 
@@ -340,8 +341,11 @@ public sealed partial class MainWindow : Window
             PageImage.Width = frame.PixelWidth / frame.DeviceScale;
             PageImage.Height = frame.PixelHeight / frame.DeviceScale;
             PageImage.Source = source;
-            StatusText.Text = documentError ??
-                $"{current.Page + 1} / {current.PageCount}쪽 · {(int)Math.Round(zoom * 100)}%";
+            if (pdfCancellation is null)
+            {
+                StatusText.Text = documentError ??
+                    $"{current.Page + 1} / {current.PageCount}쪽 · {(int)Math.Round(zoom * 100)}%";
+            }
         }
         catch (OperationCanceledException) when (closing || request.IsCancellationRequested)
         {
@@ -364,6 +368,10 @@ public sealed partial class MainWindow : Window
         bool available = !closing && !editorBusy && !picking;
         OpenButton.IsEnabled = available;
         SaveCopyButton.IsEnabled = available && (page is not null || editorInfo is not null);
+        ExportPdfButton.Content = pdfCancellation is null ? "현재 쪽 PDF 저장" : "PDF 내보내기 취소";
+        ExportPdfButton.IsEnabled = pdfCancellation is CancellationTokenSource export
+            ? !export.IsCancellationRequested
+            : available && page is not null && pdfLimits is not null;
         CloseButton.IsEnabled = available && (fileName is not null || documentRequest is not null);
         PreviousButton.IsEnabled = available && page is { Page: > 0 };
         NextButton.IsEnabled = available && page is PageInfo current && current.Page + 1 < current.PageCount;

@@ -10,6 +10,8 @@
     <Compile Include="../WinUI/NativeWorkerDispatcher.cs" Link="NativeWorkerDispatcher.cs" />
     <Compile Include="../WinUI/NativeWorkerDispatcher.Editor.cs" Link="NativeWorkerDispatcher.Editor.cs" />
     <Compile Include="../WinUI/NativeWorkerDispatcher.Save.cs" Link="NativeWorkerDispatcher.Save.cs" />
+    <Compile Include="../WinUI/NativeWorkerDispatcher.Pdf.cs" Link="NativeWorkerDispatcher.Pdf.cs" />
+    <Compile Include="../WinUI/LivePdfContract.cs" Link="LivePdfContract.cs" />
     <Compile Include="../WinUI/DocumentFileStore.cs" Link="DocumentFileStore.cs" />
     <Compile Include="../WinUI/DocumentSaveCopy.cs" Link="DocumentSaveCopy.cs" />
     <Compile Include="../WinUI/PageEditText.cs" Link="PageEditText.cs" />
