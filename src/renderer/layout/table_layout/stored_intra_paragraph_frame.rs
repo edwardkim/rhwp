@@ -418,6 +418,51 @@ impl LayoutEngine {
         (required <= height).then_some(height)
     }
 
+    /// The opening overlay frame can end after a complete row inside its
+    /// stored empty band. Use the same physical row for fit and paint.
+    pub(crate) fn stored_overlay_opening_closing_row(
+        &self,
+        table: &Table,
+        row: usize,
+        measured_rows: &[f64],
+        available: f64,
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        if table.caption.is_some()
+            || table.cell_spacing != 0
+            || row == 0
+            || row + 1 >= usize::from(table.row_count)
+            || !self.stored_row_boxes_exceed_first_frame(table)
+            || !crate::renderer::float_placement::complete_declared_column_grid(table)
+            || table.cells.iter().any(|cell| {
+                usize::from(cell.row) <= row
+                    && (cell.row_span != 1 || !self.stored_plain_text_cell_frame(table, cell))
+            })
+        {
+            return None;
+        }
+        let rows = table.get_raw_row_heights();
+        let measured = measured_rows.get(..row)?;
+        let source = rows.get(..row)?;
+        let unit = hwpunit_to_px(1, self.dpi);
+        if source.iter().zip(measured).any(|(&source, &measured)| {
+            source == 0 || (hwpunit_to_px(source as i32, self.dpi) - measured).abs() > unit
+        }) {
+            return None;
+        }
+        let prefix = source.iter().map(|&height| i64::from(height)).sum::<i64>();
+        let band = i32::try_from(i64::from(table.common.height) - prefix).ok()?;
+        let band = hwpunit_to_px(band, self.dpi);
+        let declared = hwpunit_to_px(*rows.get(row)? as i32, self.dpi);
+        if band <= 0.0 || band >= declared || band > available {
+            return None;
+        }
+        let content = self.row_complete_cut_content_height(table, row, styles);
+        (content > 0.0
+            && self.row_aligned_content_bottom(table, row, content, band, styles) <= band)
+            .then_some(band)
+    }
+
     pub(super) fn stored_span_partial_first_frame_owner(
         &self,
         table: &Table,

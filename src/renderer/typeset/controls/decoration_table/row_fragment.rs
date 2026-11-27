@@ -33,6 +33,21 @@ pub(super) fn query(
     layout.prime_column_layout_env(&state.layout);
     layout.set_render_normalization_overlay(std::sync::Arc::clone(&engine.render_normalization));
     layout.remember_stored_frame_rows(table, &formatted.row_heights);
+    if let Some(opening_height) = layout.stored_overlay_opening_closing_row(
+        table,
+        row,
+        &formatted.row_heights,
+        available,
+        styles,
+    ) {
+        return Some(OverlayRowFragment {
+            fully_consumed: true,
+            end_cut: Vec::new(),
+            opening_height,
+            remaining_height: 0.0,
+            owns_stored_frame: true,
+        });
+    }
     let is_overlay = super::row_contains_cell_overlay(table, row);
     let overlay_frame =
         is_overlay.then(|| super::overlay_opening_frame(table, available, engine.dpi));

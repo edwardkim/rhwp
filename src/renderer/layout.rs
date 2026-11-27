@@ -18413,7 +18413,7 @@ impl LayoutEngine {
                         .iter()
                         .find(|(pi, ci, _)| *pi == para_index && *ci == control_index)
                         .map(|(_, _, cut)| cut);
-                    if let Some(cut) = source_cut.filter(|cut| !cut.end_cut.is_empty()) {
+                    if let Some(cut) = source_cut.filter(|cut| cut.end_row_height.is_some()) {
                         self.layout_partial_table(
                             tree,
                             &mut temp_parent,
