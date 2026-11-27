@@ -186,7 +186,10 @@ pub(crate) fn hidden_field_guide_fits_one_row<S: crate::storage::Storage>(
         || !para.stored_rows_include_hidden_guide()
         || para.stored_text_partition_is_dirty()
         || para.cell_format_vpos_dirty
-        || !para.text.chars().all(|ch| ch.is_whitespace() && !ch.is_control())
+        || !para
+            .text
+            .chars()
+            .all(|ch| ch.is_whitespace() && !ch.is_control())
         || !crate::renderer::cell_paragraph_has_only_text_metadata(para)
     {
         return Ok(false);
