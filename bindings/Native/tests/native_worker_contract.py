@@ -12,6 +12,9 @@ from native_host import NativeCallError
 from native_worker import NativeWorker
 
 
+BASIC_TABLE = Path(__file__).resolve().parents[3] / "samples/hwpx/basic-table-01.hwpx"
+
+
 def accepted(worker, command):
     result = worker.wait(worker.submit(command))
     assert result["ok"], result
@@ -23,9 +26,8 @@ def position(offset=0):
 
 
 def cell_edit_contract(library):
-    fixture = Path(__file__).resolve().parents[3] / "samples/hwpx/basic-table-01.hwpx"
     with NativeWorker(library) as worker:
-        opened = worker.wait(worker.open_bytes(fixture.read_bytes()))
+        opened = worker.wait(worker.open_bytes(BASIC_TABLE.read_bytes()))
         assert opened["ok"], opened
         info = opened["info"]
         target = {"documentId": info["documentId"], "revision": info["revision"]}
@@ -158,6 +160,100 @@ def cell_edit_contract(library):
         assert body["role"] == "bodyParagraph" and body["text"] == "", body
         edit("setSelection", selection={"anchor": body["start"], "focus": body["end"]})
         verify_save("hwp", bytes.fromhex("d0cf11e0a1b11ae1"), "currentFocus")
+
+
+def cell_ime_contract(library):
+    with NativeWorker(library) as worker:
+        opened = worker.wait(worker.open_bytes(BASIC_TABLE.read_bytes()))
+        assert opened["ok"], opened
+        target = {key: opened["info"][key] for key in ("documentId", "revision")}
+
+        def call(operation, **arguments):
+            return accepted(worker, {"op": operation, "target": target, **arguments})
+
+        def apply(operation, **arguments):
+            outcome = call(operation, **arguments)["outcome"]
+            target["revision"] = outcome["revision"]
+            return outcome
+
+        def cell_contents():
+            snapshot = call("accessibility", request={})["snapshot"]
+            return [(node["start"], node["text"]) for node in snapshot["nodes"]
+                    if node["role"] == "tableCellParagraph"]
+
+        def span(point, start, end):
+            return {"anchor": {**point, "scalarOffset": start},
+                    "focus": {**point, "scalarOffset": end}}
+
+        def context():
+            return call("imeEditContext")["context"]
+
+        def replacement(text, start, end):
+            return {"range": {"start": start, "end": end}, "text": text}
+
+        before = cell_contents()
+        selected, = (point for point, text in before if text == "10")
+        sibling, = (point for point, text in before if text == "11")
+        call("beginEdit", selection=span(sibling, 0, 2))
+        apply("replace", text="10")
+        apply("setSelection", selection=span(selected, 1, 1))
+        old_context = context()
+        assert old_context["context"]["position"] == span(selected, 1, 1)["focus"], old_context
+
+        # Context text, scalar offsets and revision are identical in the two
+        # cells. The worker must check the full paragraph address as well.
+        apply("setSelection", selection=span(sibling, 1, 1))
+        sibling_context = context()
+        assert sibling_context["revision"] == old_context["revision"]
+        assert sibling_context["context"]["text"] == old_context["context"]["text"] == "10"
+        stale = worker.wait(worker.submit({
+            "op": "applyImeEdit", "target": target, "expected": old_context,
+            "edit": {"kind": "commit", "replacement": replacement("한", 1, 1)},
+        }))
+        assert stale["ok"] is False and stale["code"] == "invalidArgument", stale
+        assert context() == sibling_context
+
+        apply("setSelection", selection=span(selected, 1, 1))
+        seeded = cell_contents()
+        assert seeded == [(point, "10" if point == sibling else text) for point, text in before]
+        before_preview = context()
+        preview = apply("applyImeEdit", expected=before_preview, edit={
+            "kind": "commit", "replacement": replacement("", 1, 1),
+            "preedit": {"replacement": replacement("ㅎ", 1, 1)},
+        })
+        assert preview["compositionId"] is not None and not preview["historyChanged"], preview
+        preedit = context()
+        assert preedit["context"]["text"] == "1ㅎ0", preedit
+        assert preedit["preedit"] == {"start": 1, "end": 2}, preedit
+
+        # Saving is possible after a composition has been explicitly settled.
+        refused_save = worker.wait(worker.submit({
+            "op": "prepareSave", "target": target, "format": "hwpx",
+        }))
+        assert refused_save["ok"] is False and refused_save["code"] == "invalidArgument", refused_save
+        assert context() == preedit
+
+        continued = apply("applyImeEdit", expected=preedit, edit={
+            "kind": "continue", "replacement": replacement("하", 1, 2),
+        })
+        assert continued["compositionId"] == preview["compositionId"], continued
+        assert not continued["historyChanged"], continued
+        current = context()
+        assert current["context"]["text"] == "1하0", current
+        committed = apply("applyImeEdit", expected=current, edit={
+            "kind": "commit", "replacement": replacement("한", 1, 2),
+        })
+        assert committed["compositionId"] is None and committed["historyChanged"], committed
+        assert committed["selection"] == span(selected, 2, 2), committed
+        expected = [(point, "1한0" if point == selected else text) for point, text in seeded]
+        assert cell_contents() == expected
+
+        undone = apply("undo")
+        assert undone["selection"] == span(selected, 1, 1), undone
+        assert cell_contents() == seeded
+        redone = apply("redo")
+        assert redone["selection"] == span(selected, 2, 2), redone
+        assert cell_contents() == expected
 
 
 def buffer_quota_contract(library):
@@ -363,8 +459,9 @@ def run(library):
     viewport_budget_contract(library)
     tiled_cancellation_contract(library)
     cell_edit_contract(library)
+    cell_ime_contract(library)
     print('{"ok":true,"contract":"native-worker","queueCredit":true,"saveRevision":true,'
-          '"threadOwnership":true,"saveBufferQuotaCleanup":true,"cellEdit":true}')
+          '"threadOwnership":true,"saveBufferQuotaCleanup":true,"cellEdit":true,"cellIme":true}')
 
 
 if __name__ == "__main__":

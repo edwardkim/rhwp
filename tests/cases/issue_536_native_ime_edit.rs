@@ -143,6 +143,144 @@ fn native_ime_invalid_surrogates_offsets_text_and_selection_preserve_redo() {
     assert_eq!(text(&editor), "x가😀나");
 }
 
+fn editor_with_matching_cells() -> NativeEditor {
+    let mut core = core("");
+    core.paste_html_native(
+        0,
+        0,
+        0,
+        "<table><tr><td><p>가😀나</p></td><td><p>가😀나</p></td></tr></table>",
+    )
+    .unwrap();
+    let (paragraph, control) = core.document().sections[0]
+        .paragraphs
+        .iter()
+        .enumerate()
+        .find_map(|(paragraph, host)| {
+            host.controls
+                .iter()
+                .position(|item| matches!(item, Control::Table(_)))
+                .map(|control| (paragraph as u32, control as u32))
+        })
+        .expect("table in fixture");
+    let mut selection = selected(2, 1);
+    for position in [&mut selection.anchor, &mut selection.focus] {
+        position.paragraph = paragraph;
+        position.cell_path.push(NativeCellPathEntry {
+            control,
+            cell: 0,
+            paragraph: 0,
+        });
+    }
+    NativeEditor::new(NativeDocumentSession::from_core(core), selection).unwrap()
+}
+
+fn cell_texts(editor: &NativeEditor) -> [&str; 2] {
+    let pos = &editor.selection().focus;
+    let para =
+        &editor.session().document().document().sections[0].paragraphs[pos.paragraph as usize];
+    let Control::Table(table) = &para.controls[pos.cell_path[0].control as usize] else {
+        panic!("missing fixture table");
+    };
+    [
+        &table.cells[0].paragraphs[0].text,
+        &table.cells[1].paragraphs[0].text,
+    ]
+}
+
+#[test]
+fn native_ime_cell_uses_leaf_text_and_cancels_only_new_preedit() {
+    let mut editor = editor_with_matching_cells();
+    let original = editor.selection().clone();
+    let context = editor.ime_edit_context(0).unwrap();
+    assert_eq!(context.context.text, "가😀나");
+    assert_eq!(context.context.selected_text, "😀");
+    assert_eq!(context.context.anchor_scalar, Some(2));
+    assert!(editor
+        .apply_ime_edit(0, &context, commit(replace(1, 2, "한")))
+        .is_err());
+    assert_eq!(editor.ime_edit_context(0).unwrap(), context);
+
+    let first = editor.begin_composition(0).unwrap().composition_id.unwrap();
+    editor.update_composition(0, first, "ㅎ").unwrap();
+    apply(
+        &mut editor,
+        NativeImeEdit::Continue {
+            replacement: replace(1, 2, "하"),
+            selection: None,
+        },
+    );
+    assert_eq!(cell_texts(&editor), ["가하나", "가😀나"]);
+    apply(
+        &mut editor,
+        NativeImeEdit::Commit {
+            replacement: replace(1, 2, "한"),
+            selection: None,
+            preedit: Some(NativeImePreedit {
+                replacement: replace(2, 2, "ㄱ"),
+                selection: None,
+            }),
+        },
+    );
+    assert_eq!(cell_texts(&editor), ["가한ㄱ나", "가😀나"]);
+    let second = editor.composition_id().unwrap();
+    assert_ne!(first, second);
+    editor
+        .cancel_composition(revision(&editor), second)
+        .unwrap();
+    assert_eq!(cell_texts(&editor), ["가한나", "가😀나"]);
+    let committed_selection = editor.selection().clone();
+    editor.undo(revision(&editor)).unwrap();
+    assert_eq!(editor.selection(), &original);
+    assert_eq!(cell_texts(&editor), ["가😀나", "가😀나"]);
+    assert!(!editor.can_undo());
+    editor.redo(revision(&editor)).unwrap();
+    assert_eq!(editor.selection(), &committed_selection);
+    assert_eq!(cell_texts(&editor), ["가한나", "가😀나"]);
+}
+
+#[test]
+fn native_ime_rejects_equal_sibling_context_and_stale_cell_composition() {
+    let mut editor = editor_with_matching_cells();
+    let original = editor.ime_edit_context(0).unwrap();
+    let first = editor.begin_composition(0).unwrap().composition_id.unwrap();
+    let old_composition = editor.ime_edit_context(0).unwrap();
+    editor.cancel_composition(0, first).unwrap();
+    let mut sibling = original.selection.clone();
+    sibling.anchor.cell_path[0].cell = 1;
+    sibling.focus.cell_path[0].cell = 1;
+    editor.set_selection(0, sibling).unwrap();
+    let current = editor.ime_edit_context(0).unwrap();
+    assert_eq!(current.context.text, original.context.text);
+    assert_eq!(
+        current.context.selected_text,
+        original.context.selected_text
+    );
+    assert!(editor
+        .apply_ime_edit(0, &original, commit(replace(1, 3, "X")))
+        .is_err());
+    assert_eq!(editor.ime_edit_context(0).unwrap(), current);
+
+    let second = editor.begin_composition(0).unwrap().composition_id.unwrap();
+    assert_ne!(first, second);
+    let current = editor.ime_edit_context(0).unwrap();
+    assert!(editor
+        .apply_ime_edit(
+            0,
+            &old_composition,
+            NativeImeEdit::Continue {
+                replacement: replace(1, 3, "X"),
+                selection: None,
+            }
+        )
+        .is_err());
+    assert_eq!(editor.ime_edit_context(0).unwrap(), current);
+    editor.cancel_composition(0, second).unwrap();
+    assert_eq!(revision(&editor), 0);
+    assert_eq!(cell_texts(&editor), ["가😀나", "가😀나"]);
+    assert!(!editor.can_undo() && !editor.can_redo());
+}
+
 #[test]
 fn native_ime_context_checks_selection_and_composition_identity_without_revision_changes() {
     let mut editor = editor("AB");
@@ -381,7 +519,7 @@ fn native_ime_snapshot_budget_rejection_preserves_live_composition() {
 }
 
 #[test]
-fn native_ime_context_rejects_semantic_paragraphs_cells_and_cross_paragraph_selection() {
+fn native_ime_context_rejects_semantic_paragraphs_and_mixed_selection_scopes() {
     let mut core = core("AB");
     let mut document = core.document().clone();
     document.sections[0].paragraphs[0]
