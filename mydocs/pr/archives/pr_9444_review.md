@@ -90,6 +90,16 @@ HWP와 HWPX를 각각 두 번 저장해도 세 값이 유지됐다.
 글리프 윤곽과 일부 잔간격 차이가 남았다.
 [Native HYhwpEQ 비교](../assets/pr9444/print/HYhwpEQ-native-review.png) · [Native HancomEQN 비교](../assets/pr9444/print/HancomEQN-native-review.png) · [브라우저 수식 확대](../assets/pr9444/print/wasm-equations-crop.png)
 
+한컴 2020 Print의 1쪽 상세 비교에서 네 출력 모두 표시 필요 플래그가 0쪽이었다.
+아래 수치는 자동 픽셀 비교의 보조값이며, 위 실루엣 수치와 확대 판독을 함께 사용했다.
+
+| 출력 | 글꼴 | Pixel match | Visual accuracy proxy |
+| --- | --- | ---: | ---: |
+| Native | HYhwpEQ | 99.02342% | 42.76692% |
+| Native | HancomEQN | 99.02836% | 43.01514% |
+| WASM | HYhwpEQ | 99.14802% | 49.66510% |
+| WASM | HancomEQN | 99.14870% | 49.71823% |
+
 ## 정본 보호
 
 정본은 최신 devel의 `mydocs/pr/assets/visual-protected-baseline/final.tsv`이며,
