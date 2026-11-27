@@ -388,6 +388,16 @@ impl TypesetEngine {
                 super::paragraph::stored_lines::stored_blank_prefix_fits_reduced_frame(
                     &st, paragraphs, para_idx, styles,
                 );
+            if st.col_count == 1
+                && st.current_start_height == 0.0
+                && st.current_zone_y_offset == 0.0
+                && !profile.session_edited()
+                && (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+            {
+                st.place_stored_overlay_guide_successor(
+                    paragraphs, styles, para_idx, self.dpi, storage,
+                )?;
+            }
             let picture_host_origin = (
                 st.pages.len(),
                 st.current_column,
