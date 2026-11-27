@@ -4,10 +4,10 @@
 
 use rhwp::document_core::native_interaction::{NativeTextPosition, NativeTextSelection};
 use rhwp::native_host::accessibility::{
-    native_scalar_to_utf16, native_utf16_to_scalar, NativeAccessibilityGeometryStatus,
-    NativeAccessibilityLimitation, NativeAccessibilityRange, NativeAccessibilityRequest,
-    NativeAccessibilityRole, MAX_ACCESSIBILITY_DEPTH, MAX_ACCESSIBILITY_NODES,
-    MAX_ACCESSIBILITY_TEXT_BYTES, MAX_ACCESSIBILITY_WORK_ITEMS,
+    native_scalar_to_utf16, native_utf16_to_scalar, NativeAccessibilityCellLayout,
+    NativeAccessibilityGeometryStatus, NativeAccessibilityLimitation, NativeAccessibilityRange,
+    NativeAccessibilityRequest, NativeAccessibilityRole, MAX_ACCESSIBILITY_DEPTH,
+    MAX_ACCESSIBILITY_NODES, MAX_ACCESSIBILITY_TEXT_BYTES, MAX_ACCESSIBILITY_WORK_ITEMS,
 };
 use rhwp::native_host::editor::NativeEditor;
 use rhwp::native_host::{NativeDocumentSession, NativeHostError};
@@ -114,6 +114,71 @@ fn issue_536_native_accessibility_nested_cells_keep_full_paths_and_structural_or
     let unique: std::collections::HashSet<_> =
         snapshot.nodes.iter().map(|node| &node.key).collect();
     assert_eq!(unique.len(), snapshot.nodes.len());
+}
+
+#[test]
+fn issue_536_native_accessibility_cell_layout_uses_immediate_table_and_merged_spans() {
+    let mut core = core("");
+    core.paste_html_native(
+        0,
+        0,
+        0,
+        concat!(
+            "<table><tr><td><p>바깥</p>",
+            "<table><tr><td colspan='2'><p>병합</p><p>둘째 줄</p></td></tr>",
+            "<tr><td><p>아래 왼쪽</p></td><td><p>아래 오른쪽</p></td></tr></table>",
+            "</td></tr></table>",
+        ),
+    )
+    .unwrap();
+    let session = NativeDocumentSession::from_core(core);
+    let ordinary = session
+        .accessibility_snapshot(&NativeAccessibilityRequest::default(), None)
+        .unwrap();
+    assert!(ordinary.nodes.iter().all(|node| node.cell_layout.is_none()));
+
+    let snapshot = session
+        .accessibility_snapshot(
+            &NativeAccessibilityRequest {
+                include_cell_layout: true,
+                ..Default::default()
+            },
+            None,
+        )
+        .unwrap();
+    let node = |text| {
+        snapshot
+            .nodes
+            .iter()
+            .find(|node| node.text == text)
+            .unwrap()
+    };
+    let merged = NativeAccessibilityCellLayout {
+        row: 0,
+        column: 0,
+        row_span: 1,
+        column_span: 2,
+        row_count: 2,
+        column_count: 2,
+    };
+    assert_eq!(node("바깥").cell_layout.unwrap().column_count, 1);
+    assert_eq!(node("병합").start.cell_path.len(), 2);
+    assert_eq!(node("병합").cell_layout, Some(merged));
+    assert_eq!(node("둘째 줄").cell_layout, Some(merged));
+    assert_eq!(
+        node("아래 오른쪽").cell_layout,
+        Some(NativeAccessibilityCellLayout {
+            row: 1,
+            column: 1,
+            column_span: 1,
+            ..merged
+        })
+    );
+    assert!(snapshot
+        .nodes
+        .iter()
+        .filter(|node| node.start.cell_path.is_empty())
+        .all(|node| node.cell_layout.is_none()));
 }
 
 #[test]
