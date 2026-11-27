@@ -5,7 +5,7 @@ namespace Rhwp.WinUI;
 
 // The ABI's worker handle and transferred buffers belong to the OS thread
 // that created the handle. Only managed page pixels leave the dispatcher.
-internal sealed class NativeWorkerDispatcher
+internal sealed partial class NativeWorkerDispatcher
 {
     private const int MaxDocumentBytes = 128 * 1024 * 1024;
     private const int MaxFrameBytes = PageViewport.MaxRasterDimension * PageViewport.MaxRasterDimension * 4;
@@ -20,14 +20,15 @@ internal sealed class NativeWorkerDispatcher
     // These fields are read and written by Run's owning OS thread.
     private ulong? worker;
     private DocumentTarget? target;
+    private bool dirty;
 
     public NativeWorkerDispatcher()
     {
         new Thread(Run) { IsBackground = true, Name = "RHWP ABI dispatcher" }.Start();
     }
 
-    public Task<PageInfo> OpenAsync(string path, CancellationToken cancellation) =>
-        Dispatch(token => OpenFile(path, token), cancellation);
+    public Task<PageInfo> OpenAsync(string path, CancellationToken cancellation, bool discardChanges = false) =>
+        Dispatch(token => OpenFile(path, discardChanges, token), cancellation);
 
     public Task<PageInfo> GetPageAsync(PageInfo info, uint page, CancellationToken cancellation) =>
         Dispatch(token => ReadPage(EnsureWorker(), info.Target, info.FontGeneration,
@@ -36,13 +37,15 @@ internal sealed class NativeWorkerDispatcher
     public Task<PageFrame> RenderAsync(PageInfo info, PageViewport viewport, CancellationToken cancellation) =>
         Dispatch(token => Render(EnsureWorker(), info, viewport, token), cancellation);
 
-    public Task CloseDocumentAsync(CancellationToken cancellation) =>
+    public Task CloseDocumentAsync(CancellationToken cancellation, bool discardChanges = false) =>
         Dispatch(token =>
         {
+            CheckDirty(discardChanges);
             if (worker is ulong handle && target is DocumentTarget current)
             {
                 Submit(handle, new { op = "closeDocument", target = current }, token);
                 target = null;
+                dirty = false;
             }
             return true;
         }, cancellation);
@@ -135,24 +138,42 @@ internal sealed class NativeWorkerDispatcher
         return created.RootElement.GetProperty("worker").GetUInt64();
     }
 
-    private PageInfo OpenFile(string path, CancellationToken cancellation)
+    private PageInfo OpenFile(string path, bool discardChanges, CancellationToken cancellation)
     {
+        CheckDirty(discardChanges);
         ulong handle = EnsureWorker();
         byte[] contents = ReadFile(path);
         CheckClosing();
         cancellation.ThrowIfCancellationRequested();
         using var submitted = Send(new { op = "workerOpen", worker = handle, replace = target }, contents);
         JsonElement opened = Poll(handle, submitted.RootElement.GetProperty("requestId").GetUInt64(), cancellation);
-        GetCompleted(opened);
-        JsonElement info = opened.GetProperty("info");
-        DocumentTarget current = new(info.GetProperty("documentId").GetUInt64(), info.GetProperty("revision").GetUInt64());
-        target = current;
-        ulong fontGeneration = info.GetProperty("fontGeneration").GetUInt64();
-        uint pageCount = info.GetProperty("pageCount").GetUInt32();
-        if (pageCount == 0)
+        return InitialPage(handle, GetCompleted(opened), cancellation);
+    }
+
+    private PageInfo InitialPage(ulong handle, JsonElement reply, CancellationToken cancellation)
+    {
+        NativeDocumentInfo info = AdoptInfo(reply);
+        if (info.PageCount == 0)
             throw new InvalidDataException("표시할 쪽이 없습니다.");
 
-        return ReadPage(handle, current, fontGeneration, 0, pageCount, cancellation);
+        return ReadPage(handle, info.Target, info.FontGeneration, 0, info.PageCount, cancellation);
+    }
+
+    private void CheckDirty(bool discardChanges)
+    {
+        if (dirty && !discardChanges)
+            throw new InvalidOperationException("문서를 닫기 전에 변경 사항을 저장하거나 폐기해야 합니다.");
+    }
+
+    private NativeDocumentInfo AdoptInfo(JsonElement reply, DocumentTarget? expected = null)
+    {
+        NativeDocumentInfo info = Read<NativeDocumentInfo>(reply.GetProperty("info"));
+        if (expected is not null && info.Target != expected)
+            throw new InvalidOperationException("문서가 바뀌었습니다.");
+
+        target = info.Target;
+        dirty = info.IsDirty;
+        return info;
     }
 
     private PageInfo ReadPage(ulong handle, DocumentTarget current, ulong fontGeneration, uint page,

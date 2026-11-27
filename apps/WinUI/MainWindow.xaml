@@ -16,6 +16,8 @@
             <Button x:Name="NextButton" Content="다음 쪽" Click="OnNextClicked" IsEnabled="False" />
             <Button x:Name="ZoomOutButton" Content="축소" Click="OnZoomOutClicked" IsEnabled="False" />
             <Button x:Name="ZoomInButton" Content="확대" Click="OnZoomInClicked" IsEnabled="False" />
+            <Button x:Name="UndoButton" Content="실행 취소" Click="OnUndoClicked" IsEnabled="False" />
+            <Button x:Name="RedoButton" Content="다시 실행" Click="OnRedoClicked" IsEnabled="False" />
         </StackPanel>
         <TextBlock x:Name="StatusText" Grid.Row="1" Margin="16,0,16,10"
                    TextTrimming="CharacterEllipsis" AutomationProperties.LiveSetting="Polite"
@@ -26,7 +28,8 @@
                       Background="{ThemeResource LayerFillColorDefaultBrush}">
             <Canvas x:Name="PageCanvas" HorizontalAlignment="Left" VerticalAlignment="Top"
                     Width="0" Height="0">
-                <Image x:Name="PageImage" Stretch="Fill" AutomationProperties.Name="문서 쪽" />
+                <Image x:Name="PageImage" Stretch="Fill" Tapped="OnPageTapped"
+                       AutomationProperties.Name="문서 쪽" />
             </Canvas>
         </ScrollViewer>
     </Grid>

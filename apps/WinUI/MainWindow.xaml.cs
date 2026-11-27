@@ -24,6 +24,7 @@ public sealed partial class MainWindow : Window
     private CancellationTokenSource? renderRequest;
     private PageInfo? page;
     private string? fileName;
+    private string? documentError;
     private ulong viewVersion;
     private double zoom = 1;
     private bool picking;
@@ -41,7 +42,7 @@ public sealed partial class MainWindow : Window
 
     private async void OnOpenClicked(object sender, RoutedEventArgs args)
     {
-        if (picking || closing)
+        if (picking || closing || editorBusy)
             return;
 
         picking = true;
@@ -68,14 +69,16 @@ public sealed partial class MainWindow : Window
             await OpenFileAsync(path);
     }
 
-    internal Task OpenFileAsync(string path) => closing
-        ? Task.CompletedTask
-        : ChangeDocumentAsync(token => worker.OpenAsync(path, token),
-            Path.GetFileName(path), resetZoom: true);
+    internal async Task OpenFileAsync(string path)
+    {
+        if (!closing && await ConfirmDiscardAsync())
+            await ChangeDocumentAsync(token => worker.OpenAsync(path, token, discardChanges: true),
+                Path.GetFileName(path), resetZoom: true);
+    }
 
     private void OnFilesDragOver(object sender, DragEventArgs args)
     {
-        if (!closing && args.DataView.Contains(StandardDataFormats.StorageItems))
+        if (!closing && !editorBusy && args.DataView.Contains(StandardDataFormats.StorageItems))
         {
             args.AcceptedOperation = DataPackageOperation.Copy;
             args.Handled = true;
@@ -84,7 +87,7 @@ public sealed partial class MainWindow : Window
 
     private async void OnFilesDropped(object sender, DragEventArgs args)
     {
-        if (closing || !args.DataView.Contains(StandardDataFormats.StorageItems))
+        if (closing || editorBusy || !args.DataView.Contains(StandardDataFormats.StorageItems))
             return;
 
         args.Handled = true;
@@ -113,11 +116,11 @@ public sealed partial class MainWindow : Window
 
     private async void OnCloseClicked(object sender, RoutedEventArgs args)
     {
-        if (!closing)
+        if (!closing && await ConfirmDiscardAsync())
         {
             await ChangeDocumentAsync(async token =>
             {
-                await worker.CloseDocumentAsync(token);
+                await worker.CloseDocumentAsync(token, discardChanges: true);
                 return null;
             }, null, resetZoom: true);
         }
@@ -125,13 +128,13 @@ public sealed partial class MainWindow : Window
 
     private async void OnPreviousClicked(object sender, RoutedEventArgs args)
     {
-        if (page is { Page: > 0 } current && !closing)
+        if (page is { Page: > 0 } current && !closing && !editorBusy)
             await GoToPageAsync(current, current.Page - 1);
     }
 
     private async void OnNextClicked(object sender, RoutedEventArgs args)
     {
-        if (page is PageInfo current && current.Page + 1 < current.PageCount && !closing)
+        if (page is PageInfo current && current.Page + 1 < current.PageCount && !closing && !editorBusy)
             await GoToPageAsync(current, current.Page + 1);
     }
 
@@ -141,6 +144,10 @@ public sealed partial class MainWindow : Window
     private async Task ChangeDocumentAsync(Func<CancellationToken, Task<PageInfo?>> action,
         string? name, bool resetZoom)
     {
+        var priorPage = page;
+        var priorFile = fileName;
+        double priorZoom = zoom;
+        documentError = null;
         documentRequest?.Cancel();
         using var request = new CancellationTokenSource();
         documentRequest = request;
@@ -148,7 +155,7 @@ public sealed partial class MainWindow : Window
         if (resetZoom)
             zoom = 1;
         fileName = name;
-        Title = name is null ? "RHWP" : name + " — RHWP";
+        UpdateTitle();
         StatusText.Text = name is null ? "문서 닫는 중…" : "문서 읽는 중…";
         RefreshButtons();
         try
@@ -161,6 +168,9 @@ public sealed partial class MainWindow : Window
                 PageInfo? result = await action(request.Token);
                 if (closing || request.IsCancellationRequested)
                     return;
+                if (resetZoom)
+                    editorInfo = null;
+                UpdateTitle();
                 page = result;
                 if (result is null)
                     StatusText.Text = IdleStatus;
@@ -183,7 +193,12 @@ public sealed partial class MainWindow : Window
         catch (Exception error)
         {
             if (!closing && !request.IsCancellationRequested)
-                StatusText.Text = "문서 요청을 처리할 수 없습니다. " + error.Message;
+            {
+                documentError = "문서 요청을 처리할 수 없습니다. " + error.Message;
+                StatusText.Text = documentError;
+                if (priorPage is not null)
+                    await RestorePageAsync(priorPage, priorFile, priorZoom, request.Token);
+            }
         }
         finally
         {
@@ -192,6 +207,28 @@ public sealed partial class MainWindow : Window
                 documentRequest = null;
                 RefreshButtons();
             }
+        }
+    }
+
+    private async Task RestorePageAsync(PageInfo prior, string? name, double priorZoom, CancellationToken token)
+    {
+        try
+        {
+            PageInfo restored = await worker.GetPageAsync(prior, prior.Page, token);
+            if (closing || token.IsCancellationRequested)
+                return;
+
+            page = restored;
+            fileName = name;
+            zoom = priorZoom;
+            SetPageSize(restored);
+            UpdateTitle();
+            QueueRender();
+        }
+        catch (Exception)
+        {
+            // A replacement may have opened while its layout failed to load.
+            // Only a validated previous target can supply the restored page.
         }
     }
 
@@ -216,7 +253,7 @@ public sealed partial class MainWindow : Window
 
     private void ZoomTo(double value)
     {
-        if (closing || page is not PageInfo current)
+        if (closing || editorBusy || page is not PageInfo current)
             return;
 
         double nextZoom = Math.Clamp(value, MinZoom, MaxZoom);
@@ -294,7 +331,8 @@ public sealed partial class MainWindow : Window
             PageImage.Width = frame.PixelWidth / frame.DeviceScale;
             PageImage.Height = frame.PixelHeight / frame.DeviceScale;
             PageImage.Source = source;
-            StatusText.Text = $"{current.Page + 1} / {current.PageCount}쪽 · {(int)Math.Round(zoom * 100)}%";
+            StatusText.Text = documentError ??
+                $"{current.Page + 1} / {current.PageCount}쪽 · {(int)Math.Round(zoom * 100)}%";
         }
         catch (OperationCanceledException) when (closing || request.IsCancellationRequested)
         {
@@ -314,18 +352,21 @@ public sealed partial class MainWindow : Window
 
     private void RefreshButtons()
     {
-        OpenButton.IsEnabled = !closing && !picking;
-        CloseButton.IsEnabled = !closing && (fileName is not null || documentRequest is not null);
-        PreviousButton.IsEnabled = !closing && page is { Page: > 0 };
-        NextButton.IsEnabled = !closing && page is PageInfo current && current.Page + 1 < current.PageCount;
-        ZoomOutButton.IsEnabled = !closing && page is not null && zoom > MinZoom;
-        ZoomInButton.IsEnabled = !closing && page is not null && zoom < MaxZoom;
+        bool available = !closing && !editorBusy && !picking;
+        OpenButton.IsEnabled = available;
+        CloseButton.IsEnabled = available && (fileName is not null || documentRequest is not null);
+        PreviousButton.IsEnabled = available && page is { Page: > 0 };
+        NextButton.IsEnabled = available && page is PageInfo current && current.Page + 1 < current.PageCount;
+        ZoomOutButton.IsEnabled = available && page is not null && zoom > MinZoom;
+        ZoomInButton.IsEnabled = available && page is not null && zoom < MaxZoom;
+        UndoButton.IsEnabled = available && page is not null && editorInfo?.CanUndo == true;
+        RedoButton.IsEnabled = available && page is not null && editorInfo?.CanRedo == true;
     }
 
     private async void OnClosing(AppWindow sender, AppWindowClosingEventArgs args)
     {
         args.Cancel = true;
-        if (closing)
+        if (closing || !await ConfirmDiscardAsync())
             return;
 
         closing = true;

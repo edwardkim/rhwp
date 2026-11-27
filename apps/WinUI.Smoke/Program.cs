@@ -111,6 +111,8 @@ catch (OperationCanceledException)
     Console.WriteLine("Pending open cancelled on shutdown.");
 }
 
+await EditorSmoke.RunAsync(args[1]);
+
 static PageViewport Visible(PageInfo page, double x, double y, double width, double height, double zoom, double scale) =>
     PageViewport.Visible(page, x, y, width, height, zoom, scale) ?? throw new Exception("No visible page.");
 
