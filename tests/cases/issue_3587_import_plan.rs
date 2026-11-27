@@ -1,4 +1,8 @@
-//! CLI/MCP transport and import -> fill recipe; generated HWPX is not a Hancom oracle.
+//! 관계형: 문단 가져오기의 CLI/MCP 전달, 내용 보존 및 HWP 표 헤더 왕복 계약.
+//! 주석 갱신: 2026-11-27 14:16:46 KST. 직전 파일 변경: 2026-09-13 07:44:09 UTC
+//! (`9acd8d54fd04477ee819238ee63abd4eb7676380`).
+//! #9225는 기존 표 샘플에 제보의 헤더 바이트를 추가한 합성 HWP를 다시 읽어 검증한다.
+//! 렌더링 좌표나 시각 일치율을 검사하지 않는다. 생성된 HWPX는 한컴 기준 출력이 아니다.
 #![cfg(not(target_arch = "wasm32"))]
 use rhwp::document_core::{DocumentCore, ImportParagraphBlockRequest};
 use serde_json::{json, Value};
@@ -82,8 +86,12 @@ impl Fixture {
     }
 }
 fn run(plan: &Value) -> (i32, Value) {
+    run_with_flags(plan, &[])
+}
+fn run_with_flags(plan: &Value, flags: &[&str]) -> (i32, Value) {
     let out = Command::new(bin())
         .args(["run", "--plan-json", &plan.to_string(), "--json"])
+        .args(flags)
         .output()
         .unwrap();
     let value = serde_json::from_slice(&out.stdout).unwrap_or_else(|e| {
@@ -285,4 +293,177 @@ fn import_rejects_oversized_and_malformed_files_without_replacing_output() {
     let (code, result) = run(&plan);
     assert_eq!(code, 1, "{result}");
     assert_eq!(std::fs::read(&f.output).unwrap(), b"sentinel");
+}
+
+const TABLE_SAMPLE: &str = "samples/hwp_table_test.hwp";
+const TABLE_PARAGRAPH: usize = 3;
+
+fn table_at(core: &DocumentCore, paragraph: usize) -> &rhwp::model::table::Table {
+    let mut tables = core.document().sections[0].paragraphs[paragraph]
+        .controls
+        .iter()
+        .filter_map(|control| match control {
+            rhwp::model::control::Control::Table(table) => Some(table.as_ref()),
+            _ => None,
+        });
+    let table = tables
+        .next()
+        .unwrap_or_else(|| panic!("expected a table in paragraph {paragraph}"));
+    assert!(
+        tables.next().is_none(),
+        "multiple tables in paragraph {paragraph}"
+    );
+    table
+}
+
+fn table_source_with_common_tail(tail: &[u8]) -> Vec<u8> {
+    let mut source = DocumentCore::from_bytes(&std::fs::read(TABLE_SAMPLE).unwrap()).unwrap();
+    let table = table_at(&source, TABLE_PARAGRAPH);
+    assert_eq!(table.raw_ctrl_data.len(), 42);
+    assert!(table.common.description.is_empty());
+    assert!(table.common.raw_extra.is_empty());
+    let rhwp::model::control::Control::Table(table) =
+        &mut source.document_mut().sections[0].paragraphs[TABLE_PARAGRAPH].controls[0]
+    else {
+        unreachable!();
+    };
+    table.common.raw_extra.extend_from_slice(tail);
+    table.raw_ctrl_data.extend_from_slice(tail);
+    let bytes = source.export_hwp_native().unwrap();
+    let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+    let table = table_at(&reopened, TABLE_PARAGRAPH);
+    assert_eq!(&table.raw_ctrl_data[40..42], &[0, 0]);
+    assert_eq!(&table.raw_ctrl_data[42..], tail);
+    assert_eq!(table.common.raw_extra, tail);
+    bytes
+}
+
+fn table_import_request() -> ImportParagraphBlockRequest {
+    ImportParagraphBlockRequest {
+        source_section: 0,
+        source_start: TABLE_PARAGRAPH,
+        source_end: TABLE_PARAGRAPH + 1,
+        target_section: 0,
+        insert_before: 0,
+        count: 1,
+        limits: Default::default(),
+    }
+}
+
+fn assert_imported_table(core: &DocumentCore, original: &rhwp::model::table::Table, tail: &[u8]) {
+    let table = table_at(core, 0);
+    assert_eq!(table.common.raw_extra, tail);
+    assert_eq!(table.row_count, original.row_count);
+    assert_eq!(table.col_count, original.col_count);
+    assert_eq!(table.cells.len(), original.cells.len());
+    for (cell, original_cell) in table.cells.iter().zip(&original.cells) {
+        assert!(cell
+            .paragraphs
+            .iter()
+            .map(|paragraph| &paragraph.text)
+            .eq(original_cell
+                .paragraphs
+                .iter()
+                .map(|paragraph| &paragraph.text)));
+    }
+}
+
+#[test]
+fn issue_9225_imports_table_and_preserves_zero_common_tail_in_hwp() {
+    let source_bytes = table_source_with_common_tail(&[0, 0]);
+    let source = DocumentCore::from_bytes(&source_bytes).unwrap();
+    let original = table_at(&source, TABLE_PARAGRAPH);
+    let request = table_import_request();
+    let mut target = DocumentCore::new_empty();
+    target.create_blank_document_native().unwrap();
+    let preview = target
+        .preview_paragraph_block_import_native(source.document(), &request)
+        .expect("HWP table with a zero word after its empty description can be imported");
+    let applied = target
+        .import_paragraph_block_native(source.document(), &request)
+        .unwrap();
+    assert_eq!(preview.inserted, applied.inserted);
+    assert_eq!(applied.inserted, 0..1);
+    assert_imported_table(&target, original, &[0, 0]);
+
+    let hwp = DocumentCore::from_bytes(&target.export_hwp_native().unwrap()).unwrap();
+    assert_imported_table(&hwp, original, &[0, 0]);
+    assert_eq!(&table_at(&hwp, 0).raw_ctrl_data[42..], &[0, 0]);
+    let hwp = DocumentCore::from_bytes(&hwp.export_hwp_native().unwrap()).unwrap();
+    assert_imported_table(&hwp, original, &[0, 0]);
+    assert_eq!(&table_at(&hwp, 0).raw_ctrl_data[42..], &[0, 0]);
+
+    let mut hwpx = DocumentCore::from_bytes(&target.export_hwpx_native().unwrap()).unwrap();
+    assert_imported_table(&hwpx, original, &[]);
+    hwpx = DocumentCore::from_bytes(&hwpx.export_hwpx_native().unwrap()).unwrap();
+    assert_imported_table(&hwpx, original, &[]);
+}
+
+#[test]
+fn issue_9225_cli_previews_and_imports_table_common_tail() {
+    let source_bytes = table_source_with_common_tail(&[0, 0]);
+    let source = DocumentCore::from_bytes(&source_bytes).unwrap();
+    let original = table_at(&source, TABLE_PARAGRAPH);
+    let mut target = DocumentCore::new_empty();
+    target.create_blank_document_native().unwrap();
+    let before = target.export_hwp_native().unwrap();
+    let dir = TempDir::new();
+    let source_path = dir.path().join("source.hwp");
+    let input = dir.path().join("input.hwp");
+    let output = dir.path().join("imported.hwp");
+    std::fs::write(&source_path, &source_bytes).unwrap();
+    std::fs::write(&input, &before).unwrap();
+    let plan = json!({
+        "planVersion": "1.0",
+        "input": input,
+        "output": output,
+        "steps": [{
+            "action": "import_paragraph_block",
+            "source": { "path": source_path, "sha256": hash(&source_bytes) },
+            "request": table_import_request()
+        }]
+    });
+    let (dry_code, dry) = run_with_flags(&plan, &["--dry-run"]);
+    assert!(!output.exists());
+
+    let (apply_code, actual) = run(&plan);
+    assert_eq!([dry_code, apply_code], [0, 0], "{dry} / {actual}");
+    assert_eq!(
+        dry["preview"][0]["operationResult"]["result"],
+        actual["steps"][0]["operationResult"]["result"]
+    );
+    let reopened = DocumentCore::from_bytes(&std::fs::read(output).unwrap()).unwrap();
+    assert_imported_table(&reopened, original, &[0, 0]);
+    assert_eq!(std::fs::read(source_path).unwrap(), source_bytes);
+    assert_eq!(std::fs::read(input).unwrap(), before);
+}
+
+#[test]
+fn issue_9225_only_accepts_the_observed_table_common_tail() {
+    let mut target = DocumentCore::new_empty();
+    target.create_blank_document_native().unwrap();
+    let request = table_import_request();
+    let normal = DocumentCore::from_bytes(&std::fs::read(TABLE_SAMPLE).unwrap()).unwrap();
+    target
+        .preview_paragraph_block_import_native(normal.document(), &request)
+        .unwrap();
+    let before = format!("{:?}", target.document());
+
+    for tail in [&[0, 1][..], &[0][..], &[0, 0, 0, 0][..]] {
+        let bytes = table_source_with_common_tail(tail);
+        let source = DocumentCore::from_bytes(&bytes).unwrap();
+        for error in [
+            target
+                .preview_paragraph_block_import_native(source.document(), &request)
+                .unwrap_err(),
+            target
+                .import_paragraph_block_native(source.document(), &request)
+                .unwrap_err(),
+        ] {
+            let message = error.to_string();
+            assert!(message.contains("uninterpreted common tail"), "{message}");
+            assert!(message.contains("[Paragraph(0), Control(0)]"), "{message}");
+        }
+        assert_eq!(format!("{:?}", target.document()), before);
+    }
 }
