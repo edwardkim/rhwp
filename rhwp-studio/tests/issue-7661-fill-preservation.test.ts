@@ -5,6 +5,7 @@ import { stripTypeScriptTypes } from 'node:module';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 import { tabUnitsToPt } from '../src/core/tab-units.ts';
+import { paragraphLengthFromPt } from '../src/core/paragraph-spacing.ts';
 
 // 제품 대화상자 메서드를 그대로 실행한다. DOM 입력과 부수 미리보기만 대역이다.
 const ui = fileURLToPath(new URL('../src/ui/', import.meta.url));
@@ -23,9 +24,15 @@ class Select {
   appendChild(o: Option) { o.parent=this; this.options.push(o); return o; }
 }
 const noop=()=>{};
-function control() { return {value:'',checked:false,disabled:false,textContent:'',classList:{contains:()=>false,add:noop,remove:noop,toggle:noop}}; }
+function control() {
+  return {
+    value: '', checked: false, disabled: false, textContent: '',
+    get valueAsNumber() { return this.value === '' ? NaN : Number(this.value); },
+    classList: { contains: () => false, add: noop, remove: noop, toggle: noop },
+  };
+}
 function controls(): any { return new Proxy({}, {get(o: any,k) { return o[k]??=(control()); }}); }
-const context=vm.createContext({tabUnitsToPt,i18nText:(s:string)=>s,REGISTERED_FONTS:new Set(),console,document:{createElement:(name:string)=>{assert.equal(name,'option');return new Option();}}});
+const context=vm.createContext({tabUnitsToPt,paragraphLengthFromPt,i18nText:(s:string)=>s,REGISTERED_FONTS:new Set(),console,document:{createElement:(name:string)=>{assert.equal(name,'option');return new Option();}}});
 function loadSource(file: string) {
   const source=readFileSync(ui+file+'.ts','utf8').replace(/^import\s[\s\S]*?\sfrom\s+['"][^'"]+['"];\s*$/gm,'');
   return stripTypeScriptTypes(source,{mode:'transform'}).replace(/\bexport\s+/g,'');
@@ -33,11 +40,12 @@ function loadSource(file: string) {
 if (existsSync(ui+'fill-selection.ts')) vm.runInContext(loadSource('fill-selection'),context);
 function dialog(file: string, name: string, kind: string) {
   const C=vm.runInContext(`{${loadSource(file)};${name}}`,context);
-  const target=Object.create(C.prototype);
-  const instance=new Proxy(target,{get(o,k) { if(k in o)return o[k];return o[k]=control(); }});
+  const target=new C();
+  const instance=new Proxy(target,{get(o,k) { if(o[k] !== undefined)return o[k];return o[k]=control(); }});
   const p={fontSize:1000,shadowOffsetX:10,shadowOffsetY:10,fillType:kind,fillColor:'#ffffff',patternColor:'#000000',patternType:0,borderFillId:42};
-  Object.assign(target,{props:structuredClone(p),initialProps:structuredClone(p),attrBtns:{},alignBtns:{justify:control()},currentLang:0,shadowRadios:[control()],firstLineRadios:[control(),control(),control()],headTypeRadios:[Object.assign(control(),{value:'None'})],borderStates:{},bdSideToggles:{},tabState:{currentTabStops:[],deletedTabStops:[]},tabResult:controls(),borderResult:controls(),saveLangFields:noop,updateLangFields:noop,updateBorderPreview:noop,updatePreview:noop,hide:noop});
+  Object.assign(target,{props:structuredClone(p),initialProps:structuredClone(p),attrBtns:{},alignBtns:{justify:control()},currentLang:0,shadowRadios:[control()],headTypeRadios:[Object.assign(control(),{value:'None'})],borderStates:{},bdSideToggles:{},tabState:{currentTabStops:[],deletedTabStops:[]},tabResult:controls(),borderResult:controls(),saveLangFields:noop,updateLangFields:noop,updateBorderPreview:noop,updatePreview:noop,hide:noop});
   target.tabResult.renderTabList=noop; target.tabResult.renderDeletedTabList=noop;
+  target.firstLineRadios = ['normal', 'indent', 'hanging'].map(value => Object.assign(control(), { value }));
   target.borderResult.bdSpacingInputs=Array.from({length:4},control); target.borderResult.updateBdPreview=noop;
   target.faceColorSelect=new Select(); target.borderResult.bgFillSelect=new Select();
   const calls: any[]=[];target.onApply=(mods:unknown)=>calls.push(structuredClone(mods));
