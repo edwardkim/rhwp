@@ -1,0 +1,17 @@
+{
+  "official_table_sha256": "8141acb297ce2f39148f9014e463986431d266120629e8f368665e5917138f9d",
+  "earlier_capture": "ec3dac549a2ed5f16c067ae2bc59fae01370d1f6",
+  "final_capture": "997278c7321dba5cfd1c140496eca8cdd625f6bb",
+  "latest_base": "c6fcb1a61211d3d6eb8698660074849431b63e34",
+  "required_pages": 4046,
+  "replayed_boundary_pages": 6,
+  "boundary_equivalence": {
+    "same_raw": 6,
+    "same_png": 6
+  },
+  "status": {
+    "native/meets": 2023,
+    "wasm/meets": 2023
+  },
+  "result_table_sha256": "edde38c7b1340a367bbeab592e49b88962ba3d8f666605b6e2a668377ad10bef"
+}
