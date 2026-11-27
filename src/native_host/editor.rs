@@ -3,7 +3,8 @@
 //! Offsets are Unicode scalar indices. Plain-text replacement supports body
 //! ranges and a single paragraph of a top-level table cell. Object-bearing
 //! paragraph mutations, inline-control affinity and tabs are rejected explicitly.
-//! Paragraph split/join, keyboard commands and composition use body positions.
+//! Composition also supports one editable cell paragraph. Paragraph split/join
+//! and keyboard commands use body positions.
 
 use std::collections::VecDeque;
 
@@ -325,7 +326,9 @@ impl NativeEditor {
         self.session.check_revision(expected_revision)?;
         self.require_no_composition()?;
         Self::validate_selection(&self.session.core, &self.selection)?;
-        self.require_body_selection("composition")?;
+        if !self.selection.focus.cell_path.is_empty() {
+            Self::check_editable_text_span(&self.session.core, &self.selection)?;
+        }
         self.check_snapshot_slots(2)?;
         let next_id = self.next_composition_id.checked_add(1).ok_or_else(|| {
             NativeHostError::LimitExceeded("composition identifiers exhausted".into())
@@ -597,7 +600,7 @@ impl NativeEditor {
         Ok(())
     }
 
-    fn check_editable_text_span(
+    pub(super) fn check_editable_text_span(
         core: &DocumentCore,
         selection: &NativeTextSelection,
     ) -> Result<(), NativeHostError> {

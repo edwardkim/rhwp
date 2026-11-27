@@ -354,11 +354,12 @@ impl NativeEditor {
         self.session().check_revision(expected_revision)?;
         let selection = self.selection();
         Self::validate_selection(self.session().document(), selection)?;
-        self.require_body_selection("IME context")?;
+        let core = self.session().document();
         let focus = &selection.focus;
-        let document = self.session().document().document();
-        let paragraph =
-            &document.sections[focus.section as usize].paragraphs[focus.paragraph as usize];
+        if !focus.cell_path.is_empty() {
+            Self::check_editable_text_span(core, selection)?;
+        }
+        let paragraph = core.native_text_paragraph(focus)?;
         let length = paragraph.text.chars().count();
         let start = (focus.scalar_offset as usize).saturating_sub(NATIVE_IME_CONTEXT_SCALARS / 2);
         let end = length.min(start.saturating_add(NATIVE_IME_CONTEXT_SCALARS));
@@ -386,7 +387,13 @@ impl NativeEditor {
                 selected.push('\n');
                 count += 1;
             }
-            let text = &document.sections[from.section as usize].paragraphs[index as usize].text;
+            // A validated cell selection stays in the single resolved leaf. Only
+            // body selections can span other paragraphs in the same section.
+            let text = if index == focus.paragraph {
+                &paragraph.text
+            } else {
+                &core.document().sections[from.section as usize].paragraphs[index as usize].text
+            };
             let left = if index == from.paragraph {
                 from.scalar_offset as usize
             } else {
