@@ -2,7 +2,7 @@
 mydocs/pr/assets/issue7445/30269-anticorruption-recommendation-toc.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7729
 mydocs/pr/assets/issue7445/30269_reform_recommendation.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7729
 mydocs/pr/assets/issue7445/70833-electrical-safety-rule-regulatory-analysis.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7728
-mydocs/pr/assets/issue7445/aift74/aift.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7791
+mydocs/pr/assets/issue7445/aift74/aift.hwp	body	7791
 mydocs/pr/assets/issue7445/deferred-20261020/added-issue7677-float_push_spacing_before_continuation-2024-hwp/float_push_spacing_before_continuation-2024.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	8100
 mydocs/pr/assets/issue7445/deferred-20261020/added-issue7677-float_push_spacing_before_continuation-hwpx/float_push_spacing_before_continuation.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	8100
 mydocs/pr/assets/issue7445/deferred-20261020/added-issue7678-float_push_spacing_before_continuation-2024-hwp/float_push_spacing_before_continuation-2024.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	8100
@@ -19,7 +19,6 @@ mydocs/pr/assets/issue7445/hwpctl_API_v2.4.hwp	body,off_canvas,oracle,overflow_c
 mydocs/pr/assets/issue7445/issue1937_rowbreak_footnote_overpagination.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7732
 mydocs/pr/assets/issue7445/ktx-toc27/KTX.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7786,7787,7788
 mydocs/pr/assets/issue7445/saved_bounds_cumulative_page_break.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7734
-mydocs/pr/assets/issue7445/table-text-anchor-wrap/table_text_anchor_wrap.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7792
 mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwp5.hwp	body,off_canvas,oracle,overflow_cell,render_page	7774
 mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwpx.hwpx	body,off_canvas,oracle,overflow_cell,render_page	7774
 mydocs/pr/assets/issue7922/trailing-tab-regressions-20261015/1192000-202100017-policy-research-report.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7922
@@ -28,8 +27,6 @@ mydocs/pr/assets/semanticist21-20261008/legacy-cropped-fixtures-v448/6575/tac_pi
 samples/76076_regulatory_analysis.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7784
 samples/80168_regulatory_analysis.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7783
 samples/KTX.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7786,7787,7788
-samples/SO-SUEOP.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7807
-samples/SO-SUEOP.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7807
 samples/aift.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7791
 samples/basic/KTX-003.hwp	body,off_canvas,oracle,overflow_cell,render_page	7739,7780,7781
 samples/basic/issue2007_nested_cell_pagination_42065.hwp	body,overflow_cell,render_page,text_overlap	7747
@@ -52,7 +49,6 @@ samples/issue1949_giant_cell_nested_tables_perf.hwp	body,off_canvas,oracle,overf
 samples/issue1949_giant_cell_nested_tables_perf.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7813
 samples/issue2006/1790387_prep_final_report.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	8044
 samples/issue2439/issue2439_repeat_table_overlap.hwp	body,off_canvas,oracle,overflow_cell,render_page	7739,7780,7781
-samples/issue4514/sample1-repro.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7808
 samples/issue5584/3232693_employment_support_criteria.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7822
 samples/issue5699/37787_regulatory_impact.hwp	oracle,overflow_cell,render_page	7777
 samples/issue5807/coanchored_float_tac_order.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7821
@@ -60,9 +56,7 @@ samples/issue5833/cell_multi_para_float_pics.hwp	body,off_canvas,oracle,overflow
 samples/issue5877/fragment_ghost_vrules.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7803
 samples/issue6023/30269_reform_recommendation.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7729
 samples/issue6025/3232693_employment_support_criteria.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7822
-samples/issue6111/56345_regulatory_impact_analysis.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7806
 samples/issue6575/tac_picture_line_top.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7864
-samples/issue6712/중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp	off_canvas,oracle,overflow_cell,render_page,text_overlap	7789
 samples/issue6778/156757920-animal-welfare-husbandry-guidelines.hwp	off_canvas,oracle,overflow_cell,render_page,text_overlap	7767
 samples/issue6797/156160455-social-pig-farm-income.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7770
 samples/issue6800/1192000-202100017-policy-research-report.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7922
@@ -79,12 +73,8 @@ samples/issue7695/footnote-page-tail.hwpx	body,off_canvas,oracle,overflow_cell,r
 samples/issue7874/omitted-spacing-after.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	8100
 samples/issue8060/71352_lpg_regulatory_impact.hwp	body	8060
 samples/k-water-rfp-2024.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7737,7773
-samples/pic-in-head-01.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7790
-samples/pic-in-table-01.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7790
 samples/stored-nested-content-flow/overlay-top.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7786,7787,7788
 samples/synam-001.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7739,7769,7780,7781
-samples/table_giant_cell_overfill.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7812
-samples/table_text_anchor_wrap.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7792
 samples/task1749/saved_bounds_cumulative_page_break.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7734
 samples/task1749/saved_bounds_cumulative_page_break.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7734
 samples/task2146/21761835_jeonjik_exemption_table.hwp	body,off_canvas,overflow_cell,render_page,text_overlap	7748

@@ -1,0 +1,875 @@
+{
+  "code_head": "f3dae4a6483f62e5854417ef73cac111ec5dde10",
+  "cases": {
+    "chinese-newsletter": {
+      "native": {
+        "pages": 2,
+        "minimum": [
+          98.11,
+          1
+        ],
+        "focus": {
+          "1": 98.11,
+          "2": 99.37
+        },
+        "files": {
+          "overlay_001.png": "1a6019a89563a144b3fd857a31fe595ce86d2ca3b15833877965400ab6108d99",
+          "overlay_002.png": "f3aab2d7e31d94fc0b7da7bc85f76ca6b76a74128da49ae839141906008d9e75",
+          "review_001.png": "1f1efaa0398cba7bff2f9565445e4f78316e4a12bdb0006cce8f8ca8a2889b37",
+          "review_002.png": "ec938201f7073a239dc9dce7f0912bdbc7768d21e0868f89845d31be6440d5f2",
+          "silhouette.tsv": "a49e48c0fe1af162211b9247c5b9d5e4842d0a5b0a42104f59d868d57464e361"
+        }
+      },
+      "wasm": {
+        "pages": 2,
+        "minimum": [
+          98.04,
+          1
+        ],
+        "focus": {
+          "1": 98.04,
+          "2": 99.37
+        },
+        "files": {
+          "overlay_001.png": "cb07d3b6c34228e0f05cb2ccb48d7c7365106af8303375befe6435faf3e31d91",
+          "overlay_002.png": "d9efe81a2f3fff39b050bea12feef5ca295288c6d2970feb8e999feb0fc64957",
+          "review_001.png": "d29638324372a440c492aa0df837a4a8dc70ae96262efc10f7a3b807bd81bcd2",
+          "review_002.png": "eb6435f6edc75f07965ea606a0b072d4a9e4fab6d844cfc0b3df7182f9caf12f",
+          "silhouette.tsv": "8d529a24ddfb81080afbe9463d51b0f24443645590bc3abf5855700befac69cc"
+        }
+      }
+    },
+    "pic-in-head": {
+      "native": {
+        "pages": 22,
+        "minimum": [
+          99.86,
+          2
+        ],
+        "focus": {
+          "2": 99.86,
+          "10": 100.0,
+          "19": 100.0
+        },
+        "files": {
+          "overlay_002.png": "b7c28281534b49b2e3915c41c2f3bb5b69218cabd0710058eb9eae2546b8f0c7",
+          "overlay_010.png": "8d34e82cb736e6e0c144c7743b1fc4520d390c4cec7c9529dbf7e1b14d821d62",
+          "overlay_019.png": "3a4a86693ae55c803ba83dc1c5b14d0765103f70e1dfc350aec386c8a029a999",
+          "review_002.png": "f8152ba8e99fabc589ac2f0a6d4ecea970e22e515d0cddbe193ae6b56aba37f1",
+          "review_010.png": "91e94fbc6920c6a834fd88df99efc0ba70078214f7e326af603157ddd7b4d5f8",
+          "review_019.png": "821d6f49715399c6837e4e708de3f97584c33b81186fd628128512378021ff3e",
+          "silhouette.tsv": "779a0513f60ae11b4ddc1d93896f7a46d9b1208bc129c96d3fe6072c7c830a1a"
+        }
+      },
+      "wasm": {
+        "pages": 22,
+        "minimum": [
+          99.86,
+          2
+        ],
+        "focus": {
+          "2": 99.86,
+          "10": 100.0,
+          "19": 100.0
+        },
+        "files": {
+          "overlay_002.png": "f9d741c2f051276b476acbb20b04960c098884b707ba5efd95fec9a4a889b4bd",
+          "overlay_010.png": "c0ec02777aa03e2f27d4670124863d2c55d3d26186a1869dacbb9a6c9a165165",
+          "overlay_019.png": "f369a35340404b57faa2299266029307929657d3bf0fde82218be97bd5e5585c",
+          "review_002.png": "49f46f32c66a25c9101cc0a7ca3b858e3cddb6570de75a23b91b6d082a3b529a",
+          "review_010.png": "4d17f3c7de91371e5b06e1af91f3cbc133c3161da568646cf09c2d8807a2c445",
+          "review_019.png": "34ff6ffc323552bc1fa51eb71f0b7608e0f79a8af94c4ca6fafbc74f290b7592",
+          "silhouette.tsv": "30af2fbe7058f6db761249bf9948556a3e003083516de2ce32f844133fe45934"
+        }
+      }
+    },
+    "pic-in-table": {
+      "native": {
+        "pages": 22,
+        "minimum": [
+          99.86,
+          2
+        ],
+        "focus": {
+          "2": 99.86,
+          "10": 100.0,
+          "19": 100.0
+        },
+        "files": {
+          "overlay_002.png": "88c121d1415be1472ef5891819b3140f9b143ffb556a1c3a8cd6220109a378b0",
+          "overlay_010.png": "2558335d9b458a8012e805f19fcacf2272e76a37b0b8da4d68bf9fbf7ef9ee82",
+          "overlay_019.png": "53f099fa3fbee3387af5665b1c63b87f1d0113843cb2db875b46b3a2a92569bf",
+          "review_002.png": "b4d93806ece73d3bc374bab244b06a3b79dc6947a8f948c31e127fbc004b890a",
+          "review_010.png": "b79855f096b9e06dbc0bc11cbf761bb024027b587bb03a17bb42b07be6110c01",
+          "review_019.png": "0511b178092a1e04c09cbd18770c239416eb74f9f2c177e5c0d23828dc10745e",
+          "silhouette.tsv": "779a0513f60ae11b4ddc1d93896f7a46d9b1208bc129c96d3fe6072c7c830a1a"
+        }
+      },
+      "wasm": {
+        "pages": 22,
+        "minimum": [
+          99.86,
+          2
+        ],
+        "focus": {
+          "2": 99.86,
+          "10": 100.0,
+          "19": 100.0
+        },
+        "files": {
+          "overlay_002.png": "bf1bff9bbcc9ab2788cbfcf03918d4c67077460f337a7ab8e701e73225070082",
+          "overlay_010.png": "670ec9124b370a44fc291dcc9830c70c612f6af504d34c8edae8bcea6d4a0c13",
+          "overlay_019.png": "c217bc1feb5b9eff798979d9c2d545159aa56ab4ae397ea4f0c6e21ead67b58f",
+          "review_002.png": "3c8b87cc7bb5a5c55ac53761d3c1e9a27b0f2682c6bfc76a31ae80475da81e6b",
+          "review_010.png": "5c1725ab784c38fb26d98b477106b8d9732f1c2d6e3fc552dc6e56befd12b8be",
+          "review_019.png": "bbb66d54347f69fa133d1e6544dc8f6fa710501f56c2a1940825e41bf8ddea25",
+          "silhouette.tsv": "30af2fbe7058f6db761249bf9948556a3e003083516de2ce32f844133fe45934"
+        }
+      }
+    },
+    "aift": {
+      "native": {
+        "pages": 74,
+        "minimum": [
+          98.48,
+          19
+        ],
+        "focus": {
+          "4": 99.87,
+          "45": 100.0
+        },
+        "files": {
+          "overlay_004.png": "c6060e80d9222f0211a7919435f3f036e59d8cd7f69347953c9547617e2d2d9d",
+          "overlay_045.png": "42215f1ff13b73e7f032c3c74ba9fc282c8cb2da04b8275599821bfadce18bce",
+          "review_004.png": "67dcd1af5690ce5748ca9bb9497615472f42489a141ce9a37537eed28ce50c8b",
+          "review_045.png": "5981dde219fa4c23ef4564f2cc10a8ec7f56d595b4b34464dfdae1521dab5d17",
+          "silhouette.tsv": "b5f2ff0a5865b8076e32982a29d61c4a8b681fe1d3547a2479b1a740f1bb32c3"
+        }
+      },
+      "wasm": {
+        "pages": 74,
+        "minimum": [
+          98.49,
+          19
+        ],
+        "focus": {
+          "4": 99.88,
+          "45": 100.0
+        },
+        "files": {
+          "overlay_004.png": "3e7bc2902629f6ba972c063cb6d6ffd8e3c94e5e19c9d0025e0f8c9a24f9fe24",
+          "overlay_045.png": "18319d4ec899f4537d17ba113ac556520dc37999a31d2f952f94ee6ca563841d",
+          "review_004.png": "3aabefbe9709db2dee3230c34415a63b966f1b23543abb7e027793f8ffec9f7e",
+          "review_045.png": "d1e5681d353de8d19ef086ff1713694dde04442331d453e99af7234d0166a7f1",
+          "silhouette.tsv": "c7822a63c292424bab1ae491f44a21262e7d72eee3a82d3b6513364f004052e8"
+        }
+      }
+    },
+    "table-text-anchor-wrap": {
+      "native": {
+        "pages": 3,
+        "minimum": [
+          99.74,
+          1
+        ],
+        "focus": {
+          "2": 100.0,
+          "3": 100.0
+        },
+        "files": {
+          "overlay_002.png": "2ca8edb5165b638bf43040bb8c0209cd6622ff95df3e31544a4dbf07e9882a84",
+          "overlay_003.png": "a60de0b45f4326b08d606e3c887134a649f41aa54697e71f92bfca378004b9ae",
+          "review_002.png": "7b8f818cd6d5ddc681153fe02726c488f59ae4e8d1eafc31ab5b858b48ca283a",
+          "review_003.png": "69de17273057bc77f683db1e80fa56003a4e24f899e8534507c2e25f91ffcca5",
+          "silhouette.tsv": "c5e0bea0d5f3725a253bb08ff7717273b3f65b99ab2c8d5e589295f01f731fa2"
+        }
+      },
+      "wasm": {
+        "pages": 3,
+        "minimum": [
+          100.0,
+          1
+        ],
+        "focus": {
+          "2": 100.0,
+          "3": 100.0
+        },
+        "files": {
+          "overlay_002.png": "e0eed57ed1a4659ddd319c3c7fb885fe27e9da7d5f2c7af24e9955828ab20d6b",
+          "overlay_003.png": "88088a6aeb25a2527714149aa31b6f35165d063f6aaf6c14f512349d1f6b06fe",
+          "review_002.png": "a8c5133cb0389fc304d75e149712f87409122d8412e4bbbd629032154fba06bf",
+          "review_003.png": "3066ec24444a74036fd93c1d98bf57e04b03230e10facb2cdf02bbe60f85a6e3",
+          "silhouette.tsv": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af"
+        }
+      }
+    },
+    "regulatory-impact-56345": {
+      "native": {
+        "pages": 21,
+        "minimum": [
+          99.58,
+          15
+        ],
+        "focus": {
+          "18": 100.0,
+          "20": 100.0,
+          "21": 100.0
+        },
+        "files": {
+          "overlay_018.png": "9b2c32ca2bffaa7b2bcfdb68af389b4dd46510fc8d94db268f4834f233230910",
+          "overlay_020.png": "a0adee01cde4a20079c3f3a4f5201891f1a6d4d57aa51a0f92c9cb113044ab42",
+          "overlay_021.png": "5fe5c8ed624129e1953b06d4f884c552241b2793c6fa0bdd890e26a92ed0d236",
+          "review_018.png": "bc6fe4fe1ebca471d290602ab491ec86628d43db5aa9cf97e96dc3bf5463a2aa",
+          "review_020.png": "6fc4a8ac055a2e56168c038aa692339be3fd0c156aed95a2102a3bf12ccdac90",
+          "review_021.png": "816f6f3af96129cd01ff177ee89f25c1cb3a65ae7bce1c020b2d5f0fc0373d27",
+          "silhouette.tsv": "31ef94029e7d567ac90dab4b497da324b495e2d205c1625af5d6e27aeed9cf0a"
+        }
+      },
+      "wasm": {
+        "pages": 21,
+        "minimum": [
+          99.79,
+          13
+        ],
+        "focus": {
+          "18": 100.0,
+          "20": 99.99,
+          "21": 100.0
+        },
+        "files": {
+          "overlay_018.png": "2a2d697a2b7dbe3b9815f4f807944f2a77bb4ffefb6107f8a2a0021b48b1db91",
+          "overlay_020.png": "0428666dc7485454890d89acee435333640e06b7333781f510749042e22eb23a",
+          "overlay_021.png": "0cf32f83bbae3917f2fbb9c6c8119390233c858204164480c36902debeebbdac",
+          "review_018.png": "37c989a7be1df1b1300fcf71134bdd004c7242134c7824c228afffcf1e522798",
+          "review_020.png": "7501903697cfe84b8f9e76285753bb37a6bc5e48a0198628d51339e4305ff968",
+          "review_021.png": "5ff2222aea30d3471e09b3c252ff868b81b2fd9a6d5190783a8f68b36b2f3dad",
+          "silhouette.tsv": "65e280494146886193441c2123810b6013e9bb239a915014bcb9fe51d0eda589"
+        }
+      }
+    },
+    "so-sueop-hwp3": {
+      "native": {
+        "pages": 46,
+        "minimum": [
+          98.88,
+          40
+        ],
+        "focus": {
+          "1": 100.0,
+          "13": 99.97,
+          "17": 99.87,
+          "22": 99.93,
+          "26": 99.39,
+          "27": 99.75,
+          "42": 99.89,
+          "45": 99.48,
+          "46": 99.73
+        },
+        "files": {
+          "overlay_001.png": "022a4c45524511d855d153cf0385934985a69bf15dfc6a45ec1a6d0570e488fb",
+          "overlay_013.png": "576097c261710d31c6c869b6861148edd3eeed62d2a8496eede04a73b7bc4566",
+          "overlay_017.png": "03e80da072fdaa7867866312fdf0a4f57512d893e02a35c51e4ef122403f744b",
+          "overlay_022.png": "cf91aaad13ecedce119a9950aabb34db1c9153768710c39682b8ca828808196b",
+          "overlay_026.png": "48d7d8a12a8359b269aaa7d46cc58c7389a7ca63227cedd1bf37b1a6d35ab0c2",
+          "overlay_027.png": "a57f8dda64477c3d820d1b6d5861d12a995ab3ac4326dcf11d43113528ec5a40",
+          "overlay_042.png": "b022dc21897d03223fdc6280cfec76b566489f2b4c62614d740fbd1fd9d45448",
+          "overlay_045.png": "966de9df63897738a574d3884e25df28873b3df7d89e6d4f45bdbdda6916ad04",
+          "overlay_046.png": "6f4a1dd24685274234968500eb4ef2fb16a687c68a0ebff04b6740cb8371b79a",
+          "review_001.png": "359b8c98015202ffb0d5a1ec092a592effccc02c204366260ef3829368de767c",
+          "review_013.png": "567cc4dbe7fd4201b54d386438bb2078ff31e35fb48b7642b110d416851794eb",
+          "review_017.png": "a4e8bc8872b67e0c510e55b2b3304bea8856d08684cbd0eff89b337a4c52ff9e",
+          "review_022.png": "9fb8760b996923443ed46d40d7fddbe4cbb4bfe35a7257686e8f52afa83dea38",
+          "review_026.png": "044a2f21fdd65eaa6813252a1fd23f93fe8392ce66d529866c9726071c66d5e1",
+          "review_027.png": "d731ef766ef2a30395612390b5b82df14bc7e60e93593ae089a040b1a1e0fe3a",
+          "review_042.png": "64f0f140935b74161a5f5f9607e9fc4d03064db4e2c47b59c089f3976629ed11",
+          "review_045.png": "0619701d1c00fab7d1547b28343cf1897cc7998573468099df62ca37ebd23cfd",
+          "review_046.png": "c05a07ab42e298739238144a24b4e20ae5118d81c7b2a9d3cab4db5af727b018",
+          "silhouette.tsv": "024ec72ef921f5c4f2a74732aba84c2c1ff6e76663c04a626706972d82126511"
+        }
+      },
+      "wasm": {
+        "pages": 46,
+        "minimum": [
+          98.49,
+          15
+        ],
+        "focus": {
+          "1": 99.69,
+          "13": 99.97,
+          "17": 98.59,
+          "22": 99.93,
+          "26": 99.52,
+          "27": 99.98,
+          "42": 99.94,
+          "45": 99.49,
+          "46": 99.74
+        },
+        "files": {
+          "overlay_001.png": "09bdca58b31564b361812c5dcd35ebdd210adcd0f01ef617ddc6d7b0064828d9",
+          "overlay_013.png": "dde17eb2dc7d247d57b2080b9612a26df43f003f1afb4212aeec6d3ae54c8f10",
+          "overlay_017.png": "dc414f2adf27401c8a626d32fd7ae6bcc7c72ed659bb07c1bcc99807c724de0a",
+          "overlay_022.png": "10dd52237b95a94229e19a8425d243880d64fc260994b4474b143a54ad73cbce",
+          "overlay_026.png": "4971369ba72b293ce340da7c3d80352a360c05c638a9f5ed5d46f0e57a671bf1",
+          "overlay_027.png": "bf70ce9793c4084570328b2938dd4d9e218ec6969c88246ab67322430f0f0c01",
+          "overlay_042.png": "bcf2cdb68958d826667083225cfec31a64b4ac14ee7e1804fa0c1f39d5e8d486",
+          "overlay_045.png": "068aabaabcc9a279ba957f2e24fdfc69fa9293524bbb41d3e5c405216188fcfa",
+          "overlay_046.png": "1e22995d28bc629a7308df996794731fbf61035771d63c0045566718258de7b8",
+          "review_001.png": "d61561bcd31745d2f3bc9c7ea07620ac249a2cc910903e853311190c8205da1b",
+          "review_013.png": "6f72370f49f23cf71efb2ab04e5229fef6b78e76682161df3784bbe07686189e",
+          "review_017.png": "c8296c6a159918570aff4629ef7e6c45e279b224be1d67e978e6fc28c3a60328",
+          "review_022.png": "83f04587dc8bf3f16f1d6a66520fe244766e3a868af326b8df4873d7ca3ac7d1",
+          "review_026.png": "de1285e2649b45596861991054d63e53bb48b8602b121ac666962b75ff1cf8c6",
+          "review_027.png": "584a7ed3d0e709e106e608670928b1314a50a9ff7180e1b3bc96464248ba2f13",
+          "review_042.png": "bc59243b39c1c9d853d1215f01410db60faed22a8f169787dd3133b66c8f9888",
+          "review_045.png": "2a2ff0890cd5c14fb607b292774af491db432ee764952addaf6a4c34e24a887d",
+          "review_046.png": "6b61070970ded60889886dc768c67ecd71ff6339a4211b4408d040ebc2295a43",
+          "silhouette.tsv": "fec9ec4acb14e9673e7728191f3cff19ead38fc560ed07ec2e14ebf8a75c52ee"
+        }
+      }
+    },
+    "so-sueop-hwpx": {
+      "native": {
+        "pages": 46,
+        "minimum": [
+          99.53,
+          44
+        ],
+        "focus": {
+          "1": 100.0,
+          "13": 99.96,
+          "22": 100.0,
+          "46": 99.98
+        },
+        "files": {
+          "overlay_001.png": "3e8f064384443761c2c41161168be3d0cef3d0ec2ad114e2355b109fb810e758",
+          "overlay_013.png": "b46abca4388374912e5ac6007435634c48538596f666a163ad35a295e3ab06a6",
+          "overlay_022.png": "714dca753794f036fd914136481e6f394cca2ef4dc7625078e00d0a7a57e06de",
+          "overlay_046.png": "e8141a8f11cb0d6fcd51890dae356e91ca13dce788b3d8c71c8c24be89bb2773",
+          "review_001.png": "cbb5dc489e16ef5359d0a74b94f7da0a0330b81ba3a620d9c4d220b8b5c1533b",
+          "review_013.png": "7575f4e1084e485a10e72b264a05c11bd74b3f8500f642789f89894d65e65ad2",
+          "review_022.png": "9d988beea5783e587270eb253955e0d9d7f9ef68329a534ff5565e6b352736bf",
+          "review_046.png": "8834cba53d7598c0647456580b9ce22c2c39cd14f95480ee39c27692ba6d3cd0",
+          "silhouette.tsv": "f4082a96af4e454a17002b27563b5b151ad6714fc67ff9ccd8e9818ae6095627"
+        }
+      },
+      "wasm": {
+        "pages": 46,
+        "minimum": [
+          98.62,
+          6
+        ],
+        "focus": {
+          "1": 99.73,
+          "13": 99.97,
+          "22": 99.94,
+          "46": 99.98
+        },
+        "files": {
+          "overlay_001.png": "4c40d981fe9d090605b050620dbb4af5c2d2fd5437e0f85990f4a8debdcb3029",
+          "overlay_013.png": "64b27b0d286cad4d5c9925e5922745e42c9f686a2555fe2a3312372e0c0e0335",
+          "overlay_022.png": "41ff4a43d51f59683d920e45dc8faee7fb371c9ffeae9fabe716a24500fcdab3",
+          "overlay_046.png": "56a29b109224e474e9784bf7c6084496b2a6c399fee095af679e5b78ecd2ea68",
+          "review_001.png": "264ce01470606789c1655fdf93b23639758698f1ac66650e1cab5ae044b73f59",
+          "review_013.png": "cbc1eae37291fddb3f129e2b36b1bf5b9be5525934ca2f7dd67eb74bc67e8684",
+          "review_022.png": "48232a7367b950972941af86b1fe4aac5f543c13deb0371cca2681def4bce472",
+          "review_046.png": "d7ccc400cae6e47b9edee0fca6a50a7d1db479257a39a9936e71f414de193f4a",
+          "silhouette.tsv": "79b41653c8c48f76b87007c7bf5e9ce5bf2f8641f2f5b7abf876aaae5f7c8d10"
+        }
+      }
+    },
+    "sample1-repro": {
+      "native": {
+        "pages": 46,
+        "minimum": [
+          98.26,
+          24
+        ],
+        "focus": {
+          "5": 100.0,
+          "10": 99.94,
+          "19": 100.0,
+          "42": 100.0,
+          "43": 100.0
+        },
+        "files": {
+          "overlay_005.png": "acbd373f116988cbddd30cb40b34fb45988c74b901344b17ab039d558dc7da58",
+          "overlay_010.png": "25a721064d63167423c3c72abbdaba2577d450a6d2dbfb5f961d38f8ba9d3820",
+          "overlay_019.png": "e29d3058fef238574771554846793494e6065a58c3557ff453d356bb35b24028",
+          "overlay_042.png": "f4bd725b62f2f5b62d45f170eef6d6b0502830a7937d0cbdc7e286239dcb71d5",
+          "overlay_043.png": "13a49045dece692a38506633f7d862dbfda4e2bcfb3a6e7f434fc7cc0eb9ba2b",
+          "review_005.png": "4a1ef9352bc2dc5add67301374b21cf39f8927dc485d6d3b87a8655f4874f8ad",
+          "review_010.png": "e1895054b7ef118d7643db9c1919b1e954838efae268a76d3b6c0d7d537b5242",
+          "review_019.png": "94120560e2e7e4f20826a1ca17e2eb49366a65cbfa8b1a18bfce701f3f7fe5f6",
+          "review_042.png": "0fef5c7bf5490daa957a639adda3193c7226239693eae973347b4963aa7983d0",
+          "review_043.png": "361f382e4a096b25d5ad18daea1caaaa32f35148a51ec8c59105677eecfc1995",
+          "silhouette.tsv": "16dac6a68be7350ab21d6e43dad65b674410569cfb03ebeb0337a40dd73e738d"
+        }
+      },
+      "wasm": {
+        "pages": 46,
+        "minimum": [
+          98.35,
+          24
+        ],
+        "focus": {
+          "5": 100.0,
+          "10": 99.94,
+          "19": 100.0,
+          "42": 100.0,
+          "43": 100.0
+        },
+        "files": {
+          "overlay_005.png": "6147d7fd43876116177627baadf61860bc2739c63ffe88d5bb7d3c3819ec30a2",
+          "overlay_010.png": "7a6d556e36d8ad32ca339bf6da46fb9160fe12dfed8906492892ae05655b83d0",
+          "overlay_019.png": "5302e4c375077765cb13385154c070f753a839695088c828f4ebfeda04061fad",
+          "overlay_042.png": "3553c9c32d8df9ee60367bc29397d08c47f416e726b652b802fd073fb7aae407",
+          "overlay_043.png": "947b1d3c23b2d27881a36cfa9a78abfb4b33c6b997a467f337231ded790f352d",
+          "review_005.png": "da82813aa289b82a1b99d62776a5b21d57d883db24a783f4b476e285ce645f75",
+          "review_010.png": "bd460833b67b934da13db6f19831e810d6d0f16dada3d91ed9b62f89e2944a42",
+          "review_019.png": "5aa36b8bb5cf369c5269418c9d8a0c04a2e16a3d7e80c3a3fbe98828be1be239",
+          "review_042.png": "a1e98cebec000bb52b37cc55380b2eff04a06f8b8d21e6236d2ae915069c4add",
+          "review_043.png": "789d7a4e4bbbf3ed483d3c7fa0ca6a8f38143d8ec3cf94e158ad0f97a7ca9151",
+          "silhouette.tsv": "9b186ce2f19e7ebd9a501c9593a274cc64ff879e13fe35295eaf839a3ca4ac4c"
+        }
+      }
+    },
+    "animal-facility": {
+      "native": {
+        "pages": 6,
+        "minimum": [
+          99.99,
+          5
+        ],
+        "focus": {
+          "5": 99.99,
+          "6": 100.0
+        },
+        "files": {
+          "overlay_005.png": "9356b4a42e6b266687b357991781b364afbda8cdd45766d0342d5173c556fb97",
+          "overlay_006.png": "677df68a929f3c3b8ce7b17ae01b91412da11c6642306fe7785c9ef1bcb455e5",
+          "review_005.png": "b59271adebc683ebcadabdc7c6fc5c3d9af37db3af68ba8b309a8c7a37ff275b",
+          "review_006.png": "4774c953c3880e21f53a4132aab20fbf458f2bcc56a1e368a96c7588209e9f30",
+          "silhouette.tsv": "80197e064ccdcda8030b0d21aa5110072b6b8e5bfc3a444e047b394c2e6c3b0b"
+        }
+      },
+      "wasm": {
+        "pages": 6,
+        "minimum": [
+          100.0,
+          1
+        ],
+        "focus": {
+          "5": 100.0,
+          "6": 100.0
+        },
+        "files": {
+          "overlay_005.png": "8cbf239fb6d84a8df0fa6bef7d892e904355116d458ec87a856b0c403f9f66cf",
+          "overlay_006.png": "91797c04c1eb3df65b33c26e9eae003bf21088fa7a072b041dc60c7735d692db",
+          "review_005.png": "aee5041f4aa7b024849af06b2452868ff7f86341fc75f93f10787906ea773c49",
+          "review_006.png": "6b5a353e6072cab3675b43defcbb0fafb5eaf4263cc008d2b6875db603000f10",
+          "silhouette.tsv": "cdcf3e026b8de27abee1649a14fc0767bd3b6d02806046e34dcc9164c24df91f"
+        }
+      }
+    },
+    "overfill-hwpx": {
+      "native": {
+        "pages": 48,
+        "minimum": [
+          98.25,
+          39
+        ],
+        "focus": {
+          "44": 99.82,
+          "45": 100.0,
+          "48": 100.0
+        },
+        "files": {
+          "overlay_044.png": "662f912cc431ccfc1b794da7b2bf7e9b46562791cdc4bfe80d619e885d738756",
+          "overlay_045.png": "bbd48823d7fd9acd54464883d6c11f600a82be1b51af4678f454f18cadec43d5",
+          "overlay_048.png": "38ced777c4d84ff5392cc9de452390332a37557f7bdd3838e524ad675a090003",
+          "review_044.png": "3f3cc2ac1224c761ee1a01227d92cbac84a9ded4bc6da734b6f6a447aba12382",
+          "review_045.png": "5d8dad60b01796b4545003e49b9b79bc6f3797493f5503a24113bea0324150f3",
+          "review_048.png": "428f273b3d2bde9c87e192ae580e1a53f871dc3696c108d674a453f8becdd825",
+          "silhouette.tsv": "b14c54229934ce8c497cf312da9268eb906eba4e3e41fff226c44a2f56fc3a99"
+        }
+      },
+      "wasm": {
+        "pages": 48,
+        "minimum": [
+          98.25,
+          39
+        ],
+        "focus": {
+          "44": 99.8,
+          "45": 100.0,
+          "48": 100.0
+        },
+        "files": {
+          "overlay_044.png": "952e56bff74eeb062ff175cdeb66d7ea39e5daa436350694e0b2f753c4c4738f",
+          "overlay_045.png": "460f1ae69d57ff3be0f9b9bec444b2dee41e2beaa350d48a0635fb524eb1c65d",
+          "overlay_048.png": "a049c7bca996629dc6b1fcf217dff9ecc87cca549cc67dba1af96d73380ca927",
+          "review_044.png": "75da1ef7cb6fa72feac9de4b06f182f3591ba1080d27bade6f4369fe1d5de14f",
+          "review_045.png": "b3d99ad31cea128a9a7e31c324b226b01f2c7287128d5628dad28d5acfeb18f8",
+          "review_048.png": "af67c0a313ceb1baf54696fc7b9a1167c92b80250c24d966a299f9618f521056",
+          "silhouette.tsv": "876416c830c5ec90b24cdb5da68cf7372945f021843d0d8fb441f8977a6c4ebd"
+        }
+      }
+    }
+  },
+  "base": "77e4c3d1369623818e8cf3213e3fdc21d8e6502e",
+  "inputs": {
+    "chinese-newsletter": {
+      "issue": 7789,
+      "compat": "2024",
+      "input": {
+        "path": "samples/issue6712/중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp",
+        "sha256": "34a5964fa791ae662052cba8482efae682f13b45a0c0cd6ce633425566a2d5a9",
+        "bytes": 2150912,
+        "git_blob": "b8937178cc462aab63a2fa91f072f74780f826cf"
+      },
+      "reference": {
+        "path": "pdf/issue6712/중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방-review-20261009-2024.pdf",
+        "sha256": "f915cfd1d1a91b61ee6c3ebf3b7db25f0736aa344c54d2b4e1ef0011fec8e5e2",
+        "bytes": 279196,
+        "git_blob": "8110a49e2a37d2d9e8415f0832416d658946c4cf",
+        "pages": 2,
+        "creator": "Hancom PDF 1.3.0.550",
+        "producer": "Hancom PDF 1.3.0.550"
+      }
+    },
+    "pic-in-head": {
+      "issue": 7790,
+      "compat": "2022",
+      "input": {
+        "path": "samples/pic-in-head-01.hwp",
+        "sha256": "c73145d60f3f0b041bc8fee64b65e6d419a1fc78aa62a90fa150b36f35278f4a",
+        "bytes": 179200,
+        "git_blob": "7592d2dd46f06352796b21666db4cd829edb1c2c"
+      },
+      "reference": {
+        "path": "pdf/pic-in-head-01-review-20261009-2020.pdf",
+        "sha256": "bdd50b016b157ed721fb4b36e5021eab9e74babac4257647e80e6f2e3db57968",
+        "bytes": 1279129,
+        "git_blob": "2df9ea8ddc7b3db7d077558ab56231d84c6afc98",
+        "pages": 22,
+        "creator": "Hwp 2020 0.0.0.0",
+        "producer": "Hancom PDF 1.3.0.550"
+      }
+    },
+    "pic-in-table": {
+      "issue": 7790,
+      "compat": "2022",
+      "input": {
+        "path": "samples/pic-in-table-01.hwp",
+        "sha256": "c73145d60f3f0b041bc8fee64b65e6d419a1fc78aa62a90fa150b36f35278f4a",
+        "bytes": 179200,
+        "git_blob": "7592d2dd46f06352796b21666db4cd829edb1c2c"
+      },
+      "reference": {
+        "path": "pdf/pic-in-table-01-review-20261009-2020.pdf",
+        "sha256": "0e55f13ff078d5238e022a450c94d04728ca8f49f500fb5f10b08b988e455e85",
+        "bytes": 1279129,
+        "git_blob": "78b09638373044c8bd2674d4cb6d2751ba5bc4ea",
+        "pages": 22,
+        "creator": "Hwp 2020 0.0.0.0",
+        "producer": "Hancom PDF 1.3.0.550"
+      }
+    },
+    "aift": {
+      "issue": 7791,
+      "compat": "2022",
+      "input": {
+        "path": "mydocs/pr/assets/issue7445/aift74/aift.hwp",
+        "sha256": "a3e94e613a7d3dad0ee11e2df8f9572a5b7c2d704602960c2075b5fd22df995c",
+        "bytes": 5724672,
+        "git_blob": "dbc92dccde8f909786275ea8b01d27d13fc17078"
+      },
+      "reference": {
+        "path": "mydocs/pr/assets/issue7445/aift74/aift-hwp-2020.pdf",
+        "sha256": "481b46b3b0aa9c87ca3b0af979aba1e6b366efe2592268e1978370d6968f33e9",
+        "bytes": 2311161,
+        "git_blob": "ffab8410a56859fbaf14b429d9421b6aecebdba3",
+        "pages": 74,
+        "creator": "Hwp 2020 0.0.0.0",
+        "producer": "Hancom PDF 1.3.0.550"
+      }
+    },
+    "table-text-anchor-wrap": {
+      "issue": 7792,
+      "compat": "2024",
+      "input": {
+        "path": "mydocs/pr/assets/issue7445/table-text-anchor-wrap/table_text_anchor_wrap.hwpx",
+        "sha256": "5947d1cd9553bd5368a23a7538e93d38d250460d5ca379e7770fad363e81d888",
+        "bytes": 63762,
+        "git_blob": "680d3fad2cd3048c0647e10292b514523befa353"
+      },
+      "reference": {
+        "path": "mydocs/pr/assets/issue7445/table-text-anchor-wrap/table_text_anchor_wrap-fresh-2024.pdf",
+        "sha256": "0d411a09a97cefe47e05ff2c09b385bc3d1646550713edd64030e7250633518a",
+        "bytes": 58299,
+        "git_blob": "efeea580ef7eb5029203b5ebf63fd5701dd288f7",
+        "pages": 3,
+        "creator": "Hancom PDF 1.3.0.550",
+        "producer": "Hancom PDF 1.3.0.550"
+      }
+    },
+    "regulatory-impact-56345": {
+      "issue": 7806,
+      "compat": "2022",
+      "input": {
+        "path": "samples/issue6111/56345_regulatory_impact_analysis.hwp",
+        "sha256": "58013017c3a3dc7e2d278b99c5b4fa1c61de0aa861f913a2c41a49145baadafc",
+        "bytes": 124416,
+        "git_blob": "7925c7c73d02af9dfa8971fc776306931954a350"
+      },
+      "reference": {
+        "path": "pdf/issue6111/56345_regulatory_impact_analysis-hwp-2020.pdf",
+        "sha256": "c66ea20c3b8d6b31af73752e170372bc7af839c38812991125bdde4dfba35abb",
+        "bytes": 369330,
+        "git_blob": "6c7517c8ab0375c5bcf2d2f446840cad82a956b8",
+        "pages": 21,
+        "creator": "Hwp 2020 0.0.0.0",
+        "producer": "Hancom PDF 1.3.0.550"
+      }
+    },
+    "so-sueop-hwp3": {
+      "issue": 7807,
+      "compat": "2022",
+      "input": {
+        "path": "samples/SO-SUEOP.hwp",
+        "sha256": "b5e410d4972b988240eb79f462c75ab3f92ce3415af6ed7f411906cc7498396c",
+        "bytes": 112481,
+        "git_blob": "f44ade9906b41ad64e57483ec147096ab6f863fd"
+      },
+      "reference": {
+        "path": "pdf/SO-SUEOP-hwp-2020.pdf",
+        "sha256": "12f7e011dcf1aaf90484a79c60b7ca853dcea860f135263ac41abf7c9ae613a7",
+        "bytes": 2838039,
+        "git_blob": "77adec6e6f07cb26274b8b171925577bbe28081c",
+        "pages": 46,
+        "creator": "Hwp 2022 0.0.0.0",
+        "producer": "Hancom PDF 1.3.0.550"
+      }
+    },
+    "so-sueop-hwpx": {
+      "issue": 7807,
+      "compat": "2024",
+      "input": {
+        "path": "samples/SO-SUEOP.hwpx",
+        "sha256": "ebbd6f5c86d6eda195bb9c4ba1fc35b329432dcc5ef1dc0fffbfb4542fce74b8",
+        "bytes": 134304,
+        "git_blob": "a7c325b99bfe8516b16f90a1ab3fec474a517fea"
+      },
+      "reference": {
+        "path": "pdf/SO-SUEOP-hwpx-2024.pdf",
+        "sha256": "e6ae998e709e6cb2da11d05843f21b7983bd4512d1ddf93c5051a3b9da58a66f",
+        "bytes": 2111535,
+        "git_blob": "dab1f8b67188513dd9002cc728ae3e2a81adeaf0",
+        "pages": 46,
+        "creator": "Hwp 2024 0.0.0.0",
+        "producer": "Hancom PDF 1.3.0.550"
+      }
+    },
+    "sample1-repro": {
+      "issue": 7808,
+      "compat": "2022",
+      "input": {
+        "path": "samples/issue4514/sample1-repro.hwp",
+        "sha256": "72d3be39c8af8779387e7657cb9cd5823fda62dff1c8700ab1bfe73592baf793",
+        "bytes": 367616,
+        "git_blob": "55719a40af07c2af181494211f3e552a10d5598d"
+      },
+      "reference": {
+        "path": "pdf/issue4514/sample1-repro-hwp-2020.pdf",
+        "sha256": "939ff6aa74c887179214577150e7a9cbf5cb746969f2041a0a7c606d3c93f0ed",
+        "bytes": 538387,
+        "git_blob": "dca5e499f6f0a283bf2ac07e2709e1a0662f4fda",
+        "pages": 46,
+        "creator": "Hwp 2022 0.0.0.0",
+        "producer": "Hancom PDF 1.3.0.550"
+      }
+    },
+    "animal-facility": {
+      "issue": 7811,
+      "compat": "2022",
+      "input": {
+        "path": "samples/issue5792/2700727_animal_facility_standards.hwpx",
+        "sha256": "43f4d4a0e6134c787278b139da49ea88e560aee199f2c19f37c787ecb71aeb86",
+        "bytes": 48731,
+        "git_blob": "abea41cfeccb1965d89286a542050ccba224b9e8"
+      },
+      "reference": {
+        "path": "pdf/issue5792/2700727_animal_facility_standards-hwpx-2020.pdf",
+        "sha256": "3bd076dfedc98d52daf416fabf6d6b8e3acfa10473e3edd4a3e26c9b075a4039",
+        "bytes": 628534,
+        "git_blob": "8323c5db84dcbe099d202f56a1cb26f7e4dd0d8a",
+        "pages": 6,
+        "creator": "Hwp 2022 0.0.0.0",
+        "producer": "Hancom PDF 1.3.0.550"
+      }
+    },
+    "overfill-hwpx": {
+      "issue": 7812,
+      "compat": "2024",
+      "input": {
+        "path": "samples/table_giant_cell_overfill.hwpx",
+        "sha256": "5d7eb4a21e46d9ad01a0f631eea2b1f2ec8a71750b4d448868e944e1b95042f4",
+        "bytes": 534016,
+        "git_blob": "9b136353fb2fd54b0f69f4dd848fe920c8ba75b3"
+      },
+      "reference": {
+        "path": "pdf/table_giant_cell_overfill-hwpx-2024.pdf",
+        "sha256": "7669a8f468fd47e3180a09b5ea60526785e968fcb9ad5f1039d1f585d55d59be",
+        "bytes": 510623,
+        "git_blob": "d9821eb10107e6bbc8896f70ac0252afde442657",
+        "pages": 48,
+        "creator": "Hwp 2024 0.0.0.0",
+        "producer": "Hancom PDF 1.3.0.550"
+      }
+    }
+  },
+  "contributor_protected": {
+    "baseline_sha256": "8141acb297ce2f39148f9014e463986431d266120629e8f368665e5917138f9d",
+    "checks": {
+      "52ee61fe7201e36b": {
+        "input": {
+          "compat": "2022",
+          "input": {
+            "path": "samples/re-03-latin-only-hancom.hwp",
+            "sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+            "bytes": 9216,
+            "git_blob": "b55553422f96b5d2b5c2fd6ee1cf06bdd129f573"
+          },
+          "reference": {
+            "path": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+            "sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+            "bytes": 11752,
+            "git_blob": "007f057f67b46042b6ec6e67f6aa597226ec00e2",
+            "pages": 1,
+            "creator": "Hwp 2022 0.0.0.0",
+            "producer": "Hancom PDF 1.3.0.550"
+          }
+        },
+        "renderers": {
+          "native": {
+            "silhouette.tsv": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "review_001.png": "c49ffdc9736e6a1080efa55e305e520c8a55c6437546dc00366a0f6bae2ec168",
+            "overlay_001.png": "dccee7d8474d59cb01d6038d889055f45ae3d7c8115e0b096094f8587e82d4ee"
+          },
+          "wasm": {
+            "silhouette.tsv": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "review_001.png": "03a40c5dd59b3589afd07e296b71d34e41721da5d247700fb2cad41b5523de23",
+            "overlay_001.png": "2f00dc3260c3bddfa1c3958794cc16b1a0c01b6b4f14674f7bc26478c9081a59"
+          }
+        }
+      },
+      "59f6ab1155623bda": {
+        "input": {
+          "compat": "2022",
+          "input": {
+            "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+            "sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+            "bytes": 6848,
+            "git_blob": "8f5511811a26703a906360ea22a5e3cf141f8b73"
+          },
+          "reference": {
+            "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+            "sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+            "bytes": 10328,
+            "git_blob": "512875fda389b4eef8987e2b9911e03408f29006",
+            "pages": 1,
+            "creator": "Hwp 2020 0.0.0.0",
+            "producer": "Hancom PDF 1.3.0.550"
+          }
+        },
+        "renderers": {
+          "native": {
+            "silhouette.tsv": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "review_001.png": "b7305cd737d65244eda0792781a2277f04956a68fea3fba540033679c5f8aa3d",
+            "overlay_001.png": "a8a9c21bc7382a231ac300d91244f1b5114f39d8758a2b57a440df351181c2b2"
+          },
+          "wasm": {
+            "silhouette.tsv": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "review_001.png": "9a419983ea99526735522a7a75d92e627727357d235a1805c7bb4bbd24aeb477",
+            "overlay_001.png": "ccb4abe863c7d9eb3d7f068b55d416dded20773c13e396d1899778b4ac362b7b"
+          }
+        }
+      },
+      "cdacd874b6e6ac66": {
+        "input": {
+          "compat": "2022",
+          "input": {
+            "path": "samples/pic-crop-01.hwp",
+            "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+            "bytes": 131072,
+            "git_blob": "2ae41567f46adfdecebab27b327500f76b74c4e1"
+          },
+          "reference": {
+            "path": "pdf/pic-crop-01-2022.pdf",
+            "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+            "bytes": 19211,
+            "git_blob": "171d9dfe4e3511ec9ed8c8078e47cfa5ac2ac7e2",
+            "pages": 1,
+            "creator": "Hwp 2022 12.0.0.4426",
+            "producer": "Hancom PDF 1.3.0.550"
+          }
+        },
+        "renderers": {
+          "native": {
+            "silhouette.tsv": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "review_001.png": "8ae93a85525666d5df563119a25f43aac3705f9bd003c0aad2da71eb8474ec38",
+            "overlay_001.png": "e492665747dd06f00373e8a93934f59652f6eda4af703575e77bd2ec71d8fb34"
+          },
+          "wasm": {
+            "silhouette.tsv": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "review_001.png": "8abc67a85b0bab59101a3db8d71ad5f101790ac3fd73149e21915408bccbffbe",
+            "overlay_001.png": "35a911ebe2d4755ac652a082beed6921272ebb49e6e6605dda0a3b91b0db5626"
+          }
+        }
+      },
+      "d03a9dde3d5dc7ac": {
+        "input": {
+          "compat": "2022",
+          "input": {
+            "path": "samples/shape-group-02.hwp",
+            "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+            "bytes": 16384,
+            "git_blob": "ceb34fdaad8f81674881bfeae7a1089e68aab262"
+          },
+          "reference": {
+            "path": "pdf/shape-group-02-hwp-2020.pdf",
+            "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+            "bytes": 89651,
+            "git_blob": "58e8dc8d8a4c11df34acee1058470239c4aea1e3",
+            "pages": 1,
+            "creator": "Hwp 2022 0.0.0.0",
+            "producer": "Hancom PDF 1.3.0.550"
+          }
+        },
+        "renderers": {
+          "native": {
+            "silhouette.tsv": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "review_001.png": "2aa82e664eba1bf96b69864941d873d9f0962caa0b800417f91e5dc741611ee5",
+            "overlay_001.png": "13aa1d8844d06bd3593d96bcdb19fa5a29e28beebfa28e78dbaf7ea4dcd4de2d"
+          },
+          "wasm": {
+            "silhouette.tsv": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "review_001.png": "60aab5e68772376dd2a2148c6319829729548195a4a0c88a431cbfc4385de467",
+            "overlay_001.png": "eda0ab33f824f0baf982af9ce058789cb72828b57b66359374735c2eccbf49fc"
+          }
+        }
+      }
+    }
+  },
+  "native_protected": {
+    "summary": {
+      "measured": 413,
+      "declines": 0,
+      "failures": []
+    },
+    "files": {
+      "handbook_383.tsv": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590",
+      "comparison_413.tsv": "f8780af47d5eafc472cd4a639d8ec47f72a7518d89c446c7663f73e9ff0a5ad0"
+    }
+  }
+}

@@ -108,8 +108,6 @@ const DEFERRED_BODY_OVERFLOW_FIXTURES: &[&str] = &[
     // #7834: 고정 devel bfa28a77a 전15쪽 Native/fresh 최저45.18405%.
     // 본문 넘침 원문과 기존0행을 보존하여 이 입력만 이관한다.
     "issue6854/22037757-chuncheon-personnel-rule-annex13.hwpx",
-    // 사용자 요청: 아래 세 HWPX의 조판 보정은 다른 브랜치에서 진행한다.
-    "table_giant_cell_overfill.hwpx",
     // #7445: CGMP 48쪽은 다른 작업이 보정한다. 사용자 요청으로 이 입력의 회귀를 제거한다.
     "issue6035/cgmp_evaluation_table.hwpx",
     "issue3637/press_release_split_cell_nested_table.hwpx",
@@ -257,16 +255,9 @@ fn body_overflow_does_not_grow_partition(part: usize) {
         !samples.is_empty(),
         "body-overflow partition {part} 이 비어 있음"
     );
-    // #7812: 다른 브랜치의 보정 대상은 원본을 보존하고 활성 회귀에서 분리한다.
-    // partition 배정 뒤 제외하므로 다른 문서의 배정은 바뀌지 않는다.
     // #7813: 같은 원본의 기존 전쪽 미달이 이관된 거대 중첩 셀 문서.
-    samples.retain(|(_, rel)| {
-        ![
-            "table_giant_cell_overfill.hwpx",
-            "issue1949_giant_cell_nested_tables_perf.hwpx",
-        ]
-        .contains(&rel.as_str())
-    });
+    // partition 배정 뒤 해당 입력만 제외한다.
+    samples.retain(|(_, rel)| rel != "issue1949_giant_cell_nested_tables_perf.hwpx");
     let selected_rels: BTreeSet<String> = samples.iter().map(|(_, rel)| rel.clone()).collect();
 
     let workers = std::thread::available_parallelism()
