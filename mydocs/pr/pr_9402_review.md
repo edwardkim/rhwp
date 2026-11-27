@@ -1,8 +1,55 @@
 # PR #9402 리뷰 — 줄 삽입 시 가로 병합 상속
 
-## 최종 판정
+## 현재 판정
 
-**머지 보류.** 원 PR의 Rust 테스트 배치 정책 검사가 실패했다. 새 회귀 검사를 통합 테스트로 옮긴 커밋의 CI와, 기준 행 위에 삽입한 결과를 독립 한컴 출력에서 확인하면 재검토할 수 있다.
+원 PR의 테스트 배치 오류를 메인테이너 후보에서 수정했다. 원 head는 두 번째 CI에서도
+같은 Rust 테스트 수 제한으로 실패했다. 후보의 통합 여부는 최종 로컬 검증 뒤 다시 판정한다.
+
+## 메인테이너 보완
+
+기여자 `semanticist21`은 본 저장소의 읽기 권한을 가지고 있다. 메인테이너
+`edwardkim`이 원 head를 재실행했지만 `src/` 회귀 4,093개가 기준 4,092개를 넘었다.
+[두 번째 Lint 실패](https://github.com/edwardkim/rhwp/actions/runs/45539271682/job/140235752629)
+
+원 기여 커밋을 보존하고 새 혼합 병합 회귀와 헬퍼 두 개를 기존 통합 모듈로 옮겼다.
+이관 커밋은 `59047307c17b57f9211ced5cce6199dd4ce87485`이고, 스타일 콤보 #9453이
+들어간 `devel` `3749b19583c8d3005c3a6c8f1e310b36a697b8d9`를 충돌 없이 반영한
+소스는 `0d28d2fe435b95fc267955e7f788bbd08a0f00a8`이다. 원 PR의 제품 코드와 바이트가
+같다. 최신 base 상대 Rust unit tier는 4,092건, integration manifest는 48개 타깃으로
+통과했다. 최소 글꼴 격리에서 표 4건과 PDF 표 테두리 34건이 모두 통과했다.
+
+### 독립 한컴 저장본과 Native·브라우저 확인
+
+5행 4열 공개 합성 표에서 셀 B3에 캐럿을 두고 Windows 한컴오피스 2020
+11.0.0.9172의 위·아래 행 삽입 명령을 각각 실행했다. 저장한 HWPX 3개를 같은 버전으로
+한 장에 한 쪽씩 직접 인쇄했다(`pdf_print_method=0`).
+
+| 방향 | 독립 저장본의 새 행 | 기존 세로 병합 | `B3` 최종 주소 |
+| --- | --- | --- | --- |
+| 위 | B와 C:D, 각각 3,600·7,200 HWPUNIT | A2:A4로 확장 | B4 |
+| 아래 | A, B, C:D, 각각 3,600·3,600·7,200 HWPUNIT | A2:A3 유지 | B3 |
+
+기준 `devel`은 두 방향 모두 새 행에서 C:D를 두 칸으로 나눴다. 후보는 Native CLI와 최적화한
+fresh 브라우저 WASM의 실제 편집 API에서 HWP·HWPX 각각을 두 번 저장·재열기한 뒤에도 전체 셀
+주소, 병합 범위, 너비와 내용을 보존했다. 독립 한컴 Print 대비 원본 및 위·아래 삽입 결과는
+Native·WASM 각 3쪽 모두 96 DPI 실루엣 raw 100.00%였다. 확대 비교에서도 새 행의 분할선과
+기존 텍스트의 행 소속을 확인했다.
+
+[한컴 위 삽입 저장본](assets/pr9402/hancom-above.hwpx) ·
+[한컴 위 삽입 Print](../../pdf/pr9402/hancom-above-2020.pdf) ·
+[인쇄 영수증](assets/pr9402/print-receipts.tsv) ·
+[전쪽 TSV](assets/pr9402/focused-print.tsv) ·
+[위 삽입 Native](assets/pr9402/above-native-direct.png) ·
+[위 삽입 브라우저](assets/pr9402/above-wasm-direct.png) ·
+[아래 삽입 Native](assets/pr9402/below-native-direct.png) ·
+[아래 삽입 브라우저](assets/pr9402/below-wasm-direct.png)
+
+### 최신 devel의 Studio 기능 확인
+
+별도로 들어온 #9453의 원래 E2E를 후보 WASM을 로드한 Studio에서 실행했다. 목록을 연 뒤
+스크롤과 재클릭, 키보드와 바깥 클릭, 스타일 적용과 실행 취소를 모두 확인했다.
+
+## 최초 검토
 
 ## 접수 정보
 
