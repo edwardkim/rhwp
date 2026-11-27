@@ -1298,7 +1298,12 @@ pub(super) fn expand_page_fragment_clip_to_own_text_lines(
     // 폭은 줄 하나 남짓이므로 되살릴 대상도 줄 하나로 못박는다.
     let mut recovered: Option<&RenderNode> = None;
     for child in &node.children {
-        if !child.visible || !matches!(child.node_type, RenderNodeType::TextLine(_)) {
+        // 빈 줄의 점유는 이미 컷 예산에 남아 있다. 그리는 요소가 없으면
+        // 테두리와 클립을 다음 빈 줄까지 차례로 늘릴 이유도 없다.
+        if !child.visible
+            || !matches!(child.node_type, RenderNodeType::TextLine(_))
+            || child.is_empty_text_carrier()
+        {
             continue;
         }
         let candidate_edge = if terminal_fragment {
