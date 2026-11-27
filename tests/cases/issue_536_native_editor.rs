@@ -251,6 +251,72 @@ fn issue_536_native_editor_keeps_body_commands_and_protected_cells_read_only() {
 }
 
 #[test]
+fn issue_536_native_editor_rejects_writes_through_a_protected_nested_cell_ancestor() {
+    let bytes = include_bytes!("../../samples/issue5599_oracle/3191107_leave_request_form.hwpx");
+    let point = NativeTextPosition {
+        section: 0,
+        paragraph: 1,
+        scalar_offset: 0,
+        cell_path: vec![
+            NativeCellPathEntry {
+                control: 0,
+                cell: 1,
+                paragraph: 1,
+            },
+            NativeCellPathEntry {
+                control: 0,
+                cell: 5,
+                paragraph: 0,
+            },
+        ],
+    };
+    let selection = NativeTextSelection {
+        anchor: point.clone(),
+        focus: point.clone(),
+    };
+
+    for lock_outer_table in [false, true] {
+        let mut core = DocumentCore::from_bytes(bytes).unwrap();
+        let mut document = core.document().clone();
+        let Control::Table(outer) = &mut document.sections[0].paragraphs[1].controls[0] else {
+            panic!("missing outer table");
+        };
+        if lock_outer_table {
+            outer.common.locked = true;
+        } else {
+            outer.cells[1].set_cell_protect(true);
+        }
+        let Control::Table(inner) = &outer.cells[1].paragraphs[1].controls[0] else {
+            panic!("missing applicant table");
+        };
+        assert!(!inner.common.locked);
+        assert!(!inner.cells[5].cell_protect());
+        assert!(inner.cells[5].paragraphs[0].text.is_empty());
+        core.set_document(document);
+
+        let mut editor =
+            NativeEditor::new(NativeDocumentSession::from_core(core), selection.clone())
+                .expect("a protected cell permits read-only selection");
+        assert!(matches!(
+            editor.replace_selection(0, "1991.07.23"),
+            Err(NativeHostError::Unsupported(_))
+        ));
+        assert!(matches!(
+            editor.begin_composition(0),
+            Err(NativeHostError::Unsupported(_))
+        ));
+        assert_eq!(editor.selection(), &selection);
+        assert_eq!(revision(&editor), 0);
+        assert!(!editor.can_undo() && !editor.can_redo());
+        let outer = table_at(&editor, &point);
+        let Control::Table(inner) = &outer.cells[1].paragraphs[1].controls[0] else {
+            panic!("missing applicant table");
+        };
+        assert!(inner.cells[5].paragraphs[0].text.is_empty());
+    }
+}
+
+#[test]
 fn issue_536_native_editor_ime_commits_one_undo_without_reinserting() {
     let mut editor = editor("");
     let id = editor.begin_composition(0).unwrap().composition_id.unwrap();

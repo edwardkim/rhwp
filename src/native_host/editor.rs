@@ -1,7 +1,7 @@
 //! Opt-in native editor state. The document engine itself remains history-free.
 //!
 //! Offsets are Unicode scalar indices. Plain-text replacement supports body
-//! ranges and a single paragraph of a top-level table cell. Object-bearing
+//! ranges and a single paragraph of a table cell, including nested tables. Object-bearing
 //! paragraph mutations, inline-control affinity and tabs are rejected explicitly.
 //! Composition also supports one editable cell paragraph. Paragraph split/join
 //! and keyboard commands use body positions.
@@ -567,11 +567,10 @@ impl NativeEditor {
         if !selection.anchor.cell_path.is_empty() || !selection.focus.cell_path.is_empty() {
             if selection.anchor.section != selection.focus.section
                 || selection.anchor.paragraph != selection.focus.paragraph
-                || selection.anchor.cell_path.len() != 1
                 || selection.anchor.cell_path != selection.focus.cell_path
             {
                 return Err(NativeHostError::Unsupported(
-                    "cell editing requires one paragraph of a top-level table cell".into(),
+                    "cell editing requires one paragraph of the same table cell".into(),
                 ));
             }
             for position in [&selection.anchor, &selection.focus] {
@@ -722,15 +721,22 @@ impl NativeEditor {
         // editor's current selection. This check precedes all core mutations.
         Self::check_editable_text_span(core, selection)?;
         let (start, end) = Self::ordered(selection);
-        if let [cell] = start.cell_path.as_slice() {
+        if !start.cell_path.is_empty() {
+            let path: Vec<_> = start
+                .cell_path
+                .iter()
+                .map(|part| {
+                    (
+                        part.control as usize,
+                        part.cell as usize,
+                        part.paragraph as usize,
+                    )
+                })
+                .collect();
             core.replace_text_in_cell_by_path(
                 start.section as usize,
                 start.paragraph as usize,
-                &[(
-                    cell.control as usize,
-                    cell.cell as usize,
-                    cell.paragraph as usize,
-                )],
+                &path,
                 start.scalar_offset as usize,
                 (end.scalar_offset - start.scalar_offset) as usize,
                 text,

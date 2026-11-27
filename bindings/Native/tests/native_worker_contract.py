@@ -13,6 +13,8 @@ from native_worker import NativeWorker
 
 
 BASIC_TABLE = Path(__file__).resolve().parents[3] / "samples/hwpx/basic-table-01.hwpx"
+APPLICATION_FORM = (Path(__file__).resolve().parents[3]
+                    / "samples/issue5599_oracle/3191107_leave_request_form.hwpx")
 
 
 def accepted(worker, command):
@@ -274,6 +276,132 @@ def cell_ime_contract(library):
         assert cell_contents() == expected
 
 
+def nested_cell_contract(library):
+    # This one-page public form has two different blank birth-date fields and an
+    # applicant name field. Accessibility identifies each inner table separately.
+    with NativeWorker(library) as worker:
+        opened = worker.wait(worker.open_bytes(APPLICATION_FORM.read_bytes()))
+        assert opened["ok"] and opened["info"]["pageCount"] == 1, opened
+        target = {key: opened["info"][key] for key in ("documentId", "revision")}
+
+        def call(operation, **arguments):
+            return accepted(worker, {"op": operation, "target": target, **arguments})
+
+        def edit(operation, **arguments):
+            outcome = call(operation, **arguments)["outcome"]
+            target["revision"] = outcome["revision"]
+            return outcome
+
+        def contents(host, current):
+            receipt = accepted(host, {
+                "op": "accessibility", "target": current, "request": {"maxNodes": 128},
+            })["snapshot"]
+            assert not receipt["truncated"], receipt["limitations"]
+            assert all(node["textComplete"] for node in receipt["nodes"])
+            return [(node["role"], node["start"], node["end"], node["text"])
+                    for node in receipt["nodes"]]
+
+        def selection_at(point):
+            return {"anchor": point, "focus": point}
+
+        before = contents(worker, target)
+        name_label, = (i for i, (_, _, _, text) in enumerate(before) if text.replace(" ", "") == "성명")
+        applicant_birth_label, child_birth_label = (
+            i for i, (_, _, _, text) in enumerate(before) if text == "생년월일"
+        )
+
+        def field(label_index):
+            _, label, _, _ = before[label_index]
+            role, start, end, text = before[label_index + 1]
+            label_path = label["cellPath"]
+            value_path = start["cellPath"]
+            assert role == "tableCellParagraph" and len(value_path) == 2, (role, start)
+            assert start["paragraph"] == label["paragraph"] and value_path[:-1] == label_path[:-1]
+            assert value_path[-1] == {**label_path[-1], "cell": label_path[-1]["cell"] + 1}
+            assert not text.strip(), (start, text)
+            return start, end
+
+        name, name_end = field(name_label)
+        applicant_birth, _ = field(applicant_birth_label)
+        child_birth, _ = field(child_birth_label)
+        assert name["cellPath"][0] == applicant_birth["cellPath"][0]
+        assert applicant_birth["cellPath"][0] != child_birth["cellPath"][0]
+        for point in (name, applicant_birth, child_birth):
+            caret = call("caretRect", position=point)["caret"]
+            assert caret["page"] == 0 and caret["cellBounds"]["width"] > 0, caret
+
+        call("beginEdit", selection={"anchor": name, "focus": name_end})
+        edit("replace", text="홍길동")
+        edit("setSelection", selection=selection_at(applicant_birth))
+        applicant_context = call("imeEditContext")["context"]
+        edit("setSelection", selection=selection_at(child_birth))
+        child_context = call("imeEditContext")["context"]
+        assert applicant_context["context"]["text"] == child_context["context"]["text"] == ""
+        assert applicant_context["revision"] == child_context["revision"]
+        mixed = worker.wait(worker.submit({
+            "op": "setSelection", "target": target,
+            "selection": {"anchor": applicant_birth, "focus": child_birth},
+        }))
+        assert mixed["ok"] is False and mixed["code"] == "unsupported", mixed
+        assert call("imeEditContext")["context"] == child_context
+
+        birthdate = "1991.07.23"
+        commit = {"kind": "commit", "replacement": {"text": birthdate, "range": {"start": 0, "end": 0}}}
+        stale = worker.wait(worker.submit({
+            "op": "applyImeEdit", "target": target, "expected": applicant_context, "edit": commit,
+        }))
+        assert stale["ok"] is False and stale["code"] == "invalidArgument", stale
+        assert call("imeEditContext")["context"] == child_context
+
+        edit("setSelection", selection=selection_at(applicant_birth))
+        committed = edit("applyImeEdit", expected=call("imeEditContext")["context"], edit=commit)
+        caret = selection_at({**applicant_birth, "scalarOffset": len(birthdate)})
+        assert committed["selection"] == caret and committed["historyChanged"], committed
+
+        def expected_contents(edits):
+            return [(role, start, {**end, "scalarOffset": len(edits[start_index])}, edits[start_index])
+                    if start_index in edits else (role, start, end, text)
+                    for start_index, (role, start, end, text) in enumerate(before)]
+
+        name_only = {name_label + 1: "홍길동"}
+        expected = expected_contents({**name_only, applicant_birth_label + 1: birthdate})
+        assert contents(worker, target) == expected
+        undone = edit("undo")
+        assert undone["selection"] == selection_at(applicant_birth), undone
+        assert contents(worker, target) == expected_contents(name_only)
+        redone = edit("redo")
+        assert redone["selection"] == caret, redone
+        assert contents(worker, target) == expected
+
+        for file_format, signature, policy in (
+            ("hwp", bytes.fromhex("d0cf11e0a1b11ae1"), "storedCore"),
+            ("hwpx", b"PK", "hwpxSourceSettings"),
+        ):
+            def save(host, current):
+                prepared = accepted(host, {"op": "prepareSave", "target": current, "format": file_format})
+                data = host.copy_buffer(prepared)
+                assert data.startswith(signature) and prepared["report"]["count"] == 0, prepared
+                assert prepared["caretPolicy"] == policy and prepared["caretSaved"] is False, prepared
+                saved = accepted(host, {"op": "acknowledgeSave", "documentId": current["documentId"],
+                                        "token": prepared["token"]})
+                assert saved["isDirty"] is False, saved
+                return data
+
+            data = save(worker, target)
+            assert accepted(worker, {"op": "info"})["info"]["selection"] == caret
+            with NativeWorker(library) as verifier:
+                for pass_number in range(2):
+                    reopened = verifier.wait(verifier.open_bytes(data))
+                    assert reopened["ok"] and reopened["info"]["pageCount"] == 1, reopened
+                    reopened_target = {key: reopened["info"][key] for key in target}
+                    assert contents(verifier, reopened_target) == expected
+                    if pass_number == 0:
+                        accepted(verifier, {"op": "beginEdit", "target": reopened_target,
+                                            "selection": caret})
+                        data = save(verifier, reopened_target)
+                        accepted(verifier, {"op": "closeDocument", "target": reopened_target})
+
+
 def buffer_quota_contract(library):
     # Exercise the handle-count limit using only 256 retained pixel bytes. Each
     # completion is received before another render, so coalescing cannot hide it.
@@ -478,8 +606,9 @@ def run(library):
     tiled_cancellation_contract(library)
     cell_edit_contract(library)
     cell_ime_contract(library)
+    nested_cell_contract(library)
     print('{"ok":true,"contract":"native-worker","queueCredit":true,"saveRevision":true,'
-          '"threadOwnership":true,"saveBufferQuotaCleanup":true,"cellEdit":true,"cellIme":true}')
+          '"threadOwnership":true,"saveBufferQuotaCleanup":true,"cellEdit":true,"cellIme":true,"nestedCell":true}')
 
 
 if __name__ == "__main__":
