@@ -1,0 +1,714 @@
+{
+  "HYhwpEQ": {
+    "original": [
+      [
+        "a ^{2} + b ^{2} = c ^{2}",
+        "HYhwpEQ",
+        1000,
+        4597,
+        1123,
+        85
+      ],
+      [
+        "alpha + beta LEQ gamma",
+        "HYhwpEQ",
+        1000,
+        3941,
+        1000,
+        85
+      ],
+      [
+        "a times b",
+        "HYhwpEQ",
+        1000,
+        1736,
+        1000,
+        85
+      ],
+      [
+        "e ^{i pi} + 1 = 0",
+        "HYhwpEQ",
+        1000,
+        4273,
+        1123,
+        85
+      ],
+      [
+        "LFLOOR a RFLOOR",
+        "HYhwpEQ",
+        1000,
+        1416,
+        1000,
+        85
+      ],
+      [
+        "1 over {2 over 3}",
+        "HYhwpEQ",
+        1000,
+        1300,
+        3734,
+        85
+      ],
+      [
+        "prod _{i} x",
+        "HYhwpEQ",
+        1000,
+        2438,
+        2250,
+        85
+      ]
+    ],
+    "wanted": [
+      [
+        "a ^{2} + b ^{2} = c ^{2}",
+        "HYhwpEQ",
+        1000,
+        5050,
+        1163,
+        89
+      ],
+      [
+        "alpha + beta LEQ gamma",
+        "HYhwpEQ",
+        1000,
+        4375,
+        975,
+        86
+      ],
+      [
+        "a times b",
+        "HYhwpEQ",
+        1000,
+        2080,
+        975,
+        86
+      ],
+      [
+        "e ^{i pi} + 1 = 0",
+        "HYhwpEQ",
+        1000,
+        4660,
+        1163,
+        89
+      ],
+      [
+        "LFLOOR a RFLOOR",
+        "HYhwpEQ",
+        1000,
+        2625,
+        975,
+        86
+      ],
+      [
+        "1 over {2 over 3}",
+        "HYhwpEQ",
+        1000,
+        1525,
+        3525,
+        42
+      ],
+      [
+        "prod _{i} x",
+        "HYhwpEQ",
+        1000,
+        1950,
+        2025,
+        51
+      ]
+    ],
+    "roundtrips": {
+      "hwp": {
+        "first": [
+          [
+            "a ^{2} + b ^{2} = c ^{2}",
+            "HYhwpEQ",
+            1000,
+            4597,
+            1123,
+            85
+          ],
+          [
+            "alpha + beta LEQ gamma",
+            "HYhwpEQ",
+            1000,
+            3941,
+            1000,
+            85
+          ],
+          [
+            "a times b",
+            "HYhwpEQ",
+            1000,
+            1736,
+            1000,
+            85
+          ],
+          [
+            "e ^{i pi} + 1 = 0",
+            "HYhwpEQ",
+            1000,
+            4273,
+            1123,
+            85
+          ],
+          [
+            "LFLOOR a RFLOOR",
+            "HYhwpEQ",
+            1000,
+            1416,
+            1000,
+            85
+          ],
+          [
+            "1 over {2 over 3}",
+            "HYhwpEQ",
+            1000,
+            1300,
+            3734,
+            85
+          ],
+          [
+            "prod _{i} x",
+            "HYhwpEQ",
+            1000,
+            2438,
+            2250,
+            85
+          ]
+        ],
+        "second": [
+          [
+            "a ^{2} + b ^{2} = c ^{2}",
+            "HYhwpEQ",
+            1000,
+            4597,
+            1123,
+            85
+          ],
+          [
+            "alpha + beta LEQ gamma",
+            "HYhwpEQ",
+            1000,
+            3941,
+            1000,
+            85
+          ],
+          [
+            "a times b",
+            "HYhwpEQ",
+            1000,
+            1736,
+            1000,
+            85
+          ],
+          [
+            "e ^{i pi} + 1 = 0",
+            "HYhwpEQ",
+            1000,
+            4273,
+            1123,
+            85
+          ],
+          [
+            "LFLOOR a RFLOOR",
+            "HYhwpEQ",
+            1000,
+            1416,
+            1000,
+            85
+          ],
+          [
+            "1 over {2 over 3}",
+            "HYhwpEQ",
+            1000,
+            1300,
+            3734,
+            85
+          ],
+          [
+            "prod _{i} x",
+            "HYhwpEQ",
+            1000,
+            2438,
+            2250,
+            85
+          ]
+        ]
+      },
+      "hwpx": {
+        "first": [
+          [
+            "a ^{2} + b ^{2} = c ^{2}",
+            "HYhwpEQ",
+            1000,
+            4597,
+            1123,
+            85
+          ],
+          [
+            "alpha + beta LEQ gamma",
+            "HYhwpEQ",
+            1000,
+            3941,
+            1000,
+            85
+          ],
+          [
+            "a times b",
+            "HYhwpEQ",
+            1000,
+            1736,
+            1000,
+            85
+          ],
+          [
+            "e ^{i pi} + 1 = 0",
+            "HYhwpEQ",
+            1000,
+            4273,
+            1123,
+            85
+          ],
+          [
+            "LFLOOR a RFLOOR",
+            "HYhwpEQ",
+            1000,
+            1416,
+            1000,
+            85
+          ],
+          [
+            "1 over {2 over 3}",
+            "HYhwpEQ",
+            1000,
+            1300,
+            3734,
+            85
+          ],
+          [
+            "prod _{i} x",
+            "HYhwpEQ",
+            1000,
+            2438,
+            2250,
+            85
+          ]
+        ],
+        "second": [
+          [
+            "a ^{2} + b ^{2} = c ^{2}",
+            "HYhwpEQ",
+            1000,
+            4597,
+            1123,
+            85
+          ],
+          [
+            "alpha + beta LEQ gamma",
+            "HYhwpEQ",
+            1000,
+            3941,
+            1000,
+            85
+          ],
+          [
+            "a times b",
+            "HYhwpEQ",
+            1000,
+            1736,
+            1000,
+            85
+          ],
+          [
+            "e ^{i pi} + 1 = 0",
+            "HYhwpEQ",
+            1000,
+            4273,
+            1123,
+            85
+          ],
+          [
+            "LFLOOR a RFLOOR",
+            "HYhwpEQ",
+            1000,
+            1416,
+            1000,
+            85
+          ],
+          [
+            "1 over {2 over 3}",
+            "HYhwpEQ",
+            1000,
+            1300,
+            3734,
+            85
+          ],
+          [
+            "prod _{i} x",
+            "HYhwpEQ",
+            1000,
+            2438,
+            2250,
+            85
+          ]
+        ]
+      }
+    }
+  },
+  "HancomEQN": {
+    "original": [
+      [
+        "a ^{2} + b ^{2} = c ^{2}",
+        "HancomEQN",
+        1000,
+        4597,
+        1123,
+        85
+      ],
+      [
+        "alpha + beta LEQ gamma",
+        "HancomEQN",
+        1000,
+        3941,
+        1000,
+        85
+      ],
+      [
+        "a times b",
+        "HancomEQN",
+        1000,
+        1736,
+        1000,
+        85
+      ],
+      [
+        "e ^{i pi} + 1 = 0",
+        "HancomEQN",
+        1000,
+        4273,
+        1123,
+        85
+      ],
+      [
+        "LFLOOR a RFLOOR",
+        "HancomEQN",
+        1000,
+        1416,
+        1000,
+        85
+      ],
+      [
+        "1 over {2 over 3}",
+        "HancomEQN",
+        1000,
+        1300,
+        3734,
+        85
+      ],
+      [
+        "prod _{i} x",
+        "HancomEQN",
+        1000,
+        2438,
+        2250,
+        85
+      ]
+    ],
+    "wanted": [
+      [
+        "a ^{2} + b ^{2} = c ^{2}",
+        "HancomEQN",
+        1000,
+        5050,
+        1163,
+        89
+      ],
+      [
+        "alpha + beta LEQ gamma",
+        "HancomEQN",
+        1000,
+        4300,
+        975,
+        86
+      ],
+      [
+        "a times b",
+        "HancomEQN",
+        1000,
+        2080,
+        975,
+        86
+      ],
+      [
+        "e ^{i pi} + 1 = 0",
+        "HancomEQN",
+        1000,
+        4585,
+        1163,
+        89
+      ],
+      [
+        "LFLOOR a RFLOOR",
+        "HancomEQN",
+        1000,
+        2625,
+        975,
+        86
+      ],
+      [
+        "1 over {2 over 3}",
+        "HancomEQN",
+        1000,
+        1525,
+        3525,
+        42
+      ],
+      [
+        "prod _{i} x",
+        "HancomEQN",
+        1000,
+        1875,
+        2025,
+        51
+      ]
+    ],
+    "roundtrips": {
+      "hwp": {
+        "first": [
+          [
+            "a ^{2} + b ^{2} = c ^{2}",
+            "HancomEQN",
+            1000,
+            4597,
+            1123,
+            85
+          ],
+          [
+            "alpha + beta LEQ gamma",
+            "HancomEQN",
+            1000,
+            3941,
+            1000,
+            85
+          ],
+          [
+            "a times b",
+            "HancomEQN",
+            1000,
+            1736,
+            1000,
+            85
+          ],
+          [
+            "e ^{i pi} + 1 = 0",
+            "HancomEQN",
+            1000,
+            4273,
+            1123,
+            85
+          ],
+          [
+            "LFLOOR a RFLOOR",
+            "HancomEQN",
+            1000,
+            1416,
+            1000,
+            85
+          ],
+          [
+            "1 over {2 over 3}",
+            "HancomEQN",
+            1000,
+            1300,
+            3734,
+            85
+          ],
+          [
+            "prod _{i} x",
+            "HancomEQN",
+            1000,
+            2438,
+            2250,
+            85
+          ]
+        ],
+        "second": [
+          [
+            "a ^{2} + b ^{2} = c ^{2}",
+            "HancomEQN",
+            1000,
+            4597,
+            1123,
+            85
+          ],
+          [
+            "alpha + beta LEQ gamma",
+            "HancomEQN",
+            1000,
+            3941,
+            1000,
+            85
+          ],
+          [
+            "a times b",
+            "HancomEQN",
+            1000,
+            1736,
+            1000,
+            85
+          ],
+          [
+            "e ^{i pi} + 1 = 0",
+            "HancomEQN",
+            1000,
+            4273,
+            1123,
+            85
+          ],
+          [
+            "LFLOOR a RFLOOR",
+            "HancomEQN",
+            1000,
+            1416,
+            1000,
+            85
+          ],
+          [
+            "1 over {2 over 3}",
+            "HancomEQN",
+            1000,
+            1300,
+            3734,
+            85
+          ],
+          [
+            "prod _{i} x",
+            "HancomEQN",
+            1000,
+            2438,
+            2250,
+            85
+          ]
+        ]
+      },
+      "hwpx": {
+        "first": [
+          [
+            "a ^{2} + b ^{2} = c ^{2}",
+            "HancomEQN",
+            1000,
+            4597,
+            1123,
+            85
+          ],
+          [
+            "alpha + beta LEQ gamma",
+            "HancomEQN",
+            1000,
+            3941,
+            1000,
+            85
+          ],
+          [
+            "a times b",
+            "HancomEQN",
+            1000,
+            1736,
+            1000,
+            85
+          ],
+          [
+            "e ^{i pi} + 1 = 0",
+            "HancomEQN",
+            1000,
+            4273,
+            1123,
+            85
+          ],
+          [
+            "LFLOOR a RFLOOR",
+            "HancomEQN",
+            1000,
+            1416,
+            1000,
+            85
+          ],
+          [
+            "1 over {2 over 3}",
+            "HancomEQN",
+            1000,
+            1300,
+            3734,
+            85
+          ],
+          [
+            "prod _{i} x",
+            "HancomEQN",
+            1000,
+            2438,
+            2250,
+            85
+          ]
+        ],
+        "second": [
+          [
+            "a ^{2} + b ^{2} = c ^{2}",
+            "HancomEQN",
+            1000,
+            4597,
+            1123,
+            85
+          ],
+          [
+            "alpha + beta LEQ gamma",
+            "HancomEQN",
+            1000,
+            3941,
+            1000,
+            85
+          ],
+          [
+            "a times b",
+            "HancomEQN",
+            1000,
+            1736,
+            1000,
+            85
+          ],
+          [
+            "e ^{i pi} + 1 = 0",
+            "HancomEQN",
+            1000,
+            4273,
+            1123,
+            85
+          ],
+          [
+            "LFLOOR a RFLOOR",
+            "HancomEQN",
+            1000,
+            1416,
+            1000,
+            85
+          ],
+          [
+            "1 over {2 over 3}",
+            "HancomEQN",
+            1000,
+            1300,
+            3734,
+            85
+          ],
+          [
+            "prod _{i} x",
+            "HancomEQN",
+            1000,
+            2438,
+            2250,
+            85
+          ]
+        ]
+      }
+    }
+  }
+}
