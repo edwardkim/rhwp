@@ -6,8 +6,8 @@
 | `rhwp-HYhwpEQ.hancom-relayout.hwp` | 이슈 첨부. 같은 수식 7개를 한글 2020(11.0.0.9166)이 다시 조판해 저장 | `3f74388395da` |
 | `rhwp-HancomEQN.hancom-relayout.hwp` | 이슈 첨부. 위와 같고 수식 글꼴만 HancomEQN | `50af1f33b658` |
 | `base-a4.hwp` | `base.hwp`를 한글 2022(12.0.0.4645)에서 열어 편집 용지만 A4로 바꿔 저장 | `66d2351a7768` |
-| `a4-inserted-HYhwpEQ.hwp` | `base-a4.hwp`에 `rhwp edit insert-equation`으로 이슈의 수식 7개를 넣음(fd42b4ed42) | `1b94da38342e` |
-| `a4-inserted-HancomEQN.hwp` | 위 파일의 수식 7개를 `rhwp edit set-equation-properties --props '{"fontName":"HancomEQN"}'`로 바꿈 | `ca509c1531a3` |
+| `a4-inserted-HYhwpEQ.hwp` | `base-a4.hwp`에 `rhwp edit insert-equation`으로 이슈의 수식 7개를 넣음(fd008abb42) | `d51e2042e767` |
+| `a4-inserted-HancomEQN.hwp` | 위 파일의 수식 7개를 `rhwp edit set-equation-properties --props '{"fontName":"HancomEQN"}'`로 바꿈 | `71088a5cb141` |
 
 `pdf/issue-8927/a4-inserted-*-2022.pdf`는 위 두 `a4-inserted-*.hwp`를 한글 2022 12.0.0.4645에서
 열어 Hancom PDF(1.3.0.550)로 A4·100% Print한 것이다. 본문 글꼴 `KoPubWorld바탕체 Light`를 설치한

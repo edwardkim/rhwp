@@ -1,13 +1,15 @@
-//! 검사 유형: 고정형(한글 2020 재조판 저장본에서 읽은 수식 프레임 값·문단 저장 세로 위치와의 일치)
-//! + 관계형(비적용 경로는 기존 추정 크기와 같음, 문단 사이 간격은 기준 문서와 같음).
-//! 주석 갱신: 2026-11-27T09:45:53+09:00, 새 파일.
-//! 측정: 2026-11-27, source fd42b4ed42(대조 devel 3fdaa04258). 96 DPI·Print·2px raw 실루엣
+//! 검사 유형: 고정형과 관계형. 고정형은 한글 2020 재조판 저장본에서 읽은 수식 프레임 값·문단 저장
+//! 세로 위치와의 일치, 관계형은 비적용 경로의 기존 추정 크기 유지·문단 사이 간격 보존·큰 합·곱
+//! 한계값과 연산자 잉크의 분리다.
+//! 주석 갱신: 2026-11-27T12:28:12+09:00, 새 파일.
+//! 측정: 2026-11-27, source c0672ca3d3(대조 devel 3fdaa04258). 96 DPI·Print·2px raw 실루엣
 //! (threshold_boundary_color_support_v1, 색상 허용 32, 경계 보정 0px). 입력은 `base-a4.hwp`에 CLI로
-//! 수식 7개를 넣은 `a4-inserted-*.hwp`, 기준은 한글 2022 12.0.0.4645 Print(A4, 본문 KoPubWorld바탕체
-//! Light 설치) `pdf/issue-8927/a4-inserted-*-2022.pdf`. 전1쪽, 쪽수 1=1, 90% 미만 없음:
-//! HYhwpEQ Native 99.57% / fresh WASM 98.02%, HancomEQN Native 99.53% / fresh WASM 97.82%
-//! (devel 렌더러 98.97/97.65%, 98.94/97.47%). fresh WASM Canvas2D는 HYhwpEQ 사설 영역 글리프를
-//! □로 그려(devel 같음) WASM의 수식 글자 모양은 미검증이다. 이 파일은 화소를 비교하지 않는다.
+//! 수식 7개를 넣은 `a4-inserted-*.hwp`, 기준은 한글 2022 12.0.0.4645 Print(Hancom PDF, A4, 본문
+//! KoPubWorld바탕체 Light 설치) `pdf/issue-8927/a4-inserted-*-2022.pdf`. 수식 원 글꼴(HyhwpEQ·
+//! HancomEQN)은 같은 한컴 설치본에서 Native·fresh WASM에 공급했다(저장소에는 없다). 전1쪽,
+//! 쪽수 1=1, 90% 미만 없음: HYhwpEQ Native 99.93%(미대응 11px) / fresh WASM 99.95%(8px),
+//! HancomEQN Native 99.92%(12px) / fresh WASM 99.94%(10px). devel 렌더러는 같은 입력에서
+//! 99.05/99.07%, 99.03/99.05%다. 이 파일은 화소를 비교하지 않는다.
 //!
 //! # 무엇이 깨져 있었나
 //!
