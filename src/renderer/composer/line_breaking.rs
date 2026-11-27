@@ -4104,6 +4104,23 @@ pub(crate) fn control_is_width_neutral_marker(control: &Control) -> bool {
     inline_control_size_hwp(control).is_none() && !control_owns_a_layout_box(control)
 }
 
+/// 폭은 없지만 줄의 내용인 확장 제어 문자 — 필드 시작·책갈피·새 번호·감추기·쪽 번호
+/// 위치·쪽 번호 제어·찾아보기 표식 등.
+///
+/// [#8684] 그 뒤 남은 폭에 들지 않는 글자처럼 취급 개체가 오면 한/글은 이 제어 문자만 담은
+/// 첫 줄(글자 높이)을 두고 개체를 다음 줄에서 시작한다. 한/글 2020 재저장(누름틀·하이퍼링크·
+/// 책갈피·새 번호·감추기·쪽 번호 위치·쪽 번호 제어·찾아보기 표식 8종)이 모두 첫 줄 textpos 0,
+/// 개체 줄 textpos 8 로 같다. 구역·단 정의는 줄 내용이 아니라 개체가 첫 줄에 남는다(같은
+/// 실험의 단 정의 변형: 줄 하나). 숨은 설명은 확인하지 못해(합성본의 숨은 설명을 한/글이
+/// 재저장 때 버렸다) 종전대로 둔다. 자기 상자를 갖는 개체·각주·머리말은 여기에 들지 않는다.
+pub(crate) fn control_is_line_content_marker(control: &Control) -> bool {
+    !matches!(
+        control,
+        Control::SectionDef(_) | Control::ColumnDef(_) | Control::HiddenComment(_)
+    ) && control.occupies_ctrl_char_slot()
+        && control_is_width_neutral_marker(control)
+}
+
 /// 본문 글과 각주 참조만 줄 폭을 소비하는 문단. 각주 내용은 별도 영역에 조판한다.
 pub(crate) fn is_footnote_text_host(para: &Paragraph) -> bool {
     let mut has_note = false;
@@ -4419,13 +4436,14 @@ pub(super) fn supports_inline_form_frame_controls(para: &Paragraph) -> bool {
         })
 }
 
-/// 글자 앞에 놓인 개체 가운데 원시 스트림에서 필드 시작이 앞선 개체.
+/// 글자 앞에 놓인 개체 가운데 원시 스트림에서 줄 내용 제어 문자가 앞선 개체.
 ///
 /// [#8773] 필드 시작(누름틀 등)은 폭이 없어도 줄 안의 제어 문자다. 그 뒤에 남은 폭에
 /// 들어가지 않는 개체가 오면 한/글은 필드 시작만 담은 첫 줄을 두고 개체를 다음 줄
 /// (개체 원시 위치)에서 시작한다. 공개 결재문서 한/글 저장 사다리 26건이 모두 이 모양이다
 /// (첫 줄 textpos 0, 표 줄 textpos 8). 앞에 아무 제어 문자도 없거나 구역·단 정의만 있으면
-/// 개체는 첫 줄에 남는다 — 구역·단 정의는 줄 내용이 아니다.
+/// 개체는 첫 줄에 남는다 — 구역·단 정의는 줄 내용이 아니다. [#8684] 책갈피 등 다른 폭 없는
+/// 확장 제어 문자도 같다([`control_is_line_content_marker`]).
 fn field_led_leading_control(
     para: &Paragraph,
     occupied_controls: &[(usize, u32, i32, i32)],
@@ -4438,12 +4456,12 @@ fn field_led_leading_control(
     if leading.next().is_some() {
         return None;
     }
-    let field_before = para
+    let marker_before = para
         .controls
         .iter()
         .zip(para.control_utf16_positions())
-        .any(|(control, start)| matches!(control, Control::Field(_)) && start < candidate.1);
-    field_before.then_some(candidate)
+        .any(|(control, start)| control_is_line_content_marker(control) && start < candidate.1);
+    marker_before.then_some(candidate)
 }
 
 /// 본문 뒤 남은 폭에 놓이지 않는 inline control은 별도 physical line을 가진다.
@@ -6962,7 +6980,7 @@ fn try_reflow_line_segs_impl<S: Storage>(
                     inline_control_occupied_size_hwp(ctrl, styles, dpi)
                         .map(|occupied| (start, Some(occupied)))
                         .or_else(|| {
-                            (matches!(ctrl, Control::Field(_))
+                            (control_is_line_content_marker(ctrl)
                                 || inline_frame_input::is_nonflow_anchor(ctrl))
                             .then_some((start, None))
                         })
@@ -6983,7 +7001,7 @@ fn try_reflow_line_segs_impl<S: Storage>(
             let mut line_start = 0u32;
             let mut line_width = 0i32;
             let mut line_height = 0i32;
-            // 필드 시작과 종이층 개체의 앵커는 폭이 없어도 줄의 내용이다. 한/글 2020은 그 뒤
+            // 필드 시작 등 줄 내용 제어 문자(#8684)와 종이층 개체의 앵커는 폭이 없어도 줄의 내용이다. 한/글 2020은 그 뒤
             // 글자처럼 취급 개체가 남은 폭에 들지 않으면 개체를 다음 줄로 넘기고 필드 줄을
             // 글자 높이의 빈 줄로 남긴다(합성 field_over19: 표 바깥 폭이 줄보다 19HU 넓으면
             // 표가 160%·10pt 빈 줄 1600HU 만큼 아래). 줄 맨 앞 개체는 넘쳐도 그 줄에 둔다.

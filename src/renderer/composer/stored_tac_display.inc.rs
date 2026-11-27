@@ -98,7 +98,8 @@ pub(crate) fn ordinary_tac_prefix_rows(para: &Paragraph, owner: usize) -> bool {
 }
 
 /// 개체 줄 앞의 저장 줄이 이 문단이 실제로 쌓는 줄인가 — 공백 줄
-/// ([`ordinary_tac_prefix_rows`]) 또는 글자 없는 host 의 필드 시작 줄.
+/// ([`ordinary_tac_prefix_rows`]) 또는 글자 없는 host 의 필드 시작 줄(책갈피 등 다른 줄 내용
+/// 제어 문자 포함, [`control_is_line_content_marker`], #8684).
 ///
 /// [#8782] 필드 시작(누름틀 등)은 폭이 없어도 줄의 내용이라, 그 뒤 남은 폭에 들지 않는
 /// 개체는 다음 줄에서 시작하고 필드 시작은 글자 높이의 빈 줄로 남는다(#8507, #8684).
@@ -114,7 +115,7 @@ pub(crate) fn owned_tac_prefix_rows(para: &Paragraph, owner: usize) -> bool {
                 .controls
                 .iter()
                 .take_while(|control| !control.is_treat_as_char_object())
-                .any(|control| matches!(control, Control::Field(_)))
+                .any(control_is_line_content_marker)
             && stored_prefix_rows_are_text_rows(para, owner))
 }
 
@@ -164,6 +165,9 @@ pub(crate) fn stored_tac_lines(para: &Paragraph) -> Option<Vec<StoredTacLine>> {
             // 감추기는 쪽 표시 설정이며 본문 글줄을 점유하지 않는다.
             | Control::PageHide(_)
             | Control::Field(_) => continue,
+            // [#8684] 책갈피·새 번호·쪽 번호 제어·찾아보기 표식도 누름틀 시작처럼 8유닛 칸만
+            // 차지하고 개체 상자를 만들지 않는다. 그 뒤 넘친 표는 저장 줄이 다음 줄로 적는다.
+            marker if control_is_line_content_marker(marker) => continue,
             _ => return None,
         };
         let owner = control_line_seg_index(para, ci)?;
