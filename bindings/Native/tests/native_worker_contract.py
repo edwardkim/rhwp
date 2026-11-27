@@ -22,7 +22,7 @@ def position(offset=0):
     return {"section": 0, "paragraph": 0, "scalarOffset": offset, "cellPath": []}
 
 
-def cell_edit_baseline(library):
+def cell_edit_contract(library):
     fixture = Path(__file__).resolve().parents[3] / "samples/hwpx/basic-table-01.hwpx"
     with NativeWorker(library) as worker:
         opened = worker.wait(worker.open_bytes(fixture.read_bytes()))
@@ -56,33 +56,108 @@ def cell_edit_baseline(library):
                                   "position": hit_position})["caret"]
         assert caret["page"] == rect["page"] and caret["height"] > 0, caret
 
-        rejected = worker.wait(worker.submit({"op": "beginEdit", "target": target,
-                                              "selection": selection}))
-        assert rejected["ok"] is False and rejected["code"] == "unsupported", rejected
-        assert accepted(worker, {"op": "info"})["info"] == info
-        assert snapshot() == before
+        def select_cell(start, end):
+            return {
+                "anchor": {**cell["start"], "scalarOffset": start},
+                "focus": {**cell["start"], "scalarOffset": end},
+            }
 
-        # The fixture has an empty body paragraph after the table.
+        def edit(operation, **arguments):
+            outcome = accepted(worker, {"op": operation, "target": target, **arguments})["outcome"]
+            target["revision"] = outcome["revision"]
+            return outcome
+
+        def contents(receipt):
+            return [(node["role"], node["start"], node["end"], node["text"])
+                    for node in receipt["nodes"]]
+
+        def assert_cell_text(text):
+            expected = contents(before)
+            index = before["nodes"].index(cell)
+            expected[index] = (cell["role"], cell["start"],
+                               {**cell["end"], "scalarOffset": len(text)}, text)
+            assert contents(snapshot()) == expected
+
+        beginning = select_cell(1, 1)
+        begun = accepted(worker, {"op": "beginEdit", "target": target, "selection": beginning})
+        assert begun["info"]["selection"] == beginning, begun
+        original_target = target.copy()
+        inserted = edit("replace", text="가")
+        assert inserted["documentChanged"] and inserted["selection"] == select_cell(2, 2), inserted
+        assert_cell_text("1가0")
+
+        stale = worker.wait(worker.submit({"op": "replace", "target": original_target, "text": "X"}))
+        assert stale["ok"] is False and stale["code"] == "staleRevision", stale
+        neighbor = next(node for node in before["nodes"]
+                        if node["role"] == "tableCellParagraph" and node["text"] == "11")
+        selected_info = accepted(worker, {"op": "info"})["info"]
+        selected_snapshot = snapshot()
+        mixed = {"anchor": cell["start"], "focus": neighbor["end"]}
+        rejected = worker.wait(worker.submit({"op": "setSelection", "target": target,
+                                              "selection": mixed}))
+        assert rejected["ok"] is False and rejected["code"] == "unsupported", rejected
+        assert accepted(worker, {"op": "info"})["info"] == selected_info
+        assert snapshot() == selected_snapshot
+
+        edit("setSelection", selection=select_cell(1, 2))
+        replaced = edit("replace", text="한글")
+        assert replaced["documentChanged"] and replaced["selection"] == select_cell(3, 3), replaced
+        assert_cell_text("1한글0")
+        delete_range = select_cell(1, 3)
+        edit("setSelection", selection=delete_range)
+        deleted = edit("replace", text="")
+        assert deleted["documentChanged"] and deleted["selection"] == beginning, deleted
+        assert_cell_text("10")
+
+        for text, expected_selection in (("1한글0", delete_range), ("1가0", select_cell(1, 2)),
+                                         ("10", beginning)):
+            undone = edit("undo")
+            assert undone["documentChanged"] and undone["selection"] == expected_selection, undone
+            assert_cell_text(text)
+        for text, expected_selection in (("1가0", select_cell(2, 2)), ("1한글0", select_cell(3, 3)),
+                                         ("10", beginning)):
+            redone = edit("redo")
+            assert redone["documentChanged"] and redone["selection"] == expected_selection, redone
+            assert_cell_text(text)
+
+        edit("undo")
+        assert_cell_text("1한글0")
+        expected = contents(snapshot())
+
+        def verify_save(format, signature, caret_policy):
+            saved = accepted(worker, {"op": "prepareSave", "target": target, "format": format})
+            data = worker.copy_buffer(saved)
+            assert data.startswith(signature) and saved["report"]["count"] == 0, saved
+            assert saved["caretPolicy"] == caret_policy, saved
+            accepted(worker, {"op": "acknowledgeSave", "documentId": target["documentId"],
+                              "token": saved["token"]})
+            with NativeWorker(library) as verifier:
+                for pass_number in range(2):
+                    reopened = verifier.wait(verifier.open_bytes(data))
+                    assert reopened["ok"] and not reopened["info"]["isDirty"], reopened
+                    reopened_target = {key: reopened["info"][key] for key in target}
+                    receipt = accepted(verifier, {"op": "accessibility", "target": reopened_target,
+                                                  "request": {}})["snapshot"]
+                    assert contents(receipt) == expected
+                    if pass_number == 0:
+                        resaved = accepted(verifier, {"op": "prepareSave", "target": reopened_target,
+                                                       "format": format})
+                        data = verifier.copy_buffer(resaved)
+                        assert resaved["report"]["count"] == 0, resaved
+                        accepted(verifier, {"op": "closeDocument", "target": reopened_target})
+
+        # HWP can save the edited cell content after the cursor moves to body text.
+        # HWP active-cell cursor persistence has its own format contract.
+        before_save = accepted(worker, {"op": "info"})["info"]
+        hwp = worker.wait(worker.submit({"op": "prepareSave", "target": target, "format": "hwp"}))
+        assert hwp["ok"] is False and hwp["code"] == "unsupported", hwp
+        assert accepted(worker, {"op": "info"})["info"] == before_save
+        verify_save("hwpx", b"PK", "hwpxSourceSettings")
+
         body = before["nodes"][-1]
         assert body["role"] == "bodyParagraph" and body["text"] == "", body
-        accepted(worker, {"op": "beginEdit", "target": target,
-                          "selection": {"anchor": body["start"], "focus": body["end"]}})
-        edited = accepted(worker, {"op": "replace", "target": target, "text": "본문"})["outcome"]
-        target["revision"] = edited["revision"]
-        edited_info = accepted(worker, {"op": "info"})["info"]
-        edited_snapshot = snapshot()
-        assert edited_info["canUndo"] and edited_snapshot["nodes"][-1]["text"] == "본문"
-
-        rejected = worker.wait(worker.submit({"op": "setSelection", "target": target,
-                                              "selection": selection}))
-        assert rejected["ok"] is False and rejected["code"] == "unsupported", rejected
-        assert accepted(worker, {"op": "info"})["info"] == edited_info
-        assert snapshot() == edited_snapshot
-        undone = accepted(worker, {"op": "undo", "target": target})["outcome"]
-        target["revision"] = undone["revision"]
-        assert [node["text"] for node in snapshot()["nodes"]] == [
-            node["text"] for node in before["nodes"]
-        ]
+        edit("setSelection", selection={"anchor": body["start"], "focus": body["end"]})
+        verify_save("hwp", bytes.fromhex("d0cf11e0a1b11ae1"), "currentFocus")
 
 
 def buffer_quota_contract(library):
@@ -287,9 +362,9 @@ def run(library):
     buffer_quota_contract(library)
     viewport_budget_contract(library)
     tiled_cancellation_contract(library)
-    cell_edit_baseline(library)
+    cell_edit_contract(library)
     print('{"ok":true,"contract":"native-worker","queueCredit":true,"saveRevision":true,'
-          '"threadOwnership":true,"saveBufferQuotaCleanup":true,"cellEditBaseline":true}')
+          '"threadOwnership":true,"saveBufferQuotaCleanup":true,"cellEdit":true}')
 
 
 if __name__ == "__main__":

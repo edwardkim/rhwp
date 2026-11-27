@@ -6,6 +6,7 @@ use rhwp::document_core::native_interaction::{
 };
 use rhwp::model::control::Control;
 use rhwp::model::table::Table;
+use rhwp::native_host::commands::NativeEditCommand;
 use rhwp::native_host::editor::{NativeCompositionFocusLoss, NativeEditor};
 use rhwp::native_host::{NativeDocumentSession, NativeHostError};
 use rhwp::DocumentCore;
@@ -51,6 +52,61 @@ fn revision(editor: &NativeEditor) -> u64 {
     editor.session().revision()
 }
 
+fn cell_editor(protected: bool) -> (NativeEditor, NativeTextSelection) {
+    let mut core = core_with_text("");
+    core.paste_html_native(
+        0,
+        0,
+        0,
+        "<table><tr><td><p>가😀나</p><p>다음 문단</p></td><td><p>이웃 칸</p></td></tr></table>",
+    )
+    .unwrap();
+    let mut document = core.document().clone();
+    let (paragraph, control) = document.sections[0]
+        .paragraphs
+        .iter_mut()
+        .enumerate()
+        .find_map(|(paragraph, host)| {
+            host.controls
+                .iter_mut()
+                .enumerate()
+                .find_map(|(control, item)| match item {
+                    Control::Table(table) => {
+                        table.cells[0].set_cell_protect(protected);
+                        Some((paragraph as u32, control as u32))
+                    }
+                    _ => None,
+                })
+        })
+        .expect("fixture table");
+    core.set_document(document);
+    let anchor = NativeTextPosition {
+        section: 0,
+        paragraph,
+        scalar_offset: 2,
+        cell_path: vec![NativeCellPathEntry {
+            control,
+            cell: 0,
+            paragraph: 0,
+        }],
+    };
+    let mut focus = anchor.clone();
+    focus.scalar_offset = 1;
+    let selection = NativeTextSelection { anchor, focus };
+    let editor = NativeEditor::new(NativeDocumentSession::from_core(core), selection.clone())
+        .expect("cell selection is available");
+    (editor, selection)
+}
+
+fn table_at<'a>(editor: &'a NativeEditor, position: &NativeTextPosition) -> &'a Table {
+    let section = &editor.session().document().document().sections[position.section as usize];
+    let paragraph = &section.paragraphs[position.paragraph as usize];
+    let Control::Table(table) = &paragraph.controls[position.cell_path[0].control as usize] else {
+        panic!("fixture table moved");
+    };
+    table
+}
+
 #[test]
 fn issue_536_native_editor_replaces_scalar_selection_and_restores_it() {
     let mut editor = editor("가😀나다");
@@ -65,6 +121,133 @@ fn issue_536_native_editor_replaces_scalar_selection_and_restores_it() {
     assert_eq!(editor.selection(), &selection(3, 1));
     editor.redo(revision(&editor)).unwrap();
     assert_eq!(text(&editor), "가한글다");
+}
+
+#[test]
+fn issue_536_native_editor_replaces_one_cell_paragraph_and_restores_it() {
+    let (mut editor, original) = cell_editor(false);
+    let changed = editor.replace_selection(0, "한글").unwrap();
+    let mut caret = original.focus.clone();
+    caret.scalar_offset = 3;
+    assert_eq!(changed.selection.anchor, caret);
+    assert_eq!(changed.selection.focus, caret);
+    assert!(changed.document_changed && changed.history_changed);
+    let table = table_at(&editor, &caret);
+    assert_eq!(table.cells[0].paragraphs[0].text, "가한글나");
+    assert_eq!(table.cells[0].paragraphs[1].text, "다음 문단");
+    assert_eq!(table.cells[1].paragraphs[0].text, "이웃 칸");
+
+    assert!(matches!(
+        editor.replace_selection(0, "늦은 입력"),
+        Err(NativeHostError::StaleRevision { .. })
+    ));
+    editor.undo(changed.revision).unwrap();
+    assert_eq!(
+        table_at(&editor, &caret).cells[0].paragraphs[0].text,
+        "가😀나"
+    );
+    assert_eq!(editor.selection(), &original);
+    editor.redo(revision(&editor)).unwrap();
+    assert_eq!(
+        table_at(&editor, &caret).cells[0].paragraphs[0].text,
+        "가한글나"
+    );
+
+    editor.replace_selection(revision(&editor), "😀").unwrap();
+    assert_eq!(
+        table_at(&editor, &caret).cells[0].paragraphs[0].text,
+        "가한글😀나"
+    );
+    let mut after_insert = caret.clone();
+    after_insert.scalar_offset += 1;
+    editor
+        .set_selection(
+            revision(&editor),
+            NativeTextSelection {
+                anchor: caret.clone(),
+                focus: after_insert,
+            },
+        )
+        .unwrap();
+    editor.replace_selection(revision(&editor), "").unwrap();
+    assert_eq!(
+        table_at(&editor, &caret).cells[0].paragraphs[0].text,
+        "가한글나"
+    );
+}
+
+#[test]
+fn issue_536_native_editor_keeps_body_commands_and_protected_cells_read_only() {
+    let (mut editor, selection) = cell_editor(true);
+    let mut sibling = selection.focus.clone();
+    sibling.cell_path[0].cell = 1;
+    assert!(matches!(
+        editor.set_selection(
+            0,
+            NativeTextSelection {
+                anchor: selection.anchor.clone(),
+                focus: sibling
+            }
+        ),
+        Err(NativeHostError::Unsupported(_))
+    ));
+    let mut next_paragraph = selection.focus.clone();
+    next_paragraph.cell_path[0].paragraph = 1;
+    assert!(matches!(
+        editor.set_selection(
+            0,
+            NativeTextSelection {
+                anchor: selection.anchor.clone(),
+                focus: next_paragraph
+            }
+        ),
+        Err(NativeHostError::Unsupported(_))
+    ));
+    let mut invalid = selection.clone();
+    invalid.anchor.scalar_offset = 4;
+    assert!(matches!(
+        editor.set_selection(0, invalid),
+        Err(NativeHostError::InvalidArgument(_))
+    ));
+    let mut caption = selection.focus.clone();
+    caption.cell_path[0].cell = 65_534;
+    assert!(matches!(
+        editor.set_selection(
+            0,
+            NativeTextSelection {
+                anchor: caption.clone(),
+                focus: caption,
+            }
+        ),
+        Err(NativeHostError::Unsupported(_))
+    ));
+
+    for result in [
+        editor.replace_selection(0, "한"),
+        editor
+            .execute_command(0, NativeEditCommand::SplitParagraph {})
+            .map(|result| result.outcome),
+        editor.begin_composition(0),
+        editor.paste_text(0, "새\n내용"),
+        editor.paste_html(0, "<p>새 내용</p>"),
+    ] {
+        assert!(matches!(result, Err(NativeHostError::Unsupported(_))));
+    }
+    assert!(matches!(
+        editor.copy_selection(0),
+        Err(NativeHostError::Unsupported(_))
+    ));
+    assert!(matches!(
+        editor.ime_context(0),
+        Err(NativeHostError::Unsupported(_))
+    ));
+    assert_eq!(editor.selection(), &selection);
+    assert_eq!(revision(&editor), 0);
+    assert!(!editor.can_undo() && !editor.can_redo());
+    let table = table_at(&editor, &selection.focus);
+    assert!(table.cells[0].cell_protect());
+    assert_eq!(table.cells[0].paragraphs[0].text, "가😀나");
+    assert_eq!(table.cells[1].paragraphs[0].text, "이웃 칸");
 }
 
 #[test]

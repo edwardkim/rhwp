@@ -46,6 +46,7 @@ impl NativeEditor {
         expected_revision: u64,
     ) -> Result<NativeClipboardPayload, NativeHostError> {
         self.check_edit_ready(expected_revision)?;
+        self.require_body_selection("clipboard")?;
         let selection = self.selection();
         let (bytes, empty_fragment) =
             clipboard_selection_size(self.session().document(), selection)?;
@@ -98,6 +99,7 @@ impl NativeEditor {
         text: &str,
     ) -> Result<NativeEditOutcome, NativeHostError> {
         self.check_edit_ready(expected_revision)?;
+        self.require_body_selection("clipboard")?;
         check_input_size(text)?;
         let text = text.replace("\r\n", "\n").replace('\r', "\n");
         check_text_controls(&text)?;
@@ -172,6 +174,7 @@ impl NativeEditor {
         html: &str,
     ) -> Result<NativeEditOutcome, NativeHostError> {
         self.check_edit_ready(expected_revision)?;
+        self.require_body_selection("clipboard")?;
         check_input_size(html)?;
         let html = prepare_body_html(html)?;
         let selection = self.selection().clone();
