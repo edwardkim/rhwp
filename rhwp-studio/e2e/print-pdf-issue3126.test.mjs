@@ -527,3 +527,56 @@ await runTest('#9333 메모 선택 인쇄 — 본문·표 셀·댓글과 별도 
   const source = await page.evaluate(() => Array.from(window.__wasm.exportHwpx()));
   assert(JSON.stringify(source) === JSON.stringify(memo.source), '인쇄 설정은 원본 문서에 저장되지 않음');
 });
+
+await runTest('#9336 짧은 용지의 이어지는 메모 인쇄', async ({ page, browser }) => {
+  await applyPdfGuidancePreference(page, true);
+  await createNewDocument(page);
+  const original = await page.evaluate(async () => {
+    const wasm = window.__wasm;
+    wasm.setPageDef(0, {
+      ...wasm.getPageDef(0), width: 30000, height: 7200,
+      leftMargin: 300, rightMargin: 300, topMargin: 300, bottomMargin: 300,
+      headerMargin: 0, footerMargin: 0,
+    });
+    wasm.doc.insertText(0, 0, 0, '메모가 달린 글자');
+    wasm.insertMemo({ section: 0, para: 0, cellPath: [] }, 0, 2, '작성자',
+      '검토 줄 1\n검토 줄 2\n검토 줄 3\n검토 줄 4\n검토 줄 5');
+    await window.__canvasView.loadDocument();
+    return wasm.getPageInfo(0);
+  });
+  const popup = new Promise(resolve => page.once('popup', resolve));
+  await clickPrintMenuItem(page);
+  const preview = await popup;
+  await preview.waitForSelector('#print-btn');
+  await preview.click('.print-preview-bar summary');
+  await preview.click('[name="print-memo-include"]');
+  await preview.click('[name="print-memo-list"]');
+  const pages = await preview.$$eval('.page', nodes => nodes.map(node => ({
+    text: node.textContent.replace(/\s/g, ''),
+    height: Number(node.querySelector('svg').getAttribute('height')),
+  })));
+  assert(pages.length === 2, `높이 25.4mm에서 제목만 있는 쪽 없이 두 쪽 인쇄 (실제 ${pages.length}쪽)`);
+  assert(pages[0].height === original.height && pages[1].height > original.height,
+    '본문은 원래 용지, 이어지는 메모는 본문을 담을 수 있는 별도 용지');
+  assert(pages[0].text.includes('검토줄1') && pages[1].text.includes('1쪽검토줄2검토줄3검토줄4검토줄5'),
+    '이어지는 쪽에 원래 쪽 번호와 나머지 메모 줄을 순서대로 보존');
+  await preview.close();
+
+  await installPrintCapture(page);
+  await clickPdfMenuItem(page);
+  await page.waitForSelector('[data-testid="pdf-print-dialog"]');
+  await page.click('[data-testid="pdf-print-dialog"] [name="print-memo-include"]');
+  await page.click('[data-testid="pdf-print-dialog"] [name="print-memo-list"]');
+  await confirmPdfDialog(page);
+  const { capture } = await capturePrintDocument(page);
+  const outputPath = await renderCapturedPdf(browser, capture.html, 'memo-short-paper');
+  const pdf = inspectPdf(outputPath);
+  assert(pdf.pageCount === pages.length, '실제 PDF의 페이지 수가 미리보기와 일치');
+  assert(JSON.stringify(capture.pages.map(p => p.text.replace(/\s/g, '')))
+    === JSON.stringify(pages.map(p => p.text)), '실제 PDF의 입력과 미리보기가 같은 쪽·내용을 구성');
+  if (pdf.text !== null) {
+    const [first, continued] = pdf.text.split('\f').map(text => text.replace(/\s/g, ''));
+    assert(first.includes('검토줄1') && continued.includes('1쪽검토줄2검토줄3검토줄4검토줄5'),
+      '실제 PDF 각 쪽에서 메모 줄을 읽을 수 있음');
+  }
+});

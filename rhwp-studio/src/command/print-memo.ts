@@ -13,6 +13,8 @@ const LINE = 18;
 const GAP = 8;
 const PAPER_INSET = 12;
 const TEXT_INSET = 8;
+const LIST_TOP = PAPER_INSET + 26;
+const REVIEW_PAPER: PrintPageInfo = { width: 794, height: 1123 };
 const GRAPHEMES = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
 
 export function createPrintMemoOptions(doc: Document): {
@@ -105,6 +107,10 @@ function card(root: Element, x: number, y: number, width: number, lines: readonl
   return height;
 }
 
+function listCapacity(height: number, y: number): number {
+  return Math.floor((height - PAPER_INSET - y - 2 * TEXT_INSET) / LINE) - 1;
+}
+
 function written(sheet: Sheet): PrintSourcePage {
   return { svg: new XMLSerializer().serializeToString(sheet.root), info: sheet.info };
 }
@@ -139,26 +145,30 @@ export function composePrintMemos(
   }
 
   function appendList(out: PrintSourcePage[], blocks: NoteBlock[], info: PrintPageInfo, title: string) {
-    let start = sheet(info);
-    let y = PAPER_INSET + 26;
+    if (!blocks.length) return;
+    // 출처 쪽 번호와 메모 한 줄이 모두 들어가는 이어쓰기 용지를 먼저 정한다.
+    const paper = listCapacity(info.height, LIST_TOP) > 0 ? info : REVIEW_PAPER;
+    const firstCapacity = listCapacity(paper.height, LIST_TOP);
+    let start = sheet(paper);
+    let y = LIST_TOP;
     text(start.root, PAPER_INSET, PAPER_INSET + FONT_SIZE, title);
     for (const { sourcePage, lines } of blocks) {
       const remaining = [...lines];
       const label = sourcePage === null ? t('dialog.memo.noLocation') : t('dialog.memo.page', { p1: sourcePage + 1 });
       while (remaining.length) {
-        let capacity = Math.floor((info.height - PAPER_INSET - y - 2 * TEXT_INSET) / LINE) - 1;
+        let capacity = listCapacity(paper.height, y);
         if (capacity < 1) {
           out.push(written(start));
-          start = sheet(info);
+          start = sheet(paper);
           text(start.root, PAPER_INSET, PAPER_INSET + FONT_SIZE, title);
-          y = PAPER_INSET + 26;
-          capacity = Math.max(1, Math.floor((info.height - PAPER_INSET - y - 2 * TEXT_INSET) / LINE) - 1);
+          y = LIST_TOP;
+          capacity = firstCapacity;
         }
         const chunk = [label, ...remaining.splice(0, capacity)];
-        y += card(start.root, PAPER_INSET, y, info.width - 2 * PAPER_INSET, chunk) + GAP;
+        y += card(start.root, PAPER_INSET, y, paper.width - 2 * PAPER_INSET, chunk) + GAP;
       }
     }
-    if (blocks.length) out.push(written(start));
+    out.push(written(start));
   }
 
   const out: PrintSourcePage[] = [];
@@ -211,7 +221,7 @@ export function composePrintMemos(
   }
 
   const first = pages[0].info;
-  const info = first.width >= 260 && first.height >= 160 ? first : { width: 794, height: 1123 };
+  const info = first.width >= 260 && first.height >= 160 ? first : REVIEW_PAPER;
   const listing = options.list ? all : unresolved;
   appendList(out, listing.map(thread => ({
     lines: lines(thread, info.width - 2 * (PAPER_INSET + TEXT_INSET)),
