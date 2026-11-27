@@ -368,7 +368,7 @@ public sealed partial class MainWindow : Window
         bool available = !closing && !editorBusy && !picking;
         OpenButton.IsEnabled = available;
         SaveCopyButton.IsEnabled = available && (page is not null || editorInfo is not null);
-        ExportPdfButton.Content = pdfCancellation is null ? "현재 쪽 PDF 저장" : "PDF 내보내기 취소";
+        ExportPdfButton.Content = pdfCancellation is null ? "현재 쪽 PDF 미리보기" : "PDF 작업 취소";
         ExportPdfButton.IsEnabled = pdfCancellation is CancellationTokenSource export
             ? !export.IsCancellationRequested
             : available && page is not null && pdfLimits is not null;
