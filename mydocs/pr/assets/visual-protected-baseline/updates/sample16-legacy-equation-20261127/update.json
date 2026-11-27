@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "user_approved": true,
+  "accepted_at": "2026-11-27T23:06:55+09:00",
+  "pr": null,
+  "evidence_commit": "d88a1c4bb519dd2a54434e4ed7bac331987de115",
+  "code_commit": "3749b19583c8d3005c3a6c8f1e310b36a697b8d9",
+  "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/sample16-legacy-equation-20261127/conditions.json",
+  "condition_evidence_sha256": "787de0963ed6c9559358ec97d56eaac37b2c406390285989f00e35b339bf34ce",
+  "previous_table_sha256": "8141acb297ce2f39148f9014e463986431d266120629e8f368665e5917138f9d",
+  "table_sha256": "3c727506bc3a94f60d4c5dfefaaec3f512f49c0e193d17f0c1846c300a3f9f45",
+  "previous_manifest_sha256": "e2f09e22730d879031a1ac07c8c6a04b394c8f66a1fd717735deaa362ef00d1a",
+  "manifest_sha256": "164881c9ecf65a66ede3455f5b5caa9300fa1aa27eb86132c9656bd03c9ca6c1",
+  "evaluated_row_count": 384,
+  "increased_rows": [
+    {
+      "document_id": "4bac5a5d1702df5f",
+      "key": "sample16-hwp2022",
+      "backend": "native",
+      "page": 6,
+      "previous": "99.95",
+      "accepted": "100.00"
+    },
+    {
+      "document_id": "4bac5a5d1702df5f",
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": 6,
+      "previous": "99.97",
+      "accepted": "100.00"
+    },
+    {
+      "document_id": "7df4af8174abd82a",
+      "key": "sample16-hwp2024",
+      "backend": "native",
+      "page": 6,
+      "previous": "99.96",
+      "accepted": "100.00"
+    },
+    {
+      "document_id": "7df4af8174abd82a",
+      "key": "sample16-hwp2024",
+      "backend": "wasm",
+      "page": 6,
+      "previous": "99.97",
+      "accepted": "100.00"
+    },
+    {
+      "document_id": "43c0a207f6daa0bb",
+      "key": "sample16-hwpx",
+      "backend": "native",
+      "page": 6,
+      "previous": "99.96",
+      "accepted": "100.00"
+    },
+    {
+      "document_id": "43c0a207f6daa0bb",
+      "key": "sample16-hwpx",
+      "backend": "wasm",
+      "page": 6,
+      "previous": "99.97",
+      "accepted": "100.00"
+    }
+  ],
+  "decreased_rows": []
+}
