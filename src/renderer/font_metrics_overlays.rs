@@ -355,6 +355,12 @@ pub(crate) fn declared_original_glyph_advance_em(
     if face == "명조" && !bold && !italic && matches!(character, '─' | '│' | '═') {
         return Some(1.0);
     }
+    // 독립 한컴 Print 26쪽의 HWP3 T18과 HWPX T14에서 원본 명조
+    // HFT 정체의 U+2024는 Widths와 CharProc d1 모두 1000/1000em이다.
+    // 뒤 한글의 원점은 같은 원본 글꼴의 한 글자 폭만큼 전진한다.
+    if face == "명조" && !bold && !italic && character == '\u{2024}' {
+        return Some(1.0);
+    }
     // 원본 명조의 글머리표는 한컴 Print에서 한 글자 폭을 점유한다.
     // 원본 프로그램이 해당 글리프를 제공하면 호출자가 그 실제 폭을 우선한다.
     if face == "명조" && !bold && !italic && character == '•' {

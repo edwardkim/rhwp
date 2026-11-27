@@ -1040,7 +1040,6 @@ fn try_char_style_to_text_style<S: crate::renderer::style_resolver::storage::Sto
             source_verified_hft_bold_tracking: cs.verified_hft_bold_tracking_for_lang(lang_index),
             source_hwp3_hft_bold: (styles.hwp3_variant || styles.source_hwp3_native)
                 && cs.source_hft_for_lang(lang_index),
-            source_hwp3_native: styles.source_hwp3_native,
             hft_print_frame: cs.hft_print_frame_for_lang(lang_index),
             print_text_device_frame: cs.print_text_device_frame_for_lang(lang_index),
             source_dc_frame: cs
@@ -2431,17 +2430,7 @@ fn measure_scalar_advance<'a>(
             font_metrics_data::verified_non_hft_glyph_width(found.metric, metric_character)
                 .map(|width| f64::from(width) / f64::from(found.metric.em_size))
         });
-        // 독립 한컴 Print 26쪽 T18의 원본 명조 HFT 한점 리더는
-        // /Widths와 CharProc d1이 모두 1000/1000em이다. HWPX의
-        // 같은 이름 선언이나 문서 지정 대체 프로그램에 이 폭을 옮기지 않는다.
-        let hwp3_myeongjo_dot = style.source_hwp3_native
-            && !source_ttf
-            && original_glyph_face.map(String::as_str) == Some("명조")
-            && !style.bold
-            && !style.italic
-            && chars[i] == '\u{2024}';
         let original_glyph_em = implicit_symbol_em
-            .or(hwp3_myeongjo_dot.then_some(1.0))
             .or_else(|| {
                 original_glyph_face.and_then(|face| {
                     // 표시용 Unicode로 바꾸기 전의 원본 프로그램 hit를 먼저 소비한다.
