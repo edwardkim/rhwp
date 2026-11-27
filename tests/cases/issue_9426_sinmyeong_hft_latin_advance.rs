@@ -1,5 +1,5 @@
 //! 고정형(독립 한/글 Print 좌표 ±2px)·관계형(보통/굵게 라틴 런의 시작·끝) — [#9426] HFT 로 저장된 `신명 중명조` 라틴 글자는 원 프로그램 폭으로 잰다.
-//! 주석 갱신: 2026-11-27 06:10 KST (새 파일).
+//! 주석 갱신: 2026-11-27 10:55 KST (새 파일, devel `fef912a6fb` 로 rebase 뒤 재측정).
 //!
 //! - 입력: `samples/issue8482/germany_law_ch3_resaved2020.hwp`(#8482 fixture, sha256 945183c9…401f) — HWP3
 //!   「독일의 법령체계와 입법심사기준」을 rhwp 로 HWP5 변환해 한/글 2020 으로 다시 저장하고 131~141쪽만 남긴
@@ -17,7 +17,7 @@
 //! - 입력 조건: 세 런의 라틴 슬롯 글꼴은 HFT `신명 중명조` 이다(표시 이름만 바뀌는 경로).
 //!
 //! 측정일 2026-11-27. raw 측정: `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96` 의
-//! `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣). base = upstream/devel `e46501863d`,
+//! `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣). base = upstream/devel `fef912a6fb`,
 //! head = 이 수정.
 //!
 //! | 쪽 | Native base | Native head | fresh WASM base | fresh WASM head |
