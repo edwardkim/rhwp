@@ -1416,7 +1416,6 @@ pub(crate) fn stored_tac_line_successor_advance(
         || line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
         || successor.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
         || line.line_height <= 0
-        || line.line_spacing < 0
         || i64::from(line.line_height)
             != i64::from(table.common.height)
                 + i64::from(table.outer_margin_top)
