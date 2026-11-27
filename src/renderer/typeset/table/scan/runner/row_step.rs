@@ -1061,6 +1061,38 @@ impl TypesetEngine {
                 }
             }
             if res.fully_consumed {
+                // 온전한 끝 행이 저장 쪽의 하단을 넘으면 같은 컷이 수용한
+                // 내용으로 물리 상자를 닫는다. 선언의 빈 잔여는 다음 쪽으로 넘기지 않는다.
+                let closing_band = (v.blank_row_available_height() - consumed - cs_before).max(0.0);
+                if v.owns_continued_source_bottom
+                    && is_continuation
+                    && r == cursor_row
+                    && r + 1 == row_count
+                    && !start_cut_is_block
+                    && !row_start_cut.is_empty()
+                    && !rowspan_touched[r]
+                    && row_total > closing_band
+                    && res.consumed_height > 0.0
+                    && layout_engine.row_aligned_content_bottom(
+                        table,
+                        r,
+                        res.consumed_height + padding,
+                        closing_band,
+                        styles,
+                    ) <= closing_band
+                {
+                    if std::env::var_os("RHWP_DIAG_SCAN").is_some() {
+                        eprintln!(
+                            "DIAG_SCAN CLOSING_SOURCE_BAND r={r} physical={closing_band:.6} content={:.6}",
+                            res.consumed_height + padding
+                        );
+                    }
+                    plain_cut_owns_blank_band = true;
+                    consumed += cs_before + closing_band;
+                    end_row = r + 1;
+                    end_row_height_override = Some(closing_band);
+                    return false;
+                }
                 // 선언 첫 조각과 실제 본문 잔여가 같은 끝을 증언하면,
                 // 완결한 행 내용은 그 상자 안에서 닫는다. 후속 쪽에서
                 // 이 행의 빈 선언 꼬리를 다시 소비하지 않는다.

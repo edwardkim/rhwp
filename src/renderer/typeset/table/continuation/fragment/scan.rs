@@ -265,6 +265,10 @@ impl TypesetEngine {
                             }) if *para_index == previous && *start_line > 0)
                     })
             },
+            owns_continued_source_bottom: budget.accepted_continuation_frame
+                && !input.row_cursor_is_nested
+                && input.prepared.table_footnotes.is_empty()
+                && table.caption.is_none(),
             cursor_row,
             row_count: scan_row_count,
             cs,

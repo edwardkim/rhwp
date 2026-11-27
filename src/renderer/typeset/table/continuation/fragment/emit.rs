@@ -1184,6 +1184,17 @@ impl TypesetEngine {
         };
 
         if end_row >= row_count && split_end_limit == 0.0 {
+            let closed_carried_row = is_continuation
+                && cursor_row + 1 == end_row
+                && !start_cut.is_empty()
+                && !start_cut_is_block
+                && plain_cut_owns_blank_band
+                && end_row_height_override.is_some();
+            let terminal_start_row_height = if closed_carried_row {
+                end_row_height_override
+            } else {
+                start_row_height_override
+            };
             let skip_terminal_empty_sliver = is_continuation
                 // 스캔이 인증한 빈 종료 상자는 줄 유닛을 모두 소비한 뒤에도 물리 공간을 소유한다.
                 && !input.closes_blank_source_row()
@@ -1379,13 +1390,13 @@ impl TypesetEngine {
                     start_cut_is_block,
                     row_cursor_is_nested,
                     end_row_height_override,
-                    start_row_height_override,
+                    start_row_height_override: terminal_start_row_height,
                     straddle_row_relief: straddle_row_relief.clone(),
                     remaining_child_row: input.start.remaining_child_row.map(Box::new),
                     straddle_page_bands: straddle_page_bands.clone(),
                     fragment_row_heights: fragment_rows.clone(),
                     fragment_block_frames: fragment_block_frames.clone(),
-                    end_row_owns_stored_frame: completed_empty_row_frame,
+                    end_row_owns_stored_frame: completed_empty_row_frame || closed_carried_row,
                 });
                 // 마지막 조각: spacing_after만 포함 (페이지 분할기 engine.rs:1051과 동일)
                 // 호스트 줄 전진과 양의 오프셋은 원래 앵커 조각의 계약이며,
