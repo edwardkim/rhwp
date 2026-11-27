@@ -23,13 +23,25 @@ impl EqLayout {
             }
         }
         // ∑, ∏ 등: limits 스타일 (위/아래 중앙)
-        let source_sum = self.hancom_math_face && symbol == "∑";
+        // 원본 수식 face의 큰 합·곱은 세로 범위가 같은 형제 글리프(U+E067·U+E068,
+        // 2..702/1024, 두 face 동일)를 1.8em으로 그린다. 한글 2022 4645 Print의 곱도
+        // 본문 글자의 150/83배다. 합의 원본 face 기하를 같은 프레임을 쓰는 곱에도 쓴다.
+        let source_sum = (self.hancom_math_face && symbol == "∑")
+            || (self.source_limit_face() && matches!(symbol, "∑" | "∏"));
         let op_fs = if source_sum {
             fs * 1.8 * 700.0 / 1024.0
         } else {
             fs * BIG_OP_SCALE
         };
-        let op_w = estimate_text_width(symbol, op_fs, false);
+        // 표시 글리프는 공개 글꼴이지만 전진은 원본 PUA의 GDI 전진을 쓴다(곱의 공개 전진
+        // 944/1000은 U+E068보다 좁아 그대로 두면 뒤 글자와 겹친다). 공개 글리프는 원본
+        // PUA처럼(잉크 좌우 여백이 거의 같다) 그 칸의 가운데에 둔다.
+        let glyph_w = estimate_text_width(symbol, op_fs, false);
+        let op_w = source_sum
+            .then(|| symbol.chars().next())
+            .flatten()
+            .and_then(|ch| super::super::hancom_glyphs::big_operator_advance(ch, fs, self.dpi))
+            .unwrap_or(glyph_w);
         let op_h = op_fs;
 
         let sub_box = sub
@@ -122,8 +134,8 @@ impl EqLayout {
             kind: LayoutKind::BigOp {
                 symbol: symbol.to_string(),
                 op_font_size: op_fs,
-                op_width: op_w,
-                op_x: (max_w - op_w) / 2.0,
+                op_width: glyph_w,
+                op_x: (max_w - glyph_w) / 2.0,
                 op_y: 0.0,
                 op_baseline: op_baseline + head,
                 sub: sub_laid.map(Box::new),
@@ -133,15 +145,21 @@ impl EqLayout {
         self.with_hancom_limit_frame(value, max_w, fs)
     }
 
+    /// 한컴 합·곱 프레임과 원본 face 연산자 기하를 함께 쓰는 수식 face.
+    /// 둘이 같은 조건을 써야 프레임의 연산자 칸과 실제 연산자 글리프가 어긋나지 않는다.
+    fn source_limit_face(&self) -> bool {
+        (self.hancom_math_face || self.hancom_eqn)
+            && !self.legacy_math_face
+            && !self.legacy_hft_metrics
+    }
+
     /// 원본 수식 face의 합·곱 프레임(`hancom_frame::limit_operator`)을 측정과 표시에 쓴다.
     /// 원본 face의 합은 뒤 피연산자를 바로 잇는다는 기존 계약을 곱에도 같이 적용해
-    /// trailing 여백을 두지 않는다. 연산자 글리프의 크기·폭과 본문 기준선에 대한
-    /// 위치는 바꾸지 않는다. 한 줄이 아닌 한계값(분수·첨자 겹침)은 이 프레임으로 접지 않는다.
+    /// trailing 여백을 두지 않는다. 연산자 글리프는 `layout_big_op`의 원본 face 기하
+    /// (크기·폭·본문 기준선에 대한 위치)를 그대로 쓴다. 한 줄이 아닌 한계값(분수·첨자
+    /// 겹침)은 이 프레임으로 접지 않는다.
     fn with_hancom_limit_frame(&self, mut value: LayoutBox, max_w: f64, fs: f64) -> LayoutBox {
-        if !(self.hancom_math_face || self.hancom_eqn)
-            || self.legacy_math_face
-            || self.legacy_hft_metrics
-        {
+        if !self.source_limit_face() {
             return value;
         }
         let LayoutKind::BigOp {
