@@ -1298,12 +1298,7 @@ pub(super) fn expand_page_fragment_clip_to_own_text_lines(
     // 폭은 줄 하나 남짓이므로 되살릴 대상도 줄 하나로 못박는다.
     let mut recovered: Option<&RenderNode> = None;
     for child in &node.children {
-        // 빈 줄의 점유는 이미 컷 예산에 남아 있다. 그리는 요소가 없으면
-        // 테두리와 클립을 다음 빈 줄까지 차례로 늘릴 이유도 없다.
-        if !child.visible
-            || !matches!(child.node_type, RenderNodeType::TextLine(_))
-            || child.is_empty_text_carrier()
-        {
+        if !child.visible || !matches!(child.node_type, RenderNodeType::TextLine(_)) {
             continue;
         }
         let candidate_edge = if terminal_fragment {
@@ -1333,6 +1328,11 @@ pub(super) fn expand_page_fragment_clip_to_own_text_lines(
     let Some(line) = recovered else {
         return;
     };
+    // 빈 저장 줄도 컷 경계를 증명한다. 그 줄은 클립을 늘리지 않으며,
+    // 건너뛰어서 다음 물리 프레임의 본문을 포섭하지도 않는다.
+    if line.is_empty_text_carrier() {
+        return;
+    }
     let mut owned_bottom = line.bbox.y + line.bbox.height;
     if page_bottom > 0.0 {
         owned_bottom = owned_bottom.min(page_bottom);
