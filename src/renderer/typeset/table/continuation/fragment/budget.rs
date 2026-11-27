@@ -156,10 +156,7 @@ impl TypesetEngine {
                 .map(|top| {
                     let left = f64::from(signed_hwpunit(table.common.horizontal_offset))
                         + f64::from(table.outer_margin_left);
-                    (
-                        left * self.dpi / 7200.0,
-                        hwpunit_to_px(top, self.dpi),
-                    )
+                    (left * self.dpi / 7200.0, hwpunit_to_px(top, self.dpi))
                 });
         let (host_before_overhead, fragment_outer_bottom_overhead) =
             partial_rowbreak_fragment_spacing_px(
@@ -255,6 +252,7 @@ impl TypesetEngine {
                 ));
         // 첫 조각은 이미 host_spacing.before에서 위여백을 받는다.
         // 이어받기는 paint가 여는 같은 프레임 여백을 한 번만 예약한다.
+        // 빈 어울림 호스트에 이미 예약한 위 여백도 일반 행 경계에서 다시 더하지 않는다.
         // 단일 셀/후속 본문 엄격 예산은 partial_rowbreak_fragment_spacing_px에서
         // 이미 예약하며, 종료 컷과 일반 프레임 술어가 동시에 참이어도 중복하지 않는다.
         let grid_fragment_opens_outer_top =
@@ -292,6 +290,7 @@ impl TypesetEngine {
                             crate::model::table::TablePageBreak::RowBreak
                         )
                         && start_cut.iter().all(|&unit| unit == 0)
+                        && empty_square_outer_top.is_none()
                         && host_before_overhead < 0.5))
                 && !strict_following_plain_text_fit
                 && !single_cell_page_fragment

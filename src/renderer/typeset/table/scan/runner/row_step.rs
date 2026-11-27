@@ -324,6 +324,16 @@ impl TypesetEngine {
                         self.dpi,
                     );
                     let closing_box = rest - v.unreserved_outer_bottom - fragment_bottom_inset;
+                    // 저장 HWPX의 자리차지 어울림 표도 noAdjust가 지정한
+                    // 물리 하단에 내용이 들어오면 해당 행을 이 쪽에서 닫는다.
+                    let stored_closing_frame = st.profile.hwp5_stored_pagination_layout()
+                        || (st.profile.hwpx_stored_layout()
+                            && (table.attr | table.raw_table_record_attr) & 0x08 != 0
+                            && crate::renderer::float_placement::square_float_outer_margin_top_hu(
+                                table,
+                            )
+                            .is_some()
+                            && layout_engine.table_uses_stored_fragment_coordinates(table));
                     if v.is_continuation
                         && !source_certified_band
                         && !table::scan::row::retains_blank_tail(&probe, visible_height, rest)
@@ -336,7 +346,7 @@ impl TypesetEngine {
                             .iter()
                             .any(|cell| cell.row as usize == r && cell.row_span <= 1)
                         && visible_height <= closing_box
-                        && st.profile.hwp5_stored_pagination_layout()
+                        && stored_closing_frame
                         && !st.profile.session_edited()
                     {
                         consumed += cs_before + closing_box;
