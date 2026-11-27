@@ -6,7 +6,7 @@ use rhwp::document_core::native_interaction::{
 };
 use rhwp::model::control::Control;
 use rhwp::model::table::Table;
-use rhwp::native_host::commands::NativeEditCommand;
+use rhwp::native_host::commands::{NativeEditCommand, NativeParagraphAlignment};
 use rhwp::native_host::editor::{NativeCompositionFocusLoss, NativeEditor};
 use rhwp::native_host::{NativeDocumentSession, NativeHostError};
 use rhwp::DocumentCore;
@@ -299,6 +299,15 @@ fn issue_536_native_editor_rejects_writes_through_a_protected_nested_cell_ancest
                 .expect("a protected cell permits read-only selection");
         assert!(matches!(
             editor.replace_selection(0, "1991.07.23"),
+            Err(NativeHostError::Unsupported(_))
+        ));
+        assert!(matches!(
+            editor.execute_command(
+                0,
+                NativeEditCommand::SetParagraphAlignment {
+                    alignment: NativeParagraphAlignment::Right,
+                },
+            ),
             Err(NativeHostError::Unsupported(_))
         ));
         assert!(matches!(

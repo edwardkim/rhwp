@@ -38,6 +38,29 @@ def run(library):
         target["revision"] = undone["outcome"]["revision"]
         assert accepted({"op": "imeContext", "target": target})["context"]["text"] == "가👩\u200d💻"
 
+        end = {**point, "scalarOffset": 1}
+        selection = {"anchor": end, "focus": point}
+        accepted({"op": "setSelection", "target": target, "selection": selection})
+        assert worker.host.call("capabilities")["basicTextFormatting"]
+        characters = {"command": "formatCharacters", "bold": True, "fontSize": 1500}
+        alignment = {"command": "setParagraphAlignment", "alignment": "right"}
+        for command in (characters, alignment):
+            formatted = accepted({"op": "executeCommand", "target": target, "command": command})
+            outcome = formatted["outcome"]
+            assert formatted["kind"] == "command" and formatted["preferredX"] is None, formatted
+            assert outcome["documentChanged"] and outcome["historyChanged"], outcome
+            assert outcome["selection"] == selection, outcome
+            assert outcome["revision"] == target["revision"] + 1, outcome
+            target["revision"] = outcome["revision"]
+        invalid = worker.wait(worker.submit({
+            "op": "executeCommand", "target": target,
+            "command": {"command": "formatCharacters", "fontSize": 0},
+        }))
+        assert not invalid["ok"] and invalid["code"] == "invalidArgument", invalid
+        unchanged = accepted({"op": "executeCommand", "target": target, "command": alignment})
+        assert not unchanged["outcome"]["documentChanged"], unchanged
+        assert unchanged["outcome"]["revision"] == target["revision"], unchanged
+        assert accepted({"op": "imeContext", "target": target})["context"]["selectedText"] == "가"
 
 def table_navigation(library):
     form = (Path(__file__).resolve().parents[3]

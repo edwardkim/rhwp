@@ -811,7 +811,11 @@ impl NativeEditor {
         }
     }
 
-    fn outcome(&self, document_changed: bool, history_changed: bool) -> NativeEditOutcome {
+    pub(super) fn outcome(
+        &self,
+        document_changed: bool,
+        history_changed: bool,
+    ) -> NativeEditOutcome {
         NativeEditOutcome {
             revision: self.session.revision(),
             selection: self.selection.clone(),

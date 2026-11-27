@@ -5,12 +5,15 @@
 //! SelectAll selects the current body section, never cells or other sections.
 //! Hosts must commit/cancel composition before issuing these commands.
 
+use std::ops::Range;
+
 use serde::{Deserialize, Serialize};
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::document_core::native_interaction::{
-    NativeTextPosition, NativeTextSelection, NativeVerticalDirection,
+    legacy_cell_path, NativeTextPosition, NativeTextSelection, NativeVerticalDirection,
 };
+use crate::model::{paragraph::Paragraph, style::Alignment};
 
 use super::editor::{NativeEditOutcome, NativeEditor};
 use super::NativeHostError;
@@ -26,6 +29,31 @@ mod table_navigation;
 pub enum NativeTableCellDirection {
     Next,
     Previous,
+}
+
+/// Paragraph alignment on the Native command wire.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum NativeParagraphAlignment {
+    Justify,
+    Left,
+    Right,
+    Center,
+    Distribute,
+    Split,
+}
+
+impl From<NativeParagraphAlignment> for Alignment {
+    fn from(alignment: NativeParagraphAlignment) -> Self {
+        match alignment {
+            NativeParagraphAlignment::Justify => Self::Justify,
+            NativeParagraphAlignment::Left => Self::Left,
+            NativeParagraphAlignment::Right => Self::Right,
+            NativeParagraphAlignment::Center => Self::Center,
+            NativeParagraphAlignment::Distribute => Self::Distribute,
+            NativeParagraphAlignment::Split => Self::Split,
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -79,6 +107,16 @@ pub enum NativeEditCommand {
     /// delete a noncollapsed selection.
     JoinPreviousParagraph {},
     SelectAll {},
+    /// Change at least one character property within a nonempty selection in one
+    /// plain paragraph. Font size is in HWPUNIT (100 units per point).
+    FormatCharacters {
+        bold: Option<bool>,
+        font_size: Option<i32>,
+    },
+    /// Align the paragraph that owns the selection. A collapsed caret is valid.
+    SetParagraphAlignment {
+        alignment: NativeParagraphAlignment,
+    },
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -101,6 +139,8 @@ impl NativeEditor {
             &command,
             NativeEditCommand::SplitParagraph {}
                 | NativeEditCommand::JoinPreviousParagraph {}
+                | NativeEditCommand::FormatCharacters { .. }
+                | NativeEditCommand::SetParagraphAlignment { .. }
                 | NativeEditCommand::NavigateTableCell { .. }
         ) {
             self.require_body_selection("keyboard commands")?;
@@ -169,6 +209,12 @@ impl NativeEditor {
                     self.join_previous_cell_paragraph(expected_revision)?
                 }
             }
+            NativeEditCommand::FormatCharacters { bold, font_size } => {
+                self.format_characters(expected_revision, bold, font_size)?
+            }
+            NativeEditCommand::SetParagraphAlignment { alignment } => {
+                self.set_paragraph_alignment(expected_revision, alignment)?
+            }
             NativeEditCommand::SelectAll {} => {
                 let mut start = self.selection().focus.clone();
                 start.paragraph = 0;
@@ -193,6 +239,122 @@ impl NativeEditor {
         Ok(NativeCommandOutcome {
             outcome,
             preferred_x,
+        })
+    }
+
+    fn formatting_paragraph(&self) -> Result<&Paragraph, NativeHostError> {
+        let selection = self.selection();
+        if selection.anchor.paragraph != selection.focus.paragraph {
+            return Err(NativeHostError::Unsupported(
+                "formatting requires a selection within one paragraph".into(),
+            ));
+        }
+        let core = self.session().document();
+        Self::check_editable_text_span(core, selection)?;
+        Ok(core.native_text_paragraph(&selection.focus)?)
+    }
+
+    fn format_characters(
+        &mut self,
+        revision: u64,
+        bold: Option<bool>,
+        font_size: Option<i32>,
+    ) -> Result<NativeEditOutcome, NativeHostError> {
+        if bold.is_none() && font_size.is_none() {
+            return Err(NativeHostError::InvalidArgument(
+                "formatCharacters requires bold or fontSize".into(),
+            ));
+        }
+        // The model stores its base size as HWPUNIT, with 100 units per point
+        // and an upper bound of 4096 points.
+        if font_size.is_some_and(|size| !(1..=409_600).contains(&size)) {
+            return Err(NativeHostError::InvalidArgument(
+                "fontSize must be within 1..=409600 HWPUNIT".into(),
+            ));
+        }
+        let paragraph = self.formatting_paragraph()?;
+        let (start, end) = Self::ordered(self.selection());
+        let range = start.scalar_offset as usize..end.scalar_offset as usize;
+        if range.is_empty() {
+            return Err(NativeHostError::InvalidArgument(
+                "formatCharacters requires a nonempty text selection".into(),
+            ));
+        }
+        let shapes = &self.session().document().document().doc_info.char_shapes;
+        let ids = paragraph.char_shape_ids_in_range(range.start, range.end);
+        if ids.is_empty() {
+            return Err(NativeHostError::InvalidArgument(
+                "invalid character format range".into(),
+            ));
+        }
+        let mut changes_style = false;
+        for id in ids {
+            let shape = shapes.get(id as usize).ok_or_else(|| {
+                NativeHostError::InvalidArgument("unknown character shape in selection".into())
+            })?;
+            changes_style |= bold.is_some_and(|bold| shape.bold != bold)
+                || font_size.is_some_and(|size| shape.base_size != size);
+        }
+        if !changes_style {
+            return Ok(self.outcome(false, false));
+        }
+        let properties = serde_json::json!({"bold": bold, "fontSize": font_size});
+        self.apply_format(revision, Some(range), &properties.to_string())
+    }
+
+    fn set_paragraph_alignment(
+        &mut self,
+        revision: u64,
+        alignment: NativeParagraphAlignment,
+    ) -> Result<NativeEditOutcome, NativeHostError> {
+        let paragraph = self.formatting_paragraph()?;
+        let shapes = &self.session().document().document().doc_info.para_shapes;
+        let shape = shapes
+            .get(paragraph.para_shape_id as usize)
+            .ok_or_else(|| {
+                NativeHostError::InvalidArgument("unknown paragraph shape in selection".into())
+            })?;
+        if shape.alignment == Alignment::from(alignment) {
+            return Ok(self.outcome(false, false));
+        }
+        let properties = serde_json::json!({"alignment": alignment});
+        self.apply_format(revision, None, &properties.to_string())
+    }
+
+    fn apply_format(
+        &mut self,
+        revision: u64,
+        characters: Option<Range<usize>>,
+        properties: &str,
+    ) -> Result<NativeEditOutcome, NativeHostError> {
+        let selection = self.selection().clone();
+        let position = &selection.focus;
+        let section = position.section as usize;
+        let paragraph = position.paragraph as usize;
+        let path = legacy_cell_path(&position.cell_path);
+        self.edit_transaction(revision, move |core| {
+            match (path.is_empty(), characters) {
+                (true, Some(range)) => core.apply_char_format_native(
+                    section,
+                    paragraph,
+                    range.start,
+                    range.end,
+                    properties,
+                ),
+                (false, Some(range)) => core.apply_char_format_in_cell_by_path(
+                    section,
+                    paragraph,
+                    &path,
+                    range.start,
+                    range.end,
+                    properties,
+                ),
+                (true, None) => core.apply_para_format_native(section, paragraph, properties),
+                (false, None) => {
+                    core.apply_para_format_in_cell_by_path(section, paragraph, &path, properties)
+                }
+            }?;
+            Ok(selection)
         })
     }
 
