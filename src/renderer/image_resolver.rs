@@ -14,7 +14,9 @@ mod print_tone;
 pub(crate) use print_alpha::print_alpha_payload;
 pub(crate) use print_alpha_device::{print_transparent_png, PrintAlphaDeviceGrid};
 pub(crate) use print_crop::{publish_print_jpeg_crop, resolve_print_jpeg_window};
-pub(crate) use print_jpeg_encode::{encode_print_jpeg, print_jpeg_payload, PrintJpegTransfer};
+pub(crate) use print_jpeg_encode::{
+    encode_print_jpeg, print_jpeg_bands, print_jpeg_payload, PrintJpegTransfer,
+};
 mod print_window;
 #[cfg(target_arch = "wasm32")]
 pub(crate) use print_tone::decode_print_jpeg_replay;

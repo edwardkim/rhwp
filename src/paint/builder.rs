@@ -506,6 +506,7 @@ impl LayerBuilder {
 
         let mut image_fill_clip = None;
         let mut picture_shadow = None;
+        let mut image_band_bounds = None;
         let own_ops = match &node.node_type {
             RenderNodeType::PageBackground(background) => Some(vec![PaintOp::page_background(
                 node.bbox,
@@ -720,6 +721,36 @@ impl LayerBuilder {
                     if let Some((full, image, payload)) = group_projection {
                         image_fill_clip = Some(frame);
                         vec![PaintOp::image(full, image, Some(payload))]
+                    } else if let Some(bands) = (self.profile == RenderProfile::Print
+                        && self.shape_group_depth == 0
+                        && !soft_edge_prepared
+                        && image_fill_clip.is_none())
+                    .then(|| {
+                        let device_frame = crate::renderer::print_raster::PrintRasterFrame::new(
+                            self.image_page_size,
+                            self.image_reference_origin,
+                            node.bbox,
+                            self.layout_dpi,
+                        )?;
+                        crate::renderer::image_resolver::print_jpeg_bands(
+                            &image,
+                            frame,
+                            self.layout_dpi,
+                            self.print_png_rgb555,
+                            device_frame,
+                        )
+                    })
+                    .flatten()
+                    {
+                        image_band_bounds = Some(frame);
+                        // 띠의 출력 바이트는 원본 BinData와 독립이다.
+                        image.data = None;
+                        bands
+                            .into_iter()
+                            .map(|(bbox, payload)| {
+                                PaintOp::image(bbox, image.clone(), Some(payload))
+                            })
+                            .collect()
                     } else {
                         crate::renderer::image_resolver::publish_print_jpeg_crop(&mut image);
                         let device_effect = soft_edge_payload.as_ref().is_some_and(|p| {
@@ -973,7 +1004,8 @@ impl LayerBuilder {
         };
 
         if let Some(ops) = own_ops {
-            let own_bounds = ops.first().map_or(node.bbox, PaintOp::bounds);
+            let own_bounds =
+                image_band_bounds.unwrap_or_else(|| ops.first().map_or(node.bbox, PaintOp::bounds));
             let mut own_leaf =
                 LayerNode::leaf(own_bounds, Some(node.id), ops).with_layer(node.layer);
             own_leaf = super::metafile_picture::lower(own_leaf);

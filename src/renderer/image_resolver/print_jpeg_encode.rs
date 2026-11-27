@@ -11,6 +11,7 @@ use jpeg_encoder::{ChromaSubsamplingMethod, ColorType, Encoder, SamplingFactor};
 use super::{decode_image_with_format_limited, detect_image_mime_type, memoized, Conversion};
 use crate::model::{image::ImageEffect, style::ImageFillMode};
 use crate::paint::{ResolvedImageKind, ResolvedImagePayload};
+use crate::renderer::print_raster::PrintRasterFrame;
 use crate::renderer::render_tree::{BoundingBox, ImageNode};
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
@@ -20,13 +21,23 @@ pub(crate) enum PrintJpegTransfer {
     Rgb555,
 }
 
-pub(crate) fn print_jpeg_payload(
-    image: &ImageNode,
+struct PrintJpegPlan<'a> {
+    data: &'a [u8],
+    mime: &'static str,
+    width: u32,
+    height: u32,
+    quality: u8,
+    transfer: PrintJpegTransfer,
+    source_window: Option<[u32; 4]>,
+}
+
+fn print_jpeg_plan<'a>(
+    image: &'a ImageNode,
     bbox: BoundingBox,
     dpi: f64,
     print_png_rgb555: Option<bool>,
     print_bmp_full_color: bool,
-) -> Option<ResolvedImagePayload> {
+) -> Option<PrintJpegPlan<'a>> {
     if image.effect != ImageEffect::RealPic
         || image.brightness != 0
         || image.contrast != 0
@@ -120,6 +131,32 @@ pub(crate) fn print_jpeg_payload(
     } else {
         PrintJpegTransfer::Direct
     };
+    Some(PrintJpegPlan {
+        data,
+        mime,
+        width,
+        height,
+        quality,
+        transfer,
+        source_window,
+    })
+}
+
+pub(crate) fn print_jpeg_payload(
+    image: &ImageNode,
+    bbox: BoundingBox,
+    dpi: f64,
+    print_png_rgb555: Option<bool>,
+    print_bmp_full_color: bool,
+) -> Option<ResolvedImagePayload> {
+    let PrintJpegPlan {
+        data,
+        mime,
+        quality,
+        transfer,
+        source_window,
+        ..
+    } = print_jpeg_plan(image, bbox, dpi, print_png_rgb555, print_bmp_full_color)?;
     let bytes = if mime == "image/jpeg" {
         // 한컴 2020 Print에서 원본 JPEG의 RGB를 유지하며 출력 폭으로 다시 압축한다.
         let mut bytes = super::print_fill_jpeg::recompress_original_rgb(data, quality)?;
@@ -139,6 +176,80 @@ pub(crate) fn print_jpeg_payload(
         },
         suppress_effects: false,
     })
+}
+
+/// 한컴 2020의 원본 RGB 전송은 큰 PNG를 각각 JPEG로 인코딩한다.
+pub(crate) fn print_jpeg_bands(
+    image: &ImageNode,
+    bbox: BoundingBox,
+    dpi: f64,
+    print_png_rgb555: Option<bool>,
+    frame: PrintRasterFrame,
+) -> Option<Vec<(BoundingBox, ResolvedImagePayload)>> {
+    if image.hancom2024_print_bitmap
+        || image.transform.has_transform()
+        || image.fill_mode.is_some()
+        || image.source_rect.is_some()
+        || detect_image_mime_type(image.data.as_deref()?) != "image/png"
+    {
+        return None;
+    }
+    let PrintJpegPlan {
+        data,
+        width,
+        height,
+        quality,
+        transfer,
+        source_window,
+        ..
+    } = print_jpeg_plan(image, bbox, dpi, print_png_rgb555, false)?;
+    if transfer != PrintJpegTransfer::Direct || source_window.is_some() {
+        return None;
+    }
+    // 독립 AIFT 9·19·25·37·40쪽에서 각각 316·270·493·595·432행씩 전송됐다.
+    // 원본 너비를 유지하고 각 띠가 1 Mi 픽셀 이내가 될 때까지 높이를 반으로 줄인다.
+    const MAX_BAND_PIXELS: u64 = 1 << 20;
+    let mut band_rows = height;
+    while u64::from(width) * u64::from(band_rows) > MAX_BAND_PIXELS {
+        band_rows = band_rows.div_ceil(2);
+    }
+    if band_rows == height {
+        return None;
+    }
+    let decoded = decode_image_with_format_limited(data, image::ImageFormat::Png)?.into_rgba8();
+    let palette = opaque_palette(&decoded)?;
+    if palette.len() < 32 {
+        return None;
+    }
+    let rgb = image::DynamicImage::ImageRgba8(decoded).into_rgb8();
+    let row_bytes = usize::try_from(width).ok()?.checked_mul(3)?;
+    let band_bytes = row_bytes.checked_mul(usize::try_from(band_rows).ok()?)?;
+    let mut bands = Vec::new();
+    for (band, pixels) in rgb.as_raw().chunks(band_bytes).enumerate() {
+        let first_row = u32::try_from(band).ok()?.checked_mul(band_rows)?;
+        let rows = u32::try_from(pixels.len() / row_bytes).ok()?;
+        let end_row = first_row.checked_add(rows)?;
+        let mut data = encode_rgb(pixels, width, rows, quality, false)?;
+        frame
+            .vertical_band(first_row, end_row, height)?
+            .attach(&mut data);
+        let scale = bbox.height / f64::from(height);
+        bands.push((
+            BoundingBox::new(
+                bbox.x,
+                bbox.y + f64::from(first_row) * scale,
+                bbox.width,
+                f64::from(rows) * scale,
+            ),
+            ResolvedImagePayload {
+                data,
+                mime: "image/jpeg",
+                kind: ResolvedImageKind::OutputDeviceWindow,
+                suppress_effects: false,
+            },
+        ));
+    }
+    Some(bands)
 }
 
 /// 중첩 메타파일 자원도 동일한 팔레트·양자화·전달 마커를 소비한다.
@@ -190,15 +301,7 @@ fn encode_print_jpeg_window(
             let (width, height) = decoded.dimensions();
             // RGB555 전달과 JPEG 품질은 서로 다른 팔레트 경계를 소비한다.
             // 변환 전 원본에서 큰 경계까지 세고 알파 검사는 모든 픽셀에서 유지한다.
-            let mut colors = HashSet::with_capacity(1025);
-            for pixel in decoded.pixels() {
-                if pixel[3] != 255 {
-                    return None;
-                }
-                if colors.len() <= 1024 {
-                    colors.insert([pixel[0], pixel[1], pixel[2]]);
-                }
-            }
+            let mut colors = opaque_palette(&decoded)?;
             if colors.len() < 32 {
                 return None;
             }
@@ -229,20 +332,43 @@ fn encode_print_jpeg_window(
                 }
             }
             let rgb = image::DynamicImage::ImageRgba8(decoded).to_rgb8();
-            let mut output = Vec::new();
-            let mut encoder = Encoder::new(&mut output, quality);
-            encoder.set_sampling_factor(SamplingFactor::F_2_2);
-            encoder.set_chroma_subsampling_method(ChromaSubsamplingMethod::Average);
-            encoder
-                .encode(
-                    rgb.as_raw(),
-                    width.try_into().ok()?,
-                    height.try_into().ok()?,
-                    ColorType::Rgb,
-                )
-                .ok()?;
-            super::png_sampling::mark_print_jpeg(&mut output, reconstruction);
-            Some(output)
+            encode_rgb(rgb.as_raw(), width, height, quality, reconstruction)
         },
     )
+}
+
+fn opaque_palette(decoded: &image::RgbaImage) -> Option<HashSet<[u8; 3]>> {
+    let mut colors = HashSet::with_capacity(1025);
+    for pixel in decoded.pixels() {
+        if pixel[3] != 255 {
+            return None;
+        }
+        if colors.len() <= 1024 {
+            colors.insert([pixel[0], pixel[1], pixel[2]]);
+        }
+    }
+    Some(colors)
+}
+
+fn encode_rgb(
+    bytes: &[u8],
+    width: u32,
+    height: u32,
+    quality: u8,
+    reconstruction: bool,
+) -> Option<Vec<u8>> {
+    let mut output = Vec::new();
+    let mut encoder = Encoder::new(&mut output, quality);
+    encoder.set_sampling_factor(SamplingFactor::F_2_2);
+    encoder.set_chroma_subsampling_method(ChromaSubsamplingMethod::Average);
+    encoder
+        .encode(
+            bytes,
+            width.try_into().ok()?,
+            height.try_into().ok()?,
+            ColorType::Rgb,
+        )
+        .ok()?;
+    super::png_sampling::mark_print_jpeg(&mut output, reconstruction);
+    Some(output)
 }
