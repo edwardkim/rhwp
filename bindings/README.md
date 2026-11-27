@@ -247,7 +247,9 @@ vertical 입력에 전달하고 다른 명령 뒤에는 초기화한다.
 
 동기 session의 `copySelection`/`cutSelection`/`pasteText`/`pasteHtml`은 `expectedRevision`을 필수로 받습니다. worker에서는 같은 이름에 `target`을 전달합니다. 복사/잘라내기 응답의 `payload`는 `{plainText, html}`이며 `outcome`은 복사 시 null, 잘라내기 시 편집 결과입니다. 붙여넣기는 기존 편집 결과를 반환합니다. OS clipboard 소유권은 host가 관리합니다.
 
-본문 section의 텍스트만 지원하며 출력 payload와 입력은 1 MiB, 한 번의 붙여넣기는 256 문단으로 제한합니다. CRLF/CR을 LF로 정규화하며 하나의 undo로 복원합니다. HTML은 기존 core importer/exporter를 사용하고 object/control/table의 미지원 결과는 rollback합니다. HTML parser의 peak RSS까지 제한하는 계약은 아닙니다. 빈 문단을 HTML exporter가 생략하는 선택은 정확한 plain text와 `html:null`을 반환합니다.
+본문은 section 안의 텍스트를 지원하며 출력 payload와 입력은 1 MiB, 한 번의 붙여넣기는 256 문단으로 제한합니다. CRLF/CR을 LF로 정규화하며 하나의 undo로 복원합니다. HTML은 기존 core importer/exporter를 사용하고 object/control/table의 미지원 결과는 rollback합니다. HTML parser의 peak RSS까지 제한하는 계약은 아닙니다. 빈 문단을 HTML exporter가 생략하는 선택은 정확한 plain text와 `html:null`을 반환합니다.
+
+capabilities의 `tableCellTextClipboard`가 `true`면 표 셀은 중첩 경로를 포함해 같은 셀의 한 문단에서 텍스트를 복사하거나 잘라낼 수 있으며 `html:null`을 반환합니다. `pasteText`는 한 줄을 지원합니다. 셀에서 여러 문단이나 HTML을 붙여넣으면 `unsupported`를 반환합니다. 보호된 셀의 텍스트는 읽을 수 있으며 잘라내기와 붙여넣기는 편집 권한을 확인합니다.
 
 P61의 텍스트 편집·clipboard는 전체 대상 문단에 floating object나 필드/책갈피 등 semantic control이 있으면 명시적으로 거절합니다(구조용 SectionDef/ColumnDef는 예외). 문단 합치기와 IME에도 같은 guard를 적용하며 선택 조회와 동일 텍스트 no-op는 보존합니다. HTML은 lexical preflight로 객체 태그를 거절하고 주석을 제거한 뒤 기존 importer에 전달합니다. 일반 HTML sanitizer나 객체/필드 복사 기능은 아닙니다.
 

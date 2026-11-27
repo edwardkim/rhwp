@@ -1,8 +1,9 @@
-//! Bounded body-text clipboard adapters; the OS clipboard belongs to the host.
+//! Bounded body and cell text clipboard adapters; the OS clipboard belongs to the host.
 //!
 //! HTML uses the core's existing formatting importer/exporter, not a browser or
 //! a general HTML sanitizer. Objects/tables and scalar/logical inline affinity
-//! are outside this surface. Empty HTML and empty text preserve selection/history.
+//! are outside this surface. Cells support plain text within one paragraph.
+//! Empty body HTML and empty text preserve selection/history.
 
 use std::borrow::Cow;
 
@@ -24,8 +25,8 @@ pub const MAX_CLIPBOARD_PARAGRAPHS: usize = 256;
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct NativeClipboardPayload {
     pub plain_text: String,
-    /// None for an empty selection or when the existing HTML exporter would
-    /// omit an empty selected paragraph fragment. Plain text remains lossless.
+    /// None for cell text, an empty selection or a body fragment that the
+    /// existing HTML exporter would omit. Plain text remains lossless.
     pub html: Option<String>,
 }
 
@@ -46,8 +47,8 @@ impl NativeEditor {
         expected_revision: u64,
     ) -> Result<NativeClipboardPayload, NativeHostError> {
         self.check_edit_ready(expected_revision)?;
-        self.require_body_selection("clipboard")?;
         let selection = self.selection();
+        let cell = !selection.anchor.cell_path.is_empty();
         let (bytes, empty_fragment) =
             clipboard_selection_size(self.session().document(), selection)?;
         if bytes == 0 {
@@ -56,11 +57,13 @@ impl NativeEditor {
                 html: None,
             });
         }
-        Self::check_body_text_span(self.session().document(), selection)?;
+        if !cell {
+            Self::check_body_text_span(self.session().document(), selection)?;
+        }
         let plain_text = self.selected_text(selection);
         check_text_controls(&plain_text)?;
         let (start, end) = Self::ordered(selection);
-        let html = if empty_fragment {
+        let html = if cell || empty_fragment {
             None
         } else {
             let exported = self.session().document().export_selection_html_native(
@@ -99,12 +102,20 @@ impl NativeEditor {
         text: &str,
     ) -> Result<NativeEditOutcome, NativeHostError> {
         self.check_edit_ready(expected_revision)?;
-        self.require_body_selection("clipboard")?;
         check_input_size(text)?;
         let text = text.replace("\r\n", "\n").replace('\r', "\n");
         check_text_controls(&text)?;
         if text.is_empty() {
             return self.set_selection(expected_revision, self.selection().clone());
+        }
+        let selection = self.selection().clone();
+        if !text.contains('\n') {
+            return self.replace_range(expected_revision, &selection, &text);
+        }
+        if !selection.anchor.cell_path.is_empty() {
+            return Err(NativeHostError::Unsupported(
+                "clipboard paste into a table cell requires a single paragraph".into(),
+            ));
         }
         let lines: Vec<&str> = text
             .split('\n')
@@ -114,10 +125,6 @@ impl NativeEditor {
             return Err(NativeHostError::LimitExceeded(
                 "clipboard paragraph limit exceeded".into(),
             ));
-        }
-        let selection = self.selection().clone();
-        if lines.len() == 1 {
-            return self.replace_range(expected_revision, &selection, &text);
         }
         let (start, end) = Self::ordered(&selection);
         // The comparison allocates selected text only after its byte bound is
@@ -174,7 +181,7 @@ impl NativeEditor {
         html: &str,
     ) -> Result<NativeEditOutcome, NativeHostError> {
         self.check_edit_ready(expected_revision)?;
-        self.require_body_selection("clipboard")?;
+        self.require_body_selection("clipboard HTML paste")?;
         check_input_size(html)?;
         let html = prepare_body_html(html)?;
         let selection = self.selection().clone();
@@ -405,6 +412,23 @@ fn clipboard_selection_size(
     selection: &NativeTextSelection,
 ) -> Result<(usize, bool), NativeHostError> {
     let (start, end) = NativeEditor::ordered(selection);
+    if !start.cell_path.is_empty() {
+        // Reading a protected cell is allowed. Cut and paste check permissions
+        // through the editor's existing mutation path before changing the cell.
+        let paragraph = core.native_text_paragraph(start)?;
+        if !paragraph.controls.is_empty() {
+            return Err(NativeHostError::Unsupported(
+                "clipboard cell text cannot include semantic controls".into(),
+            ));
+        }
+        let bytes = clipboard_fragment_size(
+            &paragraph.text,
+            start.scalar_offset as usize,
+            (end.scalar_offset - start.scalar_offset) as usize,
+            MAX_CLIPBOARD_BYTES,
+        )?;
+        return Ok((bytes, false));
+    }
     let paragraphs = &core.document().sections[start.section as usize].paragraphs;
     let mut bytes = (end.paragraph - start.paragraph) as usize;
     let mut empty_fragment = false;
@@ -425,24 +449,33 @@ fn clipboard_selection_size(
         } else {
             usize::MAX
         };
-        let mut fragment_bytes = 0;
-        for ch in text.chars().skip(from).take(count) {
-            if ch.is_control() {
-                return Err(NativeHostError::Unsupported(
-                    "clipboard paragraph contains unsupported control characters".into(),
-                ));
-            }
-            fragment_bytes += ch.len_utf8();
-            bytes = bytes
-                .checked_add(ch.len_utf8())
-                .ok_or_else(clipboard_limit)?;
-            if bytes > MAX_CLIPBOARD_BYTES {
-                return Err(clipboard_limit());
-            }
-        }
+        let fragment_bytes =
+            clipboard_fragment_size(text, from, count, MAX_CLIPBOARD_BYTES - bytes)?;
+        bytes += fragment_bytes;
         empty_fragment |= fragment_bytes == 0;
     }
     Ok((bytes, empty_fragment))
+}
+
+fn clipboard_fragment_size(
+    text: &str,
+    from: usize,
+    count: usize,
+    max_bytes: usize,
+) -> Result<usize, NativeHostError> {
+    let mut bytes = 0;
+    for ch in text.chars().skip(from).take(count) {
+        if ch.is_control() {
+            return Err(NativeHostError::Unsupported(
+                "clipboard paragraph contains unsupported control characters".into(),
+            ));
+        }
+        bytes += ch.len_utf8();
+        if bytes > max_bytes {
+            return Err(clipboard_limit());
+        }
+    }
+    Ok(bytes)
 }
 
 fn check_imported_paragraphs(
