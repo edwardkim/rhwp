@@ -17,6 +17,16 @@ use super::NativeHostError;
 
 #[path = "cell_paragraph_commands.rs"]
 mod cell_paragraph_commands;
+#[path = "table_navigation.rs"]
+mod table_navigation;
+
+/// Tab moves to the next editable cell, Shift+Tab to the previous cell.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum NativeTableCellDirection {
+    Next,
+    Previous,
+}
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(
@@ -52,6 +62,10 @@ pub enum NativeEditCommand {
         extend_selection: bool,
         preferred_x: Option<f64>,
     },
+    /// Move within the innermost table without changing the document.
+    NavigateTableCell {
+        direction: NativeTableCellDirection,
+    },
     /// Delete the scalar selection, or one complete grapheme at a caret.
     /// At the paragraph start, join with the preceding body paragraph.
     DeleteBackward {},
@@ -85,7 +99,9 @@ impl NativeEditor {
         self.check_edit_ready(expected_revision)?;
         if !matches!(
             &command,
-            NativeEditCommand::SplitParagraph {} | NativeEditCommand::JoinPreviousParagraph {}
+            NativeEditCommand::SplitParagraph {}
+                | NativeEditCommand::JoinPreviousParagraph {}
+                | NativeEditCommand::NavigateTableCell { .. }
         ) {
             self.require_body_selection("keyboard commands")?;
         }
@@ -129,6 +145,10 @@ impl NativeEditor {
                 )?;
                 preferred_x = Some(movement.preferred_x);
                 self.move_focus(expected_revision, movement.position, extend_selection)?
+            }
+            NativeEditCommand::NavigateTableCell { direction } => {
+                let selection = self.table_cell_selection(direction)?;
+                self.set_selection(expected_revision, selection)?
             }
             NativeEditCommand::DeleteBackward {} => {
                 self.delete_grapheme(expected_revision, true)?
