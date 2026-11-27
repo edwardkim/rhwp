@@ -9,11 +9,9 @@ use rhwp::renderer::style_resolver::ResolvedCharStyle;
 
 #[test]
 fn per_language_spacing_wins_when_present() {
-    let cs = ResolvedCharStyle {
-        letter_spacing: 0.5,
-        letter_spacings: vec![1.25, -0.75],
-        ..Default::default()
-    };
+    let mut cs = ResolvedCharStyle::default();
+    cs.letter_spacing = 0.5;
+    cs.letter_spacings = vec![1.25, -0.75];
     assert_eq!(cs.letter_spacing_for_lang(0), 1.25);
     assert_eq!(cs.letter_spacing_for_lang(1), -0.75);
     assert_eq!(
