@@ -32,6 +32,7 @@ use super::editor::{NativeEditOutcome, NativeEditor};
 use super::render_snapshot::{NativeRenderSnapshot, NativeRenderSnapshotLimits};
 use super::save::NativeSaveCaretPolicy;
 use super::save::{NativeSaveFormat, NativeSaveStatus, NativeSaveToken, PreparedSave};
+use super::search::{NativeSearchRequest, NativeSearchResult};
 use super::NativePageSize;
 use super::{
     NativeDocumentSession, NativeFrame, NativeHostError, MAX_DOCUMENT_BYTES, MAX_FRAME_PIXELS,
@@ -183,6 +184,10 @@ pub enum NativeRuntimeCommand {
         target: NativeRuntimeTarget,
         request: NativeAccessibilityRequest,
     },
+    SearchText {
+        target: NativeRuntimeTarget,
+        request: NativeSearchRequest,
+    },
     /// Export only owned immutable inputs. The worker clamps the input ceiling
     /// to its byte quota and charges the actual estimate before completion.
     ExportRenderSnapshot {
@@ -248,6 +253,12 @@ pub enum NativeRuntimeCommand {
     },
     Replace {
         target: NativeRuntimeTarget,
+        text: String,
+    },
+    /// Replace a caller-named range, preserving the live selection for undo.
+    ReplaceRange {
+        target: NativeRuntimeTarget,
+        selection: NativeTextSelection,
         text: String,
     },
     BeginComposition {
@@ -344,6 +355,9 @@ impl NativeRuntimeCommand {
             Self::BeginEdit { selection, .. } | Self::SetSelection { selection, .. } => {
                 selection_bytes(selection)
             }
+            Self::ReplaceRange {
+                selection, text, ..
+            } => selection_bytes(selection).and_then(|bytes| bytes.checked_add(text.capacity())),
             Self::CaretRect { position, .. } => position
                 .cell_path
                 .capacity()
@@ -388,6 +402,12 @@ impl NativeRuntimeCommand {
                     .and_then(|bytes| bytes.checked_add(replacement_bytes?))
             }
             Self::Accessibility { .. } => Some(ACCESSIBILITY_RESERVATION_BYTES),
+            Self::SearchText { request, .. } => {
+                request
+                    .validate()
+                    .map_err(|_| NativeRuntimeError::InvalidArgument)?;
+                request.reservation_bytes()
+            }
             _ => Some(0),
         };
         bytes.ok_or(NativeRuntimeError::ByteCapacity)
@@ -488,6 +508,10 @@ pub enum NativeRuntimeOutput {
         target: NativeRuntimeTarget,
         snapshot: NativeAccessibilitySnapshot,
     },
+    SearchText {
+        target: NativeRuntimeTarget,
+        result: NativeSearchResult,
+    },
     RenderSnapshot {
         document_id: NativeRequestId,
         snapshot: Arc<NativeRenderSnapshot>,
@@ -545,6 +569,7 @@ impl fmt::Debug for NativeRuntimeOutput {
             Self::ImeEditContext(_) => "ImeEditContext",
             Self::Clipboard { .. } => "Clipboard",
             Self::Accessibility { .. } => "Accessibility",
+            Self::SearchText { .. } => "SearchText",
             Self::RenderSnapshot { .. } => "RenderSnapshot",
             Self::DocumentClosed => "DocumentClosed",
             Self::RasterCacheLimit { .. } => "RasterCacheLimit",

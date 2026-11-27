@@ -244,6 +244,22 @@ fn execute(
             *owner = None;
             Ok(O::DocumentClosed)
         }
+        C::SearchText { target, request } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            if matches!(
+                &doc.owner,
+                DocumentOwner::Editor(editor) if editor.composition_id().is_some()
+            ) {
+                return Err(NativeHostError::Unsupported(
+                    "finish or cancel composition before searching".into(),
+                ));
+            }
+            Ok(O::SearchText {
+                target,
+                result: doc.session().search_text(&request)?,
+            })
+        }
         C::Accessibility { target, request } => {
             let doc = document(owner)?;
             doc.check(target)?;
@@ -396,6 +412,19 @@ fn execute(
             doc.editor()?
                 .set_selection(target.revision, selection)
                 .map(O::Edited)
+        }
+        C::ReplaceRange {
+            target,
+            selection,
+            text,
+        } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            Ok(O::Edited(doc.editor()?.replace_range(
+                target.revision,
+                &selection,
+                &text,
+            )?))
         }
         C::Replace { target, text } => {
             let doc = document(owner)?;
@@ -612,6 +641,7 @@ pub(super) fn worker_loop(
             Ok(NativeRuntimeOutput::Accessibility { snapshot, .. }) => {
                 accessibility_retained_bytes(snapshot)
             }
+            Ok(NativeRuntimeOutput::SearchText { result, .. }) => result.retained_bytes(),
             Ok(NativeRuntimeOutput::RenderSnapshot { snapshot, .. }) => {
                 snapshot.usage().estimated_bytes
             }

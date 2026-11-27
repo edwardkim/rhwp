@@ -84,7 +84,17 @@ pub(crate) fn find_matches(text: &str, query: &str, case_sensitive: bool) -> Vec
 
 /// 문단 텍스트에서 query를 검색하여 겹치지 않는 매치의 원문 문자 (오프셋, 길이)를 반환
 fn find_in_text(text: &str, query: &str, case_sensitive: bool) -> Vec<(usize, usize)> {
-    if query.is_empty() || text.is_empty() {
+    find_matches_limited(text, query, case_sensitive, usize::MAX)
+}
+
+/// Same source-scalar and nonoverlap rules as the legacy search paths.
+pub(crate) fn find_matches_limited(
+    text: &str,
+    query: &str,
+    case_sensitive: bool,
+    limit: usize,
+) -> Vec<(usize, usize)> {
+    if query.is_empty() || text.is_empty() || limit == 0 {
         return vec![];
     }
     let mut results = vec![];
@@ -100,6 +110,9 @@ fn find_in_text(text: &str, query: &str, case_sensitive: bool) -> Vec<(usize, us
         for i in 0..=chars.len() - qlen {
             if i >= match_end && chars[i..i + qlen] == qchars[..] {
                 results.push((i, qlen));
+                if results.len() == limit {
+                    break;
+                }
                 match_end = i + qlen;
             }
         }
@@ -131,6 +144,9 @@ fn find_in_text(text: &str, query: &str, case_sensitive: bool) -> Vec<(usize, us
                 let offset = chars[i].1;
                 let length = chars[i + qlen - 1].1 + 1 - offset;
                 results.push((offset, length));
+                if results.len() == limit {
+                    break;
+                }
                 match_end = offset + length;
             }
         }

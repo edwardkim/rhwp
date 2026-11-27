@@ -598,6 +598,9 @@ fn worker_output(host: &mut Host, worker: u64, output: NativeRuntimeOutput) -> V
             NativeRuntimeOutput::Clipboard { payload, outcome } => {
                 json!({"ok":true,"kind":"clipboard","payload":payload,"outcome":outcome})
             }
+            NativeRuntimeOutput::SearchText { target, result } => {
+                json!({"ok":true,"kind":"searchText","target":target,"result":result})
+            }
             NativeRuntimeOutput::Accessibility { target, snapshot } => {
                 json!({"ok":true,"kind":"accessibility","target":target,"snapshot":snapshot})
             }
@@ -811,6 +814,7 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
         "recoveryOpen":true,
         "tableCellTextClipboard":true,
         "atomicImeEdits":true,
+        "workerTextSearch":true,
         "worker":true,"maxWorkers":4,"hostRequests":true,"viewState":true,"accessibilitySnapshots":true,"threadAffine":true,"maxSessions":MAX_SESSIONS,"maxDocumentBytes":MAX_DOCUMENT_BYTES,
         "maxRequestBytes":MAX_REQUEST_BYTES,"maxBufferBytes":MAX_BUFFER_BYTES,
         "pixelFormat":"rgba8Premultiplied","colorSpace":"srgb"}),
