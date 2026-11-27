@@ -1,0 +1,18 @@
+{
+  "recorded": 1795335256.9549236,
+  "old_base": "bd3cd171331e80e79881dc8e9ed37f837ef6be77",
+  "new_base": "8a196ca7aea2aa3cf32d394f5b7da2bdf4520479",
+  "old_head": "77e6ed84717507a27a1df10dd1cf1555509f80c6",
+  "new_head": "383c475aee18bc368e1ce393a97edf4b050b9ea0",
+  "branch": "task/7754-nine-fidelity-devel",
+  "range_diff_sha256": "2ef685e5fa190fc1f4c8a891200b7e37ad4f9dd3ef05280ea7cb4a7f78e44c22",
+  "same_patches": 66,
+  "conflicts": 0,
+  "protected_tsv_sha256": "b2ea68f97a242d111522132b6c733f15a65b29b56e227943fd9c15f9c8d35597",
+  "scope": "Actual user-requested rebase onto merged PR9316. PR9293 is closed without merge; its preview code is not included in this task branch. New-head validation remains required.",
+  "original_log": {
+    "commit": "c1ead7045fb0bc6793f140c8001410e317d3eb1a",
+    "path": "mydocs/pr/assets/issues7754_7765/source46/source87-range-diff.txt",
+    "sha256": "53a07248e848db4bb9b241576a94d2d09faa95eabd117abc5d27089cdeb766e1"
+  }
+}

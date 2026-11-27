@@ -1,0 +1,16 @@
+{
+  "test_source": "tests/cases/issue_7765_hwpx_saved_flow_ownership.rs",
+  "sha256": "483100f7465498e41100279ee9d919a075039d03f641db48d4c19536e03e0a29",
+  "before_source": "d6b1b4e18e70746c0497b2e4fb98432bc773ffc7",
+  "after_production_source": "2f46647df16da00365b22a1364cdc0b28b8344bc",
+  "before_result": "2 PASS / 1 FAIL; 13.79s",
+  "after_result": "3 PASS / 0 FAIL; 1.30s",
+  "method": "frozen libraries, rustc --test, bwrap minimal fonts; final Cargo suites remain required",
+  "font_files": [
+    "/home/tsjang/rhwp/ttfs/opensource/NotoSansKR-Regular.ttf",
+    "/home/tsjang/rhwp/ttfs/opensource/RHWPOldHangul-Regular.otf",
+    "/home/tsjang/rhwp/ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+    "/home/tsjang/rhwp/ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+    "/home/tsjang/rhwp/ttfs/opensource/NotoSansSymbols2-Regular.ttf"
+  ]
+}

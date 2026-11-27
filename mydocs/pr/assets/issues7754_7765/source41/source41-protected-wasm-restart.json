@@ -1,0 +1,6 @@
+{
+  "recorded": 1795325543.6626515,
+  "pid": 1828356,
+  "reason": "Previous first Chromium startup exceeded default 30s. Same namespace/Chrome155 now launches successfully in 5937ms. Preserve failed receipt and retry unchanged producer and validation command.",
+  "changed_production_code": false
+}

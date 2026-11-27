@@ -1,0 +1,31 @@
+{
+  "scope": "Causal glyph-only diagnostic with explicit verified PostScript query. Not the final font environment or a visual acceptance result. Original input bytes unchanged.",
+  "command": [
+    "/home/tsjang/rhwp/venv/bin/python",
+    "scripts/visual_sweep.py",
+    "--silhouette-only",
+    "--hwp",
+    "samples/HWP5-nopassword-123456.hwpx",
+    "--pdf",
+    "pdf/HWP5-nopassword-123456-hwpx-2024.pdf",
+    "--key",
+    "original-HGGGT-diagnostic",
+    "--compat",
+    "2024",
+    "--dpi",
+    "96",
+    "--pages",
+    "1",
+    "--page-workers",
+    "1",
+    "--rhwp-bin",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source34-optimized",
+    "--font-environment",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source34-causal-split-program/environment.json",
+    "--out",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source34-causal-split-program"
+  ],
+  "started": 1795295614.5348005,
+  "ended": 1795295634.4305418,
+  "exit_code": 0
+}

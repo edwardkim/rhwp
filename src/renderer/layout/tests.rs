@@ -721,7 +721,9 @@ fn test_layout_with_composed_styles() {
     let styles = ResolvedStyleSet {
         section_tab_width_bits: Default::default(),
         source_hwp3_native: false,
+        legacy_body_symbols: false,
         word_compat_target: false,
+        word_spacing: Default::default(),
         source_program_projection_slots: Default::default(),
         unsubstituted_font_slots: Default::default(),
         isolated_jamo_font: None,
@@ -758,6 +760,7 @@ fn test_layout_with_composed_styles() {
         bullets: Vec::new(),
         kerning_measurement_context: None,
         horizontal_shaping_context: None,
+        word_line_factors: None,
         supplemental_metrics: None,
     };
 
@@ -887,7 +890,9 @@ fn test_layout_multi_run_x_position() {
     let styles = ResolvedStyleSet {
         section_tab_width_bits: Default::default(),
         source_hwp3_native: false,
+        legacy_body_symbols: false,
         word_compat_target: false,
+        word_spacing: Default::default(),
         source_program_projection_slots: Default::default(),
         unsubstituted_font_slots: Default::default(),
         isolated_jamo_font: None,
@@ -919,6 +924,7 @@ fn test_layout_multi_run_x_position() {
         bullets: Vec::new(),
         kerning_measurement_context: None,
         horizontal_shaping_context: None,
+        word_line_factors: None,
         supplemental_metrics: None,
     };
 
@@ -1003,7 +1009,9 @@ fn test_resolved_to_text_style() {
     let styles = ResolvedStyleSet {
         section_tab_width_bits: Default::default(),
         source_hwp3_native: false,
+        legacy_body_symbols: false,
         word_compat_target: false,
+        word_spacing: Default::default(),
         source_program_projection_slots: Default::default(),
         unsubstituted_font_slots: Default::default(),
         isolated_jamo_font: None,
@@ -1035,6 +1043,7 @@ fn test_resolved_to_text_style() {
         bullets: Vec::new(),
         kerning_measurement_context: None,
         horizontal_shaping_context: None,
+        word_line_factors: None,
         supplemental_metrics: None,
     };
 
@@ -1056,7 +1065,9 @@ fn test_resolved_to_text_style_with_ratio() {
     let styles = ResolvedStyleSet {
         section_tab_width_bits: Default::default(),
         source_hwp3_native: false,
+        legacy_body_symbols: false,
         word_compat_target: false,
+        word_spacing: Default::default(),
         source_program_projection_slots: Default::default(),
         unsubstituted_font_slots: Default::default(),
         isolated_jamo_font: None,
@@ -1084,6 +1095,7 @@ fn test_resolved_to_text_style_with_ratio() {
         bullets: Vec::new(),
         kerning_measurement_context: None,
         horizontal_shaping_context: None,
+        word_line_factors: None,
         supplemental_metrics: None,
     };
 
@@ -2595,6 +2607,7 @@ fn task1197_paper_nodes_sort_by_plane_z_order_and_stable_index() {
                 section_index: Some(0),
                 para_index: Some(0),
                 control_index: Some(control_index),
+                cell_context: None,
             }),
             BoundingBox::new(0.0, 0.0, 1.0, 1.0),
         )

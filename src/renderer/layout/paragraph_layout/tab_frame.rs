@@ -3,6 +3,39 @@ use crate::model::style::Alignment;
 use crate::renderer::composer::{ComposedLine, ComposedParagraph};
 use crate::renderer::TabStop;
 
+/// 글상자 오른쪽 밖에 지정된 쪽번호 리더는 현재 글줄의 오른쪽에서 끝난다.
+pub(super) fn bounded_textbox_leader(
+    composed: &ComposedParagraph,
+    paragraph: &Paragraph,
+    stops: &mut [TabStop],
+    right: f64,
+) -> Option<ComposedParagraph> {
+    let [stop] = stops else { return None };
+    let [extension] = composed.tab_extended.as_slice() else {
+        return None;
+    };
+    let (prefix, suffix) = paragraph.text.rsplit_once('\t')?;
+    let suffix = suffix.trim();
+    if composed.lines.len() != 1
+        || prefix.contains('\t')
+        || suffix.is_empty()
+        || !suffix.bytes().all(|byte| byte.is_ascii_digit())
+        || stop.tab_type != 1
+        || stop.fill_type == 0
+        || extension[2] >> 8 != 2
+        || extension[2] & 0xff == 0
+        || !(right > 0.0 && stop.position > right)
+    {
+        return None;
+    }
+    // 저장 폭은 이전 정지에서 배치한 다음 블록의 시작이다. 이 경우에만
+    // 현재 경계에서 다시 정렬하며 같은 런·교차 런의 기존 소비 경로를 공유한다.
+    stop.position = right;
+    let mut bounded = composed.clone();
+    bounded.tab_extended[0][..2].fill(0);
+    Some(bounded)
+}
+
 /// 저장 왼쪽 탭은 고정 전진이다. 줄 중간의 마지막 탭까지 자연 폭으로
 /// 소비하고, 뒤 내용만 같은 양쪽 정렬 예산을 나누어 쓴다.
 pub(super) fn saved_left_tab_count(

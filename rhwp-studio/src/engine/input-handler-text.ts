@@ -1,6 +1,7 @@
 /** input-handler text methods — extracted from InputHandler class */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { fieldInfoAt } from './control-place';
 import { normalizeTextNewlines } from '../core/text-newlines';
 import {
   InsertTextCommand,
@@ -61,7 +62,7 @@ function overwrittenTextAt(this: any, pos: DocumentPosition, text: string): stri
   if (this.cursor.isInHeaderFooter() || this.cursor.isInFootnote()) return '';
   try {
     const limit = graphemes(text).length;
-    const fi = this.wasm.getFieldInfoAt(pos);
+    const fi = fieldInfoAt(this.wasm, pos, this.f11Field);
     let fieldEnd = Infinity; // 누름틀 안이면 그 끝
     if (fi.inField && fi.fieldType === 'clickhere') {
       if (this.isAtExitedFieldStart?.(pos, fi)) return '';
@@ -121,7 +122,7 @@ function tryConfirmRemoveClickHereAtBoundary(
 ): boolean {
   if (this.isFormMode?.()) return false;
   try {
-    const fi = this.wasm.getFieldInfoAt(pos);
+    const fi = fieldInfoAt(this.wasm, pos, this.f11Field);
     if (!fi.inField || fi.fieldType !== 'clickhere') return false;
     const start = fi.startCharIdx ?? -1;
     const end = fi.endCharIdx ?? -1;
@@ -246,10 +247,10 @@ export function handleBackspace(this: any, pos: DocumentPosition, inCell: boolea
 
   // 필드 경계 보호: 필드 시작 위치에서는 Backspace 차단
   try {
-    const fi = this.wasm.getFieldInfoAt(pos);
+    const fi = fieldInfoAt(this.wasm, pos, this.f11Field);
     if (fi.inField && this.isAtExitedFieldStart?.(pos, fi)) {
       // 누름틀 시작 바깥에서는 Backspace가 앞쪽 본문 글자를 지운다.
-    } else if (fi.inField && charOffset <= fi.startCharIdx) {
+    } else if (fi.inField && fi.startCharIdx !== undefined && charOffset <= fi.startCharIdx) {
       if (tryConfirmRemoveClickHereAtBoundary.call(this, pos, 'backward')) return;
       return;
     }
@@ -318,8 +319,8 @@ export function handleDelete(this: any, pos: DocumentPosition, inCell: boolean):
 
   // 필드 경계 보호: 필드 끝 위치에서는 Delete 차단
   try {
-    const fi = this.wasm.getFieldInfoAt(pos);
-    if (fi.inField && charOffset >= fi.endCharIdx) {
+    const fi = fieldInfoAt(this.wasm, pos, this.f11Field);
+    if (fi.inField && fi.endCharIdx !== undefined && charOffset >= fi.endCharIdx) {
       if (tryConfirmRemoveClickHereAtBoundary.call(this, pos, 'forward')) return;
       return;
     }
@@ -419,6 +420,7 @@ export function onCompositionStart(this: any): void {
   }
 
   this.isComposing = true;
+  this.compositionAreaTextStart = null;
   this.compositionBodyLogical = !this.cursor.isInHeaderFooter()
     && !this.cursor.isInFootnote()
     && basePos.parentParaIndex === undefined
@@ -445,6 +447,8 @@ export function onCompositionEnd(this: any): void {
   }
 
   const anchor = this.compositionAnchor;
+  const areaStart = this.compositionAreaTextStart ?? anchor?.charOffset;
+  this.compositionAreaTextStart = null;
   const finalLength = this.compositionLength;
   const bodyLogical = this.compositionBodyLogical;
   const headerFooterSelectionComposition = this.headerFooterSelectionComposition === true;
@@ -497,7 +501,7 @@ export function onCompositionEnd(this: any): void {
           applyTo: this.cursor.hfApplyTo,
           previewPage: this.cursor.hfPreviewPage,
         };
-        this.executeOperation({ kind: 'record', command: new InsertTextInHeaderFooterCommand(target, this.cursor.hfParaIdx, anchor.charOffset, composed) });
+        this.executeOperation({ kind: 'record', command: new InsertTextInHeaderFooterCommand(target, this.cursor.hfParaIdx, anchor.charOffset, composed, areaStart) });
       }
     } else if (this.cursor.isInFootnote()) {
       const composed = this._lastCompositionText || '';
@@ -506,7 +510,7 @@ export function onCompositionEnd(this: any): void {
           sectionIdx: this.cursor.fnSectionIdx, paraIdx: this.cursor.fnParaIdx, controlIdx: this.cursor.fnControlIdx,
           footnoteIndex: this.cursor.fnFootnoteIndex, pageNum: this.cursor.fnPageNum,
         };
-        this.executeOperation({ kind: 'record', command: new InsertTextInFootnoteCommand(target, this.cursor.fnInnerParaIdx, anchor.charOffset, composed) });
+        this.executeOperation({ kind: 'record', command: new InsertTextInFootnoteCommand(target, this.cursor.fnInnerParaIdx, anchor.charOffset, composed, areaStart) });
       }
     } else {
       const textAnchor = bodyLogical ? {
@@ -597,7 +601,7 @@ export function onInput(this: any, e?: InputEvent): void {
         this._compositionFragment = captureTextFragment(this.wasm, anchor);
         // 앵커가 누름틀 밖인지 편집기의 빠져나온 끝 상태로 지금 정한다(빠져나온 시작에서는 덮지 않는다).
         // 누름틀 조회는 끝 위치도 안으로 치고, 그 상태는 첫 갱신 뒤 캐럿이 다음 누름틀에 들어가면 지워진다.
-        const fi = this.wasm.getFieldInfoAt(anchor);
+        const fi = fieldInfoAt(this.wasm, anchor, this.f11Field);
         this._compositionOutsideField = !fi.inField || this.isAtExitedFieldEnd?.(anchor, fi);
       }
       this.compositionLength += charCount(this._compositionCovered);
@@ -656,7 +660,7 @@ export function onInput(this: any, e?: InputEvent): void {
     // cursor.moveTo() 내부의 exact lookup 전에 deferred mutation을 등록하고,
     // 실제 cell-flow 경계에서만 동기 flush한다.
     const boundaryHandled = this.consumeRawTextMutationBeforeCursor();
-    const newOffset = anchor.charOffset + charCount(text);
+    const newOffset = (this.compositionAreaTextStart ?? anchor.charOffset) + charCount(text);
     if (this.cursor.isInHeaderFooter()) {
       this.cursor.setHfCursorPosition(this.cursor.hfParaIdx, newOffset);
     } else if (this.cursor.isInFootnote()) {
@@ -765,10 +769,11 @@ export function onInput(this: any, e?: InputEvent): void {
       };
       const paraIdx = this.cursor.hfParaIdx;
       const charOffset = this.cursor.hfCharOffset;
-      this.wasm.insertTextInHeaderFooter(target.sectionIdx, isHeader, target.applyTo, paraIdx, charOffset, text);
+      const result = JSON.parse(this.wasm.insertTextInHeaderFooter(target.sectionIdx, isHeader, target.applyTo, paraIdx, charOffset, text));
+      const insertedAt = result.charOffset - charCount(text);
       // [Task #2337] 히스토리 기록 → 본문 스냅샷 undo 가 이 편집을 무언 파괴하지 않게 한다.
-      this.executeOperation({ kind: 'record', command: new InsertTextInHeaderFooterCommand(target, paraIdx, charOffset, text) });
-      this.cursor.setHfCursorPosition(paraIdx, charOffset + charCount(text));
+      this.executeOperation({ kind: 'record', command: new InsertTextInHeaderFooterCommand(target, paraIdx, charOffset, text, insertedAt) });
+      this.cursor.setHfCursorPosition(paraIdx, result.charOffset);
       this.afterEdit();
     } catch (err) {
       console.error('[HF-input] insertTextInHeaderFooter 실패:', err);
@@ -785,9 +790,10 @@ export function onInput(this: any, e?: InputEvent): void {
       };
       const innerParaIdx = this.cursor.fnInnerParaIdx;
       const charOffset = this.cursor.fnCharOffset;
-      this.wasm.insertTextInFootnote(target.sectionIdx, target.paraIdx, target.controlIdx, innerParaIdx, charOffset, text);
-      this.executeOperation({ kind: 'record', command: new InsertTextInFootnoteCommand(target, innerParaIdx, charOffset, text) });
-      this.cursor.setFnCursorPosition(innerParaIdx, charOffset + charCount(text));
+      const result = this.wasm.insertTextInFootnote(target.sectionIdx, target.paraIdx, target.controlIdx, innerParaIdx, charOffset, text);
+      const insertedAt = result.charOffset - charCount(text);
+      this.executeOperation({ kind: 'record', command: new InsertTextInFootnoteCommand(target, innerParaIdx, charOffset, text, insertedAt) });
+      this.cursor.setFnCursorPosition(innerParaIdx, result.charOffset);
       this.afterEdit();
     } catch (err) {
       console.error('[FN-input] insertTextInFootnote 실패:', err);
@@ -831,18 +837,20 @@ export function insertTextAtRaw(this: any, pos: DocumentPosition, text: string):
   // 머리말/꼬리말 편집 모드
   if (this.cursor.isInHeaderFooter()) {
     const isHeader = this.cursor.headerFooterMode === 'header';
-    this.wasm.insertTextInHeaderFooter(
+    const result = JSON.parse(this.wasm.insertTextInHeaderFooter(
       this.cursor.hfSectionIdx, isHeader, this.cursor.hfApplyTo,
       this.cursor.hfParaIdx, pos.charOffset, text,
-    );
+    ));
+    if (this.isComposing) this.compositionAreaTextStart = result.charOffset - charCount(text);
     return IMMEDIATE_TEXT_MUTATION_EFFECTS;
   }
   // 각주 편집 모드
   if (this.cursor.isInFootnote()) {
-    this.wasm.insertTextInFootnote(
+    const result = this.wasm.insertTextInFootnote(
       this.cursor.fnSectionIdx, this.cursor.fnParaIdx, this.cursor.fnControlIdx,
       this.cursor.fnInnerParaIdx, pos.charOffset, text,
     );
+    if (this.isComposing) this.compositionAreaTextStart = result.charOffset - charCount(text);
     return IMMEDIATE_TEXT_MUTATION_EFFECTS;
   }
   return insertTextWithMutationEffects(this.wasm, pos, text);
@@ -900,7 +908,10 @@ export function replaceTextAtRaw(
 
   const effects = new TextMutationEffectAccumulator();
   if (deleteCount > 0) {
-    effects.add(deleteTextAt.call(this, pos, deleteCount));
+    const deletePos = this.isComposing && this.compositionAreaTextStart != null
+      ? { ...pos, charOffset: this.compositionAreaTextStart }
+      : pos;
+    effects.add(deleteTextAt.call(this, deletePos, deleteCount));
   }
   if (text.length > 0) {
     effects.add(insertTextAtRaw.call(this, pos, text));

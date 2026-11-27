@@ -149,6 +149,159 @@ pub(crate) fn coanchored_host_restarts_page(
     )
 }
 
+/// 음수 앵커 표가 호스트의 저장 줄 바로 위에서 닫히고, 다음 표의
+/// 양수 앵커는 같은 쪽 본문을 벗어난다. 공백 줄은 첫 표와 함께 점유한다.
+pub(in crate::renderer) struct StoredLeadingFloatFrame {
+    pub previous_end: f64,
+    pub restart: bool,
+    pub placements: [ParagraphFloatPlacement; 2],
+}
+
+impl StoredLeadingFloatFrame {
+    pub(in crate::renderer) fn resolve(
+        previous: &Paragraph,
+        host: &Paragraph,
+        measured_height: impl Fn(usize, &Table) -> Option<f64>,
+        body_px: f64,
+        styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+        dpi: f64,
+    ) -> Option<Self> {
+        let [Control::Table(first), Control::Table(second)] = host.controls.as_slice() else {
+            return None;
+        };
+        if host.column_type != ColumnBreakType::None
+            || signed_hwpunit(first.common.vertical_offset) >= 0
+            || signed_hwpunit(second.common.vertical_offset) <= 0
+            || !super::coanchored_float_overlaps_preceding_horizontally(host, 1)
+            || !host
+                .text
+                .chars()
+                .any(|ch| ch > '\u{001f}' && ch.is_whitespace())
+            || super::para_has_non_whitespace_text(host)
+            || !super::para_has_non_whitespace_text(previous)
+            || !previous
+                .controls
+                .iter()
+                .all(crate::renderer::control_is_body_flow_neutral_marker)
+        {
+            return None;
+        }
+        // 하나의 글자 모양을 쓰는 저장 줄은 실제 조판에 쓰는 글자·문단
+        // 모양으로 독립 확인한다. 확장 제어 문자만으로는 공백 줄을 만들지 않는다.
+        fn confirmed_line<'a>(
+            para: &'a Paragraph,
+            styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+            dpi: f64,
+        ) -> Option<&'a LineSeg> {
+            let [line] = para.line_segs.as_slice() else {
+                return None;
+            };
+            let [run] = para.char_shapes.as_slice() else {
+                return None;
+            };
+            let style = styles.para_styles.get(para.para_shape_id as usize)?;
+            let size = styles
+                .char_styles
+                .get(run.char_shape_id as usize)?
+                .font_size;
+            let metrics = crate::renderer::composer::frame_metrics_for_line(
+                size,
+                size,
+                style.line_spacing_type,
+                style.line_spacing,
+                dpi,
+            );
+            (stored_line(para).is_some()
+                && size > 0.0
+                && style.spacing_before == 0.0
+                && style.spacing_after == 0.0
+                && line.line_height == metrics.line_height
+                && line.text_height == metrics.text_height
+                && line.line_spacing == metrics.line_spacing)
+                .then_some(line)
+        }
+        let previous_line = confirmed_line(previous, styles, dpi)?;
+        let host_line = confirmed_line(host, styles, dpi)?;
+        if previous_line.vertical_pos < 0
+            || previous_line.line_spacing < 0
+            || host_line.line_height <= 0
+            || previous_line.column_start != host_line.column_start
+            || host_line.segment_width <= 0
+            || previous_line.segment_width != host_line.segment_width
+        {
+            return None;
+        }
+        let body = (body_px * 7200.0 / dpi).round() as i32;
+        let incoming = previous_line
+            .vertical_pos
+            .checked_add(previous_line.line_height)?
+            .checked_add(previous_line.line_spacing)?;
+        let host_top = host_line.vertical_pos;
+        let mut heights = [0; 2];
+        for (i, table) in [first, second].into_iter().enumerate() {
+            let h = signed_hwpunit(table.common.height);
+            if !is_para_topbottom_float(&table.common)
+                || table.common.vert_align != VertAlign::Top
+                || table.common.horz_rel_to != HorzRelTo::Column
+                || !table.common.flow_with_text
+                || table.common.allow_overlap
+                || table.caption.is_some()
+                || h <= 0
+                || (measured_height(i, table)? * 7200.0 / dpi).round() != f64::from(h)
+            {
+                return None;
+            }
+            heights[i] = h;
+        }
+        let first_box = i32::from(first.outer_margin_top)
+            .checked_add(heights[0])?
+            .checked_add(i32::from(first.outer_margin_bottom))?;
+        let first_end = first_box.checked_add(host_line.line_height)?;
+        let following_top = i32::from(second.outer_margin_top);
+        let following_bottom = following_top.checked_add(heights[1])?;
+        // 줄의 하단까지 들어가야 첫 표를 수용한다. 뒤 표의 아래 바깥
+        // 여백은 흐름에 예약하지만 종이 안에 들어가는 본체를 밀지는 않는다.
+        if host_top != first_box
+            || first_end > body
+            || incoming > body
+            || host_top.checked_add(signed_hwpunit(second.common.vertical_offset))? < body
+            || following_bottom > body
+            || first_end.checked_add(following_bottom)? <= body
+        {
+            return None;
+        }
+        let restart = incoming.checked_add(first_end)? > body;
+        let origin = if restart { 0 } else { incoming };
+        let placement = |anchor: i32, top, bottom, host: Option<i32>| ParagraphFloatPlacement {
+            flow: ParagraphFloatFlow::NextLine,
+            anchor_y: hwpunit_to_px(anchor, dpi),
+            stored_host_origin: host.map(|y| hwpunit_to_px(y, dpi)),
+            stored_successor_line_origin: None,
+            table_left: None,
+            table_top: hwpunit_to_px(top, dpi),
+            occupied_bottom: hwpunit_to_px(bottom, dpi),
+        };
+        Some(Self {
+            previous_end: hwpunit_to_px(incoming, dpi),
+            restart,
+            placements: [
+                placement(
+                    origin,
+                    origin.checked_add(i32::from(first.outer_margin_top))?,
+                    origin.checked_add(first_end)?,
+                    Some(origin.checked_add(host_top)?),
+                ),
+                placement(
+                    0,
+                    following_top,
+                    following_bottom.checked_add(i32::from(second.outer_margin_bottom))?,
+                    None,
+                ),
+            ],
+        })
+    }
+}
+
 impl ParagraphFloatPlacement {
     /// 표 이어받기 옆의 빈 저장 줄이 새 쪽의 앵커 축을 닫는다.
     /// 이전 쪽의 마지막 줄간격은 새 쪽 호스트의 원점에 재가산하지 않는다.

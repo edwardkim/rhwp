@@ -1,0 +1,81 @@
+{
+  "recorded": "2026-11-22T00:01:57.440148+00:00",
+  "candidate_document_head": "bda6e29c8ca65d74555168937738b88f18f21883",
+  "product_producer": "436f8629b7f2b9aee520962297b79cdf15c17743",
+  "formal_registered_tests": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+  "results": [
+    {
+      "label": "product",
+      "left": "436f8629b7f2b9aee520962297b79cdf15c17743",
+      "right": "bda6e29c8ca65d74555168937738b88f18f21883",
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "436f8629b7f2b9aee520962297b79cdf15c17743",
+        "bda6e29c8ca65d74555168937738b88f18f21883",
+        "--",
+        "src",
+        "crates",
+        "vendor",
+        "build_scripts",
+        ".cargo",
+        "Cargo.toml",
+        "Cargo.lock",
+        "build.rs",
+        "mydocs/manual/agent_knowledge_map.md",
+        "mydocs/manual/agent_troubleshooting_guide.md",
+        "mydocs/manual/gym_optional_tool.md",
+        "mydocs/tech/agent_roadmap/atlas_r1_r200.md",
+        "mydocs/manual/recipes/01_fill_form_and_submit.md",
+        "mydocs/manual/recipes/02_table_csv_roundtrip.md",
+        "mydocs/manual/recipes/03_redact_before_sharing.md",
+        "mydocs/manual/recipes/04_safety_check_untrusted_doc.md",
+        "mydocs/manual/recipes/05_mail_merge_batch_fill.md",
+        "mydocs/manual/recipes/06_visual_regression_before_after.md"
+      ],
+      "exit_code": 0,
+      "selected_tree_listing_sha256": "1c24b884ae30f127c15f7c1328042b669a7bc63d20553133b63a7b3d767526a2",
+      "tracked_file_count": 3263
+    },
+    {
+      "label": "registered-tests",
+      "left": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "right": "bda6e29c8ca65d74555168937738b88f18f21883",
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+        "bda6e29c8ca65d74555168937738b88f18f21883",
+        "--",
+        "tests"
+      ],
+      "exit_code": 0,
+      "selected_tree_listing_sha256": "8d9394c7b7b2e93a21849f4b3b6466a1e31bdc345c8131fa80f0820554d5aac0",
+      "tracked_file_count": 4422
+    },
+    {
+      "label": "studio-and-export-source",
+      "left": "1a27faacff48ea7329e76ce8eca15aa9ca8aa877",
+      "right": "bda6e29c8ca65d74555168937738b88f18f21883",
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "1a27faacff48ea7329e76ce8eca15aa9ca8aa877",
+        "bda6e29c8ca65d74555168937738b88f18f21883",
+        "--",
+        "rhwp-studio/src",
+        "rhwp-studio/e2e",
+        "scripts/visual_sweep.py",
+        "scripts/export-wasm-png-for-sweep.mjs",
+        "scripts/visual_sweep_canvas_fonts.mjs"
+      ],
+      "exit_code": 0,
+      "selected_tree_listing_sha256": "9ebd46fae0d5a0cb07d8eb671a45c40d2011baedf138cb993af9268655d7cfa0",
+      "tracked_file_count": 629
+    }
+  ],
+  "scope": "Content equivalence permits documentation/evidence commits to retain frozen product and registered-test evidence. Runtime gates still require terminal completion."
+}

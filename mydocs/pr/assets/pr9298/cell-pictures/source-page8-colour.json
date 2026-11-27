@@ -1,0 +1,14 @@
+[
+  {
+    "source": "devel",
+    "full_photo_pair_rgb_mae": 79.575
+  },
+  {
+    "source": "EXIF fix",
+    "full_photo_pair_rgb_mae": 70.487
+  },
+  {
+    "source": "EXIF and placement",
+    "full_photo_pair_rgb_mae": 15.405
+  }
+]

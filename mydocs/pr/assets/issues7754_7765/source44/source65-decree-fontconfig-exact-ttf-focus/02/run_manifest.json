@@ -1,0 +1,143 @@
+{
+  "schema_version": 2,
+  "key": "decree",
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617"
+    },
+    "pdf": {
+      "path": "pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+      "sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9"
+    },
+    "git_head": "84bdda2d167c8e0041ac780385dbfefe98d59f91",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "c3a60c2d34dea583ac6516417a55175b299d17ec8edf480abf4509cd82b252cb"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+      "pillow_version": "12.3.0",
+      "pillow_core_sha256": "94310f4a073e9773a067df88513804649f50a974f78bd85a52c52d21170783f2",
+      "zlib_version": "1.3"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-base1a27-optimized",
+      "path": "output/pr-review/issue7754-nine/bin/rhwp-base1a27-optimized",
+      "sha256": "97ae20cc86799d72e8d4388112f6e74c6c1b395f8f1c81bad088f2e6b3144a44"
+    },
+    "raster_backend": "wasm-canvas2d",
+    "png_exporter_sha256": "c45e30335911d290b888a6d5b1bdae99caab701bd9949cf0d0698c7b36c8b1e9",
+    "layout_generation": "2022",
+    "print_png_rgb555": true,
+    "print_png_rgb555_reference_metadata": {
+      "creator": "Hwp 2022 0.0.0.0",
+      "producer": "Hancom PDF 1.3.0.550"
+    },
+    "font_environment": {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source63-decree-selected-programs/decree-wasm.json",
+      "sha256": "72fa35c7fbb75863be3403be92c5552a00c5227418ff406ad61f833084cda110"
+    },
+    "wasm": {
+      "files": [
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-base1a27/rhwp.js",
+          "sha256": "36fa6ce45be4ef3c5617535a640a90bbd7363927fd47f8b8c7a5f7760585ed6e"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-base1a27/rhwp_bg.wasm",
+          "sha256": "abdae9325eaa4df812872d80d03f388cb4a7b9d6cacf9323e8bfbf07bd4e3445"
+        }
+      ],
+      "exporter_sha256": "f0db771cef8386e121ba33ddaf87f8da982500b3a94b262549e5a5553300bd38",
+      "font_registration_sha256": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+      "comparison_profile": "print",
+      "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "/opt/hnc/hoffice11/Shared/TTF/Hwp/HMKMM.TTF",
+          "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+        },
+        {
+          "path": "/home/tsjang/.local/share/fonts/rhwp-protected-reference/49dd1ef0caa6-H2MJSM.TTF",
+          "sha256": "49dd1ef0caa6989a7dd95b484fdd052cbc846f6514c0c08421ed03a6cb1669cc"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/pala.ttf",
+          "sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palab.ttf",
+          "sha256": "8e14668bbae03f78ed668dbe3261218881960dcd9fb80ad6c1d1dfb4226a57c3"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palabi.ttf",
+          "sha256": "d0e722b91ffd5391cc2e7d6e976f274d5aee9fe0b8d0fedfffe093763e695cde"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palai.ttf",
+          "sha256": "99f0af2d1941707fecda23da38bafbed5144a73a3720d773c05b9d4c445920ed"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-canonical-fonts-20261122/820d3212f688-H2GTRE.TTF",
+          "sha256": "820d3212f688b546a327ea43a7202e3379cdbbd767ebac9753997e3f3d285171"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-canonical-fonts-20261122/e50c7200521c-H2HDRM.TTF",
+          "sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831"
+        }
+      ]
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [
+    4,
+    5,
+    8,
+    24,
+    28,
+    45,
+    46,
+    63
+  ],
+  "requested_page_shards": [],
+  "run_state": "complete",
+  "document_page_counts": {
+    "rhwp": 74,
+    "pdf": 74
+  }
+}

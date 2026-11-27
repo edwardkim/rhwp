@@ -1,0 +1,172 @@
+[
+  {
+    "issue": 886,
+    "file": "pdf/issue886/1660000-201400009-kobe-earthquake-hancom-2020.pdf",
+    "pages": 64,
+    "sha256": "d0fcc123cf3c73aa68ecd6e3ecd7676c887b0c21b6eb13833fce00a3278d6f59",
+    "job": "4c7556ed-21b3-405f-97a4-70ddc70939e8",
+    "input": "samples/issue886/1660000-201400009-kobe-earthquake.hwp",
+    "input_sha256": "a2a6d53dad049bf27c4855e05227e467aba7b71184f43a0dbd1136d972bea13f",
+    "start_engine": "2020",
+    "status_engine": "2020",
+    "output": {
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+      "pdf_print_method": 0,
+      "backend": "hwp-managed-direct-dll-host",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "input_preprocess": "scripts_disabled",
+      "logical_page_count": null,
+      "pdf_page_count": 64,
+      "size": null
+    },
+    "pdfinfo": {
+      "Creator": "Hwp 2020 0.0.0.0",
+      "Producer": "Hancom PDF 1.3.0.550",
+      "CreationDate": "Sat Nov 21 18:14:53 2026 KST",
+      "Pages": "64",
+      "PDF version": "1.4"
+    },
+    "compat": "2022",
+    "rejected_print_2024": {
+      "file": "pdf/issue886/1660000-201400009-kobe-earthquake-2024.pdf",
+      "sha256": "841fa93ab146a9adbe552827ce303bdc6738306202c79c6d31799799c10d768e",
+      "job": "c1da352d-a299-4db6-937a-dd732c41b82f",
+      "output": {
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+        "pdf_print_method": 0,
+        "backend": "hwp-managed-direct-dll-host",
+        "engine": "2024",
+        "hancom_version": "13.0.0.3901",
+        "input_preprocess": "scripts_disabled",
+        "logical_page_count": null,
+        "pdf_page_count": 64,
+        "size": 1549886
+      },
+      "pdfinfo": {
+        "Creator": "Hancom PDF 1.3.0.550",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "CreationDate": "Sat Nov 21 17:56:21 2026 KST",
+        "Pages": "64",
+        "PDF version": "1.6"
+      },
+      "reason": "HCI Type0에 DescendantFonts와 Encoding이 없어 본문에서 사용한 글자가 빠짐",
+      "affected_pages": 63
+    }
+  },
+  {
+    "issue": 9239,
+    "file": "pdf/issue9239/senior-employment-policy-caption-float-table-hancom-2020.pdf",
+    "pages": 62,
+    "sha256": "2f7fbdd3cc9f9fe94b02b8ad524667fec96672609e324ec2fe6bfba7698f6151",
+    "job": "08562403-37a1-4c73-a95b-ad9b5bb8a4c1",
+    "input": "samples/issue9239/senior-employment-policy-caption-float-table.hwp",
+    "input_sha256": "7ee3c3ef43b95204383b800fbe36644e7eb5730f399065ebc90bab3c269082a2",
+    "start_engine": "2020",
+    "status_engine": "2020",
+    "output": {
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+      "pdf_print_method": 0,
+      "backend": "hwp-managed-direct-dll-host",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "input_preprocess": "scripts_disabled",
+      "logical_page_count": null,
+      "pdf_page_count": 62,
+      "size": null
+    },
+    "pdfinfo": {
+      "Creator": "Hwp 2020 0.0.0.0",
+      "Producer": "Hancom PDF 1.3.0.550",
+      "CreationDate": "Sat Nov 21 18:14:12 2026 KST",
+      "Pages": "62",
+      "PDF version": "1.4"
+    },
+    "compat": "2022",
+    "rejected_print_2024": {
+      "file": "pdf/issue9239/senior-employment-policy-caption-float-table-2024.pdf",
+      "sha256": "6cc244d85bf58b6d8daa4cf3fc478d1333eae4e103644cc2f54691a8f1b7145c",
+      "job": "b34d629e-bdaa-43f9-bb97-b519acc0c904",
+      "output": {
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+        "pdf_print_method": 0,
+        "backend": "hwp-managed-direct-dll-host",
+        "engine": "2024",
+        "hancom_version": "13.0.0.3901",
+        "input_preprocess": "scripts_disabled",
+        "logical_page_count": null,
+        "pdf_page_count": 62,
+        "size": 857988
+      },
+      "pdfinfo": {
+        "Creator": "Hancom PDF 1.3.0.550",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "CreationDate": "Sat Nov 21 17:55:21 2026 KST",
+        "Pages": "62",
+        "PDF version": "1.6"
+      },
+      "reason": "HCI Type0에 DescendantFonts와 Encoding이 없어 본문에서 사용한 글자가 빠짐",
+      "affected_pages": 56
+    }
+  },
+  {
+    "issue": 9272,
+    "file": "pdf/issue9272/trade-remedy-decree-table-tail-empty-lines-2024.pdf",
+    "pages": 7,
+    "sha256": "25f1443410590604f527e07739b0b33f3f34ba5d207e85b3f2fccac87c859fc7",
+    "job": "874933b1-3886-446d-aa8e-6778590d7d2d",
+    "input": "samples/issue9272/trade-remedy-decree-table-tail-empty-lines.hwpx",
+    "input_sha256": "37624fffaa34704360298c9edfc3d636f5a0fabd0db040a7bc6a161b73a1301d",
+    "start_engine": "2024",
+    "status_engine": "2024",
+    "output": {
+      "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+      "pdf_print_method": 0,
+      "backend": "hwp-managed-direct-dll-host",
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "input_preprocess": "none",
+      "logical_page_count": null,
+      "pdf_page_count": 7,
+      "size": 150150
+    },
+    "pdfinfo": {
+      "Creator": "Hancom PDF 1.3.0.550",
+      "Producer": "Hancom PDF 1.3.0.550",
+      "CreationDate": "Sat Nov 21 17:57:08 2026 KST",
+      "Pages": "7",
+      "PDF version": "1.6"
+    },
+    "compat": "2024"
+  },
+  {
+    "issue": 9279,
+    "file": "pdf/issue9279/forest-press-release-tac-table-shape-tail-2024.pdf",
+    "pages": 3,
+    "sha256": "1a5a6c2d74197b6e691807b86e1bf3f346779abe623f2ee7e687054de5bde097",
+    "job": "996a401a-f7c0-44d7-9f2c-7484fcca303a",
+    "input": "samples/issue9279/forest-press-release-tac-table-shape-tail.hwpx",
+    "input_sha256": "4763ea3fac592f39dccc36808d022edd0be57db2746e38a50cb9dfe5e6726ea9",
+    "start_engine": "2024",
+    "status_engine": "2024",
+    "output": {
+      "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+      "pdf_print_method": 0,
+      "backend": "hwp-managed-direct-dll-host",
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "input_preprocess": "none",
+      "logical_page_count": null,
+      "pdf_page_count": 3,
+      "size": 770606
+    },
+    "pdfinfo": {
+      "Creator": "Hancom PDF 1.3.0.550",
+      "Producer": "Hancom PDF 1.3.0.550",
+      "CreationDate": "Sat Nov 21 18:01:31 2026 KST",
+      "Pages": "3",
+      "PDF version": "1.6"
+    },
+    "compat": "2024"
+  }
+]

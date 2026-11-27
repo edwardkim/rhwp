@@ -1,3 +1,14 @@
+# #7754~#7765: source32 독립 Print·전쪽 두 경로98% 이상. 106쪽 두 줄은 Print에도 같은 간격이다.
+143E433F503322BD33.hwp	0
+86712_regulatory_analysis.hwp	0
+[2027] 온새미로 1 본교재.hwp	0
+[2027] 온새미로 1 본교재.hwpx	0
+issue1891/86712_regulatory_analysis.hwpx	0
+# #9000 파생 표본(KAF 회의자료 표 구간 44쪽, 한/글 2020 Print 44쪽): 21~26쪽 표 개체가 저장 높이대로 본문 아래 끝을 넘는다
+# (23쪽 마지막 글줄 「호, 건물번호, …」 가 한컴 PDF 에서도 쪽 번호 줄 아래 약 723px 에 인쇄, Native raw 99.34~99.93). 수정 전(devel 9ee9a5b0b1)과 같은 5건.
+issue9000/kaf_table_section.hwp	5
+복학원서.hwp	0
+
 # #7727: 전204쪽 Native/fresh WASM 최저92.05/92.16% 수용 후 복원. fixed170b/후보의 기존 계산식 실측 모두0; 다른 원장은 유지.
 # 조이기 (#6976 단계): devel 236a601da 실측으로 85행을 내렸다 — 대상 행 합계 1,037 -> 667,
 # 원장 전체 1,386 -> 1,016. 증가·신규는 0 이라 완화가 아니다. 측정은 이 게이트 자신의
@@ -33,13 +44,13 @@ issue6133/156483831_poster_title_above_offset_float.hwp	1
 issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	0
 issue6782/1480000-201900042-chemical-product-labeling-study.hwp	6
 issue6921/148733091-briefing-stenographic-record.hwp	0
-156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp	1
+156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp	0
 2022년 국립국어원 업무계획.hwp	1
 2025년 기부·답례품 실적 지자체 보고서_양식.hwpx	3
 253E164F57A1BC6934-empty.hwp	1
 76076_regulatory_analysis.hwp	1
 80168_regulatory_analysis.hwp	1
-HWP5-nopassword-123456.hwpx	24
+HWP5-nopassword-123456.hwpx	0
 basic/issue1994_behindtext_table_20200830.hwp	1
 basic/sungeo.hwp	4
 byeolpyo1.hwp	2
@@ -72,6 +83,7 @@ hwpx/pr-1674.hwpx	1
 hwpx_sample2.hwp	2
 issue-986-receipt.hwp	0
 issue1835_tac_stale_height.hwp	1
+issue1853_caption_precedes_body_split.hwpx	0
 issue1858_paper_anchor_float_stack.hwpx	1
 issue1891/76076_regulatory_analysis.hwpx	2
 issue1891/80168_regulatory_analysis.hwpx	1
@@ -131,6 +143,7 @@ issue6551/113424_evaluation_guideline.hwpx	1
 issue6601/36331407_side_by_side_tac_tables.hwpx	1
 issue6712/한국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp	1
 issue6718/27469-child-allowance-retroactive-support.hwp	0
+issue6778/156757920-animal-welfare-husbandry-guidelines.hwp	0
 issue6795/1341000-201100013-cyber-university-application.hwp	4
 issue6879/156767332-broadcast-revenue-attachment.hwp	2
 issue6882/synth_cell_enter_table_growth.hwp	0
@@ -140,11 +153,14 @@ issue6946/44529-logistics-policy-rule-amendment.hwp	1
 issue8755/46551_road_traffic_rule_amendment.hwp	11
 issue9073/proficiency_test_result_form.hwpx	1
 issue9223/ccus-press-release-square-band.hwpx	1
+# #9291 신규 공개 샘플: base 17b17c934b 와 head 의 over_bottom 이 동일(16쪽 표 34.4px 1건, 수정과 무관).
+issue9291/consumer-price-trend-page-start-empty-line.hwp	1
 issues/2809/jubo_20260104.hwp	3
 kps-ai.hwp	2
 loading-fail-01.hwp	0
 pic-in-head-01.hwp	0
 pic-in-table-01.hwp	0
+pr-1674.hwp	0
 rowbreak-problem-pages.hwpx	1
 synam-001.hwp	2
 table_scattered_header_rowbreak.hwp	3
@@ -155,8 +171,8 @@ task1718/table_giant_cell_overfill.hwp	1
 task1725/text_footnote_tail_overpagination.hwp	13
 task1725/text_footnote_tail_overpagination.hwpx	13
 task1749/saved_bounds_cumulative_page_break.hwpx	1
-task1768/distribution_doc.hwpx	1
-task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	27
+task1768/distribution_doc.hwpx	0
+task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	0
 task2070/hy_ladder3.hwpx	2
 task2093/1192000_hydrogen_policy_research.hwp	1
 task2097/18095317_eogu_geumji.hwp	1
@@ -268,3 +284,16 @@ issue8993/31675-rowbreak-overflowing-frame.hwp	2
 # (pdf/issue8660/picture_unrestricted_over_12px-hwp-2020.pdf, 데스크톱 한컴 2020 Print 1쪽).
 # Native/fresh WASM 전쪽 raw 100.00%로 같은 배치를 확인했다. 의도된 넘침 1건.
 issue8660/picture_unrestricted_over_12px.hwp	1
+# #9239 신규 공개 샘플(고령자 취업지원 제도개선 30023, 한/글 Print 62쪽): 43쪽 문단 519 의 글자처럼 취급 표는 위 캡션이 285문단(5408px)이라 캡션 뒤쪽과 바깥 표(21×7)가 쪽 아래로 넘는다. 한 줄이라 나뉘지 않으며 한/글 Print 도 같다 — 기준 PDF 전체에 바깥 표의 글자(「이탈리아」)가 없고 43쪽에는 캡션 첫 문단의 표만 보인다. 수정 전(devel 411a9f944c)과 수정 후의 값이 같다.
+issue9239/senior-employment-policy-caption-float-table.hwp	3
+# #9379 파생 표본(KAF 회의자료 부록 54쪽, 한/글 2020 Print 54쪽): 21~26쪽 표 개체가 저장 높이대로 본문 아래 끝을 넘는다.
+# 원본 1~32쪽을 그대로 가진 #9000 파생 표본(issue9000/kaf_table_section.hwp)의 같은 5건이다 — 한컴 PDF 도 23쪽 마지막 글줄을
+# 쪽 번호 줄 아래에 인쇄한다. 수정 전(devel 8a26c00869)과 수정 후의 쪽·경로·넘침 값이 같다.
+issue9379/kaf_appendix.hwp	5
+# #9419 같은 문서를 한/글 2020 으로 HWPX 로 다시 저장한 표본(54쪽, 한/글 2020 Print 54쪽): layout-anomaly 의 쪽·경로·넘침 값이
+# 위 issue9379/kaf_appendix.hwp 와 같은 5건이다(수정 후 기준; 수정 전에는 21·23쪽 표가 위 간격만큼 올라가 있었다).
+issue9419/kaf_appendix_2020.hwpx	5
+
+# #9384 용지 끝 사진 대조. 한컴 2020 인쇄에서 같은 위치에서 잘리는 의도적 입력이다.
+pr9349-cell-floats/photo-a5-height.hwp	1
+pr9349-cell-floats/photo-short-page.hwp	1

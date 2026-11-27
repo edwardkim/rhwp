@@ -43,6 +43,14 @@
 `YYYYMMDD`를 쓴다. 원본 head 보존·SHA 기록 등은
 [체리픽 통합 브랜치 명명](mydocs/manual/codex/docs_and_git_workflow.md#외부-pr-검토와-체리픽-통합-브랜치-명명)을 따른다.
 
+## 최신 devel 비교용 빌드
+
+- 로컬 `devel`이 최신 `upstream/devel`과 같으면 기본 rhwp 작업공간에서 기준을 빌드한다. 비교용
+  임시 worktree 생성을 생략하고, 후보 빌드 전에 Native 실행 파일과 WASM 패키지를
+  `output/pr-review/<검토명>/base-tools/`에 고정한다.
+- 기준 source SHA·빌드 옵션·산출물 SHA-256이 일치하는 기존 결과를 재사용한다.
+  [기준 빌드 보존 절차](mydocs/manual/pr_review/local_validation.md#최신-devel-비교용-빌드-보존)를 따른다.
+
 ## PR 제출 전 검증과 Draft 제한
 
 CI workflow·action·CI 실행/재사용 판정 정책 변경 PR의 후속 기록은 **옵션 2**로 처리한다.
@@ -64,14 +72,20 @@ head CI와 충돌 해소를 확인한 뒤 신규 PR을 진행한다. **새 PR �
 4.3과 해당 보조 절차의 필수 검증을 빠짐없이 완료한 뒤 일반 Open PR을 제출한다. 실패·미실행을
 PR CI나 Draft로 우회하지 않는다. Draft는 특별한 조기 논의·WIP 목적을 작업지시자가 명시적으로
 승인한 경우만 허용하고 목적·미완료 항목·완료 계획을 본문에 적는다. 번호 확보·CI 대기는 사유가 아니다.
+렌더러·조판·글꼴 공급·Native 출력 또는 관련 Skia 회귀를 바꾼 새 제출 후보는
+[CI와 같은 Native Skia 사전 검사](mydocs/manual/pr_review/local_validation.md#ci와-같은-native-skia-사전-검사)의
+라이브러리·통합 모듈 실행 결과를 남긴다.
 Docker는 필수 설치 조건이 아니며 [환경별 fresh WASM 경로](mydocs/manual/pr_review/local_validation.md#환경에-따른-fresh-wasm-검증)의
 Docker 또는 호스트 빌드를 선택해 동일한 필수 검증을 완료한다.
 
 조판에 영향을 주는 변경이 포함된 PR은 일반 기여자를 포함하여 제출 전 최종 head에서
-행정업무운영 편람 HWPX Native 383쪽 `--handbook-gate`를 실행해 통과한다. 지원 웹폰트를
-사용할 수 있으며 비공개 원본 OTF 보유는 요구하지 않는다. 정본 보호 TSV 전체의 특별 하락 금지
+행정업무운영 편람 HWPX Native 383쪽을 정본에 대조해 통과한다. 같은 조건의 정본 보호 전쪽
+결과가 있으면 그 TSV를 제출하고, 없으면 `--handbook-gate`를 실행한다. 지원 웹폰트를 사용할 수
+있으며 비공개 원본 OTF 보유는 요구하지 않는다. 정본 보호 TSV 전체의 특별 하락 금지
 검증은 통합 담당 collaborator·maintainer에게만 추가 적용한다. 일반 Visual Sweep에서는 자동 실행하지 않으며,
 실행과 판정은 [로컬 사전 검증](mydocs/manual/pr_review/local_validation.md)을 따른다.
+통합 담당자는 첫 전쪽 실행 전에 [동명 글꼴과 실제 사용 글리프 확인](mydocs/manual/verification/visual_sweep_guide.md#동명-글꼴과-실제-사용-글리프-확인)의
+절차로 수용 당시 공급 파일과 실제 사용 프로그램을 대조한다.
 
 ## 리뷰어 지정 후 추가 커밋 제한
 
@@ -90,6 +104,10 @@ Docker 또는 호스트 빌드를 선택해 동일한 필수 검증을 완료한
 새 devel과 후보의 실제 기능·출력을 대조하고, 후퇴하면 보정 후 재검증한다. 충돌 없음이나
 CI 성공으로 대체하지 않는다. 후퇴·필수 증거 부족이 남으면 PR 생성·승인·통합을 보류한다.
 [공통 검증 절차](mydocs/manual/pr_review/local_validation.md#리베이스로-반영한-pr의-기능-보존-검증)를 따른다.
+
+체리픽 통합 PR은 각 원 PR의 제출 TSV를 최종 후보와 페이지별로 대조한다. 원 PR보다 낮은 쪽은
+같은 조건으로 다시 검사하고 원인을 해결한 뒤 제출·승인·병합한다.
+[원 PR 대비 시각 하락 확인](mydocs/manual/pr_review/multi_pr_update_branch.md#원-pr-대비-시각-하락-확인)을 따른다.
 
 ## 페이지별 TSV와 PR 재검토 필수 조건
 
@@ -346,7 +364,10 @@ SHA-256·이전/보존 경로·활성 유지/제거 목록·복원 조건을 기
 - 완료 보고 전에 [구현 주장과 검증 증거의 대조](AGENTS.md#구현-주장과-검증-증거의-대조)를 수행한다.
   증적의 존재뿐 아니라 실제 검사 항목이 PR 본문의 주장을 입증하는지 확인한다. 부족한 필수 근거는
   자료 확보·추가 실행으로 보완하고 보정·재검증까지 완료한 뒤 PR을 제출한다. 메인터너 보정에도 적용한다.
-- 공식 기준 PDF는 한컴 2020·2024의 `Hancom PDF` 인쇄본만 수용한다. Cairo 출력은
+- 공식 기준 PDF는 한컴 2020·2024의 `Hancom PDF` 인쇄본을 기본으로 수용한다.
+  MCP가 인쇄 오류를 검출해 같은 엔진의 검증된 PDF 저장본을 반환하면
+  [한컴 Print 버그 예외](mydocs/manual/verification/visual_verification_governance.md#한컴-print-오류-시-mcp-대체-저장본-수용)를 기록하고 Visual Sweep을 계속한다.
+  전쪽 TSV·쪽수·일치율·확대 판독 기준은 유지한다. Cairo 출력은
   원본 저장 제품에 맞는 MCP 엔진으로, `Creator: Hwp 2022` 출력은 MCP 2024로 다시 인쇄한다.
   일반 기여자는 한컴 2020 또는 2024에서 직접 인쇄한 PDF와 원본 HWP/HWPX를 함께 첨부한다.
   [기준 PDF 재사용·재출력](mydocs/manual/pr_review/visual_fixture_evidence.md#35-시각-검증-원칙) 절차를 따른다.

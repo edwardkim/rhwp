@@ -257,6 +257,10 @@ hwp5rb	issue6924/148751598-briefing.hwp	sections[].paragraphs[].controls[].cells
 hwp5rb	issue6924/148751598-briefing.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].raw_picture_extra.len	1
 hwp5rb	issue7840/1150200_youth_vision2030_application.hwp	sections[].paragraphs[].controls[].section_def.raw_ctrl_extra.len	1
 hwp5rb	issue7840/1150200_youth_vision2030_application.hwp	sections[].section_def.raw_ctrl_extra.len	1
+hwp5rb	issue8495/council-badge-para-float-sibling-origin.hwp	sections[].paragraphs[].controls[].img_dim[]	4
+hwp5rb	issue8495/council-badge-para-float-sibling-origin.hwp	sections[].paragraphs[].controls[].raw_picture_extra.len	2
+hwp5rb	issue8495/council-badge-para-float-sibling-origin.hwp	sections[].paragraphs[].controls[].section_def.raw_ctrl_extra.len	1
+hwp5rb	issue8495/council-badge-para-float-sibling-origin.hwp	sections[].section_def.raw_ctrl_extra.len	1
 hwp5rb	issue8560/21138757-agenda-cover-form.hwp	sections[].paragraphs[].controls[].section_def.raw_ctrl_extra.len	1
 hwp5rb	issue8560/21138757-agenda-cover-form.hwp	sections[].section_def.raw_ctrl_extra.len	1
 hwp5rb	issue8641/labor_standards_report.hwp	sections[].paragraphs[].controls[].section_def.raw_ctrl_extra.len	1
@@ -279,6 +283,9 @@ hwp5rb	issue8891/1480000-201900510_facility_pollution_study.hwp	sections[].parag
 hwp5rb	issue9040/1371000-policy-research-application.hwp	sections[].paragraphs[].controls[].section_def.raw_ctrl_extra.len	1
 hwp5rb	issue9040/1371000-policy-research-application.hwp	sections[].section_def.raw_ctrl_extra.len	1
 hwp5rb	issue9076/textbox_unfilled_field_tac_tables.hwp	sections[].paragraphs[].controls[].text_box.paragraphs[].field_ranges[].inner_slot_count	1
+hwp5rb	issue9291/consumer-price-trend-page-start-empty-line.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].img_dim[]	4
+hwp5rb	issue9291/consumer-price-trend-page-start-empty-line.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].raw_picture_extra.len	2
+hwp5rb	issue9291/consumer-price-trend-page-start-empty-line.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[][].drawing.text_box.raw_list_header_extra.len	1
 hwp5rb	issue_1133.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	15
 hwp5rb	issues/2809/jubo_20260104.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	174
 hwp5rb	k-water-rfp-2024.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	457
@@ -306,6 +313,7 @@ hwp5rb	pua-test.hwp	sections[].paragraphs[].raw_header_extra.len	18
 hwp5rb	rowbreak-problem-pages.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	104
 hwp5rb	rowbreak-problem-pages.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	10
 hwp5rb	rowbreak-problem-pages.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].text_box.paragraphs[].controls[].cells[].list_header_width_ref	69
+hwp5rb	semanticist21-20261124-rework/two-sections-2020.hwp	sections[].paragraphs[].controls[]	2
 hwp5rb	synam-001.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	441
 hwp5rb	synam-001.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	49
 hwp5rb	ta-pic-001-r-쪽영역안제한.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	3

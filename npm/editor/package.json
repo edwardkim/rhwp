@@ -13,6 +13,7 @@
     "index.d.ts",
     "transport.js",
     "document-agent-contract.js",
+    "password-save-contract.js",
     "README.md"
   ],
   "keywords": [

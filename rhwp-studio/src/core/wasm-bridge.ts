@@ -1,3 +1,5 @@
+import { isHwp3Document } from './document-signature.ts';
+import { t } from '../i18n/index.ts';
 import { publishPreparedPdf } from './pdf-open';
 import { RecoveryCipher } from '../recovery/recovery-crypto';
 import init, { HwpDocument, version } from '@wasm/rhwp.js';
@@ -13,7 +15,8 @@ import type { CanvasMetricDocument } from './canvas-metric-session';
 import { requireCharShapeRunsDocument, parseCharShapeRuns, validateCharShapeRuns } from './char-shape-runs';
 import type { CharShapeRun } from './types';
 import type { HyperlinkTarget, HyperlinkContext } from './hyperlink';
-import type { MemoAnchor } from './memo';
+import { memoAnchorMatchesTarget, type MemoAnchor } from './memo';
+import { MemoEditError, requireMemoSuccess, memoTargetPath, type MemoInfo } from './memo-editor';
 import * as wasmExports from '@wasm/rhwp.js';
 import { inspectFontSymbols } from './wasm-font-symbol-coverage';
 import { hasPdfImportCapability } from './pdf-import-capability';
@@ -21,7 +24,7 @@ import { createDocumentForBytes } from './pdf-import-layout';
 import { userSettings } from './user-settings';
 import { blake3 } from '@noble/hashes/blake3.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
-import type { DocumentInfo, PageInfo, PageDef, SectionDef, PageBorderFillSettings, EndnoteShapeSettings, NoteEditInfo, CursorRect, HitTestResult, BodyFootnoteMarkerHit, FootnoteAtCursorResult, DeleteFootnoteResult, LineInfo, TableDimensions, CellInfo, CellBbox, CellProperties, TableProperties, DocumentPosition, MoveVerticalResult, SelectionRect, CharProperties, ParaProperties, CellPathEntry, CellPathLike, NavContextEntry, FieldInfoResult, BookmarkInfo, LayerRenderProfile, PageLayerTree, CanvasKitDocumentPreflight } from './types';
+import type { DocumentInfo, PageInfo, PageDef, SectionDef, PageBorderFillSettings, EndnoteShapeSettings, NoteEditInfo, CursorRect, HitTestResult, BodyFootnoteMarkerHit, FootnoteAtCursorResult, DeleteFootnoteResult, LineInfo, TableDimensions, CellInfo, CellBbox, CellProperties, TableProperties, DocumentPosition, MoveVerticalResult, SelectionRect, CharProperties, ParaProperties, CellPathEntry, CellPathLike, NavContextEntry, FieldInfoResult, BookmarkInfo, ControlPlace, NearestControl, LayerRenderProfile, PageLayerTree, CanvasKitDocumentPreflight } from './types';
 import { parseCanvasKitDocumentPreflight } from './canvaskit-document-preflight';
 import { LayerResourceStore } from './layer-resource-store';
 import { readLayerTreeTransport, type LayerTreeExportOptions } from './layer-tree-transport';
@@ -293,8 +296,8 @@ export class WasmBridge {
   }
 
   invalidateCanvasMetricFonts(): void {
-    for (const family of this.hostLayoutFamilies) {
-      this.doc?.clearTextFontFamily?.(family);
+    if (this.doc) {
+      for (const family of this.hostLayoutFamilies) this.hostCanvasFonts.clearFamily(this.doc, family);
     }
     this.hostLayoutFamilies.clear();
     this.nativePuaFonts.clear(this.doc as unknown as NativePuaFontDocument | null);
@@ -423,6 +426,7 @@ export class WasmBridge {
   onRecoveryProtectionChanged?: () => void;
   private _pdfImport: Record<string, unknown> | null = null;
   private _requiresPasswordForSave = false;
+  private _loadedHwp3 = false;
   private _documentDigest: string | null = null;
   /** 같은 바이트를 다시 열어도 구분되는 문서 인스턴스 세대. */
   private _documentGeneration = 0;
@@ -513,6 +517,7 @@ export class WasmBridge {
     this.setRecoveryCipher(null);
     this._pdfImport = null;
     this._requiresPasswordForSave = false;
+    this._loadedHwp3 = false;
     this._documentDigest = null;
   }
 
@@ -551,6 +556,7 @@ export class WasmBridge {
     this._recoveryCipher = null;
     this._pdfImport = null;
     this._requiresPasswordForSave = requiresPasswordForSave;
+    this._loadedHwp3 = isHwp3Document(data);
     this._documentDigest = nextDocumentDigest;
     this._documentGeneration += 1;
     const notify = (work: () => void) => {
@@ -692,6 +698,7 @@ export class WasmBridge {
     this.setRecoveryCipher(null);
     this._pdfImport = null;
     this._requiresPasswordForSave = false;
+    this._loadedHwp3 = false;
     this.doc.setFileName(this._fileName);
     try {
       this._documentDigest = `blake3:${bytesToHex(blake3(this.doc.exportHwp()))}`;
@@ -883,6 +890,13 @@ export class WasmBridge {
   exportHwpVerify(): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return this.doc.exportHwpVerify();
+  }
+
+  getLoadedDocumentFormat(): string | null {
+    if (!this.doc) return null;
+    const format = this.getSourceFormat();
+    if (format !== 'hwp') return format;
+    return this._loadedHwp3 ? 'hwp3' : 'hwp5';
   }
 
   getSourceFormat(): string {
@@ -1745,6 +1759,28 @@ export class WasmBridge {
     return JSON.parse(this.doc.findNearestControlBackward(sec, para, charOffset));
   }
 
+  /**
+   * 주소 문단의 글자 자리에서 앞(forward면 뒤)으로 가장 가까운 선택 가능 컨트롤 (F11).
+   * 셀·글상자 안이면 그 영역을 먼저 훑고 그 표·개체로 나온다. fromControl이 0 이상이면 글자 자리 대신
+   * 그 컨트롤의 형제부터 이어 찾는다 — 같은 글자 자리의 누름틀을 하나씩 고르는 데 쓴다.
+   */
+  findNearestControlAt(place: ControlPlace, charOffset: number, fromControl: number, forward: boolean): NearestControl {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse(this.doc.findNearestControlAt(JSON.stringify(place), charOffset, fromControl, forward));
+  }
+
+  /** 지정한 컨트롤의 실제 필드 범위가 캐럿을 포함하는지 조회한다. */
+  getFieldInfoForControlAt(place: ControlPlace, controlIndex: number, offset: number): FieldInfoResult {
+    if (!this.doc) return { inField: false };
+    return JSON.parse(this.doc.getFieldInfoForControlAt(JSON.stringify(place), controlIndex, offset));
+  }
+
+  /** 주소 문단의 controlIndex 누름틀을 활성 필드로 둔다. 같은 자리 누름틀 가운데 고른 것에 입력이 든다. 바뀌면 true. */
+  setActiveFieldAt(place: ControlPlace, controlIndex: number): boolean {
+    if (!this.doc) return false;
+    return this.doc.setActiveFieldAt(JSON.stringify(place), controlIndex);
+  }
+
   /** 현재 위치 이후의 가장 가까운 선택 가능 컨트롤 (Shift+F11) */
   findNearestControlForward(sec: number, para: number, charOffset: number): { type: string; sec: number; para: number; ci: number; charPos?: number } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
@@ -1993,13 +2029,15 @@ export class WasmBridge {
 
   // ─── 중첩 표 path 기반 편집 API ──────────────────────────
 
-  insertTextInCellByPath(sec: number, parentPara: number, pathJson: string, charOffset: number, text: string): string {
+  insertTextInCellByPath(sec: number, parentPara: number, pathJson: string, charOffset: number, text: string, atCaret = false): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    if (atCaret) return this.doc.replaceTextAtCellCaretByPath(sec, parentPara, pathJson, charOffset, 0, text);
     return (this.doc as any).insertTextInCellByPath(sec, parentPara, pathJson, charOffset, text);
   }
 
-  deleteTextInCellByPath(sec: number, parentPara: number, pathJson: string, charOffset: number, count: number): string {
+  deleteTextInCellByPath(sec: number, parentPara: number, pathJson: string, charOffset: number, count: number, atCaret = false): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    if (atCaret) return this.doc.replaceTextAtCellCaretByPath(sec, parentPara, pathJson, charOffset, count, '');
     return (this.doc as any).deleteTextInCellByPath(sec, parentPara, pathJson, charOffset, count);
   }
 
@@ -2024,8 +2062,9 @@ export class WasmBridge {
     return this.doc.getTextInCell(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset, count);
   }
 
-  getTextInCellByPath(sec: number, parentPara: number, pathJson: string, charOffset: number, count: number): string {
+  getTextInCellByPath(sec: number, parentPara: number, pathJson: string, charOffset: number, count: number, atCaret = false): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    if (atCaret) return this.doc.getTextAtCellCaretByPath(sec, parentPara, pathJson, charOffset, count);
     return (this.doc as any).getTextInCellByPath(sec, parentPara, pathJson, charOffset, count);
   }
 
@@ -2983,6 +3022,15 @@ export class WasmBridge {
   moveLineEndpoint(sec: number, para: number, ci: number, sx: number, sy: number, ex: number, ey: number): void {
     if (!this.doc) return;
     (this.doc as any).moveLineEndpoint(sec, para, ci, sx, sy, ex, ey);
+  }
+
+  moveConnectorMidpoint(sec: number, para: number, ci: number, dx: number, dy: number, path?: CellPathLike): void {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    if (path?.length) {
+      this.doc.moveConnectorMidpointByPath(sec, para, JSON.stringify(path), ci, dx, dy);
+    } else {
+      this.doc.moveConnectorMidpoint(sec, para, ci, dx, dy);
+    }
   }
 
   updateConnectorsInSection(sec: number): void {
@@ -3991,6 +4039,65 @@ export class WasmBridge {
   getMemoAnchors(): MemoAnchor[] {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.getMemoList());
+  }
+
+  getMemos(): MemoInfo[] {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse(this.doc.getMemoList());
+  }
+
+  /** 목록에는 상위 문단 첫 쪽이 아니라 실제 기준 글자가 표시되는 쪽을 쓴다. */
+  getMemoDisplayPage(memo: MemoInfo): number | null {
+    const { sectionIndex: sec, paraIndex: para, startCharIdx: start, endCharIdx: end, path } = memo;
+    if (para === null || start === null || end === null) return null;
+    if (this.pageCount === 1) return 1;
+    try {
+      let pageIndex: number | undefined;
+      if (path?.length) {
+        const pathJson = JSON.stringify(path.map(entry => ({
+          controlIndex: entry.controlIndex,
+          cellIndex: entry.type === 'cell' ? entry.cellIndex : 0,
+          cellParaIndex: entry.paraIndex,
+        })));
+        const cellPara = path[path.length - 1].paraIndex;
+        const glyph = start === end ? undefined
+          : this.getSelectionRectsInCellByPath(sec, para, pathJson, cellPara, start, cellPara, start + 1)[0];
+        pageIndex = glyph?.pageIndex ?? this.getCursorRectByPath(sec, para, pathJson, start).pageIndex;
+      } else {
+        const from = this.textToLogicalOffset(sec, para, start);
+        const glyph = start === end ? undefined : this.getSelectionRects(sec, para, from, para, from + 1)[0];
+        pageIndex = glyph?.pageIndex ?? this.getCursorRect(sec, para, from).pageIndex;
+      }
+      return pageIndex !== undefined && Number.isInteger(pageIndex) && pageIndex >= 0
+        && pageIndex < this.pageCount ? pageIndex + 1 : null;
+    } catch {
+      return null;
+    }
+  }
+
+  insertMemo(target: HyperlinkTarget, start: number, end: number, author: string, text: string): void {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const payload = JSON.stringify({ author, text });
+    const { id } = requireMemoSuccess(target.cellPath.length
+      ? this.doc.insertMemoByPath(target.section, target.para, memoTargetPath(target), start, end, payload)
+      : this.doc.insertMemo(target.section, target.para, start, end, payload));
+    // 범용 경로 API는 묶음 안 글상자처럼 메모 목록에서 관리할 수 없는 개체도 편집할 수 있다.
+    // 목록에서 같은 위치를 확인할 수 없으면 snapshot의 실패 경로로 삽입을 되돌린다.
+    const inserted = this.getMemos().find(memo => memo.id === id);
+    if (!inserted?.editable || !memoAnchorMatchesTarget(inserted, target)
+      || inserted.startCharIdx !== start || inserted.endCharIdx !== end) {
+      throw new MemoEditError(t('dialog.memo.unsupportedTarget'));
+    }
+  }
+
+  updateMemo(id: number, text: string): void {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    requireMemoSuccess(this.doc.setMemoText(id, text));
+  }
+
+  removeMemo(id: number): void {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    requireMemoSuccess(this.doc.removeMemo(id));
   }
 
   insertHyperlink(target: HyperlinkTarget, start: number, end: number, uri: string): number {

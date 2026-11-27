@@ -1,3 +1,10 @@
+//! 관계형·고정형 회귀 — #7769 국민임대 안내문의 금융자산 행 이어받기와 동의서 순서를 보호한다.
+//! 주석 갱신 2026-11-23 22:35 KST. 직전 파일 변경 2026-11-23T21:00:34+09:00
+//! `eea27261915ad7a99c1cf8df80ab4a252bedca57`.
+//! 기준 검증 2026-11-23 KST, 96 DPI Print PDFium과 보정 전 2px raw 실루엣.
+//! 35쪽 최저 Native/fresh WASM 98.99/99.00%, 5쪽 98.99/99.00%, 6쪽 99.99/100.00%.
+//! 30쪽 99.82/99.81%. 근거는 `mydocs/pr/assets/issue7769/synam/`의 TSV와 확대 비교다.
+//!
 //! RowBreak 표의 행 내부 조각 때문에 전체 조각이 쪽 경계를 넘으면
 //! 그 조각을 현재 쪽에 남기지 않는다.
 //!
@@ -373,4 +380,107 @@ fn synam_001_page14_uses_row_budget_after_repeated_header() {
         page14.contains("start_cut=[2, 13]"),
         "page 14 should continue from the row 6 cut already started on page 13:\n{page14}"
     );
+}
+
+#[test]
+fn synam_001_financial_assets_cell_continues_between_pages_five_and_six() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/synam-001.hwp");
+    let core = DocumentCore::from_bytes(&fs::read(path).expect("synam-001 원본")).unwrap();
+    let (para, control, row, column) = core.document().sections[0]
+        .paragraphs
+        .iter()
+        .enumerate()
+        .find_map(|(pi, paragraph)| {
+            paragraph
+                .controls
+                .iter()
+                .enumerate()
+                .find_map(|(ci, ctrl)| {
+                    let Control::Table(table) = ctrl else {
+                        return None;
+                    };
+                    let cell = table.cells.iter().find(|cell| {
+                        cell.paragraphs
+                            .iter()
+                            .any(|p| p.text.contains("비상장주식의 평가"))
+                            && cell.paragraphs.iter().any(|p| p.text.contains("보통예금"))
+                    })?;
+                    Some((pi, ci, cell.row, cell.col))
+                })
+        })
+        .expect("금융자산 설명의 원본 셀");
+    assert_eq!(core.page_count(), 35);
+
+    let split_cell = |page| {
+        let tree = core
+            .build_page_render_tree(page)
+            .expect("원본 표가 나뉜 쪽");
+        let table = owned_table(&tree.root, para, control);
+        let mut cells = table.children.iter().filter(|node| {
+            matches!(&node.node_type, RenderNodeType::TableCell(cell)
+                if cell.row == row && cell.col == column)
+        });
+        let cell = cells.next().expect("해당 쪽의 금융자산 설명 셀");
+        assert!(
+            cells.next().is_none(),
+            "같은 셀 조각이 한 쪽에 중복되지 않는다"
+        );
+        compact(&subtree_text(cell))
+    };
+    let first = split_cell(4);
+    let second = split_cell(5);
+    assert!(first.contains("보통예금") && first.ends_with("비상장주"));
+    assert!(second.starts_with("식의평가에관하여는") && second.contains("연금보험"));
+    assert_eq!(
+        format!("{first}{second}")
+            .matches("비상장주식의평가에관하여는")
+            .count(),
+        1
+    );
+}
+
+#[test]
+fn synam_visible_float_title_precedes_its_cell_and_the_signature_line() {
+    let document = DocumentCore::from_bytes(include_bytes!("../samples/synam-001.hwp"))
+        .expect("국민임대 안내문 원본");
+    let tree = document
+        .build_page_render_tree(29)
+        .expect("30쪽 개인정보 동의");
+    let form = owned_table(&tree.root, 229, 0);
+    let mut nodes = Vec::new();
+    walk(&tree.root, &mut nodes);
+    let column = nodes
+        .iter()
+        .copied()
+        .find(|node| {
+            matches!(node.node_type, RenderNodeType::Column(_))
+                && node.children.iter().any(|child| child.id == form.id)
+        })
+        .expect("동의서 표를 담는 본문 단");
+    let title = column
+        .children
+        .iter()
+        .find(|node| {
+            matches!(&node.node_type,
+        RenderNodeType::TextLine(line) if line.para_index == Some(229)
+            && compact(&subtree_text(node)) == "7.[필수]")
+        })
+        .expect("표와 같은 문단에 속한 제목");
+    let signature = column
+        .children
+        .iter()
+        .find(|node| {
+            matches!(&node.node_type,
+        RenderNodeType::TextLine(line) if line.para_index == Some(231)
+            && compact(&subtree_text(node)).starts_with("20"))
+        })
+        .expect("표 뒤의 서명 날짜");
+    let cell = form
+        .children
+        .iter()
+        .find(|node| matches!(node.node_type, RenderNodeType::TableCell(_)))
+        .expect("동의서 설명 셀");
+    assert!(compact(&subtree_text(cell)).starts_with("본인은위1~6호"));
+    assert!(title.bbox.y + title.bbox.height <= form.bbox.y);
+    assert!(form.bbox.y + form.bbox.height <= signature.bbox.y);
 }

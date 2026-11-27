@@ -10,13 +10,13 @@ use crate::renderer::font_rule_layout_metric_projection::find_font_rule_layout_m
 
 #[path = "font_metrics_vertical.rs"]
 mod vertical;
-pub(crate) use vertical::win_descent_em;
+pub(crate) use vertical::{font_line_box_em, win_descent_em};
 
 #[path = "font_metric_han_santteut.rs"]
 mod han_santteut;
 
-#[path = "font_metric_legacy_hft.rs"]
-mod legacy_hft;
+#[path = "font_metric_legacy_faces.rs"]
+mod legacy_faces;
 
 #[path = "font_metric_hci_poppy.rs"]
 mod hci_poppy;
@@ -37,6 +37,7 @@ mod supplementary_pictographs;
 
 #[path = "font_metric_contextual_scripts.rs"]
 mod contextual_scripts;
+pub(crate) use contextual_scripts::indic_number_print_notdef_em;
 #[path = "font_metric_math_symbol_blocks.rs"]
 mod math_symbol_blocks;
 
@@ -94,7 +95,7 @@ mod symbol_slot_chars;
 #[path = "font_metric_nimbus_roman.rs"]
 mod nimbus_roman;
 
-pub(crate) use legacy_hft::{
+pub(crate) use legacy_faces::{
     centered_bar_advance_em as original_hft_centered_bar_advance_em,
     is_metric_face as is_legacy_hft_metric_face, metric_face_name as legacy_hft_metric_face,
 };
@@ -290,6 +291,10 @@ pub(crate) fn verified_missing_glyph_supplier(
         // 평가결과서(docs#648)의 독립 한컴2022 Print는 돋움 사이의 `․`만 Haansoft
         // Dotum CID 글꼴의 0.173em으로 출력한다. U+2027과 다른 weight/style은 바꾸지 않는다.
         ("Dotum", 1024, false, false, '\u{2024}') => Some("Haansoft Dotum"),
+        // 맑은 고딕 Regular에서 빠진 한점 리더는 국민임대 안내문 8쪽의
+        // 한컴 Print에서 함초롬돋움의 288/1000em으로 전진한다. 이 공급은
+        // 맑은 고딕에만 적용한다. KoPub돋움체 Light의 한컴 Print는 한컴바탕을 쓴다.
+        ("Malgun Gothic", 2048, false, false, '\u{2024}') => Some("HCR Dotum"),
         // 기호 슬롯을 HY신명조 TTF로 지정한 독립2020 Print의 두 점은
         // HBATANG이다. HFT 한양신명조의 전진은 해당 overlay가 보존한다.
         ("HYSinMyeongJo-Medium", 1024, false, false, '\u{2024}' | '\u{2027}') => {
@@ -572,8 +577,8 @@ pub(crate) fn find_metric_decision_for_character<'a>(
     let mut decision = find_metric_decision(name, bold, italic)?;
     // 부분 HFT 표에 새로 확인한 일반 glyph를 굵게·기울임의 공급 근거로
     // 상속하지 않는다. 확인하지 않은 서식은 기존 표시 대체 조회가 폭을 소유한다.
-    if legacy_hft::is_metric_face(decision.metric.name)
-        && legacy_hft::rejects_regular_bar_style(decision.metric.name, bold, italic, character)
+    if legacy_faces::is_metric_face(decision.metric.name)
+        && legacy_faces::rejects_regular_bar_style(decision.metric.name, bold, italic, character)
     {
         return None;
     }
@@ -731,7 +736,7 @@ impl FontMetrics {
             .chain(MEASURED_FONT_METRIC_OVERLAYS.iter())
             .chain(CORE14_FONT_METRICS.iter())
             .chain(han_santteut::METRICS.iter())
-            .chain(legacy_hft::METRICS.iter())
+            .chain(legacy_faces::METRICS.iter())
             .chain(hci_poppy::METRICS.iter())
             .chain(hci_tulip::METRICS.iter())
             .chain(nimbus_roman::METRICS.iter())

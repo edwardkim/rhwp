@@ -1,0 +1,34 @@
+{
+  "started": 1795323931.1293528,
+  "scope": "Only generated PNG intermediates from superseded Source33 protected runs. Preserve every JSON, TSV, log, original, PDF and all formal evidence. Source36 before-correction and all Source37 final image sets remain.",
+  "roots": [
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-protected-native",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-protected-wasm"
+  ],
+  "process_references": [],
+  "sequencing_scripts_checked": [
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/aggregate_source37_matrices.py",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_source37_candidate_ctrl_data.py",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_source37_canonical_original_world.py",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_source37_features_wasm_after_originals.py",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_source37_incoming_studio.py",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_source37_matrix_role.py",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_source37_wasm_live.py",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_source37_wasm_saved_live.py",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_source38_public_visual_gate.py",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_source38_rust_gates.py",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/score_source37_live_preservation.py",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/score_source37_saved_live_and_content.py",
+    "/home/tsjang/rhwp/scripts/export-wasm-png-for-sweep.mjs",
+    "scripts/visual_sweep.py"
+  ],
+  "inventory": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source39-obsolete-protected-png-inventory.json",
+  "inventory_sha256": "8c8bd406ead412cfb1c23e9f6bfdd85b88e74c07c427df19d1e39ae66c9c0961",
+  "count": 17612,
+  "apparent_bytes": 2600920618,
+  "free_before": 1970184192,
+  "complete": true,
+  "free_after": 3182796800,
+  "ended": 1795323939.9416895,
+  "actual_free_delta": 1212612608
+}

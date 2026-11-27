@@ -1032,6 +1032,9 @@ pub struct TextLineNode {
     /// Optional source ownership; ordinary body lines keep their existing JSON.
     #[serde(rename = "captionOwner", skip_serializing_if = "Option::is_none")]
     pub caption_owner: Option<CaptionOwner>,
+    /// 실제로 배치한 본문 줄의 문자 시작과 후행 간격(px). 저장 줄 재구성에 쓴다.
+    #[serde(skip)]
+    pub(crate) source_flow: Option<(usize, f64)>,
     /// 줄 높이 (px)
     pub line_height: f64,
     /// 베이스라인 위치 (줄 상단으로부터, px)
@@ -1051,6 +1054,7 @@ impl TextLineNode {
     pub fn new(line_height: f64, baseline: f64) -> Self {
         Self {
             caption_owner: None,
+            source_flow: None,
             line_height,
             baseline,
             section_index: None,
@@ -1075,6 +1079,7 @@ impl TextLineNode {
             line_index: None,
             vpos: None,
             caption_owner: None,
+            source_flow: None,
         }
     }
 
@@ -1095,6 +1100,7 @@ impl TextLineNode {
             line_index: Some(line_index),
             vpos: Some(vpos),
             caption_owner: None,
+            source_flow: None,
         }
     }
 }
@@ -1376,6 +1382,10 @@ pub struct ShapeTransform {
     /// 흐름·선택 bbox는 유지하고 모든 paint 소비자가 같은 잉크 상자를 구한다.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub image_frame_ratio: Option<[f64; 2]>,
+    /// 한/글 개체 속성의 가로·세로 기울이기. 원래 크기로 그린 도형을 쪽 공간에서 옮기는
+    /// 아핀 행렬 `[a, b, c, d, e, f]`이며, paint 단계가 공통 변환 묶음으로 내린다.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub skew: Option<[f64; 6]>,
 }
 
 impl ShapeTransform {
@@ -1822,8 +1832,9 @@ impl ImageNode {
     /// #8957의 한컴 2024 Print는 정상 그림과 같은 페이지의 미해결 연결 그림만 비운다.
     /// 경로·배치 공간은 보존하고, 실제 바이트가 공급되면 연결 그림도 정상 인쇄한다.
     /// 외부 데이터의 디코딩 실패나 채우기 이미지까지 이 계약으로 확대하지 않는다.
-    pub(crate) fn is_nonprinting_picture_placeholder(&self) -> bool {
+    pub(crate) fn is_nonprinting_picture(&self) -> bool {
         self.is_missing_picture()
+            || crate::renderer::image_resolver::nonprinting_source_picture(self)
             || (self.fill_mode.is_none()
                 && self.external_path.is_some()
                 && self.data.as_deref().is_none_or(<[u8]>::is_empty))
@@ -1949,6 +1960,9 @@ pub struct GroupNode {
     pub para_index: Option<usize>,
     /// 문단 내 컨트롤 인덱스
     pub control_index: Option<usize>,
+    /// 묶음을 소유한 셀 문단의 경로. Studio에서 묶음과 자식 글상자를 구분한다.
+    #[serde(skip)]
+    pub cell_context: Option<CellContext>,
 }
 
 /// 각주/미주 내부에 있는 컨트롤의 원본 위치.
@@ -2184,6 +2198,8 @@ pub struct PageLayoutContext {
     next_id: NodeId,
     /// 인라인 Shape 좌표 맵: (section, para, control, cell_path) → (x, y)
     inline_shape_positions: std::collections::HashMap<InlineShapeKey, (f64, f64)>,
+    /// 셀에서 나중에 그릴 인라인 그림의 왼쪽 잉크 경계. (출력한 글줄 ID, 원본 개체 번호).
+    deferred_picture_offsets: std::collections::HashMap<(NodeId, usize), f64>,
     /// 페이지 인덱스. 재귀가 페인트 root 의 `PageNode` 에서 읽던 값 (#4277).
     page_index: u32,
     /// 페이지 bbox. 재귀가 페인트 root 의 bbox 에서 읽던 값 — 레이아웃 도중 불변이다.
@@ -2192,6 +2208,8 @@ pub struct PageLayoutContext {
     horizontal_shaping_sidecars: HorizontalShapingPageSidecars,
     /// Q4-D2 bounded HWP5 vertical table-cell owners. Paint publication is D3-only.
     vertical_shaping_sidecars: VerticalShapingPageSidecars,
+    /// 칸 clip 밖에 놓이는 개체와 원본의 앞뒤 배치.
+    cell_overlay_nodes: std::collections::HashMap<NodeId, crate::model::shape::TextWrap>,
 }
 
 impl PageLayoutContext {
@@ -2200,11 +2218,41 @@ impl PageLayoutContext {
         Self {
             next_id: 1,
             inline_shape_positions: std::collections::HashMap::new(),
+            deferred_picture_offsets: std::collections::HashMap::new(),
             page_index,
             page_bbox: BoundingBox::new(0.0, 0.0, width, height),
             horizontal_shaping_sidecars: HorizontalShapingPageSidecars::default(),
             vertical_shaping_sidecars: VerticalShapingPageSidecars::default(),
+            cell_overlay_nodes: std::collections::HashMap::new(),
         }
+    }
+
+    pub(crate) fn mark_cell_overlay_node(
+        &mut self,
+        id: NodeId,
+        wrap: crate::model::shape::TextWrap,
+    ) {
+        self.cell_overlay_nodes.insert(id, wrap);
+    }
+
+    /// 종이·쪽 기준 도형의 ‘글 뒤’는 표 배경·괘선보다 먼저, 나머지는 완성된 표 위에 그린다.
+    /// 같은 층의 순서와 칸 안에 속한 그림의 그리기 순서는 보존한다.
+    pub(crate) fn order_cell_overlay_nodes(&self, table_node: &mut RenderNode) {
+        if self.cell_overlay_nodes.is_empty()
+            || !table_node
+                .children
+                .iter()
+                .any(|child| self.cell_overlay_nodes.contains_key(&child.id))
+        {
+            return;
+        }
+        table_node
+            .children
+            .sort_by_key(|child| match self.cell_overlay_nodes.get(&child.id) {
+                Some(crate::model::shape::TextWrap::BehindText) => 0,
+                None => 1,
+                Some(_) => 2,
+            });
     }
 
     /// 페이지 인덱스
@@ -2290,6 +2338,34 @@ impl PageLayoutContext {
     /// 인라인 Shape 좌표 전체 참조 (hitTest용)
     pub fn inline_shape_positions(&self) -> &std::collections::HashMap<InlineShapeKey, (f64, f64)> {
         &self.inline_shape_positions
+    }
+
+    pub(crate) fn defer_picture_left(&mut self, line: &RenderNode, control: usize, left: f64) {
+        self.deferred_picture_offsets
+            .insert((line.id, control), left - line.bbox.x);
+    }
+
+    pub(crate) fn take_cell_picture_left(
+        &mut self,
+        cell: &RenderNode,
+        section: usize,
+        paragraph: usize,
+        control: usize,
+    ) -> Option<f64> {
+        if self.deferred_picture_offsets.is_empty() {
+            return None;
+        }
+        cell.children.iter().rev().find_map(|node| {
+            let RenderNodeType::TextLine(line) = &node.node_type else {
+                return None;
+            };
+            if line.section_index != Some(section) || line.para_index != Some(paragraph) {
+                return None;
+            }
+            self.deferred_picture_offsets
+                .remove(&(node.id, control))
+                .map(|offset| node.bbox.x + offset)
+        })
     }
 
     /// 새 노드 ID 할당

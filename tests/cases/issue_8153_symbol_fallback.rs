@@ -1,7 +1,7 @@
 //! 관계형: 빈 cmap 기호와 실제 fallback의 잉크를 최종 Native paint에서 확인한다.
 //! 주석 갱신: 2026-11-06 04:45:01 KST; 직전 파일 커밋: c417310cab 2026-10-30T19:50:11+09:00.
 //! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
-//! 이 검사는 합성 입력을 사용하며 아래 수치는 관련 편람의 별도 시각 검증이다.
+//! 공개 글꼴 원본의 윤곽을 사용하며 아래 수치는 관련 편람의 별도 시각 검증이다.
 //! HWP 200쪽 Native 100.00% / fresh WASM 100.00%.
 //! HWP 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
 //! HWPX 200쪽 Native 100.00% / fresh WASM 100.00%.
@@ -9,32 +9,38 @@
 //! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 #![cfg(all(feature = "native-skia", not(target_arch = "wasm32")))]
 
-// 파생 suite 루트에서 한 번 로딩한 동일 helper를 공유한다. 검사 본문은 유지한다.
-use super::symbol_font_program;
-
 use rhwp::paint::RenderProfile;
 use rhwp::renderer::{layer_renderer::LayerRasterRenderer, skia::SkiaLayerRenderer};
 use rhwp::{model::style::SubstFont, DocumentCore};
 
 #[test]
-fn mapped_empty_symbols_use_real_fallback_without_changing_source_or_positions() {
-    let primary = symbol_font_program::mapped_program(
-        include_bytes!("../fixtures/fonts/RHWPExactKerningSmoke.ttf"),
-        &[(' ', 1), ('A', 2), ('⚫', 1), ('∑', 1), ('€', 1)],
-    );
-    let fallback = symbol_font_program::mapped_program(
-        include_bytes!("../fixtures/fonts/RHWPHostFixture-Regular.ttf"),
-        &[('A', 1), ('⚫', 1), ('∑', 1), ('€', 1)],
-    );
+fn empty_symbol_uses_real_fallback_without_changing_source_or_positions() {
+    use rhwp::renderer::{font_symbol_coverage::empty_symbol_codepoints, native_webfonts};
+    const SYMBOL: char = '¢';
+    const PRIMARY_REQUEST: &str = "RHWP Empty Cent Fixture";
+    const FALLBACK_REQUEST: &str = "RHWP Cent Fallback Fixture";
+    let primary = native_webfonts::decode_font(include_bytes!(
+        "../../assets/fonts/SpoqaHanSans-Regular.woff2"
+    ))
+    .expect("배포 WOFF2의 압축을 해제해 실제 Native 프로그램을 읽는다");
+    let fallback = include_bytes!("../fixtures/fonts/source-sans-3/SourceSans3-3.052-Regular.otf");
+    let face = ttf_parser::Face::parse(&primary, 0).unwrap();
+    let empty = face.glyph_index(SYMBOL).expect("원본 cmap의 센트 기호");
+    assert!(face.glyph_bounding_box(empty).is_none());
+    assert!(empty_symbol_codepoints(&primary, 0).contains(&u32::from(SYMBOL)));
+    let face = ttf_parser::Face::parse(fallback, 0).unwrap();
+    let visible = face.glyph_index(SYMBOL).expect("대체 원본의 센트 기호");
+    assert!(face.glyph_bounding_box(visible).is_some());
+
     let mut core = DocumentCore::new_empty();
     core.create_blank_document_native().unwrap();
-    core.insert_text_native(0, 0, 0, "⚫∑€").unwrap();
+    core.insert_text_native(0, 0, 0, "¢").unwrap();
     let mut document = core.document().clone();
     for language in &mut document.doc_info.font_faces {
         for font in language {
-            font.name = "RHWP Kerning Boundary".into();
+            font.name = PRIMARY_REQUEST.into();
             font.subst_font = Some(SubstFont {
-                face: "RHWP Host Fixture".into(),
+                face: FALLBACK_REQUEST.into(),
                 font_type: 1,
                 ..Default::default()
             });
@@ -45,11 +51,18 @@ fn mapped_empty_symbols_use_real_fallback_without_changing_source_or_positions()
     let tree = core
         .build_page_layer_tree_with_profile(0, RenderProfile::Print)
         .unwrap();
+    // 같은 이름의 설치본은 cmap·윤곽이 다를 수 있다. 두 시험 입력을 명시 별칭에만 연결한다.
     let with_empty = SkiaLayerRenderer::new()
-        .try_with_font_data(&[primary, fallback.clone()])
+        .try_with_font_data(&[primary, fallback.to_vec()])
+        .unwrap()
+        .with_font_family_alias(PRIMARY_REQUEST, "SpoqaHanSans")
+        .unwrap()
+        .with_font_family_alias(FALLBACK_REQUEST, "Source Sans 3")
         .unwrap();
     let reference = SkiaLayerRenderer::new()
-        .try_with_font_data(&[fallback])
+        .try_with_font_data(&[fallback.to_vec()])
+        .unwrap()
+        .with_font_family_alias(FALLBACK_REQUEST, "Source Sans 3")
         .unwrap();
     let expected = reference.render_png(&tree).unwrap();
     let actual = with_empty.render_png(&tree).unwrap();
@@ -63,15 +76,14 @@ fn mapped_empty_symbols_use_real_fallback_without_changing_source_or_positions()
             .unwrap(),
     )
     .unwrap();
-    for symbol in ['⚫', '∑', '€'] {
-        let record = trace["records"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .find(|record| record["source"]["character"] == symbol.to_string())
-            .unwrap();
-        assert_eq!(record["paint"]["native"]["resolved"], "RHWP Host Fixture");
-    }
+    let record = trace["records"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|record| record["source"]["character"] == SYMBOL.to_string())
+        .unwrap();
+    assert_eq!(record["paint"]["native"]["resolved"], "Source Sans 3");
+    assert_eq!(record["paint"]["native"]["source"], "custom");
     assert_eq!(
         core.export_hwp_native().unwrap(),
         source,
@@ -91,14 +103,21 @@ fn missing_primary_symbol_keeps_the_same_slot_with_unclassified_font_type() {
     use rhwp::renderer::TextStyle;
 
     let primary = include_bytes!("../fixtures/fonts/RHWPEquationLatinOnly.ttf").to_vec();
-    let fallback = symbol_font_program::mapped_program(
-        include_bytes!("../fixtures/fonts/RHWPHftOutline.otf"),
-        &[('∙', 1)],
-    );
+    let fallback =
+        include_bytes!("../fixtures/fonts/source-sans-3/SourceSans3-3.052-Regular.otf").to_vec();
+    let glyph = '∙';
+    assert!(ttf_parser::Face::parse(&primary, 0)
+        .unwrap()
+        .glyph_index(glyph)
+        .is_none());
+    assert!(ttf_parser::Face::parse(&fallback, 0)
+        .unwrap()
+        .glyph_index(glyph)
+        .is_some());
     let renderer = SkiaLayerRenderer::new()
         .try_with_font_data(&[primary.clone(), fallback.clone()])
         .unwrap();
-    let family = "RHWP Equation Contract,RHWP HFT Outline Fixture";
+    let family = "RHWP Equation Contract,Source Sans 3";
     let mut fonts = NativePuaFonts::default();
     for declared_ttf in [false, true] {
         fonts
@@ -111,7 +130,7 @@ fn missing_primary_symbol_keeps_the_same_slot_with_unclassified_font_type() {
         .unwrap();
     let render = |declared_ttf| {
         let run = TextRunNode {
-            text: "∙".into(),
+            text: glyph.to_string(),
             style: TextStyle {
                 font_family: family.into(),
                 font_size: 12.0,

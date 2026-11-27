@@ -1453,12 +1453,18 @@ impl DocumentCore {
         // 대상 셀의 적용 직전 id — 아래 borrow 블록이 정상 완료되면 채워진다.
         let mut target_bf_before = 0u16;
 
-        let (needs_reflow, wrap_changed, reflow_para_count) = {
+        let drawn_rows = top_u32("height")
+            .map(|_| self.measured_top_level_row_heights(section_idx, parent_para_idx, control_idx))
+            .unwrap_or_default();
+
+        let (needs_reflow, wrap_changed, reflow_para_count, inline_height_changed) = {
             let mut needs_reflow = false;
-            let mut size_changed = false;
             let mut width_changed = false;
             let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
-            let original_width = table.common.width;
+            let original_height = table.common.height;
+            let height_surplus = top_u32("height")
+                .map(|_| table.row_height_surplus(&drawn_rows))
+                .unwrap_or_default();
             let direct_border_fill_id = if has_border_fill_change {
                 None
             } else {
@@ -1480,13 +1486,13 @@ impl DocumentCore {
             if let Some(v) = top_u32("width") {
                 needs_reflow |= cell.width != v;
                 width_changed = cell.width != v;
-                size_changed |= width_changed;
                 cell.width = v;
             }
-            if let Some(v) = top_u32("height") {
-                size_changed |= cell.height != v;
+            let height_changed = top_u32("height").is_some_and(|v| {
+                let changed = cell.height != v;
                 cell.height = v;
-            }
+                changed
+            });
             if let Some(v) = top_i16("paddingLeft") {
                 needs_reflow |= cell.padding.left != v;
                 cell.padding.left = v;
@@ -1544,18 +1550,12 @@ impl DocumentCore {
                     paragraph.invalidate_layout_inputs();
                 }
             }
-            if size_changed {
+            if width_changed {
                 table.update_ctrl_dimensions();
-                if !width_changed {
-                    // 행마다 칸 경계가 다르면 열별 최댓값 합은 실제 표 너비보다 크다.
-                    // 높이만 바꿀 때 선언 너비와 HWP 원본 헤더는 그대로 둔다.
-                    table.common.width = original_width;
-                    patch_raw_ctrl_field(
-                        &mut table.raw_ctrl_data,
-                        common_obj_offsets::WIDTH,
-                        &original_width.to_le_bytes(),
-                    );
-                }
+                table.sync_ctrl_height(original_height);
+            }
+            if height_changed {
+                table.sync_ctrl_height_from_rows(&drawn_rows, height_surplus);
             }
             if text_direction_changed || wrap_changed {
                 table.invalidate_layout_page_break();
@@ -1564,9 +1564,15 @@ impl DocumentCore {
                 needs_reflow || wrap_changed,
                 wrap_changed,
                 table.cells[cell_idx].paragraphs.len(),
+                height_changed
+                    && table.common.treat_as_char
+                    && table.common.height != original_height,
             )
         };
 
+        if inline_height_changed {
+            self.invalidate_resized_table_host(section_idx, parent_para_idx, &[])?;
+        }
         if needs_reflow {
             let para_count = reflow_para_count;
             for cell_para_idx in 0..para_count {
@@ -2410,6 +2416,48 @@ impl DocumentCore {
         neighbor_changes
     }
 
+    /// 좌표가 가리키는 최상위 표의 내용 맞춤 행에만 현재 측정 높이를 공급한다.
+    fn measured_top_level_row_heights(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+    ) -> Vec<u32> {
+        self.measured_tables
+            .get(section_idx)
+            .and_then(|tables| {
+                tables.iter().find(|t| {
+                    t.para_index == parent_para_idx
+                        && t.control_index == control_idx
+                        && t.unwrapped_table_depth == 0
+                })
+            })
+            .map(|t| {
+                t.row_heights
+                    .iter()
+                    .map(|&h| crate::renderer::px_to_hwpunit(h, self.dpi).max(0) as u32)
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
+
+    /// 줄에 참여하는 표의 높이가 바뀌면 원래 표를 기준으로 저장한 줄 높이와 기준선도 만료된다.
+    fn invalidate_resized_table_host(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+    ) -> Result<(), HwpError> {
+        let paragraph = if path.is_empty() {
+            &mut self.document.sections[section_idx].paragraphs[parent_para_idx]
+        } else {
+            self.get_cell_paragraph_mut_by_path(section_idx, parent_para_idx, path)?
+        };
+        paragraph.replace_line_segs(Vec::new());
+        paragraph.invalidate_layout_inputs();
+        Ok(())
+    }
+
     /// 여러 셀의 width/height를 한 번에 조절한다 (네이티브).
     ///
     /// json 형식: `[{"cellIdx":0,"widthDelta":150},{"cellIdx":2,"heightDelta":-100}]`
@@ -2419,16 +2467,22 @@ impl DocumentCore {
     /// 로만 닿는 **최상위 표 전용**이었다. 중첩 표는 그 좌표계로 가리킬 수 없어 studio 의
     /// 크기 조절이 아예 닿지 못했다. 본문을 `&mut Table` 기준으로 떼어 내 경로 변형과 공유한다.
     ///
-    /// 반환값은 폭이 바뀐 셀의 `(셀 번호, 문단 수)` — 호출부가 평면/경로에 맞는 리플로우를 건다.
+    /// 폭이 바뀐 셀의 `(셀 번호, 문단 수)`와 표를 담은 줄의 높이 변경 여부를 돌려준다.
     fn apply_cell_resize_updates(
         table: &mut crate::model::table::Table,
         updates: &[CellResizeUpdate],
-    ) -> Vec<(usize, usize)> {
+        drawn_rows: &[u32],
+    ) -> (Vec<(usize, usize)>, bool) {
         const MIN_CELL_SIZE: u32 = 200; // 최소 셀 크기 (HWPUNIT)
 
         let original_width = table.common.width;
         let original_height = table.common.height;
-        let original_row_height_sum: u32 = table.get_row_heights().iter().sum();
+        let height_surplus = if updates.iter().any(|u| u.height_delta != 0) {
+            table.row_height_surplus(drawn_rows)
+        } else {
+            0
+        };
+        let columns_before = table.column_bounds();
         let mut applied_width_delta: i64 = 0;
         let mut applied_height_delta: i64 = 0;
         for update in updates {
@@ -2448,26 +2502,19 @@ impl DocumentCore {
                 applied_height_delta += i64::from(cell.height) - i64::from(old_height);
             }
         }
+        // 일부 줄의 칸 너비만 바꿔 줄마다 경계가 달라지면 한컴처럼 그 경계로 열 격자를 나눈다.
+        if let Some(before) = columns_before {
+            if updates.iter().any(|u| u.width_delta != 0) && table.column_bounds().is_none() {
+                table.regrid_columns_from_widths(&before);
+            }
+        }
         table.update_ctrl_dimensions();
-        if updates.iter().any(|u| u.height_delta != 0)
-            && original_height > original_row_height_sum
-            && table.row_count > 1
-        {
-            // 여러 행 표에서 일부 행을 조절할 때만 생성 표의 표시 height 여유분을 보존한다.
-            // 1행 표는 조절한 셀 높이가 곧 표 높이라는 기존 TAC 전환 회귀 규칙을 유지해야 한다.
-            let resized_row_height_sum: u32 = table.get_row_heights().iter().sum();
-            let row_height_delta = resized_row_height_sum as i64 - original_row_height_sum as i64;
-            let adjusted_height = if row_height_delta >= 0 {
-                original_height.saturating_add(row_height_delta.min(u32::MAX as i64) as u32)
-            } else {
-                original_height.saturating_sub((-row_height_delta).min(u32::MAX as i64) as u32)
-            }
-            .max(resized_row_height_sum);
-            table.common.height = adjusted_height;
-            if table.raw_ctrl_data.len() >= common_obj_offsets::HEIGHT.end {
-                table.raw_ctrl_data[common_obj_offsets::HEIGHT]
-                    .copy_from_slice(&adjusted_height.to_le_bytes());
-            }
+        if applied_height_delta == 0 {
+            // 이웃 셀의 크기로 보상한 편집은 표 외곽 높이를 보존한다.
+            // 최소 셀 크기에 걸릴 수 있으므로 실제 적용한 변화량을 합한다.
+            table.sync_ctrl_height(original_height);
+        } else {
+            table.sync_ctrl_height_from_rows(drawn_rows, height_surplus);
         }
         if applied_width_delta == 0 {
             table.common.width = original_width;
@@ -2476,19 +2523,15 @@ impl DocumentCore {
                     .copy_from_slice(&original_width.to_le_bytes());
             }
         }
-        if applied_height_delta == 0 {
-            table.common.height = original_height;
-            if table.raw_ctrl_data.len() >= common_obj_offsets::HEIGHT.end {
-                table.raw_ctrl_data[common_obj_offsets::HEIGHT]
-                    .copy_from_slice(&original_height.to_le_bytes());
-            }
-        }
 
-        updates
+        let reflow_cells = updates
             .iter()
             .filter(|u| u.width_delta != 0)
             .filter_map(|u| Some((u.cell_idx, table.cells.get(u.cell_idx)?.paragraphs.len())))
-            .collect()
+            .collect();
+        let inline_height_changed =
+            table.common.treat_as_char && table.common.height != original_height;
+        (reflow_cells, inline_height_changed)
     }
 
     /// 셀 크기 조절 갱신 목록을 파싱한다 — `[{"cellIdx":N,"widthDelta":D,"heightDelta":D}, ...]`.
@@ -2593,7 +2636,16 @@ impl DocumentCore {
         }
 
         let table = self.resolve_table_mut_by_cell_path(section_idx, parent_para_idx, path)?;
-        let reflow_cells = Self::apply_cell_resize_updates(table, &updates);
+        // 최상위 표의 측정값을 같은 셀 번호의 중첩 표에 적용하지 않는다.
+        let (reflow_cells, inline_height_changed) =
+            Self::apply_cell_resize_updates(table, &updates, &[]);
+        if inline_height_changed {
+            self.invalidate_resized_table_host(
+                section_idx,
+                parent_para_idx,
+                &path[..path.len() - 1],
+            )?;
+        }
 
         // 리플로우는 **안쪽 셀 폭**을 기준으로 해야 한다 — 바깥 표의 셀 폭이나 본문 폭으로
         // 다시 재면 중첩 표 글줄이 제 칸을 넘는다. `reflow_cell_paragraph_by_path` 가
@@ -2637,9 +2689,17 @@ impl DocumentCore {
             return Err(HwpError::RenderError(LOCAL_RESIZE_UNSUPPORTED.to_string()));
         }
 
-        // 셀 업데이트 적용
+        let drawn_rows = if updates.iter().any(|u| u.height_delta != 0) {
+            self.measured_top_level_row_heights(section_idx, parent_para_idx, control_idx)
+        } else {
+            Vec::new()
+        };
         let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
-        let reflow_cells = Self::apply_cell_resize_updates(table, &updates);
+        let (reflow_cells, inline_height_changed) =
+            Self::apply_cell_resize_updates(table, &updates, &drawn_rows);
+        if inline_height_changed {
+            self.invalidate_resized_table_host(section_idx, parent_para_idx, &[])?;
+        }
 
         // 너비가 변경된 셀의 모든 문단에 대해 line_segs 재계산 (텍스트 리플로우)
         self.reflow_table_cell_paragraphs(section_idx, parent_para_idx, control_idx, &reflow_cells);

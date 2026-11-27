@@ -1,0 +1,142 @@
+{
+  "id": "declared-program-0f5e4cf037119449fd5c22563d64d1a267640448cebffb16905c4438efa73891",
+  "preserveSourceMetrics": true,
+  "selectedPrograms": {
+    "HCI Poppy": {
+      "family": "HCI Poppy",
+      "openTypeCff": true,
+      "programId": "629bb8256586eaad663399a52c294f12510847527d1933b3c38c682b29af8433",
+      "query": "HCI Poppy",
+      "trueType": false
+    },
+    "HYHeadLine M": {
+      "family": "HYHeadLine M",
+      "openTypeCff": false,
+      "programId": "3590c50a33fd7bcb432e936c9d8289d2f62e13a018ad90167eff676da04ce650",
+      "query": "HYHeadLine M",
+      "trueType": true
+    },
+    "HY신명조": {
+      "family": "HYSinMyeongJo-Medium",
+      "openTypeCff": false,
+      "programId": "c557c382bc27a4948780df998f85cf6493e42a4569cd624327033de7bd52c367",
+      "query": "HY신명조",
+      "trueType": true
+    },
+    "KoPub돋움체 Light": {
+      "family": "KoPubDotum Light",
+      "openTypeCff": false,
+      "programId": "6d6953f3c854de69eb2b947d2abbdd108512617b3cd542cde6d00a1dd496824b",
+      "query": "KoPub돋움체 Light",
+      "trueType": true
+    },
+    "굴림": {
+      "family": "Gulim",
+      "openTypeCff": false,
+      "programId": "5156b4eb79fe5ffb616278674a649d749d25968903844089b39d181398cdb0c8",
+      "query": "굴림",
+      "trueType": true
+    },
+    "맑은 고딕": {
+      "family": "Malgun Gothic",
+      "openTypeCff": false,
+      "programId": "97fcea8302848cd4dd23a76a757e82a216458a3bf2134bba4a6765a35df617b5",
+      "query": "맑은 고딕",
+      "trueType": true
+    },
+    "명조": {
+      "family": "Myeongjo",
+      "openTypeCff": true,
+      "programId": "273a2975151dbf480c5784f8b57a76287898c0554b37a4b329005b97e2e4d1f6",
+      "query": "명조",
+      "trueType": false
+    },
+    "바탕체": {
+      "collectionFace": true,
+      "family": "BatangChe",
+      "openTypeCff": false,
+      "programId": "3d56206a82c78ae9f5356141bbe8cf777ba2fc1f6fc03455531d0ac453b5b6bb",
+      "query": "바탕체",
+      "trueType": true
+    },
+    "한양신명조": {
+      "family": "HY Sinmyeongjo",
+      "openTypeCff": true,
+      "programId": "8a2bf911559bb4cecd47f2a82a1fe8d65ac80cc94cd6d0ebce66b94a409cc865",
+      "query": "한양신명조",
+      "trueType": false
+    },
+    "한양중고딕": {
+      "family": "HY Junggothic",
+      "openTypeCff": true,
+      "programId": "1fd7e301e828b77b80781953d7e1fced20086ccd0cb81a38ccf96915be5e1842",
+      "query": "한양중고딕",
+      "trueType": false
+    },
+    "한컴바탕": {
+      "family": "Haansoft Batang",
+      "openTypeCff": false,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "trueType": true
+    },
+    "함초롬돋움": {
+      "family": "HCR Dotum",
+      "openTypeCff": false,
+      "programId": "d8dc4532f79118de33993f192ea81778d7aabff814fc12db1cec7d006ffe04df",
+      "query": "함초롬돋움",
+      "trueType": true
+    },
+    "함초롬바탕": {
+      "family": "HCR Batang",
+      "openTypeCff": false,
+      "programId": "6247c14b4d48d9c44d37124d74a8d3428c822e82dfa2cd3cd66cd74489e0171b",
+      "query": "함초롬바탕",
+      "trueType": true
+    },
+    "휴먼고딕": {
+      "family": "휴먼고딕",
+      "openTypeCff": false,
+      "programId": "e4569928193e96698ca77ebb16919a770dfe2d91345cdc12bb9426d0ed06152f",
+      "query": "휴먼고딕",
+      "trueType": true
+    },
+    "휴먼명조": {
+      "family": "휴먼명조",
+      "openTypeCff": false,
+      "programId": "f44febee110ef64620a17f9e884aac284878aef1bdf3cb3f41bc9efb462e629e",
+      "query": "휴먼명조",
+      "trueType": true
+    }
+  },
+  "substitutions": {
+    "HCI Poppy": "HCI Poppy",
+    "HYHeadLine M": "HYHeadLine M",
+    "HY신명조": "HYSinMyeongJo-Medium",
+    "KoPub돋움체 Light": "KoPubDotum Light",
+    "굴림": "Gulim",
+    "맑은 고딕": "Malgun Gothic",
+    "명조": "Myeongjo",
+    "바탕체": "BatangChe",
+    "한양신명조": "HY Sinmyeongjo",
+    "한양중고딕": "HY Junggothic",
+    "한컴바탕": "Haansoft Batang",
+    "함초롬돋움": "HCR Dotum",
+    "함초롬바탕": "HCR Batang",
+    "휴먼고딕": "휴먼고딕",
+    "휴먼명조": "휴먼명조"
+  },
+  "trueTypeFaces": [
+    "BatangChe",
+    "Gulim",
+    "HCR Batang",
+    "HCR Dotum",
+    "HYHeadLine M",
+    "HYSinMyeongJo-Medium",
+    "Haansoft Batang",
+    "KoPubDotum Light",
+    "Malgun Gothic",
+    "휴먼고딕",
+    "휴먼명조"
+  ]
+}

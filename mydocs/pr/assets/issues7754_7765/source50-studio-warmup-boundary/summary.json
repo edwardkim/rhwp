@@ -1,0 +1,105 @@
+{
+  "measured_at": "2026-11-22T10:32:31.207503+00:00",
+  "base": "8a196ca7aea2aa3cf32d394f5b7da2bdf4520479",
+  "candidate_production": "8f9fd0414ffcfb720fa4a601c79c4590480de0e8",
+  "studio_unit": {
+    "command": "npm --prefix rhwp-studio test",
+    "exit_code": 0,
+    "passed": 2834,
+    "failed": 0,
+    "skipped": 0
+  },
+  "typescript": {
+    "command": "cd rhwp-studio && ./node_modules/.bin/tsc --noEmit",
+    "exit_code": 0
+  },
+  "browser": {
+    "actual_journeys_passed": 14,
+    "host_input_catalogs_per_role": 3,
+    "prepares_per_20_inputs": 20,
+    "wasm_responses_verified": true
+  },
+  "scope": "Pre-9318 baseline and candidate only. Not post-9318 rebase evidence. PR preparation only; no remote mutation.",
+  "files": [
+    {
+      "path": "source138-host-font-trace-state.json",
+      "bytes": 1132,
+      "sha256": "0b5b96bc7632504de3643c6c8e9f73ee83c8682fcfa5227e8d5e24304bfcf6e6"
+    },
+    {
+      "path": "source139-host-font-trace-state.json",
+      "bytes": 1094,
+      "sha256": "8e044769fa85068fdfe2704b832848dacb4186026cb85c9bf8e4602122aff6fd"
+    },
+    {
+      "path": "source139-base-served.json",
+      "bytes": 433,
+      "sha256": "978cb5ed10cb03ef0be6366229c5518b257d60b6260f7784d989c58ad5407d3c"
+    },
+    {
+      "path": "source139-candidate-served.json",
+      "bytes": 445,
+      "sha256": "b8d20063805a14b9d36a85f2d21da9575c96caafed1e951af04838549fffa057"
+    },
+    {
+      "path": "source141-studio-completed-summary.json",
+      "bytes": 12244,
+      "sha256": "b46608dea3f55caa0f651bd556a7a396a184512313f00a4cb9fbac17425be6a6"
+    },
+    {
+      "path": "source136-completed-diagnostic-cleanup.json",
+      "bytes": 6003,
+      "sha256": "b4a0061d448d5fe1ea700659eabcbc068b043aaa22a0c3a2062f66fec66c6960"
+    },
+    {
+      "path": "source143-premerge-simulation.txt",
+      "bytes": 41,
+      "sha256": "bb4402e4ed012b5c81811f0d3ba49f2f11a714ce9895fd88cf96b04a31e0fb7f"
+    },
+    {
+      "path": "logs/source117-candidate-studio-host-font-input-9174.txt",
+      "bytes": 2897,
+      "sha256": "ab4f5863a74f5f6b3d299cc2816f77475f438939aac92ee3d111eaee5e748fd8"
+    },
+    {
+      "path": "logs/source133-host-font-retry.txt",
+      "bytes": 4133,
+      "sha256": "ebaeaee3492e84a10f2d9ecda141a7d0d73009217f348cda2cd06a7effb538de"
+    },
+    {
+      "path": "logs/source134-candidate-host-font-trace.txt",
+      "bytes": 5703,
+      "sha256": "ffa2bbf90b7ec0917c791ab7f07afc7cdd4bfaa733a761f57564545bfd2db4a6"
+    },
+    {
+      "path": "logs/source138-base-host-font-trace.txt",
+      "bytes": 3898,
+      "sha256": "91f9011e4c28ecc19ad0c6a370c1c83419bb5cef8fbbaee158c0b1c4377d3f4b"
+    },
+    {
+      "path": "logs/source138-candidate-host-font-trace.txt",
+      "bytes": 3904,
+      "sha256": "0d65f449a17ea04ee148f61493acee0b856d55c278712a7132a158ecfd2d1ba1"
+    },
+    {
+      "path": "logs/source139-base-host-font-trace.txt",
+      "bytes": 3743,
+      "sha256": "f73c81201810070fe3f9aa95c265f112fbf5b5317f79b1d5007f0ba9ed8cf797"
+    },
+    {
+      "path": "logs/source139-candidate-host-font-trace.txt",
+      "bytes": 3748,
+      "sha256": "f39ecf3dcac013c3b794b6756bc032f1163b8474a7f33f4b90df0d74e68a573c"
+    },
+    {
+      "path": "logs/source142-studio-unit.txt",
+      "bytes": 312654,
+      "sha256": "1b76e9b8681dad072df3177ff06d0fe582ad52b27ea2d532c11ab274228f1217"
+    },
+    {
+      "path": "logs/source142-studio-typescript.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

@@ -175,14 +175,14 @@ fn saved_auction_frame_is_owned_by_both_measurement_and_painted_cell() {
     };
     assert!(
         footer_run.style.bold && footer_run.style.hft_fullwidth_dot,
-        "원본 HFT 굵은 글자모양을 사용하는 수신인"
+        "원본의 굵은 글자모양을 사용하는 수신인"
     );
     let mut regular = footer_run.style.clone();
     regular.bold = false;
     assert!(
         measurer.estimate_text_width("매립지등", &footer_run.style)
             > measurer.estimate_text_width("매립지등", &regular),
-        "HFT 굵은 한글은 일반체와 다른 전진 간격을 소유한다"
+        "원본 굵은 한글은 보통 글자와 다른 전진폭을 유지한다"
     );
     assert!(
         (measurer.estimate_text_width(" ", &footer_run.style)

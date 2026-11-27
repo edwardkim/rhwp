@@ -48,6 +48,8 @@
   PR 생성·승인·통합을 보류하고 해결을 계속한다.
 - 사용자 또는 다른 도구가 만든 변경은 임의로 되돌리거나 삭제하지 않는다.
 - 작업 브랜치는 최신 `upstream/devel`을 기준으로 만들고, 일반 변경은 PR로 통합한다.
+- 로컬 `devel`이 최신 `upstream/devel`과 일치하면 기본 작업공간에서 비교용 빌드를 만들어 `output`에
+  고정하고, 비교용 임시 worktree 생성을 생략한다. [기준 빌드 보존 절차](mydocs/manual/pr_review/local_validation.md#최신-devel-비교용-빌드-보존)를 따른다.
 - 새 PR 준비·생성 전에는 본인 계정의 열린 PR을 먼저 확인한다. **이미 리뷰어가 지정된 PR은
   우선 처리 대상에서 제외**하고 임의로 갱신하지 않는다. 나머지 기존 PR의 lint를 포함한
   모든 CI 실패·오류를 신규 PR보다 우선 해결한다. 충돌·base 문제는 최신 `upstream/devel`로 rebase해 보정·커밋·
@@ -69,11 +71,19 @@
   항목을 PR CI에 넘기거나 Draft로 우회하지 않는다. 일반 제출은 검증을 완료한 Open PR이다.
   Draft는 조기 설계 논의·WIP 공유 등 특별한 목적과 작업지시자의 명시적 Draft 지시가 있는 경우만
   허용하며 목적·미완료 항목·완료 계획을 기록한다. 번호 확보·CI 대기는 예외 사유가 아니다.
+- 렌더러·조판·글꼴 공급·Native 출력 또는 관련 Skia 회귀를 바꾼 새 제출 후보는
+  [CI와 같은 Native Skia 사전 검사](mydocs/manual/pr_review/local_validation.md#ci와-같은-native-skia-사전-검사)에
+  따라 라이브러리와 CI 통합 모듈을 실행하고 모듈별 실행 건수를 확인한다.
 - 조판에 영향을 주는 변경이 포함된 PR은 일반 기여자를 포함하여 제출 전 최종 head에서
-  행정업무운영 편람 HWPX Native 383쪽 `--handbook-gate`를 실행해 통과한다. 지원 웹폰트를
-  사용할 수 있으며 비공개 원본 OTF 보유는 요구하지 않는다. 정본 보호 TSV 전체의 특별 하락 금지
+  행정업무운영 편람 HWPX Native 383쪽을 정본에 대조해 통과한다. 같은 조건의 정본 보호 전쪽
+  결과가 있으면 그 TSV를 제출하고, 없으면 `--handbook-gate`를 실행한다. 지원 웹폰트를 사용할 수
+  있으며 비공개 원본 OTF 보유는 요구하지 않는다. 정본 보호 TSV 전체의 특별 하락 금지
   검증은 통합 담당 collaborator·maintainer에게만 추가 적용한다. 일반 Visual Sweep에서는 자동 실행하지 않으며,
   실행과 판정은 [로컬 사전 검증](mydocs/manual/pr_review/local_validation.md)을 따른다.
+  통합 담당자는 첫 전쪽 실행 전에 [문서별 글꼴 공급 조건](mydocs/verification/protected-font-supply/manifest.json)을 확인하고,
+  [실제 글리프 확인 절차](mydocs/manual/verification/visual_sweep_guide.md#동명-글꼴과-실제-사용-글리프-확인)에 따라 공급 조건과 실제 선택 기록을 대조한다.
+  정본 보호의 Native·fresh WASM 공급 및 실제 선택에서 `_MAC.otf`를 제외한다.
+  보호 글꼴의 허용 조건을 바꾸는 PR은 macOS·Windows·Linux에서 정본 전쪽을 각각 통과해야 한다.
 - Docker 설치는 로컬 검증의 필수 조건이 아니다. 사용 가능 환경과 불가 환경의
   [fresh WASM 실행 경로](mydocs/manual/pr_review/local_validation.md#환경에-따른-fresh-wasm-검증)를
   구분하고, 호스트 경로도 최적화·브라우저·시각 검증까지 동일하게 완료한다.
@@ -81,6 +91,9 @@
   자동 적용·충돌 해소·컴파일 성공만으로 완료하지 않는다. 새 base와 후보의 실제 동작·출력을
   대조해 유지·개선이면 진행하고, 후퇴하면 보정 후 양쪽을 재검증한다. 필수 증거 부족도 보류한다.
   [리베이스 후 기능 보존 절차](mydocs/manual/pr_review/local_validation.md#리베이스로-반영한-pr의-기능-보존-검증)를 따른다.
+- 체리픽 통합 PR은 각 원 PR의 제출 TSV를 최종 후보와 페이지별로 대조한다. 낮아진 값은 같은 조건으로
+  검사해 원인을 확인하고 해결한 뒤 제출·승인·병합한다.
+  [원 PR 대비 시각 하락 확인](mydocs/manual/pr_review/multi_pr_update_branch.md#원-pr-대비-시각-하락-확인)을 따른다.
 - collaborator·maintainer의 예외 처리와 오늘할일·PR review 문서는 `pr_review_workflow.md`의
   라우팅 결과에 해당하는 역할별 자식 절차를 따른다. 모 문서만 읽고 세부 경로를 추정해 진행하지 않는다.
 - 작업 단계가 바뀌면 현재 단계의 변경을 커밋한 뒤 다음 단계 문서를 시작한다.
@@ -354,7 +367,10 @@ SHA-256·이전/보존 경로·활성 유지/제거 목록·복원 조건을 기
   재캡처를 먼저 한다. 기존 차이 또는 합성 입력이라는 분류만으로 보류 사유를 해소하지 않는다.
   기준 입력의 저장 정보가 무효라면 원본과 실패 증거를 보존하고, 독립적으로 재생성한 대조군의
   생성 절차와 변경점을 공개한다. 대조군 통과를 원본 입력의 일치로 바꾸어 보고하지 않는다.
-- 공식 기준 PDF는 Windows 데스크톱 한컴 2020·2024의 `Hancom PDF` 인쇄본만 수용한다.
+- 공식 기준 PDF는 Windows 데스크톱 한컴 2020·2024의 `Hancom PDF` 인쇄본을 기본으로 수용한다.
+  MCP가 인쇄 오류를 검출해 같은 엔진의 검증된 PDF 저장본을 반환하면
+  [한컴 Print 버그 예외](mydocs/manual/verification/visual_verification_governance.md#한컴-print-오류-시-mcp-대체-저장본-수용)를 기록하고 Visual Sweep을 계속한다.
+  전쪽 TSV·쪽수·일치율·확대 판독 기준은 유지한다.
   Cairo 출력은 원본 저장 제품에 맞는 MCP 엔진으로, `Creator: Hwp 2022` 출력은 MCP 2024로
   다시 인쇄한다. 제품·인쇄 경로와 PDF 형식 버전을 구분하고
   [기준 PDF 재사용·재출력](mydocs/manual/pr_review/visual_fixture_evidence.md#35-시각-검증-원칙) 절차를 따른다.

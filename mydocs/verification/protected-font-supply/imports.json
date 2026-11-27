@@ -1,0 +1,202 @@
+{
+  "files": [
+    {
+      "original_path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+      "official_path": "mydocs/verification/protected-font-supply/records/protected-font-supply-accepted-validation.json",
+      "sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+      "official_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a"
+    },
+    {
+      "original_path": "mydocs/pr/assets/planet6897_9240_9282_20261121/protected-candidate-v5/validation.json",
+      "official_path": "mydocs/verification/protected-font-supply/records/protected-font-supply-previous-validation.json",
+      "sha256": "5777ac968f022e4496238703ef94c3f0beb0cde3a98b3c538f9482bf9dd304f4",
+      "official_sha256": "5777ac968f022e4496238703ef94c3f0beb0cde3a98b3c538f9482bf9dd304f4"
+    },
+    {
+      "original_path": "mydocs/pr/assets/issues7754_7765/source33/font-environments/a3a6458dc372877daa22941d7d45ec46c249e1c0cff1465631170b08059abab9.json",
+      "official_path": "mydocs/verification/protected-font-supply/environments/yeongwol-native.json",
+      "sha256": "a3a6458dc372877daa22941d7d45ec46c249e1c0cff1465631170b08059abab9",
+      "official_sha256": "a3a6458dc372877daa22941d7d45ec46c249e1c0cff1465631170b08059abab9"
+    },
+    {
+      "original_path": "mydocs/pr/assets/jinho-von-choi-20261114/font-supply/yeongwol-qualified-environment.json",
+      "official_path": "mydocs/verification/protected-font-supply/environments/yeongwol-wasm.json",
+      "sha256": "fa15a5cc106788922437324b4f501e124fc3043eec8756f1e1ba8faaed890a9d",
+      "official_sha256": "fa15a5cc106788922437324b4f501e124fc3043eec8756f1e1ba8faaed890a9d"
+    },
+    {
+      "original_path": "mydocs/pr/assets/issue8856/final-20261110/font-environments/9d1351039b7e802f708c5c1bab199b30c612eaf4ab9a3f9561d2eee1ceb892be.json",
+      "official_path": "mydocs/verification/protected-font-supply/environments/handbook-hwp-native.json",
+      "sha256": "9d1351039b7e802f708c5c1bab199b30c612eaf4ab9a3f9561d2eee1ceb892be",
+      "official_sha256": "9d1351039b7e802f708c5c1bab199b30c612eaf4ab9a3f9561d2eee1ceb892be"
+    },
+    {
+      "original_path": "mydocs/pr/assets/issue8856/final-20261110/font-environments/b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25.json",
+      "official_path": "mydocs/verification/protected-font-supply/environments/handbook-wasm-and-hwpx.json",
+      "sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25",
+      "official_sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25"
+    },
+    {
+      "original_path": "mydocs/pr/assets/pr8896/font-supply/sample16-hwpx-font-environment.json",
+      "official_path": "mydocs/verification/protected-font-supply/environments/sample16-hwpx.json",
+      "sha256": "300d7233a5527172ad4df993214d791fe214a69cf6e36017a637ca7cb928d183",
+      "official_sha256": "300d7233a5527172ad4df993214d791fe214a69cf6e36017a637ca7cb928d183"
+    },
+    {
+      "original_path": "mydocs/pr/assets/pr8896/font-supply/sample16-hwp2022-font-environment.json",
+      "official_path": "mydocs/verification/protected-font-supply/environments/sample16-hwp2022.json",
+      "sha256": "e64dc04a55787efcbd55dcddd9f7a9fc8454a1df06a20c4cd9e99c9dd88de36b",
+      "official_sha256": "e64dc04a55787efcbd55dcddd9f7a9fc8454a1df06a20c4cd9e99c9dd88de36b"
+    },
+    {
+      "original_path": "output/pr-review/issue7754-nine/private-source124-outline/environment.json",
+      "official_path": "mydocs/verification/protected-font-supply/environments/outline-qualified.json",
+      "sha256": "64521b938565a879ce23e54942b2d905afecab3589a2807d2209696f857e684e",
+      "official_sha256": "64521b938565a879ce23e54942b2d905afecab3589a2807d2209696f857e684e"
+    },
+    {
+      "original_path": "mydocs/pr/assets/issues7754_7765/source49/source123-used-ttc-glyph-identity.json",
+      "official_path": "mydocs/verification/protected-font-supply/records/used-ttc-glyph-identity.json",
+      "sha256": "86337078bfe2f12826a19876ad352582b23bc54157e2304569e4edf14dc3626d",
+      "official_sha256": "86337078bfe2f12826a19876ad352582b23bc54157e2304569e4edf14dc3626d"
+    },
+    {
+      "original_path": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/validation.json",
+      "official_path": "mydocs/verification/protected-font-supply/records/nested-table-protected-validation.json",
+      "sha256": "067ea7e42ff4b33b1069645fc9da12414a42b7c2b64e844da028bf54b287e401",
+      "official_sha256": "067ea7e42ff4b33b1069645fc9da12414a42b7c2b64e844da028bf54b287e401"
+    },
+    {
+      "original_path": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/nested-font-environment.json",
+      "official_path": "mydocs/verification/protected-font-supply/environments/nested-table.json",
+      "sha256": "c43de121c1b5d7ed8e144856a3ad2cec661124a4c923c1bfde6dab70358913e1",
+      "official_sha256": "c43de121c1b5d7ed8e144856a3ad2cec661124a4c923c1bfde6dab70358913e1"
+    },
+    {
+      "original_path": "mydocs/pr/assets/pr8896/font-supply/sample16-hwp2024-font-environment.json",
+      "official_path": "mydocs/verification/protected-font-supply/environments/sample16-hwp2024.json",
+      "sha256": "4fb70119f4959fb6461ed304d4b166c499b58caab0cc428f9fbab5fb2ef79b8b",
+      "official_sha256": "4fb70119f4959fb6461ed304d4b166c499b58caab0cc428f9fbab5fb2ef79b8b"
+    },
+    {
+      "original_path": "mydocs/pr/assets/integration_open_prs_20261120/final-protected/validation.json",
+      "official_path": "mydocs/verification/protected-font-supply/records/integrated-protected-validation.json",
+      "sha256": "4c0a5ab6ea7e006ba068a182738f09cc0e550dc7c7c3d4a438a73a1299f4495d",
+      "official_sha256": "4c0a5ab6ea7e006ba068a182738f09cc0e550dc7c7c3d4a438a73a1299f4495d"
+    },
+    {
+      "original_path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/sample10-font-condition/font-environment.json",
+      "official_path": "mydocs/verification/protected-font-supply/environments/sample10-native.json",
+      "sha256": "11055ee9df8350c92dfb5203c48d9aa9f3a38afb457f38d519051d5c597f9b09",
+      "official_sha256": "90643398dedda2c21a45fe64973a2474ee4746da13ef89e0cef32555d136bda0"
+    },
+    {
+      "original_path": "mydocs/pr/assets/semanticist21-20261121/validation/final/font-supply/programs.tsv",
+      "official_path": "mydocs/verification/protected-font-supply/records/chemical-spec13-font-programs.tsv",
+      "sha256": "151ead21b63bad998413b517db7ed9df2402c6fdd8285498376b6e453088548a",
+      "official_sha256": "151ead21b63bad998413b517db7ed9df2402c6fdd8285498376b6e453088548a"
+    },
+    {
+      "original_path": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json",
+      "official_path": "mydocs/verification/protected-font-supply/records/chemical-spec13-protected-validation.json",
+      "sha256": "96f0acd6b6345f20f5667d0515eab42b21baa79774eeee5760c9644127d56f81",
+      "official_sha256": "96f0acd6b6345f20f5667d0515eab42b21baa79774eeee5760c9644127d56f81"
+    },
+    {
+      "original_path": "mydocs/pr/assets/semanticist21-20261121/validation/final/font-supply/chemical-native.json",
+      "official_path": "mydocs/verification/protected-font-supply/environments/chemical-native-accepted.json",
+      "sha256": "374d724612dab2e845b5d16cc96895b21f114aede6aa21153b6e700704f79dfa",
+      "official_sha256": "374d724612dab2e845b5d16cc96895b21f114aede6aa21153b6e700704f79dfa"
+    },
+    {
+      "original_path": "output/pr-review/issue7754-nine/private-source93-independent-junggothic/environment.json",
+      "official_path": "mydocs/verification/protected-font-supply/environments/chemical-qualified.json",
+      "sha256": "54231e1396bbf28c755198879206f77497495a208e2635c2856839e4eb2d6d35",
+      "official_sha256": "54231e1396bbf28c755198879206f77497495a208e2635c2856839e4eb2d6d35"
+    },
+    {
+      "original_path": "mydocs/pr/assets/issues7754_7765/source49/source118-complete-fonts-full-chemical-state.json",
+      "official_path": "mydocs/verification/protected-font-supply/records/chemical-qualified-output-validation.json",
+      "sha256": "0b2f298c1c71077f330f52e507dea9f5b2e8b7d6b5ac6b5d03f450cf6809a90d",
+      "official_sha256": "0b2f298c1c71077f330f52e507dea9f5b2e8b7d6b5ac6b5d03f450cf6809a90d"
+    },
+    {
+      "original_path": "mydocs/pr/assets/semanticist21-20261121/validation/final/font-supply/chemical-wasm.json",
+      "official_path": "mydocs/verification/protected-font-supply/environments/chemical-wasm-accepted.json",
+      "sha256": "d31081d4da1a713143035483b80ada9533cbe84be8a6edde24efa794d784183b",
+      "official_sha256": "d31081d4da1a713143035483b80ada9533cbe84be8a6edde24efa794d784183b"
+    },
+    {
+      "original_path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/supply-e7612572933cf957.json",
+      "official_path": "mydocs/verification/protected-font-supply/records/recorded-system-font-inventory.json",
+      "sha256": "150366b0d122404861a68f35a16881cdbc995203bd09868312d5a41dc8a7f08e",
+      "official_sha256": "150366b0d122404861a68f35a16881cdbc995203bd09868312d5a41dc8a7f08e"
+    },
+    {
+      "original_path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/outline-demo-native-provenance.json",
+      "official_path": "mydocs/verification/protected-font-supply/records/outline-demo-native-provenance.json",
+      "sha256": "c2ce2a3bbce35a8f40d3f4b97559967b35cafc829699d170e57378b2e16c3b6f",
+      "official_sha256": "c2ce2a3bbce35a8f40d3f4b97559967b35cafc829699d170e57378b2e16c3b6f"
+    },
+    {
+      "original_path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
+      "official_path": "mydocs/verification/protected-font-supply/records/hanyang-font-identity-validation.json",
+      "sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+      "official_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8"
+    },
+    {
+      "original_path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/outline-demo-wasm-provenance.json",
+      "official_path": "mydocs/verification/protected-font-supply/records/outline-demo-wasm-provenance.json",
+      "sha256": "66d53e92548067154179e3cad04d03a6e24761bad8fbbc0d33e6cd315812ff2e",
+      "official_sha256": "66d53e92548067154179e3cad04d03a6e24761bad8fbbc0d33e6cd315812ff2e"
+    },
+    {
+      "original_path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/decree-native-provenance.json",
+      "official_path": "mydocs/verification/protected-font-supply/records/decree-native-provenance.json",
+      "sha256": "40cd9111e62919f3f0445bdb77965dfe12be291c6a08d1a75a28b33375bf8aaa",
+      "official_sha256": "40cd9111e62919f3f0445bdb77965dfe12be291c6a08d1a75a28b33375bf8aaa"
+    },
+    {
+      "original_path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/decree-native.json",
+      "official_path": "mydocs/verification/protected-font-supply/environments/decree-native-accepted.json",
+      "sha256": "4811005db14bede74017ab7206a2f9a17deb2207bd8d84c325c853941d7098ab",
+      "official_sha256": "4811005db14bede74017ab7206a2f9a17deb2207bd8d84c325c853941d7098ab"
+    },
+    {
+      "original_path": "output/pr-review/issue7754-nine/private-source63-decree-selected-programs/decree-native.json",
+      "official_path": "mydocs/verification/protected-font-supply/environments/decree-native.json",
+      "sha256": "751a9c20401b9da40d711240848035806055b7dcd4830e9339d9801fb6031fcf",
+      "official_sha256": "751a9c20401b9da40d711240848035806055b7dcd4830e9339d9801fb6031fcf"
+    },
+    {
+      "original_path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/decree-wasm-provenance.json",
+      "official_path": "mydocs/verification/protected-font-supply/records/decree-wasm-provenance.json",
+      "sha256": "87a9a065f6fd4211bc6b34a30d87569083cb1bb559b82ab71511df2f0ea5b904",
+      "official_sha256": "87a9a065f6fd4211bc6b34a30d87569083cb1bb559b82ab71511df2f0ea5b904"
+    },
+    {
+      "original_path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/decree-wasm.json",
+      "official_path": "mydocs/verification/protected-font-supply/environments/decree-wasm-accepted.json",
+      "sha256": "d3ee0027e75691a3130acaf169666bb59f059f42d3ea5ad5043d578fc4886252",
+      "official_sha256": "d3ee0027e75691a3130acaf169666bb59f059f42d3ea5ad5043d578fc4886252"
+    },
+    {
+      "original_path": "output/pr-review/issue7754-nine/private-source63-decree-selected-programs/decree-wasm.json",
+      "official_path": "mydocs/verification/protected-font-supply/environments/decree-wasm.json",
+      "sha256": "72fa35c7fbb75863be3403be92c5552a00c5227418ff406ad61f833084cda110",
+      "official_sha256": "72fa35c7fbb75863be3403be92c5552a00c5227418ff406ad61f833084cda110"
+    },
+    {
+      "original_path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/outline-minimal-native-provenance.json",
+      "official_path": "mydocs/verification/protected-font-supply/records/outline-minimal-native-provenance.json",
+      "sha256": "e17561b7194da256308e5bfa6747ec5c30e78efc80e0b1e92475ecdc3ba022c4",
+      "official_sha256": "e17561b7194da256308e5bfa6747ec5c30e78efc80e0b1e92475ecdc3ba022c4"
+    },
+    {
+      "original_path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/outline-minimal-wasm-provenance.json",
+      "official_path": "mydocs/verification/protected-font-supply/records/outline-minimal-wasm-provenance.json",
+      "sha256": "d701a7006e43907810eb1b896788ae7fa2f20b316c283bf1f0099b189973e2c8",
+      "official_sha256": "d701a7006e43907810eb1b896788ae7fa2f20b316c283bf1f0099b189973e2c8"
+    }
+  ]
+}

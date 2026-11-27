@@ -107,37 +107,10 @@ venv/bin/python scripts/prepare_legacy_equation_font.py create \
 ```
 
 표본을 저장 버전에 맞는 한컴에서 전체 쪽 Print로 출력한다.
-[MCP Print 계약](mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)을 따르며, 수동 Print도
-가능하다. 생성된 `legacy-equation-alphabet.manifest.json`과 같은 입력을 출력해야 한다.
-PDF는 원본 문자 84개의 순서와 Type3 75자의 프로그램·em 행렬을 검사해 로컬 CFF로 옮긴다.
-그리스 문자처럼 별도 본문 프로그램으로 출력한 문자는 복원 글꼴에 섞지 않는다.
-
-```bash
-venv/bin/python scripts/prepare_legacy_equation_font.py recover \
-  --manifest output/fonts/legacy-equation-alphabet.manifest.json \
-  --pdf output/fonts/legacy-equation-alphabet-2020.pdf \
-  --output output/fonts/RHWP-Hancom-Legacy-Equation.otf
-
-# Linux 사용자 글꼴 등록 예시
-install -D -m 644 output/fonts/RHWP-Hancom-Legacy-Equation.otf \
-  ~/.local/share/fonts/rhwp-legacy-equation/RHWP-Hancom-Legacy-Equation.otf
-fc-cache -f ~/.local/share/fonts/rhwp-legacy-equation
-fc-match -f '%{family}\n%{file}\n' 'RHWP Hancom Legacy Equation'
-```
-
-표시 family는 `RHWP Hancom Legacy Equation`이다. 원본 HYhwpEQ의 현대 face를 덮어쓰지 않는다.
-동일한 SFNT를 Native와 브라우저의 실제 글꼴 공급 경로에 적재하고 출력별 선택을 확인한다.
-복원 파일과 원본 프로그램은 로컬 공급 자료로 유지한다. 입력·독립 PDF·글꼴·글리프 해시는
-출력한 `.provenance.json`에 기록한다. 대상 PDF의 윤곽을 재료로 쓰거나 점수에 맞춰
-윤곽·전진·기준선을 변형하지 않는다. 글꼴 공급 준비는 배치 차이의 해결·시각 통과를 뜻하지 않는다.
-
-구형 `×`·`÷`도 필요하면 `create`에 `--include-arithmetic-operators`를 추가한다.
-독립 표본은 86문자, 복원할 Type3는 77자가 되며 `recover`는 해당 manifest의 버전을 확인한다.
-기존 84문자·75자 manifest도 계속 사용할 수 있다. 본문 원 가족에 해당 기호가 없는 경우는
-독립 Print에서 원 프로그램을 확인한 뒤 `glyphFallbacks`로 이 가족을 추가한다. 현대
-`HYHWPEQ.TTF` 공급만으로 구형 표시까지 같아졌다고 판정하지 않는다. 복합 구형 분수의
-공통 글꼴 요청도 같은 `RHWP Hancom Legacy Equation`을 먼저 사용하며 이전 로컬 이름과
-현대 수식 글꼴은 결측 시의 후보로 유지한다.
+[MCP Print 계약](mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)을 따른다.
+구형 `×`·`÷`가 필요하면 표본 작성 명령에 `--include-arithmetic-operators`를 추가한다.
+표본 PDF의 기호·전진폭과 실제 공급한 글꼴의 출력을 대조하고, 공급 파일과 SHA-256을 기록한다.
+PDF의 글리프를 모아 새 글꼴을 만들거나 설치하지 않는다.
 
 ## 4. RED fixture 최소 분할
 

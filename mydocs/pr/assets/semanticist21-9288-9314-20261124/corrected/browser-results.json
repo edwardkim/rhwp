@@ -1,0 +1,174 @@
+{
+  "source": "10f5bca362a34f3c3f27ac15e5d921d17d1d8097",
+  "wasmSha256": "c85e0de944ca5448feab4411a7ebeb3793b137fb98e91213e807f385797c05f5",
+  "f11FieldsE2E": {
+    "f11-same-place-fields": {
+      "passed": 46,
+      "exit": 0
+    },
+    "issue-270-set-field-persist": {
+      "passed": 11,
+      "exit": 0
+    },
+    "embed-field-events": {
+      "passed": 10,
+      "exit": 0
+    },
+    "issue-6806-zero-shape-resize-undo": {
+      "passed": 4,
+      "exit": 0
+    }
+  },
+  "twoInputsOneFrame": {
+    "before": [
+      "FAIL: live 화면 갱신 전 연속 입력: {\"가\":\"x\",\"나\":\"y\"}",
+      "FAIL: HWP 화면 갱신 전 연속 입력: {\"가\":\"x\",\"나\":\"y\"}",
+      "FAIL: HWPX 화면 갱신 전 연속 입력: {\"가\":\"x\",\"나\":\"y\"}"
+    ],
+    "after": [
+      "PASS: live 화면 갱신 전 연속 입력: {\"가\":\"xy\",\"나\":\"\"}",
+      "PASS: HWP 화면 갱신 전 연속 입력: {\"가\":\"xy\",\"나\":\"\"}",
+      "PASS: HWPX 화면 갱신 전 연속 입력: {\"가\":\"xy\",\"나\":\"\"}"
+    ]
+  },
+  "replaceSelectedValue": [
+    {
+      "live": {
+        "가": "ab",
+        "나": ""
+      },
+      "hwp": {
+        "가": "ab",
+        "나": ""
+      },
+      "hwpx": {
+        "가": "ab",
+        "나": ""
+      },
+      "area": "body"
+    },
+    {
+      "live": {
+        "가": "ab",
+        "나": ""
+      },
+      "hwp": {
+        "가": "ab",
+        "나": ""
+      },
+      "hwpx": {
+        "가": "ab",
+        "나": ""
+      },
+      "area": "cell"
+    }
+  ],
+  "typescriptExit": 0,
+  "studioBuildExit": 0,
+  "studioSuite": [
+    "ℹ tests 2837",
+    "ℹ suites 0",
+    "ℹ pass 2835",
+    "ℹ fail 0",
+    "ℹ cancelled 0",
+    "ℹ skipped 2",
+    "ℹ todo 0",
+    "ℹ duration_ms 25577.854388"
+  ],
+  "f11UndoRedo": [
+    {
+      "area": "body",
+      "phases": {
+        "input": {
+          "live": {
+            "가": "x",
+            "나": ""
+          },
+          "hwp": {
+            "가": "x",
+            "나": ""
+          },
+          "hwpx": {
+            "가": "x",
+            "나": ""
+          }
+        },
+        "undo": {
+          "live": {
+            "가": "",
+            "나": ""
+          },
+          "hwp": {
+            "가": "",
+            "나": ""
+          },
+          "hwpx": {
+            "가": "",
+            "나": ""
+          }
+        },
+        "redo": {
+          "live": {
+            "가": "x",
+            "나": ""
+          },
+          "hwp": {
+            "가": "x",
+            "나": ""
+          },
+          "hwpx": {
+            "가": "x",
+            "나": ""
+          }
+        }
+      }
+    },
+    {
+      "area": "cell",
+      "phases": {
+        "input": {
+          "live": {
+            "가": "x",
+            "나": ""
+          },
+          "hwp": {
+            "가": "x",
+            "나": ""
+          },
+          "hwpx": {
+            "가": "x",
+            "나": ""
+          }
+        },
+        "undo": {
+          "live": {
+            "가": "",
+            "나": ""
+          },
+          "hwp": {
+            "가": "",
+            "나": ""
+          },
+          "hwpx": {
+            "가": "",
+            "나": ""
+          }
+        },
+        "redo": {
+          "live": {
+            "가": "x",
+            "나": ""
+          },
+          "hwp": {
+            "가": "x",
+            "나": ""
+          },
+          "hwpx": {
+            "가": "x",
+            "나": ""
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,761 @@
+{
+  "key": "nested",
+  "backend": "wasm",
+  "source": "330af8608ac741b14041d3e372284a6111346b9c",
+  "base": "321ab8f97791ecf58b56f178f49b7795a836fb79",
+  "producer_packages": {
+    "candidate": {
+      "rhwp.js": "d2d2b445cf853cf162c7664288fe34f4bb1468f0fba5512cbe79441bb53345b2",
+      "rhwp_bg.wasm": "117cfdcbed3132b2a417fd9dccd74e1b16fb5b2f4f037677a2da0f38415d9259"
+    },
+    "base": {
+      "rhwp.js": "d2d2b445cf853cf162c7664288fe34f4bb1468f0fba5512cbe79441bb53345b2",
+      "rhwp_bg.wasm": "4db07320d2c444432c7518c8ed9f5acd027af060856139e4f46cebf77a027247"
+    }
+  },
+  "input": {
+    "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626"
+  },
+  "reference_pdf": {
+    "path": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+    "sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b"
+  },
+  "previous_protected_tsv_sha256": "b2ea68f97a242d111522132b6c733f15a65b29b56e227943fd9c15f9c8d35597",
+  "condition": {
+    "compat": "2022",
+    "dpi": 96,
+    "profile": "print",
+    "radius_px": 2,
+    "backend": "wasm-canvas2d",
+    "pdf_rasterizer": "pdfium_smooth_rgb_exact_dpi_v2",
+    "workers": 4,
+    "font_environment": {
+      "path": "mydocs/verification/protected-font-supply/environments/nested-table-wasm.json",
+      "sha256": "ddafdbf48b5ca98cd18bbe18fedb0a8df5da7a1fb1dbf7aa2b9ac08feb0436d2"
+    }
+  },
+  "font_supply": {
+    "mode": "explicit_files",
+    "files": [
+      {
+        "filename": "HMKMG.otf",
+        "sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9"
+      },
+      {
+        "filename": "HMEPO.otf",
+        "sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385"
+      },
+      {
+        "filename": "ENJGT.otf",
+        "sha256": "be6bb7a453d15aa9aebe230925fff89641b1cea1331db880257d087f6939c81c"
+      },
+      {
+        "filename": "ENMJ.otf",
+        "sha256": "6055db675c538c216942788d7b83c8812c955d5bef37c2d6903a5cdb00c2930b"
+      },
+      {
+        "filename": "ENSMJ.otf",
+        "sha256": "97cf924058802123f52b26e365f5d9bfe35d379cb4ccab688285179e8e39b3f2"
+      },
+      {
+        "filename": "H2GTRM.TTF",
+        "sha256": "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5"
+      },
+      {
+        "filename": "H2HDRM.TTF",
+        "sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831"
+      },
+      {
+        "filename": "H2MJRE.TTF",
+        "sha256": "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002"
+      },
+      {
+        "filename": "HBATANG.TTF",
+        "sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068"
+      },
+      {
+        "filename": "HDOTUM.TTF",
+        "sha256": "4e7f536a6715270e06c6cc3b5474456007c193a7754131335195286d889f6757"
+      },
+      {
+        "filename": "HMEHL.otf",
+        "sha256": "a49e5cb16f806afef0e69f05c3c3668dda3db90e3229a9a3cd2d1f83995e34d4"
+      },
+      {
+        "filename": "HYGPRM.TTF",
+        "sha256": "cf8614cb09e038ff24c0edb2ba2cfa6b8911c7c913cfe590e7e56014e7e63e5a"
+      },
+      {
+        "filename": "MALGUN.TTF",
+        "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f"
+      },
+      {
+        "filename": "SPMJ.otf",
+        "sha256": "87c4cd1acd713cca565bd34694b2df5aa3240d6ef8c8d178b6b36782cd46edd2"
+      },
+      {
+        "filename": "SPSMJ.otf",
+        "sha256": "c9825ad4daaea9809b50dfeb0f1145a2ddccbbccbdd076e491d0570ea38d5ce3"
+      },
+      {
+        "filename": "TETGREN.otf",
+        "sha256": "e3601c10b4ffd156c14d1e0138cd7ab5fd439214347d8883c6524a39cbc2a5a5"
+      },
+      {
+        "filename": "TETGTEN.otf",
+        "sha256": "678e0724266842b469ccee25e4f089c24cb78de8698cc4054248fb76776a1198"
+      },
+      {
+        "filename": "batang.TTC",
+        "sha256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8"
+      },
+      {
+        "filename": "gulim.TTC",
+        "sha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c"
+      },
+      {
+        "filename": "pala.ttf",
+        "sha256": "6f98bd91b902a1b8ef86c53b084d61d40282f1c1260fce08be7dd7034713f8ad"
+      },
+      {
+        "filename": "6ff0f49540ef-Gulim.ttf",
+        "sha256": "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab"
+      }
+    ]
+  },
+  "loaded_programs": [
+    {
+      "family": "굴림",
+      "registeredFamily": "굴림",
+      "sourceSha256": "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+      "sha256": "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [],
+      "sourceKind": "external"
+    },
+    {
+      "family": "Gulim",
+      "registeredFamily": "Gulim",
+      "sourceSha256": "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+      "sha256": "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [],
+      "sourceKind": "external"
+    },
+    {
+      "family": "한컴바탕",
+      "registeredFamily": "한컴바탕",
+      "sourceSha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+      "sha256": "d10501295740bc29bf5a8fe3eb8fad1903ef63a54aa77c6cc744a609f3a627cf",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [
+        "cmap-format4-terminal-notdef",
+        "drop-embedded-bitmap-strikes"
+      ],
+      "sourceKind": "external"
+    },
+    {
+      "family": "Haansoft Batang",
+      "registeredFamily": "Haansoft Batang",
+      "sourceSha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+      "sha256": "d10501295740bc29bf5a8fe3eb8fad1903ef63a54aa77c6cc744a609f3a627cf",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [
+        "cmap-format4-terminal-notdef",
+        "drop-embedded-bitmap-strikes"
+      ],
+      "sourceKind": "external"
+    },
+    {
+      "family": "굴림체",
+      "registeredFamily": "굴림체",
+      "sourceSha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c",
+      "sha256": "023bc5c4f597f077089cb63c177617bfccec926352a61b1021763cf567f30782",
+      "faceIndex": 1,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [
+        "cmap-format4-terminal-notdef",
+        "drop-embedded-bitmap-strikes"
+      ],
+      "sourceKind": "external"
+    },
+    {
+      "family": "GulimChe",
+      "registeredFamily": "GulimChe",
+      "sourceSha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c",
+      "sha256": "023bc5c4f597f077089cb63c177617bfccec926352a61b1021763cf567f30782",
+      "faceIndex": 1,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [
+        "cmap-format4-terminal-notdef",
+        "drop-embedded-bitmap-strikes"
+      ],
+      "sourceKind": "external"
+    },
+    {
+      "family": "돋움",
+      "registeredFamily": "돋움",
+      "sourceSha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c",
+      "sha256": "f8cf42711bfe3d913c05c62612d14dfa59adafcc3f387f8c3f6dbbe932729eed",
+      "faceIndex": 2,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [
+        "cmap-format4-terminal-notdef",
+        "drop-embedded-bitmap-strikes"
+      ],
+      "sourceKind": "external"
+    },
+    {
+      "family": "Dotum",
+      "registeredFamily": "Dotum",
+      "sourceSha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c",
+      "sha256": "f8cf42711bfe3d913c05c62612d14dfa59adafcc3f387f8c3f6dbbe932729eed",
+      "faceIndex": 2,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [
+        "cmap-format4-terminal-notdef",
+        "drop-embedded-bitmap-strikes"
+      ],
+      "sourceKind": "external"
+    },
+    {
+      "family": "맑은 고딕",
+      "registeredFamily": "맑은 고딕",
+      "sourceSha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+      "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [],
+      "sourceKind": "external"
+    },
+    {
+      "family": "Malgun Gothic",
+      "registeredFamily": "Malgun Gothic",
+      "sourceSha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+      "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [],
+      "sourceKind": "external"
+    },
+    {
+      "family": "바탕",
+      "registeredFamily": "바탕",
+      "sourceSha256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+      "sha256": "3eadb23023f4d8a4947b7f49bc3cd12f1ac43cd03bd07cc6c22fecf21d46bb3a",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [
+        "cmap-format4-terminal-notdef",
+        "drop-embedded-bitmap-strikes"
+      ],
+      "sourceKind": "external"
+    },
+    {
+      "family": "Batang",
+      "registeredFamily": "Batang",
+      "sourceSha256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+      "sha256": "3eadb23023f4d8a4947b7f49bc3cd12f1ac43cd03bd07cc6c22fecf21d46bb3a",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [
+        "cmap-format4-terminal-notdef",
+        "drop-embedded-bitmap-strikes"
+      ],
+      "sourceKind": "external"
+    },
+    {
+      "family": "바탕체",
+      "registeredFamily": "바탕체",
+      "sourceSha256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+      "sha256": "57fbb1b386019fa083dd5c9ac7d096cb7abf5a17cbc3e1384edfdaf95c981969",
+      "faceIndex": 1,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [
+        "cmap-format4-terminal-notdef",
+        "drop-embedded-bitmap-strikes"
+      ],
+      "sourceKind": "external"
+    },
+    {
+      "family": "BatangChe",
+      "registeredFamily": "BatangChe",
+      "sourceSha256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+      "sha256": "57fbb1b386019fa083dd5c9ac7d096cb7abf5a17cbc3e1384edfdaf95c981969",
+      "faceIndex": 1,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [
+        "cmap-format4-terminal-notdef",
+        "drop-embedded-bitmap-strikes"
+      ],
+      "sourceKind": "external"
+    },
+    {
+      "family": "HY헤드라인M",
+      "registeredFamily": "HY헤드라인M",
+      "sourceSha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+      "sha256": "c956b7f4082859ac04b5d29b44951b49971ca2c28580d2d99379517e0bd5f248",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [
+        "cmap-format4-terminal-notdef"
+      ],
+      "sourceKind": "external"
+    },
+    {
+      "family": "HYHeadLine-Medium",
+      "registeredFamily": "HYHeadLine-Medium",
+      "sourceSha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+      "sha256": "c956b7f4082859ac04b5d29b44951b49971ca2c28580d2d99379517e0bd5f248",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [
+        "cmap-format4-terminal-notdef"
+      ],
+      "sourceKind": "external"
+    },
+    {
+      "family": "휴먼고딕",
+      "registeredFamily": "휴먼고딕",
+      "sourceSha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9",
+      "sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [],
+      "sourceKind": "external"
+    },
+    {
+      "family": "Human Gothic",
+      "registeredFamily": "Human Gothic",
+      "sourceSha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9",
+      "sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [],
+      "sourceKind": "external"
+    },
+    {
+      "family": "한양신명조",
+      "registeredFamily": "한양신명조",
+      "sourceSha256": "97cf924058802123f52b26e365f5d9bfe35d379cb4ccab688285179e8e39b3f2",
+      "sha256": "97cf924058802123f52b26e365f5d9bfe35d379cb4ccab688285179e8e39b3f2",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [],
+      "sourceKind": "external"
+    },
+    {
+      "family": "HY Sinmyeongjo",
+      "registeredFamily": "HY Sinmyeongjo",
+      "sourceSha256": "97cf924058802123f52b26e365f5d9bfe35d379cb4ccab688285179e8e39b3f2",
+      "sha256": "97cf924058802123f52b26e365f5d9bfe35d379cb4ccab688285179e8e39b3f2",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [],
+      "sourceKind": "external"
+    },
+    {
+      "family": "한양중고딕",
+      "registeredFamily": "한양중고딕",
+      "sourceSha256": "be6bb7a453d15aa9aebe230925fff89641b1cea1331db880257d087f6939c81c",
+      "sha256": "be6bb7a453d15aa9aebe230925fff89641b1cea1331db880257d087f6939c81c",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [],
+      "sourceKind": "external"
+    },
+    {
+      "family": "HY Junggothic",
+      "registeredFamily": "HY Junggothic",
+      "sourceSha256": "be6bb7a453d15aa9aebe230925fff89641b1cea1331db880257d087f6939c81c",
+      "sha256": "be6bb7a453d15aa9aebe230925fff89641b1cea1331db880257d087f6939c81c",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [],
+      "sourceKind": "external"
+    },
+    {
+      "family": "신명 태고딕",
+      "registeredFamily": "신명 태고딕",
+      "sourceSha256": "678e0724266842b469ccee25e4f089c24cb78de8698cc4054248fb76776a1198",
+      "sha256": "678e0724266842b469ccee25e4f089c24cb78de8698cc4054248fb76776a1198",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [],
+      "sourceKind": "external"
+    },
+    {
+      "family": "Sinmyeong Taegothic",
+      "registeredFamily": "Sinmyeong Taegothic",
+      "sourceSha256": "678e0724266842b469ccee25e4f089c24cb78de8698cc4054248fb76776a1198",
+      "sha256": "678e0724266842b469ccee25e4f089c24cb78de8698cc4054248fb76776a1198",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [],
+      "sourceKind": "external"
+    },
+    {
+      "family": "HY중고딕",
+      "registeredFamily": "HY중고딕",
+      "sourceSha256": "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5",
+      "sha256": "febb15c4b79dffd48f7424d656fa8456586575216f007a40d962801d0a5280fd",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [
+        "cmap-format4-terminal-notdef"
+      ],
+      "sourceKind": "external"
+    },
+    {
+      "family": "HYGothic-Medium",
+      "registeredFamily": "HYGothic-Medium",
+      "sourceSha256": "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5",
+      "sha256": "febb15c4b79dffd48f7424d656fa8456586575216f007a40d962801d0a5280fd",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [
+        "cmap-format4-terminal-notdef"
+      ],
+      "sourceKind": "external"
+    },
+    {
+      "family": "HCI Hollyhock",
+      "registeredFamily": "HCI Hollyhock",
+      "sourceSha256": "a49e5cb16f806afef0e69f05c3c3668dda3db90e3229a9a3cd2d1f83995e34d4",
+      "sha256": "a49e5cb16f806afef0e69f05c3c3668dda3db90e3229a9a3cd2d1f83995e34d4",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [],
+      "sourceKind": "external"
+    },
+    {
+      "family": "HCI Poppy",
+      "registeredFamily": "HCI Poppy",
+      "sourceSha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+      "sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [],
+      "sourceKind": "external"
+    },
+    {
+      "family": "Palatino Linotype",
+      "registeredFamily": "Palatino Linotype",
+      "sourceSha256": "6f98bd91b902a1b8ef86c53b084d61d40282f1c1260fce08be7dd7034713f8ad",
+      "sha256": "6f98bd91b902a1b8ef86c53b084d61d40282f1c1260fce08be7dd7034713f8ad",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [],
+      "sourceKind": "external"
+    },
+    {
+      "family": "신명 태그래픽",
+      "registeredFamily": "신명 태그래픽",
+      "sourceSha256": "e3601c10b4ffd156c14d1e0138cd7ab5fd439214347d8883c6524a39cbc2a5a5",
+      "sha256": "e3601c10b4ffd156c14d1e0138cd7ab5fd439214347d8883c6524a39cbc2a5a5",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [],
+      "sourceKind": "external"
+    },
+    {
+      "family": "Sinmyeong Taegraphic",
+      "registeredFamily": "Sinmyeong Taegraphic",
+      "sourceSha256": "e3601c10b4ffd156c14d1e0138cd7ab5fd439214347d8883c6524a39cbc2a5a5",
+      "sha256": "e3601c10b4ffd156c14d1e0138cd7ab5fd439214347d8883c6524a39cbc2a5a5",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [],
+      "sourceKind": "external"
+    },
+    {
+      "family": "HY그래픽",
+      "registeredFamily": "HY그래픽",
+      "sourceSha256": "cf8614cb09e038ff24c0edb2ba2cfa6b8911c7c913cfe590e7e56014e7e63e5a",
+      "sha256": "357431a78f35a8f58fa1ef0e64326fb448cf0ad351c8e7e0c5e0d67dd8cc341a",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [
+        "cmap-format4-terminal-notdef"
+      ],
+      "sourceKind": "external"
+    },
+    {
+      "family": "HYgprM",
+      "registeredFamily": "HYgprM",
+      "sourceSha256": "cf8614cb09e038ff24c0edb2ba2cfa6b8911c7c913cfe590e7e56014e7e63e5a",
+      "sha256": "357431a78f35a8f58fa1ef0e64326fb448cf0ad351c8e7e0c5e0d67dd8cc341a",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [
+        "cmap-format4-terminal-notdef"
+      ],
+      "sourceKind": "external"
+    },
+    {
+      "family": "명조",
+      "registeredFamily": "명조",
+      "sourceSha256": "6055db675c538c216942788d7b83c8812c955d5bef37c2d6903a5cdb00c2930b",
+      "sha256": "6055db675c538c216942788d7b83c8812c955d5bef37c2d6903a5cdb00c2930b",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [],
+      "sourceKind": "external"
+    },
+    {
+      "family": "Myeongjo",
+      "registeredFamily": "Myeongjo",
+      "sourceSha256": "6055db675c538c216942788d7b83c8812c955d5bef37c2d6903a5cdb00c2930b",
+      "sha256": "6055db675c538c216942788d7b83c8812c955d5bef37c2d6903a5cdb00c2930b",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [],
+      "sourceKind": "external"
+    },
+    {
+      "family": "HY견명조",
+      "registeredFamily": "HY견명조",
+      "sourceSha256": "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002",
+      "sha256": "acd4b604c9561bd88f9c6d160e640f42bce668abd106a39c2ed74478a15869bd",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [
+        "cmap-format4-terminal-notdef"
+      ],
+      "sourceKind": "external"
+    },
+    {
+      "family": "HYMyeongJo-Extra",
+      "registeredFamily": "HYMyeongJo-Extra",
+      "sourceSha256": "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002",
+      "sha256": "acd4b604c9561bd88f9c6d160e640f42bce668abd106a39c2ed74478a15869bd",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [
+        "cmap-format4-terminal-notdef"
+      ],
+      "sourceKind": "external"
+    },
+    {
+      "family": "Myeongjo-SPMJ",
+      "registeredFamily": "Myeongjo-SPMJ",
+      "sourceSha256": "87c4cd1acd713cca565bd34694b2df5aa3240d6ef8c8d178b6b36782cd46edd2",
+      "sha256": "87c4cd1acd713cca565bd34694b2df5aa3240d6ef8c8d178b6b36782cd46edd2",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [],
+      "sourceKind": "external"
+    },
+    {
+      "family": "HYSinmyeongjo-SPSMJ",
+      "registeredFamily": "HYSinmyeongjo-SPSMJ",
+      "sourceSha256": "c9825ad4daaea9809b50dfeb0f1145a2ddccbbccbdd076e491d0570ea38d5ce3",
+      "sha256": "c9825ad4daaea9809b50dfeb0f1145a2ddccbbccbdd076e491d0570ea38d5ce3",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [],
+      "sourceKind": "external"
+    },
+    {
+      "family": "Haansoft Dotum",
+      "registeredFamily": "Haansoft Dotum",
+      "sourceSha256": "4e7f536a6715270e06c6cc3b5474456007c193a7754131335195286d889f6757",
+      "sha256": "64d95505c713ca56be34f8746ff50da35df891e41535818d6185aa50a6124aca",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [
+        "cmap-format4-terminal-notdef",
+        "drop-embedded-bitmap-strikes"
+      ],
+      "sourceKind": "external"
+    }
+  ],
+  "baseline_relative": {
+    "status": "passed",
+    "pages": 17,
+    "minimum": "100.00",
+    "losses": [],
+    "increases": [
+      {
+        "page": 2,
+        "before": "99.99",
+        "after": "100.00"
+      },
+      {
+        "page": 7,
+        "before": "99.99",
+        "after": "100.00"
+      },
+      {
+        "page": 17,
+        "before": "99.98",
+        "after": "100.00"
+      }
+    ],
+    "same_png": 17,
+    "same_render_tree": 17
+  },
+  "tsv": {
+    "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/nested/wasm/silhouette.tsv",
+    "sha256": "ecb048af51ad821884726d567a4f747feb05a3965bf51b2f49b9777e953ed0d1"
+  },
+  "base_tsv": {
+    "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/nested/wasm/base-silhouette.tsv",
+    "sha256": "ecb048af51ad821884726d567a4f747feb05a3965bf51b2f49b9777e953ed0d1"
+  },
+  "precise_raw": {
+    "1": 100.0,
+    "2": 100.0,
+    "3": 100.0,
+    "4": 100.0,
+    "5": 100.0,
+    "6": 100.0,
+    "7": 100.0,
+    "8": 99.99772,
+    "9": 100.0,
+    "10": 99.99852,
+    "11": 100.0,
+    "12": 100.0,
+    "13": 100.0,
+    "14": 100.0,
+    "15": 99.99839,
+    "16": 100.0,
+    "17": 100.0
+  },
+  "manifests": {
+    "candidate": "79b795eeb3c40864bf513e926ce519ad47b70aee1ed3752a50dd938239b0a887",
+    "base": "802ff6fdfc32be866d5d4202470c5e2b91befeb4ddf6e6b4395eba602193fdb1"
+  },
+  "page_image_sha256": [
+    {
+      "page": 1,
+      "rhwp_sha256": "20020aad6ef9c806157c92a1a1fae7e7d31ceb6445141f354c740d00e480e9db",
+      "pdf_sha256": "98e37ebd2d0bfc98c67113d2800187a8d356968e8e7dc07eac18e2c914fc3768"
+    },
+    {
+      "page": 2,
+      "rhwp_sha256": "a08b58ec4682df2e191213b3e6114fe82a537076c0a4ef7682053648f8d78012",
+      "pdf_sha256": "dabcf08a3c937272650f0ee067e4b3b2a439e222554d602450bdc94d906f95e5"
+    },
+    {
+      "page": 3,
+      "rhwp_sha256": "19212529ab6edef61d02585c8101d9455578b1212b8789d1d83de04a75c06744",
+      "pdf_sha256": "fe3c0fc612febc75f6203f7f34d04cd1c34f0da441d4f0bb4e98b055fd85c51b"
+    },
+    {
+      "page": 4,
+      "rhwp_sha256": "02ce474b63ad181ac6d8198043455250660dfdcc97ac4904db9d0add96d3e8ff",
+      "pdf_sha256": "7dcba8d637e922347727b6746eb063cb5cf13a69dabcf91d288852ac55e7bc75"
+    },
+    {
+      "page": 5,
+      "rhwp_sha256": "37a520ceb41bf421f35aed4d2da3605935ef021f205a0088632dc896a4a89a9d",
+      "pdf_sha256": "9458c85e28a72c1c7b4a667c025d161d2fbd3b8298548aa0fa978e5f8383f605"
+    },
+    {
+      "page": 6,
+      "rhwp_sha256": "a4191ba7b8367d28695e07b7f4fd78730fbe7d1d29e4aff4057004e3da7e9e24",
+      "pdf_sha256": "9b7128e253c05e2bb7de9189f867fb1e52b2a55b175ddc90f341195383311edb"
+    },
+    {
+      "page": 7,
+      "rhwp_sha256": "a56f308c900532e930dcd89b6924d09a61f759b9bf462f38b3039045c21f78a9",
+      "pdf_sha256": "74b97dca755068afdd7eb82f5a4769672204397d10ae448fa0b9b66dc4012874"
+    },
+    {
+      "page": 8,
+      "rhwp_sha256": "7fa159ab84271545009c2dfe06da0f17c5a6751f7f57d62fc99849644fbe9d72",
+      "pdf_sha256": "6b3863f866f88b34abd3044c31e7e4e0571423e99047f02b917fad84c4bb7cda"
+    },
+    {
+      "page": 9,
+      "rhwp_sha256": "4140f094c264bf16c3cccd82e6ac3fde13f0cfaa2e8354c12d21bb24c586f926",
+      "pdf_sha256": "7958a35213bbcb299e7d75daa75d654d7f6e90fcabd1800a71a7d99afe5956d7"
+    },
+    {
+      "page": 10,
+      "rhwp_sha256": "10c956e93a99255e106109eb6772df6970a30dad63c20c52061838435258c8bc",
+      "pdf_sha256": "549692cbfd5f56f866579e6ea21e1207d2005df4df4ee345451227214af25cc6"
+    },
+    {
+      "page": 11,
+      "rhwp_sha256": "902d8954f97e625aeffc945604a0118fe0f18e5cddc2697048ce0ac57b8cf341",
+      "pdf_sha256": "4632924769ed1cc80f030d94cbdda13ce1db14189ea0a4cc3f18a64d853b1a53"
+    },
+    {
+      "page": 12,
+      "rhwp_sha256": "2365160c067e1304ba88a2d62952ee03bf5ee18f661908bd8a39256d2a4cc0fb",
+      "pdf_sha256": "2dbc89c8d5902b9ec76955a2fa1d054ad36e9724dacc96d8d10439de792e9b14"
+    },
+    {
+      "page": 13,
+      "rhwp_sha256": "4ffd5ed4360cd64c5a2fcfbe42c39e5a8e00334b529c80cca52e5644d367cf91",
+      "pdf_sha256": "8f57a03aeaa4fd9627f329418205d632aca47cb700c68777e40f62206e087969"
+    },
+    {
+      "page": 14,
+      "rhwp_sha256": "03cfecb83a9e280dfdcd442a203f4569060fea8f5dc70c49ffef9afa7bb0985f",
+      "pdf_sha256": "cdbca0837d5a7e167474d1ac8330ecdc37a3479f2cd2a52df854bdae00f935ea"
+    },
+    {
+      "page": 15,
+      "rhwp_sha256": "78e0a68425a6f223999d7f3f09d69fbc5e9029e44bdb611eee6733b600c1739f",
+      "pdf_sha256": "4ea820277473e24e887785de418b5b0619f9ed3b31505d2ccd34bfddbf60f106"
+    },
+    {
+      "page": 16,
+      "rhwp_sha256": "01af612003110ea11f248cc51d5c45488c909d4f129b49ea8b9d8f8c8324abfb",
+      "pdf_sha256": "199310fd71c4ab5f7244084ea505f93561403b83a7f5b88df17267fb4fa2a4e3"
+    },
+    {
+      "page": 17,
+      "rhwp_sha256": "96702711643d67d86dda1c2048f2b9be95d639f07ed126895abb5cc4527b5b04",
+      "pdf_sha256": "2d4dcf055575d118ce93f1085f782ce48f3dbc2a9e05a5fb53474bf39570cdfd"
+    }
+  ]
+}

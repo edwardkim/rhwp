@@ -84,6 +84,13 @@ fn assert_profile_run_ownership(document: &serde_json::Value, trace: &serde_json
         Some(count as u64)
     );
     let records = trace["records"].as_array().expect("문자 기록");
+    assert_eq!(records.len(), count, "누락 없이 모든 공개 문자를 기록한다");
+    assert_eq!(
+        trace["counts"]["recordsEmitted"].as_u64(),
+        Some(records.len() as u64)
+    );
+    assert_eq!(trace["counts"]["recordsOmitted"], 0);
+
     let mut record_ids = std::collections::HashSet::new();
     let mut raw_addresses = std::collections::HashSet::new();
     let mut previous_in_run = None;
@@ -146,7 +153,6 @@ fn assert_profile_run_ownership(document: &serde_json::Value, trace: &serde_json
             .expect("문자는 소유 런 안에 포함");
         assert_eq!(source["character"], character.to_string());
         assert_eq!(source["charShapeId"], run["charShapeId"]);
-        assert_eq!(source["sectionIndex"], run["secIdx"]);
         let nested: Vec<_> = run["cellPath"]
             .as_array()
             .into_iter()
@@ -170,9 +176,35 @@ fn assert_profile_run_ownership(document: &serde_json::Value, trace: &serde_json
                 virtual_owner || run["charStart"].is_null(),
                 "실물 본문 소유자를 임의로 누락하지 않는다"
             );
+            if !run["secIdx"].is_null() {
+                assert_eq!(source["sectionIndex"], run["secIdx"]);
+            }
             previous_in_run = None;
             continue;
         }
+        if run["charStart"].is_null() && run["paraIdx"].is_null() {
+            let marker = document["generatedRunOwners"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .find(|entry| {
+                    entry["sectionIndex"] == source["sectionIndex"]
+                        && entry["paragraphIndex"] == source["paragraphIndex"]
+                        && entry["text"] == run["text"]
+                })
+                .expect("독립 Print의 생성 번호와 원본 소유 문단");
+            assert_eq!(source["status"], "unavailable");
+            assert!(source["charOffset"].is_null() && source["charShapeId"].is_null());
+            let para = source_paragraph(&core, source);
+            let style = &core.document().doc_info.para_shapes[para.para_shape_id as usize];
+            assert!(
+                matches!(style.head_type, rhwp::model::style::HeadType::Number),
+                "생성 번호는 원본 번호 스타일 문단에서만 허용한다: {marker}"
+            );
+            previous_in_run = None;
+            continue;
+        }
+        assert_eq!(source["sectionIndex"], run["secIdx"]);
         assert_eq!(
             &source["paragraphIndex"],
             if run["cellPath"].is_null() {
@@ -181,6 +213,46 @@ fn assert_profile_run_ownership(document: &serde_json::Value, trace: &serde_json
                 &run["parentParaIdx"]
             }
         );
+        if let Some(marker) = document["unavailableRunOwners"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .find(|entry| {
+                entry["sectionIndex"] == source["sectionIndex"]
+                    && entry["paragraphIndex"] == source["paragraphIndex"]
+                    && entry["nestedPath"] == source["nestedPath"]
+                    && entry["text"] == run["text"]
+            })
+        {
+            assert_eq!(marker["reason"], "tableCaptionAddressUnavailable");
+            assert_eq!(source["status"], "unavailable");
+            assert!(source["charOffset"].is_null());
+            let section = source["sectionIndex"].as_u64().unwrap() as usize;
+            let pi = source["paragraphIndex"].as_u64().unwrap() as usize;
+            let path = source["nestedPath"].as_array().unwrap();
+            assert_eq!(path.len(), 3);
+            assert_eq!(path[1], 65_534, "공개 caption 주소의 예약 셀 번호");
+            let ci = path[0].as_u64().unwrap() as usize;
+            let cpi = path[2].as_u64().unwrap() as usize;
+            let Control::Table(table) =
+                &core.document().sections[section].paragraphs[pi].controls[ci]
+            else {
+                panic!("원본 caption을 소유한 표");
+            };
+            let caption = &table.caption.as_ref().expect("원본 표 caption").paragraphs[cpi];
+            let compact = |text: &str| {
+                text.chars()
+                    .filter(|c| !c.is_whitespace() && !c.is_control())
+                    .collect::<String>()
+            };
+            assert_eq!(
+                compact(&caption.text),
+                compact(run["text"].as_str().unwrap()),
+                "미지원 주소를 가짜 raw 주소로 바꾸지 않고 원본 caption 내용을 확인한다"
+            );
+            previous_in_run = None;
+            continue;
+        }
         let para = source_paragraph(&core, source);
         if source["status"] == "unavailable" {
             assert!(

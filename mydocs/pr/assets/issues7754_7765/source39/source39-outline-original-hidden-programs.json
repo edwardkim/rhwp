@@ -1,0 +1,30 @@
+[
+  {
+    "query": "신명조",
+    "family": "Sinmyeongjo",
+    "programId": "0e72f833504538574ce2ecdd44eabe57442aa08f5788028f7527dbe5fc99d5c2",
+    "trueType": false,
+    "openTypeCff": true
+  },
+  {
+    "query": "신명조",
+    "family": "Sinmyeongjo",
+    "programId": "0d6656b89e0c04d73467ea0c3a1b4a87b6348e42bb7e261c65a39edfac719888",
+    "trueType": false,
+    "openTypeCff": true
+  },
+  {
+    "query": "신명조",
+    "family": "Sinmyeongjo",
+    "programId": "86748c96d38a5a2e508c622c643e4131475e72a3827e47413b54fff83a637487",
+    "trueType": false,
+    "openTypeCff": true
+  },
+  {
+    "query": "신명조",
+    "family": "Sinmyeongjo",
+    "programId": "887f54a04819c4c9ea1c84c9101aece1f21750394b61926de0dbc2aec9f8b8ec",
+    "trueType": false,
+    "openTypeCff": true
+  }
+]

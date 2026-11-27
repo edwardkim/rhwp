@@ -342,12 +342,13 @@ fn with_shadow(bounds: BoundingBox, shadow: Option<&ShadowStyle>) -> BoundingBox
     let Some(shadow) = shadow else {
         return bounds;
     };
-    // 평행 그림자는 재생과 같은 이동량(기본 이동량 + 저장 offset)만큼 옮긴 도형이다.
-    if let Some((dx, dy)) = super::parallel_shadow::offset_px(shadow) {
-        return union(
-            bounds,
-            BoundingBox::new(bounds.x + dx, bounds.y + dy, bounds.width, bounds.height),
+    // 그림자는 재생과 같은 행렬(종류별 기본 변환 + 저장 offset)로 옮긴 도형이다.
+    if let Some(m) = super::parallel_shadow::matrix_px(shadow, bounds) {
+        let [x, y, w, h] = crate::model::shape::shadow::transformed_box(
+            m,
+            [bounds.x, bounds.y, bounds.width, bounds.height],
         );
+        return union(bounds, BoundingBox::new(x, y, w, h));
     }
     let offset = BoundingBox::new(
         bounds.x + shadow.offset_x,

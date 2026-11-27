@@ -1,0 +1,12 @@
+{
+  "started": 1795320989.1051023,
+  "pid": 1799998,
+  "target_sha256": "4ade9f383e2554fddcfa517cf8de6d1dadf51c379836a615795afabe9eeaf41d",
+  "scope": "Search JSON environment objects embedded in tracked metadata, including files larger than the earlier 64KiB whole-file scan. Exact canonical JSON SHA is required.",
+  "matches": [],
+  "candidates": 348,
+  "files": 388,
+  "parse_errors": [],
+  "complete": true,
+  "ended": 1795321007.0591755
+}

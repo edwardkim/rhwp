@@ -1,0 +1,32 @@
+{
+  "old_head": "77d6d756fed8df04f289c5c5560f282737e1ed07",
+  "new_base": "622af208ee12c4cb16357d465e4802e7fd4726bc",
+  "automatic_final_merge_tree": "3bd2061f201d32ad716d2868c216796a5ec8d3b5",
+  "files": [
+    {
+      "path": "tests/fixtures/body_overflow_baseline.tsv",
+      "sha256": "001d8ca654fe5d0e1ebc14a3d44282ada6420b963e7397d6359806c7a6988416",
+      "bytes": 20123,
+      "git_blob": "eb7fc81d357da5e82972f75879a5f579a6321db3"
+    },
+    {
+      "path": "tests/fixtures/off_canvas_baseline.tsv",
+      "sha256": "56d64b1803107af7b5b3b4a5caa663e7f9091cc9bfa2d95bbf11dd48aa6532e8",
+      "bytes": 5862,
+      "git_blob": "8765e7f40b2033a553036a2e47677f5ab84269e5"
+    },
+    {
+      "path": "tests/fixtures/overflow_cell_baseline.tsv",
+      "sha256": "b1e5fc11ffa9804fd039ba79172a2b3805566c74d044451371598c7dcac54cf8",
+      "bytes": 1680,
+      "git_blob": "82ac82a2972f4e34d44ad6cab70bf463e6509f42"
+    },
+    {
+      "path": "tests/fixtures/oracle_page_count_verified_references.json",
+      "sha256": "7f933d48c43a6117cffbbe577743d899a3879cee2b1312cffff5febf4fac61cf",
+      "bytes": 15582,
+      "git_blob": "a7652c8e7704ee2a785f0cb6ac3c503fb483fb9a"
+    }
+  ],
+  "resolution": "Use Git automatic final merge for four fixture files at intermediate rebase ordering conflicts; preserve both branch contributions exactly. Verify final tree equals this independent merge."
+}

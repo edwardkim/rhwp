@@ -1,0 +1,9 @@
+{
+  "parent_scheduler_pid": 1527879,
+  "completed_child_pid": 1549308,
+  "observed_state": "zombie pending parent wait",
+  "kernel_exit_status": 0,
+  "exit_code": 0,
+  "observed": 1795293249.9653478,
+  "test_summary": "2 tests run: 2 passed, 350 skipped (official focused helper filter)"
+}

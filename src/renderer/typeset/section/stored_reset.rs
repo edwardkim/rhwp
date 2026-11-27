@@ -375,17 +375,24 @@ impl TypesetEngine {
                         para_idx,
                         crate::renderer::px_to_hwpunit(st.layout.body_area.height, self.dpi),
                     );
-                let trigger = if st.col_count > 1 {
-                    if is_distribute {
-                        cv < prev_vpos_end && prev_vpos_end > 0
+                let stale_closed_float_reset = st.col_count == 1
+                    && crate::renderer::typeset::stored_reset_ownership::closed_float_reset_is_stale(
+                        profile, paragraphs, para_idx, &st.current_items,
+                        st.vpos_page_base.or(st.vpos_lazy_base),
+                        st.current_height, self.dpi,
+                    );
+                let trigger = !stale_closed_float_reset
+                    && if st.col_count > 1 {
+                        if is_distribute {
+                            cv < prev_vpos_end && prev_vpos_end > 0
+                        } else {
+                            cv < pv && pv > 5000
+                        }
                     } else {
-                        cv < pv && pv > 5000
-                    }
-                } else {
-                    // 큰 개체 줄의 끝만으로 다음 vpos=0을 새 쪽으로 추정하지 않는다.
-                    // 뒤 글줄이 현재 쪽에 들어가는 정상 인쇄도 있으므로, 저장 줄의
-                    // 시작 위치가 충분히 진행한 기존 되감김 조건을 유지한다.
-                    (cv == 0
+                        // 큰 개체 줄의 끝만으로 다음 vpos=0을 새 쪽으로 추정하지 않는다.
+                        // 뒤 글줄이 현재 쪽에 들어가는 정상 인쇄도 있으므로, 저장 줄의
+                        // 시작 위치가 충분히 진행한 기존 되감김 조건을 유지한다.
+                        (cv == 0
                             && pv > 5000
                             && !stored_ladder_misses_content
                             && !hwp3_content_vpos_zero_reset
@@ -407,8 +414,10 @@ impl TypesetEngine {
                         || inline_frame_page_restart
                         || stored_picture_group_reset
                         || coanchored_host_reset
+                        || self.stored_leading_float_frame(st, paragraphs, para_idx, measured_tables, styles)
+                            .is_some_and(|frame| frame.restart)
                         || reconstructed_source_vpos.is_some()
-                };
+                    };
                 // [#2279 OMIT-fit] spacing-누락 문서군에서 fresh 재계산이 직전
                 // 쪽에서 밀어낸 빈 문단만 담긴 쪽에는 저장 리셋 경계를 적용하지
                 // 않는다 — 한글 fresh 는 그 빈 문단을 다음 쪽 상단에 두고
@@ -537,7 +546,7 @@ impl TypesetEngine {
                             // 신호지 자리차지 밴드까지 옮기라는 신호가 아니다.
                             // 한글은 밴드를 떠나는 쪽의 흐름 말미에 남기고 본문 아래
                             // 여백으로 흘린다.
-                            st.spill_page_tail_floats(para_idx, para);
+                            st.spill_page_tail_floats(para_idx, para, paragraphs.get(para_idx + 1));
                             st.advance_column_or_new_page_with_storage(storage)?;
                         }
                     }

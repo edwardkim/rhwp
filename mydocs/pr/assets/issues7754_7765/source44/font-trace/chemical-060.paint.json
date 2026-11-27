@@ -1,0 +1,24 @@
+{
+  "state": "complete",
+  "scope": "nativeTextTypefaceSelection",
+  "records": [
+    {
+      "requested": "HY Junggothic",
+      "resolved": "Apple SD Gothic Neo",
+      "source": "system",
+      "bold": false,
+      "italic": false
+    },
+    {
+      "requested": "HY Junggothic",
+      "resolved": "HCR Dotum",
+      "source": "custom",
+      "bold": false,
+      "italic": false
+    }
+  ],
+  "missingRequests": [],
+  "droppedObservations": 0,
+  "recordLimit": 256,
+  "nameByteLimit": 65536
+}

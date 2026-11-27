@@ -1,0 +1,1 @@
+candidate 8 source/output physical owner+payload comparisons PASS

@@ -1,0 +1,266 @@
+{
+  "scope": "Reconcile the same 14 actual journeys. Preserve original failure, trace it to unfinished warmup pagination, and use only the actual corrected repository test for that journey. No application or WASM implementation change.",
+  "results": [
+    {
+      "role": "base",
+      "label": "split-original-hft",
+      "source_head": "8a196ca7aea2aa3cf32d394f5b7da2bdf4520479",
+      "wasm_sha256": "5df649e4e6327e0efe2d4e3231be43e399f67992458b560a2944a45ce825fef5",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source117_studio_wrapper.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source88-base",
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/studio_split_hft_probe.mjs",
+        "--mode=headless"
+      ],
+      "exit_code": 0,
+      "seconds": 111.28549928287975,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source117-base-studio-split-original-hft.txt"
+    },
+    {
+      "role": "base",
+      "label": "memo-ui-9011",
+      "source_head": "8a196ca7aea2aa3cf32d394f5b7da2bdf4520479",
+      "wasm_sha256": "5df649e4e6327e0efe2d4e3231be43e399f67992458b560a2944a45ce825fef5",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source117_studio_wrapper.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source88-base",
+        "/usr/local/bin/node",
+        "e2e/memo-ui-issue9011.test.mjs",
+        "--mode=headless"
+      ],
+      "exit_code": 0,
+      "seconds": 29.903201723005623,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source117-base-studio-memo-ui-9011.txt"
+    },
+    {
+      "role": "base",
+      "label": "body-paste-8197",
+      "source_head": "8a196ca7aea2aa3cf32d394f5b7da2bdf4520479",
+      "wasm_sha256": "5df649e4e6327e0efe2d4e3231be43e399f67992458b560a2944a45ce825fef5",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source117_studio_wrapper.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source88-base",
+        "/usr/local/bin/node",
+        "e2e/body-plain-text-paste-issue8197.test.mjs",
+        "--mode=headless"
+      ],
+      "exit_code": 0,
+      "seconds": 32.055633476004004,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source117-base-studio-body-paste-8197.txt"
+    },
+    {
+      "role": "base",
+      "label": "host-font-input-9174",
+      "source_head": "8a196ca7aea2aa3cf32d394f5b7da2bdf4520479",
+      "wasm_sha256": "5df649e4e6327e0efe2d4e3231be43e399f67992458b560a2944a45ce825fef5",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source117_studio_wrapper.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source88-base",
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/rhwp-studio/e2e/host-font-input-issue9165.test.mjs",
+        "--mode=headless"
+      ],
+      "resolution": "Actual repository test waits for public warmup pagination completion; original strict20 and all other assertions retained",
+      "resolution_receipt": "source139-host-font-trace-state.json",
+      "runtime_wasm_receipt": "source139-base-served.json",
+      "original_run": {
+        "exit_code": 0,
+        "seconds": 49.17811306612566,
+        "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source117-base-studio-host-font-input-9174.txt"
+      },
+      "exit_code": 0,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source139-base-host-font-trace.txt",
+      "command_receipt": "source139-host-font-trace-state.json"
+    },
+    {
+      "role": "base",
+      "label": "host-provider-canvas2d",
+      "source_head": "8a196ca7aea2aa3cf32d394f5b7da2bdf4520479",
+      "wasm_sha256": "5df649e4e6327e0efe2d4e3231be43e399f67992458b560a2944a45ce825fef5",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source117_studio_wrapper.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source88-base",
+        "/usr/local/bin/node",
+        "e2e/host-font-provider-issue7403.test.mjs",
+        "--mode=headless",
+        "--renderer=canvas2d"
+      ],
+      "exit_code": 0,
+      "seconds": 82.13918315293267,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source117-base-studio-host-provider-canvas2d.txt"
+    },
+    {
+      "role": "base",
+      "label": "host-provider-canvaskit",
+      "source_head": "8a196ca7aea2aa3cf32d394f5b7da2bdf4520479",
+      "wasm_sha256": "5df649e4e6327e0efe2d4e3231be43e399f67992458b560a2944a45ce825fef5",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source117_studio_wrapper.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source88-base",
+        "/usr/local/bin/node",
+        "e2e/host-font-provider-issue7403.test.mjs",
+        "--mode=headless",
+        "--renderer=canvaskit"
+      ],
+      "exit_code": 0,
+      "seconds": 28.168226385023445,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source117-base-studio-host-provider-canvaskit.txt"
+    },
+    {
+      "role": "base",
+      "label": "ruler-document-switch",
+      "source_head": "8a196ca7aea2aa3cf32d394f5b7da2bdf4520479",
+      "wasm_sha256": "5df649e4e6327e0efe2d4e3231be43e399f67992458b560a2944a45ce825fef5",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source117_studio_wrapper.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source88-base",
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/ruler_document_switch_with_font_choice.mjs",
+        "--mode=headless"
+      ],
+      "exit_code": 0,
+      "seconds": 14.778476824983954,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source117-base-studio-ruler-document-switch.txt"
+    },
+    {
+      "role": "candidate",
+      "label": "split-original-hft",
+      "source_head": "8f9fd0414ffcfb720fa4a601c79c4590480de0e8",
+      "wasm_sha256": "d02f8e1661a0eb51fbbe33212998755fb1f5c221ae1fac78b2083297461d9896",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source117_studio_wrapper.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source105-candidate",
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/studio_split_hft_probe.mjs",
+        "--mode=headless"
+      ],
+      "exit_code": 0,
+      "seconds": 86.66383289312944,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source117-candidate-studio-split-original-hft.txt"
+    },
+    {
+      "role": "candidate",
+      "label": "memo-ui-9011",
+      "source_head": "8f9fd0414ffcfb720fa4a601c79c4590480de0e8",
+      "wasm_sha256": "d02f8e1661a0eb51fbbe33212998755fb1f5c221ae1fac78b2083297461d9896",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source117_studio_wrapper.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source105-candidate",
+        "/usr/local/bin/node",
+        "e2e/memo-ui-issue9011.test.mjs",
+        "--mode=headless"
+      ],
+      "exit_code": 0,
+      "seconds": 33.69342003692873,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source117-candidate-studio-memo-ui-9011.txt"
+    },
+    {
+      "role": "candidate",
+      "label": "body-paste-8197",
+      "source_head": "8f9fd0414ffcfb720fa4a601c79c4590480de0e8",
+      "wasm_sha256": "d02f8e1661a0eb51fbbe33212998755fb1f5c221ae1fac78b2083297461d9896",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source117_studio_wrapper.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source105-candidate",
+        "/usr/local/bin/node",
+        "e2e/body-plain-text-paste-issue8197.test.mjs",
+        "--mode=headless"
+      ],
+      "exit_code": 0,
+      "seconds": 29.697547372896224,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source117-candidate-studio-body-paste-8197.txt"
+    },
+    {
+      "role": "candidate",
+      "label": "host-font-input-9174",
+      "source_head": "8f9fd0414ffcfb720fa4a601c79c4590480de0e8",
+      "wasm_sha256": "d02f8e1661a0eb51fbbe33212998755fb1f5c221ae1fac78b2083297461d9896",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source117_studio_wrapper.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source105-candidate",
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/rhwp-studio/e2e/host-font-input-issue9165.test.mjs",
+        "--mode=headless"
+      ],
+      "resolution": "Actual repository test waits for public warmup pagination completion; original strict20 and all other assertions retained",
+      "resolution_receipt": "source139-host-font-trace-state.json",
+      "runtime_wasm_receipt": "source139-candidate-served.json",
+      "original_run": {
+        "exit_code": 0,
+        "seconds": 22.070317660924047,
+        "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source117-candidate-studio-host-font-input-9174.txt"
+      },
+      "exit_code": 0,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source139-candidate-host-font-trace.txt",
+      "command_receipt": "source139-host-font-trace-state.json"
+    },
+    {
+      "role": "candidate",
+      "label": "host-provider-canvas2d",
+      "source_head": "8f9fd0414ffcfb720fa4a601c79c4590480de0e8",
+      "wasm_sha256": "d02f8e1661a0eb51fbbe33212998755fb1f5c221ae1fac78b2083297461d9896",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source117_studio_wrapper.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source105-candidate",
+        "/usr/local/bin/node",
+        "e2e/host-font-provider-issue7403.test.mjs",
+        "--mode=headless",
+        "--renderer=canvas2d"
+      ],
+      "exit_code": 0,
+      "seconds": 103.7001174299512,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source117-candidate-studio-host-provider-canvas2d.txt"
+    },
+    {
+      "role": "candidate",
+      "label": "host-provider-canvaskit",
+      "source_head": "8f9fd0414ffcfb720fa4a601c79c4590480de0e8",
+      "wasm_sha256": "d02f8e1661a0eb51fbbe33212998755fb1f5c221ae1fac78b2083297461d9896",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source117_studio_wrapper.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source105-candidate",
+        "/usr/local/bin/node",
+        "e2e/host-font-provider-issue7403.test.mjs",
+        "--mode=headless",
+        "--renderer=canvaskit"
+      ],
+      "exit_code": 0,
+      "seconds": 43.35974810901098,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source117-candidate-studio-host-provider-canvaskit.txt"
+    },
+    {
+      "role": "candidate",
+      "label": "ruler-document-switch",
+      "source_head": "8f9fd0414ffcfb720fa4a601c79c4590480de0e8",
+      "wasm_sha256": "d02f8e1661a0eb51fbbe33212998755fb1f5c221ae1fac78b2083297461d9896",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source117_studio_wrapper.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source105-candidate",
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/ruler_document_switch_with_font_choice.mjs",
+        "--mode=headless"
+      ],
+      "exit_code": 0,
+      "seconds": 15.016842849785462,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source117-candidate-studio-ruler-document-switch.txt"
+    }
+  ],
+  "passed": true,
+  "original_failure_preserved": "source117-incoming-studio-base-state.json",
+  "independent_warmup_state_evidence": "source138-host-font-trace-state.json"
+}

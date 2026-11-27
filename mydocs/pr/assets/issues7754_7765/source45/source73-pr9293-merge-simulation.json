@@ -1,0 +1,9 @@
+{
+  "recorded": 1795331951.8103592,
+  "candidate": "914f408caafc3e6159e26880b8561ab8518aea7c",
+  "pr9293": "980516d956c3cfba7bdf0e22ddb3d10e04b12ea1",
+  "operation": "Read-only merge simulation; no branch/index/worktree mutation and no remote write. Actual integration is deferred until PR9293 merges.",
+  "exit_code": 0,
+  "result_tree": "d6e00190fb4822aae9dd127a117743046eeff659",
+  "conflicts": []
+}

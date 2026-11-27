@@ -1,0 +1,8 @@
+{
+  "started": 1795332483.0899231,
+  "pid": 1921414,
+  "scope": "Local preparation preview only; PR9293 is unmerged. Compare identical font conditions with the previous frozen candidate. Not a final merged-head or whole-document gate.",
+  "results": [],
+  "waiting": "native preview producer",
+  "reason": "Replaced before any rendering to use the merged preview frontend scripts as well as its Rust/WASM producers."
+}

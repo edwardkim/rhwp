@@ -5,12 +5,13 @@ use serde_json::Value;
 
 const KINDS: [&str; 6] = ["각주", "미주", "수식", "새 번호", "그림", "도형"];
 
-/// 이름·범위·값만 비교한다. 저장 위치(startPos·endPos)는 앞에 넣은 개체만큼 밀린다.
+/// 이름·범위·값만 비교한다. 저장 위치(startPos·endPos)와 컨트롤 번호는 앞에 넣은 개체만큼 밀린다.
 fn fields(core: &DocumentCore) -> Value {
     let mut values: Value = serde_json::from_str(&core.get_field_list_json()).unwrap();
     for value in values.as_array_mut().unwrap() {
         value.as_object_mut().unwrap().remove("startPos");
         value.as_object_mut().unwrap().remove("endPos");
+        value.as_object_mut().unwrap().remove("controlIndex");
     }
     values
 }

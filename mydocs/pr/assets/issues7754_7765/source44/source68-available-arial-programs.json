@@ -1,0 +1,65 @@
+{
+  "fonts": [
+    {
+      "path": "/usr/local/share/fonts/rhwp-issue8160-ted2/system-fonts/hancom-office-2020/Install/arial.ttf",
+      "sha256": "b23742143bae95dfaf50d8d530e798c7863336b254b899024b0b12b09c93abfd",
+      "program_id": "b4f12ad432d3505dd4903eea408ada1958d641697703eae8f6e021ecff59d867"
+    },
+    {
+      "path": "/usr/local/share/fonts/hwp-convert-mcp-survey/525979822591-Arial.ttf",
+      "sha256": "525979822591a3447cfc49d943d6f7683508e25543407871c0ed8fed05fd2bd9",
+      "program_id": "d7fed63b4b0d03be72501f238ccf6d5e580b1989cee25ddc273c2e6bcf06505d"
+    },
+    {
+      "path": "/usr/local/share/fonts/hwp-convert-mcp-survey/fcf34b330033-Arial_Narrow_Bold.ttf",
+      "sha256": "fcf34b330033e26c06e9bd466bea5a3e4b2f39272972275369beb7d8b257ed57",
+      "program_id": "0f7a775370efbb16b754256e6bcc9e4376e25d8a2e3a99eb5bbe43afe53b7786"
+    },
+    {
+      "path": "/usr/local/share/fonts/hwp-convert-mcp-survey/7d7db3ad96a3-Arial_Black.ttf",
+      "sha256": "7d7db3ad96a31373c1437c6ab14266f6605495544c8e663558b047521174c42e",
+      "program_id": "6d2ff64371bc3a8fde1f613f57fa01aa34fa1eb731eed57cd0d8ac9b114340b9"
+    },
+    {
+      "path": "/home/tsjang/.local/share/fonts/rhwp-protected-reference/6c4a4b643461-ARIALNB.TTF",
+      "sha256": "6c4a4b643461def5411e0217b74a625dcf2fb681252ef5da1db0af4eae80aa7e",
+      "program_id": "56d6e943dafd889be697cdc695a6cff1d23a973c91cd2adef6f3be3be73634ec"
+    },
+    {
+      "path": "/home/tsjang/.local/share/fonts/rhwp-protected-reference/161b859efd20-ARIALNBI.TTF",
+      "sha256": "161b859efd20c69ddebb23012a49f4f2030d56a0c1b9bcfd4df753217ce3e358",
+      "program_id": "6a31c21c8d58e15eff4bf98d2d2802955d2f01f54b92502aec39df96436ef334"
+    },
+    {
+      "path": "/home/tsjang/.local/share/fonts/rhwp-protected-reference/cad552553cf2-ARIALN.TTF",
+      "sha256": "cad552553cf2a75afca01955751aaa115e2a64fd6c6eea42e1fbd236630b7e0a",
+      "program_id": "35eb3ecc33fc2645b2d3786d455d79010a3d0d49f5c180146f8fbfe4df4dcedd"
+    },
+    {
+      "path": "/home/tsjang/.local/share/fonts/rhwp-protected-reference/faf73aa7ce40-ARIALNI.TTF",
+      "sha256": "faf73aa7ce40b77ad19c09507a2263fe3f3ce9fa5642e8a1cd54fb3c9f52d599",
+      "program_id": "04f7363bb94d10d98cf1430f54ccc21c6fec1cd3c9aa22745add25bada9b46e8"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-font-supply-20261122/arial.ttf",
+      "sha256": "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1",
+      "program_id": "4e21f9fd8dfaecba75dbc00fd1e60665450905eebbf5685d4cb671ef1b702fab"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-font-supply-20261122/arialbd.ttf",
+      "sha256": "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69",
+      "program_id": "57d1a7cad3956edc6e16f05ca9e349463f289f848eaf337d1e297f68804a6304"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-font-supply-20261122/arialbi.ttf",
+      "sha256": "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994",
+      "program_id": "f8cc2705bfc6c92623ee5350aeab1c5ba3b1c635a1a95949f3a8b57eb28fdb10"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-font-supply-20261122/ariali.ttf",
+      "sha256": "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62",
+      "program_id": "57ca893dc73da5edeed10e23da940260ceeda11390467508786d121e8c8cab24"
+    }
+  ],
+  "native_selected_Arial_program": "d7fed63b4b0d03be72501f238ccf6d5e580b1989cee25ddc273c2e6bcf06505d"
+}

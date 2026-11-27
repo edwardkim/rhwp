@@ -10,7 +10,7 @@ fn frame_signature(equation: &Equation) -> [u8; 32] {
 
 /// 호출자는 원본 본문의 저장 좌표가 미계산임을 확인하고 캐시를 비우기 전에 봉인한다.
 pub(crate) fn retain_unpositioned_host_frame(equation: &mut Equation) {
-    if equation.font_name.eq_ignore_ascii_case("HYhwpEQ")
+    if equation.uses_hyhwpeq_font()
         && equation.common.treat_as_char
         && equation.attr & EQUATION_LINE_MODE_BIT == 0
         && equation.common.width > 0

@@ -1,0 +1,27 @@
+{
+  "recorded": 1795313071.17652,
+  "scope": "Causal focused Native diagnosis, not complete protected acceptance and not WASM qualification.",
+  "source": "436f8629b7f2b9aee520962297b79cdf15c17743",
+  "before_raw": "99.44",
+  "original_spsmj_raw": "100.00",
+  "actual_pages_compared": [
+    51
+  ],
+  "changed_pixel_bbox": [
+    229,
+    127,
+    283,
+    153
+  ],
+  "below_title_pixels_identical": true,
+  "before_png_sha256": "4acb8b8ec042e837c419da6d43e476f437b578b6bba7f74760b3fa254857a01f",
+  "after_png_sha256": "b183e4d931eea03c0a50141bb39e3edad153060066f9a2e01597e49bf2da8612",
+  "input_pdf_dpi_compat_and_product_unchanged": true,
+  "font_change": "Only this process sees exact canonical original SPSMJ bytes at the current SPSMJ path; global filesystem read-only.",
+  "direct_review": "Independent PDF and both Native images read at same scale. The two title circles regain the independent shape; the body and table pixels are unchanged. Render-tree/ink columns confirm the year/month space is preserved.",
+  "limitations": [
+    "The full protected gate and WASM are not completed by this one-page proof.",
+    "Other missing canonical font files and one exact environment remain unresolved.",
+    "Native trace observes ordinary typeface decisions; it does not by itself prove every projected-outline replay."
+  ]
+}

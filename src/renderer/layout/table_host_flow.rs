@@ -10,8 +10,16 @@ pub(crate) fn stored_unconsumed_rowbreak_host_advance_hu(
     table: &Table,
     next_para: Option<&Paragraph>,
     host_line_consumed: bool,
+    is_continuation: bool,
 ) -> Option<i32> {
+    // 표 제어만 있는 줄의 전진은 머리 조각의 앵커가 소비한다.
+    // 실제 공백 문자를 저장한 줄은 이어받는 조각 뒤에도 별도 흐름을 소유할 수 있다.
     if host_line_consumed
+        || (is_continuation
+            && !para
+                .text
+                .chars()
+                .any(|ch| ch > '\u{001f}' && ch != '\u{fffc}'))
         || para.stored_text_partition_is_dirty()
         || para.cell_format_vpos_dirty
         || next_para.is_some_and(|next| {

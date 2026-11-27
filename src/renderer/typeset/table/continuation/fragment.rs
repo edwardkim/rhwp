@@ -14,6 +14,7 @@ mod physical_rows;
 mod scan;
 mod stored_block_frames;
 mod stored_frame_budget;
+mod terminal_source_axis;
 
 pub(super) struct FragmentProfile {
     pub(super) enabled: bool,
@@ -137,6 +138,7 @@ struct FragmentBudget {
     fragment_outer_bottom_overhead: f64,
     fragment_opens_outer_top: bool,
     physical_content_limit: f64,
+    fragment_flow_origin: f64,
     vert_offset_overhead: f64,
     page_avail: f64,
     /// [#8081] 첫 조각 `page_avail` 을 0 으로 자르기 전 모자란 몫(px, 0 이상). 표 각주

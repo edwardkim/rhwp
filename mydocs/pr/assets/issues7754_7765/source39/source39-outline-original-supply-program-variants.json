@@ -1,0 +1,516 @@
+{
+  "#신명조": [],
+  "KoPubWorld바탕체 Light": [
+    {
+      "program": {
+        "family": "KoPubWorldBatang Light",
+        "openTypeCff": false,
+        "programId": "2f38ac079f1fd21c13272ccaa528109a17e556dcd80ff291e8f9069f91c6232b",
+        "query": "KoPubWorld바탕체 Light",
+        "trueType": true
+      },
+      "sources": [
+        "mydocs/pr/assets/issue8856/final-20261110/font-environments/cce7acdac8ae6caa24767d1c22ee4bcc3aac5dabbcf0bc8dcefb88d2727cd745.json"
+      ]
+    }
+  ],
+  "Times New Roman": [
+    {
+      "program": {
+        "family": "Times New Roman",
+        "openTypeCff": false,
+        "programId": "sweep-2cff2a03d8034801979dd6d16f09b9a825c3d710fcf068f2ebfbf0e1425c87cf",
+        "query": "Times New Roman",
+        "trueType": true
+      },
+      "sources": [
+        "mydocs/pr/assets/all_open_prs_20261116/sample10-symbol-provider/environment.json",
+        "mydocs/pr/assets/issue8946/stage6-20261112/independent-triangle-environment.json",
+        "mydocs/pr/assets/issue8957/protected-review/manifest.json",
+        "mydocs/pr/assets/pr9007_protection_20261114/environments/sample10-native.json"
+      ]
+    },
+    {
+      "program": {
+        "family": "Times New Roman",
+        "openTypeCff": false,
+        "programId": "85445be8f7a2360edbe4aaa777941648654534500f06ee579a4f1d8ff8204c99",
+        "query": "Times New Roman",
+        "trueType": true
+      },
+      "sources": [
+        "mydocs/pr/assets/issue7732_split_span_20261115/sample10-symbol-supply/native-environment.json",
+        "mydocs/pr/assets/issue8856/final-20261110/font-environments/5dbc55dd8623904d94b43e876b89a780437a3c0ff264ebd591439225a1b8adc6.json",
+        "mydocs/pr/assets/issue8856/final-20261110/font-environments/cce7acdac8ae6caa24767d1c22ee4bcc3aac5dabbcf0bc8dcefb88d2727cd745.json",
+        "mydocs/pr/assets/issue8856/stage14-note-reference-source-style/print-gulim-reference-environment.json"
+      ]
+    },
+    {
+      "program": {
+        "family": "Times New Roman",
+        "openTypeCff": false,
+        "programId": "sweep-d713af89fbadd537f4bdf217f43a16dd11e9ec21f371e82ad93898afbb35374e",
+        "query": "Times New Roman",
+        "trueType": true
+      },
+      "sources": [
+        "mydocs/pr/assets/issue7732_split_span_20261115/sample10-symbol-supply/wasm-environment.json",
+        "mydocs/pr/assets/issues7733_7738_20261117/chemical-bullet-program-order/font-environment-wasm.json",
+        "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/chemical-wasm.json",
+        "mydocs/pr/assets/semanticist21-20261121/validation/final/font-supply/chemical-wasm.json"
+      ]
+    },
+    {
+      "program": {
+        "family": "Times New Roman",
+        "openTypeCff": false,
+        "programId": "efce3cf2f2e397d8544171eefe04e6c0af7379eb362a93d7a09fd6c6963872a6",
+        "query": "Times New Roman",
+        "trueType": true
+      },
+      "sources": [
+        "mydocs/pr/assets/issue8957/protected-review/manifest.json",
+        "mydocs/pr/assets/issue_8371/sample4-source-layout-20261117/sample4-font-environment-hft2ttf.json"
+      ]
+    },
+    {
+      "program": {
+        "family": "Times New Roman",
+        "openTypeCff": false,
+        "programId": "05431e66ef394384694c35739bcff3bd67242cc74aca1f13b54c7a92822f0fde",
+        "query": "Times New Roman",
+        "trueType": true
+      },
+      "sources": [
+        "mydocs/pr/assets/planet6897_remaining39_20261111/provenance/base-native/pr8710-1311000-201100125_saemaul_oda_pilot_report.json",
+        "mydocs/pr/assets/planet6897_remaining39_20261111/provenance/base-native/pr8746-36453591_approval_body.json",
+        "mydocs/pr/assets/planet6897_remaining39_20261111/provenance/base-native/pr8772-46551_road_traffic_rule_amendment.json",
+        "mydocs/pr/assets/planet6897_remaining39_20261111/provenance/base-native/pr8785-stored_field_line_page_split.json"
+      ]
+    },
+    {
+      "program": {
+        "family": "Times New Roman",
+        "openTypeCff": false,
+        "programId": "09d9ee0e2d6700728fbfeb1402177341b8dc6c7e9a5206fb98563c21cba089d4",
+        "query": "Times New Roman",
+        "trueType": true
+      },
+      "sources": [
+        "output/pr-review/native-webfont-cache/environments/c38ccaa14ce30ff06023a44b77d9dd11edd355d402143c456f4fd48294abdb76.json"
+      ]
+    }
+  ],
+  "돋움": [
+    {
+      "program": {
+        "collectionFace": true,
+        "family": "Dotum",
+        "openTypeCff": false,
+        "programId": "8b227d162052d30a43bfb3fe8f9f2dd63b7b99c9f0a0a043e95dd5000bcf589f",
+        "query": "돋움",
+        "trueType": true
+      },
+      "sources": [
+        "mydocs/pr/assets/issue8856/final-20261110/font-environments/5dbc55dd8623904d94b43e876b89a780437a3c0ff264ebd591439225a1b8adc6.json",
+        "mydocs/pr/assets/issue8856/final-20261110/font-environments/cce7acdac8ae6caa24767d1c22ee4bcc3aac5dabbcf0bc8dcefb88d2727cd745.json",
+        "mydocs/pr/assets/issue8856/stage14-note-reference-source-style/print-gulim-reference-environment.json",
+        "mydocs/pr/assets/issues7733_7738_20261117/chemical-bullet-program-order/font-environment-native.json"
+      ]
+    },
+    {
+      "program": {
+        "collectionFace": true,
+        "family": "Dotum",
+        "openTypeCff": false,
+        "programId": "sweep-f8cf42711bfe3d913c05c62612d14dfa59adafcc3f387f8c3f6dbbe932729eed",
+        "query": "돋움",
+        "trueType": true
+      },
+      "sources": [
+        "mydocs/pr/assets/issues7733_7738_20261117/chemical-bullet-program-order/font-environment-wasm.json",
+        "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/chemical-wasm.json",
+        "mydocs/pr/assets/semanticist21-20261121/validation/final/font-supply/chemical-wasm.json"
+      ]
+    }
+  ],
+  "돋움체": [
+    {
+      "program": {
+        "family": "DotumChe",
+        "openTypeCff": false,
+        "programId": "8a8fe301bd734d37449a3c582716d20bcb287d2900dd6e572e011f22fb815636",
+        "query": "돋움체",
+        "trueType": true
+      },
+      "sources": [
+        "mydocs/pr/assets/issue8856/final-20261110/font-environments/5dbc55dd8623904d94b43e876b89a780437a3c0ff264ebd591439225a1b8adc6.json",
+        "mydocs/pr/assets/issue8856/final-20261110/font-environments/cce7acdac8ae6caa24767d1c22ee4bcc3aac5dabbcf0bc8dcefb88d2727cd745.json"
+      ]
+    }
+  ],
+  "명조": [
+    {
+      "program": {
+        "family": "Myeongjo",
+        "openTypeCff": true,
+        "programId": "0b6c5d9bbd45d90df3d5f4d5fd62830fa409676c3315b8c76d204cd0d789989d",
+        "query": "명조",
+        "trueType": false
+      },
+      "sources": [
+        "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/outline/00-hft/ENMJ.otf"
+      ],
+      "available_source": "/home/tsjang/Downloads/hft2otf-deploy-20261117/hft2ttf-restore-stage-20261117/win10-all-hft-20261029/ENMJ.otf",
+      "source_sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f"
+    },
+    {
+      "program": {
+        "family": "Myeongjo",
+        "openTypeCff": true,
+        "programId": "2d231540bd511cc4fa74c850ea90aaae803d5f517832efb0600ce4c14346288f",
+        "query": "명조",
+        "trueType": false
+      },
+      "sources": [
+        "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/outline/00-hft/FLMJ.otf"
+      ],
+      "available_source": "/home/tsjang/Downloads/hft2otf-deploy-20261117/hft2ttf-restore-stage-20261117/win10-all-hft-20261029/FLMJ.otf",
+      "source_sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e"
+    },
+    {
+      "program": {
+        "family": "Myeongjo",
+        "openTypeCff": true,
+        "programId": "ccf2a7ac3b69ee08e38896d1a0dba44bb7d1cdcd27aba8d1768bcffa16244b10",
+        "query": "명조",
+        "trueType": false
+      },
+      "sources": [
+        "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/outline/00-hft/HGMJ.otf"
+      ],
+      "available_source": "/home/tsjang/Downloads/hft2otf-deploy-20261117/hft2ttf-restore-stage-20261117/win10-all-hft-20261029/HGMJ.otf",
+      "source_sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287"
+    },
+    {
+      "program": {
+        "family": "Myeongjo",
+        "openTypeCff": true,
+        "programId": "25edc151bf07eda5c3d2da928a3b1955a8ebc82c1737d92370bbb5a6e4247b1c",
+        "query": "명조",
+        "trueType": false
+      },
+      "sources": [
+        "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/outline/00-hft/HJMJ.otf"
+      ],
+      "available_source": "/home/tsjang/Downloads/hft2otf-deploy-20261117/hft2ttf-restore-stage-20261117/win10-all-hft-20261029/HJMJ.otf",
+      "source_sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba"
+    },
+    {
+      "program": {
+        "family": "Myeongjo",
+        "openTypeCff": true,
+        "programId": "c844e18302b686388e572f670a312c2f2c639500582e371bb150097d040af10c",
+        "query": "명조",
+        "trueType": false
+      },
+      "sources": [
+        "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/outline/00-hft/JPMJ.otf"
+      ],
+      "available_source": "/home/tsjang/Downloads/hft2otf-deploy-20261117/hft2ttf-restore-stage-20261117/win10-all-hft-20261029/JPMJ.otf",
+      "source_sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c"
+    },
+    {
+      "program": {
+        "family": "Myeongjo",
+        "openTypeCff": true,
+        "programId": "7bba0f353b6e655d5ff691e19ef8615c74324a2339dfa3dae54c45d620da47c2",
+        "query": "명조",
+        "trueType": false
+      },
+      "sources": [
+        "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/outline/00-hft/SPMJ.otf"
+      ],
+      "available_source": "/home/tsjang/Downloads/hft2otf-deploy-20261117/hft2ttf-restore-stage-20261117/win10-all-hft-20261029/SPMJ.otf",
+      "source_sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834"
+    },
+    {
+      "program": {
+        "family": "Myeongjo",
+        "openTypeCff": true,
+        "programId": "de8adc73f49a968b99d2e75f236add4f25fdfb72c52b7a5b803011905145f70e",
+        "query": "명조",
+        "trueType": false
+      },
+      "sources": [
+        "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/outline/00-hft/USER.otf"
+      ],
+      "available_source": "/home/tsjang/Downloads/hft2otf-deploy-20261117/hft2ttf-restore-stage-20261117/win10-all-hft-20261029/USER.otf",
+      "source_sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece"
+    }
+  ],
+  "한양견고딕": [
+    {
+      "program": {
+        "family": "HY Gyeongothic",
+        "openTypeCff": true,
+        "programId": "cd8c166268de7779d7835d5b18447bcd62123fff2f7927f94b15d644f1690d67",
+        "query": "한양견고딕",
+        "trueType": false
+      },
+      "sources": [
+        "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/outline/00-hft/ENGGT.otf"
+      ],
+      "available_source": "/home/tsjang/Downloads/hft2otf-deploy-20261117/hft2ttf-restore-stage-20261117/win10-all-hft-20261029/ENGGT.otf",
+      "source_sha256": "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9"
+    },
+    {
+      "program": {
+        "family": "HY Gyeongothic",
+        "openTypeCff": true,
+        "programId": "39e93182f8aae88b91f3dc340729c278abe7cce261f2bd41b1b768016628cf59",
+        "query": "한양견고딕",
+        "trueType": false
+      },
+      "sources": [
+        "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/outline/00-hft/HGGGT.otf"
+      ],
+      "available_source": "/home/tsjang/Downloads/hft2otf-deploy-20261117/hft2ttf-restore-stage-20261117/win10-all-hft-20261029/HGGGT.otf",
+      "source_sha256": "da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68"
+    }
+  ],
+  "한양신명조": [
+    {
+      "program": {
+        "family": "HY Sinmyeongjo",
+        "openTypeCff": true,
+        "programId": "3869c79ebb60220282c8440cd01688a386e5d2b11ed4af043337a14c2fedc01e",
+        "query": "한양신명조",
+        "trueType": false
+      },
+      "sources": [
+        "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/outline/00-hft/ENSMJ.otf"
+      ],
+      "available_source": "/home/tsjang/Downloads/hft2otf-deploy-20261117/hft2ttf-restore-stage-20261117/win10-all-hft-20261029/ENSMJ.otf",
+      "source_sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+    },
+    {
+      "program": {
+        "family": "HY Sinmyeongjo",
+        "openTypeCff": true,
+        "programId": "9c7bd4e59d13a1744b6e41eaffb57478c5f129fe87e89e800721bad584214e10",
+        "query": "한양신명조",
+        "trueType": false
+      },
+      "sources": [
+        "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/outline/00-hft/FLSMJ.otf"
+      ],
+      "available_source": "/home/tsjang/Downloads/hft2otf-deploy-20261117/hft2ttf-restore-stage-20261117/win10-all-hft-20261029/FLSMJ.otf",
+      "source_sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b"
+    },
+    {
+      "program": {
+        "family": "HY Sinmyeongjo",
+        "openTypeCff": true,
+        "programId": "c20485a292d437a1f4fd2ac1def811401b8e8bff598449416656fa9b97d8e4e8",
+        "query": "한양신명조",
+        "trueType": false
+      },
+      "sources": [
+        "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/outline/00-hft/HGSMJ.otf"
+      ],
+      "available_source": "/home/tsjang/Downloads/hft2otf-deploy-20261117/hft2ttf-restore-stage-20261117/win10-all-hft-20261029/HGSMJ.otf",
+      "source_sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0"
+    },
+    {
+      "program": {
+        "family": "HY Sinmyeongjo",
+        "openTypeCff": true,
+        "programId": "3333a48e8c2aa373a961210362a4cfcfb0aa0e486467c3ae06c882b5f2a3ed01",
+        "query": "한양신명조",
+        "trueType": false
+      },
+      "sources": [
+        "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/outline/00-hft/HJSMJ.otf"
+      ],
+      "available_source": "/home/tsjang/Downloads/hft2otf-deploy-20261117/hft2ttf-restore-stage-20261117/win10-all-hft-20261029/HJSMJ.otf",
+      "source_sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9"
+    },
+    {
+      "program": {
+        "family": "HY Sinmyeongjo",
+        "openTypeCff": true,
+        "programId": "016526d6700359164c27eaecb599c03b8908c4adc9767e891b0889797c0d3b59",
+        "query": "한양신명조",
+        "trueType": false
+      },
+      "sources": [
+        "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/outline/00-hft/JPSMJ.otf"
+      ],
+      "available_source": "/home/tsjang/Downloads/hft2otf-deploy-20261117/hft2ttf-restore-stage-20261117/win10-all-hft-20261029/JPSMJ.otf",
+      "source_sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a"
+    },
+    {
+      "program": {
+        "family": "HY Sinmyeongjo",
+        "openTypeCff": true,
+        "programId": "54ff7653734fa01e6f6cb8c01ed57593c5c546bf18ac65641fd4f0574ba0451c",
+        "query": "한양신명조",
+        "trueType": false
+      },
+      "sources": [
+        "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/outline/00-hft/SPSMJ.otf"
+      ],
+      "available_source": "/home/tsjang/Downloads/hft2otf-deploy-20261117/hft2ttf-restore-stage-20261117/win10-all-hft-20261029/SPSMJ.otf",
+      "source_sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497"
+    }
+  ],
+  "한양중고딕": [
+    {
+      "program": {
+        "family": "HY Junggothic",
+        "openTypeCff": true,
+        "programId": "08829a24cc0f4f697c290d60bbcdc8410508b11aa409f97192aa3a3d7c7dac87",
+        "query": "한양중고딕",
+        "trueType": false
+      },
+      "sources": [
+        "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/outline/00-hft/ENJGT.otf"
+      ],
+      "available_source": "/home/tsjang/Downloads/hft2otf-deploy-20261117/hft2ttf-restore-stage-20261117/win10-all-hft-20261029/ENJGT.otf",
+      "source_sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659"
+    },
+    {
+      "program": {
+        "family": "HY Junggothic",
+        "openTypeCff": true,
+        "programId": "cf623dda8f51ca5dacb94f2dc942cde84a120269bd5ca018b7d182011e7933c8",
+        "query": "한양중고딕",
+        "trueType": false
+      },
+      "sources": [
+        "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/outline/00-hft/HGJGT.otf"
+      ],
+      "available_source": "/home/tsjang/Downloads/hft2otf-deploy-20261117/hft2ttf-restore-stage-20261117/win10-all-hft-20261029/HGJGT.otf",
+      "source_sha256": "ef7def56521a7087f67a623245a7c9c9899dfdc07e4839ed1f0a89f56e847013"
+    },
+    {
+      "program": {
+        "family": "HY Junggothic",
+        "openTypeCff": true,
+        "programId": "61bd7778da3d3dc16654dc311a7850c885d59167deb754df0fec42c020c204ad",
+        "query": "한양중고딕",
+        "trueType": false
+      },
+      "sources": [
+        "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/outline/00-hft/HJJGT.otf"
+      ],
+      "available_source": "/home/tsjang/Downloads/hft2otf-deploy-20261117/hft2ttf-restore-stage-20261117/win10-all-hft-20261029/HJJGT.otf",
+      "source_sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1"
+    },
+    {
+      "program": {
+        "family": "HY Junggothic",
+        "openTypeCff": true,
+        "programId": "1fd7e301e828b77b80781953d7e1fced20086ccd0cb81a38ccf96915be5e1842",
+        "query": "한양중고딕",
+        "trueType": false
+      },
+      "sources": [
+        "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/outline/00-hft/JPJGT.otf"
+      ],
+      "available_source": "/home/tsjang/Downloads/hft2otf-deploy-20261117/hft2ttf-restore-stage-20261117/win10-all-hft-20261029/JPJGT.otf",
+      "source_sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63"
+    },
+    {
+      "program": {
+        "family": "HY Junggothic",
+        "openTypeCff": true,
+        "programId": "515c7acff925f9854eab14de4f5e8c87d90650987e6db64a1ad722ef585d8026",
+        "query": "한양중고딕",
+        "trueType": false
+      },
+      "sources": [
+        "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/protected-fonts/outline/00-hft/SPJGT.otf"
+      ],
+      "available_source": "/home/tsjang/Downloads/hft2otf-deploy-20261117/hft2ttf-restore-stage-20261117/win10-all-hft-20261029/SPJGT.otf",
+      "source_sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480"
+    }
+  ],
+  "함초롬바탕": [
+    {
+      "program": {
+        "family": "HCR Batang",
+        "openTypeCff": false,
+        "programId": "6247c14b4d48d9c44d37124d74a8d3428c822e82dfa2cd3cd66cd74489e0171b",
+        "query": "함초롬바탕",
+        "trueType": true
+      },
+      "sources": [
+        "mydocs/pr/assets/issue8856/final-20261110/font-environments/cce7acdac8ae6caa24767d1c22ee4bcc3aac5dabbcf0bc8dcefb88d2727cd745.json",
+        "mydocs/pr/assets/issues7733_7738_20261117/chemical-bullet-program-order/font-environment-native.json",
+        "mydocs/pr/assets/issues7733_7738_20261117/decree-original-program-selection/font-environment-native.json",
+        "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/chemical-native.json"
+      ]
+    },
+    {
+      "program": {
+        "family": "HCR Batang",
+        "openTypeCff": false,
+        "programId": "sweep-c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+        "query": "함초롬바탕",
+        "trueType": true
+      },
+      "sources": [
+        "mydocs/pr/assets/issues7733_7738_20261117/chemical-bullet-program-order/font-environment-wasm.json",
+        "mydocs/pr/assets/issues7733_7738_20261117/decree-original-program-selection/font-environment-wasm.json",
+        "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/chemical-wasm.json",
+        "mydocs/pr/assets/open_prs_20261117/cases/band/wasm/base/export.json"
+      ]
+    },
+    {
+      "program": {
+        "family": "HCR Batang",
+        "openTypeCff": false,
+        "programId": "35ce84f9c91f589a05308c102069e836d93e3bf2acf4cad828cf9471defb11e7",
+        "query": "함초롬바탕",
+        "trueType": true
+      },
+      "sources": [
+        "mydocs/tech/investigations/release-0.9.0-renderer-sweep/native-print-export.json"
+      ]
+    }
+  ],
+  "휴먼명조": [
+    {
+      "program": {
+        "family": "휴먼명조",
+        "openTypeCff": false,
+        "programId": "f44febee110ef64620a17f9e884aac284878aef1bdf3cb3f41bc9efb462e629e",
+        "query": "휴먼명조",
+        "trueType": true
+      },
+      "sources": [
+        "mydocs/pr/assets/issue8856/final-20261110/font-environments/cce7acdac8ae6caa24767d1c22ee4bcc3aac5dabbcf0bc8dcefb88d2727cd745.json",
+        "mydocs/pr/assets/issue8856/stage14-note-reference-source-style/print-gulim-reference-environment.json",
+        "mydocs/pr/assets/issues7733_7738_20261117/chemical-bullet-program-order/font-environment-native.json",
+        "mydocs/pr/assets/issues7733_7738_20261117/decree-original-program-selection/font-environment-native.json"
+      ]
+    },
+    {
+      "program": {
+        "family": "휴먼명조",
+        "openTypeCff": false,
+        "programId": "sweep-e48a43385fc11e9460c905aa2e19780933307d85e56dcb0e3bfd9e2d4a9cfcf1",
+        "query": "휴먼명조",
+        "trueType": true
+      },
+      "sources": [
+        "mydocs/pr/assets/issues7733_7738_20261117/chemical-bullet-program-order/font-environment-wasm.json",
+        "mydocs/pr/assets/issues7733_7738_20261117/decree-original-program-selection/font-environment-wasm.json",
+        "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/chemical-wasm.json",
+        "mydocs/pr/assets/semanticist21-20261121/validation/final/font-supply/chemical-wasm.json"
+      ]
+    }
+  ]
+}

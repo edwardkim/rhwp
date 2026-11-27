@@ -1,0 +1,23 @@
+{
+  "page": 61,
+  "dpi": 96,
+  "crop": [
+    169,
+    310,
+    215,
+    348
+  ],
+  "point_window": [
+    189,
+    325,
+    195,
+    334
+  ],
+  "threshold232_ink_pixels_pdfium_mupdf": [
+    3,
+    3
+  ],
+  "reference_pdfium_png_sha256": "a36d8fd61846df216abe07948a5ceca858f8726db23d4dea3e350233b676bc00",
+  "image": "output/pr-review/issue7754-nine/source44-pdf-glyph-diagnostic/chemical-p061-pdfium-mupdf-4x.png",
+  "page_images": 7
+}

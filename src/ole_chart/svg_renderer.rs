@@ -30,7 +30,7 @@ pub(super) fn render_legacy_column_fragment(
     render_fragment(chart, Some(presentation), bounds, bin_data_id, dpi)
 }
 
-fn render_fragment(
+pub(super) fn render_fragment(
     chart: &OleChart,
     presentation: Option<&Presentation>,
     [x, y, width, height]: [f64; 4],
@@ -41,7 +41,17 @@ fn render_fragment(
     let safe_y = finite_or(y, 0.0);
     let safe_w = positive_finite_or(width, 1.0);
     let safe_h = positive_finite_or(height, 1.0);
-    let body = render_body(chart, presentation, safe_w, safe_h, dpi);
+    let body = match presentation {
+        Some(p) if p.chart_type == 14 => {
+            super::legacy_pie_renderer::render(chart, p, safe_w, safe_h, dpi)
+                .unwrap_or_else(|| render_body(chart, None, safe_w, safe_h, dpi))
+        }
+        Some(p) if p.chart_type == 11 => {
+            super::legacy_percent_bar_renderer::render(chart, p, safe_w, safe_h, dpi)
+                .unwrap_or_else(|| render_body(chart, None, safe_w, safe_h, dpi))
+        }
+        _ => render_body(chart, presentation, safe_w, safe_h, dpi),
+    };
 
     format!(
         "<g class=\"hwp-ole-chart hwp-ole-chart-rust-svg\" \
@@ -386,6 +396,56 @@ pub(super) fn series_fill(presentation: Option<&Presentation>, index: usize) -> 
         ),
         None => chart_color(index).to_string(),
     }
+}
+
+const CHART_FRAME_PRINT_DPI: f64 = 600.0;
+
+/// 구형 차트는 96 DPI에서 반올림한 참조 펜을 600 DPI 인쇄 장치에 전달한다.
+/// 이 폭은 색을 칠하는 펜의 크기이며 차트의 배치 여백과 독립이다.
+pub(super) fn chart_frame_device_stroke_width(twips: f64, dpi: f64) -> f64 {
+    let reference_dpi = crate::renderer::DEFAULT_DPI;
+    let reference_pen = (twips.trunc() * reference_dpi / 1440.0).round().max(1.0);
+    reference_pen * dpi / CHART_FRAME_PRINT_DPI
+}
+
+pub(super) fn stored_chart_backdrop(
+    presentation: &Presentation,
+    width: f64,
+    height: f64,
+    dpi: f64,
+) -> Option<String> {
+    let mut fill = "white".to_string();
+    let mut outline = String::new();
+    let color = |value: u32| {
+        format!(
+            "#{:02x}{:02x}{:02x}",
+            value & 255,
+            (value >> 8) & 255,
+            (value >> 16) & 255
+        )
+    };
+    if let Some(backdrop) = &presentation.backdrop {
+        if backdrop.shadow_enabled || !matches!(backdrop.fill_kind, 0 | 1) {
+            return None;
+        }
+        if backdrop.fill_kind == 1 {
+            fill = color(backdrop.fill_color);
+        }
+        if backdrop.frame_enabled && backdrop.frame_width > 0.0 {
+            // 인쇄의 외곽 벡터 괘선은 기준 래스터에서 한 픽셀의 피복을 유지한다.
+            // 외곽을 SVG 조각 안쪽에 그려도 래스터와 재샘플링에서 괘선이 끊기지 않게 한다.
+            let stroke = chart_frame_device_stroke_width(backdrop.frame_width, dpi)
+                .max(dpi / crate::renderer::DEFAULT_DPI);
+            let offset = stroke / 2.0;
+            if stroke >= width.min(height) {
+                return None;
+            }
+            outline = format!("<rect x=\"{offset}\" y=\"{offset}\" width=\"{}\" height=\"{}\" fill=\"none\" stroke=\"{}\" stroke-width=\"{stroke}\"/>", width - stroke, height - stroke, color(backdrop.frame_color));
+        }
+    }
+    Some(format!(
+        "<rect width=\"{width}\" height=\"{height}\" fill=\"{fill}\"/>{outline}"
+    ))
 }
 
 fn chart_color(idx: usize) -> &'static str {

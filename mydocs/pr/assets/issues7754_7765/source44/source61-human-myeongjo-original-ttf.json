@@ -1,0 +1,22 @@
+{
+  "source": "Read-only independent PDF font identity comparison; no embedded font is supplied for rendering.",
+  "reference_pdf_sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9",
+  "reference_font": "INPILL+ÈÞ¸Õ¸íÁ¶",
+  "file": "/opt/hnc/hoffice11/Shared/TTF/Hwp/HMKMM.TTF",
+  "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+  "family": "휴먼명조",
+  "glyphs": [
+    {
+      "code_point": 52628,
+      "reference_gid": 45,
+      "contours_equal": true,
+      "hmtx_equal": true
+    },
+    {
+      "code_point": 44032,
+      "reference_gid": 3,
+      "contours_equal": true,
+      "hmtx_equal": true
+    }
+  ]
+}

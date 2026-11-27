@@ -46,7 +46,12 @@ pub(super) fn draw(
                         })
                 })
         })
-        .map(|tf| Font::new(tf, size))
+        .map(|tf| {
+            Font::new(
+                super::super::pdf_fonts::for_output(replay.pdf_fonts, replay.font_mgr, tf),
+                size,
+            )
+        })
         .unwrap_or_else(|| {
             let mut font = Font::default();
             font.set_size(size);

@@ -1,0 +1,25 @@
+{
+  "label": "candidate-native",
+  "source_head": "4230d331b3e715761224fd515b1fed7ce28ba318",
+  "source_tree": "cdd877322f37bf8e2a77761b5afabeab10331c9d",
+  "command": [
+    "cargo",
+    "build",
+    "--locked",
+    "--profile",
+    "release-test",
+    "--target-dir",
+    "/home/tsjang/rhwp/target/pr-review",
+    "--features",
+    "native-skia",
+    "--bin",
+    "rhwp"
+  ],
+  "started": 1795293878.078951,
+  "exit_code": 0,
+  "seconds": 1223.521004112903,
+  "ended": 1795295101.6003847,
+  "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source34-candidate-native-build.log",
+  "binary": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source34-optimized",
+  "binary_sha256": "98a0c5983d060a37e5ac79c6ee24e0a1f3f4dd7d567d005935d55a7c653db13e"
+}

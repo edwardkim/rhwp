@@ -1,0 +1,96 @@
+{
+  "role": "candidate",
+  "scope": "actual frozen WASM constructor, insertText, HWP export and reopen twice; physical CTRL_DATA owner/bytes checked independently in Python",
+  "started": "2026-11-21T23:23:44.632Z",
+  "results": [
+    {
+      "input": "samples/basic/sungeo.hwp",
+      "input_sha256": "3b13d15833cbd0fb42b5f7ac5909eee7a68ec4505a914eb70931168c01f79d96",
+      "original_text": " 漢字成語 ",
+      "rounds": [
+        {
+          "round": 1,
+          "file": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-ctrl-data-wasm/candidate/input1-round1.hwp",
+          "bytes": 644096,
+          "sha256": "348d5e66954ea4bbc5643aa025dbdf5179b084baa9462ee27c1c201defd0e689",
+          "text": "가 漢字成語 "
+        },
+        {
+          "round": 2,
+          "file": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-ctrl-data-wasm/candidate/input1-round2.hwp",
+          "bytes": 644096,
+          "sha256": "f0788db1a397379260fc73d568135aef135ad804c406c31c44d0acde5f37cdd2",
+          "text": "가가 漢字成語 "
+        }
+      ]
+    },
+    {
+      "input": "samples/20250130-hongbo.hwp",
+      "input_sha256": "4062580dbe01654a903c88a33ac2443ba1682b9d00aeb324b749f9a902f47257",
+      "original_text": "",
+      "rounds": [
+        {
+          "round": 1,
+          "file": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-ctrl-data-wasm/candidate/input2-round1.hwp",
+          "bytes": 562176,
+          "sha256": "81e9c5c40c0262f94e772e8ac6e01a18165660b1faa64a1687d73333ca1e3c9a",
+          "text": "가"
+        },
+        {
+          "round": 2,
+          "file": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-ctrl-data-wasm/candidate/input2-round2.hwp",
+          "bytes": 562176,
+          "sha256": "93a19800c8c55366e33925ed2c43f3bb692447470e25b0e67aa99169db9ed88e",
+          "text": "가가"
+        }
+      ]
+    },
+    {
+      "input": "samples/task2137/156618554_petfood_press.hwp",
+      "input_sha256": "c9e2b516124634319d3150d79dd6d3596c0fe07a556448aa6c807c0f8c8ba516",
+      "original_text": "",
+      "rounds": [
+        {
+          "round": 1,
+          "file": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-ctrl-data-wasm/candidate/input3-round1.hwp",
+          "bytes": 116736,
+          "sha256": "e1b71c2562b5350da6e58b1254ff73b5c5dc51af70b4628e99319672f7462991",
+          "text": "가"
+        },
+        {
+          "round": 2,
+          "file": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-ctrl-data-wasm/candidate/input3-round2.hwp",
+          "bytes": 116736,
+          "sha256": "348d00ccfa783a6cac85e63f81c6421a32bfc0acf9a543fe68a85e52134500e7",
+          "text": "가가"
+        }
+      ]
+    },
+    {
+      "input": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+      "input_sha256": "83fca0151c67e2adeb7a85203f5c75204d8e53af4e44902958c96b85adf6845e",
+      "original_text": "",
+      "rounds": [
+        {
+          "round": 1,
+          "file": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-ctrl-data-wasm/candidate/input4-round1.hwp",
+          "bytes": 381440,
+          "sha256": "c25695e2b29c3d7932a4b3d522169763a3391411409e931e5cd26f4c5e15ebef",
+          "text": "가"
+        },
+        {
+          "round": 2,
+          "file": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-ctrl-data-wasm/candidate/input4-round2.hwp",
+          "bytes": 381440,
+          "sha256": "72468994d9f9f0f15da8e301f13e6d2be5661aa23b23a8c21e2c9f74973f31ec",
+          "text": "가가"
+        }
+      ]
+    }
+  ],
+  "source_head": "436f8629b7f2b9aee520962297b79cdf15c17743",
+  "wasm_sha256": "483c42c9ac2c1356985a6e1a2b2ae7c4a1a5616ec64882cc371d7cd38028b9bf",
+  "running": null,
+  "passed": true,
+  "ended": "2026-11-21T23:24:07.987Z"
+}

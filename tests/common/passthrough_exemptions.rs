@@ -186,28 +186,28 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "문서 IR을 바꾸지 않고 host font 세대와 paint cache만 해제한다. metafile_font_session_contract가 저장 bytes와 원본 IR 보존을 검사한다.",
     ),
     (
-        "commands/document/hft_outline_fonts.rs",
+        "commands/document/legacy_font_outlines.rs",
         "clear_text_font_family_native",
         Exempt::SessionState,
-        "선택한 family의 paint 전용 글꼴 공급과 coverage만 해제한다. hft_outline_font_contract에서 해제 전후 원본 IR과 저장 HWP 바이트 보존을 검사한다.",
+        "선택한 family의 paint 전용 글꼴 공급과 coverage만 해제한다. legacy_font_outline_contract에서 해제 전후 원본 IR과 저장 HWP 바이트 보존을 검사한다.",
     ),
     (
-        "commands/document/hft_outline_fonts.rs",
+        "commands/document/legacy_font_outlines.rs",
         "register_text_font_glyph_coverage_native",
         Exempt::SessionState,
         "원문 IR·raw stream 대신 paint용 pua_coverage 세션만 등록한다. text_font_coverage_registration의 registered_upright_face_resolves_quoted_css_and_keeps_document_source가 공개 등록 전후 HWP/HWPX 바이트 보존을 검사한다.",
     ),
     (
-        "commands/document/hft_outline_fonts.rs",
+        "commands/document/legacy_font_outlines.rs",
         "register_hft_outline_font_native",
         Exempt::SessionState,
-        "#7902: hft_outline_fonts의 paint 전용 프로그램만 등록·교체한다. 문서 IR과 저장 HWP 바이트 보존은 hft_outline_font_contract의 public API 실행으로 검사한다.",
+        "#7902: legacy_font_outlines의 paint 전용 프로그램만 등록·교체한다. 문서 IR과 저장 HWP 바이트 보존은 legacy_font_outline_contract의 public API 실행으로 검사한다.",
     ),
     (
-        "commands/document/hft_outline_fonts.rs",
+        "commands/document/legacy_font_outlines.rs",
         "register_hft_outline_font_candidates_native",
         Exempt::SessionState,
-        "실제 후보 순서의 paint 전용 CFF 세션만 원자적으로 등록·교체한다. hft_outline_font_contract가 공개 단일·분할 API의 저장 IR·HWP 바이트 보존과 오류 시 기존 후보 보존을 검사한다. raw stream을 무효화할 문서 편집은 하지 않는다.",
+        "실제 후보 순서의 paint 전용 CFF 세션만 원자적으로 등록·교체한다. legacy_font_outline_contract가 공개 단일·분할 API의 저장 IR·HWP 바이트 보존과 오류 시 기존 후보 보존을 검사한다. raw stream을 무효화할 문서 편집은 하지 않는다.",
     ),
     (
         "font_environment.rs",
@@ -361,6 +361,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "set_hangul2024_compat",
         Exempt::SessionState,
         "[#5524] 세션 호환 모드 플래그·재페이지네이션만 갱신. 문서 IR 무변경.",
+    ),
+    (
+        "mod.rs",
+        "set_print_bmp_full_color",
+        Exempt::SessionState,
+        "Print의 BMP 색상 처리 옵션을 설정하고 출력 캐시를 비운다. 문서 IR과 원본 저장 스트림은 유지한다.",
     ),
     (
         "mod.rs",
@@ -647,6 +653,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "편집 세션의 활성 필드 포커스. 직렬화 비대상.",
     ),
     (
+        "queries/bookmark_query.rs",
+        "set_active_field_at",
+        Exempt::SessionState,
+        "주소의 컨트롤 번호로 고른 활성 필드 포커스 + 렌더 캐시 무효화. 직렬화 비대상.",
+    ),
+    (
         "queries/field_query.rs",
         "clear_active_field",
         Exempt::SessionState,
@@ -804,6 +816,18 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "[#7866] 지운 글자의 모양을 잇는 한 단계 바꾸기 — 무효화·재조판은 `delete_text_native` \
          와 같은 `apply_body_text_edit` 가 수행한다. issue_7866_replace_inherits_char_shapes 가 \
          저장·재열기 뒤 모양 보존을 검사한다.",
+    ),
+    (
+        "commands/text_editing.rs",
+        "insert_text_in_cell_by_path",
+        Exempt::DelegatesTo("replace_text_in_cell_by_path"),
+        "[#9398] 단일 칸은 insert_text_in_cell_native에 위임한다. 중첩 칸은 replace_text_in_cell_by_path가 변경한 구역의 raw_stream을 무효화한다.",
+    ),
+    (
+        "commands/text_editing.rs",
+        "delete_text_in_cell_by_path",
+        Exempt::DelegatesTo("replace_text_in_cell_by_path"),
+        "[#9398] 단일 칸은 delete_text_in_cell_native에 위임한다. 중첩 칸은 replace_text_in_cell_by_path가 변경한 구역의 raw_stream을 무효화한다.",
     ),
     (
         "commands/text_editing.rs",

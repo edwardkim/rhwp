@@ -1,0 +1,34 @@
+from pathlib import Path
+from io import BytesIO
+import json,hashlib,time,traceback
+import pymupdf
+from fontTools.ttLib import TTFont
+from fontTools.pens.recordingPen import DecomposingRecordingPen
+R=Path('/home/tsjang/rhwp');O=R/'output/pr-review/issue7754-nine'
+sources={'Dotum':('/home/tsjang/.local/share/fonts/rhwp-pr9237/gulim.ttc',2),'DotumChe':('/home/tsjang/.local/share/fonts/rhwp-pr9237/gulim.ttc',3),'Batang':('/home/tsjang/.local/share/fonts/rhwp-protected-reference/0ea38ac53e8d-batang.TTC',0),'BatangChe':('/home/tsjang/.local/share/fonts/rhwp-protected-reference/0ea38ac53e8d-batang.TTC',1)}
+fonts={k:TTFont(p,fontNumber=i) for k,(p,i) in sources.items()};s={'started':time.time(),'scope':'Read-only comparison of every observed TrueType glyph program and advance with the immutable independent Print PDFs. No font source is constructed from these target PDFs. This qualifies original TTF/verified TTC faces; it does not claim recovery of a missing historical whole-file SHA or JSON snapshot.','font_sources':{k:{'path':p,'face_index':i,'sha256':hashlib.sha256(Path(p).read_bytes()).hexdigest()} for k,(p,i) in sources.items()},'documents':[]}
+def shape(font,glyph):
+ gs=font.getGlyphSet();pen=DecomposingRecordingPen(gs);gs[glyph].draw(pen);return {'upem':font['head'].unitsPerEm,'advance_and_lsb':font['hmtx'][glyph],'contours':pen.value}
+try:
+ for key,pdf in [('outline','pdf/task3307/issue3307_outline_number-2020.pdf'),('chemical','pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf')]:
+  document=pymupdf.open(R/pdf);loaded={};seen=set();rows=[];missing=[];mismatches=[]
+  for p in document:
+   faces={f[3].split('+')[-1]:f[0] for f in p.get_fonts() if f[1]=='ttf' and f[3].split('+')[-1] in sources}
+   for span in p.get_texttrace():
+    family=span['font']
+    if family not in faces:continue
+    ref=faces[family]
+    if ref not in loaded:loaded[ref]=TTFont(BytesIO(document.extract_font(ref)[3]))
+    pdf_font=loaded[ref];actual=fonts[family];cmap=actual.getBestCmap()
+    for character in span['chars']:
+     cp,gid=character[:2];identity=(ref,cp,gid)
+     if identity in seen:continue
+     seen.add(identity)
+     if cp not in cmap or gid>=len(pdf_font.getGlyphOrder()):missing.append({'page':p.number+1,'family':family,'codepoint':cp,'glyph':gid});continue
+     a=shape(pdf_font,pdf_font.getGlyphOrder()[gid]);b=shape(actual,cmap[cp]);equal=a==b
+     row={'family':family,'codepoint':f'U+{cp:04X}','pdf_glyph_id':gid,'units_per_em':a['upem'],'independent_metrics':a['advance_and_lsb'],'same_outline_and_metrics':equal,'independent_contour_sha256':hashlib.sha256(repr(a).encode()).hexdigest(),'actual_contour_sha256':hashlib.sha256(repr(b).encode()).hexdigest()};rows.append(row)
+     if not equal:mismatches.append(row)
+  s['documents'].append({'key':key,'pdf':pdf,'pdf_sha256':hashlib.sha256((R/pdf).read_bytes()).hexdigest(),'pages':len(document),'compared_glyphs':len(rows),'missing':missing,'mismatches':mismatches,'rows':rows})
+ s['passed']=all(not d['missing'] and not d['mismatches'] for d in s['documents'])
+except Exception as e:s['error']=str(e);s['traceback']=traceback.format_exc()
+finally:s['ended']=time.time();(O/'source123-used-ttc-glyph-identity.json').write_text(json.dumps(s,ensure_ascii=False,indent=2)+'\n');print('passed',s.get('passed'),'error',s.get('error'));print([(d['key'],d['compared_glyphs'],len(d['missing']),len(d['mismatches'])) for d in s['documents']])

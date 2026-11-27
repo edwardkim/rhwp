@@ -349,13 +349,20 @@ impl TypesetEngine {
                     self.dpi,
                 )
             })?;
-        // 저장한 본문 좌표를 현재 단 영역 좌표로 한 번 변환한다.
-        placement.anchor_y -= st.current_zone_y_offset;
-        placement.table_top -= st.current_zone_y_offset;
-        placement.occupied_bottom -= st.current_zone_y_offset;
+        // 앞 실제 쪽이 소비한 원본 prefix는 이 단에서 다시 점유하지 않는다.
+        // 같은 변환 결과를 fit·예약·paint가 사용한다.
+        let consumed =
+            crate::renderer::typeset::stored_reset_ownership::consumed_prefix_before_float(
+                st, paragraphs, para_idx,
+            )
+            .map_or(0.0, |origin| hwpunit_to_px(origin, self.dpi));
+        let origin = st.current_zone_y_offset + consumed;
+        placement.anchor_y -= origin;
+        placement.table_top -= origin;
+        placement.occupied_bottom -= origin;
         placement.stored_successor_line_origin = placement
             .stored_successor_line_origin
-            .map(|origin| origin - st.current_zone_y_offset);
+            .map(|end| end - origin);
         (placement.table_top >= 0.0).then_some(placement)
     }
 

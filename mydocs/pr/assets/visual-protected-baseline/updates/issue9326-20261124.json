@@ -1,0 +1,39 @@
+{
+  "previous_table_sha256": "ae4559e3d3d04f60da7887a11e889bfb4f6c5fa86df1e6c47745e9f6bb796a68",
+  "table_sha256": "be050f801ed2f2152017357249f4b7c1068dc83c50347266d16599d61a1f4a5c",
+  "evidence_commit": "b5cca33aabe090f0b38172bcb10f82d404cd2efd",
+  "code_commit": "24ec51a6f9186d509d3f3285faa6f9f6e067af5e",
+  "producers": {
+    "native": "57ac54841729fb413fe3acda86cb077beaa584ba1e7bd5698723790ea7dc39b5"
+  },
+  "accepted_at": "2026-11-24T18:00:30.260001+09:00",
+  "conditions": 1,
+  "compared_rows": 17,
+  "declines": [],
+  "increases": [
+    {
+      "logical_key": "nested",
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "page": 2,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "nested",
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "page": 7,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "nested",
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "page": 17,
+      "previous": "99.98",
+      "current": "100.00"
+    }
+  ]
+}

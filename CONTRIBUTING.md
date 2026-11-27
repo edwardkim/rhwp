@@ -1079,9 +1079,10 @@ Print 출력해 비교하며, 기준 PDF 부족을 Visual Sweep 비해당 사유
 
 ### 한컴 PDF 와의 일치 검증에 대해
 
-조판 영향 PR은 변경 문서의 검증에 더해 편람 `--handbook-gate`와
+조판 영향 PR은 변경 문서의 검증에 더해 최종 head에서 편람 HWPX Native 383쪽과
 [기여자 공통 보호 검사](mydocs/manual/verification/visual_sweep_guide.md#기여자-공통-보호-검사)를
-제출 전 최종 head에서 실행해주세요. 공통 검사는 저장소에 있는 원본·Print PDF를 재사용하고
+확인해주세요. 동일 조건의 정본 보호 전쪽 결과를 제출할 수 있으면 그 TSV를 사용합니다.
+해당 결과가 없으면 `--handbook-gate`를 실행해주세요. 공통 검사는 저장소에 있는 원본·Print PDF를 재사용하고
 공개 웹폰트와 OS 로컬 글꼴을 사용할 수 있습니다. 비공개 한컴 OTF나 MCP 접근은 요구하지 않습니다.
 준비한 Native Skia 실행 파일과 같은 source의 fresh 최적화 WASM package를 전달하면
 4개 문서의 두 경로 전체 TSV와 대표 review·overlay가 생성됩니다. 전쪽 결과와 대표 이미지 두 종류를

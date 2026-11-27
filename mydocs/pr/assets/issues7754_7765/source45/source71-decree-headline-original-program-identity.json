@@ -1,0 +1,21 @@
+{
+  "reference_font": "INPILL+H2hdrM",
+  "page": 17,
+  "character": "별",
+  "reference_gid": 4,
+  "scope": "Read-only embedded glyph identity; no reference font creation or rendering supply.",
+  "files": [
+    {
+      "file": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-canonical-fonts-20261122/e50c7200521c-H2HDRM.TTF",
+      "sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+      "contours_equal": true,
+      "hmtx_equal": true
+    },
+    {
+      "file": "/opt/hnc/hoffice11/Shared/TTF/All/H2HDRM.TTF",
+      "sha256": "a3f57b4cb4292977479c1511b52997daadaf04c37f180ff05ab152c4d12ccaf5",
+      "contours_equal": false,
+      "hmtx_equal": true
+    }
+  ]
+}

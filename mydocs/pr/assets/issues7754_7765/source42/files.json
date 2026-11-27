@@ -1,0 +1,551 @@
+{
+  "recorded_at": "2026-11-22T06:40:02.278796+00:00",
+  "scope": "Completed Rust/public gate, diagnostic font trials, cleanup and CI only. Neither all protected conditions nor PR readiness is asserted.",
+  "files": [
+    {
+      "source": "output/pr-review/issue7754-nine/source38-rust-gates-state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source38-rust-gates-state.json",
+      "sha256": "7fc91386f52b4abba23704daeadfcfa2185c53f3d6147f5e63b6094868ba3763",
+      "bytes": 29261
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source38-public-visual-gate-state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source38-public-visual-gate-state.json",
+      "sha256": "a44a70973fa81653086aaa103e33a31c8a67386d730979000c7081aaa51ca358",
+      "bytes": 529
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source42-ordered-font-supply.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source42-ordered-font-supply.json",
+      "sha256": "33e4cfa0e86f8bb30a108343ce1c742a3d7612c317d122ad8f396a926694497a",
+      "bytes": 64352
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source42-qualified-protected-font-paths.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source42-qualified-protected-font-paths.json",
+      "sha256": "2f458644c18b829b4ee1db3c75a02b4f3f0a0712f8e84d0e87d2d9bbe732bf33",
+      "bytes": 690410
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source42-ordered-protected-native-state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source42-ordered-protected-native-state.json",
+      "sha256": "017077c3ccc95ea41771f6e1a4786543718703745ec2fd2843a1273c50609c8c",
+      "bytes": 274082
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source43-spjgt-focus-state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source43-spjgt-focus-state.json",
+      "sha256": "f988d67181564a217a7e99aca91447d2a0663815f23559ab560d68ad87676e75",
+      "bytes": 7240
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source44-spjgt-family-focus-state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source44-spjgt-family-focus-state.json",
+      "sha256": "b09b615cf3ed339b0392cd81e1496f1f39bb103d6468e842599b9afa8a4d99d0",
+      "bytes": 4354
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source45-decree-exact-ttf-focus-state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source45-decree-exact-ttf-focus-state.json",
+      "sha256": "d2a359b1e9743cff4eec2a6fd43abd6301bdb5ef727927a18381113267c19a57",
+      "bytes": 260062
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source46-spjgt-auto-focus-state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source46-spjgt-auto-focus-state.json",
+      "sha256": "6c9a334b125886e98b39560943427d97a0a6cc61f8d6af64ca0feabd541efd70",
+      "bytes": 140738
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source43-obsolete-original-png-cleanup.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source43-obsolete-original-png-cleanup.json",
+      "sha256": "48d352462a9a5d7c86374ff948dbf665e9c99c05ad336de492c3950c27b83802",
+      "bytes": 2543
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source43-obsolete-original-png-inventory.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source43-obsolete-original-png-inventory.json",
+      "sha256": "caf50be1a8a1c0181cd92c998fb9f1457500356f32f0feb991d8f32e989a4fe5",
+      "bytes": 2065253
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source40-merge-simulations.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source40-merge-simulations.json",
+      "sha256": "7b3ab3325704ab8539bee1e25f30ae865f7c9cff854baae4b02529281b4daa24",
+      "bytes": 975
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-candidate-prepare.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-candidate-prepare.txt",
+      "sha256": "cda0ec49556e516f036a77dcf7ab1099572fd4b68360ab22ae9845898ac681a5",
+      "bytes": 252270
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-manifest-policy.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-manifest-policy.txt",
+      "sha256": "6d8b566aa542d9074a5a041a0c88a30f78f6b0a1de1d0b8e3e2dd9712ac79448",
+      "bytes": 180
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-unit-tier-policy.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-unit-tier-policy.txt",
+      "sha256": "dee262356bb2ad3d464c331a7888262da2eb25f6799e90c8cc53dcdcdecce9fe",
+      "bytes": 118
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-format.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-format.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-native-unfiltered-lib.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-native-unfiltered-lib.txt",
+      "sha256": "ed8531108b885a134d946bcb6d586c5892cd451015005587e903e963b1c706bf",
+      "bytes": 343608,
+      "original_log": {
+        "commit": "c1ead7045fb0bc6793f140c8001410e317d3eb1a",
+        "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-native-unfiltered-lib.txt",
+        "sha256": "87526847a741316772c06a8c4d682027ab72efe40951b544414dd706d4c5ec5c"
+      }
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-native-cli_exit_codes_native.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-native-cli_exit_codes_native.txt",
+      "sha256": "841731b1cbc71337e34c51aa0fc688f2772de741e58b43f0c602187c0a7b5463",
+      "bytes": 892
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-native-issue_1144_native.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-native-issue_1144_native.txt",
+      "sha256": "dc409a6b4bc1d59cb8788f73413665999f5dd7c5bda4ae31cf640a63882469f4",
+      "bytes": 777
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-native-issue_2225_missing_picture_placeholder.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-native-issue_2225_missing_picture_placeholder.txt",
+      "sha256": "d1be7d2c6a3c1f05cff7dbad740624d88269552343f95aef575fff22640d94df",
+      "bytes": 1095
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-native-render_p37_direct_pdf_export.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-native-render_p37_direct_pdf_export.txt",
+      "sha256": "7507fad86974ac60ec719f661695290f93bbbb9573d9b1c2cdb1ae70c21e7736",
+      "bytes": 7467
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-native-issue_7950_pdf_paint.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-native-issue_7950_pdf_paint.txt",
+      "sha256": "ef48eb48c69805bb8486e4f3b497fe5ecebd3fc8d38037b2e37729a5d30aab7b",
+      "bytes": 1338
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-native-issue_2083_hide_fill_page_background.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-native-issue_2083_hide_fill_page_background.txt",
+      "sha256": "dd9c09889b81325d3f15c6406d98b4bebaaa999744bba4c07fdb43bdc383753d",
+      "bytes": 946
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-native-issue_2292_chart_png_clip.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-native-issue_2292_chart_png_clip.txt",
+      "sha256": "1e705662ff428c0bd80106b6fd6e77a7e300b43c2f90f6146d78c88d803e3ee3",
+      "bytes": 894
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-native-issue_2293_chart_png_text.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-native-issue_2293_chart_png_text.txt",
+      "sha256": "d398a7ac2b6d1bcbcb22e01ed8a27d950bf560c4ce8065b1367efdb4b6b89e9a",
+      "bytes": 1017
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-native-issue_7820_sixel_contract.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-native-issue_7820_sixel_contract.txt",
+      "sha256": "ac50a99db1667eafb7ebcf9876aa9765a6b4d86b86faa789562c69b1922a73a7",
+      "bytes": 1756
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-native-issue_8150_kitty_contract.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-native-issue_8150_kitty_contract.txt",
+      "sha256": "919b4e950f547cff7451ebab277622d33e6bad877e533b7519558d69ad3f1429",
+      "bytes": 1808
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-native-issue_4961_font_decision_trace.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-native-issue_4961_font_decision_trace.txt",
+      "sha256": "156e21de854278b4a845a643cb19d21276bf70779bdaf05455c9c3c1002cf217",
+      "bytes": 2560
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-native-issue_7902_original_frame_and_content.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-native-issue_7902_original_frame_and_content.txt",
+      "sha256": "c927bee54830e9f0cc70e698852b49f9bd1291f1a2c0bc6ee67008313d532856",
+      "bytes": 1909
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-native-issue_8160_hwp2022_paragraph_relations.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-native-issue_8160_hwp2022_paragraph_relations.txt",
+      "sha256": "67c3e7211a298329bffb445ca8726babe9aa59110b1c8757eb8afca78144eb9c",
+      "bytes": 1256
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-native-native_fractional_glyph_origin.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-native-native_fractional_glyph_origin.txt",
+      "sha256": "eef6c794b4abaa05c00edd720878449d1bb23a970ed0e080e299023e6a03aa97",
+      "bytes": 1827
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-native-skia_native_glyph_replay.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-native-skia_native_glyph_replay.txt",
+      "sha256": "c2e2b298292ea68a4c3d82e777dd183c2697ff8bc84b0e81e6ce8e2679f93753",
+      "bytes": 4827
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-native-issue_8153_opaque_mixed_axis_image_sampling.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-native-issue_8153_opaque_mixed_axis_image_sampling.txt",
+      "sha256": "13610747f16923cbf52e19396217fa161d835aa6ca47c6645542c76452da4445",
+      "bytes": 1132
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-native-issue_8153_print_glyph_geometry.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-native-issue_8153_print_glyph_geometry.txt",
+      "sha256": "f911fba163b2e578509e14e1cbf3302141dfdacff2d44748aa63ce97f8369d38",
+      "bytes": 2130
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-native-issue_8153_symbol_fallback.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-native-issue_8153_symbol_fallback.txt",
+      "sha256": "08f3a21c13ba388ac8bc37df2d02fa5050e048e0725d0623e1bf828160624a27",
+      "bytes": 1083
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-native-issue_536_native_region_cache.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-native-issue_536_native_region_cache.txt",
+      "sha256": "44e4caa0781bad6085310714f959c711eb081bfe3bd7087338b14bd03ff48975",
+      "bytes": 6944
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-native-skia_region_plan.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-native-skia_region_plan.txt",
+      "sha256": "11fc25364134ad07f38efa4e88b75244ef77f5d73a79eda0e6453dac91e3b168",
+      "bytes": 2183
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-native-skia_host_surface.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-native-skia_host_surface.txt",
+      "sha256": "f2753b43e343561c08a016e3011ba689649a01712bd10d7366b0b2d47912af34",
+      "bytes": 2626
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-focused-issue_7754_font_logical_family_ownership.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-focused-issue_7754_font_logical_family_ownership.txt",
+      "sha256": "f4d52f0379811d1c583d5c7cc4e8619f9b924a1313700fef7a90d11de92ce97c",
+      "bytes": 890
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-focused-oracle_page_count_baseline.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-focused-oracle_page_count_baseline.txt",
+      "sha256": "bbf964e80e1be1a3052ae5ca4221351a34614d5e8bb9e646b614b44d62b0d6d5",
+      "bytes": 3180
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-focused-issue_7754_original_frame_and_glyph_origins.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-focused-issue_7754_original_frame_and_glyph_origins.txt",
+      "sha256": "9bc243a00cbd812a1273452e8e779fd02ed6d149a32a8c4ec29be4b58d13c76d",
+      "bytes": 1065
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-focused-issue_8418_hft_outline_tracking.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-focused-issue_8418_hft_outline_tracking.txt",
+      "sha256": "6ee29990d584dd7ee7e7aa6859cd2b424bb64aa90ad601e4ee8bbb37bebc8f75",
+      "bytes": 1209
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-focused-issue_8225_group_child_ctrl_data.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-focused-issue_8225_group_child_ctrl_data.txt",
+      "sha256": "01fd44e67fe226cd56045d181dee93c0ec044d073232072b7bf06506e386a495",
+      "bytes": 1422
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-workspace-clippy.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-workspace-clippy.txt",
+      "sha256": "18e6c1e87fe6201b9c7e35bacf326a696958327ad869f01966c3fe2ab2c606d7",
+      "bytes": 350
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-wasm-clippy.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-wasm-clippy.txt",
+      "sha256": "dcef173b80062dee5cc5778c7bcca593a594b0faf1692e777e5b3862dd1c3682",
+      "bytes": 138
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-workspace-build.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-workspace-build.txt",
+      "sha256": "55518fbccbb7075443a5d61b5cbfa190a35da7d007b22d56818e97658631ef8d",
+      "bytes": 350
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-rust-all-rust.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-all-rust.txt",
+      "sha256": "ade49bbfd54f14cace3292c1054a8e18726721dff7fc1a4f4d8e1e5c3d6a85bc",
+      "bytes": 1963346
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source43-spjgt-focus/native/before/chemical/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source43-spjgt-focus/0/silhouette.tsv",
+      "sha256": "c8f21984af5366a3231dd9ac98a5ee0830af4a7994816ee40de5eb8c4282bef9",
+      "bytes": 171
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source43-spjgt-native-before.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source43-spjgt-focus/0/render.txt",
+      "sha256": "7f2ed781db062970cfe202f276768e0b29c7243d317d066c943041c528ed4355",
+      "bytes": 8285
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source43-spjgt-focus/native/before/chemical/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source43-spjgt-focus/0/silhouette_manifest.json",
+      "sha256": "b7624ac407ccd982a58176ec8130ef224261ca233e6ba818457f0f7073918087",
+      "bytes": 17848
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source43-spjgt-focus/native/after/chemical/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source43-spjgt-focus/1/silhouette.tsv",
+      "sha256": "c8f21984af5366a3231dd9ac98a5ee0830af4a7994816ee40de5eb8c4282bef9",
+      "bytes": 171
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source43-spjgt-native-after.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source43-spjgt-focus/1/render.txt",
+      "sha256": "e073d9958f3f2713add97e064c2259e629d42baf34db5213f59890861aa35bc6",
+      "bytes": 8269
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source43-spjgt-focus/native/after/chemical/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source43-spjgt-focus/1/silhouette_manifest.json",
+      "sha256": "0585f488ad4c9c4e34d35a5c375e282bc5d2317f0a14b12a1d8f6f74af5cc076",
+      "bytes": 17832
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source43-spjgt-focus/wasm/before/chemical/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source43-spjgt-focus/2/silhouette.tsv",
+      "sha256": "840f2b98b6c98db426d6ca968593b839ebf627165ef4526f2c122951a1f200fc",
+      "bytes": 171
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source43-spjgt-wasm-before.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source43-spjgt-focus/2/render.txt",
+      "sha256": "ac29f0d4879430d8906e699edc1b06ddf5a010e2457287266befffeae8f8953b",
+      "bytes": 2592
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source43-spjgt-focus/wasm/before/chemical/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source43-spjgt-focus/2/silhouette_manifest.json",
+      "sha256": "8520555e320fed6df80f7bced823f3b6f32b7430e962d56c5580c8b6ae4d1e69",
+      "bytes": 18211
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source43-spjgt-focus/wasm/after/chemical/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source43-spjgt-focus/3/silhouette.tsv",
+      "sha256": "5f1800e6369d9ff26053a272da032dd4766099eee86a1d9bd1e636003d076f11",
+      "bytes": 171
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source43-spjgt-wasm-after.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source43-spjgt-focus/3/render.txt",
+      "sha256": "aa7012b11fd70c265d9fe84f4fb195f43c53b6d58fc66de4b0ec602c3b29bdce",
+      "bytes": 2455
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source43-spjgt-focus/wasm/after/chemical/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source43-spjgt-focus/3/silhouette_manifest.json",
+      "sha256": "8d032c2b3aaf72c0f7f73a01d131af1b6c8c68340146f63d638b89384181e8f5",
+      "bytes": 18196
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source44-spjgt-family-focus/native/after_family/chemical/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source44-spjgt-family-focus/0/silhouette.tsv",
+      "sha256": "c8f21984af5366a3231dd9ac98a5ee0830af4a7994816ee40de5eb8c4282bef9",
+      "bytes": 171
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source44-spjgt-family-native-after_family.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source44-spjgt-family-focus/0/render.txt",
+      "sha256": "4576f3cc97fe35a07aa9a267004b20e5941f3f9597549c2c10d5f6598eddb8f2",
+      "bytes": 8388
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source44-spjgt-family-focus/native/after_family/chemical/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source44-spjgt-family-focus/0/silhouette_manifest.json",
+      "sha256": "b37be8c6b7e7096de382f795b88ea8f89fe779362ed1ae9e32a93b5563d12bf7",
+      "bytes": 17951
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source44-spjgt-family-focus/wasm/after_family/chemical/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source44-spjgt-family-focus/1/silhouette.tsv",
+      "sha256": "5f1800e6369d9ff26053a272da032dd4766099eee86a1d9bd1e636003d076f11",
+      "bytes": 171
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source44-spjgt-family-wasm-after_family.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source44-spjgt-family-focus/1/render.txt",
+      "sha256": "9ca546a6e0f9e07013af049f30f4e850893f5f4eabbfcda47252abd942f5457b",
+      "bytes": 2581
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source44-spjgt-family-focus/wasm/after_family/chemical/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source44-spjgt-family-focus/1/silhouette_manifest.json",
+      "sha256": "2c7fd6ea02a8dc5eafc7ee1f6033ce7048637aa59866d6caad199e9f90591ff8",
+      "bytes": 18315
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source45-decree-exact-ttf-focus/native/base/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source45-decree-exact-ttf-focus/0/silhouette.tsv",
+      "sha256": "17748deb1b756d5b3343842430545520b11833a21cd9640450922b424ded4307",
+      "bytes": 187
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source45-decree-native-base.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source45-decree-exact-ttf-focus/0/render.txt",
+      "sha256": "5f9e16cbb41fc219329d3dc13e7e5bc158beb6d9dcabd7d280623015f4ab69bd",
+      "bytes": 3202
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source45-decree-exact-ttf-focus/native/base/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source45-decree-exact-ttf-focus/0/silhouette_manifest.json",
+      "sha256": "8f34c27357f1c7baf421ca229e68ee6bb6c492443ce62aa73b8db810db322f81",
+      "bytes": 8727
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source45-decree-exact-ttf-focus/native/candidate/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source45-decree-exact-ttf-focus/1/silhouette.tsv",
+      "sha256": "17748deb1b756d5b3343842430545520b11833a21cd9640450922b424ded4307",
+      "bytes": 187
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source45-decree-native-candidate.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source45-decree-exact-ttf-focus/1/render.txt",
+      "sha256": "ad04f896b4f057817d0fd694a21a6c9fe12a714bb3bdc63a1cd34a4044faf532",
+      "bytes": 3247
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source45-decree-exact-ttf-focus/native/candidate/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source45-decree-exact-ttf-focus/1/silhouette_manifest.json",
+      "sha256": "1e55f1c5d5910ed5a4694aea5c0350fef1de19d76e048cc2c6451d65b9692c14",
+      "bytes": 8777
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source45-decree-exact-ttf-focus/wasm/base/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source45-decree-exact-ttf-focus/2/silhouette.tsv",
+      "sha256": "00fb946b28b074852fbee58d200aafd9ec790e17c2dd1b2b3302a57076f3b161",
+      "bytes": 187
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source45-decree-wasm-base.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source45-decree-exact-ttf-focus/2/render.txt",
+      "sha256": "2cceed6e40341c8369534d32cd755056df2de2a70313e35c808d52ff92054053",
+      "bytes": 2753
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source45-decree-exact-ttf-focus/wasm/base/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source45-decree-exact-ttf-focus/2/silhouette_manifest.json",
+      "sha256": "9a881a33e115a8b6f7f8895f024189a585d3c2453ca828df2d6df72b9e4a0708",
+      "bytes": 9170
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source45-decree-exact-ttf-focus/wasm/candidate/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source45-decree-exact-ttf-focus/3/silhouette.tsv",
+      "sha256": "00fb946b28b074852fbee58d200aafd9ec790e17c2dd1b2b3302a57076f3b161",
+      "bytes": 187
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source45-decree-wasm-candidate.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source45-decree-exact-ttf-focus/3/render.txt",
+      "sha256": "4c323de49c9a3d884bfc7b61d0a1afd8ee7fdb4175046d3df6697ed4ea97e768",
+      "bytes": 2803
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source45-decree-exact-ttf-focus/wasm/candidate/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source45-decree-exact-ttf-focus/3/silhouette_manifest.json",
+      "sha256": "8fd9bab8d0f6ef976c7a387a9f39074272421925cc4b7525fdfd307b8a0aa079",
+      "bytes": 9220
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source46-spjgt-auto-focus/native/chemical/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source46-spjgt-auto-focus/0/silhouette.tsv",
+      "sha256": "7bac676fac0e02d78fced719d2345e34119ace499d40009afa33d6310741bdc8",
+      "bytes": 175
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source46-spjgt-auto-native.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source46-spjgt-auto-focus/0/render.txt",
+      "sha256": "d7811b82d2b4b234d928347b8520908a4d1c48f73ec46e90181f7482bac0fe98",
+      "bytes": 8144
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source46-spjgt-auto-focus/native/chemical/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source46-spjgt-auto-focus/0/silhouette_manifest.json",
+      "sha256": "fc415c689f60ecd4d9f6957cbe7cd294b7d6b86f15381b93e99914e41f45af7c",
+      "bytes": 17630
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source46-spjgt-auto-focus/wasm/chemical/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source46-spjgt-auto-focus/1/silhouette.tsv",
+      "sha256": "d6c684dbe08b952217482bf6fe2bdaee485a476bb86d7ae07d700dfbafff0230",
+      "bytes": 171
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source46-spjgt-auto-wasm.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source46-spjgt-auto-focus/1/render.txt",
+      "sha256": "4d5517e03dfbb69b8a6f35bbd61eca33527c1c3bffe08fbfe30b7e2981572537",
+      "bytes": 2446
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source46-spjgt-auto-focus/wasm/chemical/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source46-spjgt-auto-focus/1/silhouette_manifest.json",
+      "sha256": "209cca93c910796df9ea99bc08af08505fdc247851c6e0b9dc28069ed5114659",
+      "bytes": 17962
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source43-spjgt-direct-review/regions.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/spjgt-direct-review/regions.json",
+      "sha256": "fa9c8e59d6847b9ac5836b195c4fbcdb649919082cb138708e80a16bc7856df3",
+      "bytes": 2706
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source43-spjgt-direct-review/chemical-p061-4x.png",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/spjgt-direct-review/chemical-p061-4x.png",
+      "sha256": "c38b2a744e0e3527e17ce8d9cd609661cf481d7b2c8f25f18b4ad90bcf4be0bc",
+      "bytes": 6902
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source43-spjgt-direct-review/chemical-p074-4x.png",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/spjgt-direct-review/chemical-p074-4x.png",
+      "sha256": "e44081063f60bf4e8faf42248ded34c722fcfdbbf26e5f1acc740c8f214c7a7b",
+      "bytes": 6834
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source43-spjgt-direct-review/chemical-p091-4x.png",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/spjgt-direct-review/chemical-p091-4x.png",
+      "sha256": "4f8d3c415f0b9d4786c29bd38b9e949a73327ef8c8829455761d98289e683b8f",
+      "bytes": 8521
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source44-pdf-glyph-diagnostic/result.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/pdf-glyph-diagnostic/result.json",
+      "sha256": "3fec5eaf14a75cf3883832cb460192e1f6738b2cc32a57f539771e399bd79e45",
+      "bytes": 435
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source44-pdf-glyph-diagnostic/chemical-p061-pdfium-mupdf-4x.png",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/pdf-glyph-diagnostic/chemical-p061-pdfium-mupdf-4x.png",
+      "sha256": "405c4c2a4eaadc66754465d0eff7dee2de7deaba6ec5f538cf25cddd1a233dcc",
+      "bytes": 3888
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source38-contributor-gate.log",
+      "path": "mydocs/pr/assets/issues7754_7765/source42/source38-contributor-gate.txt",
+      "sha256": "14cde9c5143d8c61450f2ba99b5eb043aa70a59ce114860fe0f4aec726561446",
+      "bytes": 1276
+    }
+  ]
+}

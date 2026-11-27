@@ -1,0 +1,102 @@
+{
+  "started": 1795327649.1811445,
+  "authorization": "User requested trying SPJGT.otf in place of unavailable RHWPIndependentHFTSourceSymbols.",
+  "source_font": "/home/tsjang/.local/share/fonts/hft-cmap-v2/SPJGT.otf",
+  "source_font_sha256": "6f6cc714a13a2a68f4f9446c082ff7e6514d3088b14a954edf82933a0417b51a",
+  "private_copy": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source43-spjgt/SPJGT.otf",
+  "copy_sha256": "6f6cc714a13a2a68f4f9446c082ff7e6514d3088b14a954edf82933a0417b51a",
+  "postscript_name": "HYJunggothic-SPJGT",
+  "family": "HY Junggothic",
+  "existing_unicode_coverage": {
+    "U+2022": null,
+    "U+2027": null,
+    "U+25CB": "hft343B",
+    "U+FF5E": "hft340D"
+  },
+  "scope": "Three boundary pages only. Preserve original TTF/TTC choices, all other mappings, input/PDF/96DPI/Print and actual frozen producer. Replace only missing explicit CFF glyph fallback family. No cmap/outline/advance edits.",
+  "results": [
+    {
+      "backend": "native",
+      "role": "after_family",
+      "exit_code": 0,
+      "seconds": 20.502199860056862,
+      "source_head": "68b4f6bdfda465aaafd0634c587cd6a17252fed6",
+      "environment": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source43-spjgt/chemical-native-spjgt-family.json",
+      "environment_sha256": "46d69ea891fa638b609be1a9127d44b2d0bf03ab8f4ec0e92c0355c575dc02df",
+      "changed_missing_fallbacks": [
+        "HYGothic-Medium",
+        "HY Sinmyeongjo"
+      ],
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source44-spjgt-family-focus/native/after_family/chemical/silhouette.tsv",
+      "tsv_sha256": "c8f21984af5366a3231dd9ac98a5ee0830af4a7994816ee40de5eb8c4282bef9",
+      "rows": [
+        {
+          "page": "61",
+          "tolerant_content_match_percent": "99.98",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.98",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "74",
+          "tolerant_content_match_percent": "99.86",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.86",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "91",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source44-spjgt-family-native-after_family.txt"
+    },
+    {
+      "backend": "wasm",
+      "role": "after_family",
+      "exit_code": 0,
+      "seconds": 54.72680795285851,
+      "source_head": "68b4f6bdfda465aaafd0634c587cd6a17252fed6",
+      "environment": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source43-spjgt/chemical-wasm-spjgt-family.json",
+      "environment_sha256": "dd796487d56c245e847a614827eb1d280c7a01ee022969c9b89af16f9fc41a09",
+      "changed_missing_fallbacks": [
+        "HYGothic-Medium",
+        "HY Sinmyeongjo"
+      ],
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source44-spjgt-family-focus/wasm/after_family/chemical/silhouette.tsv",
+      "tsv_sha256": "5f1800e6369d9ff26053a272da032dd4766099eee86a1d9bd1e636003d076f11",
+      "rows": [
+        {
+          "page": "61",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "74",
+          "tolerant_content_match_percent": "99.88",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.88",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "91",
+          "tolerant_content_match_percent": "99.96",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.96",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source44-spjgt-family-wasm-after_family.txt"
+    }
+  ],
+  "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+  "pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+  "running": null,
+  "complete_coverage": true,
+  "ended": 1795327724.5133345
+}

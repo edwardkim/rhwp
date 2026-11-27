@@ -1,0 +1,125 @@
+[
+  {
+    "original_pr": 9289,
+    "input": "samples/issue8495/council-badge-para-float-sibling-origin.hwp",
+    "input_sha256": "edc9850dabb2278e5972dd2feacd4db37874f087766cec56e55f05bfffb4657c",
+    "retained_pdf": "pdf/issue8495/council-badge-para-float-sibling-origin-2024.pdf",
+    "sha256": "c1e9822000652895105c7d331bc9a17e8223a06d91621bec787398b4569a8821",
+    "bytes": 52801,
+    "comparison_pdf_sha256": "c1e9822000652895105c7d331bc9a17e8223a06d91621bec787398b4569a8821",
+    "requested_engine": 2024,
+    "new_print_pdfinfo": [
+      "Creator:         Hwp 2024 13.0.0.3901",
+      "Producer:        Hancom PDF 1.3.0.550",
+      "Pages:           1",
+      "Page size:       595 x 841 pts (A4)",
+      "PDF version:     1.4"
+    ],
+    "job_id": "af60d35c-26c6-436c-a4d1-d75ebb907826",
+    "engine": "2024",
+    "elapsed_seconds": 15
+  },
+  {
+    "original_pr": 9305,
+    "input": "samples/issue9290/labor-townhall-table-opened-page.hwpx",
+    "input_sha256": "4a0d235391c59e2f22dc79e51c08fd0f18660a6d64b5747b8998e603d52078d4",
+    "retained_pdf": "pdf/issue9290/labor-townhall-table-opened-page-2024.pdf",
+    "sha256": "1501760ba54d4569721b7e1c90aa05d05d635acbcfa9e727d788c48629c7a1ed",
+    "bytes": 218950,
+    "comparison_pdf_sha256": "1501760ba54d4569721b7e1c90aa05d05d635acbcfa9e727d788c48629c7a1ed",
+    "requested_engine": 2024,
+    "new_print_pdfinfo": [
+      "Creator:         Hwp 2024 13.0.0.3901",
+      "Producer:        Hancom PDF 1.3.0.550",
+      "Pages:           3",
+      "Page size:       595 x 841 pts (A4)",
+      "PDF version:     1.4"
+    ],
+    "job_id": "07dba619-a3d4-4177-9f1a-bc0cc4441459",
+    "engine": "2024",
+    "elapsed_seconds": 32
+  },
+  {
+    "original_pr": 9311,
+    "input": "samples/issue9272/trade-remedy-decree-table-tail-empty-lines.hwpx",
+    "input_sha256": "37624fffaa34704360298c9edfc3d636f5a0fabd0db040a7bc6a161b73a1301d",
+    "retained_pdf": "pdf/issue9272/trade-remedy-decree-table-tail-empty-lines-2024.pdf",
+    "sha256": "25f1443410590604f527e07739b0b33f3f34ba5d207e85b3f2fccac87c859fc7",
+    "bytes": 150150,
+    "comparison_pdf_sha256": "344a56d7c03631a6ad9d97d482b152223ff8e3b5e0b30bcaa2d3ad3edace25f6",
+    "requested_engine": 2024,
+    "new_print_pdfinfo": [
+      "Creator:         Hwp 2024 13.0.0.3901",
+      "Producer:        Hancom PDF 1.3.0.550",
+      "Pages:           7",
+      "Page size:       595 x 841 pts (A4)",
+      "PDF version:     1.4"
+    ],
+    "reference_raster_equality": {
+      "existing_pdf_sha256": "25f1443410590604f527e07739b0b33f3f34ba5d207e85b3f2fccac87c859fc7",
+      "mcp_pdf_sha256": "344a56d7c03631a6ad9d97d482b152223ff8e3b5e0b30bcaa2d3ad3edace25f6",
+      "dpi": 96,
+      "pages": [
+        {
+          "page": 1,
+          "legacy_raster": "786ad3e8c4dacd864eee52647032731bc0a2afb2a289203caf91f5ccaaed991a",
+          "new_raster": "786ad3e8c4dacd864eee52647032731bc0a2afb2a289203caf91f5ccaaed991a"
+        },
+        {
+          "page": 2,
+          "legacy_raster": "7f4072d82576bc6a0975cfa4b9f1270ba7f9705c55770cc5da89e87498f17585",
+          "new_raster": "7f4072d82576bc6a0975cfa4b9f1270ba7f9705c55770cc5da89e87498f17585"
+        },
+        {
+          "page": 3,
+          "legacy_raster": "bb983e5962c95ecbabccce396f4c86a8e2d5ee5b59c15aec81ea442e8655a6bd",
+          "new_raster": "bb983e5962c95ecbabccce396f4c86a8e2d5ee5b59c15aec81ea442e8655a6bd"
+        },
+        {
+          "page": 4,
+          "legacy_raster": "e5775cecd84712379cc53ef481bf998c30b19e7d3eb520b2bcca22c202cbc89f",
+          "new_raster": "e5775cecd84712379cc53ef481bf998c30b19e7d3eb520b2bcca22c202cbc89f"
+        },
+        {
+          "page": 5,
+          "legacy_raster": "363545f98594da8fc7b7892dae638559ca162175a92b36d8ffb2602b7ee5ebbb",
+          "new_raster": "363545f98594da8fc7b7892dae638559ca162175a92b36d8ffb2602b7ee5ebbb"
+        },
+        {
+          "page": 6,
+          "legacy_raster": "570c94c068a436fa1423afb33f08982562903a70a0a1ae35102fb943efe9b1a4",
+          "new_raster": "570c94c068a436fa1423afb33f08982562903a70a0a1ae35102fb943efe9b1a4"
+        },
+        {
+          "page": 7,
+          "legacy_raster": "3e0792a8043b6d11b7e578b944f4018ec35abb23c14ffe4e7ffb99bcb8c1e134",
+          "new_raster": "3e0792a8043b6d11b7e578b944f4018ec35abb23c14ffe4e7ffb99bcb8c1e134"
+        }
+      ],
+      "all_identical": true
+    },
+    "job_id": "8c7fb76f-6281-4d83-a974-0cce8bdaab9a",
+    "engine": "2024",
+    "elapsed_seconds": 15
+  },
+  {
+    "original_pr": 9324,
+    "input": "samples/issue2439_zero_offset_coanchored_float_exclusion.hwp",
+    "input_sha256": "fbe318ac2fb20e42612571fe384567259b4785bc0375766c122cbc31cad828ca",
+    "retained_pdf": "pdf/issue2439/issue2439_zero_offset_coanchored_float_exclusion-2020.pdf",
+    "sha256": "4cbc03d073d9231bcfe6ad59ecbff4d9693a09e103fb2430031c26d9dabe221c",
+    "bytes": 16609,
+    "comparison_pdf_sha256": "4cbc03d073d9231bcfe6ad59ecbff4d9693a09e103fb2430031c26d9dabe221c",
+    "requested_engine": 2020,
+    "new_print_pdfinfo": [
+      "Creator:         Hwp 2020 11.0.0.9136",
+      "Producer:        Hancom PDF 1.3.0.550",
+      "Pages:           1",
+      "Page size:       595 x 841 pts (A4)",
+      "PDF version:     1.4"
+    ],
+    "job_id": "fb423010-0368-47c4-8b45-7c506140cd56",
+    "engine": "2020",
+    "elapsed_seconds": 12
+  }
+]

@@ -1,0 +1,168 @@
+{
+  "source": "28a6afc1ebe3e9873605f2d306ca094b422abf24",
+  "wasm_sha256": "54abaa50f0ba7c60024692b6ab81836fa1382d3053b10fb9a634f542832bc6da",
+  "scope": "14 pages below the historical floor on both devel and the candidate in the paired Linux run. Alternative platforms were tested on devel using the same document, reference, ordered font catalogue and Print Canvas settings.",
+  "metric": "96 DPI, 2px raw silhouette, historical display precision",
+  "linux156": "Chrome/156.0.8078.47",
+  "linux157": "Google Chrome for Testing 157.0.8103.80",
+  "linux157_binary_sha256": "c9ae97e52e944f83172f7b1cb5e7dfbae848cf572e7a53c6031fc335a1f33d42",
+  "windows157": "Windows 11, Chrome/157.0.8103.80 (browser runtime receipt and chrome.exe product version)",
+  "windows157_launcher_sha256": "9827861428755ccfa7558d314e1de677a759be5054b684da0760fa84ba690c56",
+  "decree_recorded_browser_source": "mydocs/verification/protected-font-supply/records/integrated-protected-validation.json",
+  "pages": [
+    {
+      "document": "decree",
+      "page": 1,
+      "floor": "100.00",
+      "linux_156_raw": "99.99",
+      "linux_157_raw": "99.99",
+      "linux_156_and_157_png_sha256": "676ee8b272c71ef31f0f76daecdd0d664bcccbc2cecb090ae7135c0e097a9749",
+      "windows_157_raw": "99.66",
+      "windows_157_png_sha256": "d6e9eac12e36ba098eb39582c184daab8298a301a3e03458f789094e271b0fbd",
+      "windows_same_pixels_as_linux": false
+    },
+    {
+      "document": "decree",
+      "page": 8,
+      "floor": "100.00",
+      "linux_156_raw": "99.98",
+      "linux_157_raw": "99.98",
+      "linux_156_and_157_png_sha256": "6c04df83d33ceac29863d0da058b023e7196492a7778aa2a004748e4f1327089",
+      "windows_157_raw": "100.00",
+      "windows_157_png_sha256": "71e8d2768720e4dec647693ddb2f820a38eb57f8e7e07fdce8273390a284bfba",
+      "windows_same_pixels_as_linux": false
+    },
+    {
+      "document": "decree",
+      "page": 29,
+      "floor": "100.00",
+      "linux_156_raw": "99.95",
+      "linux_157_raw": "99.95",
+      "linux_156_and_157_png_sha256": "93e4c9c8953478f5a99d338290cc4930cd2322a16fbe269ccdbc3136acb564dd",
+      "windows_157_raw": "100.00",
+      "windows_157_png_sha256": "274651307b80338c4ec6646ddb152fd20bd32c31f57361e7e390928b0452e04d",
+      "windows_same_pixels_as_linux": false
+    },
+    {
+      "document": "decree",
+      "page": 39,
+      "floor": "100.00",
+      "linux_156_raw": "99.98",
+      "linux_157_raw": "99.98",
+      "linux_156_and_157_png_sha256": "80a2e711cfa57b82e27111ab0fed5e478457d09a81b40af1c3447cd01f96fa41",
+      "windows_157_raw": "100.00",
+      "windows_157_png_sha256": "f1f61aa3d9a069e62ad92379fdccff7eb439c559c45fea76cec59d4826402298",
+      "windows_same_pixels_as_linux": false
+    },
+    {
+      "document": "decree",
+      "page": 46,
+      "floor": "100.00",
+      "linux_156_raw": "99.96",
+      "linux_157_raw": "99.96",
+      "linux_156_and_157_png_sha256": "cc8afe8a44db1b11b67df4ba9d808f3091e6a3365de7456ccca2ddabe04c9708",
+      "windows_157_raw": "100.00",
+      "windows_157_png_sha256": "47aab26b72cf26f4d9f3022d9862ca53df7d00418405979740746db11f16a893",
+      "windows_same_pixels_as_linux": false
+    },
+    {
+      "document": "decree",
+      "page": 54,
+      "floor": "100.00",
+      "linux_156_raw": "99.87",
+      "linux_157_raw": "99.87",
+      "linux_156_and_157_png_sha256": "5de3b4933736fa7967a52cdb754f65f0f1d3e9a7c66441670349cffbe0414c12",
+      "windows_157_raw": "100.00",
+      "windows_157_png_sha256": "35080de7bbcc01d0d9c4f84f7d6b1a40f8ed31e4fa29d587e322619078e25432",
+      "windows_same_pixels_as_linux": false
+    },
+    {
+      "document": "decree",
+      "page": 63,
+      "floor": "100.00",
+      "linux_156_raw": "99.99",
+      "linux_157_raw": "99.99",
+      "linux_156_and_157_png_sha256": "1f277ec46b15580a52fc2a075201103a6cd7309e0374e88a669df241b6101f35",
+      "windows_157_raw": "100.00",
+      "windows_157_png_sha256": "1ae55e3b5e22152ad51dacf3f2ccdb41385cec4cac6fd815c56d348a25d10b5b",
+      "windows_same_pixels_as_linux": false
+    },
+    {
+      "document": "decree",
+      "page": 64,
+      "floor": "100.00",
+      "linux_156_raw": "99.99",
+      "linux_157_raw": "99.99",
+      "linux_156_and_157_png_sha256": "06a46b01f1e5eaaf522d98a1912323499f92de29477d941feee960a7a43d2290",
+      "windows_157_raw": "100.00",
+      "windows_157_png_sha256": "ddb3e2358bfbd1367ce056b2dd2f3138873875a744b1badb7a3d96337bf3dc8e",
+      "windows_same_pixels_as_linux": false
+    },
+    {
+      "document": "nested",
+      "page": 17,
+      "floor": "100.00",
+      "linux_156_raw": "99.98",
+      "linux_157_raw": "99.98",
+      "linux_156_and_157_png_sha256": "b768062b9a514d9ae3bc301a1de97abab18b96bcd2e5e96f9154ae11157dfb26",
+      "windows_157_raw": "100.00",
+      "windows_157_png_sha256": "aba822750f2c122bc63e779e99e596ad4aabd10dd7661016fd4de453b53f7a2b",
+      "windows_same_pixels_as_linux": false
+    },
+    {
+      "document": "sample10",
+      "page": 81,
+      "floor": "100.00",
+      "linux_156_raw": "99.99",
+      "linux_157_raw": "99.99",
+      "linux_156_and_157_png_sha256": "7804b31ef3e07036b514a81217dc07d6aa901dc8b271a4b0e9f28e41b0e40b92",
+      "windows_157_raw": "99.99",
+      "windows_157_png_sha256": "455034e6be9185005e1e6419f16d7da28e13aab43ea8a778e1d1b448f0a0b487",
+      "windows_same_pixels_as_linux": false
+    },
+    {
+      "document": "sample10",
+      "page": 351,
+      "floor": "100.00",
+      "linux_156_raw": "99.99",
+      "linux_157_raw": "99.99",
+      "linux_156_and_157_png_sha256": "8c69b7ad3d9810ef867dc40d3173281fa59be3b3ae448b06e34daa7ae2026a2f",
+      "windows_157_raw": "99.99",
+      "windows_157_png_sha256": "653c0249d3ee9f4b40669d25e287f72aaa07c99accfd4c2115a57072b0fc49b5",
+      "windows_same_pixels_as_linux": false
+    },
+    {
+      "document": "spec13",
+      "page": 16,
+      "floor": "100.00",
+      "linux_156_raw": "99.97",
+      "linux_157_raw": "99.97",
+      "linux_156_and_157_png_sha256": "80a0be2434a185cd6d0752bccf48254aa76956dbb08bd88b996ce5e9566f477d",
+      "windows_157_raw": "99.96",
+      "windows_157_png_sha256": "a0d3b40b0f4cd839351cc9f8211835d4319965e3279e0ded30d51b27fb951e9b",
+      "windows_same_pixels_as_linux": false
+    },
+    {
+      "document": "spec13",
+      "page": 17,
+      "floor": "100.00",
+      "linux_156_raw": "99.99",
+      "linux_157_raw": "99.99",
+      "linux_156_and_157_png_sha256": "da86b6a0b7374c672b65de352c9c5f95561c37b388abd8293c348318e829d86e",
+      "windows_157_raw": "99.99",
+      "windows_157_png_sha256": "91fb59221e2378c8de4f3986a3346439f717d943c9d6ce9e04322e6a41517a5e",
+      "windows_same_pixels_as_linux": false
+    },
+    {
+      "document": "yeongwol",
+      "page": 3,
+      "floor": "100.00",
+      "linux_156_raw": "99.99",
+      "linux_157_raw": "99.99",
+      "linux_156_and_157_png_sha256": "1238525ed567e516993457ed366940def97036f73840a0ec81f05d100b8ca523",
+      "windows_157_raw": "99.95",
+      "windows_157_png_sha256": "5f840454c1684777a93c54339428541eaa8954059d604b7ac21e4c5f3c0836c0",
+      "windows_same_pixels_as_linux": false
+    }
+  ]
+}

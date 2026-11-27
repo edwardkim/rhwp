@@ -52,6 +52,7 @@ use crate::serializer::hwpx::serialize_hwpx;
 use crate::serializer::SerializeError;
 
 mod export_cache;
+pub(crate) use export_cache::project_body_paragraphs as project_exported_body_line_caches;
 pub(crate) use export_cache::project_paragraphs as project_exported_line_caches;
 pub use export_cache::{diff_exported_hwp_documents, diff_exported_hwpx_documents};
 
@@ -772,16 +773,20 @@ fn is_hwpx_to_hwp_incomparable(d: &IrDifference) -> bool {
 ///
 /// [`Paragraph::remove_control_slot_like_hwpx_export`]: crate::model::paragraph::Paragraph::remove_control_slot_like_hwpx_export
 pub fn hwpx_export_expected_document(doc: &Document) -> Document {
+    let legacy_symbols = doc.uses_legacy_body_symbols();
     let mut expected = doc.clone();
     for section in &mut expected.sections {
         for para in &mut section.paragraphs {
-            normalize_paragraph_like_hwpx_export(para);
+            normalize_paragraph_like_hwpx_export(para, legacy_symbols);
         }
     }
     expected
 }
 
-fn normalize_paragraph_like_hwpx_export(para: &mut crate::model::paragraph::Paragraph) {
+fn normalize_paragraph_like_hwpx_export(
+    para: &mut crate::model::paragraph::Paragraph,
+    legacy_symbols: bool,
+) {
     use crate::model::control::Control;
 
     for control in &mut para.controls {
@@ -790,13 +795,13 @@ fn normalize_paragraph_like_hwpx_export(para: &mut crate::model::paragraph::Para
                 for cell in &mut table.cells {
                     cell.paragraphs
                         .iter_mut()
-                        .for_each(normalize_paragraph_like_hwpx_export);
+                        .for_each(|p| normalize_paragraph_like_hwpx_export(p, legacy_symbols));
                 }
                 if let Some(caption) = &mut table.caption {
                     caption
                         .paragraphs
                         .iter_mut()
-                        .for_each(normalize_paragraph_like_hwpx_export);
+                        .for_each(|p| normalize_paragraph_like_hwpx_export(p, legacy_symbols));
                 }
             }
             Control::Picture(picture) => {
@@ -804,42 +809,41 @@ fn normalize_paragraph_like_hwpx_export(para: &mut crate::model::paragraph::Para
                     caption
                         .paragraphs
                         .iter_mut()
-                        .for_each(normalize_paragraph_like_hwpx_export);
+                        .for_each(|p| normalize_paragraph_like_hwpx_export(p, legacy_symbols));
                 }
             }
-            Control::Shape(shape) => {
-                if let Some(text_box) = shape_text_box_mut(shape) {
-                    text_box
-                        .paragraphs
-                        .iter_mut()
-                        .for_each(normalize_paragraph_like_hwpx_export);
-                }
-                if let Some(caption) = shape_caption_mut(shape) {
-                    caption
-                        .paragraphs
-                        .iter_mut()
-                        .for_each(normalize_paragraph_like_hwpx_export);
-                }
-            }
+            Control::Shape(shape) => normalize_shape_like_hwpx_export(shape, legacy_symbols),
+            Control::Field(field) => field
+                .memo_paragraphs
+                .iter_mut()
+                .for_each(|p| normalize_paragraph_like_hwpx_export(p, legacy_symbols)),
             Control::Footnote(note) => note
                 .paragraphs
                 .iter_mut()
-                .for_each(normalize_paragraph_like_hwpx_export),
+                .for_each(|p| normalize_paragraph_like_hwpx_export(p, legacy_symbols)),
             Control::Endnote(note) => note
                 .paragraphs
                 .iter_mut()
-                .for_each(normalize_paragraph_like_hwpx_export),
+                .for_each(|p| normalize_paragraph_like_hwpx_export(p, legacy_symbols)),
             Control::Header(header) => header
                 .paragraphs
                 .iter_mut()
-                .for_each(normalize_paragraph_like_hwpx_export),
+                .for_each(|p| normalize_paragraph_like_hwpx_export(p, legacy_symbols)),
             Control::Footer(footer) => footer
                 .paragraphs
                 .iter_mut()
-                .for_each(normalize_paragraph_like_hwpx_export),
+                .for_each(|p| normalize_paragraph_like_hwpx_export(p, legacy_symbols)),
             _ => {}
         }
     }
+
+    let symbols = super::body_symbols::BodySymbolExpansion::for_paragraph(
+        para,
+        legacy_symbols,
+        &crate::storage::Unbounded,
+    )
+    .expect("unbounded symbol projection");
+    symbols.apply_to_expected(para);
 
     // 뒤에서부터 걷어내야 앞 컨트롤의 자리 좌표가 유지된다.
     for index in super::section::hwpx_collapsed_page_number_pos_indices(para)
@@ -850,6 +854,27 @@ fn normalize_paragraph_like_hwpx_export(para: &mut crate::model::paragraph::Para
     }
     if super::section::line_segs_are_all_synthetic(&para.line_segs) {
         para.line_segs.clear();
+    }
+}
+
+fn normalize_shape_like_hwpx_export(
+    shape: &mut crate::model::shape::ShapeObject,
+    legacy_symbols: bool,
+) {
+    if let Some(text_box) = shape_text_box_mut(shape) {
+        for para in &mut text_box.paragraphs {
+            normalize_paragraph_like_hwpx_export(para, legacy_symbols);
+        }
+    }
+    if let Some(caption) = shape_caption_mut(shape) {
+        for para in &mut caption.paragraphs {
+            normalize_paragraph_like_hwpx_export(para, legacy_symbols);
+        }
+    }
+    if let crate::model::shape::ShapeObject::Group(group) = shape {
+        for child in &mut group.children {
+            normalize_shape_like_hwpx_export(child, legacy_symbols);
+        }
     }
 }
 

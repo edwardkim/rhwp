@@ -1,5 +1,5 @@
 //! 관계형(그림·도형 컨트롤의 문단·칸 소속, 저장 → 다시 열기 → 재저장 → 다시 열기 뒤 소속 보존, 거부한 편집 ↔ 출력 파일 없음; 실물 px 검사 아님): #9020 회귀.
-//! 주석 갱신: 2026-11-13T23:25:55+09:00
+//! 주석 갱신: 2026-11-24T10:20:58+09:00. 직전 변경: 2026-11-14T00:34:08+09:00, d7b927d073489b8c5ea95655224b04096c939534.
 //! 이 파일은 조판 회귀가 아닌 CLI 명령 계약 검사다. 새 명령은 코어의 기존 편집 함수
 //! (`set_shape_properties_native`·`relocate_floating_picture_native`·`insert_picture_in_cell_native`)를
 //! 부르기만 하고 조판 규칙과 그림 배치 계산을 바꾸지 않으므로, 독립 PDF 시각 측정 대상이 아니며 시각
@@ -418,7 +418,10 @@ fn check_shape_props_accepts_setter_values_and_rejects_the_rest() {
         r#"{"textWrap":"TopAndBottom","horzOffset":1000,"fillType":"solid"}"#
     )
     .is_ok());
+    assert!(check_shape_props(r#"{"skewX":-89,"skewY":89}"#).is_ok());
     for json in [
+        r#"{"skewX":-90}"#,
+        r#"{"skewY":90}"#,
         r#"{"horzOffset":-1}"#,
         r#"{"fillType":"Solid"}"#,
         r#"{"lineType":64}"#,
@@ -435,11 +438,16 @@ fn fn_body<'a>(src: &'a str, name: &str) -> &'a str {
         .find(&format!("fn {name}("))
         .unwrap_or_else(|| panic!("함수 {name} 이 없다"));
     let rest = &src[start + 3..];
-    let end = ["\n    pub fn ", "\n    pub(crate) fn ", "\n    fn "]
-        .iter()
-        .filter_map(|marker| rest.find(marker))
-        .min()
-        .unwrap_or(rest.len());
+    let end = [
+        "\n    pub fn ",
+        "\n    pub(crate) fn ",
+        "\n    fn ",
+        "\nfn ",
+    ]
+    .iter()
+    .filter_map(|marker| rest.find(marker))
+    .min()
+    .unwrap_or(rest.len());
     &src[start..start + 3 + end]
 }
 
@@ -455,13 +463,18 @@ fn shape_prop_list_matches_the_setter() {
         "/src/document_core/commands/object_ops/common.rs"
     ));
     let mut read = std::collections::BTreeSet::new();
-    for body in [
-        fn_body(shape, "set_shape_properties_native"),
-        fn_body(shape, "apply_shape_caption_props"),
-        fn_body(common, "apply_common_obj_attr_from_json"),
+    // 도형 변경 전에 별도로 검사하는 기울기와 회전·대칭 키도 CLI 계약에 속한다.
+    for (body, argument) in [
+        (fn_body(shape, "set_shape_properties_native"), "props_json"),
+        (fn_body(shape, "apply_shape_caption_props"), "props_json"),
+        (fn_body(shape, "validated_skew"), "props"),
+        (
+            fn_body(common, "apply_common_obj_attr_from_json"),
+            "props_json",
+        ),
     ] {
-        for (i, _) in body.match_indices("props_json, \"") {
-            let rest = &body[i + "props_json, \"".len()..];
+        let prefix = format!("{argument}, \"");
+        for rest in body.split(&prefix).skip(1) {
             read.insert(rest[..rest.find('"').unwrap()].to_string());
         }
     }

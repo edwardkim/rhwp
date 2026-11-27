@@ -180,6 +180,7 @@ fn build_node(n: &serde_json::Value) -> RenderNode {
                 section_index: None,
                 para_index: None,
                 control_index: None,
+                cell_context: None,
             }),
             bbox,
         ),

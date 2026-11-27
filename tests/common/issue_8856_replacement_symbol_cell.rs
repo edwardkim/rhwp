@@ -4,10 +4,9 @@
 //! 실물 근거: issue1994 4쪽 독립 Print의 U+2219는 512/1024 전진 칸이며,
 //! 표시 TTF의 같은 윤곽은 1024/1024 칸에 있다. 음수 자간은 다음 원점만 옮긴다.
 //! 과거 Native 99.94357%, 현재 재현 99.80186%; 새 head 전쪽 수용을 뜻하지 않는다.
-//! MIT 합성 CFF만 메모리에서 공급하며 개인·한컴 글꼴 설치에 의존하지 않는다.
+//! Adobe 배포 원본 CFF를 공급하며 개인·한컴 글꼴 설치에 의존하지 않는다.
 #![cfg(all(feature = "native-skia", not(target_arch = "wasm32")))]
 
-use super::symbol_font_program;
 use rhwp::paint::{LayerNode, PageLayerTree, PaintOp};
 use rhwp::renderer::{
     layer_renderer::LayerRasterRenderer,
@@ -20,7 +19,7 @@ fn render(renderer: &SkiaLayerRenderer, spacing: f64, selected: bool, original: 
     let run = TextRunNode {
         text: "∙".into(),
         style: TextStyle {
-            font_family: "RHWP HFT Outline Fixture".into(),
+            font_family: "Source Code Pro".into(),
             metric_font_family: Some("Haansoft Batang".into()),
             font_size: 24.0,
             color: 0,
@@ -62,12 +61,14 @@ fn render(renderer: &SkiaLayerRenderer, spacing: f64, selected: bool, original: 
 }
 
 pub(crate) fn assert_replacement_symbol_ink_keeps_the_intrinsic_cell_under_negative_tracking() {
-    let program = symbol_font_program::mapped_program(
-        include_bytes!("../fixtures/fonts/RHWPHftOutline.otf"),
-        &[('∙', 1)],
-    );
+    let program = include_bytes!("../fixtures/fonts/source-code-pro/SourceCodePro-Regular.otf");
+    let face = ttf_parser::Face::parse(program, 0).unwrap();
+    let dot = face.glyph_index('∙').unwrap();
+    assert!(face.glyph_bounding_box(dot).is_some());
+    assert_eq!(face.glyph_hor_advance(dot), Some(600));
+    assert_eq!(face.units_per_em(), 1000);
     let renderer = SkiaLayerRenderer::new()
-        .try_with_font_data(&[program])
+        .try_with_font_data(&[program.to_vec()])
         .unwrap();
     let reference = render(&renderer, 0.0, false, false);
     for spacing in [-0.4, -1.0, -2.0] {

@@ -1,0 +1,9 @@
+frozen pkg /home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37 at http://127.0.0.1:46793
+=== E2E: 문서 전환 시 눈금자 갱신 ===
+
+  [browser] headless Chrome 실행
+  [wasm-artifact] matched 76f7c64d27fe8fbbd7bd5baa2fdb3d30af9c8014fd16fb6b83afc498907ba7e3
+테스트 오류: Runtime.callFunctionOn timed out. Increase the 'protocolTimeout' setting in launch/connect calls for a higher timeout if needed.
+  Screenshot: e2e/screenshots/error.png
+
+📋 HTML 보고서: ../output/e2e/ruler-document-switch-report.html

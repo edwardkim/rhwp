@@ -493,7 +493,7 @@ export function insertTextWithMutationEffects(
   text: string,
 ): TextMutationEffects {
   if (isNestedCell(pos)) {
-    wasm.insertTextInCellByPath(pos.sectionIndex, pos.parentParaIndex!, cellPathJson(pos), pos.charOffset, text);
+    wasm.insertTextInCellByPath(pos.sectionIndex, pos.parentParaIndex!, cellPathJson(pos), pos.charOffset, text, true);
   } else if (isCell(pos)) {
     if (canUseDeferredCellTextInsert(pos, text)) {
       const result = wasm.insertTextInCellDeferredPagination(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, pos.cellIndex!, pos.cellParaIndex!, pos.charOffset, text);
@@ -602,7 +602,7 @@ export function captureTextFragment(wasm: WasmBridge, pos: DocumentPosition): nu
 /** undo/구조 명령의 full-refresh 복원은 flat cell에서도 immediate pagination을 사용한다. */
 function doInsertTextImmediate(wasm: WasmBridge, pos: DocumentPosition, text: string): void {
   if (isNestedCell(pos)) {
-    wasm.insertTextInCellByPath(pos.sectionIndex, pos.parentParaIndex!, cellPathJson(pos), pos.charOffset, text);
+    wasm.insertTextInCellByPath(pos.sectionIndex, pos.parentParaIndex!, cellPathJson(pos), pos.charOffset, text, true);
   } else if (isCell(pos)) {
     wasm.insertTextInCell(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, pos.cellIndex!, pos.cellParaIndex!, pos.charOffset, text);
   } else {
@@ -616,7 +616,7 @@ export function deleteTextWithMutationEffects(
   count: number,
 ): TextMutationEffects {
   if (isNestedCell(pos)) {
-    wasm.deleteTextInCellByPath(pos.sectionIndex, pos.parentParaIndex!, cellPathJson(pos), pos.charOffset, count);
+    wasm.deleteTextInCellByPath(pos.sectionIndex, pos.parentParaIndex!, cellPathJson(pos), pos.charOffset, count, true);
   } else if (isCell(pos)) {
     if (canUseDeferredCellTextDelete(pos, count)) {
       const result = wasm.deleteTextInCellDeferredPagination(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, pos.cellIndex!, pos.cellParaIndex!, pos.charOffset, count);
@@ -641,7 +641,7 @@ export function deleteTextWithMutationEffects(
 
 function doDeleteTextImmediate(wasm: WasmBridge, pos: DocumentPosition, count: number): void {
   if (isNestedCell(pos)) {
-    wasm.deleteTextInCellByPath(pos.sectionIndex, pos.parentParaIndex!, cellPathJson(pos), pos.charOffset, count);
+    wasm.deleteTextInCellByPath(pos.sectionIndex, pos.parentParaIndex!, cellPathJson(pos), pos.charOffset, count, true);
   } else if (isCell(pos)) {
     wasm.deleteTextInCell(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, pos.cellIndex!, pos.cellParaIndex!, pos.charOffset, count);
   } else {
@@ -651,7 +651,7 @@ function doDeleteTextImmediate(wasm: WasmBridge, pos: DocumentPosition, count: n
 
 function doGetTextRange(wasm: WasmBridge, pos: DocumentPosition, count: number): string {
   if (isNestedCell(pos)) {
-    return wasm.getTextInCellByPath(pos.sectionIndex, pos.parentParaIndex!, cellPathJson(pos), pos.charOffset, count);
+    return wasm.getTextInCellByPath(pos.sectionIndex, pos.parentParaIndex!, cellPathJson(pos), pos.charOffset, count, true);
   } else if (isCell(pos)) {
     return wasm.getTextInCell(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, pos.cellIndex!, pos.cellParaIndex!, pos.charOffset, count);
   } else {
@@ -1653,18 +1653,20 @@ export class InsertTextInHeaderFooterCommand implements EditCommand {
     private paraIdx: number,
     private charOffset: number,
     private text: string,
+    private insertedAt = charOffset,
   ) {
-    this.lastContext = hfEditContext(target, paraIdx, charOffset + charCount(text));
+    this.lastContext = hfEditContext(target, paraIdx, insertedAt + charCount(text));
   }
 
   execute(wasm: WasmBridge): DocumentPosition {
-    wasm.insertTextInHeaderFooter(this.target.sectionIdx, this.target.isHeader, this.target.applyTo, this.paraIdx, this.charOffset, this.text);
-    this.lastContext = hfEditContext(this.target, this.paraIdx, this.charOffset + charCount(this.text));
+    const result = JSON.parse(wasm.insertTextInHeaderFooter(this.target.sectionIdx, this.target.isHeader, this.target.applyTo, this.paraIdx, this.charOffset, this.text));
+    this.insertedAt = result.charOffset - charCount(this.text);
+    this.lastContext = hfEditContext(this.target, this.paraIdx, result.charOffset);
     return hfFnStubPosition(this.target.sectionIdx);
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
-    wasm.deleteTextInHeaderFooter(this.target.sectionIdx, this.target.isHeader, this.target.applyTo, this.paraIdx, this.charOffset, charCount(this.text));
+    wasm.deleteTextInHeaderFooter(this.target.sectionIdx, this.target.isHeader, this.target.applyTo, this.paraIdx, this.insertedAt, charCount(this.text));
     this.lastContext = hfEditContext(this.target, this.paraIdx, this.charOffset);
     return hfFnStubPosition(this.target.sectionIdx);
   }
@@ -1838,18 +1840,20 @@ export class InsertTextInFootnoteCommand implements EditCommand {
     private innerParaIdx: number,
     private charOffset: number,
     private text: string,
+    private insertedAt = charOffset,
   ) {
-    this.lastContext = fnEditContext(target, innerParaIdx, charOffset + charCount(text));
+    this.lastContext = fnEditContext(target, innerParaIdx, insertedAt + charCount(text));
   }
 
   execute(wasm: WasmBridge): DocumentPosition {
-    wasm.insertTextInFootnote(this.target.sectionIdx, this.target.paraIdx, this.target.controlIdx, this.innerParaIdx, this.charOffset, this.text);
-    this.lastContext = fnEditContext(this.target, this.innerParaIdx, this.charOffset + charCount(this.text));
+    const result = wasm.insertTextInFootnote(this.target.sectionIdx, this.target.paraIdx, this.target.controlIdx, this.innerParaIdx, this.charOffset, this.text);
+    this.insertedAt = result.charOffset - charCount(this.text);
+    this.lastContext = fnEditContext(this.target, this.innerParaIdx, result.charOffset);
     return hfFnStubPosition(this.target.sectionIdx);
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
-    wasm.deleteTextInFootnote(this.target.sectionIdx, this.target.paraIdx, this.target.controlIdx, this.innerParaIdx, this.charOffset, charCount(this.text));
+    wasm.deleteTextInFootnote(this.target.sectionIdx, this.target.paraIdx, this.target.controlIdx, this.innerParaIdx, this.insertedAt, charCount(this.text));
     this.lastContext = fnEditContext(this.target, this.innerParaIdx, this.charOffset);
     return hfFnStubPosition(this.target.sectionIdx);
   }
@@ -2022,21 +2026,11 @@ export class MergeParagraphInCellCommand implements EditCommand {
     const sec = pos.sectionIndex;
     const ppi = pos.parentParaIndex!;
     const cpi = cellParaIndexOf(pos);
-    // 병합 전 이전 셀 문단 길이 기억.
-    // flat 필드(controlIndex/cellIndex)는 "외부 표 기준" 레거시 좌표라(types.ts DocumentPosition)
-    // 중첩 셀에서는 안쪽 셀을 가리키지 못한다. 뮤테이션이 ByPath 로 분기하는 만큼 길이 조회도
-    // 같은 축으로 맞춘다(cursor.ts 의 useCellPath 분기와 동형). 어긋나면 undo 가 바깥 셀에서
-    // 읽은 길이로 안쪽 셀을 분할해 문단이 엉뚱한 지점에서 잘린다.
-    if (isNestedCell(pos)) {
-      const prevPath = pos.cellPath!.map((entry, index, path) =>
-        index + 1 === path.length ? { ...entry, cellParaIndex: cpi - 1 } : entry,
-      );
-      this.mergePointOffset = wasm.getCellParagraphLengthByPath(sec, ppi, JSON.stringify(prevPath));
-      this.removedParaMeta = JSON.parse(wasm.mergeParagraphInCellByPath(sec, ppi, cellPathJson(pos))).removedParaMeta;
-    } else {
-      this.mergePointOffset = wasm.getCellParagraphLength(sec, ppi, pos.controlIndex!, pos.cellIndex!, cpi - 1);
-      this.removedParaMeta = JSON.parse(wasm.mergeParagraphInCell(sec, ppi, pos.controlIndex!, pos.cellIndex!, cpi)).removedParaMeta;
-    }
+    const result = JSON.parse(isNestedCell(pos)
+      ? wasm.mergeParagraphInCellByPath(sec, ppi, cellPathJson(pos))
+      : wasm.mergeParagraphInCell(sec, ppi, pos.controlIndex!, pos.cellIndex!, cpi));
+    this.mergePointOffset = result.charOffset;
+    this.removedParaMeta = result.removedParaMeta;
     return cellParagraphPosition(pos, cpi - 1, this.mergePointOffset);
   }
 
@@ -2404,6 +2398,28 @@ export class MoveLineEndpointCommand implements EditCommand {
     return { sectionIndex: this.sec, paragraphIndex: this.ppi, charOffset: 0 };
   }
 
+  mergeWith(): null { return null; }
+}
+
+/** 꺾인 연결선 안쪽 두 점의 이동만 되돌린다. 양 끝점과 개체 크기는 편집하지 않는다. */
+export class MoveConnectorMidpointCommand implements EditCommand {
+  readonly type = 'moveConnectorMidpoint';
+  readonly timestamp = Date.now();
+
+  constructor(
+    private ref: Pick<ObjectPropsRef, 'sec' | 'ppi' | 'ci' | 'cellPath'>,
+    private dx: number,
+    private dy: number,
+  ) {}
+
+  private move(wasm: WasmBridge, dx: number, dy: number): DocumentPosition {
+    const { sec, ppi, ci, cellPath } = this.ref;
+    wasm.moveConnectorMidpoint(sec, ppi, ci, dx, dy, cellPath);
+    return { sectionIndex: sec, paragraphIndex: ppi, charOffset: 0 };
+  }
+
+  execute(wasm: WasmBridge): DocumentPosition { return this.move(wasm, this.dx, this.dy); }
+  undo(wasm: WasmBridge): DocumentPosition { return this.move(wasm, -this.dx, -this.dy); }
   mergeWith(): null { return null; }
 }
 

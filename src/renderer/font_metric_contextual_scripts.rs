@@ -646,6 +646,19 @@ static WIDTHS_3: &[u16] = &[
     MISSING, MISSING, MISSING, 327, 303, 184, 503, 303, 376, 219, 419, 219, 332, MISSING, MISSING,
     MISSING, MISSING, MISSING, MISSING,
 ];
+// Syloti Nagri, Common Indic Number Forms and Phags-pa. The cmap and hmtx
+// for these blocks agree across regular and bold HCR Batang and HCR Dotum.
+// Independent HWP and font program evidence: mydocs/pr/assets/pr9280/.
+const INDIC_AND_PHAGS_PA: [u16; 128] = [
+    745, 470, 0, 573, 491, 484, 0, 789, 789, 494, 484, 0, 566, 594, 666, 789, 466, 466, 620, 526,
+    536, 789, 559, 686, 586, 700, 746, 484, 586, 576, 536, 536, 470, 700, 700, 304, 413, 0, 0, 336,
+    464, 464, 673, 680, MISSING, MISSING, MISSING, MISSING, MISSING, MISSING, MISSING, MISSING,
+    MISSING, MISSING, MISSING, MISSING, MISSING, MISSING, MISSING, MISSING, MISSING, MISSING,
+    MISSING, MISSING, 736, 737, 737, 731, 735, 727, 731, 732, 732, 736, 704, 743, 729, 729, 729,
+    733, 732, 734, 731, 727, 731, 731, 736, 731, 729, 726, 729, 729, 677, 730, 743, 729, 711, 736,
+    729, 728, 710, 729, 699, 722, 709, 732, 716, 699, 743, 731, 733, 670, 680, 704, 660, 665, 715,
+    775, 663, 663, MISSING, MISSING, MISSING, MISSING, MISSING, MISSING, MISSING, MISSING,
+];
 struct Source {
     names: &'static [&'static str],
     bold: bool,
@@ -699,14 +712,44 @@ fn source(name: &str, bold: bool, italic: bool) -> Option<&'static Source> {
         .iter()
         .find(|s| s.bold == bold && s.names.contains(&primary))
 }
+fn units(source: &Source, ch: char) -> Option<u16> {
+    match ch as u32 {
+        // Yi Syllables and Yi Radicals are almost monospaced in these four
+        // faces. U+A079 is the one wider syllable in the source hmtx.
+        0xA079 => Some(716),
+        0xA000..=0xA48C => Some(645),
+        0xA490..=0xA4C6 => Some(537),
+        0xA48D..=0xA48F | 0xA4C7..=0xA4CF => Some(MISSING),
+        cp @ 0xA800..=0xA87F => Some(INDIC_AND_PHAGS_PA[(cp - 0xA800) as usize]),
+        _ => Some(source.widths[index(ch)?]),
+    }
+}
 pub(super) fn primary_has_glyph(name: &str, bold: bool, italic: bool, ch: char) -> Option<bool> {
-    Some(source(name, bold, italic)?.widths[index(ch)?] != MISSING)
+    Some(units(source(name, bold, italic)?, ch)? != MISSING)
+}
+
+/// Hancom Print uses Gulim glyph zero (hmtx 1024 / 1024) for these ten
+/// Common Indic Number Forms when the HCR source has no character glyph.
+/// This is fallback layout evidence, not a cmap entry for the missing sign.
+pub(crate) fn indic_number_print_notdef_em(
+    name: &str,
+    bold: bool,
+    italic: bool,
+    ch: char,
+) -> Option<f64> {
+    if ('\u{A830}'..='\u{A839}').contains(&ch)
+        && primary_has_glyph(name, bold, italic, ch) == Some(false)
+    {
+        Some(1.0)
+    } else {
+        None
+    }
 }
 pub(super) fn entry(metric: &FontMetric, ch: char) -> Option<(bool, u16)> {
     if metric.em_size != 1000 {
         return None;
     }
-    let w = source(metric.name, metric.bold, metric.italic)?.widths[index(ch)?];
+    let w = units(source(metric.name, metric.bold, metric.italic)?, ch)?;
     Some((w != MISSING, if w == MISSING { 0 } else { w }))
 }
 pub(super) fn width(metric: &FontMetric, ch: char) -> Option<u16> {

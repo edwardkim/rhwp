@@ -413,7 +413,7 @@ fn image_stack_hwpx_page_five_keeps_all_four_picture_edges_inside_its_cell() {
 }
 
 #[test]
-fn hft_hwp_and_hwpx_pages_104_keep_source_face_and_post_table_body_origins() {
+fn legacy_hwp_and_hwpx_pages_104_keep_source_face_and_post_table_body_origins() {
     for (sample, compatibility_2024) in [
         ("samples/issue1949_giant_cell_nested_tables_perf.hwp", true),
         (
@@ -456,7 +456,7 @@ fn hft_hwp_and_hwpx_pages_104_keep_source_face_and_post_table_body_origins() {
             for run in hangul {
                 assert!(
                     run.style.source_font_is_hft,
-                    "원본 HFT 선언이 resolver에서 실제 paint style까지 전달돼야 한다"
+                    "원본에 저장된 글꼴 유형을 실제 출력 스타일에 전달해야 한다"
                 );
             }
         }

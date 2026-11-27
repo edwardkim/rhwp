@@ -1,0 +1,20 @@
+[
+  {
+    "package": "pkg",
+    "chosen": 1,
+    "other": 2,
+    "passed": true
+  },
+  {
+    "package": "rhwp-studio/public",
+    "chosen": 1,
+    "other": 2,
+    "passed": true
+  },
+  {
+    "package": "rhwp-studio/dist",
+    "chosen": 1,
+    "other": 2,
+    "passed": true
+  }
+]

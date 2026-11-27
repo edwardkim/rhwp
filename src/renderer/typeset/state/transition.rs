@@ -131,6 +131,7 @@ impl TypesetState {
                 wrap_around_derived_band: false,
                 behind_float_table_para: None,
                 next_para_first_stored_vpos: None,
+                stored_ladder_keeps_empty_line: false,
                 next_para_lane_probe: None,
                 next_para_is_empty_float_table_anchor: false,
                 next_para_is_plain_text: false,
@@ -579,6 +580,48 @@ impl TypesetState {
             });
     }
 
+    /// [#9274] 쪽·종이 기준 자리차지 표의 밴드 `(top, bottom)` — 현재 단 위끝 기준 px.
+    /// 그림 밴드와 같은 틀(`ObjectPlacementFrame`)에서 계산한다.
+    pub(in crate::renderer::typeset) fn page_anchored_table_band(
+        &self,
+        table: &crate::model::table::Table,
+    ) -> Option<(f64, f64)> {
+        let column = self.inline_flow_column();
+        let paper = crate::renderer::page_layout::LayoutRect {
+            x: 0.0,
+            y: 0.0,
+            width: self.data.layout.page_width,
+            height: self.data.layout.page_height,
+        };
+        let frame = crate::renderer::float_placement::ObjectPlacementFrame {
+            container: &column,
+            column: &column,
+            body: &self.data.layout.body_area,
+            paper: &paper,
+            paragraph_y: column.y,
+            alignment: crate::model::style::Alignment::Left,
+            dpi: self.data.layout.dpi,
+        };
+        let (top, bottom) = frame.page_anchored_topbottom_table_band(table)?;
+        Some((top - column.y, bottom - column.y))
+    }
+
+    /// [#9274] host 줄이 닿지 않은 쪽·종이 기준 자리차지 표 밴드를 뒤 문단의 시작 판정에 싣는다.
+    pub(in crate::renderer::typeset) fn push_page_anchored_band(
+        &mut self,
+        para_index: usize,
+        top: f64,
+        bottom: f64,
+    ) {
+        self.data
+            .page_anchored_bands
+            .push(crate::renderer::typeset::VisibleFloatExclusion {
+                para_index,
+                top,
+                bottom,
+            });
+    }
+
     /// 문단 자기 쪽·종이 기준 자리차지 개체의 밴드도 그 문단의 첫 줄을 민다. 개체는 문단
     /// 흐름 뒤에 방출되므로(`place_paragraph_controls`) 방출 전 첫 줄 시작 판정에 먼저
     /// 싣는다. 위치가 문단 흐름과 무관해 지금 쪽의 상자가 그대로 확정 상자다. 한/글 저장
@@ -924,6 +967,7 @@ impl TypesetState {
         &mut self,
         para_idx: usize,
         para: &Paragraph,
+        next: Option<&Paragraph>,
     ) {
         use crate::model::shape::{TextWrap, VertRelTo};
         if self.data.current_items.is_empty() || self.data.col_count > 1 {
@@ -1018,6 +1062,19 @@ impl TypesetState {
                     ctrl_idx,
                 )
                 .is_some()
+            {
+                continue;
+            }
+            // [#9396] 마지막 줄 앵커 개체가 다음 문단을 밀어낸 띠는 새 쪽의 저장 사다리
+            // 안에 있다. 한/글은 개체를 host 의 줄과 함께 새 쪽에 그린다.
+            if crate::renderer::layout::stored_band_after_last_anchor_line_offset_hu(
+                para,
+                next,
+                common,
+                i64::from(common.margin.top) + i64::from(common.margin.bottom),
+                ctrl_idx,
+            )
+            .is_some()
             {
                 continue;
             }
@@ -1355,9 +1412,10 @@ impl TypesetState {
         self.data
             .visible_float_exclusions
             .retain(|zone| current_height < zone.bottom - 0.5);
+        // 밴드 아래끝에 정확히 놓인 시작(저장 vpos 스냅)도 아래에서 배치에 넘기므로 남긴다.
         self.data
             .page_anchored_bands
-            .retain(|zone| current_height < zone.bottom - 0.5);
+            .retain(|zone| current_height < zone.bottom + 0.5);
 
         let hits = |jump_to: f64, top: f64, bottom: f64| {
             let starts_in_zone = jump_to + 0.5 >= top && jump_to < bottom;
@@ -1385,6 +1443,10 @@ impl TypesetState {
                     // 첫 줄 vpos 3668 ≈ 종이 기준 제목 상자 밴드 아래끝 3665.
                     let target = (zone.bottom - absorbed_spacing_before.max(0.0)).max(zone.top);
                     jump_to = jump_to.max(target);
+                    pushed_by_page_band = true;
+                } else if (jump_to - zone.bottom).abs() <= 0.5 {
+                    // [#9274] 흐름이 이미 밴드 아래끝에 있다(저장 vpos 스냅). 밴드가 정한 시작과
+                    // 같으므로 배치가 밴드 위에서 순차로 그리지 않게 같은 원점을 넘긴다.
                     pushed_by_page_band = true;
                 }
             }

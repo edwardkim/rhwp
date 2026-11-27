@@ -1,0 +1,673 @@
+{
+  "product_commit": "e4ce75728af706c8fdab93882172ad07843b00b8",
+  "section_overlap_source": "Windows Hancom 2020 Print, PDF word bounds in points",
+  "section_master_body": [
+    {
+      "input": "b5-adjacent.hwpx",
+      "input_sha256": "3055d77f433066d508502bc09a5eed34be601ffd92c0a9c037343df6259c8f08",
+      "print_sha256": "92dcdb69c07b4e972cad60e5a992aa21470397cf36b421df14d014a61c013984",
+      "devel_overlaps": 4,
+      "candidate_overlaps": 4,
+      "pages": [
+        {
+          "page": 1,
+          "printed_body": {
+            "text": "첫째",
+            "x": 84.934655,
+            "y": 99.421897,
+            "right": 104.28271,
+            "bottom": 109.374759
+          },
+          "printed_master": [
+            {
+              "text": "바탕쪽표식",
+              "x": 84.934655,
+              "y": 99.421897,
+              "right": 133.392787,
+              "bottom": 109.374759
+            }
+          ],
+          "overlap_owners": [
+            [
+              "Page/Body/Column0/TextLine0/TextRun0",
+              "Page/MasterPage1/TextLine0/TextRun0"
+            ]
+          ]
+        },
+        {
+          "page": 2,
+          "printed_body": {
+            "text": "둘째",
+            "x": 84.934655,
+            "y": 99.421897,
+            "right": 104.28271,
+            "bottom": 109.374759
+          },
+          "printed_master": [
+            {
+              "text": "바탕쪽표식",
+              "x": 84.934655,
+              "y": 99.421897,
+              "right": 133.392787,
+              "bottom": 109.374759
+            }
+          ],
+          "overlap_owners": [
+            [
+              "Page/Body/Column0/TextLine0/TextRun0",
+              "Page/MasterPage1/TextLine0/TextRun0"
+            ]
+          ]
+        },
+        {
+          "page": 3,
+          "printed_body": {
+            "text": "셋째",
+            "x": 85.033915,
+            "y": 99.384587,
+            "right": 104.404581,
+            "bottom": 109.333714
+          },
+          "printed_master": [
+            {
+              "text": "바탕쪽표식",
+              "x": 85.033915,
+              "y": 99.384587,
+              "right": 133.548678,
+              "bottom": 109.333714
+            }
+          ],
+          "overlap_owners": [
+            [
+              "Page/Body/Column0/TextLine0/TextRun0",
+              "Page/MasterPage1/TextLine0/TextRun0"
+            ]
+          ]
+        },
+        {
+          "page": 4,
+          "printed_body": {
+            "text": "넷째",
+            "x": 85.033915,
+            "y": 99.384587,
+            "right": 104.404581,
+            "bottom": 109.333714
+          },
+          "printed_master": [
+            {
+              "text": "바탕쪽표식",
+              "x": 85.033915,
+              "y": 99.384587,
+              "right": 133.548678,
+              "bottom": 109.333714
+            }
+          ],
+          "overlap_owners": [
+            [
+              "Page/Body/Column0/TextLine0/TextRun0",
+              "Page/MasterPage1/TextLine0/TextRun0"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "input": "b5-no-column.hwpx",
+      "input_sha256": "a1ffbcaf9bcf249bdf8aba61f1f69088a2fc444bbbff2771ce61f28aa8981f10",
+      "print_sha256": "1af46cafbee3983b065e8ce2580541635051ddbcc005982e0c75c340854474f8",
+      "devel_overlaps": 4,
+      "candidate_overlaps": 2,
+      "pages": [
+        {
+          "page": 1,
+          "printed_body": {
+            "text": "첫째",
+            "x": 85.033915,
+            "y": 99.384587,
+            "right": 104.404581,
+            "bottom": 109.333714
+          },
+          "printed_master": [],
+          "overlap_owners": []
+        },
+        {
+          "page": 2,
+          "printed_body": {
+            "text": "둘째",
+            "x": 85.033915,
+            "y": 99.384587,
+            "right": 104.404581,
+            "bottom": 109.333714
+          },
+          "printed_master": [],
+          "overlap_owners": []
+        },
+        {
+          "page": 3,
+          "printed_body": {
+            "text": "셋째",
+            "x": 85.033915,
+            "y": 99.384587,
+            "right": 104.404581,
+            "bottom": 109.333714
+          },
+          "printed_master": [
+            {
+              "text": "바탕쪽표식",
+              "x": 85.033915,
+              "y": 99.384587,
+              "right": 133.548678,
+              "bottom": 109.333714
+            }
+          ],
+          "overlap_owners": [
+            [
+              "Page/Body/Column0/TextLine0/TextRun0",
+              "Page/MasterPage1/TextLine0/TextRun0"
+            ]
+          ]
+        },
+        {
+          "page": 4,
+          "printed_body": {
+            "text": "넷째",
+            "x": 85.033915,
+            "y": 99.384587,
+            "right": 104.404581,
+            "bottom": 109.333714
+          },
+          "printed_master": [
+            {
+              "text": "바탕쪽표식",
+              "x": 85.033915,
+              "y": 99.384587,
+              "right": 133.548678,
+              "bottom": 109.333714
+            }
+          ],
+          "overlap_owners": [
+            [
+              "Page/Body/Column0/TextLine0/TextRun0",
+              "Page/MasterPage1/TextLine0/TextRun0"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "input": "b5-page-number.hwpx",
+      "input_sha256": "3ffa6242ea97c6a636d6bb3fbf7991d19be7955c258dd5aa466274d836b4062b",
+      "print_sha256": "49cd1469b6640792eb13dd0722738e653f0afa2f5f9ed0b6ed90fc406697cce9",
+      "devel_overlaps": 4,
+      "candidate_overlaps": 2,
+      "pages": [
+        {
+          "page": 1,
+          "printed_body": {
+            "text": "첫째",
+            "x": 85.033915,
+            "y": 99.384587,
+            "right": 104.404581,
+            "bottom": 109.333714
+          },
+          "printed_master": [],
+          "overlap_owners": []
+        },
+        {
+          "page": 2,
+          "printed_body": {
+            "text": "둘째",
+            "x": 85.033915,
+            "y": 99.384587,
+            "right": 104.404581,
+            "bottom": 109.333714
+          },
+          "printed_master": [],
+          "overlap_owners": []
+        },
+        {
+          "page": 3,
+          "printed_body": {
+            "text": "셋째",
+            "x": 85.033915,
+            "y": 99.384587,
+            "right": 104.404581,
+            "bottom": 109.333714
+          },
+          "printed_master": [
+            {
+              "text": "바탕쪽표식",
+              "x": 85.033915,
+              "y": 99.384587,
+              "right": 133.548678,
+              "bottom": 109.333714
+            }
+          ],
+          "overlap_owners": [
+            [
+              "Page/Body/Column0/TextLine0/TextRun0",
+              "Page/MasterPage1/TextLine0/TextRun0"
+            ]
+          ]
+        },
+        {
+          "page": 4,
+          "printed_body": {
+            "text": "넷째",
+            "x": 85.033915,
+            "y": 99.384587,
+            "right": 104.404581,
+            "bottom": 109.333714
+          },
+          "printed_master": [
+            {
+              "text": "바탕쪽표식",
+              "x": 85.033915,
+              "y": 99.384587,
+              "right": 133.548678,
+              "bottom": 109.333714
+            }
+          ],
+          "overlap_owners": [
+            [
+              "Page/Body/Column0/TextLine0/TextRun0",
+              "Page/MasterPage1/TextLine0/TextRun0"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "input": "b5-text.hwpx",
+      "input_sha256": "d865f01fdab935d7e3bc596ffe151c4f8f3db3005927335531dfa113f59c4be9",
+      "print_sha256": "db02751af6050fd204ed3c026185b48172b047392fee1d7863795421a149bd83",
+      "devel_overlaps": 5,
+      "candidate_overlaps": 2,
+      "pages": [
+        {
+          "page": 1,
+          "printed_body": {
+            "text": "A첫째",
+            "x": 85.033915,
+            "y": 99.384587,
+            "right": 111.480746,
+            "bottom": 109.333714
+          },
+          "printed_master": [],
+          "overlap_owners": []
+        },
+        {
+          "page": 2,
+          "printed_body": {
+            "text": "둘째",
+            "x": 85.033915,
+            "y": 99.384587,
+            "right": 104.404581,
+            "bottom": 109.333714
+          },
+          "printed_master": [],
+          "overlap_owners": []
+        },
+        {
+          "page": 3,
+          "printed_body": {
+            "text": "셋째",
+            "x": 85.033915,
+            "y": 99.384587,
+            "right": 104.404581,
+            "bottom": 109.333714
+          },
+          "printed_master": [
+            {
+              "text": "바탕쪽표식",
+              "x": 85.033915,
+              "y": 99.384587,
+              "right": 133.548678,
+              "bottom": 109.333714
+            }
+          ],
+          "overlap_owners": [
+            [
+              "Page/Body/Column0/TextLine0/TextRun0",
+              "Page/MasterPage1/TextLine0/TextRun0"
+            ]
+          ]
+        },
+        {
+          "page": 4,
+          "printed_body": {
+            "text": "넷째",
+            "x": 85.033915,
+            "y": 99.384587,
+            "right": 104.404581,
+            "bottom": 109.333714
+          },
+          "printed_master": [
+            {
+              "text": "바탕쪽표식",
+              "x": 85.033915,
+              "y": 99.384587,
+              "right": 133.548678,
+              "bottom": 109.333714
+            }
+          ],
+          "overlap_owners": [
+            [
+              "Page/Body/Column0/TextLine0/TextRun0",
+              "Page/MasterPage1/TextLine0/TextRun0"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "input": "two-sections-2020.hwp",
+      "input_sha256": "ada99b31fdaf7a604509bd714efeecba6fb04d041ceb11fdba869766a89b3e3f",
+      "print_sha256": "81b2558c67a8a10e7278a4ed3b942bd83bad2a5e1be1823de10174e0fb71d786",
+      "devel_overlaps": 2,
+      "candidate_overlaps": 2,
+      "pages": [
+        {
+          "page": 1,
+          "printed_body": {
+            "text": "첫째",
+            "x": 85.033915,
+            "y": 99.384587,
+            "right": 104.404581,
+            "bottom": 109.333714
+          },
+          "printed_master": [],
+          "overlap_owners": []
+        },
+        {
+          "page": 2,
+          "printed_body": {
+            "text": "둘째",
+            "x": 85.033915,
+            "y": 99.384587,
+            "right": 104.404581,
+            "bottom": 109.333714
+          },
+          "printed_master": [],
+          "overlap_owners": []
+        },
+        {
+          "page": 3,
+          "printed_body": {
+            "text": "셋째",
+            "x": 85.033915,
+            "y": 99.384587,
+            "right": 104.404581,
+            "bottom": 109.333714
+          },
+          "printed_master": [
+            {
+              "text": "바탕쪽표식",
+              "x": 85.033915,
+              "y": 99.384587,
+              "right": 133.548678,
+              "bottom": 109.333714
+            }
+          ],
+          "overlap_owners": [
+            [
+              "Page/Body/Column0/TextLine0/TextRun0",
+              "Page/MasterPage1/TextLine0/TextRun0"
+            ]
+          ]
+        },
+        {
+          "page": 4,
+          "printed_body": {
+            "text": "넷째",
+            "x": 85.033915,
+            "y": 99.384587,
+            "right": 104.404581,
+            "bottom": 109.333714
+          },
+          "printed_master": [
+            {
+              "text": "바탕쪽표식",
+              "x": 85.033915,
+              "y": 99.384587,
+              "right": 133.548678,
+              "bottom": 109.333714
+            }
+          ],
+          "overlap_owners": [
+            [
+              "Page/Body/Column0/TextLine0/TextRun0",
+              "Page/MasterPage1/TextLine0/TextRun0"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "input": "two-sections-2020.hwpx",
+      "input_sha256": "bec4434d84703f64ea9b83b612c51fc45f6ab9882ba7f440a1fb8c846d259d99",
+      "print_sha256": "57ffabd95eddd3af30b3790041cefe89324f283fbf8ca6f9353baa31996c2206",
+      "devel_overlaps": 2,
+      "candidate_overlaps": 2,
+      "pages": [
+        {
+          "page": 1,
+          "printed_body": {
+            "text": "첫째",
+            "x": 85.033915,
+            "y": 99.384587,
+            "right": 104.404581,
+            "bottom": 109.333714
+          },
+          "printed_master": [],
+          "overlap_owners": []
+        },
+        {
+          "page": 2,
+          "printed_body": {
+            "text": "둘째",
+            "x": 85.033915,
+            "y": 99.384587,
+            "right": 104.404581,
+            "bottom": 109.333714
+          },
+          "printed_master": [],
+          "overlap_owners": []
+        },
+        {
+          "page": 3,
+          "printed_body": {
+            "text": "셋째",
+            "x": 85.033915,
+            "y": 99.384587,
+            "right": 104.404581,
+            "bottom": 109.333714
+          },
+          "printed_master": [
+            {
+              "text": "바탕쪽표식",
+              "x": 85.033915,
+              "y": 99.384587,
+              "right": 133.548678,
+              "bottom": 109.333714
+            }
+          ],
+          "overlap_owners": [
+            [
+              "Page/Body/Column0/TextLine0/TextRun0",
+              "Page/MasterPage1/TextLine0/TextRun0"
+            ]
+          ]
+        },
+        {
+          "page": 4,
+          "printed_body": {
+            "text": "넷째",
+            "x": 85.033915,
+            "y": 99.384587,
+            "right": 104.404581,
+            "bottom": 109.333714
+          },
+          "printed_master": [
+            {
+              "text": "바탕쪽표식",
+              "x": 85.033915,
+              "y": 99.384587,
+              "right": 133.548678,
+              "bottom": 109.333714
+            }
+          ],
+          "overlap_owners": [
+            [
+              "Page/Body/Column0/TextLine0/TextRun0",
+              "Page/MasterPage1/TextLine0/TextRun0"
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "forced_hwp_rebuild": {
+    "input": "two-sections-2020.hwp",
+    "input_sha256": "ada99b31fdaf7a604509bd714efeecba6fb04d041ceb11fdba869766a89b3e3f",
+    "rebuilt_sha256": "e781e7150dfc5be2a83ec57cd9a3c393e0e7bd6fad88222d7a3253a281cf0a85",
+    "section_number": 2,
+    "original_slots": [
+      "PageNumberPos",
+      "ColumnDef"
+    ],
+    "rebuilt_slots": [
+      "ColumnDef",
+      "PageNumberPos"
+    ],
+    "field_differences_after_aligning_these_two_slots": 0
+  },
+  "narrow_cell_zip": [
+    {
+      "input": "narrow-cell-indent--7832-defined.hwpx",
+      "reference_sha256": "47950a486a132d7819c5ed011b04f81a77cffdaa61ce67969c926e0bd0a693b8",
+      "rebuilt_sha256": "9af4690f56aea8d386954989643326a868868e8ae979cc7b81cfcf193fcd5820",
+      "entries_reference": 11,
+      "entries_rebuilt": 12,
+      "extra": {
+        "META-INF/rhwp-byte-alpha": "1"
+      },
+      "existing_entries_changed": [
+        "Contents/header.xml"
+      ],
+      "header_change": "none -> #FFFFFFFF (existing export sentinel)"
+    },
+    {
+      "input": "narrow-cell-indent-0-defined.hwpx",
+      "reference_sha256": "039bc60fe5667542cb457a61ed005cbbb22911e45a6a0475dcd7aca2ae7bf117",
+      "rebuilt_sha256": "7b1cc87460924557a21c55016307048fa0175e35b655db4910c4b00f1beaea69",
+      "entries_reference": 11,
+      "entries_rebuilt": 12,
+      "extra": {
+        "META-INF/rhwp-byte-alpha": "1"
+      },
+      "existing_entries_changed": [
+        "Contents/header.xml"
+      ],
+      "header_change": "none -> #FFFFFFFF (existing export sentinel)"
+    }
+  ],
+  "independent_print": [
+    {
+      "case": "narrow-cell-indent--7832-defined-independent",
+      "backend": "native",
+      "source_sha256": "47950a486a132d7819c5ed011b04f81a77cffdaa61ce67969c926e0bd0a693b8",
+      "pdf_sha256": "39c1559e62dc98e34d6530498bf838939bf290e5ad4b72241be18ac26cb5257a",
+      "raw": [
+        "100.00"
+      ]
+    },
+    {
+      "case": "narrow-cell-indent--7832-defined-independent",
+      "backend": "wasm",
+      "source_sha256": "47950a486a132d7819c5ed011b04f81a77cffdaa61ce67969c926e0bd0a693b8",
+      "pdf_sha256": "39c1559e62dc98e34d6530498bf838939bf290e5ad4b72241be18ac26cb5257a",
+      "raw": [
+        "100.00"
+      ]
+    },
+    {
+      "case": "narrow-cell-indent--7832-defined-current",
+      "backend": "native",
+      "source_sha256": "9af4690f56aea8d386954989643326a868868e8ae979cc7b81cfcf193fcd5820",
+      "pdf_sha256": "39c1559e62dc98e34d6530498bf838939bf290e5ad4b72241be18ac26cb5257a",
+      "raw": [
+        "100.00"
+      ]
+    },
+    {
+      "case": "narrow-cell-indent--7832-defined-current",
+      "backend": "wasm",
+      "source_sha256": "9af4690f56aea8d386954989643326a868868e8ae979cc7b81cfcf193fcd5820",
+      "pdf_sha256": "39c1559e62dc98e34d6530498bf838939bf290e5ad4b72241be18ac26cb5257a",
+      "raw": [
+        "100.00"
+      ]
+    },
+    {
+      "case": "narrow-cell-indent-0-defined-independent",
+      "backend": "native",
+      "source_sha256": "039bc60fe5667542cb457a61ed005cbbb22911e45a6a0475dcd7aca2ae7bf117",
+      "pdf_sha256": "b2a1f82b7d171589cd3690703b9229886ee5c4a1b79ae04e13254ce38f5960a9",
+      "raw": [
+        "100.00"
+      ]
+    },
+    {
+      "case": "narrow-cell-indent-0-defined-independent",
+      "backend": "wasm",
+      "source_sha256": "039bc60fe5667542cb457a61ed005cbbb22911e45a6a0475dcd7aca2ae7bf117",
+      "pdf_sha256": "b2a1f82b7d171589cd3690703b9229886ee5c4a1b79ae04e13254ce38f5960a9",
+      "raw": [
+        "100.00"
+      ]
+    },
+    {
+      "case": "narrow-cell-indent-0-defined-current",
+      "backend": "native",
+      "source_sha256": "7b1cc87460924557a21c55016307048fa0175e35b655db4910c4b00f1beaea69",
+      "pdf_sha256": "b2a1f82b7d171589cd3690703b9229886ee5c4a1b79ae04e13254ce38f5960a9",
+      "raw": [
+        "100.00"
+      ]
+    },
+    {
+      "case": "narrow-cell-indent-0-defined-current",
+      "backend": "wasm",
+      "source_sha256": "7b1cc87460924557a21c55016307048fa0175e35b655db4910c4b00f1beaea69",
+      "pdf_sha256": "b2a1f82b7d171589cd3690703b9229886ee5c4a1b79ae04e13254ce38f5960a9",
+      "raw": [
+        "100.00"
+      ]
+    },
+    {
+      "case": "two-sections-rebuilt",
+      "backend": "native",
+      "source_sha256": "e781e7150dfc5be2a83ec57cd9a3c393e0e7bd6fad88222d7a3253a281cf0a85",
+      "pdf_sha256": "81b2558c67a8a10e7278a4ed3b942bd83bad2a5e1be1823de10174e0fb71d786",
+      "raw": [
+        "100.00",
+        "100.00",
+        "100.00",
+        "100.00"
+      ]
+    },
+    {
+      "case": "two-sections-rebuilt",
+      "backend": "wasm",
+      "source_sha256": "e781e7150dfc5be2a83ec57cd9a3c393e0e7bd6fad88222d7a3253a281cf0a85",
+      "pdf_sha256": "81b2558c67a8a10e7278a4ed3b942bd83bad2a5e1be1823de10174e0fb71d786",
+      "raw": [
+        "100.00",
+        "100.00",
+        "100.00",
+        "100.00"
+      ]
+    }
+  ]
+}

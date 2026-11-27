@@ -335,3 +335,46 @@ fn real_picture_page_background_uses_print_rgb_once_without_mutating_source() {
         "render-node 보정이 원본 BinData를 바꾸면 안 된다"
     );
 }
+
+#[test]
+fn legacy_pie_frame_preserves_reference_coverage_within_chart_bounds() {
+    use rhwp::document_core::DocumentCore;
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+
+    fn pie_svg(node: &RenderNode) -> Option<&str> {
+        match &node.node_type {
+            RenderNodeType::RawSvg(raw)
+                if raw
+                    .svg
+                    .contains("data-ole-chart-presentation=\"legacy-pie\"") =>
+            {
+                Some(&raw.svg)
+            }
+            _ => node.children.iter().find_map(pie_svg),
+        }
+    }
+
+    // 관계형. 제주 한컴 2024 Print 47~50쪽의 외곽은 차트 경계를 따라
+    // 벡터로 인쇄되고 96 DPI 대조에서도 각 변의 회색 피복이 이어진다.
+    let source = "samples/issue8759/6500000-201700118_jeju_tourism_education_plan.hwp";
+    let mut core = DocumentCore::from_bytes(&std::fs::read(source).unwrap()).unwrap();
+    core.set_hangul2024_compat(true);
+    for page in 46..50 {
+        let tree = core.build_page_render_tree(page).unwrap();
+        let svg = roxmltree::Document::parse(pie_svg(&tree.root).expect("원형 차트")).unwrap();
+        let background = svg
+            .descendants()
+            .find(|node| node.has_tag_name("rect") && node.attribute("fill") == Some("white"))
+            .expect("차트 배경");
+        let frame = background.next_sibling_element().expect("배경 뒤의 괘선");
+        assert_eq!(frame.attribute("stroke"), Some("#8c8c8c"));
+        let stroke = number(frame, "stroke-width");
+        assert!(stroke >= 1.0, "기준 96 DPI에서 끊기지 않는 괘선");
+        for (position, size) in [("x", "width"), ("y", "height")] {
+            let start = number(frame, position) - stroke / 2.0;
+            let end = number(frame, position) + number(frame, size) + stroke / 2.0;
+            assert!(start.abs() < 0.000001);
+            assert!((end - number(background, size)).abs() < 0.000001);
+        }
+    }
+}

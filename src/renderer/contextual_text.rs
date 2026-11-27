@@ -25,6 +25,8 @@ fn script(text: &str) -> Option<u32> {
         0x0900..=0x0dff => Some(first / 128),
         0x0e00..=0x0e7f => Some(3),
         0x1780..=0x17ff => Some(4),
+        0xa800..=0xa82f => Some(5), // Syloti Nagri
+        0xa840..=0xa87f => Some(6), // Phags-pa
         _ => None,
     }
 }

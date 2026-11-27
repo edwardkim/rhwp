@@ -196,7 +196,7 @@ fn compute_flow_metrics_hwp(equation: &crate::model::control::Equation) -> (u32,
         && equation.common.height > 0;
     if !equation.common.size_protect
         && !stored_legacy_frame
-        && equation.font_name.eq_ignore_ascii_case("HYhwpEQ")
+        && equation.uses_hyhwpeq_font()
         && equation
             .script
             .chars()
@@ -282,7 +282,7 @@ fn simple_math_frame_metrics(
         || equation.common.size_protect
         || equation.attr & 1 != 0
         || equation.font_size == 0
-        || !equation.font_name.eq_ignore_ascii_case("HYhwpEQ")
+        || !equation.uses_hyhwpeq_font()
     {
         return None;
     }
@@ -527,7 +527,7 @@ pub(crate) fn layout_for_paint(
         fs,
     );
     if scale == 1.0
-        && equation.font_name.eq_ignore_ascii_case("HYhwpEQ")
+        && equation.uses_hyhwpeq_font()
         && logical_font_frame::dyad_font_line(&result, fs)
     {
         // bbox는 이미 저장 예약 프레임의 기준선으로 배치됐다. 자연 glyph를

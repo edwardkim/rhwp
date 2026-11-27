@@ -1,0 +1,79 @@
+{
+  "source_head": "436f8629b7f2b9aee520962297b79cdf15c17743",
+  "started": 1795299724.5739555,
+  "results": [
+    {
+      "label": "studio-unit",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "cwd": "/home/tsjang/rhwp/rhwp-studio",
+      "exit_code": 0,
+      "seconds": 60.74517364590429,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-studio-unit.log"
+    },
+    {
+      "label": "studio-types",
+      "command": [
+        "node_modules/.bin/tsc",
+        "--noEmit"
+      ],
+      "cwd": "/home/tsjang/rhwp/rhwp-studio",
+      "exit_code": 0,
+      "seconds": 2.2128181129228324,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-studio-types.log"
+    },
+    {
+      "label": "rust-suite-policy",
+      "command": [
+        "/usr/local/bin/node",
+        "--test",
+        "scripts/tests/rust-test-suite-manifest.test.mjs",
+        "scripts/tests/rust-unit-test-tiers.test.mjs"
+      ],
+      "cwd": "/home/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 8.054251587949693,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-suite-policy.log"
+    },
+    {
+      "label": "font-trace-contract",
+      "command": [
+        "/usr/local/bin/node",
+        "--test",
+        "scripts/tests/font_decision_trace_contract.test.mjs"
+      ],
+      "cwd": "/home/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 1.430364988045767,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-font-trace-contract.log"
+    }
+  ],
+  "running": null,
+  "passed": true,
+  "ended": 1795299797.0185838,
+  "additional_checks": [
+    {
+      "label": "unit-tier-after-test-routing",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "1a27faacff48ea7329e76ce8eca15aa9ca8aa877"
+      ],
+      "exit_code": 0,
+      "actual_summary": "[RustUnitTier] 확인 완료: 4092 tests / 295 modules / ready 0 / support 85 / white-box 4003 / cfg support items 28"
+    },
+    {
+      "label": "types-after-optimized-bindgen",
+      "command": [
+        "node_modules/.bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-types-after-bindgen.log"
+    }
+  ]
+}

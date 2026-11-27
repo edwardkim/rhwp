@@ -1,0 +1,3430 @@
+{
+  "base_source": "dd1dc8509769df46593ca91e23c06167d0436607",
+  "candidate_source": "e2e6c3dc5273f5b63be9215bdd7a34adb2d19cb5",
+  "programs": {
+    "base": {
+      "native": "57ac54841729fb413fe3acda86cb077beaa584ba1e7bd5698723790ea7dc39b5",
+      "wasm": {
+        "rhwp.js": "5ec4c5ce9ed9b852cb5e0d97a4baa6eb6fbe734cebdbb321709088d794678406",
+        "rhwp_bg.wasm": "48150c7062a0b396d7de6d3e0efe0100e67f73c416c01b7e0af11c8c168954d1"
+      }
+    },
+    "candidate": {
+      "native": "a1364e973ae517f7228f98c188cdf1871c8e0541e196f3cbc08c9b6588659e8f",
+      "wasm": {
+        "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+        "rhwp_bg.wasm": "7d2d471c1552609cd4d5842f44a95ada49ad30ca3cd660b5746091c4951e5a17"
+      }
+    }
+  },
+  "cases": [
+    {
+      "key": "1853",
+      "issue": 7766,
+      "label": "법률 개정 이유서",
+      "pages": 52,
+      "input": {
+        "path": "samples/issue1853_caption_precedes_body_split.hwpx",
+        "sha256": "46bd0142f7fe2f68dffb9768e08d65488feeb19f5fd6916f9ad90ae5d72a96a9"
+      },
+      "reference": {
+        "path": "pdf/issue1853_caption_precedes_body_split-2024.pdf",
+        "bytes": 749771,
+        "sha256": "c3befae95a2135761066c44435a331bb55d0d27bac2f97d8487358f1b9f2bd9b",
+        "pages": 52
+      },
+      "backends": {
+        "native": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/native/1853.tsv",
+            "sha256": "6bf1768dc42b44527cff21903ec7ef47e3068c0a474373ff93989b9be0ae60b3",
+            "bytes": 1109,
+            "minimum": "94.84",
+            "minimum_page": 44
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/native/1853.tsv",
+            "sha256": "85e39b5f3008fd7f51373a8053c2adeebf3dcdd38c6f365b1b4ee491f58d8095",
+            "bytes": 1111,
+            "minimum": "98.40",
+            "minimum_page": 24
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 44,
+            "raw": "100.00",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/1853/review_044.png",
+              "sha256": "0bf40e35bdaaf09030cfd95de6fbb62700c09115db715f37280f7a3b5ab23409",
+              "bytes": 543690
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/1853/overlay_044.png",
+              "sha256": "7a6e9f14a6646cd7feaed66def92218bdc6fc11a2c8a4d0adcb901f0f5cdb545",
+              "bytes": 201287
+            }
+          }
+        },
+        "wasm": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/wasm/1853.tsv",
+            "sha256": "989f274068a857bbb9d57f086eb836b89f3e806b461c464f7fe687da71728613",
+            "bytes": 1107,
+            "minimum": "94.80",
+            "minimum_page": 44
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/wasm/1853.tsv",
+            "sha256": "01e0daa10ea796b3025e26330585c46c871d966eab20c30e1226554dd439a071",
+            "bytes": 1109,
+            "minimum": "98.40",
+            "minimum_page": 24
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 44,
+            "raw": "100.00",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/1853/review_044.png",
+              "sha256": "450297ee388f7ff067de02e49fbc68babb67e2e6c6889a94a4e64f88a0ee1160",
+              "bytes": 543966
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/1853/overlay_044.png",
+              "sha256": "3896475b3d1a350fd4a239741be5e42ed1aebf4e976216320009fa4c1a7ad429",
+              "bytes": 201703
+            }
+          }
+        }
+      }
+    },
+    {
+      "key": "husbandry-2024-one-up",
+      "issue": 7767,
+      "label": "동물복지 사육관리 지침",
+      "pages": 12,
+      "input": {
+        "path": "samples/issue6778/156757920-animal-welfare-husbandry-guidelines.hwp",
+        "sha256": "309494bf58da7c092eca2c6fe55918063d2f538820cbc3fc6f8c8196fcd3586a"
+      },
+      "reference": {
+        "path": "pdf/issue7767/animal-welfare-husbandry-one-up-2024.pdf",
+        "bytes": 925808,
+        "sha256": "3c86ba0cb8d57587c8c4be95e8babde1b119bb9147dd617d83d7ce4081368896",
+        "pages": 12
+      },
+      "backends": {
+        "native": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/native/husbandry-2024-one-up.tsv",
+            "sha256": "8b8a31ac1f0cf647a55483208ceb58ce80f9bba45154e1d71871ca3b025175b5",
+            "bytes": 353,
+            "minimum": "94.62",
+            "minimum_page": 1
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/native/husbandry-2024-one-up.tsv",
+            "sha256": "8b8a31ac1f0cf647a55483208ceb58ce80f9bba45154e1d71871ca3b025175b5",
+            "bytes": 353,
+            "minimum": "94.62",
+            "minimum_page": 1
+          },
+          "candidate_full_color": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate-full-color/native/husbandry-2024-one-up.tsv",
+            "sha256": "909e0a9233fb51f6c18ec6a5c76ca34e8abbb3ee9b4baecef27111034cccb2d7",
+            "bytes": 347,
+            "minimum": "99.98",
+            "minimum_page": 7
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 2,
+            "raw": "100.00",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/husbandry-2024-one-up/review_002.png",
+              "sha256": "691a855a93abf8c9b371701aacdf8db9edaa632f3ef70ea5834a1d234f5661d0",
+              "bytes": 663213
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/husbandry-2024-one-up/overlay_002.png",
+              "sha256": "98fa5d910ba96a46699975326b5db61edbe84bca09cb96f0d9e92af03929f90c",
+              "bytes": 214797
+            }
+          }
+        },
+        "wasm": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/wasm/husbandry-2024-one-up.tsv",
+            "sha256": "aa52bd3f7c78587b46fb629f496269ca1c2c2cb6e282ba8b24dc01417e21618f",
+            "bytes": 352,
+            "minimum": "94.57",
+            "minimum_page": 1
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/wasm/husbandry-2024-one-up.tsv",
+            "sha256": "aa52bd3f7c78587b46fb629f496269ca1c2c2cb6e282ba8b24dc01417e21618f",
+            "bytes": 352,
+            "minimum": "94.57",
+            "minimum_page": 1
+          },
+          "candidate_full_color": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate-full-color/wasm/husbandry-2024-one-up.tsv",
+            "sha256": "521c65f9d33f407977235ce76decfa30a153338b2f9ee451bedb1d66d295d791",
+            "bytes": 345,
+            "minimum": "99.72",
+            "minimum_page": 10
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 2,
+            "raw": "100.00",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/husbandry-2024-one-up/review_002.png",
+              "sha256": "9b549365c977b6d6aa91125cc28cc94af4eaa3ac8f02143b3202a4fd1ec22ccb",
+              "bytes": 682258
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/husbandry-2024-one-up/overlay_002.png",
+              "sha256": "e85c1f1c0ff8ca0a8ca7e4ead3345e56a7021b4f0ec0309eddcc56fc63343c4e",
+              "bytes": 235660
+            }
+          }
+        }
+      }
+    },
+    {
+      "key": "synam",
+      "issue": 7769,
+      "label": "영구임대주택 예비입주자 모집 공고",
+      "pages": 35,
+      "input": {
+        "path": "samples/synam-001.hwp",
+        "sha256": "1dce9356ec316407b6c684d5a11190a44bb26da643a7749626763e781ab0c13b"
+      },
+      "reference": {
+        "path": "pdf/synam-001-hwp-2020.pdf",
+        "bytes": 837269,
+        "sha256": "d199640be90cb39acfde965bbeb66c787d01d179b6759c5d797cf91043c7d09d",
+        "pages": 35
+      },
+      "backends": {
+        "native": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/native/synam.tsv",
+            "sha256": "d57de502c2cc597f3679f772322c7e616cbb55854fdf4963c421e0eaeaff2ff1",
+            "bytes": 786,
+            "minimum": "95.83",
+            "minimum_page": 8
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/native/synam.tsv",
+            "sha256": "2d0747bf4bb093b5c8421e3e0d3588e836525deae9485f71e95f35c56b552f4e",
+            "bytes": 810,
+            "minimum": "98.99",
+            "minimum_page": 5
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 8,
+            "raw": "100.00",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/synam/review_008.png",
+              "sha256": "0321084e282167fa336fe8868d0f275ce9e3e39cfd8aae813a77fec44469a50c",
+              "bytes": 564414
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/synam/overlay_008.png",
+              "sha256": "ed3b1719727194b61598fa740c6669aa18b79c509a0adc1d16e057e3643c230b",
+              "bytes": 196283
+            }
+          }
+        },
+        "wasm": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/wasm/synam.tsv",
+            "sha256": "101e54d32d699847c2a1c31e9c785908599a5f9d27b593c22360976330bc28ce",
+            "bytes": 788,
+            "minimum": "95.83",
+            "minimum_page": 8
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/wasm/synam.tsv",
+            "sha256": "8d2cb8ca3a9666f317862a4e4ed17c58d60b3f425d6fafd612ad49044a981bf6",
+            "bytes": 810,
+            "minimum": "99.02",
+            "minimum_page": 5
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 8,
+            "raw": "100.00",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/synam/review_008.png",
+              "sha256": "3e67ada2c5abc81f3be723de0ea0ce7b6fb54e6b3fc49772d54e1dee024cb691",
+              "bytes": 574448
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/synam/overlay_008.png",
+              "sha256": "88afed09a9097c9499d128d12d96c92f971b7dd99da4b63bcc0d9ace2f311543",
+              "bytes": 204658
+            }
+          }
+        }
+      }
+    },
+    {
+      "key": "chemical",
+      "issue": 7769,
+      "label": "화학제품 표시 조사보고서",
+      "pages": 103,
+      "input": {
+        "path": "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+        "sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860"
+      },
+      "reference": {
+        "path": "pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf",
+        "bytes": 2208597,
+        "sha256": "f8e5c0408e221080ede9a9a67b153d02d792d22961c738e46749641f32a32e79",
+        "pages": 103
+      },
+      "backends": {
+        "native": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/native/chemical.tsv",
+            "sha256": "61d5eb9c5a68fd1fe0f7fe63527b5cd99f54437cfa08b4eb6016e1543c24e018",
+            "bytes": 2255,
+            "minimum": "99.53",
+            "minimum_page": 65
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/native/chemical.tsv",
+            "sha256": "61d5eb9c5a68fd1fe0f7fe63527b5cd99f54437cfa08b4eb6016e1543c24e018",
+            "bytes": 2255,
+            "minimum": "99.53",
+            "minimum_page": 65
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 83,
+            "raw": "100.00",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/chemical/review_083.png",
+              "sha256": "bbd1db307480c5598c3646f27b56297df9f8526d2384875f6036d1d0ac131b96",
+              "bytes": 639390
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/chemical/overlay_083.png",
+              "sha256": "071b2e8760cd8867bebbfb7a0110ba5d6bd25ef70987b53c9e7848c5306c3e6c",
+              "bytes": 207602
+            }
+          }
+        },
+        "wasm": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/wasm/chemical.tsv",
+            "sha256": "50d2c651221cdcf14d5078db90fa3e123a7ccc19b2df5db765a68d8dd01f6f06",
+            "bytes": 2251,
+            "minimum": "99.53",
+            "minimum_page": 65
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/wasm/chemical.tsv",
+            "sha256": "50d2c651221cdcf14d5078db90fa3e123a7ccc19b2df5db765a68d8dd01f6f06",
+            "bytes": 2251,
+            "minimum": "99.53",
+            "minimum_page": 65
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 83,
+            "raw": "100.00",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/chemical/review_083.png",
+              "sha256": "606bff628f4713eac860bca4aab55ba1e3e24f2327bcaaeb78684a667263eb4c",
+              "bytes": 642867
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/chemical/overlay_083.png",
+              "sha256": "3cdf93747465bf5191b68141266b6f158b2386d6d1d995e3458379bc44280ece",
+              "bytes": 210987
+            }
+          }
+        }
+      }
+    },
+    {
+      "key": "ktx",
+      "issue": 7769,
+      "label": "KTX-003",
+      "pages": 1,
+      "input": {
+        "path": "samples/basic/KTX-003.hwp",
+        "sha256": "619bc919de3f2b8113fb9af0fcc808c754dc601ed9e66e49226280fd3d1ae032"
+      },
+      "reference": {
+        "path": "pdf/basic/KTX-003-hwp-2020.pdf",
+        "bytes": 719180,
+        "sha256": "a0798bc093be8521908d9d0e5f2bf557013370f12de455fb9886d4f4d6419787",
+        "pages": 1
+      },
+      "backends": {
+        "native": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/native/ktx.tsv",
+            "sha256": "2a1e837bee6e72e6bbc680c8595b19ccf8e98255decb58ac67f4a55ba8c65f94",
+            "bytes": 131,
+            "minimum": "99.99",
+            "minimum_page": 1
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/native/ktx.tsv",
+            "sha256": "2a1e837bee6e72e6bbc680c8595b19ccf8e98255decb58ac67f4a55ba8c65f94",
+            "bytes": 131,
+            "minimum": "99.99",
+            "minimum_page": 1
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 1,
+            "raw": "99.99",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/ktx/review_001.png",
+              "sha256": "a32512d6dbaa13eb2b90897511302a79d127bd689f57b049fda159952510adf0",
+              "bytes": 699877
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/ktx/overlay_001.png",
+              "sha256": "5eb2538229be06ba0916fb610580a0ee4b142d9218badb6d75cad541da5cac4a",
+              "bytes": 232127
+            }
+          }
+        },
+        "wasm": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/wasm/ktx.tsv",
+            "sha256": "34a1e83af97dc2295dc6d9dc0e13e8eb07f892a3817c3d3e6b855a06682c736c",
+            "bytes": 130,
+            "minimum": "99.99",
+            "minimum_page": 1
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/wasm/ktx.tsv",
+            "sha256": "34a1e83af97dc2295dc6d9dc0e13e8eb07f892a3817c3d3e6b855a06682c736c",
+            "bytes": 130,
+            "minimum": "99.99",
+            "minimum_page": 1
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 1,
+            "raw": "99.99",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/ktx/review_001.png",
+              "sha256": "b1ebbb787f885efd1ca56afaef434ad378a108c1618785a8ebb24f782067a4eb",
+              "bytes": 683010
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/ktx/overlay_001.png",
+              "sha256": "2d499e083b0e15f0d57b1c82e7dcd31000ea8c0ee74cf8df16f811985aeab3b1",
+              "bytes": 227067
+            }
+          }
+        }
+      }
+    },
+    {
+      "key": "2439",
+      "issue": 7769,
+      "label": "반복 점검표",
+      "pages": 10,
+      "input": {
+        "path": "samples/issue2439/issue2439_repeat_table_overlap.hwp",
+        "sha256": "674eabe66ea0ba783ad2cd398519c9893ba94956a22d9cb94b084db00d4d2c3d"
+      },
+      "reference": {
+        "path": "pdf/issue2439/issue2439_hancom2024_landscape.pdf",
+        "bytes": 199809,
+        "sha256": "f36a747c5f848d90e755abe2e730d932429a324fad9b7e822964934cd8f8eca4",
+        "pages": 10
+      },
+      "backends": {
+        "native": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/native/2439.tsv",
+            "sha256": "b206f1e145d3181698161552ed745dd472b14556c908945b2b8d05b056e172eb",
+            "bytes": 295,
+            "minimum": "11.92",
+            "minimum_page": 10
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/native/2439.tsv",
+            "sha256": "cd69186771b706c9ee855490c9c46fc4471589a8658df8076b89a360b68ddd4e",
+            "bytes": 313,
+            "minimum": "100.00",
+            "minimum_page": 1
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 2,
+            "raw": "100.00",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/2439/review_002.png",
+              "sha256": "d585d45609cb9efe2f23bd6fa0985da14578ae3955a847354d8253883316c1b3",
+              "bytes": 348012
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/2439/overlay_002.png",
+              "sha256": "c03caecdfc7fb5aac7c08c25e80edfcc02b35fa8eaea7277007f50541449a087",
+              "bytes": 120371
+            }
+          }
+        },
+        "wasm": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/wasm/2439.tsv",
+            "sha256": "ce8931a05376b1b9e2a8e8daae601def6f78f1014cedc4a004e2424f28b51a41",
+            "bytes": 295,
+            "minimum": "12.09",
+            "minimum_page": 10
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/wasm/2439.tsv",
+            "sha256": "cd69186771b706c9ee855490c9c46fc4471589a8658df8076b89a360b68ddd4e",
+            "bytes": 313,
+            "minimum": "100.00",
+            "minimum_page": 1
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 2,
+            "raw": "100.00",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/2439/review_002.png",
+              "sha256": "970d7bafc1a4cba58ca4c73897ca4002042b2915f60c66238f307b165271fb08",
+              "bytes": 350643
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/2439/overlay_002.png",
+              "sha256": "99a4a6ccfa5a2c0862868b661c3162a50c980442ceb712202f30ae8e523da355",
+              "bytes": 123407
+            }
+          }
+        }
+      }
+    },
+    {
+      "key": "pig-hwp",
+      "issue": 7770,
+      "label": "양돈 소득 HWP",
+      "pages": 11,
+      "input": {
+        "path": "samples/issue6797/156160455-social-pig-farm-income.hwp",
+        "sha256": "1b99b763aac36a14a9f463e35ee894a23eb1083780040eab5e0f02a481c694b8"
+      },
+      "reference": {
+        "path": "pdf/156160455-social-pig-farm-income-2020.pdf",
+        "bytes": 533249,
+        "sha256": "4d5abf857476fca43befe528d10221b668a85bb2d7497a2165da34e46c11b002",
+        "pages": 11
+      },
+      "backends": {
+        "native": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/native/pig-hwp.tsv",
+            "sha256": "55fda97212387b282f2b087af435fc6899c9d31b37c52c178950eedfc15af9d4",
+            "bytes": 329,
+            "minimum": "94.34",
+            "minimum_page": 6
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/native/pig-hwp.tsv",
+            "sha256": "55fda97212387b282f2b087af435fc6899c9d31b37c52c178950eedfc15af9d4",
+            "bytes": 329,
+            "minimum": "94.34",
+            "minimum_page": 6
+          },
+          "candidate_full_color": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate-full-color/native/pig-hwp.tsv",
+            "sha256": "2b7f1b007f445fe6cf1fba4aa837e6e7d20b6465ff092e946668cbf74235234e",
+            "bytes": 328,
+            "minimum": "99.81",
+            "minimum_page": 2
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 5,
+            "raw": "100.00",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/pig-hwp/review_005.png",
+              "sha256": "ae8b86104972d91b35df017794a7d261e3ce9427f6ba2f5dfb8a02e7036c8474",
+              "bytes": 795914
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/pig-hwp/overlay_005.png",
+              "sha256": "80b81c01e71c4e4fcf2b3c9d15cb1d96478a9207c487cce3c582a04cf5dbd350",
+              "bytes": 267657
+            }
+          }
+        },
+        "wasm": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/wasm/pig-hwp.tsv",
+            "sha256": "c2eb94def68d0f651d923fbbf817217e7d589ec8ef34ebeb75ea36447465683a",
+            "bytes": 329,
+            "minimum": "94.39",
+            "minimum_page": 6
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/wasm/pig-hwp.tsv",
+            "sha256": "c2eb94def68d0f651d923fbbf817217e7d589ec8ef34ebeb75ea36447465683a",
+            "bytes": 329,
+            "minimum": "94.39",
+            "minimum_page": 6
+          },
+          "candidate_full_color": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate-full-color/wasm/pig-hwp.tsv",
+            "sha256": "b4d30838453393c175bd3133c59c25e309395d9ec3794e4d7ceb9408ad9b2219",
+            "bytes": 328,
+            "minimum": "99.80",
+            "minimum_page": 1
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 5,
+            "raw": "100.00",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/pig-hwp/review_005.png",
+              "sha256": "e7d57f690bc6bbc53f5b62f9858dda61222075928b13ecbb95b20ee690c87e72",
+              "bytes": 706577
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/pig-hwp/overlay_005.png",
+              "sha256": "add5128a91ed1a0cdb3c6b27309095ae64d4fc7925ed263f9ec4ebe9ed7862ff",
+              "bytes": 254048
+            }
+          }
+        }
+      }
+    },
+    {
+      "key": "center",
+      "issue": 7771,
+      "label": "아이돌 굿즈 판매사업자 제재",
+      "pages": 20,
+      "input": {
+        "path": "tests/fixtures/issue6923/156645214_240812(조간)_4개_아이돌굿즈_판매사업자_전상법의_위반행위_제재.hwp",
+        "sha256": "cb36c862d3d41757d15fb322b1733f0e0ce27bf20142db0a25c57a624739e23b"
+      },
+      "reference": {
+        "path": "tests/fixtures/issue6923/156645214_240812(조간)_4개_아이돌굿즈_판매사업자_전상법의_위반행위_제재-2020.pdf",
+        "bytes": 2232190,
+        "sha256": "71261bcb218eabc6f1b2af5ce81797a3505f417d1c2482ee5441dec11b6ba943",
+        "pages": 20
+      },
+      "backends": {
+        "native": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/native/center.tsv",
+            "sha256": "c2f79219fbd519c163fd6c2d1fc52ec0cb8c5a2f7bbb8d3f4e8066ec017a5b9f",
+            "bytes": 510,
+            "minimum": "86.68",
+            "minimum_page": 8
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/native/center.tsv",
+            "sha256": "3e260428d81e33a17778522482e10a50edd05f11a4d58e4b782d4f0f40f154a2",
+            "bytes": 509,
+            "minimum": "99.31",
+            "minimum_page": 7
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 8,
+            "raw": "99.73",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/center/review_008.png",
+              "sha256": "eaafb8250673bd25797ba1360edf24a59138f44628533daf9420a49624427eec",
+              "bytes": 828019
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/center/overlay_008.png",
+              "sha256": "8d984da69eeb726c98381534649814a943dada14d35e47cea13af1918e9e1ed1",
+              "bytes": 247367
+            }
+          }
+        },
+        "wasm": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/wasm/center.tsv",
+            "sha256": "607ee68e6fbf4d5c35ba6e7f35b018492039a7c65ab5066b71daad147aa446fb",
+            "bytes": 510,
+            "minimum": "86.72",
+            "minimum_page": 8
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/wasm/center.tsv",
+            "sha256": "7e47ab1b7fd09722a47e9be97c3c8cf6456dc3264145419201d15cf35e5a3e0e",
+            "bytes": 509,
+            "minimum": "99.32",
+            "minimum_page": 7
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 8,
+            "raw": "99.73",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/center/review_008.png",
+              "sha256": "c7d0f8b3c13305a39aa399f35e9e358a7db0c151d0ca977ddcdd1858e17ee7b2",
+              "bytes": 824072
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/center/overlay_008.png",
+              "sha256": "e60ed9f514a0656bec694e6d79d6f86c3ef9618aa813be3d4339cdbd704b5946",
+              "bytes": 244888
+            }
+          }
+        }
+      }
+    },
+    {
+      "key": "hwpspec-2024-one-up",
+      "issue": 7772,
+      "label": "HWP 사양서",
+      "pages": 178,
+      "input": {
+        "path": "samples/hwpspec.hwp",
+        "sha256": "64df877f3c4accda0111ecf39d837da889741bb821b220cf61b6c126dc88364d"
+      },
+      "reference": {
+        "path": "pdf/issue7772/hwpspec-hancom-one-up-2024.pdf",
+        "bytes": 1915882,
+        "sha256": "a4f52594ead9e292f6d124a362f91ed28d84fa29a3e23858232b1a95f7bedd39",
+        "pages": 178
+      },
+      "backends": {
+        "native": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/native/hwpspec-2024-one-up.tsv",
+            "sha256": "24f5bbfcfdbb390bfacfe05cfd0dfece6c4d46dc246d879eece3f573ad29258f",
+            "bytes": 3790,
+            "minimum": "93.35",
+            "minimum_page": 1
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/native/hwpspec-2024-one-up.tsv",
+            "sha256": "24f5bbfcfdbb390bfacfe05cfd0dfece6c4d46dc246d879eece3f573ad29258f",
+            "bytes": 3790,
+            "minimum": "93.35",
+            "minimum_page": 1
+          },
+          "candidate_full_color": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate-full-color/native/hwpspec-2024-one-up.tsv",
+            "sha256": "2dc76f5c6be5257ebd2d63752840213bf06a6f5ab150277b3984f9a0e43c750e",
+            "bytes": 3778,
+            "minimum": "98.14",
+            "minimum_page": 67
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 20,
+            "raw": "100.00",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/hwpspec-2024-one-up/review_020.png",
+              "sha256": "51abd86f1d912e5268f66fd600d1f2bed276700310e8779ae0ce1a9abcba108b",
+              "bytes": 419547
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/hwpspec-2024-one-up/overlay_020.png",
+              "sha256": "4871759310b5bb650492e312b2287b64c0c44f14629f2bc92fc2886e38ff7a06",
+              "bytes": 143579
+            }
+          }
+        },
+        "wasm": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/wasm/hwpspec-2024-one-up.tsv",
+            "sha256": "1089455374c84602c0439171d006cad991a55538cf0c66096ab1f958bf65aa9d",
+            "bytes": 3788,
+            "minimum": "93.34",
+            "minimum_page": 1
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/wasm/hwpspec-2024-one-up.tsv",
+            "sha256": "1089455374c84602c0439171d006cad991a55538cf0c66096ab1f958bf65aa9d",
+            "bytes": 3788,
+            "minimum": "93.34",
+            "minimum_page": 1
+          },
+          "candidate_full_color": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate-full-color/wasm/hwpspec-2024-one-up.tsv",
+            "sha256": "e1770253b3f5a044614321d242e2835d69c418dbf9dba8b9bcb6159cfc0c22f7",
+            "bytes": 3777,
+            "minimum": "98.16",
+            "minimum_page": 67
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 20,
+            "raw": "100.00",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/hwpspec-2024-one-up/review_020.png",
+              "sha256": "1f1c092d2101692c42906d68f1bb5cf250e25e4f4c10e15319bfec265e454ca4",
+              "bytes": 409828
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/hwpspec-2024-one-up/overlay_020.png",
+              "sha256": "117ff765b9cff48d687cf88da149529f7c82fbf5f60ee8700adc77d69ad66f3e",
+              "bytes": 141336
+            }
+          }
+        }
+      }
+    },
+    {
+      "key": "cbta-verified-2020",
+      "issue": 7772,
+      "label": "CBTA",
+      "pages": 204,
+      "input": {
+        "path": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+        "sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7"
+      },
+      "reference": {
+        "path": "pdf/issue7727/cbta-original-hancom2020-print-20261106.pdf",
+        "bytes": 4970756,
+        "sha256": "0db1eb55eda0f1a4985eeaf187656c23499616b7dccddcbb7c874c0937e1b2e0",
+        "pages": 204
+      },
+      "backends": {
+        "native": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/native/cbta-verified-2020.tsv",
+            "sha256": "dfe00135fa9dbfafddd62a5d11018334e850450346558263fc72ce2801a51889",
+            "bytes": 4122,
+            "minimum": "98.21",
+            "minimum_page": 58
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/native/cbta-verified-2020.tsv",
+            "sha256": "dfe00135fa9dbfafddd62a5d11018334e850450346558263fc72ce2801a51889",
+            "bytes": 4122,
+            "minimum": "98.21",
+            "minimum_page": 58
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 59,
+            "raw": "98.87",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/cbta-verified-2020/review_059.png",
+              "sha256": "d437eea8a661655dfe4d124354c99819fba6439da51aa6c18c2a1a903ebea57e",
+              "bytes": 667404
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/cbta-verified-2020/overlay_059.png",
+              "sha256": "45c42dbeb91b240f5581a56368bbb92197017effc060b63248aa5c9d78a459b0",
+              "bytes": 207862
+            }
+          }
+        },
+        "wasm": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/wasm/cbta-verified-2020.tsv",
+            "sha256": "00ee6d5cb4348e0370b970381071b4be41d13123736e6c36cab71057e55d148e",
+            "bytes": 4120,
+            "minimum": "98.22",
+            "minimum_page": 58
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/wasm/cbta-verified-2020.tsv",
+            "sha256": "00ee6d5cb4348e0370b970381071b4be41d13123736e6c36cab71057e55d148e",
+            "bytes": 4120,
+            "minimum": "98.22",
+            "minimum_page": 58
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 59,
+            "raw": "98.90",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/cbta-verified-2020/review_059.png",
+              "sha256": "0475082d8f1be648fe33cf490cbd410b170f7f793afd81adb21f5eab5834cdee",
+              "bytes": 671364
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/cbta-verified-2020/overlay_059.png",
+              "sha256": "3509de30cb5b032a930dcd0fafe24f49ca51975cdac63fa6c80a48f8a8d66453",
+              "bytes": 210552
+            }
+          }
+        }
+      }
+    },
+    {
+      "key": "policy-verified-2024",
+      "issue": 7772,
+      "label": "정책연구",
+      "pages": 215,
+      "input": {
+        "path": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+        "sha256": "50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113"
+      },
+      "reference": {
+        "path": "pdf/issue7753/policy-donor-screening-hwp-2024-print.pdf",
+        "bytes": 3785323,
+        "sha256": "fed7aef74005a175baac87ad1415be126b881633390ec04b6b557447c164060d",
+        "pages": 215
+      },
+      "backends": {
+        "native": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/native/policy-verified-2024.tsv",
+            "sha256": "41ae6ee8f1be4204f8d41fc28864192f40ecec57b13b017ac867e07f1ef8da40",
+            "bytes": 4664,
+            "minimum": "98.37",
+            "minimum_page": 37
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/native/policy-verified-2024.tsv",
+            "sha256": "41ae6ee8f1be4204f8d41fc28864192f40ecec57b13b017ac867e07f1ef8da40",
+            "bytes": 4664,
+            "minimum": "98.37",
+            "minimum_page": 37
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 1,
+            "raw": "100.00",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/policy-verified-2024/review_001.png",
+              "sha256": "f639cfa744fcbacd0ae3434c8552271525deb1e05f8a832a0183203d2efcc7b6",
+              "bytes": 344220
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/policy-verified-2024/overlay_001.png",
+              "sha256": "618a060d3248550e300b73d75e1f23f40b25f819836a623c3c2cd3eb2ccd565d",
+              "bytes": 119610
+            }
+          }
+        },
+        "wasm": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/wasm/policy-verified-2024.tsv",
+            "sha256": "f659134fe15d19ad954be1895885f13dc0d59525b26966dfe17a112c3c60311c",
+            "bytes": 4653,
+            "minimum": "98.86",
+            "minimum_page": 175
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/wasm/policy-verified-2024.tsv",
+            "sha256": "f659134fe15d19ad954be1895885f13dc0d59525b26966dfe17a112c3c60311c",
+            "bytes": 4653,
+            "minimum": "98.86",
+            "minimum_page": 175
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 1,
+            "raw": "100.00",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/policy-verified-2024/review_001.png",
+              "sha256": "aba262fa358ae1d727fcb26f0d3f624a8065d33d40bd2d801a468a08ac5826e2",
+              "bytes": 350876
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/policy-verified-2024/overlay_001.png",
+              "sha256": "c4dc0de2c15f5c5d6cf8663b7fd17c35c9bb9c71e3ddab7ad684a8e7ace34819",
+              "bytes": 123557
+            }
+          }
+        }
+      }
+    },
+    {
+      "key": "sql-hwp5",
+      "issue": 7774,
+      "label": "SQL sample10 HWP5",
+      "pages": 763,
+      "input": {
+        "path": "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwp5.hwp",
+        "sha256": "a660a0d41898c8316479392c9687d81a15555431a581bdda988bf3598f6f0d51"
+      },
+      "reference": {
+        "bytes": 105687267,
+        "sha256": "e3e33b3bbe3370cb64f3775ea7f87d25ece53e1d4f4272ef2d713977e535e857",
+        "pages": 763,
+        "source_splits": {
+          "source_files": [
+            {
+              "path": "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwp5-p001-300-2024.pdf",
+              "pages": 300,
+              "sha256": "650f210c1d4127b404beab774e445651d463b00ac774c84f68210f42773a391a",
+              "bytes": 42328968
+            },
+            {
+              "path": "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwp5-p301-600-2024.pdf",
+              "pages": 300,
+              "sha256": "ee223ef5a83e1349ed24af1a56fc3c786221df6c0f45c0100d65acd64d824e25",
+              "bytes": 40344499
+            },
+            {
+              "path": "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwp5-p601-763-2024.pdf",
+              "pages": 163,
+              "sha256": "52d42e6c96ce8c3631302ea9787e505f9639fd38ab7f01dc41f3140e4ee8954f",
+              "bytes": 21264303
+            }
+          ],
+          "same_page_content_streams": 763,
+          "same_raster_pages": [
+            1,
+            16,
+            125,
+            243,
+            299,
+            300,
+            301,
+            302,
+            489,
+            554,
+            599,
+            600,
+            601,
+            744,
+            757,
+            763
+          ]
+        }
+      },
+      "backends": {
+        "native": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/native/sql-hwp5.tsv",
+            "sha256": "3347d69eef78c3bace0718e21cb3ac734ac5e8c48285982b5cf747dfac3d8cae",
+            "bytes": 16348,
+            "minimum": "96.81",
+            "minimum_page": 16
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/native/sql-hwp5.tsv",
+            "sha256": "c66d73b717283c147eea1b715eebd4c1bc454079044a64d113dad76d6f2a7909",
+            "bytes": 16364,
+            "minimum": "99.58",
+            "minimum_page": 757
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 16,
+            "raw": "99.99",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/sql-hwp5/review_016.png",
+              "sha256": "61760a096d2f0a8c0d4fd5ec584daa167729edad06ac2e90bb0eaf1cd9af7b0d",
+              "bytes": 308148
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/sql-hwp5/overlay_016.png",
+              "sha256": "82d2296348f3b735539808453429586b317d98a85acbfffa599fb35dd5310e7b",
+              "bytes": 101661
+            }
+          }
+        },
+        "wasm": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/wasm/sql-hwp5.tsv",
+            "sha256": "68caf47976f483e769a902d9694762d2ddc52544def4de058fffa5fc450e1328",
+            "bytes": 16192,
+            "minimum": "96.82",
+            "minimum_page": 16
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/wasm/sql-hwp5.tsv",
+            "sha256": "6d8d647f83d77d1b919cf038eeb5c419df9c563a8ae376cb6b9070729bf79281",
+            "bytes": 16204,
+            "minimum": "99.34",
+            "minimum_page": 757
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 16,
+            "raw": "99.99",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/sql-hwp5/review_016.png",
+              "sha256": "f183ad2540a7b820638464ea557c51e61aae0c99bb4d96e949c66e0c2b53a263",
+              "bytes": 304036
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/sql-hwp5/overlay_016.png",
+              "sha256": "a58372b426b931f12a33417ec680a86c30015b089999b8b48fb5002b994a1222",
+              "bytes": 102576
+            }
+          }
+        }
+      }
+    },
+    {
+      "key": "sql-hwpx-2024-one-up",
+      "issue": 7774,
+      "label": "SQL sample10 HWPX",
+      "pages": 763,
+      "input": {
+        "path": "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwpx.hwpx",
+        "sha256": "3395e19bebea8b6689f383df1f4ea1ddb253dee91c4320392cc40e90e2e4f191"
+      },
+      "reference": {
+        "bytes": 96144250,
+        "sha256": "ad6c03db8a81c5a65ba064ef0933b8a37446f1b106fa4b09757bc8b4bb7f04a9",
+        "pages": 763
+      },
+      "backends": {
+        "native": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/native/sql-hwpx-2024-one-up.tsv",
+            "sha256": "5eaa49713b01d83225855f4aaf3ef8bacc49505b4e6997591a58e1368a19128e",
+            "bytes": 16308,
+            "minimum": "96.81",
+            "minimum_page": 16
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/native/sql-hwpx-2024-one-up.tsv",
+            "sha256": "ee1202c6091686f0e9f76e7321a40fdb995dc4de52d76f1beedc886c61fbeec0",
+            "bytes": 16324,
+            "minimum": "99.58",
+            "minimum_page": 757
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 16,
+            "raw": "99.99",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/sql-hwpx-2024-one-up/review_016.png",
+              "sha256": "e0c52c0ae0873b8e6163a41190f8dc36a3450ee23fc7b7467d9e94a3f1eeecff",
+              "bytes": 309269
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/sql-hwpx-2024-one-up/overlay_016.png",
+              "sha256": "0e14afff2f9710205390d9ccd9275c9dcf5737ef140710d941f0e9589a93f89b",
+              "bytes": 102665
+            }
+          }
+        },
+        "wasm": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/wasm/sql-hwpx-2024-one-up.tsv",
+            "sha256": "1ab340658afc77dfed28547d0ba388f42a15cf51ae93fadb1a6ef81826ad42c3",
+            "bytes": 16188,
+            "minimum": "96.82",
+            "minimum_page": 16
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/wasm/sql-hwpx-2024-one-up.tsv",
+            "sha256": "c70d9e11522011e9324eab4f3c4301cce2e65c2c0422ebdc44731fb3fb00bedc",
+            "bytes": 16200,
+            "minimum": "99.34",
+            "minimum_page": 757
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 16,
+            "raw": "99.99",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/sql-hwpx-2024-one-up/review_016.png",
+              "sha256": "e6fc7069caa59384d43ec7b9ee0f407a007de70e6c85bd9873b33be6e7ace06e",
+              "bytes": 305529
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/sql-hwpx-2024-one-up/overlay_016.png",
+              "sha256": "99f1470e657f636527a7c78741a0079f8fcd2a8fd622566c6ad9fc4344511315",
+              "bytes": 103747
+            }
+          }
+        }
+      }
+    },
+    {
+      "key": "pig-hwpx",
+      "issue": 7775,
+      "label": "양돈 소득 HWPX",
+      "pages": 11,
+      "input": {
+        "path": "samples/hwpx/156160455-social-pig-farm-income.hwpx",
+        "sha256": "3194188fb93047684c560f346d13015f31bf77a4d1ca02eed6ba3a19f0fa9f53"
+      },
+      "reference": {
+        "path": "pdf/hwpx/156160455-social-pig-farm-income-hwpx-2020.pdf",
+        "bytes": 533249,
+        "sha256": "a3cd4b32d3539729650e3754407ffb2c876e1e1a75873d6e32454f24bff354f0",
+        "pages": 11
+      },
+      "backends": {
+        "native": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/native/pig-hwpx.tsv",
+            "sha256": "55fda97212387b282f2b087af435fc6899c9d31b37c52c178950eedfc15af9d4",
+            "bytes": 329,
+            "minimum": "94.34",
+            "minimum_page": 6
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/native/pig-hwpx.tsv",
+            "sha256": "55fda97212387b282f2b087af435fc6899c9d31b37c52c178950eedfc15af9d4",
+            "bytes": 329,
+            "minimum": "94.34",
+            "minimum_page": 6
+          },
+          "candidate_full_color": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate-full-color/native/pig-hwpx.tsv",
+            "sha256": "2b7f1b007f445fe6cf1fba4aa837e6e7d20b6465ff092e946668cbf74235234e",
+            "bytes": 328,
+            "minimum": "99.81",
+            "minimum_page": 2
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 7,
+            "raw": "100.00",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/pig-hwpx/review_007.png",
+              "sha256": "d614e853c017cf6c55f6d2fd353992a8ee828f62aae217bd12b10e77be0ad308",
+              "bytes": 644795
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/pig-hwpx/overlay_007.png",
+              "sha256": "d4e6f956f98c59ee7637ab464a7c1ef782791b35eb6b0c72ee23a91b1d3f66d4",
+              "bytes": 222721
+            }
+          }
+        },
+        "wasm": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/wasm/pig-hwpx.tsv",
+            "sha256": "c2eb94def68d0f651d923fbbf817217e7d589ec8ef34ebeb75ea36447465683a",
+            "bytes": 329,
+            "minimum": "94.39",
+            "minimum_page": 6
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/wasm/pig-hwpx.tsv",
+            "sha256": "c2eb94def68d0f651d923fbbf817217e7d589ec8ef34ebeb75ea36447465683a",
+            "bytes": 329,
+            "minimum": "94.39",
+            "minimum_page": 6
+          },
+          "candidate_full_color": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate-full-color/wasm/pig-hwpx.tsv",
+            "sha256": "b4d30838453393c175bd3133c59c25e309395d9ec3794e4d7ceb9408ad9b2219",
+            "bytes": 328,
+            "minimum": "99.80",
+            "minimum_page": 1
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 7,
+            "raw": "100.00",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/pig-hwpx/review_007.png",
+              "sha256": "bdd212b256e2e22aeee483696754d38903a2c1b9f18073ddf22f252e0f06a4f4",
+              "bytes": 652648
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/pig-hwpx/overlay_007.png",
+              "sha256": "612b7b9b7f0e16baaf4fe552aadb608022c981b71fb4bba267e3e6118fbafecd",
+              "bytes": 223750
+            }
+          }
+        }
+      }
+    },
+    {
+      "key": "pr1674",
+      "issue": 7776,
+      "label": "채용 공고 pr-1674",
+      "pages": 35,
+      "input": {
+        "path": "samples/pr-1674.hwp",
+        "sha256": "e8b4027cbb6cbec47ccaa70de4aa4111dbb39bcdcce6b8399386d5e28974524c"
+      },
+      "reference": {
+        "path": "pdf/pr-1674-hwp-2020.pdf",
+        "bytes": 801827,
+        "sha256": "374d92ed8747d363601f3a76d5120d5afab705cbcfb103f8ed1283bf4260d69d",
+        "pages": 35
+      },
+      "backends": {
+        "native": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/native/pr1674.tsv",
+            "sha256": "1f3fa6468d564830709a32dbe708c7be802cc48819c6e8591a0bf9963aa584b2",
+            "bytes": 795,
+            "minimum": "68.70",
+            "minimum_page": 23
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/native/pr1674.tsv",
+            "sha256": "cfdcd6aa2b72c0cc61fd194ac3cbbd851a4035efb66d1d68f9d4332b7f08ee98",
+            "bytes": 799,
+            "minimum": "98.38",
+            "minimum_page": 14
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 7,
+            "raw": "99.54",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/pr1674/review_007.png",
+              "sha256": "a941b98bdc5982d320c85a7fe23bd0311aa5eaf7a8b3a55ea06513c825a9dab4",
+              "bytes": 732004
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/native/pr1674/overlay_007.png",
+              "sha256": "ad780903509abab6543029fb0ee785d2076d83d4e7845d845eb084d87eb16f51",
+              "bytes": 256974
+            }
+          }
+        },
+        "wasm": {
+          "base": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/base/wasm/pr1674.tsv",
+            "sha256": "a923a9bc6b50ae26b47f97ff392596cc8c8a821005b4cc0dba02dcb72450f7f2",
+            "bytes": 795,
+            "minimum": "68.25",
+            "minimum_page": 23
+          },
+          "candidate": {
+            "path": "mydocs/pr/assets/issue7766/mac-rebase-final/candidate/wasm/pr1674.tsv",
+            "sha256": "a23546f8b0f41369818269e4cb7fb6cffeeec9fb555e6092babe330aafc2e973",
+            "bytes": 799,
+            "minimum": "98.35",
+            "minimum_page": 14
+          },
+          "maximum_loss_pp": "0",
+          "representative": {
+            "page": 7,
+            "raw": "99.53",
+            "review": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/pr1674/review_007.png",
+              "sha256": "753e6e2c436785d8f7b1073e68ffe847a89248c4ed549e7d1792fdeca3f6e5c5",
+              "bytes": 741852
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/issue7766/mac-rebase-final/review/wasm/pr1674/overlay_007.png",
+              "sha256": "509db436f5f8b7f64a991c583eeaede6c7bc20218fbf116b124b8b4f00dd0eb4",
+              "bytes": 267258
+            }
+          }
+        }
+      }
+    }
+  ],
+  "protected": {
+    "candidate": "e2e6c3dc5273f5b63be9215bdd7a34adb2d19cb5",
+    "official_baseline_sha256": "be050f801ed2f2152017357249f4b7c1068dc83c50347266d16599d61a1f4a5c",
+    "catalog_sha256": "dbf2fc1e061d18118403c0bfe7881317118b5a0b36dd6a14430ef586ef1eb87c",
+    "summary": {
+      "native": {
+        "pages": 2023,
+        "conditions": 23,
+        "minimum": "98.86",
+        "protected_declines": 0
+      },
+      "wasm": {
+        "pages": 2023,
+        "conditions": 23,
+        "minimum": "98.86",
+        "protected_declines": 0
+      }
+    },
+    "conditions": [
+      {
+        "key": "yeongwol",
+        "backend": "native",
+        "pages": 4,
+        "minimum": "100.00",
+        "protected_declines": 0,
+        "input_sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+        "reference_pdf_sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123",
+        "tsv_sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1"
+      },
+      {
+        "key": "yeongwol",
+        "backend": "wasm",
+        "pages": 4,
+        "minimum": "100.00",
+        "protected_declines": 0,
+        "input_sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+        "reference_pdf_sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123",
+        "tsv_sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1"
+      },
+      {
+        "key": "seo-body-list-typed",
+        "backend": "native",
+        "pages": 1,
+        "minimum": "100.00",
+        "protected_declines": 0,
+        "input_sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687",
+        "reference_pdf_sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      {
+        "key": "seo-body-list-typed",
+        "backend": "wasm",
+        "pages": 1,
+        "minimum": "100.00",
+        "protected_declines": 0,
+        "input_sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687",
+        "reference_pdf_sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      {
+        "key": "handbook-hwp",
+        "backend": "native",
+        "pages": 383,
+        "minimum": "99.97",
+        "protected_declines": 0,
+        "input_sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+        "reference_pdf_sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+        "tsv_sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590"
+      },
+      {
+        "key": "handbook-hwp",
+        "backend": "wasm",
+        "pages": 383,
+        "minimum": "99.96",
+        "protected_declines": 0,
+        "input_sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+        "reference_pdf_sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+        "tsv_sha256": "42d98e13b63b2cdaa6b49f2b313e53fd2b281214a5b4b46caeabc92ab186b97a"
+      },
+      {
+        "key": "seo-helvetica-styles",
+        "backend": "native",
+        "pages": 1,
+        "minimum": "100.00",
+        "protected_declines": 0,
+        "input_sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da",
+        "reference_pdf_sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      {
+        "key": "seo-helvetica-styles",
+        "backend": "wasm",
+        "pages": 1,
+        "minimum": "100.00",
+        "protected_declines": 0,
+        "input_sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da",
+        "reference_pdf_sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      {
+        "key": "sample16-hwpx",
+        "backend": "native",
+        "pages": 64,
+        "minimum": "99.99",
+        "protected_declines": 0,
+        "input_sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+        "reference_pdf_sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+        "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942"
+      },
+      {
+        "key": "sample16-hwpx",
+        "backend": "wasm",
+        "pages": 64,
+        "minimum": "99.99",
+        "protected_declines": 0,
+        "input_sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+        "reference_pdf_sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+        "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "pages": 64,
+        "minimum": "100.00",
+        "protected_declines": 0,
+        "input_sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+        "reference_pdf_sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+        "tsv_sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "wasm",
+        "pages": 64,
+        "minimum": "100.00",
+        "protected_declines": 0,
+        "input_sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+        "reference_pdf_sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+        "tsv_sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7"
+      },
+      {
+        "key": "seo-re-03-latin",
+        "backend": "native",
+        "pages": 1,
+        "minimum": "100.00",
+        "protected_declines": 0,
+        "input_sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+        "reference_pdf_sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      {
+        "key": "seo-re-03-latin",
+        "backend": "wasm",
+        "pages": 1,
+        "minimum": "100.00",
+        "protected_declines": 0,
+        "input_sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+        "reference_pdf_sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      {
+        "key": "angle-narrow",
+        "backend": "native",
+        "pages": 1,
+        "minimum": "100.00",
+        "protected_declines": 0,
+        "input_sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+        "reference_pdf_sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      {
+        "key": "angle-narrow",
+        "backend": "wasm",
+        "pages": 1,
+        "minimum": "100.00",
+        "protected_declines": 0,
+        "input_sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+        "reference_pdf_sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      {
+        "key": "outline",
+        "backend": "native",
+        "pages": 9,
+        "minimum": "100.00",
+        "protected_declines": 0,
+        "input_sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+        "reference_pdf_sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+        "tsv_sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675"
+      },
+      {
+        "key": "outline",
+        "backend": "wasm",
+        "pages": 9,
+        "minimum": "100.00",
+        "protected_declines": 0,
+        "input_sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+        "reference_pdf_sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+        "tsv_sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675"
+      },
+      {
+        "key": "issue8040-insert",
+        "backend": "native",
+        "pages": 4,
+        "minimum": "99.99",
+        "protected_declines": 0,
+        "input_sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82",
+        "reference_pdf_sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74",
+        "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08"
+      },
+      {
+        "key": "issue8040-insert",
+        "backend": "wasm",
+        "pages": 4,
+        "minimum": "99.99",
+        "protected_declines": 0,
+        "input_sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82",
+        "reference_pdf_sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74",
+        "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08"
+      },
+      {
+        "key": "nested",
+        "backend": "native",
+        "pages": 17,
+        "minimum": "100.00",
+        "protected_declines": 0,
+        "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+        "reference_pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+        "tsv_sha256": "ecb048af51ad821884726d567a4f747feb05a3965bf51b2f49b9777e953ed0d1"
+      },
+      {
+        "key": "nested",
+        "backend": "wasm",
+        "pages": 17,
+        "minimum": "100.00",
+        "protected_declines": 0,
+        "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+        "reference_pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+        "tsv_sha256": "ecb048af51ad821884726d567a4f747feb05a3965bf51b2f49b9777e953ed0d1"
+      },
+      {
+        "key": "sample16-hwp2024",
+        "backend": "native",
+        "pages": 64,
+        "minimum": "99.99",
+        "protected_declines": 0,
+        "input_sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+        "reference_pdf_sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+        "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942"
+      },
+      {
+        "key": "sample16-hwp2024",
+        "backend": "wasm",
+        "pages": 64,
+        "minimum": "99.99",
+        "protected_declines": 0,
+        "input_sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+        "reference_pdf_sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+        "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942"
+      },
+      {
+        "key": "handbook-hwpx",
+        "backend": "native",
+        "pages": 383,
+        "minimum": "99.97",
+        "protected_declines": 0,
+        "input_sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+        "reference_pdf_sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+        "tsv_sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590"
+      },
+      {
+        "key": "handbook-hwpx",
+        "backend": "wasm",
+        "pages": 383,
+        "minimum": "99.96",
+        "protected_declines": 0,
+        "input_sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+        "reference_pdf_sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+        "tsv_sha256": "42d98e13b63b2cdaa6b49f2b313e53fd2b281214a5b4b46caeabc92ab186b97a"
+      },
+      {
+        "key": "issue7905",
+        "backend": "native",
+        "pages": 6,
+        "minimum": "98.86",
+        "protected_declines": 0,
+        "input_sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+        "reference_pdf_sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511",
+        "tsv_sha256": "f6879a02ba8764cd58d12fdc6514c1336bcc5dbd3c22631bf0e6aa85f72fa893"
+      },
+      {
+        "key": "issue7905",
+        "backend": "wasm",
+        "pages": 6,
+        "minimum": "98.86",
+        "protected_declines": 0,
+        "input_sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+        "reference_pdf_sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511",
+        "tsv_sha256": "2bffc1537a24f58a1447d9211be6c987290b133882b6336c97ac762d6a222c56"
+      },
+      {
+        "key": "sample10",
+        "backend": "native",
+        "pages": 763,
+        "minimum": "99.57",
+        "protected_declines": 0,
+        "input_sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+        "reference_pdf_sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+        "tsv_sha256": "24a4c3bc3368f412242846a5523b7d733c95be9a9f92bf30643388ac27290e2f"
+      },
+      {
+        "key": "sample10",
+        "backend": "wasm",
+        "pages": 763,
+        "minimum": "99.57",
+        "protected_declines": 0,
+        "input_sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+        "reference_pdf_sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+        "tsv_sha256": "4e519b6639b1e7483ac1682c4be6b44030dbb7896e487eb98a22a55136c9e081"
+      },
+      {
+        "key": "issue8040-insert-delete",
+        "backend": "native",
+        "pages": 4,
+        "minimum": "99.99",
+        "protected_declines": 0,
+        "input_sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee",
+        "reference_pdf_sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d",
+        "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08"
+      },
+      {
+        "key": "issue8040-insert-delete",
+        "backend": "wasm",
+        "pages": 4,
+        "minimum": "99.99",
+        "protected_declines": 0,
+        "input_sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee",
+        "reference_pdf_sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d",
+        "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08"
+      },
+      {
+        "key": "seo-pic-crop-01",
+        "backend": "native",
+        "pages": 1,
+        "minimum": "100.00",
+        "protected_declines": 0,
+        "input_sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+        "reference_pdf_sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      {
+        "key": "seo-pic-crop-01",
+        "backend": "wasm",
+        "pages": 1,
+        "minimum": "100.00",
+        "protected_declines": 0,
+        "input_sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+        "reference_pdf_sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      {
+        "key": "seo-shape-group-02",
+        "backend": "native",
+        "pages": 1,
+        "minimum": "100.00",
+        "protected_declines": 0,
+        "input_sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+        "reference_pdf_sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      {
+        "key": "seo-shape-group-02",
+        "backend": "wasm",
+        "pages": 1,
+        "minimum": "100.00",
+        "protected_declines": 0,
+        "input_sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+        "reference_pdf_sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      {
+        "key": "chemical",
+        "backend": "native",
+        "pages": 103,
+        "minimum": "99.99",
+        "protected_declines": 0,
+        "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+        "reference_pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+        "tsv_sha256": "d55cc0d20d9cf48ab7af6139c63f9c7ce9d90ff2cd4d0c668a810fccb2ae63f3"
+      },
+      {
+        "key": "chemical",
+        "backend": "wasm",
+        "pages": 103,
+        "minimum": "99.99",
+        "protected_declines": 0,
+        "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+        "reference_pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+        "tsv_sha256": "d55cc0d20d9cf48ab7af6139c63f9c7ce9d90ff2cd4d0c668a810fccb2ae63f3"
+      },
+      {
+        "key": "spec13",
+        "backend": "native",
+        "pages": 71,
+        "minimum": "99.92",
+        "protected_declines": 0,
+        "input_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+        "reference_pdf_sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+        "tsv_sha256": "8872491efcc58b013f7647fcabdf0c9be12fdf14677b74410227ab3c4cdb477e"
+      },
+      {
+        "key": "spec13",
+        "backend": "wasm",
+        "pages": 71,
+        "minimum": "99.92",
+        "protected_declines": 0,
+        "input_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+        "reference_pdf_sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+        "tsv_sha256": "8872491efcc58b013f7647fcabdf0c9be12fdf14677b74410227ab3c4cdb477e"
+      },
+      {
+        "key": "outline-demo",
+        "backend": "native",
+        "pages": 3,
+        "minimum": "100.00",
+        "protected_declines": 0,
+        "input_sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4",
+        "reference_pdf_sha256": "c24e248c56bad280219bbd32f59fc6f07a3895fb5146b225c9ae4f9e4ac662be",
+        "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af"
+      },
+      {
+        "key": "outline-demo",
+        "backend": "wasm",
+        "pages": 3,
+        "minimum": "100.00",
+        "protected_declines": 0,
+        "input_sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4",
+        "reference_pdf_sha256": "c24e248c56bad280219bbd32f59fc6f07a3895fb5146b225c9ae4f9e4ac662be",
+        "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af"
+      },
+      {
+        "key": "decree",
+        "backend": "native",
+        "pages": 74,
+        "minimum": "99.98",
+        "protected_declines": 0,
+        "input_sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+        "reference_pdf_sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9",
+        "tsv_sha256": "71762c0b40f0cb54b8b352b2c6865fbe64bc9c3a3d1f8e469f6e33541bdf2ed5"
+      },
+      {
+        "key": "decree",
+        "backend": "wasm",
+        "pages": 74,
+        "minimum": "99.98",
+        "protected_declines": 0,
+        "input_sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+        "reference_pdf_sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9",
+        "tsv_sha256": "71762c0b40f0cb54b8b352b2c6865fbe64bc9c3a3d1f8e469f6e33541bdf2ed5"
+      },
+      {
+        "key": "outline-minimal",
+        "backend": "native",
+        "pages": 1,
+        "minimum": "100.00",
+        "protected_declines": 0,
+        "input_sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+        "reference_pdf_sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      {
+        "key": "outline-minimal",
+        "backend": "wasm",
+        "pages": 1,
+        "minimum": "100.00",
+        "protected_declines": 0,
+        "input_sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+        "reference_pdf_sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      }
+    ]
+  },
+  "incoming": {
+    "job": {
+      "job_id": "69ff19d3-4091-4927-9f8a-ff8ae7d85516",
+      "engine": "2024",
+      "hancom_version": "13.0.0.4225",
+      "pdf_output_mode": "hancom2024_pdf_save_as",
+      "pdf_print_method": null,
+      "pdf_page_count": 313,
+      "elapsed_seconds": 541,
+      "input_sha256": "fa87e135c3d609324457adb37230e220be9406ba99a94d26a813ba7132244ac9",
+      "pdf_sha256": "a26435bfcc2e69e623da920ddf1a7a839f3c5248cde81a8711807858adaea3ea",
+      "seoul_fonts_used_on_pages": {
+        "SeoulNamsanB": [
+          291,
+          293,
+          294
+        ],
+        "SeoulNamsanM": [
+          295,
+          297,
+          298,
+          299,
+          300,
+          301,
+          302
+        ]
+      }
+    },
+    "reference_pdf": {
+      "path": "pdf/issue8759/6500000-201700118_jeju_tourism_education_plan-seoul-fonts-2024.pdf",
+      "sha256": "a26435bfcc2e69e623da920ddf1a7a839f3c5248cde81a8711807858adaea3ea",
+      "bytes": 7597480
+    },
+    "server_notice": "한컴 PDF 인쇄 결과에서 오류가 검출되어 한컴의 PDF로 저장하기로 다시 생성했습니다. 저장본은 PDF 구조 및 전체 313쪽 검사를 통과했습니다.",
+    "cases": [
+      {
+        "key": "jeju-save-as",
+        "backend": "native",
+        "page_count": 313,
+        "changed_rasters": [],
+        "base_source": "dd1dc8509769df46593ca91e23c06167d0436607",
+        "candidate_source": "e2e6c3dc5273f5b63be9215bdd7a34adb2d19cb5",
+        "reference_pdf_sha256": "a26435bfcc2e69e623da920ddf1a7a839f3c5248cde81a8711807858adaea3ea",
+        "minimum_base": "98.18",
+        "minimum_candidate": "98.18",
+        "regressed": [],
+        "improved": [],
+        "base_tsv": {
+          "path": "mydocs/pr/assets/issue7766/mac-rebase-final/incoming/native/base/jeju-save-as.tsv",
+          "sha256": "6356ba0b503927ec383cb8063a7f748557d61a35c7b7f82166bf9f1fe0e6e023",
+          "bytes": 6837
+        },
+        "candidate_tsv": {
+          "path": "mydocs/pr/assets/issue7766/mac-rebase-final/incoming/native/candidate/jeju-save-as.tsv",
+          "sha256": "6356ba0b503927ec383cb8063a7f748557d61a35c7b7f82166bf9f1fe0e6e023",
+          "bytes": 6837
+        }
+      },
+      {
+        "key": "jeju-print",
+        "backend": "native",
+        "page_count": 313,
+        "changed_rasters": [],
+        "base_source": "dd1dc8509769df46593ca91e23c06167d0436607",
+        "candidate_source": "e2e6c3dc5273f5b63be9215bdd7a34adb2d19cb5",
+        "reference_pdf_sha256": "4c7292f010ceecc9b8f4656f77e25b570e24534324b04574851bb5e34187604e",
+        "minimum_base": "98.18",
+        "minimum_candidate": "98.18",
+        "regressed": [],
+        "improved": [],
+        "base_tsv": {
+          "path": "mydocs/pr/assets/issue7766/mac-rebase-final/incoming/native/base/jeju-print.tsv",
+          "sha256": "6356ba0b503927ec383cb8063a7f748557d61a35c7b7f82166bf9f1fe0e6e023",
+          "bytes": 6837
+        },
+        "candidate_tsv": {
+          "path": "mydocs/pr/assets/issue7766/mac-rebase-final/incoming/native/candidate/jeju-print.tsv",
+          "sha256": "6356ba0b503927ec383cb8063a7f748557d61a35c7b7f82166bf9f1fe0e6e023",
+          "bytes": 6837
+        }
+      },
+      {
+        "key": "food-print",
+        "backend": "native",
+        "page_count": 141,
+        "changed_rasters": [],
+        "base_source": "dd1dc8509769df46593ca91e23c06167d0436607",
+        "candidate_source": "e2e6c3dc5273f5b63be9215bdd7a34adb2d19cb5",
+        "reference_pdf_sha256": "4c2d909332e5fe3be5044a76cc9d5448e29e98087b4688907fdf1ce093dccc04",
+        "minimum_base": "98.25",
+        "minimum_candidate": "98.25",
+        "regressed": [],
+        "improved": [],
+        "base_tsv": {
+          "path": "mydocs/pr/assets/issue7766/mac-rebase-final/incoming/native/base/food-print.tsv",
+          "sha256": "6e1bb2dbf2458a633b4f9437779ba96627483e8cff55f9faed96718fafb3d31c",
+          "bytes": 3079
+        },
+        "candidate_tsv": {
+          "path": "mydocs/pr/assets/issue7766/mac-rebase-final/incoming/native/candidate/food-print.tsv",
+          "sha256": "6e1bb2dbf2458a633b4f9437779ba96627483e8cff55f9faed96718fafb3d31c",
+          "bytes": 3079
+        }
+      },
+      {
+        "key": "jeju-save-as",
+        "backend": "wasm",
+        "page_count": 313,
+        "changed_rasters": [],
+        "base_source": "dd1dc8509769df46593ca91e23c06167d0436607",
+        "candidate_source": "e2e6c3dc5273f5b63be9215bdd7a34adb2d19cb5",
+        "reference_pdf_sha256": "a26435bfcc2e69e623da920ddf1a7a839f3c5248cde81a8711807858adaea3ea",
+        "minimum_base": "98.11",
+        "minimum_candidate": "98.11",
+        "regressed": [],
+        "improved": [],
+        "base_tsv": {
+          "path": "mydocs/pr/assets/issue7766/mac-rebase-final/incoming/wasm/base/jeju-save-as.tsv",
+          "sha256": "a8320ed394ac8b2bc2a7cb8a46bfc7add4016da82a7ba766385db5c0d711cf72",
+          "bytes": 6822
+        },
+        "candidate_tsv": {
+          "path": "mydocs/pr/assets/issue7766/mac-rebase-final/incoming/wasm/candidate/jeju-save-as.tsv",
+          "sha256": "a8320ed394ac8b2bc2a7cb8a46bfc7add4016da82a7ba766385db5c0d711cf72",
+          "bytes": 6822
+        }
+      },
+      {
+        "key": "jeju-print",
+        "backend": "wasm",
+        "page_count": 313,
+        "changed_rasters": [],
+        "base_source": "dd1dc8509769df46593ca91e23c06167d0436607",
+        "candidate_source": "e2e6c3dc5273f5b63be9215bdd7a34adb2d19cb5",
+        "reference_pdf_sha256": "4c7292f010ceecc9b8f4656f77e25b570e24534324b04574851bb5e34187604e",
+        "minimum_base": "98.11",
+        "minimum_candidate": "98.11",
+        "regressed": [],
+        "improved": [],
+        "base_tsv": {
+          "path": "mydocs/pr/assets/issue7766/mac-rebase-final/incoming/wasm/base/jeju-print.tsv",
+          "sha256": "f6852b809e7596d06ca2ba6dbd2b8afaff66a72f5b1cb570613ebb7b18b13058",
+          "bytes": 6834
+        },
+        "candidate_tsv": {
+          "path": "mydocs/pr/assets/issue7766/mac-rebase-final/incoming/wasm/candidate/jeju-print.tsv",
+          "sha256": "f6852b809e7596d06ca2ba6dbd2b8afaff66a72f5b1cb570613ebb7b18b13058",
+          "bytes": 6834
+        }
+      },
+      {
+        "key": "food-print",
+        "backend": "wasm",
+        "page_count": 141,
+        "changed_rasters": [],
+        "base_source": "dd1dc8509769df46593ca91e23c06167d0436607",
+        "candidate_source": "e2e6c3dc5273f5b63be9215bdd7a34adb2d19cb5",
+        "reference_pdf_sha256": "4c2d909332e5fe3be5044a76cc9d5448e29e98087b4688907fdf1ce093dccc04",
+        "minimum_base": "98.18",
+        "minimum_candidate": "98.18",
+        "regressed": [],
+        "improved": [],
+        "base_tsv": {
+          "path": "mydocs/pr/assets/issue7766/mac-rebase-final/incoming/wasm/base/food-print.tsv",
+          "sha256": "c7dbcbfd59e3d8c42d7a36e17c64c3f923b836b08643e5b2db1538d62fba6ea9",
+          "bytes": 3069
+        },
+        "candidate_tsv": {
+          "path": "mydocs/pr/assets/issue7766/mac-rebase-final/incoming/wasm/candidate/food-print.tsv",
+          "sha256": "c7dbcbfd59e3d8c42d7a36e17c64c3f923b836b08643e5b2db1538d62fba6ea9",
+          "bytes": 3069
+        }
+      }
+    ],
+    "representative": {
+      "native": {
+        "review": {
+          "path": "mydocs/pr/assets/issue7766/mac-rebase-final/incoming/native/jeju-save-as-review-049.png",
+          "sha256": "d2e537efd208c6995713545667b0eecf30e8feff6e3716cc677a2efaf249d70b",
+          "bytes": 424671
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issue7766/mac-rebase-final/incoming/native/jeju-save-as-overlay-049.png",
+          "sha256": "f350d819eb970a5fabe174c6d82184cb41f584244475ddc41de37767a18dfa8e",
+          "bytes": 145291
+        }
+      },
+      "wasm": {
+        "review": {
+          "path": "mydocs/pr/assets/issue7766/mac-rebase-final/incoming/wasm/jeju-save-as-review-049.png",
+          "sha256": "aabaa0748367f578318ada0ad596f0711c1032248302deca09d4de38b69b6aa0",
+          "bytes": 429395
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issue7766/mac-rebase-final/incoming/wasm/jeju-save-as-overlay-049.png",
+          "sha256": "f41e8156294c779edd3ba77b6b7c6a211e362d34c57eff70801131d8cb41f54e",
+          "bytes": 154481
+        }
+      }
+    }
+  },
+  "bmp_rebase_proof": {
+    "before_rebase": "4729b86ccddcd787180d0038f3092b46cd88b583",
+    "after_rebase": "e2e6c3dc5273f5b63be9215bdd7a34adb2d19cb5",
+    "devel": "dd1dc8509769df46593ca91e23c06167d0436607",
+    "unchanged_interface_blobs": [
+      {
+        "path": "src/cli/outputs/raster.rs",
+        "blob_before": "27719e8b988826ee30f3ce0ebf977972f910930c",
+        "blob_after": "27719e8b988826ee30f3ce0ebf977972f910930c"
+      },
+      {
+        "path": "src/wasm_api/layout_generation.rs",
+        "blob_before": "87053852d92d14ff1014ed79f17aa81d0d409b9d",
+        "blob_after": "87053852d92d14ff1014ed79f17aa81d0d409b9d"
+      },
+      {
+        "path": "scripts/export-wasm-png-for-sweep.mjs",
+        "blob_before": "4a8e934facc93f732768ff756f7dba7dab26c276",
+        "blob_after": "4a8e934facc93f732768ff756f7dba7dab26c276"
+      }
+    ],
+    "conflicts": [
+      {
+        "file": "src/renderer/image_resolver/print_jpeg_encode.rs",
+        "before": "8deb40d9c4",
+        "after": "3b4c550fe9",
+        "matching_rehearsal": "7f3044e008"
+      },
+      {
+        "file": "src/renderer/image_resolver/print_jpeg_encode.rs",
+        "before": "0647ad707b",
+        "after": "08f538aedf",
+        "matching_rehearsal": "84dd77ccbe"
+      }
+    ],
+    "runtime_option": {
+      "base": {
+        "native_option": false,
+        "wasm_method": false
+      },
+      "candidate": {
+        "native_option": true,
+        "wasm_method": true
+      }
+    },
+    "wasm_exports": [
+      {
+        "case": "hwpspec-2024-one-up",
+        "print_bmp_full_color": true,
+        "pages": 178
+      },
+      {
+        "case": "pig-hwp",
+        "print_bmp_full_color": true,
+        "pages": 11
+      },
+      {
+        "case": "pig-hwpx",
+        "print_bmp_full_color": true,
+        "pages": 11
+      }
+    ]
+  },
+  "studio": {
+    "case2214": {
+      "base": "dd1dc8509769df46593ca91e23c06167d0436607",
+      "candidate": "e2e6c3dc5273f5b63be9215bdd7a34adb2d19cb5",
+      "strict_test_same_existing_assertion": "hwp run 1 initial-warm: cell bounds: expected 945.9 +/- 0.2, got 938.2",
+      "diagnostic": [
+        {
+          "format": "hwp",
+          "fixture_sha256": "ef10261cd29325116028e4f4f3e6be1a72c675eb771bddfd8484e7fe5aa94b4e",
+          "base": {
+            "transition_at": 55,
+            "verdict": "GREEN",
+            "model_latest": true,
+            "lines_latest": true,
+            "tree_matches_flush": true,
+            "layout_matches_flush": true,
+            "full_layer_recovers": true,
+            "diff_pixels": 0,
+            "flush_control_diff_pixels": 0
+          },
+          "candidate": {
+            "transition_at": 55,
+            "verdict": "GREEN",
+            "model_latest": true,
+            "lines_latest": true,
+            "tree_matches_flush": true,
+            "layout_matches_flush": true,
+            "full_layer_recovers": true,
+            "diff_pixels": 0,
+            "flush_control_diff_pixels": 0
+          }
+        },
+        {
+          "format": "hwpx",
+          "fixture_sha256": "fc6e5f156de470dfbb14aab392389491720ee7fb1bf6f03fe9a018e93b420c65",
+          "base": {
+            "transition_at": 55,
+            "verdict": "GREEN",
+            "model_latest": true,
+            "lines_latest": true,
+            "tree_matches_flush": true,
+            "layout_matches_flush": true,
+            "full_layer_recovers": true,
+            "diff_pixels": 0,
+            "flush_control_diff_pixels": 0
+          },
+          "candidate": {
+            "transition_at": 55,
+            "verdict": "GREEN",
+            "model_latest": true,
+            "lines_latest": true,
+            "tree_matches_flush": true,
+            "layout_matches_flush": true,
+            "full_layer_recovers": true,
+            "diff_pixels": 0,
+            "flush_control_diff_pixels": 0
+          }
+        }
+      ]
+    },
+    "comparison": {
+      "checks": [
+        {
+          "probe": "studio-actual-paths",
+          "sample": "law-caption",
+          "backend": "canvas2d",
+          "profile": "screen",
+          "status": "verified_actual",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvas2d",
+            "profile": "screen",
+            "actual_backend": "canvas2d",
+            "fallback": null,
+            "selection_error": null,
+            "last_render_error": null,
+            "violations": []
+          },
+          "page": 1,
+          "capture": {
+            "base": {
+              "sha256": "95ec3dc8f4167d258aad4f83ed4cb560d2dad4322c72a4fa7ca317ac227ee842",
+              "sizeBytes": 78948,
+              "width": 794,
+              "height": 1123
+            },
+            "candidate": {
+              "sha256": "95ec3dc8f4167d258aad4f83ed4cb560d2dad4322c72a4fa7ca317ac227ee842",
+              "sizeBytes": 78948,
+              "width": 794,
+              "height": 1123
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-paths",
+          "sample": "law-caption",
+          "backend": "canvaskit-compat",
+          "profile": "screen",
+          "status": "existing_limitation",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvas2d",
+            "profile": "screen",
+            "actual_backend": "canvas2d",
+            "fallback": "canvaskitResourcePreparationFailed",
+            "selection_error": "CanvasKit font family가 준비되지 않았습니다: 한양견고딕, 한양신명조",
+            "last_render_error": null,
+            "violations": []
+          },
+          "page": 1,
+          "capture": {
+            "base": {
+              "sha256": "95ec3dc8f4167d258aad4f83ed4cb560d2dad4322c72a4fa7ca317ac227ee842",
+              "sizeBytes": 78948,
+              "width": 794,
+              "height": 1123
+            },
+            "candidate": {
+              "sha256": "95ec3dc8f4167d258aad4f83ed4cb560d2dad4322c72a4fa7ca317ac227ee842",
+              "sizeBytes": 78948,
+              "width": 794,
+              "height": 1123
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-paths",
+          "sample": "law-caption",
+          "backend": "canvaskit-default",
+          "profile": "screen",
+          "status": "existing_limitation",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvas2d",
+            "profile": "screen",
+            "actual_backend": "canvas2d",
+            "fallback": "canvaskitResourcePreparationFailed",
+            "selection_error": "CanvasKit font family가 준비되지 않았습니다: 한양견고딕, 한양신명조",
+            "last_render_error": null,
+            "violations": []
+          },
+          "page": 1,
+          "capture": {
+            "base": {
+              "sha256": "95ec3dc8f4167d258aad4f83ed4cb560d2dad4322c72a4fa7ca317ac227ee842",
+              "sizeBytes": 78948,
+              "width": 794,
+              "height": 1123
+            },
+            "candidate": {
+              "sha256": "95ec3dc8f4167d258aad4f83ed4cb560d2dad4322c72a4fa7ca317ac227ee842",
+              "sizeBytes": 78948,
+              "width": 794,
+              "height": 1123
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-paths",
+          "sample": "law-caption",
+          "backend": "canvas2d",
+          "profile": "print",
+          "status": "verified_actual",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvas2d",
+            "profile": "print",
+            "actual_backend": "canvas2d",
+            "fallback": null,
+            "selection_error": null,
+            "last_render_error": null,
+            "violations": []
+          },
+          "page": 1,
+          "capture": {
+            "base": {
+              "sha256": "96b1bc0160203c1f1e91e601a3f42fed69aa9d67d741eedb249d6a31a04b7971",
+              "sizeBytes": 79564,
+              "width": 794,
+              "height": 1122
+            },
+            "candidate": {
+              "sha256": "96b1bc0160203c1f1e91e601a3f42fed69aa9d67d741eedb249d6a31a04b7971",
+              "sizeBytes": 79564,
+              "width": 794,
+              "height": 1122
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-paths",
+          "sample": "law-caption",
+          "backend": "canvaskit-compat",
+          "profile": "print",
+          "status": "existing_limitation",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvas2d",
+            "profile": "print",
+            "actual_backend": "canvas2d",
+            "fallback": "canvaskitResourcePreparationFailed",
+            "selection_error": "CanvasKit font family가 준비되지 않았습니다: 한양견고딕, 한양신명조",
+            "last_render_error": null,
+            "violations": []
+          },
+          "page": 1,
+          "capture": {
+            "base": {
+              "sha256": "96b1bc0160203c1f1e91e601a3f42fed69aa9d67d741eedb249d6a31a04b7971",
+              "sizeBytes": 79564,
+              "width": 794,
+              "height": 1122
+            },
+            "candidate": {
+              "sha256": "96b1bc0160203c1f1e91e601a3f42fed69aa9d67d741eedb249d6a31a04b7971",
+              "sizeBytes": 79564,
+              "width": 794,
+              "height": 1122
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-paths",
+          "sample": "law-caption",
+          "backend": "canvaskit-default",
+          "profile": "print",
+          "status": "existing_limitation",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvas2d",
+            "profile": "print",
+            "actual_backend": "canvas2d",
+            "fallback": "canvaskitResourcePreparationFailed",
+            "selection_error": "CanvasKit font family가 준비되지 않았습니다: 한양견고딕, 한양신명조",
+            "last_render_error": null,
+            "violations": []
+          },
+          "page": 1,
+          "capture": {
+            "base": {
+              "sha256": "96b1bc0160203c1f1e91e601a3f42fed69aa9d67d741eedb249d6a31a04b7971",
+              "sizeBytes": 79564,
+              "width": 794,
+              "height": 1122
+            },
+            "candidate": {
+              "sha256": "96b1bc0160203c1f1e91e601a3f42fed69aa9d67d741eedb249d6a31a04b7971",
+              "sizeBytes": 79564,
+              "width": 794,
+              "height": 1122
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-paths",
+          "sample": "repeated-table",
+          "backend": "canvas2d",
+          "profile": "screen",
+          "status": "verified_actual",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvas2d",
+            "profile": "screen",
+            "actual_backend": "canvas2d",
+            "fallback": null,
+            "selection_error": null,
+            "last_render_error": null,
+            "violations": []
+          },
+          "page": 2,
+          "capture": {
+            "base": {
+              "sha256": "1e7b4843dc215b8de1f5dbb8e8d1359c3a32f3987f8940d8bedda781fcda68f3",
+              "sizeBytes": 106075,
+              "width": 1123,
+              "height": 794
+            },
+            "candidate": {
+              "sha256": "b96a168824e0063f38ee9b0322c5b918ba95d263df27024c233362aa58dfae88",
+              "sizeBytes": 106033,
+              "width": 1123,
+              "height": 794
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-paths",
+          "sample": "repeated-table",
+          "backend": "canvaskit-compat",
+          "profile": "screen",
+          "status": "verified_actual",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvaskit",
+            "profile": "screen",
+            "actual_backend": "canvaskit-compat",
+            "fallback": null,
+            "selection_error": null,
+            "last_render_error": null,
+            "violations": []
+          },
+          "page": 2,
+          "capture": {
+            "base": {
+              "sha256": "91dc068fd27c21893d17b6fd5a73bb997c065db6d415f2280c2c1d596ec4871e",
+              "sizeBytes": 95155,
+              "width": 1123,
+              "height": 794
+            },
+            "candidate": {
+              "sha256": "e008866a74339b687e10929a9ae4a8b0812d1088c5e35f1f10564229ef515f7f",
+              "sizeBytes": 94912,
+              "width": 1123,
+              "height": 794
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-paths",
+          "sample": "repeated-table",
+          "backend": "canvaskit-default",
+          "profile": "screen",
+          "status": "verified_actual",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvaskit",
+            "profile": "screen",
+            "actual_backend": "canvaskit-default",
+            "fallback": null,
+            "selection_error": null,
+            "last_render_error": null,
+            "violations": []
+          },
+          "page": 2,
+          "capture": {
+            "base": {
+              "sha256": "91dc068fd27c21893d17b6fd5a73bb997c065db6d415f2280c2c1d596ec4871e",
+              "sizeBytes": 95155,
+              "width": 1123,
+              "height": 794
+            },
+            "candidate": {
+              "sha256": "e008866a74339b687e10929a9ae4a8b0812d1088c5e35f1f10564229ef515f7f",
+              "sizeBytes": 94912,
+              "width": 1123,
+              "height": 794
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-paths",
+          "sample": "repeated-table",
+          "backend": "canvas2d",
+          "profile": "print",
+          "status": "verified_actual",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvas2d",
+            "profile": "print",
+            "actual_backend": "canvas2d",
+            "fallback": null,
+            "selection_error": null,
+            "last_render_error": null,
+            "violations": []
+          },
+          "page": 2,
+          "capture": {
+            "base": {
+              "sha256": "407d21ecbee2a9e15877009162dbb96a10f4c0052220008f87bb706f37ed21c5",
+              "sizeBytes": 98190,
+              "width": 1122,
+              "height": 794
+            },
+            "candidate": {
+              "sha256": "a53d3e942e3ed0dac14cfe8d0eaebc5ead237e9729020e5fa4cf0ca6c326de46",
+              "sizeBytes": 98890,
+              "width": 1122,
+              "height": 794
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-paths",
+          "sample": "repeated-table",
+          "backend": "canvaskit-compat",
+          "profile": "print",
+          "status": "verified_actual",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvaskit",
+            "profile": "print",
+            "actual_backend": "canvaskit-compat",
+            "fallback": null,
+            "selection_error": null,
+            "last_render_error": null,
+            "violations": []
+          },
+          "page": 2,
+          "capture": {
+            "base": {
+              "sha256": "ca6455106f84af44c0492b40b50c07ced051868fac7ac805fdd3a7a2b015c5ec",
+              "sizeBytes": 85927,
+              "width": 1122,
+              "height": 794
+            },
+            "candidate": {
+              "sha256": "234b4c575c7c322966b7445e7fdf47b6481a2eef642ebd3a75be3a40b51d5a52",
+              "sizeBytes": 86301,
+              "width": 1122,
+              "height": 794
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-paths",
+          "sample": "repeated-table",
+          "backend": "canvaskit-default",
+          "profile": "print",
+          "status": "verified_actual",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvaskit",
+            "profile": "print",
+            "actual_backend": "canvaskit-default",
+            "fallback": null,
+            "selection_error": null,
+            "last_render_error": null,
+            "violations": []
+          },
+          "page": 2,
+          "capture": {
+            "base": {
+              "sha256": "ca6455106f84af44c0492b40b50c07ced051868fac7ac805fdd3a7a2b015c5ec",
+              "sizeBytes": 85927,
+              "width": 1122,
+              "height": 794
+            },
+            "candidate": {
+              "sha256": "234b4c575c7c322966b7445e7fdf47b6481a2eef642ebd3a75be3a40b51d5a52",
+              "sizeBytes": 86301,
+              "width": 1122,
+              "height": 794
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-paths",
+          "sample": "hwpspec-graphic",
+          "backend": "canvas2d",
+          "profile": "screen",
+          "status": "verified_actual",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvas2d",
+            "profile": "screen",
+            "actual_backend": "canvas2d",
+            "fallback": null,
+            "selection_error": null,
+            "last_render_error": null,
+            "violations": []
+          },
+          "page": 19,
+          "capture": {
+            "base": {
+              "sha256": "8809907e647c31189a1d5568fea8855866fdd01da86009400ba8c69ad82302c3",
+              "sizeBytes": 114203,
+              "width": 794,
+              "height": 1123
+            },
+            "candidate": {
+              "sha256": "8809907e647c31189a1d5568fea8855866fdd01da86009400ba8c69ad82302c3",
+              "sizeBytes": 114203,
+              "width": 794,
+              "height": 1123
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-paths",
+          "sample": "hwpspec-graphic",
+          "backend": "canvaskit-compat",
+          "profile": "screen",
+          "status": "existing_limitation",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvas2d",
+            "profile": "screen",
+            "actual_backend": "canvas2d",
+            "fallback": "canvaskitResourcePreparationFailed",
+            "selection_error": "CanvasKit 문서 글꼴 요구 목록이 완전하지 않습니다",
+            "last_render_error": null,
+            "violations": [
+              "runtimeBackendMismatch",
+              "runtimeDiagnosticsUnavailable"
+            ]
+          },
+          "page": 19,
+          "capture": {
+            "base": {
+              "sha256": "8809907e647c31189a1d5568fea8855866fdd01da86009400ba8c69ad82302c3",
+              "sizeBytes": 114203,
+              "width": 794,
+              "height": 1123
+            },
+            "candidate": {
+              "sha256": "8809907e647c31189a1d5568fea8855866fdd01da86009400ba8c69ad82302c3",
+              "sizeBytes": 114203,
+              "width": 794,
+              "height": 1123
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-paths",
+          "sample": "hwpspec-graphic",
+          "backend": "canvaskit-default",
+          "profile": "screen",
+          "status": "existing_limitation",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvas2d",
+            "profile": "screen",
+            "actual_backend": "canvas2d",
+            "fallback": "canvaskitResourcePreparationFailed",
+            "selection_error": "CanvasKit 문서 글꼴 요구 목록이 완전하지 않습니다",
+            "last_render_error": null,
+            "violations": [
+              "runtimeBackendMismatch",
+              "runtimeDiagnosticsUnavailable"
+            ]
+          },
+          "page": 19,
+          "capture": {
+            "base": {
+              "sha256": "8809907e647c31189a1d5568fea8855866fdd01da86009400ba8c69ad82302c3",
+              "sizeBytes": 114203,
+              "width": 794,
+              "height": 1123
+            },
+            "candidate": {
+              "sha256": "8809907e647c31189a1d5568fea8855866fdd01da86009400ba8c69ad82302c3",
+              "sizeBytes": 114203,
+              "width": 794,
+              "height": 1123
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-paths",
+          "sample": "hwpspec-graphic",
+          "backend": "canvas2d",
+          "profile": "print",
+          "status": "verified_actual",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvas2d",
+            "profile": "print",
+            "actual_backend": "canvas2d",
+            "fallback": null,
+            "selection_error": null,
+            "last_render_error": null,
+            "violations": []
+          },
+          "page": 19,
+          "capture": {
+            "base": {
+              "sha256": "788c23f281453284408cd6418eae35f1c959fb2be66f0e02d466f0353f66c8a7",
+              "sizeBytes": 112177,
+              "width": 794,
+              "height": 1122
+            },
+            "candidate": {
+              "sha256": "788c23f281453284408cd6418eae35f1c959fb2be66f0e02d466f0353f66c8a7",
+              "sizeBytes": 112177,
+              "width": 794,
+              "height": 1122
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-paths",
+          "sample": "hwpspec-graphic",
+          "backend": "canvaskit-compat",
+          "profile": "print",
+          "status": "existing_limitation",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvas2d",
+            "profile": "print",
+            "actual_backend": "canvas2d",
+            "fallback": "canvaskitResourcePreparationFailed",
+            "selection_error": "CanvasKit 문서 글꼴 요구 목록이 완전하지 않습니다",
+            "last_render_error": null,
+            "violations": [
+              "runtimeBackendMismatch",
+              "runtimeDiagnosticsUnavailable"
+            ]
+          },
+          "page": 19,
+          "capture": {
+            "base": {
+              "sha256": "788c23f281453284408cd6418eae35f1c959fb2be66f0e02d466f0353f66c8a7",
+              "sizeBytes": 112177,
+              "width": 794,
+              "height": 1122
+            },
+            "candidate": {
+              "sha256": "788c23f281453284408cd6418eae35f1c959fb2be66f0e02d466f0353f66c8a7",
+              "sizeBytes": 112177,
+              "width": 794,
+              "height": 1122
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-paths",
+          "sample": "hwpspec-graphic",
+          "backend": "canvaskit-default",
+          "profile": "print",
+          "status": "existing_limitation",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvas2d",
+            "profile": "print",
+            "actual_backend": "canvas2d",
+            "fallback": "canvaskitResourcePreparationFailed",
+            "selection_error": "CanvasKit 문서 글꼴 요구 목록이 완전하지 않습니다",
+            "last_render_error": null,
+            "violations": [
+              "runtimeBackendMismatch",
+              "runtimeDiagnosticsUnavailable"
+            ]
+          },
+          "page": 19,
+          "capture": {
+            "base": {
+              "sha256": "788c23f281453284408cd6418eae35f1c959fb2be66f0e02d466f0353f66c8a7",
+              "sizeBytes": 112177,
+              "width": 794,
+              "height": 1122
+            },
+            "candidate": {
+              "sha256": "788c23f281453284408cd6418eae35f1c959fb2be66f0e02d466f0353f66c8a7",
+              "sizeBytes": 112177,
+              "width": 794,
+              "height": 1122
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-paths",
+          "sample": "jeju-charts",
+          "backend": "canvas2d",
+          "profile": "screen",
+          "status": "verified_actual",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvas2d",
+            "profile": "screen",
+            "actual_backend": "canvas2d",
+            "fallback": null,
+            "selection_error": null,
+            "last_render_error": null,
+            "violations": []
+          },
+          "page": 48,
+          "capture": {
+            "base": {
+              "sha256": "148ecf8852b4725ea9927dadc802e77dfc96470a848785f88be02801de30a1f9",
+              "sizeBytes": 119311,
+              "width": 794,
+              "height": 1123
+            },
+            "candidate": {
+              "sha256": "148ecf8852b4725ea9927dadc802e77dfc96470a848785f88be02801de30a1f9",
+              "sizeBytes": 119311,
+              "width": 794,
+              "height": 1123
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-paths",
+          "sample": "jeju-charts",
+          "backend": "canvaskit-compat",
+          "profile": "screen",
+          "status": "existing_limitation",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvas2d",
+            "profile": "screen",
+            "actual_backend": "canvas2d",
+            "fallback": "canvaskitResourcePreparationFailed",
+            "selection_error": "CanvasKit 문서 글꼴 요구 목록이 완전하지 않습니다",
+            "last_render_error": null,
+            "violations": [
+              "runtimeBackendMismatch",
+              "runtimeDiagnosticsUnavailable"
+            ]
+          },
+          "page": 48,
+          "capture": {
+            "base": {
+              "sha256": "148ecf8852b4725ea9927dadc802e77dfc96470a848785f88be02801de30a1f9",
+              "sizeBytes": 119311,
+              "width": 794,
+              "height": 1123
+            },
+            "candidate": {
+              "sha256": "148ecf8852b4725ea9927dadc802e77dfc96470a848785f88be02801de30a1f9",
+              "sizeBytes": 119311,
+              "width": 794,
+              "height": 1123
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-paths",
+          "sample": "jeju-charts",
+          "backend": "canvaskit-default",
+          "profile": "screen",
+          "status": "existing_limitation",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvas2d",
+            "profile": "screen",
+            "actual_backend": "canvas2d",
+            "fallback": "canvaskitResourcePreparationFailed",
+            "selection_error": "CanvasKit 문서 글꼴 요구 목록이 완전하지 않습니다",
+            "last_render_error": null,
+            "violations": [
+              "runtimeBackendMismatch",
+              "runtimeDiagnosticsUnavailable"
+            ]
+          },
+          "page": 48,
+          "capture": {
+            "base": {
+              "sha256": "148ecf8852b4725ea9927dadc802e77dfc96470a848785f88be02801de30a1f9",
+              "sizeBytes": 119311,
+              "width": 794,
+              "height": 1123
+            },
+            "candidate": {
+              "sha256": "148ecf8852b4725ea9927dadc802e77dfc96470a848785f88be02801de30a1f9",
+              "sizeBytes": 119311,
+              "width": 794,
+              "height": 1123
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-paths",
+          "sample": "jeju-charts",
+          "backend": "canvas2d",
+          "profile": "print",
+          "status": "verified_actual",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvas2d",
+            "profile": "print",
+            "actual_backend": "canvas2d",
+            "fallback": null,
+            "selection_error": null,
+            "last_render_error": null,
+            "violations": []
+          },
+          "page": 48,
+          "capture": {
+            "base": {
+              "sha256": "465deaadb53870c756b7b7682cc346eef47de077550ba6a41d0f8e30f4bd6be4",
+              "sizeBytes": 119355,
+              "width": 794,
+              "height": 1122
+            },
+            "candidate": {
+              "sha256": "465deaadb53870c756b7b7682cc346eef47de077550ba6a41d0f8e30f4bd6be4",
+              "sizeBytes": 119355,
+              "width": 794,
+              "height": 1122
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-paths",
+          "sample": "jeju-charts",
+          "backend": "canvaskit-compat",
+          "profile": "print",
+          "status": "existing_limitation",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvas2d",
+            "profile": "print",
+            "actual_backend": "canvas2d",
+            "fallback": "canvaskitResourcePreparationFailed",
+            "selection_error": "CanvasKit 문서 글꼴 요구 목록이 완전하지 않습니다",
+            "last_render_error": null,
+            "violations": [
+              "runtimeBackendMismatch",
+              "runtimeDiagnosticsUnavailable"
+            ]
+          },
+          "page": 48,
+          "capture": {
+            "base": {
+              "sha256": "465deaadb53870c756b7b7682cc346eef47de077550ba6a41d0f8e30f4bd6be4",
+              "sizeBytes": 119355,
+              "width": 794,
+              "height": 1122
+            },
+            "candidate": {
+              "sha256": "465deaadb53870c756b7b7682cc346eef47de077550ba6a41d0f8e30f4bd6be4",
+              "sizeBytes": 119355,
+              "width": 794,
+              "height": 1122
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-paths",
+          "sample": "jeju-charts",
+          "backend": "canvaskit-default",
+          "profile": "print",
+          "status": "existing_limitation",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvas2d",
+            "profile": "print",
+            "actual_backend": "canvas2d",
+            "fallback": "canvaskitResourcePreparationFailed",
+            "selection_error": "CanvasKit 문서 글꼴 요구 목록이 완전하지 않습니다",
+            "last_render_error": null,
+            "violations": [
+              "runtimeBackendMismatch",
+              "runtimeDiagnosticsUnavailable"
+            ]
+          },
+          "page": 48,
+          "capture": {
+            "base": {
+              "sha256": "465deaadb53870c756b7b7682cc346eef47de077550ba6a41d0f8e30f4bd6be4",
+              "sizeBytes": 119355,
+              "width": 794,
+              "height": 1122
+            },
+            "candidate": {
+              "sha256": "465deaadb53870c756b7b7682cc346eef47de077550ba6a41d0f8e30f4bd6be4",
+              "sizeBytes": 119355,
+              "width": 794,
+              "height": 1122
+            }
+          }
+        },
+        {
+          "probe": "studio-law-exact-fonts",
+          "sample": "law-caption",
+          "backend": "canvas2d",
+          "profile": "screen",
+          "status": "verified_actual",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvas2d",
+            "profile": "screen",
+            "actual_backend": "canvas2d",
+            "fallback": null,
+            "selection_error": null,
+            "last_render_error": null,
+            "violations": []
+          },
+          "page": 1,
+          "capture": {
+            "base": {
+              "sha256": "9dec521bf96903fdf58d73c84d1d7d1372aab6dc83e9f263b46e01a6b6a09059",
+              "sizeBytes": 77343,
+              "width": 794,
+              "height": 1123
+            },
+            "candidate": {
+              "sha256": "9dec521bf96903fdf58d73c84d1d7d1372aab6dc83e9f263b46e01a6b6a09059",
+              "sizeBytes": 77343,
+              "width": 794,
+              "height": 1123
+            }
+          }
+        },
+        {
+          "probe": "studio-law-exact-fonts",
+          "sample": "law-caption",
+          "backend": "canvaskit-compat",
+          "profile": "screen",
+          "status": "existing_limitation",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvaskit",
+            "profile": "screen",
+            "actual_backend": "canvaskit-compat",
+            "fallback": null,
+            "selection_error": null,
+            "last_render_error": "CanvasKit font family가 준비되지 않았습니다: 한양신명조",
+            "violations": [
+              "runtimeRenderError",
+              "runtimeRenderIncomplete",
+              "runtimeUnexpectedUnsupportedOps"
+            ]
+          },
+          "page": 1,
+          "capture": {
+            "base": {
+              "sha256": "30ed46a7edadbcd4c76ee4cf0c8212367f9f270dd4227febb6c023d5ede9f213",
+              "sizeBytes": 4887,
+              "width": 794,
+              "height": 1123
+            },
+            "candidate": {
+              "sha256": "30ed46a7edadbcd4c76ee4cf0c8212367f9f270dd4227febb6c023d5ede9f213",
+              "sizeBytes": 4887,
+              "width": 794,
+              "height": 1123
+            }
+          }
+        },
+        {
+          "probe": "studio-law-exact-fonts",
+          "sample": "law-caption",
+          "backend": "canvaskit-default",
+          "profile": "screen",
+          "status": "existing_limitation",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvaskit",
+            "profile": "screen",
+            "actual_backend": "canvaskit-default",
+            "fallback": null,
+            "selection_error": null,
+            "last_render_error": "CanvasKit font family가 준비되지 않았습니다: 한양신명조",
+            "violations": [
+              "runtimeRenderError",
+              "runtimeRenderIncomplete",
+              "runtimeUnexpectedUnsupportedOps"
+            ]
+          },
+          "page": 1,
+          "capture": {
+            "base": {
+              "sha256": "30ed46a7edadbcd4c76ee4cf0c8212367f9f270dd4227febb6c023d5ede9f213",
+              "sizeBytes": 4887,
+              "width": 794,
+              "height": 1123
+            },
+            "candidate": {
+              "sha256": "30ed46a7edadbcd4c76ee4cf0c8212367f9f270dd4227febb6c023d5ede9f213",
+              "sizeBytes": 4887,
+              "width": 794,
+              "height": 1123
+            }
+          }
+        },
+        {
+          "probe": "studio-law-exact-fonts",
+          "sample": "law-caption",
+          "backend": "canvas2d",
+          "profile": "print",
+          "status": "verified_actual",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvas2d",
+            "profile": "print",
+            "actual_backend": "canvas2d",
+            "fallback": null,
+            "selection_error": null,
+            "last_render_error": null,
+            "violations": []
+          },
+          "page": 1,
+          "capture": {
+            "base": {
+              "sha256": "96b1bc0160203c1f1e91e601a3f42fed69aa9d67d741eedb249d6a31a04b7971",
+              "sizeBytes": 79564,
+              "width": 794,
+              "height": 1122
+            },
+            "candidate": {
+              "sha256": "96b1bc0160203c1f1e91e601a3f42fed69aa9d67d741eedb249d6a31a04b7971",
+              "sizeBytes": 79564,
+              "width": 794,
+              "height": 1122
+            }
+          }
+        },
+        {
+          "probe": "studio-law-exact-fonts",
+          "sample": "law-caption",
+          "backend": "canvaskit-compat",
+          "profile": "print",
+          "status": "existing_limitation",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvaskit",
+            "profile": "print",
+            "actual_backend": "canvaskit-compat",
+            "fallback": null,
+            "selection_error": null,
+            "last_render_error": "CanvasKit font family가 준비되지 않았습니다: 한양신명조",
+            "violations": [
+              "runtimeRenderError",
+              "runtimeRenderIncomplete",
+              "runtimeUnexpectedUnsupportedOps"
+            ]
+          },
+          "page": 1,
+          "capture": {
+            "base": {
+              "sha256": "0a2783828a444947d5da0af1c06dee45a1ec273ec80f84b1b1aeae2bda0fcb60",
+              "sizeBytes": 4883,
+              "width": 794,
+              "height": 1122
+            },
+            "candidate": {
+              "sha256": "0a2783828a444947d5da0af1c06dee45a1ec273ec80f84b1b1aeae2bda0fcb60",
+              "sizeBytes": 4883,
+              "width": 794,
+              "height": 1122
+            }
+          }
+        },
+        {
+          "probe": "studio-law-exact-fonts",
+          "sample": "law-caption",
+          "backend": "canvaskit-default",
+          "profile": "print",
+          "status": "existing_limitation",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvaskit",
+            "profile": "print",
+            "actual_backend": "canvaskit-default",
+            "fallback": null,
+            "selection_error": null,
+            "last_render_error": "CanvasKit font family가 준비되지 않았습니다: 한양신명조",
+            "violations": [
+              "runtimeRenderError",
+              "runtimeRenderIncomplete",
+              "runtimeUnexpectedUnsupportedOps"
+            ]
+          },
+          "page": 1,
+          "capture": {
+            "base": {
+              "sha256": "0a2783828a444947d5da0af1c06dee45a1ec273ec80f84b1b1aeae2bda0fcb60",
+              "sizeBytes": 4883,
+              "width": 794,
+              "height": 1122
+            },
+            "candidate": {
+              "sha256": "0a2783828a444947d5da0af1c06dee45a1ec273ec80f84b1b1aeae2bda0fcb60",
+              "sizeBytes": 4883,
+              "width": 794,
+              "height": 1122
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-crop-control",
+          "sample": "image-crop",
+          "backend": "canvas2d",
+          "profile": "screen",
+          "status": "verified_actual",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvas2d",
+            "profile": "screen",
+            "actual_backend": "canvas2d",
+            "fallback": null,
+            "selection_error": null,
+            "last_render_error": null,
+            "violations": []
+          },
+          "page": 0,
+          "capture": {
+            "base": {
+              "sha256": "a93825da80edc13a0c8f38eb3d0d8be3ca6f6bd39cdc5ec0348a25dce63c639d",
+              "sizeBytes": 62195,
+              "width": 794,
+              "height": 1123
+            },
+            "candidate": {
+              "sha256": "a93825da80edc13a0c8f38eb3d0d8be3ca6f6bd39cdc5ec0348a25dce63c639d",
+              "sizeBytes": 62195,
+              "width": 794,
+              "height": 1123
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-crop-control",
+          "sample": "image-crop",
+          "backend": "canvaskit-compat",
+          "profile": "screen",
+          "status": "verified_actual",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvaskit",
+            "profile": "screen",
+            "actual_backend": "canvaskit-compat",
+            "fallback": null,
+            "selection_error": null,
+            "last_render_error": null,
+            "violations": []
+          },
+          "page": 0,
+          "capture": {
+            "base": {
+              "sha256": "e63ce41372e8a86a7d56e3ecc6e24959a1aaba04b955ddefdc90f9816d1c729b",
+              "sizeBytes": 62071,
+              "width": 794,
+              "height": 1123
+            },
+            "candidate": {
+              "sha256": "e63ce41372e8a86a7d56e3ecc6e24959a1aaba04b955ddefdc90f9816d1c729b",
+              "sizeBytes": 62071,
+              "width": 794,
+              "height": 1123
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-crop-control",
+          "sample": "image-crop",
+          "backend": "canvaskit-default",
+          "profile": "screen",
+          "status": "verified_actual",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvaskit",
+            "profile": "screen",
+            "actual_backend": "canvaskit-default",
+            "fallback": null,
+            "selection_error": null,
+            "last_render_error": null,
+            "violations": []
+          },
+          "page": 0,
+          "capture": {
+            "base": {
+              "sha256": "e63ce41372e8a86a7d56e3ecc6e24959a1aaba04b955ddefdc90f9816d1c729b",
+              "sizeBytes": 62071,
+              "width": 794,
+              "height": 1123
+            },
+            "candidate": {
+              "sha256": "e63ce41372e8a86a7d56e3ecc6e24959a1aaba04b955ddefdc90f9816d1c729b",
+              "sizeBytes": 62071,
+              "width": 794,
+              "height": 1123
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-crop-control",
+          "sample": "image-crop",
+          "backend": "canvas2d",
+          "profile": "print",
+          "status": "verified_actual",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvas2d",
+            "profile": "print",
+            "actual_backend": "canvas2d",
+            "fallback": null,
+            "selection_error": null,
+            "last_render_error": null,
+            "violations": []
+          },
+          "page": 0,
+          "capture": {
+            "base": {
+              "sha256": "f0b37c86afa960a5ceb936412e5897619946fea8d9dd7108e48115265e50ea9c",
+              "sizeBytes": 61311,
+              "width": 794,
+              "height": 1122
+            },
+            "candidate": {
+              "sha256": "f0b37c86afa960a5ceb936412e5897619946fea8d9dd7108e48115265e50ea9c",
+              "sizeBytes": 61311,
+              "width": 794,
+              "height": 1122
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-crop-control",
+          "sample": "image-crop",
+          "backend": "canvaskit-compat",
+          "profile": "print",
+          "status": "verified_actual",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvaskit",
+            "profile": "print",
+            "actual_backend": "canvaskit-compat",
+            "fallback": null,
+            "selection_error": null,
+            "last_render_error": null,
+            "violations": []
+          },
+          "page": 0,
+          "capture": {
+            "base": {
+              "sha256": "c8f3e82a2913cdf2040bc6ccd9cab6f17c4305979d6595989a39e19ae2567436",
+              "sizeBytes": 60846,
+              "width": 794,
+              "height": 1122
+            },
+            "candidate": {
+              "sha256": "c8f3e82a2913cdf2040bc6ccd9cab6f17c4305979d6595989a39e19ae2567436",
+              "sizeBytes": 60846,
+              "width": 794,
+              "height": 1122
+            }
+          }
+        },
+        {
+          "probe": "studio-actual-crop-control",
+          "sample": "image-crop",
+          "backend": "canvaskit-default",
+          "profile": "print",
+          "status": "verified_actual",
+          "same_outcome": true,
+          "runtime": {
+            "active_backend": "canvaskit",
+            "profile": "print",
+            "actual_backend": "canvaskit-default",
+            "fallback": null,
+            "selection_error": null,
+            "last_render_error": null,
+            "violations": []
+          },
+          "page": 0,
+          "capture": {
+            "base": {
+              "sha256": "c8f3e82a2913cdf2040bc6ccd9cab6f17c4305979d6595989a39e19ae2567436",
+              "sizeBytes": 60846,
+              "width": 794,
+              "height": 1122
+            },
+            "candidate": {
+              "sha256": "c8f3e82a2913cdf2040bc6ccd9cab6f17c4305979d6595989a39e19ae2567436",
+              "sizeBytes": 60846,
+              "width": 794,
+              "height": 1122
+            }
+          }
+        }
+      ],
+      "unchanged_preflight": [
+        {
+          "sample": "law-caption",
+          "profile": "screen",
+          "status": "eligible",
+          "complete": true,
+          "scanned_pages": 52,
+          "limit": 200000,
+          "blocker_codes": []
+        },
+        {
+          "sample": "law-caption",
+          "profile": "print",
+          "status": "eligible",
+          "complete": true,
+          "scanned_pages": 52,
+          "limit": 200000,
+          "blocker_codes": []
+        },
+        {
+          "sample": "repeated-table",
+          "profile": "screen",
+          "status": "eligible",
+          "complete": true,
+          "scanned_pages": 10,
+          "limit": 200000,
+          "blocker_codes": []
+        },
+        {
+          "sample": "repeated-table",
+          "profile": "print",
+          "status": "eligible",
+          "complete": true,
+          "scanned_pages": 10,
+          "limit": 200000,
+          "blocker_codes": []
+        },
+        {
+          "sample": "hwpspec-graphic",
+          "profile": "screen",
+          "status": "incomplete",
+          "complete": false,
+          "scanned_pages": 123,
+          "limit": 200000,
+          "blocker_codes": [
+            "hiddenCanvas2dOverlayRequired",
+            "workLimitExceeded"
+          ]
+        },
+        {
+          "sample": "hwpspec-graphic",
+          "profile": "print",
+          "status": "incomplete",
+          "complete": false,
+          "scanned_pages": 123,
+          "limit": 200000,
+          "blocker_codes": [
+            "hiddenCanvas2dOverlayRequired",
+            "workLimitExceeded"
+          ]
+        },
+        {
+          "sample": "jeju-charts",
+          "profile": "screen",
+          "status": "incomplete",
+          "complete": false,
+          "scanned_pages": 197,
+          "limit": 200000,
+          "blocker_codes": [
+            "hiddenCanvas2dOverlayRequired",
+            "workLimitExceeded"
+          ]
+        },
+        {
+          "sample": "jeju-charts",
+          "profile": "print",
+          "status": "incomplete",
+          "complete": false,
+          "scanned_pages": 197,
+          "limit": 200000,
+          "blocker_codes": [
+            "hiddenCanvas2dOverlayRequired",
+            "workLimitExceeded"
+          ]
+        }
+      ],
+      "actual_verified": 20,
+      "existing_limitations": 16
+    }
+  },
+  "regressions": {
+    "full_nextest_passed": 14093,
+    "full_nextest_skipped": 45,
+    "full_nextest_failed": 0,
+    "focused_passed": 80,
+    "studio_unit_passed": 2835,
+    "studio_unit_skipped": 2,
+    "public_protected_conditions": 8
+  },
+  "submission_rebase": {
+    "head": "9396a71bbef4bf6be4d86c19be67d9deae08083e",
+    "merged_tree": "b57c64bed6a02d80e3e78490c6e60bacdda2bbce",
+    "only_paths_changed_from_verified_runtime_source": [
+      "AGENTS.md",
+      "CLAUDE.md",
+      "mydocs/manual/mcp_hwp2024Convert_usage.md",
+      "mydocs/manual/pr_review/visual_fixture_evidence.md",
+      "mydocs/manual/verification/visual_sweep_guide.md",
+      "mydocs/manual/verification/visual_verification_governance.md",
+      "mydocs/orders/20261124.md",
+      "mydocs/pr/archives/pr_9390_review.md"
+    ]
+  }
+}

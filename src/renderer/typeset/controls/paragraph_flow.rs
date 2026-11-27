@@ -28,8 +28,11 @@ fn try_place_reflowed_table_rows_with_storage<S: crate::storage::Storage>(
     measured_tables: &[MeasuredTable],
     storage: &S,
 ) -> Result<bool, S::Error> {
-    if !crate::renderer::inline_flow::supports_table_text_rows_with_storage(para, storage)?
-        && !crate::renderer::inline_flow::supports_page_square_table_rows(para)
+    if !crate::renderer::inline_flow::supports_table_text_rows_with_storage(
+        para,
+        styles.legacy_body_symbols,
+        storage,
+    )? && !crate::renderer::inline_flow::supports_page_square_table_rows(para)
     {
         return Ok(false);
     }
@@ -53,7 +56,9 @@ fn try_place_reflowed_table_rows_with_storage<S: crate::storage::Storage>(
         // 단독 행 나눔 표도 전체가 들어가면 공백과 같은 물리 줄을 공유한다.
         // 들어가지 않는 조각은 상태를 바꾸기 전에 기존 분할 소유자에게 돌려준다.
         if crate::renderer::inline_flow::standalone_table_fragment_owner_with_storage(
-            para, storage,
+            para,
+            styles.legacy_body_symbols,
+            storage,
         )? {
             return Ok(false);
         }
@@ -431,6 +436,7 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
                     ctrl_idx,
                     order_pos,
                     next_para,
+                    paragraphs_all.get(para_idx + 1..).unwrap_or(&[]),
                     measured_tables,
                     has_tac,
                     host_col_w,

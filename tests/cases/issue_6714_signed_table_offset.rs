@@ -67,6 +67,7 @@ fn paginate(offset: i32, prefix: f64, text: &str, row_heights: Vec<f64>) -> Pagi
             total_height,
             row_heights,
             baseline_row_heights: None,
+            baseline_declared_row_heights: Vec::new(),
             row_frame_heights: None,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,

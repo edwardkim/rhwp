@@ -1,0 +1,31 @@
+{
+  "source_file": "samples/issue1921/59043_regulatory_analysis.hwp",
+  "source_sha256": "da9f9c9862475d1710f6ecf93e3ce134726054fe0be0d9523b9d60d1a90c82ef",
+  "original_pr_sha": "a5884818331908d5d6085aac3f9ca3430f27a098",
+  "baseline_sha": "0fbee2c04ecee63cf526a9a7e61b38b32608bc3c",
+  "product_sha": "ad48653ab35c51e9c83e424bdb6c7fc1a66aac76",
+  "regression_sha": "0d5795f135c6def87080de16bafe8d73410346b8",
+  "artifacts": {
+    "base": {
+      "rhwp": "840c62480d86453d8a94b90c80ec4e50c65a654e1132a2f8159db7b1182dbeda",
+      "pkg/rhwp_bg.wasm": "6312d48d29024eb2561fc074355c9d79a2bad5e4a67be07c92a885a4e31d8a88",
+      "pkg/rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d"
+    },
+    "candidate": {
+      "rhwp": "68ad3d78f4e0cf0ab17d2f981ea630d67bc4cc9da957c679a417cf8f2c80b360",
+      "pkg/rhwp_bg.wasm": "76480eb0667d27dbecf6183370d4b8d216afbfa99405f613143497fc5330a003",
+      "pkg/rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d"
+    }
+  },
+  "fixtures": {
+    "pdf/pr9298/cell-pictures-continued-2024.pdf": "7fe7ccec923ac60ac3d77613995dab19eaf7edba1a22acf343a4847b52417062",
+    "pdf/pr9298/cell-pictures-front-2024.pdf": "d841c79d90e25c434ac2145fce2eb9f51aaf50cb335a7936dcf38b0130f76b76",
+    "pdf/pr9298/cell-pictures-rule-2024.pdf": "aafa39e87c2055b242aa6ca1eaab69ad3c47fc104910bdc768c1a80d162d3ba8",
+    "pdf/pr9298/cell-pictures-square-2024.pdf": "024a4e9ecff0abad1097ea4f6550905b1984e4bda0570a7d552d35a7e882d9c7",
+    "tests/fixtures/pr9298_cell_picture_flow/cell-pictures-continued.hwp": "484b49de155ebddb1ad479c2976ddbe4d36347456e6980e8a2864506c448f8b3",
+    "tests/fixtures/pr9298_cell_picture_flow/cell-pictures-continued.hwpx": "ec83e97fe1de42a3514197985a537f395a57720493a652f3e771b9e5e87c60a9",
+    "tests/fixtures/pr9298_cell_picture_flow/cell-pictures-front.hwp": "52343be534e320d85111bf626cd201c930a4c7309fbb356e4fe239b66756cd9b",
+    "tests/fixtures/pr9298_cell_picture_flow/cell-pictures-rule.hwp": "11730a74c0567345b8334b365c35da084c362eb17f3e7db3c23c1de004120588",
+    "tests/fixtures/pr9298_cell_picture_flow/cell-pictures-square.hwpx": "b2289a40c65a8bef963d35c769ffec35f68ff00239aa2de6eab9ca56eece03c4"
+  }
+}

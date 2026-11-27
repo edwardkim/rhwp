@@ -44,6 +44,76 @@ fn natural_top_lead(table: &Table, ft: &FormattedTable, dpi: f64) -> Option<f64>
     }
 }
 
+impl TypesetEngine {
+    pub(in crate::renderer::typeset) fn stored_leading_float_frame(
+        &self,
+        st: &TypesetState,
+        paragraphs: &[Paragraph],
+        para_idx: usize,
+        measured: &[MeasuredTable],
+        styles: &ResolvedStyleSet,
+    ) -> Option<crate::renderer::float_placement::stored_empty_host_frame::StoredLeadingFloatFrame>
+    {
+        if st.col_count != 1
+            || !st.profile.hwp5_stored_pagination_layout()
+            || st.profile.session_edited()
+            || st.current_start_height != 0.0
+            || st.current_zone_y_offset != 0.0
+            || st.available_height() != st.base_available_height()
+        {
+            return None;
+        }
+        use crate::renderer::float_placement::stored_empty_host_frame::StoredLeadingFloatFrame;
+        let frame = StoredLeadingFloatFrame::resolve(
+            paragraphs.get(para_idx.checked_sub(1)?)?,
+            paragraphs.get(para_idx)?,
+            |index, table| {
+                if self.render_normalization.table_text_reflowed(table)
+                    || !crate::renderer::pagination::table_cell_footnotes(table).is_empty()
+                {
+                    return None;
+                }
+                measured
+                    .iter()
+                    .find(|entry| entry.para_index == para_idx && entry.control_index == index)
+                    .map(|entry| entry.total_height)
+            },
+            st.available_height(),
+            styles,
+            self.dpi,
+        )?;
+        // 저장 좌표와 현재 단의 흐름 끝이 같은 HWPUNIT을 가리키는지
+        // 확인한다. 지난 쪽 제목과 이미 놓인 첫 표의 소유권도 구분한다.
+        let same_hu =
+            |a: f64, b: f64| (a * 7200.0 / self.dpi).round() == (b * 7200.0 / self.dpi).round();
+        let previous_is_last = |items: &[crate::renderer::pagination::PageItem]| {
+            items.last().and_then(super::super::page_item_para_index) == para_idx.checked_sub(1)
+        };
+        let matches_flow = if let Some(first) = st.paragraph_float_placements.get(&(para_idx, 0)) {
+            same_hu(first.table_top, frame.placements[0].table_top)
+                && same_hu(first.occupied_bottom, frame.placements[0].occupied_bottom)
+                && same_hu(st.current_height, first.occupied_bottom)
+        } else if st.current_items.is_empty() {
+            frame.restart
+                && st.current_height == 0.0
+                && st
+                    .pages
+                    .iter()
+                    .rev()
+                    .nth(1)
+                    .filter(|page| page.section_index == st.section_index)
+                    .and_then(|page| page.column_contents.last())
+                    .is_some_and(|column| {
+                        previous_is_last(&column.items)
+                            && same_hu(column.used_height, frame.previous_end)
+                    })
+        } else {
+            previous_is_last(&st.current_items) && same_hu(st.current_height, frame.previous_end)
+        };
+        matches_flow.then_some(frame)
+    }
+}
+
 pub(in crate::renderer::typeset) fn place(
     engine: &TypesetEngine,
     st: &mut TypesetState,
@@ -82,6 +152,34 @@ pub(in crate::renderer::typeset) fn place(
         next_para,
         is_column_top,
     );
+
+    // 두 표가 서로 다른 쪽을 소유할 때는 공백 줄까지 포함해 확정한
+    // 표 상자를 그대로 발행한다.
+    if let Some(frame) =
+        engine.stored_leading_float_frame(st, paragraphs_all, para_idx, measured_tables, styles)
+    {
+        let placement = frame.placements[ctrl_idx];
+        let leading_on_page = st.paragraph_float_placements.contains_key(&(para_idx, 0));
+        if ctrl_idx == 0 || leading_on_page {
+            if (ctrl_idx == 1 || frame.restart) && !st.current_items.is_empty() {
+                st.advance_column_or_new_page();
+            }
+            st.record_paragraph_float_placement((para_idx, ctrl_idx), placement);
+            st.append_item(crate::renderer::pagination::PageItem::Table {
+                para_index: para_idx,
+                control_index: ctrl_idx,
+            });
+            if ctrl_idx == 0 {
+                st.append_item(crate::renderer::pagination::PageItem::PartialParagraph {
+                    para_index: para_idx,
+                    start_line: 0,
+                    end_line: 1,
+                });
+            }
+            st.align_flow_to(placement.occupied_bottom);
+            return false;
+        }
+    }
 
     let issue2439_para_start_height =
         st.prepare_flow_table_anchor(natural_top_lead(table, &ft, engine.dpi), para_start_height);
@@ -189,6 +287,19 @@ pub(in crate::renderer::typeset) fn place(
                 para_start_height,
             );
             if !deferred.is_empty() {
+                let page = st.stored_tac_page(paragraphs_all);
+                if page.profile.hwp5_stored_pagination_layout() && !page.profile.session_edited() {
+                    if let Some(advance) = next_para.and_then(|next| {
+                        let before = styles
+                            .para_styles
+                            .get(next.para_shape_id as usize)?
+                            .spacing_before;
+                        deferred_query.stored_host_advance_after_split(next, before)
+                    }) {
+                        st.advance_flow_by(advance);
+                        st.record_stored_paragraph_flow_end(para_idx, st.current_height);
+                    }
+                }
                 st.enqueue_deferred_table_controls(deferred);
                 break_after_current_table = true;
             }

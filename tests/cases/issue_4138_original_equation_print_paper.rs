@@ -89,7 +89,7 @@ fn frames(compat2024: bool, profile: RenderProfile) -> Vec<[f64; 6]> {
 
 /// 관계형: 원본 표시와 프로필·글꼴의 프레임 소유를 검사하며 원문 좌표를 고정하지 않는다.
 #[test]
-fn original_hft_equation_uses_the_same_physical_print_paper_as_body_glyphs() {
+fn original_legacy_equation_uses_the_same_physical_print_paper_as_body_glyphs() {
     let mut core = load();
     core.set_hangul2024_compat(true);
     let source = core.build_page_render_tree(128).unwrap();
@@ -129,7 +129,7 @@ fn high_quality_export_keeps_its_existing_frame() {
 
 /// 관계형: 원본 표시와 프로필·글꼴의 프레임 소유를 검사하며 원문 좌표를 고정하지 않는다.
 #[test]
-fn modern_face_is_not_reclassified_as_an_original_hft_program() {
+fn modern_face_is_not_reclassified_as_an_original_legacy_program() {
     use rhwp::model::{control::Control, paragraph::Paragraph};
     fn modernize(paragraphs: &mut [Paragraph]) {
         for para in paragraphs {
@@ -409,7 +409,7 @@ fn svg_font_collection_keeps_the_equation_declared_program() {
         codepoints
             .get("RHWP Hancom Legacy Equation")
             .is_some_and(|set| set.contains(&'P')),
-        "표시 조각에 적힌 원본 HFT face를 실제 임베딩 요청에 전달한다"
+        "표시 조각에 기록된 원본 글꼴을 임베딩 요청에 전달한다"
     );
     assert!(
         !codepoints.contains_key("Latin Modern Math"),
@@ -444,6 +444,7 @@ fn svg_replay_keeps_explicit_group_affine_around_equation_children() {
             section_index: None,
             para_index: None,
             control_index: None,
+            cell_context: None,
         }),
     );
     let mut renderer = SvgLayerRenderer::new();

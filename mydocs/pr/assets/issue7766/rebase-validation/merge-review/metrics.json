@@ -1,0 +1,643 @@
+{
+  "base": "2c0c1d205a54b8d5bd262241bac1391cffe0d801",
+  "binary_source_head": "953b43187325496645683fcc15ca989a815b0596",
+  "dpi": 96,
+  "results": [
+    {
+      "issue": 7766,
+      "case": "1853",
+      "label": "법률 개정 이유서",
+      "page": 44,
+      "backend": "native",
+      "input_sha256": "46bd0142f7fe2f68dffb9768e08d65488feeb19f5fd6916f9ad90ae5d72a96a9",
+      "reference_pdf_sha256": "c3befae95a2135761066c44435a331bb55d0d27bac2f97d8487358f1b9f2bd9b",
+      "native_sha256": "8abeddfb75573ac125e5f9c25e62328affed34900655ce9d2fe8a15e7b34d9bf",
+      "wasm_sha256": [],
+      "tsv_sha256": "85e39b5f3008fd7f51373a8053c2adeebf3dcdd38c6f365b1b4ee491f58d8095",
+      "render_png_sha256": "9ba05a2a4a77b022cf12835e62d8fb98c514ef79bf1a8abcfd7f31d0232d0db4",
+      "reference_png_sha256": "82c8c8cec82063c5cf8e546ae8698abb35fc169038c2af200d268c1d2651b6f7",
+      "silhouette_raw_match_percent": "100.00",
+      "pixel_diff_threshold": 32,
+      "pixel_match_percent": 97.84222,
+      "visual_accuracy_proxy_percent": 77.53798,
+      "review": {
+        "path": "merge-review/1853/review_044.png",
+        "sha256": "674a0fda57435ee0c68f1893275f463dc223f0be2d3e14b5f635e017d3b1b59c"
+      },
+      "overlay": {
+        "path": "merge-review/1853/overlay_044.png",
+        "sha256": "98921fb7c56c401cf4be9ad7f727fd182b7f8a8fce338da3f921e9b9dec62854"
+      }
+    },
+    {
+      "issue": 7767,
+      "case": "husbandry-2024-one-up",
+      "label": "동물복지 사육관리 지침",
+      "page": 2,
+      "backend": "native",
+      "input_sha256": "309494bf58da7c092eca2c6fe55918063d2f538820cbc3fc6f8c8196fcd3586a",
+      "reference_pdf_sha256": "3c86ba0cb8d57587c8c4be95e8babde1b119bb9147dd617d83d7ce4081368896",
+      "native_sha256": "8abeddfb75573ac125e5f9c25e62328affed34900655ce9d2fe8a15e7b34d9bf",
+      "wasm_sha256": [],
+      "tsv_sha256": "909e0a9233fb51f6c18ec6a5c76ca34e8abbb3ee9b4baecef27111034cccb2d7",
+      "render_png_sha256": "27a95767c60e12ebf1b2602fa07cc603fe4b122958ddee0a95f00bfab536a158",
+      "reference_png_sha256": "8b41831d40b8d5968dda698870a800c6dafbd3b8fbf623d0b7a1b1fd3b471d45",
+      "silhouette_raw_match_percent": "100.00",
+      "pixel_diff_threshold": 32,
+      "pixel_match_percent": 94.83044,
+      "visual_accuracy_proxy_percent": 32.30638,
+      "review": {
+        "path": "merge-review/husbandry-2024-one-up/review_002.png",
+        "sha256": "32872b9d7c2b4b7a701b94f54d009006e6cc9f043079d04c5c79aead92d07fdc"
+      },
+      "overlay": {
+        "path": "merge-review/husbandry-2024-one-up/overlay_002.png",
+        "sha256": "0942fe0ac17205e1944b6e01262c5fa0041a1dd35b13ec62f25cb2e7a3b58196"
+      }
+    },
+    {
+      "issue": 7769,
+      "case": "synam",
+      "label": "영구임대주택 예비입주자 모집 공고",
+      "page": 8,
+      "backend": "native",
+      "input_sha256": "1dce9356ec316407b6c684d5a11190a44bb26da643a7749626763e781ab0c13b",
+      "reference_pdf_sha256": "d199640be90cb39acfde965bbeb66c787d01d179b6759c5d797cf91043c7d09d",
+      "native_sha256": "8abeddfb75573ac125e5f9c25e62328affed34900655ce9d2fe8a15e7b34d9bf",
+      "wasm_sha256": [],
+      "tsv_sha256": "3b82feced7250f5469b9ab2b2d5744ee8fa8223dff28e585aa8a658b461240dc",
+      "render_png_sha256": "90ef62bf2d831e72f579e0ead451f0ebfb725674493815ddebe572799cfec4ad",
+      "reference_png_sha256": "00ea933c031466175c4e6451b86568d607234aa54e2d6bd3055375952839f968",
+      "silhouette_raw_match_percent": "100.00",
+      "pixel_diff_threshold": 32,
+      "pixel_match_percent": 94.45788,
+      "visual_accuracy_proxy_percent": 64.1015,
+      "review": {
+        "path": "merge-review/synam/review_008.png",
+        "sha256": "06ea6fc8c43f65ae2a6c0cddfe8e255a72d7ee99cd32f6de85d8e97cd8fea0cd"
+      },
+      "overlay": {
+        "path": "merge-review/synam/overlay_008.png",
+        "sha256": "edcea767657e86b9edd5a1c89eea8f1351f0754b73be36eccdcc10518c29d171"
+      }
+    },
+    {
+      "issue": 7769,
+      "case": "synam",
+      "label": "영구임대주택 예비입주자 모집 공고",
+      "page": 22,
+      "backend": "native",
+      "input_sha256": "1dce9356ec316407b6c684d5a11190a44bb26da643a7749626763e781ab0c13b",
+      "reference_pdf_sha256": "d199640be90cb39acfde965bbeb66c787d01d179b6759c5d797cf91043c7d09d",
+      "native_sha256": "8abeddfb75573ac125e5f9c25e62328affed34900655ce9d2fe8a15e7b34d9bf",
+      "wasm_sha256": [],
+      "tsv_sha256": "3b82feced7250f5469b9ab2b2d5744ee8fa8223dff28e585aa8a658b461240dc",
+      "render_png_sha256": "3730267a97358f6d1c5ed6a0ea408493da382ef9f0b1c07cfdc98c65599d93ff",
+      "reference_png_sha256": "ef3d9edba45a06cb743e1113e60108790b1374ca65e00206005a8ede856ae76e",
+      "silhouette_raw_match_percent": "100.00",
+      "pixel_diff_threshold": 32,
+      "pixel_match_percent": 93.50184,
+      "visual_accuracy_proxy_percent": 31.7053,
+      "review": {
+        "path": "merge-review/synam/review_022.png",
+        "sha256": "711fc1f6bb91c3471273b8f5a1dd8bfb82ebeb76c8f887e0991072f1b78357e2"
+      },
+      "overlay": {
+        "path": "merge-review/synam/overlay_022.png",
+        "sha256": "ad70324e7d82f9f07dc7e5889e2c444d1a69c4776c5f789e896b5f8bec4dfaaa"
+      }
+    },
+    {
+      "issue": 7769,
+      "case": "chemical",
+      "label": "화학제품 표시 조사보고서",
+      "page": 83,
+      "backend": "native",
+      "input_sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860",
+      "reference_pdf_sha256": "f8e5c0408e221080ede9a9a67b153d02d792d22961c738e46749641f32a32e79",
+      "native_sha256": "8abeddfb75573ac125e5f9c25e62328affed34900655ce9d2fe8a15e7b34d9bf",
+      "wasm_sha256": [],
+      "tsv_sha256": "2d40ed836fa5d1cc7981ce4c8239de58e8993bf4b458b2681e29fe633d724b05",
+      "render_png_sha256": "254195b5d23502a4eda686dbd0b4d37ea095eff3cee801ec87257cff3703a23b",
+      "reference_png_sha256": "170990e63da57211666f02d4411f7e8836f3dc5d89a9fab382c96db60a58e035",
+      "silhouette_raw_match_percent": "100.00",
+      "pixel_diff_threshold": 32,
+      "pixel_match_percent": 96.21369,
+      "visual_accuracy_proxy_percent": 78.18656,
+      "review": {
+        "path": "merge-review/chemical/review_083.png",
+        "sha256": "08ddefad5c0f8bb8c834ef44452607d99ac736218f3f6da263929149e7c28ba0"
+      },
+      "overlay": {
+        "path": "merge-review/chemical/overlay_083.png",
+        "sha256": "aab609baee68d5247d1f771e24f08ae07cbc2122ef6ae653c8f62862b56f006d"
+      }
+    },
+    {
+      "issue": 7769,
+      "case": "ktx",
+      "label": "KTX-003",
+      "page": 1,
+      "backend": "native",
+      "input_sha256": "619bc919de3f2b8113fb9af0fcc808c754dc601ed9e66e49226280fd3d1ae032",
+      "reference_pdf_sha256": "a0798bc093be8521908d9d0e5f2bf557013370f12de455fb9886d4f4d6419787",
+      "native_sha256": "8abeddfb75573ac125e5f9c25e62328affed34900655ce9d2fe8a15e7b34d9bf",
+      "wasm_sha256": [],
+      "tsv_sha256": "2a1e837bee6e72e6bbc680c8595b19ccf8e98255decb58ac67f4a55ba8c65f94",
+      "render_png_sha256": "ecd0edffdf8eb4676e1e15cad2b1c67a0c4bf515853d92f8cfabb96f2e2e5c91",
+      "reference_png_sha256": "1d7f358c8cabe3f469d05fe1837f7af26e0b3e374ec256b668903b523edffe7b",
+      "silhouette_raw_match_percent": "99.99",
+      "pixel_diff_threshold": 32,
+      "pixel_match_percent": 96.23502,
+      "visual_accuracy_proxy_percent": 91.53537,
+      "review": {
+        "path": "merge-review/ktx/review_001.png",
+        "sha256": "b6b47d5116988cd39c1da968af3340be7f7dd37e1705a3f0cf8eed75d5b5082e"
+      },
+      "overlay": {
+        "path": "merge-review/ktx/overlay_001.png",
+        "sha256": "86051b12fa1b694ae5c08b93689ca596b46d6889c7fca42822a21260cbf74f00"
+      }
+    },
+    {
+      "issue": 7769,
+      "case": "2439",
+      "label": "반복 점검표",
+      "page": 2,
+      "backend": "native",
+      "input_sha256": "674eabe66ea0ba783ad2cd398519c9893ba94956a22d9cb94b084db00d4d2c3d",
+      "reference_pdf_sha256": "f36a747c5f848d90e755abe2e730d932429a324fad9b7e822964934cd8f8eca4",
+      "native_sha256": "8abeddfb75573ac125e5f9c25e62328affed34900655ce9d2fe8a15e7b34d9bf",
+      "wasm_sha256": [],
+      "tsv_sha256": "cd69186771b706c9ee855490c9c46fc4471589a8658df8076b89a360b68ddd4e",
+      "render_png_sha256": "db0989af2342c93252db32b0c06e74c972d32a3bd54a78fa60a119bfd9d6a149",
+      "reference_png_sha256": "1904bc429e1cf7948ee7ddbc7f56dfbb08751cf19c5db5277305cf302b279412",
+      "silhouette_raw_match_percent": "100.00",
+      "pixel_diff_threshold": 32,
+      "pixel_match_percent": 90.76724,
+      "visual_accuracy_proxy_percent": 21.05465,
+      "review": {
+        "path": "merge-review/2439/review_002.png",
+        "sha256": "5d13a9c2189fb8c0934021c9dd90fe65aa807eddef70fdface599e326d5abf76"
+      },
+      "overlay": {
+        "path": "merge-review/2439/overlay_002.png",
+        "sha256": "8190a9a0ad904712b70b9026c137db1b838bb661f88cf6d1a77fc5e039651872"
+      }
+    },
+    {
+      "issue": 7769,
+      "case": "2439",
+      "label": "반복 점검표",
+      "page": 3,
+      "backend": "native",
+      "input_sha256": "674eabe66ea0ba783ad2cd398519c9893ba94956a22d9cb94b084db00d4d2c3d",
+      "reference_pdf_sha256": "f36a747c5f848d90e755abe2e730d932429a324fad9b7e822964934cd8f8eca4",
+      "native_sha256": "8abeddfb75573ac125e5f9c25e62328affed34900655ce9d2fe8a15e7b34d9bf",
+      "wasm_sha256": [],
+      "tsv_sha256": "cd69186771b706c9ee855490c9c46fc4471589a8658df8076b89a360b68ddd4e",
+      "render_png_sha256": "48f8550ecb5a3f12940c05b906e2e697f382c7512d3216825b7ccd1ca1f46b10",
+      "reference_png_sha256": "bb91702459441b86bf7e2940943ab554dfcc1f29c198605f708314d726e3b13b",
+      "silhouette_raw_match_percent": "100.00",
+      "pixel_diff_threshold": 32,
+      "pixel_match_percent": 90.06159,
+      "visual_accuracy_proxy_percent": 17.49651,
+      "review": {
+        "path": "merge-review/2439/review_003.png",
+        "sha256": "1d9140f7b24a38c0bd809590488d3385ccfd3c3f39cc5038c6db21812ccedef2"
+      },
+      "overlay": {
+        "path": "merge-review/2439/overlay_003.png",
+        "sha256": "4664edbe9979e3a7fc27fd53b2a922e17e43fad12e348f8631a99a31fde6f291"
+      }
+    },
+    {
+      "issue": 7770,
+      "case": "pig-hwp",
+      "label": "양돈 소득 HWP",
+      "page": 5,
+      "backend": "native",
+      "input_sha256": "1b99b763aac36a14a9f463e35ee894a23eb1083780040eab5e0f02a481c694b8",
+      "reference_pdf_sha256": "4d5abf857476fca43befe528d10221b668a85bb2d7497a2165da34e46c11b002",
+      "native_sha256": "8abeddfb75573ac125e5f9c25e62328affed34900655ce9d2fe8a15e7b34d9bf",
+      "wasm_sha256": [],
+      "tsv_sha256": "09899aa53d0abadd1809dc286c66b1ee537d30026a2d5a7acbfa8fe96d50632e",
+      "render_png_sha256": "13c6aaf395a09bd1756d425acc760304f3f9936e586ec66aca545d5b44b97475",
+      "reference_png_sha256": "ef507b778214b760832d070065691267058ef396eb6a2b823b7681b4130e019d",
+      "silhouette_raw_match_percent": "100.00",
+      "pixel_diff_threshold": 32,
+      "pixel_match_percent": 94.4544,
+      "visual_accuracy_proxy_percent": 71.74331,
+      "review": {
+        "path": "merge-review/pig-hwp/review_005.png",
+        "sha256": "645938919918946e05c0c4c097528ab4144b0dc1754c09daec675e1f0a10872b"
+      },
+      "overlay": {
+        "path": "merge-review/pig-hwp/overlay_005.png",
+        "sha256": "b265c567f8a2b034685075f245aef1c9ad3b421382641a015bec23a4c0d1af96"
+      }
+    },
+    {
+      "issue": 7771,
+      "case": "center",
+      "label": "아이돌 굿즈 판매사업자 제재",
+      "page": 8,
+      "backend": "native",
+      "input_sha256": "cb36c862d3d41757d15fb322b1733f0e0ce27bf20142db0a25c57a624739e23b",
+      "reference_pdf_sha256": "71261bcb218eabc6f1b2af5ce81797a3505f417d1c2482ee5441dec11b6ba943",
+      "native_sha256": "8abeddfb75573ac125e5f9c25e62328affed34900655ce9d2fe8a15e7b34d9bf",
+      "wasm_sha256": [],
+      "tsv_sha256": "c7b018843601b53d49875c11a5ec5b49c90fee4df9331154ab49eb8eb7853aae",
+      "render_png_sha256": "f91d8f8b73e77f3edd2e755cc77a4dd81658d46c7edfd64881d76928944e29ad",
+      "reference_png_sha256": "983501776aedfeefd87ddc11a4945a76e76c79d720de5e457e14f3435e0a3566",
+      "silhouette_raw_match_percent": "99.74",
+      "pixel_diff_threshold": 32,
+      "pixel_match_percent": 93.49365,
+      "visual_accuracy_proxy_percent": 45.54857,
+      "review": {
+        "path": "merge-review/center/review_008.png",
+        "sha256": "40a42274cec4d5ebfb343dc5a11d009ec8daa391348380864d28c06af2f8f49a"
+      },
+      "overlay": {
+        "path": "merge-review/center/overlay_008.png",
+        "sha256": "d6b03556d44412deb65435c8c8d358bfdfa1cdafd10e6e40365f92e54873ae5e"
+      }
+    },
+    {
+      "issue": 7772,
+      "case": "hwpspec-2024-one-up",
+      "label": "HWP 사양서",
+      "page": 20,
+      "backend": "native",
+      "input_sha256": "64df877f3c4accda0111ecf39d837da889741bb821b220cf61b6c126dc88364d",
+      "reference_pdf_sha256": "a4f52594ead9e292f6d124a362f91ed28d84fa29a3e23858232b1a95f7bedd39",
+      "native_sha256": "8abeddfb75573ac125e5f9c25e62328affed34900655ce9d2fe8a15e7b34d9bf",
+      "wasm_sha256": [],
+      "tsv_sha256": "2dc76f5c6be5257ebd2d63752840213bf06a6f5ab150277b3984f9a0e43c750e",
+      "render_png_sha256": "cab47b1195dc5b313132263a8486c82e4abf9883cebcc8d50991ab59d325cf95",
+      "reference_png_sha256": "c0c6bf5ed5b89a0c9d56e34f7d385d3db9280218a0c91cc4c03ecc2ab2b6fce8",
+      "silhouette_raw_match_percent": "100.00",
+      "pixel_diff_threshold": 32,
+      "pixel_match_percent": 93.92772,
+      "visual_accuracy_proxy_percent": 34.95028,
+      "review": {
+        "path": "merge-review/hwpspec-2024-one-up/review_020.png",
+        "sha256": "4009fe3bd425fd7277888502f600949e9ccae59f1b1106d94babb920a09c5f31"
+      },
+      "overlay": {
+        "path": "merge-review/hwpspec-2024-one-up/overlay_020.png",
+        "sha256": "cb46282b8843210d9e7f7cee57ce29bf6526e9bd464070a67081c6680965c1f8"
+      }
+    },
+    {
+      "issue": 7772,
+      "case": "hwpspec-2024-one-up",
+      "label": "HWP 사양서",
+      "page": 21,
+      "backend": "native",
+      "input_sha256": "64df877f3c4accda0111ecf39d837da889741bb821b220cf61b6c126dc88364d",
+      "reference_pdf_sha256": "a4f52594ead9e292f6d124a362f91ed28d84fa29a3e23858232b1a95f7bedd39",
+      "native_sha256": "8abeddfb75573ac125e5f9c25e62328affed34900655ce9d2fe8a15e7b34d9bf",
+      "wasm_sha256": [],
+      "tsv_sha256": "2dc76f5c6be5257ebd2d63752840213bf06a6f5ab150277b3984f9a0e43c750e",
+      "render_png_sha256": "5c25ef6061e1251d5d76d2ac6d91332c6a245b94e899c7974c9fd6f5e0b78dd2",
+      "reference_png_sha256": "58830f99ed4632d285b7e7a820dd200602d7eb7f1b3f89928cf0da90d103eea4",
+      "silhouette_raw_match_percent": "99.99",
+      "pixel_diff_threshold": 32,
+      "pixel_match_percent": 97.15132,
+      "visual_accuracy_proxy_percent": 78.69275,
+      "review": {
+        "path": "merge-review/hwpspec-2024-one-up/review_021.png",
+        "sha256": "049148c9a8925d9255bb8946cbbbfe45c8008a86b2d3c2747aba0ee6ca40c675"
+      },
+      "overlay": {
+        "path": "merge-review/hwpspec-2024-one-up/overlay_021.png",
+        "sha256": "88db7fa499bc45b237dd0d14f714310e81e14983530c51bbd4df8f8682d844bf"
+      }
+    },
+    {
+      "issue": 7772,
+      "case": "hwpspec-2024-one-up",
+      "label": "HWP 사양서",
+      "page": 106,
+      "backend": "native",
+      "input_sha256": "64df877f3c4accda0111ecf39d837da889741bb821b220cf61b6c126dc88364d",
+      "reference_pdf_sha256": "a4f52594ead9e292f6d124a362f91ed28d84fa29a3e23858232b1a95f7bedd39",
+      "native_sha256": "8abeddfb75573ac125e5f9c25e62328affed34900655ce9d2fe8a15e7b34d9bf",
+      "wasm_sha256": [],
+      "tsv_sha256": "2dc76f5c6be5257ebd2d63752840213bf06a6f5ab150277b3984f9a0e43c750e",
+      "render_png_sha256": "9236aeecfacd70ea8e83e1bcd3bc047d0a490d02afafa6ce72f92a8d07cdb58f",
+      "reference_png_sha256": "a03e251ebaf9f54540035567da1f69d54ce06c1fda61402bf2b83a16ef6b35ff",
+      "silhouette_raw_match_percent": "100.00",
+      "pixel_diff_threshold": 32,
+      "pixel_match_percent": 96.96476,
+      "visual_accuracy_proxy_percent": 73.17753,
+      "review": {
+        "path": "merge-review/hwpspec-2024-one-up/review_106.png",
+        "sha256": "e6b72f98419639479d2555a2dcffa5605d15627f58788b832a471a0153bf2f32"
+      },
+      "overlay": {
+        "path": "merge-review/hwpspec-2024-one-up/overlay_106.png",
+        "sha256": "0b91dad2fa5d8a8c89e7eed8c620e4e16b4fd8b98e78f573c6fe7104271f5ae4"
+      }
+    },
+    {
+      "issue": 7772,
+      "case": "cbta-verified-2020",
+      "label": "CBTA",
+      "page": 59,
+      "backend": "native",
+      "input_sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7",
+      "reference_pdf_sha256": "0db1eb55eda0f1a4985eeaf187656c23499616b7dccddcbb7c874c0937e1b2e0",
+      "native_sha256": "8abeddfb75573ac125e5f9c25e62328affed34900655ce9d2fe8a15e7b34d9bf",
+      "wasm_sha256": [],
+      "tsv_sha256": "1c6a657dac5a80f3a9e9673609746b38770c7a64f7385c75376d218cd599210d",
+      "render_png_sha256": "88a660f21b7b24fccae608ee8e645de8eb05a07609081acdd077e8d3bca81d31",
+      "reference_png_sha256": "56c2ea57e142bd3d6c035cdb70ed6e4f4fdbef5a6a6907a66463a3b8c9333e0f",
+      "silhouette_raw_match_percent": "98.90",
+      "pixel_diff_threshold": 32,
+      "pixel_match_percent": 91.8356,
+      "visual_accuracy_proxy_percent": 23.57144,
+      "review": {
+        "path": "merge-review/cbta-verified-2020/review_059.png",
+        "sha256": "5681be22be41792186e28387aebe5b842b9187ebadaeb449c3e2e60a4c6c4406"
+      },
+      "overlay": {
+        "path": "merge-review/cbta-verified-2020/overlay_059.png",
+        "sha256": "69305aa9822021c4b5c841800f2a74ba5f60e6791048fda4abb4c88bab30f09c"
+      }
+    },
+    {
+      "issue": 7772,
+      "case": "policy-verified-2024",
+      "label": "정책연구",
+      "page": 1,
+      "backend": "native",
+      "input_sha256": "50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113",
+      "reference_pdf_sha256": "fed7aef74005a175baac87ad1415be126b881633390ec04b6b557447c164060d",
+      "native_sha256": "8abeddfb75573ac125e5f9c25e62328affed34900655ce9d2fe8a15e7b34d9bf",
+      "wasm_sha256": [],
+      "tsv_sha256": "5b7590e7985dfc90f52102b9818f70ed097e83d08e1f56f2a00150c7e293d3c1",
+      "render_png_sha256": "0066e9930f356403aa3a8d0b47a63213188a778c617be3722e327b33b6bb9faa",
+      "reference_png_sha256": "a58110cdf99d9719d6a69f21df4dd9c822e3efc921c4ae5c162e05dc24c9ba3b",
+      "silhouette_raw_match_percent": "100.00",
+      "pixel_diff_threshold": 32,
+      "pixel_match_percent": 97.65734,
+      "visual_accuracy_proxy_percent": 33.48207,
+      "review": {
+        "path": "merge-review/policy-verified-2024/review_001.png",
+        "sha256": "5dae5f6cb09d1e1d7aa9c04e0e1a95ff728af40a379b47482bee6b02d5c761aa"
+      },
+      "overlay": {
+        "path": "merge-review/policy-verified-2024/overlay_001.png",
+        "sha256": "fec33de188f353300749feb7030a22bb528ca5c90082d9952f19f03520789453"
+      }
+    },
+    {
+      "issue": 7774,
+      "case": "sql-hwp5",
+      "label": "SQL sample10 HWP5",
+      "page": 16,
+      "backend": "wasm",
+      "input_sha256": "a660a0d41898c8316479392c9687d81a15555431a581bdda988bf3598f6f0d51",
+      "reference_pdf_sha256": "e3e33b3bbe3370cb64f3775ea7f87d25ece53e1d4f4272ef2d713977e535e857",
+      "native_sha256": "8abeddfb75573ac125e5f9c25e62328affed34900655ce9d2fe8a15e7b34d9bf",
+      "wasm_sha256": [
+        "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+        "0c4659cab1c3ff33db326fad3a8e4411dd1b7b736000df058607e9474f5b8c84"
+      ],
+      "tsv_sha256": "9bb22f6695039a784b7de09656d33fb94239f42bac6c80d69fd0033f57163462",
+      "render_png_sha256": "e5fbfdcda92aae54bb20c96609cec50902d9b12bcb241250cb4d635a02c71617",
+      "reference_png_sha256": "1054c42c5e104892fb9f12c272fcbe74142c26bc28ed6f843cdce65687a17e16",
+      "silhouette_raw_match_percent": "99.99",
+      "pixel_diff_threshold": 32,
+      "pixel_match_percent": 97.29938,
+      "visual_accuracy_proxy_percent": 24.1663,
+      "review": {
+        "path": "merge-review/sql-hwp5/review_016.png",
+        "sha256": "0a6ab8f728130742f06d915d91caf06a0627b3d7fc151c9b0842aa8e9d1fd699"
+      },
+      "overlay": {
+        "path": "merge-review/sql-hwp5/overlay_016.png",
+        "sha256": "4335e7f34ce07ab490eb4c760e2f087f2712bf458b403820ad165dc443106c70"
+      }
+    },
+    {
+      "issue": 7774,
+      "case": "sql-hwp5",
+      "label": "SQL sample10 HWP5",
+      "page": 489,
+      "backend": "wasm",
+      "input_sha256": "a660a0d41898c8316479392c9687d81a15555431a581bdda988bf3598f6f0d51",
+      "reference_pdf_sha256": "e3e33b3bbe3370cb64f3775ea7f87d25ece53e1d4f4272ef2d713977e535e857",
+      "native_sha256": "8abeddfb75573ac125e5f9c25e62328affed34900655ce9d2fe8a15e7b34d9bf",
+      "wasm_sha256": [
+        "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+        "0c4659cab1c3ff33db326fad3a8e4411dd1b7b736000df058607e9474f5b8c84"
+      ],
+      "tsv_sha256": "9bb22f6695039a784b7de09656d33fb94239f42bac6c80d69fd0033f57163462",
+      "render_png_sha256": "487cef963abd15032e855d9a26e885024909005b639e4cf41ea8a49f9974f9e4",
+      "reference_png_sha256": "30b63feac783661437831269b1a8e9084e46e7158c5d03e1aa5c6acb503a3e1a",
+      "silhouette_raw_match_percent": "99.98",
+      "pixel_diff_threshold": 32,
+      "pixel_match_percent": 94.22642,
+      "visual_accuracy_proxy_percent": 23.50649,
+      "review": {
+        "path": "merge-review/sql-hwp5/review_489.png",
+        "sha256": "26fa995b51eb9a5f5f4b2c9153f9a578f88ad2c6611126d85c725a382b7a88cc"
+      },
+      "overlay": {
+        "path": "merge-review/sql-hwp5/overlay_489.png",
+        "sha256": "f029b1f7c7b56f2d04e6ca4b0da629c115ba70d91ce10dd263da15bc8d5e6a1a"
+      }
+    },
+    {
+      "issue": 7774,
+      "case": "sql-hwpx-2024-one-up",
+      "label": "SQL sample10 HWPX",
+      "page": 16,
+      "backend": "wasm",
+      "input_sha256": "3395e19bebea8b6689f383df1f4ea1ddb253dee91c4320392cc40e90e2e4f191",
+      "reference_pdf_sha256": "ad6c03db8a81c5a65ba064ef0933b8a37446f1b106fa4b09757bc8b4bb7f04a9",
+      "native_sha256": "8abeddfb75573ac125e5f9c25e62328affed34900655ce9d2fe8a15e7b34d9bf",
+      "wasm_sha256": [
+        "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+        "0c4659cab1c3ff33db326fad3a8e4411dd1b7b736000df058607e9474f5b8c84"
+      ],
+      "tsv_sha256": "cfcac1a1d94fd117e3922054ccb24df3d14c69ff65db30f3447a5aeb3ddec36c",
+      "render_png_sha256": "e5fbfdcda92aae54bb20c96609cec50902d9b12bcb241250cb4d635a02c71617",
+      "reference_png_sha256": "e68aa1f4eee2f7589e8a9bbf32bf851ea1f3666217588c1d1a987983eb5f4874",
+      "silhouette_raw_match_percent": "99.99",
+      "pixel_diff_threshold": 32,
+      "pixel_match_percent": 97.29511,
+      "visual_accuracy_proxy_percent": 24.11111,
+      "review": {
+        "path": "merge-review/sql-hwpx-2024-one-up/review_016.png",
+        "sha256": "f279a00d638ed3d280c9c23643cc838b9f5962e0a0d55121038265a308f731a7"
+      },
+      "overlay": {
+        "path": "merge-review/sql-hwpx-2024-one-up/overlay_016.png",
+        "sha256": "94152455e43d277a5ccde937985c930fd836b0503c69857f9e6342c52ad1e085"
+      }
+    },
+    {
+      "issue": 7774,
+      "case": "sql-hwpx-2024-one-up",
+      "label": "SQL sample10 HWPX",
+      "page": 489,
+      "backend": "wasm",
+      "input_sha256": "3395e19bebea8b6689f383df1f4ea1ddb253dee91c4320392cc40e90e2e4f191",
+      "reference_pdf_sha256": "ad6c03db8a81c5a65ba064ef0933b8a37446f1b106fa4b09757bc8b4bb7f04a9",
+      "native_sha256": "8abeddfb75573ac125e5f9c25e62328affed34900655ce9d2fe8a15e7b34d9bf",
+      "wasm_sha256": [
+        "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+        "0c4659cab1c3ff33db326fad3a8e4411dd1b7b736000df058607e9474f5b8c84"
+      ],
+      "tsv_sha256": "cfcac1a1d94fd117e3922054ccb24df3d14c69ff65db30f3447a5aeb3ddec36c",
+      "render_png_sha256": "487cef963abd15032e855d9a26e885024909005b639e4cf41ea8a49f9974f9e4",
+      "reference_png_sha256": "ff19a4287aa66425d4264876eb9ba5e1da99c668d5e5e47db37d49504ff9c456",
+      "silhouette_raw_match_percent": "99.98",
+      "pixel_diff_threshold": 32,
+      "pixel_match_percent": 94.22058,
+      "visual_accuracy_proxy_percent": 23.48605,
+      "review": {
+        "path": "merge-review/sql-hwpx-2024-one-up/review_489.png",
+        "sha256": "ee76f865880bea912a420805b1e01842157c1bdc625f6bfb7833fb1066947d0d"
+      },
+      "overlay": {
+        "path": "merge-review/sql-hwpx-2024-one-up/overlay_489.png",
+        "sha256": "9ae0a4e9ec9805b3ccaa1692e2b30a9a637a945f8ca64efdc17141806121b96d"
+      }
+    },
+    {
+      "issue": 7775,
+      "case": "pig-hwpx",
+      "label": "양돈 소득 HWPX",
+      "page": 7,
+      "backend": "native",
+      "input_sha256": "3194188fb93047684c560f346d13015f31bf77a4d1ca02eed6ba3a19f0fa9f53",
+      "reference_pdf_sha256": "a3cd4b32d3539729650e3754407ffb2c876e1e1a75873d6e32454f24bff354f0",
+      "native_sha256": "8abeddfb75573ac125e5f9c25e62328affed34900655ce9d2fe8a15e7b34d9bf",
+      "wasm_sha256": [],
+      "tsv_sha256": "09899aa53d0abadd1809dc286c66b1ee537d30026a2d5a7acbfa8fe96d50632e",
+      "render_png_sha256": "ff9b8ffca784daeef1674afe4f1f89fcce683f734be2cbfc32833f319ed49b74",
+      "reference_png_sha256": "bb6fecb2fb75b1356e5e4c350c2f6335b4b8b1b2a4b83956e43ac954332ca093",
+      "silhouette_raw_match_percent": "100.00",
+      "pixel_diff_threshold": 32,
+      "pixel_match_percent": 95.68904,
+      "visual_accuracy_proxy_percent": 74.40264,
+      "review": {
+        "path": "merge-review/pig-hwpx/review_007.png",
+        "sha256": "d0c843db23cc3803c7668255ed3dca25580387e20737faa2636a647915791bd8"
+      },
+      "overlay": {
+        "path": "merge-review/pig-hwpx/overlay_007.png",
+        "sha256": "b907fc569ac09c84b9b4bb6f81bd421b9d517a03b5ccae57169de12449660767"
+      }
+    },
+    {
+      "issue": 7776,
+      "case": "pr1674",
+      "label": "채용 공고 pr-1674",
+      "page": 7,
+      "backend": "native",
+      "input_sha256": "e8b4027cbb6cbec47ccaa70de4aa4111dbb39bcdcce6b8399386d5e28974524c",
+      "reference_pdf_sha256": "374d92ed8747d363601f3a76d5120d5afab705cbcfb103f8ed1283bf4260d69d",
+      "native_sha256": "8abeddfb75573ac125e5f9c25e62328affed34900655ce9d2fe8a15e7b34d9bf",
+      "wasm_sha256": [],
+      "tsv_sha256": "de0f1d6985aa7b00d0761176b6505f07d0b3b9b62cc22f714f65102ab1bc2449",
+      "render_png_sha256": "48c7157573fcc2d3b019702a2b81bbf834857537fa97df5e34864e2d4c498fd4",
+      "reference_png_sha256": "e8db5de4c661806d4d40f28fb78da7d7e147aac529cedeccbf33403072eb965e",
+      "silhouette_raw_match_percent": "99.54",
+      "pixel_diff_threshold": 32,
+      "pixel_match_percent": 92.55838,
+      "visual_accuracy_proxy_percent": 47.80086,
+      "review": {
+        "path": "merge-review/pr1674/review_007.png",
+        "sha256": "f785dfceee7b297a68f13ccaa8923d0c4acef0749dd54fc9e4f4b16e59241fc7"
+      },
+      "overlay": {
+        "path": "merge-review/pr1674/overlay_007.png",
+        "sha256": "311978fcb0b15b6322ed8fe56ca20a8f989dfe12aa1866c9a35678984f536c4c"
+      }
+    },
+    {
+      "issue": 7776,
+      "case": "pr1674",
+      "label": "채용 공고 pr-1674",
+      "page": 8,
+      "backend": "native",
+      "input_sha256": "e8b4027cbb6cbec47ccaa70de4aa4111dbb39bcdcce6b8399386d5e28974524c",
+      "reference_pdf_sha256": "374d92ed8747d363601f3a76d5120d5afab705cbcfb103f8ed1283bf4260d69d",
+      "native_sha256": "8abeddfb75573ac125e5f9c25e62328affed34900655ce9d2fe8a15e7b34d9bf",
+      "wasm_sha256": [],
+      "tsv_sha256": "de0f1d6985aa7b00d0761176b6505f07d0b3b9b62cc22f714f65102ab1bc2449",
+      "render_png_sha256": "aa1f97196f5f4d3f298fd37e104ab84b8259382b001cb725c133ba913c0eae7d",
+      "reference_png_sha256": "cd54fc34bcdae1d6efd99071374939b4126e273fd57c730033adb96da1def561",
+      "silhouette_raw_match_percent": "98.98",
+      "pixel_diff_threshold": 32,
+      "pixel_match_percent": 93.89034,
+      "visual_accuracy_proxy_percent": 45.76678,
+      "review": {
+        "path": "merge-review/pr1674/review_008.png",
+        "sha256": "27906c22dcb422fe4382684a442e7b0ee10b0ca7f155709770fbd63da47a3a82"
+      },
+      "overlay": {
+        "path": "merge-review/pr1674/overlay_008.png",
+        "sha256": "d20cb90065f1513a012153e2346dd51d83887061f59b739c87056d3261c6ca31"
+      }
+    },
+    {
+      "issue": 7776,
+      "case": "pr1674",
+      "label": "채용 공고 pr-1674",
+      "page": 23,
+      "backend": "native",
+      "input_sha256": "e8b4027cbb6cbec47ccaa70de4aa4111dbb39bcdcce6b8399386d5e28974524c",
+      "reference_pdf_sha256": "374d92ed8747d363601f3a76d5120d5afab705cbcfb103f8ed1283bf4260d69d",
+      "native_sha256": "8abeddfb75573ac125e5f9c25e62328affed34900655ce9d2fe8a15e7b34d9bf",
+      "wasm_sha256": [],
+      "tsv_sha256": "de0f1d6985aa7b00d0761176b6505f07d0b3b9b62cc22f714f65102ab1bc2449",
+      "render_png_sha256": "a20a38cad538b5f6e7da6f14a4e7904a994a25ef0b42593f2b938dd283b47430",
+      "reference_png_sha256": "f374024ad78575b00cf7681448ed5b1e701d13fa32228b46d745b09a2cd2c332",
+      "silhouette_raw_match_percent": "100.00",
+      "pixel_diff_threshold": 32,
+      "pixel_match_percent": 95.01273,
+      "visual_accuracy_proxy_percent": 61.50981,
+      "review": {
+        "path": "merge-review/pr1674/review_023.png",
+        "sha256": "d5b8144311588ec34bc9072617f0431050cac4a572e786cca16e1c491a80b892"
+      },
+      "overlay": {
+        "path": "merge-review/pr1674/overlay_023.png",
+        "sha256": "a8588f51d62881c9ec35c65c74c953d0cde3b6ef15aba4a42c61124fa3ed2e7f"
+      }
+    },
+    {
+      "issue": 7776,
+      "case": "pr1674",
+      "label": "채용 공고 pr-1674",
+      "page": 24,
+      "backend": "native",
+      "input_sha256": "e8b4027cbb6cbec47ccaa70de4aa4111dbb39bcdcce6b8399386d5e28974524c",
+      "reference_pdf_sha256": "374d92ed8747d363601f3a76d5120d5afab705cbcfb103f8ed1283bf4260d69d",
+      "native_sha256": "8abeddfb75573ac125e5f9c25e62328affed34900655ce9d2fe8a15e7b34d9bf",
+      "wasm_sha256": [],
+      "tsv_sha256": "de0f1d6985aa7b00d0761176b6505f07d0b3b9b62cc22f714f65102ab1bc2449",
+      "render_png_sha256": "f06e61815d0d45e106ab29d7bf53a4da792d5a50c5dc3f70f629a2b26fe71a99",
+      "reference_png_sha256": "1a258aff3c9bd714d826707db6932030ec6b8107478ff796ec2501203179de45",
+      "silhouette_raw_match_percent": "100.00",
+      "pixel_diff_threshold": 32,
+      "pixel_match_percent": 95.56242,
+      "visual_accuracy_proxy_percent": 63.2709,
+      "review": {
+        "path": "merge-review/pr1674/review_024.png",
+        "sha256": "3414c51ca1a7e639617a5603dbf616e5d540884829f5cd4d3698e2ac1565e037"
+      },
+      "overlay": {
+        "path": "merge-review/pr1674/overlay_024.png",
+        "sha256": "00d75942152e5d7fbbe74601dc003bb3e07ea69818880ec2026710acab20aa5e"
+      }
+    }
+  ]
+}

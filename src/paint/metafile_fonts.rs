@@ -33,8 +33,8 @@ pub(crate) struct FontRequest {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct PageFontRequests {
-    metafile: Vec<FontRequest>,
-    text_effects: Vec<FontRequest>,
+    pub(crate) metafile: Vec<FontRequest>,
+    pub(crate) text_effects: Vec<FontRequest>,
 }
 
 /// 현재 인쇄 트리가 실제로 소비하는 그림·문자 효과의 글꼴만 요청한다.

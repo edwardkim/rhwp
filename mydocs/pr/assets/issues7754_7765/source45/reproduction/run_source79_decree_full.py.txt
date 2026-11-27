@@ -1,0 +1,35 @@
+from pathlib import Path
+import json,subprocess,csv,hashlib,time,traceback
+R=Path('/home/tsjang/rhwp');O=R/'output/pr-review/issue7754-nine';P=O/'source79-decree-full-exact-ttf-focus-state.json';sha=lambda p:hashlib.sha256(Path(p).read_bytes()).hexdigest();s={'started':time.time(),'scope':'Four decree pages; exact canonical H2GTRE and H2HDRM supplied privately in original TTF priority. Frozen base/candidate, Native/fresh WASM. Not the full protected inventory.','results':[]}
+def save():P.write_text(json.dumps(s,ensure_ascii=False,indent=2)+'\n')
+try:
+ fonts=json.load(open(O/'source49-win10-palatino-copy.json'))['files']+[f for f in json.load(open(O/'source41-exact-win10-font-copy.json'))['files'] if Path(f['local_path']).name.endswith(('H2GTRE.TTF','H2HDRM.TTF'))];assert len(fonts)==6
+ fonts.insert(0,{'local_path':'/home/tsjang/.local/share/fonts/rhwp-protected-reference/49dd1ef0caa6-H2MJSM.TTF','sha256':'49dd1ef0caa6989a7dd95b484fdd052cbc846f6514c0c08421ed03a6cb1669cc'})
+ fonts.insert(0,{'local_path':'/opt/hnc/hoffice11/Shared/TTF/Hwp/HMKMM.TTF','sha256':'d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6'})
+ for f in fonts:assert sha(f['local_path'])==f['sha256']
+ manifest=json.load(open(R/'mydocs/pr/assets/visual-protected-baseline/manifest.json'));resolution=json.load(open(O/'source36-canonical-environment-resolution.json'))['datasets'];pages=list(range(1,next(x['page_count'] for x in manifest['datasets'] if x['logical_key']=='decree' and x['backend']=='native')+1));cache=O/'source79-decree-full-font-cache';cache.mkdir(exist_ok=True)
+ for backend in ['native','wasm']:
+  d=next(x for x in manifest['datasets'] if x['logical_key']=='decree' and x['backend']==backend);assert sha(R/d['input']['path'])==d['input']['sha256'] and sha(R/d['reference_pdf']['path'])==d['reference_pdf']['sha256'];condition=next(x for x in resolution if x['key']=='decree' and x['backend']==backend);environment=R/condition['matching_files'][0] if condition['matching_files'] else None
+  if environment:assert sha(environment)==condition['expected_environment_sha256']
+  environment=O/'private-source63-decree-selected-programs'/f'decree-{backend}.json'
+  prefix=['bwrap','--ro-bind','/','/','--dev','/dev','--proc','/proc','--bind',str(O),str(O),'--bind','/tmp','/tmp','--setenv','XDG_CACHE_HOME',str(cache)]
+  for name in ['font-catalog-cache','native-webfont-cache']:prefix+=['--bind',str(R/'output/pr-review'/name),str(R/'output/pr-review'/name)]
+  for f in json.load(open(O/'source36-canonical-font-archive-recovery.json'))['files']:
+   target=Path('/home/tsjang/.local/share/fonts/hft-cmap-v2')/Path(f['archive_entry']).name
+   if target.exists():prefix+=['--ro-bind',f['path'],str(target)]
+  prefix+=['--setenv','FONTCONFIG_FILE',str(O/'private-source65-fontconfig/fonts.conf')]
+  if backend=='wasm':prefix+=['--setenv','VISUAL_SWEEP_CHROME',str(O/'chrome155-private-font-context.sh')]
+  for role,binary,pkg in [('base',O/'bin/rhwp-base1a27-optimized',O/'pkg-base1a27'),('candidate',O/'bin/rhwp-source37-optimized',O/'pkg-source37')]:
+   out=O/'source79-decree-full-exact-ttf-focus'/backend/role;c=[str(R/'venv/bin/python'),str(R/'scripts/visual_sweep.py'),'--silhouette-only','--hwp',d['input']['path'],'--pdf',d['reference_pdf']['path'],'--key','decree','--rhwp-bin',str(binary),'--compat',d['identity']['compat'],'--dpi','96','--page-workers','1','--out',str(out),'--pages',','.join(map(str,pages))]
+   if environment:c+=['--font-environment',str(environment)]
+   if backend=='wasm':c+=['--wasm-pkg',str(pkg)]
+   for f in fonts:
+    if backend=='native' and 'private-source49-palatino' in f['local_path']:continue
+    c+=['--font-path',f['local_path']]
+   for f in json.load(open(O/'source38-qualified-protected-font-paths.json'))[backend+':decree']['exact_files']:c+=['--font-path',f['path']]
+   command=[*prefix,'--',*c];s['running']={'backend':backend,'role':role,'command':command};save();log=O/'logs'/f'source79-decree-full-{backend}-{role}.txt';t=time.monotonic()
+   with log.open('w') as stream:r=subprocess.run(command,cwd=R,stdout=stream,stderr=subprocess.STDOUT,timeout=1800)
+   tsv=out/'decree/silhouette.tsv';rows=list(csv.DictReader(tsv.open(),delimiter='\t'));assert [int(x['page']) for x in rows]==pages;assert json.load(open(out/'decree/silhouette_manifest.json'))['pr_review_gate']['document_page_counts']=={'rhwp':d['page_count'],'pdf':d['page_count']};s['results'].append({'backend':backend,'role':role,'exit_code':r.returncode,'seconds':time.monotonic()-t,'command':command,'font_files':fonts,'binary_sha256':sha(binary),'wasm_sha256':sha(pkg/'rhwp_bg.wasm') if backend=='wasm' else None,'tsv':str(tsv),'tsv_sha256':sha(tsv),'rows':rows,'log':str(log)});save()
+ s.update(complete_coverage=True,running=None)
+except BaseException as e:s['error']=str(e);s['traceback']=traceback.format_exc()
+finally:s['ended']=time.time();save()

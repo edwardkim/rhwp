@@ -1,0 +1,72 @@
+{
+  "started": 1795299767.1217344,
+  "pid": 1602625,
+  "base": "1a27faacff48ea7329e76ce8eca15aa9ca8aa877",
+  "results": [
+    {
+      "label": "candidate-contract-build",
+      "command": [
+        "rustc",
+        "--edition=2021",
+        "/home/tsjang/rhwp/tests/cases/issue_7754_split_hft_program_contract.rs",
+        "-o",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-contract-tests",
+        "--extern",
+        "rhwp=/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-native-library/librhwp.rlib",
+        "-L",
+        "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps",
+        "--extern",
+        "serde_json=/home/tsjang/rhwp/target/pr-review/release-test/deps/libserde_json-6b264a499acbc87b.rlib",
+        "-L",
+        "native=/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-079888cb8874cccd/out/skia",
+        "-L",
+        "native=/home/tsjang/rhwp/target/pr-review/release-test/build/ring-62411559129b98e5/out",
+        "--test",
+        "--cfg",
+        "feature=\"native-skia\""
+      ],
+      "exit_code": 0,
+      "seconds": 31.641978841042146,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-candidate-contract-build.log"
+    },
+    {
+      "label": "candidate-contract-run",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font/run.sh",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-contract-tests",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "seconds": 0.44003643305040896,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-candidate-contract-run.log"
+    },
+    {
+      "label": "base-native",
+      "source_head": "1a27faacff48ea7329e76ce8eca15aa9ca8aa877",
+      "source_tree": "f08ec44a4db58c404649a8455532bce9cac29747",
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp"
+      ],
+      "exit_code": 101,
+      "seconds": 0.49719152017496526,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-base-native-build.log"
+    }
+  ],
+  "running": "base-native",
+  "candidate": "436f8629b7f2b9aee520962297b79cdf15c17743",
+  "candidate_producer_state_sha256": "404ba95c6a168a87839c458dea66589a4400ac93063186514a9042d64c21340b",
+  "error": "('base-native', 101)",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/tsjang/rhwp/output/pr-review/issue7754-nine/build_base1a27_after_source36.py\", line 32, in <module>\n    record={'label':label,'source_head':BASE,'source_tree':subprocess.check_output(['git','rev-parse','HEAD^{tree}'],cwd=W,text=True).strip(),'cwd':str(W),'command':cmd,'exit_code':p.returncode,'seconds':time.monotonic()-t,'log':str(log)};s['results'].append(record);save();assert p.returncode==0,(label,p.returncode)\n                                                                                                                                                                                                                                                                                         ^^^^^^^^^^^^^^^\nAssertionError: ('base-native', 101)\n",
+  "ended": 1795301127.320841
+}

@@ -1,0 +1,34 @@
+{
+  "head": "327be655a1d4d95486bec4b2f0c76b2fd1169e7c",
+  "wasm_sha256": "0b69eb561b47f67269d2bc46358485aa53d6ff24014e05986a98ae51d6840239",
+  "input_sha256": "bfb9e33fff873b5664dd5a6a1ed42c32cfebd9ff6c1c52251e4937c433f0fbd6",
+  "drag_css_px": [
+    40,
+    26
+  ],
+  "original": {
+    "para": 0,
+    "ci": 3,
+    "midX": 10100,
+    "midY": 8500,
+    "axis": "x",
+    "width": 19000,
+    "height": 17000,
+    "x": 534.671875,
+    "y": 360.03125,
+    "zoom": 1
+  },
+  "onPress": {
+    "resize": true,
+    "endpoint": false,
+    "handle": "s"
+  },
+  "after": {
+    "midX": 10100,
+    "midY": 8500,
+    "axis": "x",
+    "width": 18998,
+    "height": 18953
+  },
+  "midpointMovedOnlyOnX": false
+}

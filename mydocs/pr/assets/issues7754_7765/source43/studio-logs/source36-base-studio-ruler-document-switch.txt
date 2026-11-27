@@ -1,0 +1,11 @@
+frozen pkg /home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-base1a27 at http://127.0.0.1:42255
+=== E2E: 문서 전환 시 눈금자 갱신 ===
+
+  [browser] headless Chrome 실행
+  [wasm-artifact] matched abdae9325eaa4df812872d80d03f388cb4a7b9d6cacf9323e8bfbf07bd4e3445
+  PASS: TC0: 첫 문서에서 눈금자가 용지를 그림 (795px)
+actual ruler states {"portrait":{"bandWidth":795,"pageWidth":793.7,"zoom":1},"landscape":{"bandWidth":1123,"pageWidth":1122.5,"zoom":1},"fontChoices":["대체 글꼴로 보기","대체 글꼴로 보기"]}
+  PASS: TC1: 눈금자가 새 문서의 쪽 폭을 그림 (1123px vs 기대 1123px)
+  PASS: TC2: 앞 문서의 눈금이 남지 않음 (앞 795px → 지금 1123px)
+
+📋 HTML 보고서: ../output/e2e/ruler_document_switch_with_font_choice.mjs-report.html

@@ -1,0 +1,213 @@
+{
+  "id": "chemical-original-hft-hangul-and-symbol-programs",
+  "substitutions": {
+    "-소망B": "Haansoft Batang",
+    "Arial": "Arial",
+    "HCI Poppy": "HCI Poppy",
+    "HY견고딕": "HYGothic-Extra",
+    "HY중고딕": "HYGothic-Medium",
+    "HY헤드라인M": "HYHeadLine-Medium",
+    "Times New Roman": "Times New Roman",
+    "궁서": "Gungsuh",
+    "나눔명조": "NanumMyeongjo",
+    "돋움": "Dotum",
+    "맑은 고딕": "Malgun Gothic",
+    "명조": "Myeongjo",
+    "바탕": "Batang",
+    "바탕체": "BatangChe",
+    "한양신명조": "HY Sinmyeongjo",
+    "한양중고딕": "HY Junggothic",
+    "한컴바탕": "Haansoft Batang",
+    "함초롬돋움": "HCR Dotum",
+    "함초롬바탕": "HCR Batang",
+    "휴먼명조": "휴먼명조",
+    "휴먼모음T": "MoeumT R"
+  },
+  "selectedPrograms": {
+    "-소망B": {
+      "query": "한컴바탕",
+      "family": "Haansoft Batang",
+      "programId": "5917a0f055ee2ac68d86f4f47bfa418a9bdc2b37f9eb81e12c7471c67b05d80c",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "Arial": {
+      "query": "Arial",
+      "family": "Arial",
+      "programId": "4e21f9fd8dfaecba75dbc00fd1e60665450905eebbf5685d4cb671ef1b702fab",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "HCI Poppy": {
+      "query": "HCI Poppy",
+      "family": "HCI Poppy",
+      "programId": "16ea5d7d31cb6749978f98993de77fbe28ae4c249e35e6496bd3f5458ac3c14a",
+      "trueType": false,
+      "openTypeCff": true
+    },
+    "HY견고딕": {
+      "query": "HY견고딕",
+      "family": "HYGothic-Extra",
+      "programId": "e3dd2d7bb4c42b4106db5106cc8a567c679f2382114e3209293645cae02e36f0",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "HY중고딕": {
+      "query": "HY중고딕",
+      "family": "HYGothic-Medium",
+      "programId": "f19bd4435ac004182cf09af592a7353c03155fc41620d3cf8b76e556c857cfe4",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "HY헤드라인M": {
+      "query": "HY헤드라인M",
+      "family": "HYHeadLine-Medium",
+      "programId": "ac1b909a6c44c48abc008484ee604de3031269067fedfd1e3e9786c3175e1dbb",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "Times New Roman": {
+      "query": "Times New Roman",
+      "family": "Times New Roman",
+      "programId": "09d9ee0e2d6700728fbfeb1402177341b8dc6c7e9a5206fb98563c21cba089d4",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "궁서": {
+      "query": "궁서",
+      "family": "Gungsuh",
+      "programId": "4d822c2e6032d5cc0f3f1a3f3bd77ad9af16946faa779ae519d5287f3ad0e171",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "나눔명조": {
+      "query": "나눔명조",
+      "family": "NanumMyeongjo",
+      "programId": "a90d7978f370396b6a7dac82db82fe2c527e9501252e4e85369960952fc1331c",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "돋움": {
+      "query": "돋움",
+      "family": "Dotum",
+      "programId": "8b227d162052d30a43bfb3fe8f9f2dd63b7b99c9f0a0a043e95dd5000bcf589f",
+      "trueType": true,
+      "openTypeCff": false,
+      "collectionFace": true
+    },
+    "맑은 고딕": {
+      "query": "맑은 고딕",
+      "family": "Malgun Gothic",
+      "programId": "97fcea8302848cd4dd23a76a757e82a216458a3bf2134bba4a6765a35df617b5",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "명조": {
+      "query": "명조",
+      "family": "Myeongjo",
+      "programId": "c844e18302b686388e572f670a312c2f2c639500582e371bb150097d040af10c",
+      "trueType": false,
+      "openTypeCff": true
+    },
+    "바탕": {
+      "query": "바탕",
+      "family": "Batang",
+      "programId": "a475bfaf18779ebc2cda4f275e678fda3680c253e6ff93a89aafff258af308b0",
+      "trueType": true,
+      "openTypeCff": false,
+      "collectionFace": true
+    },
+    "바탕체": {
+      "query": "바탕체",
+      "family": "BatangChe",
+      "programId": "3d56206a82c78ae9f5356141bbe8cf777ba2fc1f6fc03455531d0ac453b5b6bb",
+      "trueType": true,
+      "openTypeCff": false,
+      "collectionFace": true
+    },
+    "한양신명조": {
+      "query": "한양신명조",
+      "family": "HY Sinmyeongjo",
+      "programId": "c20485a292d437a1f4fd2ac1def811401b8e8bff598449416656fa9b97d8e4e8",
+      "trueType": false,
+      "openTypeCff": true
+    },
+    "한양중고딕": {
+      "query": "한양중고딕",
+      "family": "HY Junggothic",
+      "programId": "34c487896a344abf4e35a755409d4fe599c94b3fc434db9610fba7fa50afb265",
+      "trueType": false,
+      "openTypeCff": true
+    },
+    "한컴바탕": {
+      "query": "한컴바탕",
+      "family": "Haansoft Batang",
+      "programId": "5917a0f055ee2ac68d86f4f47bfa418a9bdc2b37f9eb81e12c7471c67b05d80c",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "함초롬돋움": {
+      "query": "함초롬돋움",
+      "family": "HCR Dotum",
+      "programId": "c36d6e8cd9be327ac66f414e223e8c58137d54f8f98f8213b80d2cece863e1ee",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "함초롬바탕": {
+      "query": "함초롬바탕",
+      "family": "HCR Batang",
+      "programId": "6247c14b4d48d9c44d37124d74a8d3428c822e82dfa2cd3cd66cd74489e0171b",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "휴먼명조": {
+      "query": "휴먼명조",
+      "family": "휴먼명조",
+      "programId": "f44febee110ef64620a17f9e884aac284878aef1bdf3cb3f41bc9efb462e629e",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "휴먼모음T": {
+      "query": "휴먼모음T",
+      "family": "MoeumT R",
+      "programId": "0afbf29063a2ffcd87befc729790edc5490576e211112843081e007487cef0dc",
+      "trueType": true,
+      "openTypeCff": false,
+      "collectionFace": true
+    }
+  },
+  "trueTypeFaces": [
+    "Arial",
+    "Batang",
+    "BatangChe",
+    "Dotum",
+    "Gungsuh",
+    "HCR Batang",
+    "HCR Dotum",
+    "HYGothic-Extra",
+    "HYGothic-Medium",
+    "HYHeadLine-Medium",
+    "Haansoft Batang",
+    "Malgun Gothic",
+    "MoeumT R",
+    "NanumMyeongjo",
+    "Times New Roman",
+    "휴먼명조"
+  ],
+  "preserveSourceMetrics": true,
+  "glyphFallbacks": {
+    "HY Junggothic": [
+      "HYJunggothic-HGJGT"
+    ]
+  },
+  "documentGlyphFallbacks": [
+    {
+      "source": "한양중고딕",
+      "languageSlot": 5,
+      "fontId": 15,
+      "faces": [
+        "Myeongjo-SPMJ"
+      ]
+    }
+  ]
+}

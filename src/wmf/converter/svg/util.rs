@@ -105,6 +105,14 @@ impl From<Brush> for Fill {
                     .set("width", brush_hatch.dib_header_info.width())
                     .set("height", brush_hatch.dib_header_info.height())
                     .add(image);
+                let pattern = if brush_hatch.dib_header_info.bit_count() == BitCount::BI_BITCOUNT_1
+                    && brush_hatch.dib_header_info.width() == 8
+                    && brush_hatch.dib_header_info.height() == 8
+                {
+                    pattern.set("data-rhwp-wmf-pattern-bpp", "1")
+                } else {
+                    pattern
+                };
 
                 Fill::Pattern { pattern }
             }

@@ -1,0 +1,253 @@
+{
+  "base": "8a196ca7aea2aa3cf32d394f5b7da2bdf4520479",
+  "merge_check_commit": "b405943d2e5428de80cc4ad7ff8367a795b8aa28",
+  "verified_candidate": "954226e426517dc02ef0a15cc739899ab54b7fae",
+  "producer_equivalence": "동일 렌더러 소스에서 생성하고 두 합성 글꼴은 등록하지 않았다.",
+  "visual": [
+    {
+      "key": "9316-announce",
+      "backend": "native",
+      "pages": 11,
+      "changed": [],
+      "declined": [],
+      "input_sha256": "feed4e14e00c73a4c5cba706a2770de03d684a8cb0c3d19c574d5eaddba30ee4",
+      "pdf_sha256": "315c7040889a847533fd09b8fb47ed613eaad023304b5ee750b03985cef661c1",
+      "fixed_base": {
+        "tsv": "9316-announce/native/fixed_base.tsv",
+        "sha256": "d9b112059bb134025de140c3d354333f3e2e0a66ca10c73e1277a06edd8a57f6"
+      },
+      "candidate": {
+        "tsv": "9316-announce/native/candidate.tsv",
+        "sha256": "d9b112059bb134025de140c3d354333f3e2e0a66ca10c73e1277a06edd8a57f6"
+      }
+    },
+    {
+      "key": "9316-form",
+      "backend": "native",
+      "pages": 1,
+      "changed": [],
+      "declined": [],
+      "input_sha256": "aa2da5059cd986e58106514b48c2499d9072d54728d956aa8cb0ee837588c577",
+      "pdf_sha256": "7995b48d2333ea69ac37f1fe90289e51c7c1f956d708b08e2773a4f17530acc3",
+      "fixed_base": {
+        "tsv": "9316-form/native/fixed_base.tsv",
+        "sha256": "e4c727a4662f292bd4c51a6bed9e667b6740e1900ea63f1c56db856070a07810"
+      },
+      "candidate": {
+        "tsv": "9316-form/native/candidate.tsv",
+        "sha256": "e4c727a4662f292bd4c51a6bed9e667b6740e1900ea63f1c56db856070a07810"
+      }
+    },
+    {
+      "key": "9316-guide",
+      "backend": "native",
+      "pages": 7,
+      "changed": [],
+      "declined": [],
+      "input_sha256": "6da5bc49a8851336c1341f54ed761e2eb626ef2eb30f2fac2c4afae18a5f814f",
+      "pdf_sha256": "029fc83366d86ead06cb1d93ac6117b41e3e5208fdb3f795fe2e8033fd266c71",
+      "fixed_base": {
+        "tsv": "9316-guide/native/fixed_base.tsv",
+        "sha256": "c6c0de52dd801a4e2913d7237edf44ccd94a2ec86e132f5ee6e3793dbdb41bf3"
+      },
+      "candidate": {
+        "tsv": "9316-guide/native/candidate.tsv",
+        "sha256": "c6c0de52dd801a4e2913d7237edf44ccd94a2ec86e132f5ee6e3793dbdb41bf3"
+      }
+    },
+    {
+      "key": "chemical",
+      "backend": "native",
+      "pages": 103,
+      "changed": [
+        {
+          "page": 31,
+          "base": "99.99",
+          "merge": "100.00"
+        },
+        {
+          "page": 32,
+          "base": "99.99",
+          "merge": "100.00"
+        },
+        {
+          "page": 60,
+          "base": "99.99",
+          "merge": "100.00"
+        },
+        {
+          "page": 61,
+          "base": "99.98",
+          "merge": "100.00"
+        },
+        {
+          "page": 74,
+          "base": "99.98",
+          "merge": "100.00"
+        },
+        {
+          "page": 92,
+          "base": "99.98",
+          "merge": "100.00"
+        },
+        {
+          "page": 93,
+          "base": "99.99",
+          "merge": "100.00"
+        },
+        {
+          "page": 94,
+          "base": "99.98",
+          "merge": "100.00"
+        },
+        {
+          "page": 96,
+          "base": "99.99",
+          "merge": "100.00"
+        }
+      ],
+      "declined": [],
+      "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+      "fixed_base": {
+        "tsv": "chemical/native/fixed_base.tsv",
+        "sha256": "602aef93d10d9a9806e265e8f9445b375b123b3ca4939514121893d3cefd58a0"
+      },
+      "candidate": {
+        "tsv": "chemical/native/candidate.tsv",
+        "sha256": "d55cc0d20d9cf48ab7af6139c63f9c7ce9d90ff2cd4d0c668a810fccb2ae63f3"
+      }
+    },
+    {
+      "key": "9316-announce",
+      "backend": "wasm",
+      "pages": 11,
+      "changed": [],
+      "declined": [],
+      "input_sha256": "feed4e14e00c73a4c5cba706a2770de03d684a8cb0c3d19c574d5eaddba30ee4",
+      "pdf_sha256": "315c7040889a847533fd09b8fb47ed613eaad023304b5ee750b03985cef661c1",
+      "fixed_base": {
+        "tsv": "9316-announce/wasm/fixed_base.tsv",
+        "sha256": "5a71023b08b3df6780d2533956929d88c606f5740b171e7305adac1c50a1a3ea"
+      },
+      "candidate": {
+        "tsv": "9316-announce/wasm/candidate.tsv",
+        "sha256": "5a71023b08b3df6780d2533956929d88c606f5740b171e7305adac1c50a1a3ea"
+      }
+    },
+    {
+      "key": "9316-form",
+      "backend": "wasm",
+      "pages": 1,
+      "changed": [],
+      "declined": [],
+      "input_sha256": "aa2da5059cd986e58106514b48c2499d9072d54728d956aa8cb0ee837588c577",
+      "pdf_sha256": "7995b48d2333ea69ac37f1fe90289e51c7c1f956d708b08e2773a4f17530acc3",
+      "fixed_base": {
+        "tsv": "9316-form/wasm/fixed_base.tsv",
+        "sha256": "e4c727a4662f292bd4c51a6bed9e667b6740e1900ea63f1c56db856070a07810"
+      },
+      "candidate": {
+        "tsv": "9316-form/wasm/candidate.tsv",
+        "sha256": "e4c727a4662f292bd4c51a6bed9e667b6740e1900ea63f1c56db856070a07810"
+      }
+    },
+    {
+      "key": "9316-guide",
+      "backend": "wasm",
+      "pages": 7,
+      "changed": [],
+      "declined": [],
+      "input_sha256": "6da5bc49a8851336c1341f54ed761e2eb626ef2eb30f2fac2c4afae18a5f814f",
+      "pdf_sha256": "029fc83366d86ead06cb1d93ac6117b41e3e5208fdb3f795fe2e8033fd266c71",
+      "fixed_base": {
+        "tsv": "9316-guide/wasm/fixed_base.tsv",
+        "sha256": "1412cb0ee55e92520736a6a9f563222a5c8c0658dcaa58f45b050320ab2b1036"
+      },
+      "candidate": {
+        "tsv": "9316-guide/wasm/candidate.tsv",
+        "sha256": "1412cb0ee55e92520736a6a9f563222a5c8c0658dcaa58f45b050320ab2b1036"
+      }
+    },
+    {
+      "key": "chemical",
+      "backend": "wasm",
+      "pages": 103,
+      "changed": [
+        {
+          "page": 31,
+          "base": "99.99",
+          "merge": "100.00"
+        },
+        {
+          "page": 32,
+          "base": "99.99",
+          "merge": "100.00"
+        },
+        {
+          "page": 60,
+          "base": "99.99",
+          "merge": "100.00"
+        },
+        {
+          "page": 61,
+          "base": "99.98",
+          "merge": "100.00"
+        },
+        {
+          "page": 74,
+          "base": "99.97",
+          "merge": "99.99"
+        },
+        {
+          "page": 92,
+          "base": "99.98",
+          "merge": "100.00"
+        },
+        {
+          "page": 93,
+          "base": "99.99",
+          "merge": "100.00"
+        },
+        {
+          "page": 94,
+          "base": "99.98",
+          "merge": "100.00"
+        },
+        {
+          "page": 96,
+          "base": "99.99",
+          "merge": "100.00"
+        }
+      ],
+      "declined": [],
+      "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+      "fixed_base": {
+        "tsv": "chemical/wasm/fixed_base.tsv",
+        "sha256": "f4de419591573e4914a28637080065559a97c59b0c2461149f9d9bdf5af4afd6"
+      },
+      "candidate": {
+        "tsv": "chemical/wasm/candidate.tsv",
+        "sha256": "9245e215bb58b0873120ba33533b1f7401e4c2267cd60d3ae9f33bf0c5cb42b9"
+      }
+    }
+  ],
+  "direct_pdf": [
+    {
+      "key": "9316-announce",
+      "pages": 11,
+      "equal_raster_and_text": true
+    },
+    {
+      "key": "9316-form",
+      "pages": 1,
+      "equal_raster_and_text": true
+    },
+    {
+      "key": "9316-guide",
+      "pages": 7,
+      "equal_raster_and_text": true
+    }
+  ]
+}

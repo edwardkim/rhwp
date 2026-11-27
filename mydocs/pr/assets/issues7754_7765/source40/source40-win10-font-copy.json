@@ -1,0 +1,56 @@
+{
+  "started": 1795324160.611228,
+  "ended": 1795324163.648124,
+  "host": "win10-ted",
+  "shell": "PowerShell -NoProfile -EncodedCommand through SSH; SCP SFTP read-only transfer",
+  "authorization": "User instructed copying fonts from win10-ted on 2026-11-22.",
+  "scope": "Private task files only; no system installation, repository font bytes, distribution or remote mutations.",
+  "files": [
+    {
+      "path": "C:\\Windows\\Fonts\\arial.ttf",
+      "bytes": 1036584,
+      "sha256": "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1",
+      "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-font-supply-20261122/arial.ttf",
+      "local_sha256": "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1",
+      "expected_canonical_sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1",
+      "matches_canonical": false
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\arialbd.ttf",
+      "bytes": 980756,
+      "sha256": "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69",
+      "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-font-supply-20261122/arialbd.ttf",
+      "local_sha256": "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69",
+      "expected_canonical_sha256": "3680a1bbffab914f36b27d5fd97b193de5bccfab882c41b41b5f8f99457b4820",
+      "matches_canonical": false
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\arialbi.ttf",
+      "bytes": 721144,
+      "sha256": "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994",
+      "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-font-supply-20261122/arialbi.ttf",
+      "local_sha256": "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994",
+      "expected_canonical_sha256": "77a0b63c5f73eb85923f10359e68b8fc768487ae88ad902a1ea21276954e205b",
+      "matches_canonical": false
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\ariali.ttf",
+      "bytes": 717428,
+      "sha256": "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62",
+      "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-font-supply-20261122/ariali.ttf",
+      "local_sha256": "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62",
+      "expected_canonical_sha256": "c30c71d614e143c0d4e42aaf04d9a1f50f90b365a2654eb3f2c6598e5655af08",
+      "matches_canonical": false
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\HANBatang.ttf",
+      "bytes": 28412796,
+      "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+      "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-font-supply-20261122/HANBatang.ttf",
+      "local_sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+      "expected_canonical_sha256": "ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85",
+      "matches_canonical": false
+    }
+  ],
+  "complete": true
+}

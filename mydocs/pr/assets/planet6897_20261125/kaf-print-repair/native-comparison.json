@@ -1,0 +1,76 @@
+{
+  "9386": {
+    "pages": 44,
+    "input_sha256": "b03eaad4854504f54eafe8a1aa10eafd56e9ad75db3e40ae2ed43a31dd666c0f",
+    "binary_sha256": "1ca7fce5586cbd1f8221cea57fc973c47deef05f13d0ff34707544802e7f3862",
+    "original_print_pdf_sha256": "3c526bf9968c9ec90b5174963492762c57662ab16c2c09c62ca182b55d9ed899",
+    "mcp_pdf_sha256": "71c1a67fa80ed3535f3a807acb1d4b26f3e37c7275f61559a8ebbd36641ba0aa",
+    "mcp_below_98": {
+      "31": "95.73"
+    },
+    "original_print_below_98": {},
+    "mcp_higher_vs_before": {
+      "24": [
+        "97.05",
+        "100.00"
+      ]
+    },
+    "mcp_lower_vs_before": {},
+    "mcp_lower_vs_original_pr": {},
+    "p31": {
+      "mcp_original": "94.33",
+      "mcp_before": "95.73",
+      "mcp": "95.73",
+      "original_print": "98.84"
+    },
+    "tsv_sha256": {
+      "mcp_original": "9f7b9dc0a33175bfd6c066b9fa0e4a0a5b53a7780989b12c63e396100056152c",
+      "mcp_before": "98282b7b852c6dbba801d7abca027decc926d116a30750284f83cf98003aa99b",
+      "mcp": "02920eb582122c1b34dbde99346d363032987068328b38d5599c87517be8cfd6",
+      "original_print": "c0db41f1b2d7e328d99d814b1b145ed1e1ff98d2cbb15ff7c54f432a1fcfad88"
+    }
+  },
+  "9400": {
+    "pages": 54,
+    "input_sha256": "f5f835cb60fdb1883f5857bcc0799c22dfe24e4c1b683dfc10e9382da30d77c2",
+    "binary_sha256": "1ca7fce5586cbd1f8221cea57fc973c47deef05f13d0ff34707544802e7f3862",
+    "original_print_pdf_sha256": "7787910c514b5947639fb5857e1a5847616000115f18210a76eff05765c07a2c",
+    "mcp_pdf_sha256": "eb36dfb00712626b4aa6abb006ffd81e8aa3fd7932d3e04c6ffa691b337b5bf1",
+    "mcp_below_98": {
+      "31": "95.73"
+    },
+    "original_print_below_98": {},
+    "mcp_higher_vs_before": {
+      "24": [
+        "97.05",
+        "100.00"
+      ],
+      "36": [
+        "94.65",
+        "100.00"
+      ],
+      "38": [
+        "96.01",
+        "100.00"
+      ],
+      "39": [
+        "99.99",
+        "100.00"
+      ]
+    },
+    "mcp_lower_vs_before": {},
+    "mcp_lower_vs_original_pr": {},
+    "p31": {
+      "mcp_original": "94.33",
+      "mcp_before": "95.73",
+      "mcp": "95.73",
+      "original_print": "98.84"
+    },
+    "tsv_sha256": {
+      "mcp_original": "6096655fb2e94a9a33661d4b10a6df27d452215b77d9dfb3aba272cc9241ba47",
+      "mcp_before": "e3371064628294cd420355d5130b7ad38642d4842a19dfa910ef157a9cf21340",
+      "mcp": "a193d4f60cd3b1091f04d0a574ea5c2290e820c191b45c01ef2c885ef7840a22",
+      "original_print": "cff6f66ed2bcdd1e570e52523efbbfaac54dbfdf0a7dab93788039e8a3625237"
+    }
+  }
+}

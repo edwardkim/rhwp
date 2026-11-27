@@ -1,0 +1,44 @@
+
+running 22 tests
+test case0::issue_2279_saved_body_keeps_paragraph_tail ... ok
+test case0::issue_2279_saved_alternatives_table_stays_on_page_ten ... ok
+test case0::issue_2279_saved_body_preserves_line_pitch ... ok
+test case0::issue_2279_small_saved_frame_preserves_qualitative_benefit_pages ... ok
+test case0::issue_2279_saved_nested_frame_keeps_source_page_ownership ... ok
+test case0::issue_2279_saved_comparison_table_fragments_stay_inside_body ... ok
+test case0::issue_2279_saved_equation_split_keeps_source_lines_on_each_page ... ok
+LAYOUT_OVERFLOW_CELL: section=0 pi=2 line=1 y=1123.3 page_bottom=1122.5 overflow=0.7px
+LAYOUT_OVERFLOW_CELL: section=0 pi=4 line=0 y=1180.9 page_bottom=1122.5 overflow=58.3px
+LAYOUT_OVERFLOW_CELL: section=0 pi=5 line=0 y=1209.7 page_bottom=1122.5 overflow=87.1px
+LAYOUT_OVERFLOW_CELL: section=0 pi=6 line=0 y=1238.5 page_bottom=1122.5 overflow=115.9px
+LAYOUT_OVERFLOW_CELL: section=0 pi=6 line=1 y=1267.3 page_bottom=1122.5 overflow=144.7px
+LAYOUT_OVERFLOW: page=26, sec=0, col=0, para=145, type=PartialTable, first=false, y=1300.5, bottom=1046.9, overflow=253.6px
+test case1::issue_1891_link_bin_data_stable_across_two_rounds ... ok
+test case1::issue_1891_regulatory_fixture_preserves_authentic_saved_lines ... ok
+test case1::issue_1891_external_link_overflow_cell_lines_do_not_grow ... ok
+LAYOUT_OVERFLOW_CELL: section=0 pi=2 line=1 y=1123.3 page_bottom=1122.5 overflow=0.7px
+LAYOUT_OVERFLOW_CELL: section=0 pi=4 line=0 y=1180.9 page_bottom=1122.5 overflow=58.3px
+LAYOUT_OVERFLOW_CELL: section=0 pi=5 line=0 y=1209.7 page_bottom=1122.5 overflow=87.1px
+LAYOUT_OVERFLOW_CELL: section=0 pi=6 line=0 y=1238.5 page_bottom=1122.5 overflow=115.9px
+LAYOUT_OVERFLOW_CELL: section=0 pi=6 line=1 y=1267.3 page_bottom=1122.5 overflow=144.7px
+LAYOUT_OVERFLOW: page=26, sec=0, col=0, para=145, type=PartialTable, first=false, y=1300.5, bottom=1046.9, overflow=253.6px
+LAYOUT_OVERFLOW_CELL: section=0 pi=2 line=1 y=1123.3 page_bottom=1122.5 overflow=0.7px
+LAYOUT_OVERFLOW_CELL: section=0 pi=4 line=0 y=1180.9 page_bottom=1122.5 overflow=58.3px
+LAYOUT_OVERFLOW_CELL: section=0 pi=5 line=0 y=1209.7 page_bottom=1122.5 overflow=87.1px
+LAYOUT_OVERFLOW_CELL: section=0 pi=6 line=0 y=1238.5 page_bottom=1122.5 overflow=115.9px
+LAYOUT_OVERFLOW_CELL: section=0 pi=6 line=1 y=1267.3 page_bottom=1122.5 overflow=144.7px
+LAYOUT_OVERFLOW: page=26, sec=0, col=0, para=145, type=PartialTable, first=false, y=1300.5, bottom=1046.9, overflow=253.6px
+test case2::area_dot_without_a_metric_is_also_full_width ... ok
+test case1::issue_1891_external_link_roundtrip_render_is_self_consistent ... ok
+test case2::issue_7080_fullwidth_area_dot_keeps_no_ls_statute_rows_on_hancom_page_108 ... ok
+test case2::issue_7080_multiline_statute_keeps_hancom_page_49_three_rows ... ok
+test case2::area_dot_is_full_width_across_font_families ... ok
+test case2::issue_7080_multiline_terminal_row_does_not_push_the_next_page ... ok
+test case1::issue_1891_hwp5_origin_hwpx_export_reparse_keeps_page_count ... ok
+test case3::installed_program_alias_preserves_current_source_frames ... ok
+test case3::completed_current_object_frame_keeps_the_next_table_print_origin ... ok
+test case3::final_fragment_keeps_the_empty_line_box_inside_its_print_border ... ok
+test case3::continuation_keeps_the_terminal_text_on_its_own_page_once ... ok
+test case3::successive_saved_restarts_with_link_fields_keep_their_page_owners ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.55s

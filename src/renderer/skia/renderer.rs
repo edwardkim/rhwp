@@ -1,7 +1,7 @@
 use super::region_plan::SkiaRegionPlan;
 use skia_safe::{
     paint, png_encoder, surfaces, Canvas, Color, Font, FontMgr, FontStyle, Matrix, Paint,
-    PathBuilder, PathEffect, Picture, PictureRecorder, RRect, Rect, Shaper,
+    PathBuilder, PathEffect, Picture, PictureRecorder, RRect, Rect, Shaper, Typeface,
 };
 use std::cell::{OnceCell, RefCell};
 use std::collections::{BTreeSet, HashMap, HashSet};
@@ -28,7 +28,9 @@ use crate::renderer::raster_pixels::{
     RasterPixelFormat, RasterPixels, RasterRegion, RasterRegionPixels,
 };
 use crate::renderer::render_tree::RenderLayerInfo;
-use crate::renderer::{svg_arc_to_beziers, LineStyle, PathCommand, ShapeStyle, StrokeDash};
+use crate::renderer::{
+    alpha_to_opacity, svg_arc_to_beziers, LineStyle, PathCommand, ShapeStyle, StrokeDash,
+};
 
 use super::cache::{
     debug_key, debug_size, inline_resource_estimate, BoundedCache, NativeSkiaCacheStats,
@@ -175,13 +177,14 @@ pub fn native_skia_glyph_run_replay_proof(
     run: &LayerGlyphRunPaint,
     resources: &ResourceArena,
 ) -> NativeGlyphRunReplayProof {
-    prepare_native_glyph_run(run, resources, &FontMgr::default()).0
+    prepare_native_glyph_run(run, resources, &FontMgr::default(), None).0
 }
 
 fn prepare_native_glyph_run(
     run: &LayerGlyphRunPaint,
     resources: &ResourceArena,
     font_mgr: &FontMgr,
+    pdf_fonts: Option<&super::pdf_fonts::PdfFontCache>,
 ) -> (NativeGlyphRunReplayProof, Option<PreparedGlyph>) {
     let mut contract_reasons = BTreeSet::new();
     let mut construction_reasons = BTreeSet::new();
@@ -420,7 +423,7 @@ fn prepare_native_glyph_run(
 
     let contract_replayable = contract_reasons.is_empty();
     let prepared = if contract_replayable {
-        match construct_glyph_font(run, resources, font_mgr) {
+        match construct_glyph_font(run, resources, font_mgr, pdf_fonts) {
             Ok(prepared) => Some(prepared),
             Err(reasons) => {
                 construction_reasons.extend(reasons);
@@ -497,6 +500,7 @@ pub struct SkiaLayerRenderer {
     viewport_culling: bool,
     font_fallback_observer: Option<super::font_observation::FontFallbackObserver>,
     font_mgr: FontMgr,
+    pdf_fonts: Option<super::pdf_fonts::PdfFontCache>,
     text_shaper: OnceCell<Option<Shaper>>,
     /// 사용자 지정 경로의 family별 TTC face·스타일 catalog.
     /// SVG 의 `--font-path` 와 같은 패턴으로 ttfs 디렉토리의 한컴 전용 폰트 (HY견명조 등) 도 사용 가능.
@@ -533,6 +537,7 @@ impl SkiaLayerRenderer {
             viewport_culling: true,
             font_fallback_observer: None,
             font_mgr: font_mgr.clone(),
+            pdf_fonts: None,
             text_shaper: OnceCell::new(),
             custom_typefaces: TypefaceCatalog::default(),
             bundled_typefaces: TypefaceCatalog::default(),
@@ -547,6 +552,12 @@ impl SkiaLayerRenderer {
             )),
             image_cache: ImageResourceCache::new(DEFAULT_CACHE_ENTRIES, DEFAULT_CACHE_BYTES),
         })
+    }
+
+    /// Use PDF-specific font programs only while recording a direct PDF.
+    pub(crate) fn for_pdf(mut self) -> Self {
+        self.pdf_fonts = Some(super::pdf_fonts::PdfFontCache::new());
+        self
     }
 
     /// Bound each of the picture, glyph and image caches independently. Zero
@@ -1183,7 +1194,12 @@ impl SkiaLayerRenderer {
         }
         let prepared = Rc::new(match op {
             PaintOp::GlyphRun { run, .. } => {
-                let (proof, prepared) = prepare_native_glyph_run(run, resources, &self.font_mgr);
+                let (proof, prepared) = prepare_native_glyph_run(
+                    run,
+                    resources,
+                    &self.font_mgr,
+                    self.pdf_fonts.as_ref(),
+                );
                 prepared.ok_or(NativeGlyphPreparationFailure::GlyphRunRejected(proof))?
             }
             PaintOp::GlyphOutline { outline, bbox, .. } => {
@@ -1263,7 +1279,10 @@ impl SkiaLayerRenderer {
             } else {
                 1.0
             });
-            paint.set_color(colorref_to_skia(style.stroke_color?, style.opacity as f32));
+            paint.set_color(colorref_to_skia(
+                style.stroke_color?,
+                alpha_to_opacity(style.stroke_alpha) as f32,
+            ));
             apply_dash(&mut paint, style.stroke_dash);
             floor_stroke_to_device(canvas, &mut paint, raster_target);
             Some(paint)
@@ -1277,7 +1296,10 @@ impl SkiaLayerRenderer {
             } else {
                 1.0
             });
-            paint.set_color(colorref_to_skia(style.color, 1.0));
+            paint.set_color(colorref_to_skia(
+                style.color,
+                alpha_to_opacity(style.alpha) as f32,
+            ));
             apply_dash(&mut paint, style.dash);
             if let Some(intervals) = &style.dash_pattern {
                 let intervals = intervals.iter().map(|v| *v as f32).collect::<Vec<_>>();
@@ -1357,12 +1379,14 @@ impl SkiaLayerRenderer {
             )
         };
         let equation_fonts = EquationFonts {
+            pdf_fonts: self.pdf_fonts.as_ref(),
             font_mgr: &self.font_mgr,
             system_families: &self.system_families,
             custom_typefaces: &self.custom_typefaces,
             bundled_typefaces: &self.bundled_typefaces,
         };
         let text_replay = SkiaTextReplay {
+            pdf_fonts: self.pdf_fonts.as_ref(),
             canvas,
             font_fallback_observer: self.font_fallback_observer.as_ref(),
             raster_target: cache_context.raster_target,
@@ -2502,25 +2526,32 @@ impl LayerRasterRenderer for SkiaLayerRenderer {
 }
 
 impl SkiaLayerRenderer {
+    fn output_font(&self, face: Typeface, size: f32) -> Font {
+        Font::new(
+            super::pdf_fonts::for_output(self.pdf_fonts.as_ref(), &self.font_mgr, face),
+            size,
+        )
+    }
+
     fn make_form_font(&self, size: f32) -> Font {
         let style = FontStyle::default();
         for family in FORM_CJK_FAMILIES {
             if let Some(tf) = match_supplied_family(&self.custom_typefaces, family, style) {
-                return Font::new(tf, size);
+                return self.output_font(tf, size);
             }
             if let Some(tf) =
                 match_system_family_style(&self.font_mgr, &self.system_families, family, style)
             {
-                return Font::new(tf, size);
+                return self.output_font(tf, size);
             }
             // [#3300] 시스템 폰트가 없는 headless 환경에서는 번들 폰트가
             // custom·system 뒤의 최후 폴백으로 form caption의 한국어를 구제한다.
             if let Some(tf) = match_supplied_family(&self.bundled_typefaces, family, style) {
-                return Font::new(tf, size);
+                return self.output_font(tf, size);
             }
         }
         if let Some(tf) = legacy_typeface_for_style(&self.font_mgr, style) {
-            return Font::new(tf, size);
+            return self.output_font(tf, size);
         }
         let mut f = Font::default();
         f.set_size(size);
@@ -2620,7 +2651,7 @@ impl SkiaLayerRenderer {
                     match_supplied_family(&self.bundled_typefaces, &label.font_family, style)
                 });
             let font = typeface
-                .map(|tf| Font::new(tf, label.font_size as f32))
+                .map(|tf| self.output_font(tf, label.font_size as f32))
                 .unwrap_or_else(|| self.make_form_font(label.font_size as f32));
             let mut paint = Paint::default();
             paint.set_anti_alias(true);
@@ -2661,6 +2692,7 @@ fn draw_arrow_heads(
     style: &LineStyle,
     antialias: bool,
 ) {
+    let opacity = alpha_to_opacity(style.alpha) as f32;
     for head in heads {
         let mut builder = PathBuilder::new();
         for command in &head.commands {
@@ -2687,17 +2719,16 @@ fn draw_arrow_heads(
         let path = builder.detach();
         let mut fill = Paint::default();
         fill.set_anti_alias(antialias);
-        fill.set_color(if head.filled {
-            colorref_to_skia(style.color, 1.0)
-        } else {
-            Color::WHITE
-        });
+        fill.set_color(colorref_to_skia(
+            if head.filled { style.color } else { 0xFFFFFF },
+            opacity,
+        ));
         canvas.draw_path(&path, &fill);
         if !head.filled {
             let mut outline = Paint::default();
             outline.set_anti_alias(antialias);
             outline.set_style(paint::Style::Stroke);
-            outline.set_color(colorref_to_skia(style.color, 1.0));
+            outline.set_color(colorref_to_skia(style.color, opacity));
             outline.set_stroke_width((style.width * 0.3).max(0.5) as f32);
             canvas.draw_path(&path, &outline);
         }
@@ -3711,89 +3742,6 @@ mod tests {
         assert_channel(line_pixel, 0, 180, 255);
     }
 
-    // 합성 스타일 fixture: 기존 OFL 글꼴의 윤곽/advance는 그대로 두고
-    // 선언 weight·style만 Bold로 바꾼다. 원하는 style의 프로그램 선택을 검증한다.
-    fn synthetic_bold_font(mut bytes: Vec<u8>) -> Vec<u8> {
-        fn u16_at(b: &[u8], p: usize) -> u16 {
-            u16::from_be_bytes(b[p..p + 2].try_into().unwrap())
-        }
-        fn u32_at(b: &[u8], p: usize) -> u32 {
-            u32::from_be_bytes(b[p..p + 4].try_into().unwrap())
-        }
-        let count = usize::from(u16_at(&bytes, 4));
-        let records: Vec<_> = (0..count)
-            .map(|i| {
-                let r = 12 + i * 16;
-                (
-                    r,
-                    bytes[r..r + 4].to_vec(),
-                    u32_at(&bytes, r + 8) as usize,
-                    u32_at(&bytes, r + 12) as usize,
-                )
-            })
-            .collect();
-        let head = records.iter().find(|r| r.1 == b"head").unwrap().2;
-        let os2 = records.iter().find(|r| r.1 == b"OS/2").unwrap().2;
-        bytes[os2 + 4..os2 + 6].copy_from_slice(&700u16.to_be_bytes());
-        let selection = (u16_at(&bytes, os2 + 62) & !0x40) | 0x20;
-        bytes[os2 + 62..os2 + 64].copy_from_slice(&selection.to_be_bytes());
-        let mac_style = u16_at(&bytes, head + 44) | 1;
-        bytes[head + 44..head + 46].copy_from_slice(&mac_style.to_be_bytes());
-        let name = records.iter().find(|r| r.1 == b"name").unwrap().2;
-        let pool = name + usize::from(u16_at(&bytes, name + 4));
-        let names = usize::from(u16_at(&bytes, name + 2));
-        for i in 0..names {
-            let r = name + 6 + i * 12;
-            if ![2, 4, 6, 17].contains(&u16_at(&bytes, r + 6)) {
-                continue;
-            }
-            let start = pool + usize::from(u16_at(&bytes, r + 10));
-            let len = usize::from(u16_at(&bytes, r + 8));
-            let unicode = [0, 3].contains(&u16_at(&bytes, r));
-            let text = if unicode {
-                String::from_utf16(
-                    &bytes[start..start + len]
-                        .chunks_exact(2)
-                        .map(|x| u16::from_be_bytes([x[0], x[1]]))
-                        .collect::<Vec<_>>(),
-                )
-                .unwrap()
-            } else {
-                String::from_utf8_lossy(&bytes[start..start + len]).into_owned()
-            };
-            if !text.contains("Regular") {
-                continue;
-            }
-            let replacement = text.replace("Regular", "Bold");
-            let replacement: Vec<u8> = if unicode {
-                replacement
-                    .encode_utf16()
-                    .flat_map(u16::to_be_bytes)
-                    .collect()
-            } else {
-                replacement.into_bytes()
-            };
-            assert!(replacement.len() <= len);
-            bytes[start..start + replacement.len()].copy_from_slice(&replacement);
-            bytes[r + 8..r + 10].copy_from_slice(&(replacement.len() as u16).to_be_bytes());
-        }
-        bytes[head + 8..head + 12].fill(0);
-        let checksum = |data: &[u8]| {
-            data.chunks(4).fold(0u32, |sum, c| {
-                let mut word = [0u8; 4];
-                word[..c.len()].copy_from_slice(c);
-                sum.wrapping_add(u32::from_be_bytes(word))
-            })
-        };
-        for (r, _, off, len) in records {
-            let sum = checksum(&bytes[off..off + len]);
-            bytes[r + 4..r + 8].copy_from_slice(&sum.to_be_bytes());
-        }
-        let adjustment = 0xB1B0_AFBAu32.wrapping_sub(checksum(&bytes));
-        bytes[head + 8..head + 12].copy_from_slice(&adjustment.to_be_bytes());
-        bytes
-    }
-
     #[test]
     fn svg_images_and_raw_fragments_keep_bounded_input_and_raster_area() {
         let mut surface = surfaces::raster_n32_premul((8, 8)).unwrap();
@@ -3848,12 +3796,12 @@ mod tests {
 
     #[test]
     fn custom_font_paths_select_style_within_the_first_family_owner() {
-        let regular = std::fs::read(
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("ttfs/opensource/NotoSansKR-Regular.ttf"),
-        )
-        .unwrap();
-        let bold = synthetic_bold_font(regular.clone());
+        const FAMILY: &str = "RHWP Supplied Style Contract";
+        const REGULAR: &[u8] = include_bytes!(
+            "../../../tests/fixtures/native_font_styles/RHWPSuppliedStyle-Regular.ttf"
+        );
+        const BOLD: &[u8] =
+            include_bytes!("../../../tests/fixtures/native_font_styles/RHWPSuppliedStyle-Bold.ttf");
         let root = std::env::temp_dir().join(format!(
             "rhwp-native-font-style-{}-{}",
             std::process::id(),
@@ -3866,19 +3814,19 @@ mod tests {
         let regular_dir = root.join("regular-second");
         std::fs::create_dir_all(&bold_dir).unwrap();
         std::fs::create_dir_all(&regular_dir).unwrap();
-        std::fs::write(bold_dir.join("01-bold.ttf"), &bold).unwrap();
-        std::fs::write(bold_dir.join("02-regular.ttf"), &regular).unwrap();
-        std::fs::write(regular_dir.join("regular.ttf"), &regular).unwrap();
+        std::fs::write(bold_dir.join("01-bold.ttf"), BOLD).unwrap();
+        std::fs::write(bold_dir.join("02-regular.ttf"), REGULAR).unwrap();
+        std::fs::write(regular_dir.join("regular.ttf"), REGULAR).unwrap();
         let renderer =
             SkiaLayerRenderer::new().with_font_paths(&[bold_dir.clone(), regular_dir.clone()]);
         let declared_bold = renderer
             .font_mgr
-            .new_from_data(skia_safe::Data::new_copy(&bold), None)
+            .new_from_data(skia_safe::Data::new_copy(BOLD), None)
             .unwrap();
         assert_eq!(
             *declared_bold.font_style().weight(),
             700,
-            "합성 입력은 실제 Bold 선언을 갖는다"
+            "공급한 Bold 프로그램은 700 굵기를 선언한다"
         );
         for wanted in [FontStyle::normal(), FontStyle::bold()] {
             let (_, chain) = crate::renderer::skia::font_lookup::text_typeface_candidates(
@@ -3886,7 +3834,7 @@ mod tests {
                 &renderer.system_families,
                 &renderer.custom_typefaces,
                 &renderer.bundled_typefaces,
-                "Noto Sans KR",
+                FAMILY,
                 wanted,
             );
             assert_eq!(
@@ -3900,12 +3848,9 @@ mod tests {
         // 스타일을 뒤 경로의 동명 프로그램으로 보충하지 않는다.
         std::fs::remove_file(bold_dir.join("02-regular.ttf")).unwrap();
         let renderer = SkiaLayerRenderer::new().with_font_paths(&[bold_dir, regular_dir]);
-        let selected = match_supplied_family(
-            &renderer.custom_typefaces,
-            "Noto Sans KR",
-            FontStyle::normal(),
-        )
-        .expect("첫 경로의 family 공급");
+        let selected =
+            match_supplied_family(&renderer.custom_typefaces, FAMILY, FontStyle::normal())
+                .expect("첫 경로의 family 공급");
         assert_eq!(
             *selected.font_style().weight(),
             700,

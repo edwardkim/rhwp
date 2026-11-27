@@ -1,0 +1,32 @@
+{
+  "input": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+  "input_sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+  "job_id": "a91bfea0-c7e4-4b54-ab6e-e0198a0e6c0c",
+  "expected_page_count": 74,
+  "status": "succeeded",
+  "result": {
+    "engine": "2020",
+    "hancom_version": "11.0.0.9172",
+    "pdf_page_count": 74,
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+    "comment": null
+  },
+  "error_code": null,
+  "download_server": {
+    "engine": "2020",
+    "hancom_version": "11.0.0.9172",
+    "pdf_page_count": 74,
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+    "comment": null
+  },
+  "pdfinfo": {
+    "Creator": "Hwp 2020 11.0.0.9172",
+    "Producer": "Hancom PDF 1.3.0.550",
+    "Pages": "74",
+    "Page size": "595 x 841 pts (A4)"
+  },
+  "output_sha256": "df2f360832a8e38b35e0156d703416f69233d04fc570f60c55445afee8276e26",
+  "output_bytes": 781904
+}

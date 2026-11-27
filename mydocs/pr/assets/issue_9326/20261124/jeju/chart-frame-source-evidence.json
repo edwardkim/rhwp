@@ -1,0 +1,84 @@
+{
+  "source_frames": [
+    {
+      "page": 47,
+      "file": "output/pr-review/issue9326-food-wasm-20261124/diagnostics/jeju-source-chart/BIN0045.OLE-Contents.bin",
+      "stored_twips": 20.0,
+      "stored_color": "#8c8c8c"
+    },
+    {
+      "page": 48,
+      "file": "output/pr-review/issue9326-food-wasm-20261124/diagnostics/jeju-source-chart/BIN0046.OLE-Contents.bin",
+      "stored_twips": 20.0,
+      "stored_color": "#8c8c8c"
+    },
+    {
+      "page": 49,
+      "file": "output/pr-review/issue9326-food-wasm-20261124/diagnostics/jeju-source-chart/BIN0047.OLE-Contents.bin",
+      "stored_twips": 20.0,
+      "stored_color": "#8c8c8c"
+    },
+    {
+      "page": 50,
+      "file": "output/pr-review/issue9326-food-wasm-20261124/diagnostics/jeju-source-chart/BIN0048.OLE-Contents.bin",
+      "stored_twips": 20.0,
+      "stored_color": "#8c8c8c"
+    }
+  ],
+  "independent_print": {
+    "mode": "hancom-2024",
+    "four_border_paths": [
+      {
+        "line_width_pt": 0.12,
+        "gray": 0.549,
+        "operator": "B"
+      },
+      {
+        "line_width_pt": 0.12,
+        "gray": 0.549,
+        "operator": "B"
+      },
+      {
+        "line_width_pt": 0.12,
+        "gray": 0.549,
+        "operator": "B"
+      },
+      {
+        "line_width_pt": 0.12,
+        "gray": 0.549,
+        "operator": "B"
+      }
+    ]
+  },
+  "candidate": {
+    "svg_border_stroke_width_px": 0.48,
+    "svg_border_inset_px": 0.24,
+    "chart_replay": "RawSvg"
+  },
+  "unmatched_by_region": {
+    "47": {
+      "total": 2110,
+      "around_frame_and_inside": 2110,
+      "inside": 64,
+      "border_region": 2046
+    },
+    "48": {
+      "total": 597,
+      "around_frame_and_inside": 597,
+      "inside": 0,
+      "border_region": 597
+    },
+    "49": {
+      "total": 598,
+      "around_frame_and_inside": 598,
+      "inside": 0,
+      "border_region": 598
+    },
+    "50": {
+      "total": 1826,
+      "around_frame_and_inside": 1826,
+      "inside": 0,
+      "border_region": 1826
+    }
+  }
+}

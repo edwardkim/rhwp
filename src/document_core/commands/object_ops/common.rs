@@ -433,6 +433,9 @@ impl DocumentCore {
                 "Left" => crate::model::shape::HorzAlign::Left,
                 "Center" => crate::model::shape::HorzAlign::Center,
                 "Right" => crate::model::shape::HorzAlign::Right,
+                // 한/글 가로 정렬 안쪽·바깥쪽(맞쪽이 아니면 왼쪽·오른쪽과 같다)
+                "Inside" => crate::model::shape::HorzAlign::Inside,
+                "Outside" => crate::model::shape::HorzAlign::Outside,
                 _ => c.horz_align,
             };
         }
@@ -614,6 +617,88 @@ impl DocumentCore {
         self.update_connectors_in_section(section_idx);
         Ok("{\"ok\":true}".to_string())
     }
+    /// 꺾인·곡선 연결선의 가운데 선(안쪽 제어점 둘)을 그 축으로 옮긴다(HWPUNIT 거리).
+    ///
+    /// 한/글처럼 끝점·크기·위치는 그대로 두고, 축이 x면 `dx`만, y면 `dy`만 쓴다.
+    /// 가운데 점은 끝점 상자 밖으로도 옮길 수 있다.
+    pub fn move_connector_midpoint_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        control_idx: usize,
+        dx: i32,
+        dy: i32,
+    ) -> Result<String, HwpError> {
+        let section = self
+            .document
+            .sections
+            .get_mut(section_idx)
+            .ok_or_else(|| HwpError::RenderError("구역 범위 초과".to_string()))?;
+        let ctrl = section
+            .paragraphs
+            .get_mut(para_idx)
+            .and_then(|para| para.controls.get_mut(control_idx))
+            .ok_or_else(|| HwpError::RenderError("컨트롤 범위 초과".to_string()))?;
+        Self::shift_connector_midpoint(ctrl, dx, dy)?;
+        section.raw_stream = None;
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+        Ok("{\"ok\":true}".to_string())
+    }
+
+    /// 가운데 점 이동의 경로 변형: 표 셀·글상자·머리말/꼬리말 안 연결선(`cell_path_json` 경로 문단의 컨트롤).
+    pub fn move_connector_midpoint_by_path_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        cell_path_json: &str,
+        control_idx: usize,
+        dx: i32,
+        dy: i32,
+    ) -> Result<String, HwpError> {
+        let path = Self::parse_cell_path_json(cell_path_json)?;
+        {
+            let section = self
+                .document
+                .sections
+                .get_mut(section_idx)
+                .ok_or_else(|| HwpError::RenderError("구역 범위 초과".to_string()))?;
+            let para = Self::resolve_cell_paragraph_mut(section, parent_para_idx, &path)?;
+            let ctrl = para
+                .controls
+                .get_mut(control_idx)
+                .ok_or_else(|| HwpError::RenderError("컨트롤 범위 초과".to_string()))?;
+            Self::shift_connector_midpoint(ctrl, dx, dy)?;
+            section.raw_stream = None;
+        }
+        self.finish_loaded_source_cache_after_object_edit(section_idx);
+        self.paginate_if_needed();
+        self.invalidate_page_tree_cache();
+        Ok("{\"ok\":true}".to_string())
+    }
+
+    fn shift_connector_midpoint(ctrl: &mut Control, dx: i32, dy: i32) -> Result<(), HwpError> {
+        let conn = match ctrl {
+            Control::Shape(shape) => match shape.as_mut() {
+                ShapeObject::Line(line) => line.connector.as_mut(),
+                _ => None,
+            },
+            _ => None,
+        }
+        .ok_or_else(|| HwpError::RenderError("연결선이 아닙니다".to_string()))?;
+        let axis = conn.midpoint_axis().ok_or_else(|| {
+            HwpError::RenderError("가운데 점을 옮길 수 없는 연결선입니다".to_string())
+        })?;
+        for point in &mut conn.control_points[1..3] {
+            if axis == 'x' {
+                point.x = point.x.saturating_add(dx);
+            } else {
+                point.y = point.y.saturating_add(dy);
+            }
+        }
+        Ok(())
+    }
+
     pub(crate) fn first_char_or_nul(value: &str) -> char {
         value.chars().next().unwrap_or('\0')
     }

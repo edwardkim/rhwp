@@ -1,4 +1,10 @@
-//! [Issue #6797] 렌더의 자리차지 배제 밴드 소비가 `item_is_paragraph` 전용이라,
+//! 관계형·고정형 회귀 — #6797·#7775 양돈 문서의 그림 표 소속, 본문 순서와 쪽수.
+//! 주석 갱신 2026-11-24 00:33 KST. 직전 변경 2026-10-24 15:11:35 KST, `60972534680a0c5e51e54ec189b92e252e81a867`.
+//! 2026-11-23 독립 한컴 2020 Print, 96 DPI, 전 11쪽 2px raw 실루엣.
+//! HWP와 HWPX 모두 7쪽 Native/fresh WASM 100.00%, 전쪽 최저 99.48%/99.49%.
+//! 근거는 `mydocs/pr/assets/issue7770/`의 전쪽 TSV와 HWPX 7쪽 비교 PNG다.
+//!
+//! 렌더의 자리차지 배제 밴드 소비가 `item_is_paragraph` 전용이라,
 //! **빈 host 에 표만 달린 항목**(`PageItem::Table`)이 앞 문단 float 표의 밴드를
 //! 그대로 통과했다.
 //!
@@ -63,6 +69,7 @@ use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/issue6797/156160455-social-pig-farm-income.hwp";
+const HWPX_SAMPLE: &str = "samples/hwpx/156160455-social-pig-farm-income.hwpx";
 
 fn maintainer_float_variant(
     vertical_pos: Option<i32>,
@@ -214,11 +221,21 @@ fn page_column(core: &DocumentCore, page: u32) -> RenderNode {
 /// (겹침 높이 — 두 상자의 세로 교집합).
 #[test]
 fn table_item_clears_the_previous_float_band() {
-    let bytes = sample();
-    let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
-    assert_eq!(core.page_count(), 11, "독립 한컴 Print PDF는 전 11쪽");
+    for fixture in [SAMPLE, HWPX_SAMPLE] {
+        let bytes = std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(fixture))
+            .expect("양돈 원본 읽기");
+        let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
+        assert_eq!(
+            core.page_count(),
+            11,
+            "{fixture} 독립 한컴 Print PDF는 전 11쪽"
+        );
+        assert_graph_table_order(&core, fixture);
+    }
+}
 
-    let column = page_column(&core, 6);
+fn assert_graph_table_order(core: &DocumentCore, fixture: &str) {
+    let column = page_column(core, 6);
     let band_owner = top_level_table(&column, 70, 0).expect("7쪽에 pi=70 ci=0 표가 있어야 한다");
     let follower = top_level_table(&column, 71, 0).expect("7쪽에 pi=71 ci=0 표가 있어야 한다");
 
@@ -245,7 +262,31 @@ fn table_item_clears_the_previous_float_band() {
     let follower_bottom = follower.bbox.y + follower.bbox.height;
     assert!(
         following_heading.bbox.y + 0.5 >= follower_bottom,
-        "참고3 제목은 그래프 표 뒤에 있어야 한다"
+        "{fixture} 참고3 제목은 그래프 표 뒤에 있어야 한다"
+    );
+    let next_text = column
+        .children
+        .iter()
+        .find(|node| {
+            if !matches!(&node.node_type, RenderNodeType::TextLine(line)
+                if line.para_index == Some(74))
+            {
+                return false;
+            }
+            let text: String = node
+                .children
+                .iter()
+                .filter_map(|child| match &child.node_type {
+                    RenderNodeType::TextRun(run) => Some(run.text.as_str()),
+                    _ => None,
+                })
+                .collect();
+            text.contains("수익과 경영비 개선 효과")
+        })
+        .expect("7쪽 참고3 제목 다음의 수익과 경영비 개선 본문");
+    assert!(
+        following_heading.bbox.y + following_heading.bbox.height <= next_text.bbox.y + 0.5,
+        "{fixture} 참고3 제목 표가 뒤 본문을 덮지 않아야 한다"
     );
     assert!(
         follower_bottom <= column.bbox.y + column.bbox.height + 0.5,

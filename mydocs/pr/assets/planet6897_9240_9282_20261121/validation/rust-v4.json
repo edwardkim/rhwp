@@ -1,0 +1,67 @@
+{
+  "head": "9d6eee31ead9623a21600693ee22c4bfb608a89a",
+  "scope": "full",
+  "steps": [
+    {
+      "name": "full-nextest",
+      "started": "2026-11-21T21:03:14.636739+09:00",
+      "exit": 0,
+      "finished": "2026-11-21T21:27:52.924609+09:00"
+    },
+    {
+      "name": "fmt",
+      "started": "2026-11-21T21:27:52.930372+09:00",
+      "exit": 0,
+      "finished": "2026-11-21T21:28:49.662157+09:00"
+    },
+    {
+      "name": "native-clippy",
+      "started": "2026-11-21T21:28:49.664628+09:00",
+      "exit": 0,
+      "finished": "2026-11-21T21:30:01.601350+09:00"
+    },
+    {
+      "name": "wasm-clippy",
+      "started": "2026-11-21T21:30:01.601877+09:00",
+      "exit": 0,
+      "finished": "2026-11-21T21:30:34.370831+09:00"
+    },
+    {
+      "name": "workspace-build",
+      "started": "2026-11-21T21:30:34.371384+09:00",
+      "exit": 0,
+      "finished": "2026-11-21T21:31:33.663325+09:00"
+    },
+    {
+      "name": "workspace-clippy",
+      "started": "2026-11-21T21:31:33.669339+09:00",
+      "exit": 0,
+      "finished": "2026-11-21T21:32:39.174989+09:00"
+    },
+    {
+      "name": "native-skia-lib",
+      "started": "2026-11-21T21:32:39.175595+09:00",
+      "exit": 0,
+      "finished": "2026-11-21T21:38:43.068363+09:00"
+    }
+  ],
+  "product_head": "19646e69fc99ba76f9ff0350c2a425fe07ec1e88",
+  "build_jobs": 8,
+  "test_threads": 8,
+  "nextest": {
+    "executed": 13876,
+    "passed": 13876,
+    "slow": 2,
+    "skipped": 45,
+    "seconds": 735.5
+  },
+  "native_skia_lib": {
+    "passed": 4034,
+    "failed": 0,
+    "ignored": 12
+  },
+  "suite_manifest": "[RustTestSuite] 확인 완료: 2457 sources / 10113 static test attrs / 28 suites + 20 exceptions = 48/48 integration targets / nextest 최소 6288 cases / weight 2149117..2153792",
+  "unit_tier_check": "[RustUnitTier] 확인 완료: 4094 tests / 295 modules / ready 0 / support 85 / white-box 4005 / cfg support items 28",
+  "full_nextest_log_sha256": "a29715c1b7c050948502911520933af9e776aab48144909ebab6d507b67680e8",
+  "native_skia_lib_log_sha256": "5ca4428051eab3a0b3e9bcb875788d1c1006bb32a391bc98b1e6e2b3e71c454b"
+}

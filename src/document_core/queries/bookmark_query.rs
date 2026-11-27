@@ -970,6 +970,293 @@ pub fn parse_bookmark_place(json: &str) -> Result<BookmarkPlace, HwpError> {
     serde_json::from_str(json).map_err(|error| invalid(&format!("책갈피 주소: {error}")))
 }
 
+/// F11·Shift+F11이 고르는 컨트롤 종류. 본문 검색(`find_nearest_control_*_native`)과 같은 갈래다.
+fn nearest_kind(ctrl: &Control) -> Option<&'static str> {
+    match ctrl {
+        Control::Table(_) => Some("table"),
+        Control::Picture(_) => Some("picture"),
+        Control::Shape(_) => Some("shape"),
+        Control::Equation(_) => Some("equation"),
+        Control::Field(_) => Some("field"),
+        Control::Bookmark(_) => Some("bookmark"),
+        _ => None,
+    }
+}
+
+/// 주소가 지나는 문단 목록들. 첫째는 본문(또는 바탕쪽) 목록이고, 다음은 경로 항목마다 그 컨트롤이 연 목록과 영역 종류다.
+type PlaceLists<'a> = Vec<(&'a [Paragraph], &'static str)>;
+
+/// 주소를 푼 결과: (바탕쪽 번호, 바탕 문단, 바탕 문단에서 시작하는 경로, 경로가 지나는 문단 목록).
+type PlaceWalk<'a> = (
+    Option<usize>,
+    usize,
+    Vec<(usize, usize, usize)>,
+    PlaceLists<'a>,
+);
+
+impl DocumentCore {
+    /// 주소를 본문(또는 바탕쪽)에서 시작하는 (바탕쪽 번호, 바탕 문단, 경로)로 바꾸고 경로가 지나는 문단 목록을 모은다.
+    /// 머리말·꼬리말은 그 정의 컨트롤을 가진 본문 문단에서 시작하는 경로가 된다.
+    fn place_lists(&self, place: &BookmarkPlace) -> Result<PlaceWalk<'_>, HwpError> {
+        let section = self
+            .document
+            .sections
+            .get(place.section)
+            .ok_or_else(|| invalid("구역 범위 초과"))?;
+        let master = place
+            .header_footer
+            .and_then(|hf| master_page_slot(hf.apply_to));
+        let (base, host, path): (&[Paragraph], usize, Vec<(usize, usize, usize)>) =
+            match (place.header_footer, master) {
+                (Some(_), Some(slot)) => (
+                    &section
+                        .section_def
+                        .master_pages
+                        .get(slot)
+                        .ok_or_else(|| invalid("바탕쪽을 찾을 수 없음"))?
+                        .paragraphs,
+                    place.para,
+                    place.cell_path.clone(),
+                ),
+                (Some(hf), None) => {
+                    let (host, path) = self.header_footer_path(place, hf)?;
+                    (&section.paragraphs, host, path)
+                }
+                _ => (&section.paragraphs, place.para, place.cell_path.clone()),
+            };
+        let mut lists: PlaceLists<'_> = vec![(base, "")];
+        for (depth, &(ctrl_idx, cell, _)) in path.iter().enumerate() {
+            let para_idx = match depth {
+                0 => host,
+                _ => path[depth - 1].2,
+            };
+            let ctrl = lists[depth]
+                .0
+                .get(para_idx)
+                .and_then(|para| para.controls.get(ctrl_idx))
+                .ok_or_else(|| invalid("주소의 컨트롤을 찾을 수 없음"))?;
+            let (_, area, paragraphs) = child_lists(ctrl)
+                .into_iter()
+                .find(|(index, _, _)| *index == cell)
+                .ok_or_else(|| invalid("주소의 문단 목록을 찾을 수 없음"))?;
+            lists.push((paragraphs, area));
+        }
+        let last = path.last().map_or(host, |entry| entry.2);
+        if lists.last().is_none_or(|(list, _)| last >= list.len()) {
+            return Err(invalid("문단 범위 초과"));
+        }
+        Ok((master, host, path, lists))
+    }
+
+    /// `findNearestControlAt`: 주소 문단(`getBookmarks`의 `place` 꼴)의 글자 자리에서 앞(`forward`면 뒤)으로
+    /// 가장 가까운 표·그림·도형·수식·필드·책갈피를 찾는다.
+    ///
+    /// 표 셀·글상자·캡션·각주·미주·머리말·꼬리말 안이면 그 문단 목록을 먼저 훑고, 다 훑으면 그 영역을 가진
+    /// 컨트롤로 나온다. 한/글 12.30 F11처럼 앞으로 찾을 때는 그 컨트롤이 표·그림·도형·수식이면 그것을 고르고,
+    /// 각주·머리말처럼 고를 수 없으면 그 컨트롤 앞에서 잇는다. 본문에서는 본문 검색처럼 셀 안으로 들어가지 않는다.
+    ///
+    /// `from_control`이 있으면 글자 자리 대신 주소 문단의 그 컨트롤을 경계로 삼아, 같은 글자 자리의 앞(뒤) 형제부터 잇는다.
+    ///
+    /// 반환: `{"type","sec","para","ci","charPos","place","areas"}`. `para`는 그 영역을 가진 본문 문단,
+    /// `place`·`areas`는 `getBookmarks`와 같은 꼴의 그 컨트롤 문단 주소다. 필드면 `fieldId`·`start`·`end`(그
+    /// 문단의 글자 범위)를 더한다. 없으면 `{"type":"none"}`.
+    pub fn find_nearest_control_at_native(
+        &self,
+        place: &BookmarkPlace,
+        offset: usize,
+        from_control: Option<usize>,
+        forward: bool,
+    ) -> Result<String, HwpError> {
+        let (master, host, path, lists) = self.place_lists(place)?;
+        let hit = |section: usize,
+                   depth: usize,
+                   para_idx: usize,
+                   ci: usize,
+                   kind: &str|
+         -> String {
+            let list = if section == place.section {
+                lists[depth].0
+            } else {
+                &self.document.sections[section].paragraphs
+            };
+            let para = &list[para_idx];
+            let char_pos = find_control_text_positions(para)
+                .get(ci)
+                .copied()
+                .unwrap_or(0);
+            let mut cell_path = path[..depth].to_vec();
+            if let Some(last) = cell_path.last_mut() {
+                last.2 = para_idx;
+            }
+            let mut areas: Vec<&str> = lists[1..=depth].iter().map(|(_, area)| *area).collect();
+            let body_para = if depth == 0 { para_idx } else { host };
+            let (out_para, header_footer) = match place.header_footer {
+                // 머리말·꼬리말 안: 주소는 그 머리말 문단에서 시작한다.
+                Some(hf) if master.is_none() && depth > 0 => {
+                    areas.remove(0);
+                    (cell_path.remove(0).2, Some(hf))
+                }
+                Some(hf) if master.is_some() => (body_para, Some(hf)),
+                _ => (body_para, None),
+            };
+            let out = BookmarkPlace {
+                section,
+                para: out_para,
+                cell_path,
+                header_footer,
+            };
+            let field = para
+                .field_ranges
+                .iter()
+                .find(|range| range.control_idx == ci)
+                .and_then(|range| match &para.controls[ci] {
+                    Control::Field(field) => Some(format!(
+                        ",\"fieldId\":{},\"fieldType\":\"{}\",\"start\":{},\"end\":{}",
+                        field.field_id,
+                        field.field_type_str(),
+                        range.start_char_idx,
+                        range.end_char_idx
+                    )),
+                    _ => None,
+                })
+                .unwrap_or_default();
+            format!(
+                "{{\"type\":\"{kind}\",\"sec\":{section},\"para\":{body_para},\"ci\":{ci},\"charPos\":{char_pos},\"place\":{},\"areas\":{}{field}}}",
+                serde_json::to_string(&out).unwrap_or_else(|_| "null".into()),
+                serde_json::to_string(&areas).unwrap_or_else(|_| "[]".into()),
+            )
+        };
+        // 한 문단에서 조건에 맞는 첫 컨트롤(앞으로 찾으면 마지막부터).
+        let pick = |para: &Paragraph, accept: &dyn Fn(usize, usize) -> bool| {
+            let positions = find_control_text_positions(para);
+            let mut order: Vec<usize> = (0..para.controls.len()).collect();
+            if !forward {
+                order.reverse();
+            }
+            order.into_iter().find_map(|ci| {
+                let kind = nearest_kind(&para.controls[ci])?;
+                accept(ci, positions.get(ci).copied().unwrap_or(0)).then_some((ci, kind))
+            })
+        };
+
+        let mut depth = path.len();
+        // 나온 영역 컨트롤의 번호. 없으면 캐럿 글자 자리를 경계로 쓴다.
+        let mut bound: Option<usize> = from_control;
+        loop {
+            let list = lists[depth].0;
+            let start = if depth == 0 { host } else { path[depth - 1].2 };
+            let paras: Vec<usize> = if forward {
+                (start..list.len()).collect()
+            } else {
+                (0..=start).rev().collect()
+            };
+            for para_idx in paras {
+                let accept = |ci: usize, pos: usize| {
+                    para_idx != start
+                        || match (bound, forward) {
+                            (Some(b), true) => ci > b,
+                            (Some(b), false) => ci < b,
+                            (None, true) => pos > offset,
+                            (None, false) => pos < offset,
+                        }
+                };
+                if let Some((ci, kind)) = pick(&list[para_idx], &accept) {
+                    return Ok(hit(place.section, depth, para_idx, ci, kind));
+                }
+            }
+            if depth == 0 {
+                if master.is_some() {
+                    return Ok(r#"{"type":"none"}"#.to_string());
+                }
+                let sections: Vec<usize> = if forward {
+                    (place.section + 1..self.document.sections.len()).collect()
+                } else {
+                    (0..place.section).rev().collect()
+                };
+                for section in sections {
+                    let list = &self.document.sections[section].paragraphs;
+                    let mut paras: Vec<usize> = (0..list.len()).collect();
+                    if !forward {
+                        paras.reverse();
+                    }
+                    for para_idx in paras {
+                        if let Some((ci, kind)) = pick(&list[para_idx], &|_, _| true) {
+                            return Ok(hit(section, 0, para_idx, ci, kind));
+                        }
+                    }
+                }
+                return Ok(r#"{"type":"none"}"#.to_string());
+            }
+            // 영역을 다 훑었으면 그 영역을 가진 컨트롤로 나온다.
+            let host_ci = path[depth - 1].0;
+            depth -= 1;
+            let parent = if depth == 0 { host } else { path[depth - 1].2 };
+            if !forward {
+                if let Some(kind @ ("table" | "picture" | "shape" | "equation")) =
+                    nearest_kind(&lists[depth].0[parent].controls[host_ci])
+                {
+                    return Ok(hit(place.section, depth, parent, host_ci, kind));
+                }
+            }
+            bound = Some(host_ci);
+        }
+    }
+
+    /// 같은 자리에 여러 누름틀이 있어도 명시적으로 고른 컨트롤의 현재 범위를 조회한다.
+    pub fn field_info_for_control_at(
+        &self,
+        place: &BookmarkPlace,
+        control_idx: usize,
+        char_offset: usize,
+    ) -> String {
+        let result = self
+            .place_lists(place)
+            .ok()
+            .and_then(|(_, host, path, lists)| {
+                let para = lists
+                    .last()?
+                    .0
+                    .get(path.last().map_or(host, |entry| entry.2))?;
+                super::field_query::click_here_info(para, Some(control_idx), char_offset)
+            });
+        result.unwrap_or_else(|| r#"{"inField":false}"#.into())
+    }
+
+    /// `setActiveFieldAt`: 주소 문단의 `control_idx` 누름틀을 활성 필드로 둔다. 같은 글자 자리에 누름틀이
+    /// 여럿이면 글자 자리로는 하나를 가릴 수 없다. 고른 누름틀을 활성으로 두면 그 자리 입력이 그 누름틀에 든다.
+    /// 누름틀이 아니면 바꾸지 않고 false를 돌려준다.
+    pub fn set_active_field_at(
+        &mut self,
+        place: &BookmarkPlace,
+        control_idx: usize,
+    ) -> Result<bool, HwpError> {
+        let (master, host, path, lists) = self.place_lists(place)?;
+        if master.is_some() {
+            return Ok(false);
+        }
+        let para_idx = path.last().map_or(host, |entry| entry.2);
+        let is_click_here = matches!(
+            lists.last().and_then(|(list, _)| list[para_idx].controls.get(control_idx)),
+            Some(Control::Field(field)) if field.field_type == FieldType::ClickHere
+        );
+        if !is_click_here {
+            return Ok(false);
+        }
+        let info = crate::document_core::ActiveFieldInfo {
+            section_idx: place.section,
+            para_idx: host,
+            control_idx,
+            cell_path: (!path.is_empty()).then_some(path),
+        };
+        if self.active_field.as_ref() == Some(&info) {
+            return Ok(false);
+        }
+        self.active_field = Some(info);
+        self.invalidate_page_tree_cache();
+        Ok(true)
+    }
+}
+
 fn invalid(message: &str) -> HwpError {
     HwpError::InvalidField(message.to_string())
 }

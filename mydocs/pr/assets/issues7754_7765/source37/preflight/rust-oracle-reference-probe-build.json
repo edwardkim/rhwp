@@ -1,0 +1,20 @@
+{
+  "command": [
+    "rustc",
+    "--edition=2021",
+    "--test",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37_oracle_reference_probe.rs",
+    "-o",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-oracle-reference-probe",
+    "--extern",
+    "sha2=/home/tsjang/rhwp/target/pr-review/release-test/deps/libsha2-b45c8cf032f60fd8.rlib",
+    "--extern",
+    "serde_json=/home/tsjang/rhwp/target/pr-review/release-test/deps/libserde_json-01a0026680b78649.rlib",
+    "-L",
+    "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps"
+  ],
+  "exit_code": 0,
+  "timestamp": 1795317097.8920825,
+  "initial_compile_error": "sha2 0.11 Digest array requires explicit byte hex conversion; fixed before execution.",
+  "rechecked": 1795317123.7497563
+}

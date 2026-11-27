@@ -4,7 +4,7 @@ export const intrinsicCanvasFontAlias = family => PREFIX + family;
 export const intrinsicCanvasSourceFamily = family => family.startsWith(PREFIX) ? family.slice(PREFIX.length) : null;
 
 // Rust의 프로그램 요청은 표시 family 체인이다. 원본 TTF의 cmap·전진은
-// 주 face만 소유하며, HFT 표시는 문서가 선언한 대체 프로그램도 허용한다.
+// 첫 후보에서만 가져오며, 표시용 요청은 문서가 선언한 대체 후보도 조회한다.
 export function sourceProgramFamilies(family, sourceTtf) {
   const names = family.split(',').map(name => name.trim()).filter(Boolean);
   return sourceTtf ? names.slice(0, 1) : [...new Set(names)];

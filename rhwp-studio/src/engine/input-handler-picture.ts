@@ -429,22 +429,20 @@ export function renderPictureObjectSelection(this: any): void {
           }
 
           if (matchType === 'line') {
-            // 직선/연결선: 시작점/끝점 핸들 (꺽인/곡선 연결선은 중간점 추가)
+            // 직선에는 안내선을, 편집 가능한 꺾인 선·곡선에는 가운데 손잡이를 표시한다.
             let midPoint: { x: number; y: number } | undefined;
+            let showStraightGuide = true;
             try {
-              const props = this.wasm.getShapeProperties(ref.sec, ref.ppi, ref.ci);
-              // connectorType >= 3: 꺽인(3~5) 또는 곡선(6~8)
-              if (props.connectorType !== undefined && props.connectorType >= 3) {
-                if (props.connectorMidX !== undefined && props.connectorMidY !== undefined) {
-                  // 실제 꺽임/곡선 제어점 좌표 (HWPUNIT → page px)
-                  const PX = 96 / 7200;
-                  midPoint = {
-                    x: ctrl.x + props.connectorMidX * PX,
-                    y: ctrl.y + props.connectorMidY * PX,
-                  };
-                } else {
-                  midPoint = { x: (ctrl.x1 + ctrl.x2) / 2, y: (ctrl.y1 + ctrl.y2) / 2 };
-                }
+              const props = getObjectProperties.call(this, ref);
+              // LinkLineType 0~2는 화살촉 조합이 다른 직선이다.
+              showStraightGuide = props.connectorType === undefined || props.connectorType < 3;
+              if (!ref.headerFooter && !ref.noteRef && props.connectorMidAxis &&
+                  props.connectorMidX !== undefined && props.connectorMidY !== undefined) {
+                const px = 96 / 7200;
+                midPoint = {
+                  x: ctrl.x + props.connectorMidX * px,
+                  y: ctrl.y + props.connectorMidY * px,
+                };
               }
             } catch { /* 일반 선 */ }
             this.pictureObjectRenderer.renderLine(
@@ -452,6 +450,7 @@ export function renderPictureObjectSelection(this: any): void {
                 x: ctrl.x, y: ctrl.y, width: ctrl.w, height: ctrl.h },
               zoom,
               midPoint,
+              showStraightGuide,
             );
             this.eventBus.emit('editing-page-changed', p);
             return;
@@ -500,10 +499,10 @@ export function exitPictureObjectSelectionIfNeeded(this: any): void {
 /** 클릭 좌표가 글상자의 경계선 위인지 판정한다. */
 export function isShapeBorderClick(this: any,
   pageX: number, pageY: number,
-  shape: { sec: number; ppi: number; ci: number },
+  shape: { sec: number; ppi: number; ci: number; type?: 'shape' | 'group' },
 ): boolean {
   const THRESHOLD = 3; // px
-  const bbox = findPictureBbox.call(this, { ...shape, type: 'shape' as const });
+  const bbox = findPictureBbox.call(this, { ...shape, type: shape.type ?? 'shape' });
   if (!bbox) return false;
   const dx = Math.min(pageX - bbox.x, bbox.x + bbox.w - pageX);
   const dy = Math.min(pageY - bbox.y, bbox.y + bbox.h - pageY);

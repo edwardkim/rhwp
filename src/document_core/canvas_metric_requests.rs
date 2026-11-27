@@ -61,7 +61,7 @@ impl Collector<'_> {
     fn paragraphs(&mut self, paragraphs: &[Paragraph], depth: usize) -> Result<(), MetricError> {
         for para in paragraphs {
             self.budget(1 + para.text.len() + para.controls.len(), depth)?;
-            for line in compose_paragraph_for_metric_requests(para).lines {
+            for line in compose_paragraph_for_metric_requests(para, &self.core.styles).lines {
                 for run in line.runs {
                     // Markers/overlap have their own paint contracts, not ordinary text.
                     if run.footnote_marker.is_some()

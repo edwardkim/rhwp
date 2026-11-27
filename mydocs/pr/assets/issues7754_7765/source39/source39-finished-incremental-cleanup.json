@@ -1,0 +1,48 @@
+{
+  "started": 1795322323.0549235,
+  "pid": 1809738,
+  "deleted": [
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp-1j64n382z2daz/s-hodue03y72-18x2k79-69vn5xvt0k4u6zrtihiguji5w",
+      "lock": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp-1j64n382z2daz/s-hodue03y72-18x2k79.lock",
+      "mtime": 1795311004.8413236,
+      "du_bytes": 1224646656,
+      "basis": "All Cargo/Rust/wasm builds terminal, prior Source36 debug gates terminal, session lock acquired exclusively."
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp-3hfcj3hs02cn0/s-hodu445c0y-0uxah5d-e7qjaw8usdltqg5n04d0r9rgm",
+      "lock": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp-3hfcj3hs02cn0/s-hodu445c0y-0uxah5d.lock",
+      "mtime": 1795310388.2443564,
+      "du_bytes": 507867136,
+      "basis": "All Cargo/Rust/wasm builds terminal, prior Source36 debug gates terminal, session lock acquired exclusively."
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp-1armcfpe4vv0t/s-hodu445c0d-0vnemdt-80rydu9gcqm1fdqkzlufve1h6",
+      "lock": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp-1armcfpe4vv0t/s-hodu445c0d-0vnemdt.lock",
+      "mtime": 1795310347.949813,
+      "du_bytes": 503767040,
+      "basis": "All Cargo/Rust/wasm builds terminal, prior Source36 debug gates terminal, session lock acquired exclusively."
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp-0o6btuubjfu4v/s-hodwpexefp-1pmlj8u-cteimuwtpjc4zb8nnvtfcrc3t",
+      "lock": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp-0o6btuubjfu4v/s-hodwpexefp-1pmlj8u.lock",
+      "mtime": 1795316008.7925093,
+      "du_bytes": 503762944,
+      "basis": "All Cargo/Rust/wasm builds terminal, prior Source36 debug gates terminal, session lock acquired exclusively."
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/pdf_oxide-0aa2qo7fjd8ec/s-hoducwzmki-0vf6voi-clr7xq05prnzv8l2ks6pqb793",
+      "lock": "/home/tsjang/rhwp/target/pr-review/debug/incremental/pdf_oxide-0aa2qo7fjd8ec/s-hoducwzmki-0vf6voi.lock",
+      "mtime": 1795310784.678107,
+      "du_bytes": 378912768,
+      "basis": "All Cargo/Rust/wasm builds terminal, prior Source36 debug gates terminal, session lock acquired exclusively."
+    }
+  ],
+  "scope": "Five exact inactive prior debug incremental sessions only; active profiles, deps, binaries, fingerprints and other artifacts retained.",
+  "free_before": 1722257408,
+  "free_after": 4705992704,
+  "actual_free_delta": 2983735296,
+  "complete": true,
+  "gate_controller_resumed": 1795322325.6904523,
+  "ended": 1795322325.6904533
+}

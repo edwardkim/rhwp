@@ -1,0 +1,135 @@
+{
+  "scope": "sample16 candidate fresh WASM with locally reconstructed HFT supply",
+  "product_head": "19646e69fc99ba76f9ff0350c2a425fe07ec1e88",
+  "pkg_sha256": "1ffb6d28f8e50635c6bdc614bbf42f6b7e1ba666c5b40ebb065a65b39bc7f3fc",
+  "pages": 192,
+  "catalog_replacement": false,
+  "datasets": [
+    {
+      "key": "sample16-hwpx",
+      "supplied_myeongjo_sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834",
+      "prior_spsmj_sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+      "reused_file_count": 1216,
+      "same_font_environment_sha256": "300d7233a5527172ad4df993214d791fe214a69cf6e36017a637ca7cb928d183",
+      "minimum": "99.99",
+      "displayed_100": 63,
+      "regressions": [],
+      "pages": 64,
+      "tsv": "sample16-hwpx.tsv",
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "input_sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+      "reference_pdf_sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+      "historical_font_inventory": {
+        "found_sha256_matches": 55,
+        "entries": 70
+      },
+      "previously_below_protection": [
+        {
+          "page": 51,
+          "before": "99.44",
+          "after": "100.00",
+          "protected": "100.00",
+          "delta_pp": "0.56"
+        },
+        {
+          "page": 61,
+          "before": "99.99",
+          "after": "100.00",
+          "protected": "100.00",
+          "delta_pp": "0.01"
+        },
+        {
+          "page": 62,
+          "before": "99.98",
+          "after": "100.00",
+          "protected": "100.00",
+          "delta_pp": "0.02"
+        }
+      ]
+    },
+    {
+      "key": "sample16-hwp2022",
+      "supplied_myeongjo_sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834",
+      "prior_spsmj_sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+      "reused_file_count": 1216,
+      "same_font_environment_sha256": "e64dc04a55787efcbd55dcddd9f7a9fc8454a1df06a20c4cd9e99c9dd88de36b",
+      "minimum": "100.00",
+      "displayed_100": 64,
+      "regressions": [],
+      "pages": 64,
+      "tsv": "sample16-hwp2022.tsv",
+      "tsv_sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+      "input_sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+      "reference_pdf_sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+      "historical_font_inventory": {
+        "found_sha256_matches": 55,
+        "entries": 70
+      },
+      "previously_below_protection": [
+        {
+          "page": 51,
+          "before": "99.45",
+          "after": "100.00",
+          "protected": "100.00",
+          "delta_pp": "0.55"
+        },
+        {
+          "page": 61,
+          "before": "99.98",
+          "after": "100.00",
+          "protected": "100.00",
+          "delta_pp": "0.02"
+        },
+        {
+          "page": 62,
+          "before": "99.98",
+          "after": "100.00",
+          "protected": "100.00",
+          "delta_pp": "0.02"
+        }
+      ]
+    },
+    {
+      "key": "sample16-hwp2024",
+      "supplied_myeongjo_sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834",
+      "prior_spsmj_sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+      "reused_file_count": 1216,
+      "same_font_environment_sha256": "4fb70119f4959fb6461ed304d4b166c499b58caab0cc428f9fbab5fb2ef79b8b",
+      "minimum": "99.99",
+      "displayed_100": 63,
+      "regressions": [],
+      "pages": 64,
+      "tsv": "sample16-hwp2024.tsv",
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "input_sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+      "reference_pdf_sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+      "historical_font_inventory": {
+        "found_sha256_matches": 55,
+        "entries": 70
+      },
+      "previously_below_protection": [
+        {
+          "page": 51,
+          "before": "99.44",
+          "after": "100.00",
+          "protected": "100.00",
+          "delta_pp": "0.56"
+        },
+        {
+          "page": 61,
+          "before": "99.99",
+          "after": "100.00",
+          "protected": "100.00",
+          "delta_pp": "0.01"
+        },
+        {
+          "page": 62,
+          "before": "99.98",
+          "after": "100.00",
+          "protected": "100.00",
+          "delta_pp": "0.02"
+        }
+      ]
+    }
+  ]
+}

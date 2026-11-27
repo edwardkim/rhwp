@@ -1,0 +1,48 @@
+[RustTestSuite] 자동 배정: tests/second.rs -> regression_suite_001
+[RustTestSuite] 자동 배정: tests/first.rs -> regression_suite_002
+[RustTestSuite] 전체 재배정: 2 sources / 2 suites / 0 exceptions
+[RustTestSuite] 생성: 2 harnesses, 0 exceptions
+✔ Cargo CRLF 블록은 허용하지만 실제 target drift는 거절한다 (317.75774ms)
+✔ Cargo checkout은 core.autocrlf=true여도 저장소 속성에 따라 LF를 유지한다 (102.557317ms)
+✔ 전체 integration source는 파생 산출물을 쓰지 않고 검증한다 (9506.2348ms)
+✔ 일반 case는 weighted suite로 해석한다 (78.085403ms)
+✔ 경로 의존 case는 기존 target 이름을 유지한다 (532.170251ms)
+✔ 명시적으로 허용한 CLI module blocker는 generated suite에 배정한다 (1081.78542ms)
+✔ Native Skia 함수 게이트 case는 generated suite에서 feature별로 실행한다 (548.058969ms)
+✔ #6308 전역 카운터·벽시계 테스트는 generated suite가 아니라 독립 target이다 (2096.977543ms)
+✔ CI slow archive case는 독립 target과 nextest 우선순위를 함께 유지한다 (505.255428ms)
+✔ harness와 Cargo target 렌더링은 입력 순서와 무관하다 (1.456077ms)
+✔ 공용 helper는 소비 검사가 함께 또는 따로 배정돼도 harness마다 한 번 공급한다 (1.018931ms)
+✔ 신규 source는 선택된 suite에 정확히 한 번만 배정한다 (3.955361ms)
+✔ 개별 testcase에서 합산한 source 시간으로 suite를 재배정한다 (11.549079ms)
+✔ PR base에 없던 integration source는 tests/cases 밖에서 거부한다 (0.283003ms)
+✔ PR base에서 새로 추가된 integration source만 tests/cases 경로를 강제한다 (0.276065ms)
+✔ PR은 파생 suite 산출물과 Cargo generated target 블록을 커밋할 수 없다 (0.477711ms)
+✔ PR base 검사도 커밋된 manifest 산출물을 실제 Git diff에서 거부한다 (122.694772ms)
+✔ PR base 검사는 manifest와 맞지 않는 Cargo generated target registry를 거부한다 (114.393534ms)
+✔ CI가 삭제된 파생 산출물을 재생성해도 PR base 검사가 통과한다 (149.693819ms)
+✔ 기여자 가이드는 원본-only 제출을 안내한다 (18.172846ms)
+✔ 검토·개발 가이드는 파생 suite 준비 경로를 안내한다 (55.259827ms)
+✔ CI가 일반 PR base를 integration과 source unit 정책 검사에 전달한다 (25.102792ms)
+✔ CI는 same-repository devel-to-main exact promotion에서만 head를 정책 기준으로 쓴다 (1.749956ms)
+✔ CI lint checkout은 PR base 3-way diff를 위해 전체 Git 계보를 가져온다 (1.207292ms)
+✔ private 의존성에 따라 세 tier를 구분한다 (2.095996ms)
+✔ 문자열과 주석의 brace를 module 경계로 해석하지 않는다 (0.508465ms)
+✔ repository source를 module과 support item으로 전수 분류한다 (30.145126ms)
+✔ 내부 workspace crate의 source test도 기준선에 포함한다 (7.762264ms)
+✔ #[path] 외부 test module을 선언 파일 기준으로 해석한다 (5.182522ms)
+✔ 기존 module의 source-side test 증가는 거부한다 (10.07068ms)
+✔ 신규 cfg(test) module과 support item은 명시적 baseline 승인 없이 거부한다 (8.398128ms)
+✔ 기존 source-side test 감소는 허용하고 최대값은 보존한다 (17.850528ms)
+✔ accept-baseline으로 숨긴 source test 증가도 PR base 대비 거부한다 (9.525277ms)
+✔ 정책 파일로 source-side 테스트 기준선을 완화할 수 없다 (0.90827ms)
+✔ Git rename으로 확인된 module 이동은 test 수가 같으면 허용한다 (2.06479ms)
+✔ 생성한 tier manifest를 다시 계산해도 동일하다 (2.151418ms)
+ℹ tests 36
+ℹ suites 0
+ℹ pass 36
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15527.02468

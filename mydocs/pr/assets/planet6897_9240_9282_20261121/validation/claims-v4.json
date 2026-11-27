@@ -1,0 +1,148 @@
+{
+  "source_head": "19646e69fc99ba76f9ff0350c2a425fe07ec1e88",
+  "native_sha256": "fe91bd066efaf1f8b01becf3a1faaa1b6260834c8ebaabbd5a9df3f5a7996892",
+  "wasm_sha256": "1ffb6d28f8e50635c6bdc614bbf42f6b7e1ba666c5b40ebb065a65b39bc7f3fc",
+  "claims": [
+    {
+      "pr": 9240,
+      "backend": "native",
+      "pages": 64,
+      "minimum_display": "98.12",
+      "input_sha256": "a2a6d53dad049bf27c4855e05227e467aba7b71184f43a0dbd1136d972bea13f",
+      "reference_pdf_sha256": "d0fcc123cf3c73aa68ecd6e3ecd7676c887b0c21b6eb13833fce00a3278d6f59",
+      "all_raw_pngs_equal_to_previous_capture": true,
+      "archived_review_overlay_pages_bound_by_png": [
+        1,
+        2,
+        8
+      ],
+      "archived_tsv": "coordinate-evidence/886/native/silhouette.tsv",
+      "tsv_sha256": "3e697371dd9f05e1eeff84021c64f080ff95c8ce921253646d2861462d5224f3"
+    },
+    {
+      "pr": 9269,
+      "backend": "native",
+      "pages": 62,
+      "minimum_display": "98.87",
+      "input_sha256": "7ee3c3ef43b95204383b800fbe36644e7eb5730f399065ebc90bab3c269082a2",
+      "reference_pdf_sha256": "2f7fbdd3cc9f9fe94b02b8ad524667fec96672609e324ec2fe6bfba7698f6151",
+      "all_raw_pngs_equal_to_previous_capture": true,
+      "archived_review_overlay_pages_bound_by_png": [
+        11,
+        12,
+        43
+      ],
+      "archived_tsv": "coordinate-evidence/9239/native/silhouette.tsv",
+      "tsv_sha256": "ff3abd370b3dd4dff98bca0fc5fc31c413c24466ca2a0f317531ac10ee0b47ce"
+    },
+    {
+      "pr": 9278,
+      "backend": "native",
+      "pages": 7,
+      "minimum_display": "99.98",
+      "input_sha256": "37624fffaa34704360298c9edfc3d636f5a0fabd0db040a7bc6a161b73a1301d",
+      "reference_pdf_sha256": "25f1443410590604f527e07739b0b33f3f34ba5d207e85b3f2fccac87c859fc7",
+      "all_raw_pngs_equal_to_previous_capture": true,
+      "archived_review_overlay_pages_bound_by_png": [
+        6,
+        7
+      ],
+      "archived_tsv": "coordinate-evidence/9272/native/silhouette.tsv",
+      "tsv_sha256": "da6c8869a57d141a5a6d92e3a2f34a54c3c36ee3c2a174101de424e74abd69b2"
+    },
+    {
+      "pr": 9282,
+      "backend": "native",
+      "pages": 3,
+      "minimum_display": "100.00",
+      "input_sha256": "4763ea3fac592f39dccc36808d022edd0be57db2746e38a50cb9dfe5e6726ea9",
+      "reference_pdf_sha256": "1a5a6c2d74197b6e691807b86e1bf3f346779abe623f2ee7e687054de5bde097",
+      "all_raw_pngs_equal_to_previous_capture": true,
+      "archived_review_overlay_pages_bound_by_png": [
+        2
+      ],
+      "archived_tsv": "coordinate-evidence/9279/native/silhouette.tsv",
+      "tsv_sha256": "469cad8dc2f9a9b3afab10d1d29914f11045fc6d4f2c620aa5ef57f421259607"
+    },
+    {
+      "pr": 9287,
+      "backend": "native",
+      "pages": 9,
+      "minimum_display": "99.78",
+      "page_4": "99.93",
+      "archived_tsv": "wmf-9285/native/silhouette.tsv",
+      "tsv_sha256": "3b3b089773c9585d64a7a66a6d08553cae3ba385cb66caca65f2e57cec77015f"
+    },
+    {
+      "pr": 9240,
+      "backend": "wasm",
+      "pages": 64,
+      "minimum_display": "98.15",
+      "input_sha256": "a2a6d53dad049bf27c4855e05227e467aba7b71184f43a0dbd1136d972bea13f",
+      "reference_pdf_sha256": "d0fcc123cf3c73aa68ecd6e3ecd7676c887b0c21b6eb13833fce00a3278d6f59",
+      "all_raw_pngs_equal_to_previous_capture": true,
+      "archived_review_overlay_pages_bound_by_png": [
+        1,
+        2,
+        8
+      ],
+      "archived_tsv": "coordinate-evidence/886/wasm/silhouette.tsv",
+      "tsv_sha256": "62e9bf6e9bea17c71e18a5d8bef4ade1d7452319ee7f703aa586d5923e0a1248"
+    },
+    {
+      "pr": 9269,
+      "backend": "wasm",
+      "pages": 62,
+      "minimum_display": "98.86",
+      "input_sha256": "7ee3c3ef43b95204383b800fbe36644e7eb5730f399065ebc90bab3c269082a2",
+      "reference_pdf_sha256": "2f7fbdd3cc9f9fe94b02b8ad524667fec96672609e324ec2fe6bfba7698f6151",
+      "all_raw_pngs_equal_to_previous_capture": true,
+      "archived_review_overlay_pages_bound_by_png": [
+        11,
+        12,
+        43
+      ],
+      "archived_tsv": "coordinate-evidence/9239/wasm/silhouette.tsv",
+      "tsv_sha256": "9320f8d36fe2a75cfc73dcbb2b9cd0e2e2dc4f6d6e1d7cf59c2082945db6dd24"
+    },
+    {
+      "pr": 9278,
+      "backend": "wasm",
+      "pages": 7,
+      "minimum_display": "99.98",
+      "input_sha256": "37624fffaa34704360298c9edfc3d636f5a0fabd0db040a7bc6a161b73a1301d",
+      "reference_pdf_sha256": "25f1443410590604f527e07739b0b33f3f34ba5d207e85b3f2fccac87c859fc7",
+      "all_raw_pngs_equal_to_previous_capture": true,
+      "archived_review_overlay_pages_bound_by_png": [
+        6,
+        7
+      ],
+      "archived_tsv": "coordinate-evidence/9272/wasm/silhouette.tsv",
+      "tsv_sha256": "da6c8869a57d141a5a6d92e3a2f34a54c3c36ee3c2a174101de424e74abd69b2"
+    },
+    {
+      "pr": 9282,
+      "backend": "wasm",
+      "pages": 3,
+      "minimum_display": "100.00",
+      "input_sha256": "4763ea3fac592f39dccc36808d022edd0be57db2746e38a50cb9dfe5e6726ea9",
+      "reference_pdf_sha256": "1a5a6c2d74197b6e691807b86e1bf3f346779abe623f2ee7e687054de5bde097",
+      "all_raw_pngs_equal_to_previous_capture": true,
+      "archived_review_overlay_pages_bound_by_png": [
+        2
+      ],
+      "archived_tsv": "coordinate-evidence/9279/wasm/silhouette.tsv",
+      "tsv_sha256": "469cad8dc2f9a9b3afab10d1d29914f11045fc6d4f2c620aa5ef57f421259607"
+    },
+    {
+      "pr": 9287,
+      "backend": "wasm",
+      "pages": 9,
+      "minimum_display": "99.66",
+      "page_4": "99.80",
+      "archived_tsv": "wmf-9285/wasm/silhouette.tsv",
+      "tsv_sha256": "fc2aee754c6baaee6e2a7774afdf24327b9f19df768d200f9b6599e47d1b590b"
+    }
+  ],
+  "pages_per_backend": 145
+}

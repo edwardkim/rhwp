@@ -1,0 +1,96 @@
+{
+  "execution": {
+    "base": "2c0c1d205a54b8d5bd262241bac1391cffe0d801",
+    "binary_source_head": "953b43187325496645683fcc15ca989a815b0596"
+  },
+  "rebased": {
+    "base": "4cd460efd53377f73c896295f4b1c07b624d5398",
+    "source_head": "5bbcc3ae97f5193b965a18297952103868e6eb5f",
+    "tree": "babe7387577bd450a2f5bbe3a1f66db00f1e67a7"
+  },
+  "same_candidate_patches": 69,
+  "upstream_changed_paths": [
+    "mydocs/manual/README.md",
+    "mydocs/manual/mcp_hwp2024Convert_usage.md",
+    "mydocs/orders/20261124.md",
+    "mydocs/pr/archives/pr_9385_review.md",
+    "tools/hwp-convert-mcp-2024-client-0.10.0.tgz",
+    "tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz",
+    "tools/refresh_oracle_pdfs.py"
+  ],
+  "identical_validation_inputs": {
+    ".github": {
+      "base_object": "0c0f9fe62fc2863d11dbf2faa52f6b574c1bd159",
+      "candidate_object": "0c0f9fe62fc2863d11dbf2faa52f6b574c1bd159"
+    },
+    "Cargo.lock": {
+      "base_object": "a8b79029d1bd09f40902e2bf6d7124db1bf3dddc",
+      "candidate_object": "a8b79029d1bd09f40902e2bf6d7124db1bf3dddc"
+    },
+    "Cargo.toml": {
+      "base_object": "67c6d8ce55d9af3701aafb9906623346e9e2f690",
+      "candidate_object": "67c6d8ce55d9af3701aafb9906623346e9e2f690"
+    },
+    "build.rs": {
+      "base_object": "a3103a33faf38a899edb68f64fd0739dd4950787",
+      "candidate_object": "a3103a33faf38a899edb68f64fd0739dd4950787"
+    },
+    "rust-toolchain.toml": {
+      "base_object": "262bc86af74777a65ee87ac929fc13b319bd390d",
+      "candidate_object": "262bc86af74777a65ee87ac929fc13b319bd390d"
+    },
+    "bindings": {
+      "base_object": "e720ada0632e5b67cbe600c5e9259ea4cab0f742",
+      "candidate_object": "e720ada0632e5b67cbe600c5e9259ea4cab0f742"
+    },
+    "crates": {
+      "base_object": "86983f61c55f558e113e4728e150f1ef5820fbfe",
+      "candidate_object": "86983f61c55f558e113e4728e150f1ef5820fbfe"
+    },
+    "pdf": {
+      "base_object": "3566e8d31fe691e43b61bb97f7826322172d7194",
+      "candidate_object": "af3c16d183d39904e68f1a2b3fd929df834a8af3"
+    },
+    "rhwp-shared": {
+      "base_object": "4fc1ecaeb88d288f0efb788d7308ef3a5a0679a0",
+      "candidate_object": "4fc1ecaeb88d288f0efb788d7308ef3a5a0679a0"
+    },
+    "rhwp-studio": {
+      "base_object": "cdb9c580fd072dd5ed2a0290e660dbb3b658629f",
+      "candidate_object": "f2026243ea66568ac34cfc14c81b118694466f3a"
+    },
+    "samples": {
+      "base_object": "9f1529f40c0e492b59cc5dbee74ad4ed776927c7",
+      "candidate_object": "9f1529f40c0e492b59cc5dbee74ad4ed776927c7"
+    },
+    "scripts": {
+      "base_object": "d758084ed9e60e36a95123a72fa32c916c60cfb8",
+      "candidate_object": "036cdc8eb4dae5d14fabedba7be45c6553fcd03c"
+    },
+    "src": {
+      "base_object": "9169ca1526ea904c830c95bca13615aa4dc44014",
+      "candidate_object": "21389e74718c07bedcca52d437d48cea22d3f3da"
+    },
+    "tests": {
+      "base_object": "4ab39eca1f8538615dcc9a2c8b858781f7ebae6f",
+      "candidate_object": "fbb4c1638196dba178efb6b0c2797c6ec136303b"
+    },
+    "ttfs": {
+      "base_object": "790e77203ea8f9950c4a24c04c870c3c0234880b",
+      "candidate_object": "790e77203ea8f9950c4a24c04c870c3c0234880b"
+    },
+    "typescript": {
+      "base_object": "8bb86dc61dd430a0be88532745a1c9f2c44d16da",
+      "candidate_object": "8bb86dc61dd430a0be88532745a1c9f2c44d16da"
+    },
+    "mydocs/verification/protected-font-supply": {
+      "base_object": "a8aa0a96541c30163413ddf832d58d4728d732b4",
+      "candidate_object": "a8aa0a96541c30163413ddf832d58d4728d732b4"
+    }
+  },
+  "mcp_client": {
+    "path": "tools/hwp-convert-mcp-2024-client-0.10.0.tgz",
+    "sha256": "79b3734bee610ba1d1bac85cdb9f9b2fdb2781246bd1f92bfe7618f7c42c9a57",
+    "version": "0.10.0"
+  }
+}

@@ -17,7 +17,7 @@ impl HwpDocument {
         complete: bool,
     ) {
         self.core
-            .hft_outline_fonts
+            .legacy_font_outlines
             .register_print_primary(family, bytes, index, complete);
     }
 
@@ -25,7 +25,7 @@ impl HwpDocument {
     #[cfg(target_arch = "wasm32")]
     #[wasm_bindgen(js_name = clearPrintFontPrimary)]
     pub fn clear_print_font_primary(&mut self, family: &str) {
-        self.core.hft_outline_fonts.clear_print_primary(family);
+        self.core.legacy_font_outlines.clear_print_primary(family);
     }
 
     /// 같은 cmap 판정으로 아직 공급되지 않은 글리프만 다음 후보에 전달한다.

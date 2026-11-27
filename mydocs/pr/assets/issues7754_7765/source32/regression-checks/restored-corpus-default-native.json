@@ -1,0 +1,31 @@
+{
+  "command": [
+    "rustc",
+    "--edition=2021",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-corpus-probe/probe.rs",
+    "-o",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-corpus-default-probe/probe",
+    "--extern",
+    "rhwp=/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-existing-minfont/librhwp-source32.rlib",
+    "-L",
+    "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps",
+    "--extern",
+    "serde_json=/home/tsjang/rhwp/target/pr-review/release-test/deps/libserde_json-6b264a499acbc87b.rlib",
+    "--extern",
+    "image=/home/tsjang/rhwp/target/pr-review/release-test/deps/libimage-23af837ccdfe46d8.rlib",
+    "--extern",
+    "base64=/home/tsjang/rhwp/target/pr-review/release-test/deps/libbase64-e3f94b72ec3fea0f.rlib",
+    "-L",
+    "native=/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-079888cb8874cccd/out/skia",
+    "-L",
+    "native=/home/tsjang/rhwp/target/pr-review/release-test/build/ring-62411559129b98e5/out"
+  ],
+  "started": 1795285149.5081542,
+  "build_exit": 0,
+  "test_exit": 0,
+  "ended": 1795285182.062377,
+  "test_environment": {
+    "RHWP_PROBE_DEFAULT": "1",
+    "filesystem_isolation": "output/pr-review/issue7754-nine/minimal-font/run.sh"
+  }
+}

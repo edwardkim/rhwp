@@ -1,5 +1,6 @@
 'use strict';
 
+const {renderEvidence} = require('./pr-ci-render-artifact.cjs');
 const { MARKER, selectRuns, summary } = require('./pr-ci-summary.cjs');
 const { WORKFLOW_PATHS } = require('./ci-impact-policy.cjs');
 
@@ -40,6 +41,9 @@ async function publish({github, context}) {
     if (!item.run) continue;
     item.jobs = await github.paginate(api.actions.listJobsForWorkflowRunAttempt, {...params,
       run_id:item.run.id, attempt_number:item.run.run_attempt, per_page:100});
+    if (item.name === 'Render Diff') {
+      item.evidence = await renderEvidence(github, params, item.run, item.jobs, pull.base.repo.html_url);
+    }
   }
   const body = summary(pull, reports);
   const comments = await github.paginate(api.issues.listComments, {...issue,per_page:100});
@@ -47,7 +51,7 @@ async function publish({github, context}) {
   if (own?.body === body) return;
   if (signature(reports) !== signature(await currentRuns())) return;
   const latest = (await api.pulls.get({...params,pull_number:pull.number})).data;
-  if (!matches(latest) || latest.head.sha !== pull.head.sha) return;
+  if (!matches(latest) || latest.head.sha !== pull.head.sha || latest.base.sha !== pull.base.sha) return;
   if (own) await api.issues.updateComment({...params,comment_id:own.id,body});
   else await api.issues.createComment({...issue,body});
 }

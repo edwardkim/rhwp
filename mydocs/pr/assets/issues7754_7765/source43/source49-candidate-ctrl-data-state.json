@@ -1,0 +1,35 @@
+{
+  "started": 1795329866.9592967,
+  "pid": 1903472,
+  "results": [
+    {
+      "label": "wasm-edit-save-reopen",
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/run_studio_with_frozen_pkg.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37",
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/wasm_ctrl_data_roundtrip_source37.mjs",
+        "--mode=headless"
+      ],
+      "exit_code": 0,
+      "seconds": 13.995956936851144,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source49-candidate-ctrl-data-wasm-edit-save-reopen.txt"
+    },
+    {
+      "label": "physical-owner-payload",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/check_ctrl_data_records_source37.py",
+        "candidate"
+      ],
+      "exit_code": 0,
+      "seconds": 0.2653836328536272,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source49-candidate-ctrl-data-physical-owner-payload.txt"
+    }
+  ],
+  "studio_recovery_receipt": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source48-ruler-font-choice-retry-state.json",
+  "running": null,
+  "passed": true,
+  "ended": 1795329881.3476787
+}

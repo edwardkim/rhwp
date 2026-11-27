@@ -297,6 +297,7 @@ fn text_overlap_uses_the_visible_intersection_of_nested_clips() {
         section_index: None,
         para_index: None,
         control_index: None,
+        cell_context: None,
     });
     assert_eq!(
         scan(clipped),

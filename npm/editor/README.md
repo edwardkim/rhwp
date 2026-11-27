@@ -484,6 +484,60 @@ SDK 없이 스튜디오 페이지 안에서 직접 통합(포크/주입)하는 �
 
 iframe 안의 rhwp-studio에는 **개발 모드 전용 디버깅 헬퍼** `rhwpDev`가 내장되어 있습니다. 검색, 커서 이동, 문단 ID 점검 등을 콘솔에서 직접 호출할 수 있습니다.
 
+### 호스트가 쓰는 암호 보호 저장
+
+SDK의 `password-save-v1`으로 현재 보호 상태를 읽고, 편집 중인 리비전의 암호화 바이트를
+받을 수 있습니다. 같은 내보내기에서 생성된 `contentLoss` 보고서를 쓰기 전에 확인할 수
+있습니다. 호스트는 영속 쓰기가 성공한 후 반환된 식별자로 저장을 확정합니다.
+
+```js
+const state = await editor.getSaveProtectionState();
+const saved = await editor.exportPasswordProtectedDocument({
+  schemaVersion: 1,
+  format: 'hwpx',
+  password: await requestPassword(),
+  expectedDocumentEpoch: state.documentEpoch,
+  expectedChangeSeq: state.changeSeq,
+});
+
+await writeDocumentDurably(saved.bytes);
+await editor.acknowledgeHostSave({
+  schemaVersion: 1,
+  exportId: saved.exportId,
+  documentEpoch: saved.documentEpoch,
+  changeSeq: saved.changeSeq,
+  format: saved.format,
+  protection: saved.protection,
+  fileName: 'document.hwpx',
+});
+```
+
+`getSaveProtectionState()`는 마지막으로 확정된 `persistedProtection`과
+`requiresPasswordForSave`, 현재 `loadedFormat`(`hwp3`, `hwp5`, `hwpx`), 문서 세대와
+편집 순번을 반환합니다. `format: 'hwp'`는 HWP5 바이트를 생성합니다. HWP3 입력에도
+같은 HWP5 변환이 적용됩니다. 새 암호는 JavaScript 문자열 길이 5 이상, UTF-8 4096바이트
+이하여야 합니다. 저장이 확정된 뒤에도 다음 내보내기에는 암호를 다시 전달해야 합니다.
+
+내보내기만으로는 dirty와 자동복구 draft가 유지됩니다. 쓰기 실패나 취소 시 확인 호출을
+생략하세요. 문서 교체나 추가 편집이 있었다면 `STALE_SAVE_REVISION` 오류가 반환됩니다.
+문서를 여는 중에는 `DOCUMENT_OPEN_PENDING`이 반환되므로 열기가 끝난 뒤 상태를 다시
+조회합니다. 가장 최근에 성공한 암호 내보내기 한 건을 한 번 확정할 수 있습니다. 같은
+Studio 세션에서 내보내기부터 쓰기와 확인까지 순서대로 처리하세요. 일치하는 확인이
+들어오면 보호 상태와 선택적 파일명을 갱신하고 저장된 리비전의 dirty와 draft를 정리합니다.
+평문 호스트 저장은 기존 `notifySaved(fileName?)`를 사용합니다.
+
+암호 보호 메서드 세 개는 `rhwp-connect`와 `rhwp-connected`에서
+`password-save-v1`을 협상한 MessagePort에서 사용할 수 있습니다. 구버전 연결에서는
+`UNSUPPORTED_CAPABILITY`가 반환되며, 레거시 window 요청은
+`UNSUPPORTED_TRANSPORT`로 거부됩니다. HTTP(S) iframe의 연결은 기존 부모 창과 정확한
+origin으로 제한됩니다. custom-scheme WebView는 최상위 Studio 창 본인이
+`transferable-array-buffer`와 `password-save-v1`을 협상하고 같은 창에 MessagePort를
+전달할 수 있습니다. window 연결 메시지에는 handshake 정보만 포함하고 이후 요청은
+확정된 port로 보냅니다.
+
+Studio는 암호를 요청 범위에서 사용하며 장기 상태, 응답, 진단, DOM, URL, 저장소에
+기록하지 않습니다. JavaScript와 WASM의 문자열 메모리를 완전히 지운다는 보장은 없습니다.
+
 ### 접근 방법
 
 `rhwpDev`는 **iframe 내부 window**에 등록됩니다. 브라우저 DevTools의 콘솔 컨텍스트를 iframe으로 전환한 후 호출하세요.

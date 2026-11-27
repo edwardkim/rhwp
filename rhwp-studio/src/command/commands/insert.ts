@@ -1,3 +1,4 @@
+import { memoCommand } from './memo';
 import type { CommandDef } from '../types';
 import { hyperlinkCommand, editHyperlinkCommand, removeHyperlinkCommand } from './hyperlink';
 import { PicturePropsDialog } from '@/ui/picture-props-dialog';
@@ -280,7 +281,7 @@ export const insertCommands: CommandDef[] = [
   stub('insert:caption-bottom', t('command.insert.captionBottom.registryLabel')),
   stub('insert:caption-none', t('command.insert.captionNone.label')),
   stub('insert:para-band', t('command.insert.paraBand.label')),
-  stub('insert:comment', t('command.insert.comment.label'), 'icon-comment'),
+  memoCommand,
   {
     id: 'insert:footnote',
     label: t('command.insert.footnote.label'),

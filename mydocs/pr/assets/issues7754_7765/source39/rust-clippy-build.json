@@ -1,0 +1,73 @@
+{
+  "recorded": "2026-11-22T05:06:46.725127+00:00",
+  "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
+  "results": [
+    {
+      "label": "workspace-clippy",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 329.88055357011035,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-workspace-clippy.log",
+      "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-workspace-clippy.txt",
+      "log_sha256": "18e6c1e87fe6201b9c7e35bacf326a696958327ad869f01966c3fe2ab2c606d7"
+    },
+    {
+      "label": "wasm-clippy",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--lib",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 129.63530038902536,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-wasm-clippy.log",
+      "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-wasm-clippy.txt",
+      "log_sha256": "dcef173b80062dee5cc5778c7bcca593a594b0faf1692e777e5b3862dd1c3682"
+    },
+    {
+      "label": "workspace-build",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 268.60507578309625,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-workspace-build.log",
+      "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-workspace-build.txt",
+      "log_sha256": "55518fbccbb7075443a5d61b5cbfa190a35da7d007b22d56818e97658631ef8d"
+    }
+  ],
+  "full_nextest_status": "running; no terminal result yet"
+}

@@ -1,0 +1,60 @@
+{
+  "checks": [
+    {
+      "name": "public-consumer",
+      "exit": 0
+    },
+    {
+      "name": "wasm-editing",
+      "exit": 0
+    },
+    {
+      "name": "wasm-grid",
+      "exit": 0
+    },
+    {
+      "name": "wasm-textbox-notes",
+      "exit": 0
+    },
+    {
+      "name": "studio-tests",
+      "exit": 0
+    },
+    {
+      "name": "studio-production",
+      "exit": 0
+    },
+    {
+      "name": "issue-7442-nested-table-pointer",
+      "exit": 0
+    },
+    {
+      "name": "issue-4252-nested-partial-table-object-selection",
+      "exit": 0
+    },
+    {
+      "name": "table-border-hover-resize-issue4117",
+      "exit": 0
+    },
+    {
+      "name": "issue-4026-footnote-global-shortcuts",
+      "exit": 0
+    },
+    {
+      "name": "footnote-insert",
+      "exit": 0
+    }
+  ],
+  "studio": {
+    "tests": 2834,
+    "pass": 2832,
+    "skipped": 2
+  },
+  "typecheck_libraries": [
+    "ES2022",
+    "DOM",
+    "ESNext.Disposable"
+  ],
+  "browser": "Chrome 156 headless",
+  "runtime_wasm_sha256": "e7ed8f68fb0e5c27866177ba0a4b98ee2b919752c8102d7237196af964b4b3db"
+}

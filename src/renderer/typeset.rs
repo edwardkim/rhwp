@@ -191,6 +191,10 @@ fn empty_paragraph_fallback_line_metrics(
     let ls_type = para_style
         .map(|s| s.line_spacing_type)
         .unwrap_or(crate::model::style::LineSpacingType::Percent);
+    // [#8582] 워드 호환 문서의 빈 문단은 끝 표지(영문 슬롯 글꼴)의 배율로 잰 크기다.
+    let font_size =
+        crate::renderer::composer::word_compat_empty_paragraph_font_size(para, styles, ls_type)
+            .map_or(font_size, |scaled| font_size.max(scaled));
     Some(crate::renderer::corrected_line_metrics(
         0.0, 0.0, font_size, ls_type, ls_val,
     ))
@@ -3349,6 +3353,7 @@ pub(crate) use notes::endnotes::content::endnote_first_para_render_offset;
 mod paragraph;
 mod section;
 mod state;
+mod stored_reset_ownership;
 mod stored_table_frame;
 use state::TypesetState;
 mod table;
@@ -5288,7 +5293,11 @@ impl TypesetEngine {
             && !no_lineseg_host_flows_below
             && fmt.square_host_plan.is_none()
         {
-            total_lines
+            // 오프셋이 있는 표 앞의 글줄만 방출한다. 재조판한 인라인 표는
+            // 소유 줄에서 시작한다. 글자 없는 개체 문단의 앞줄은 개체 배치가 소비한다.
+            tac_table_line_idx
+                .filter(|_| crate::renderer::para_has_no_stored_line_segs(para))
+                .unwrap_or(total_lines)
         } else if table.common.treat_as_char
             && total_lines > 1
             && (has_owned_tac_prefix
@@ -5324,6 +5333,9 @@ impl TypesetEngine {
             st.finish_deferred_host_line();
         }
         let defer_host_line = st.defer_host_line_item_para == Some(para_idx);
+        // [#9274] host 줄이 닿지 않는 쪽·종이 기준 자리차지 표 밴드의 host 줄 전진(px).
+        // 그 줄을 표 뒤 본문 항목으로 내지 않았을 때만 마지막에 흐름에 싣는다.
+        let mut band_host_line_advance: Option<f64> = None;
         let pre_height: f64 = if pre_table_end_line > 0
             && is_first_table
             && !st.pre_emitted_host_paras.contains(&para_idx)
@@ -5344,6 +5356,20 @@ impl TypesetEngine {
             0.0
         };
 
+        // [#8474·#9419] 단 맨 위 host 의 저장 첫 줄이 증언하는 쪽 위 간격(px).
+        // 단 원점 앵커와 host 간격 가산이 같은 값을 소비한다.
+        let stored_column_top_spacing =
+            if st.current_items.is_empty() && para_start_height < 1.0 && pre_height <= 0.5 {
+                crate::renderer::stored_line_ladder::stored_column_top_spacing(
+                    para,
+                    fmt.spacing_before,
+                    (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
+                        && !st.profile.session_edited(),
+                    self.dpi,
+                )
+            } else {
+                0.0
+            };
         // 표 배치
         // [#2243] 표가 컬럼 첫 항목이면 vpos 앵커 확립 — 표 경로는
         // vpos_snap_current_height 를 거치지 않아 page_base 가 미확립으로 남고,
@@ -5363,8 +5389,14 @@ impl TypesetEngine {
                         + table.outer_margin_top as i64
                         + table.outer_margin_bottom as i64;
                 if stored && covers {
+                    // [#9419] 저장 첫 줄이 쪽 위 간격을 증언하면(한/글 저장 사다리) 그 vpos 는
+                    // 위 간격 아래의 줄 윗변이다. 단 원점(위 간격 앞의 흐름)은 그만큼 위다.
+                    // 위 간격이 없는 생성기 사다리는 증언 값이 0 이라 종전과 같다.
                     st.record_vpos_column_anchor(st.current_height);
-                    st.record_vpos_page_origin(Some(s0.vertical_pos));
+                    st.record_vpos_page_origin(Some(
+                        s0.vertical_pos
+                            - crate::renderer::px_to_hwpunit(stored_column_top_spacing, self.dpi),
+                    ));
                     st.record_vpos_lazy_origin(None);
                     st.record_vpos_origin_provenance(true);
                     st.record_vpos_ladder_validity(false);
@@ -5898,7 +5930,15 @@ impl TypesetEngine {
             // [#2279 sec0] host 문단에 표 줄 외 추가 줄박스(트레일러 빈 줄)가
             // 이미 있으면 그 줄의 fmt 가 spacing 을 계상하므로 제외(36392557
             // sec0 표지: 표 892.5 + 트레일러 25.6 = 918.1 로 한글 1쪽).
-            Some(fmt.spacing_before + fmt.spacing_after)
+            // [#9419] sb+sa 가산은 간격이 빠진 생성기 사다리를 한/글처럼 다시 세우는
+            // 규칙이다. 단 맨 위 저장 첫 줄이 위 간격을 증언하면 사다리가 이미 한/글의
+            // 것이므로 표 줄 앞에는 그 위 간격만 둔다. 뒤 간격(줄간격+sa)은 아래
+            // 끝 복원(`total_height - height_for_fit`)이 한 번 소유한다.
+            Some(if stored_column_top_spacing > 0.0 {
+                stored_column_top_spacing
+            } else {
+                fmt.spacing_before + fmt.spacing_after
+            })
         } else {
             None
         } {
@@ -6018,7 +6058,35 @@ impl TypesetEngine {
                 })
                 .flatten()
                 .filter(|(band_bottom, _)| st.current_height + 0.5 < *band_bottom);
-            if hwp3_topbottom_no_reserve {
+            // [#9274] 쪽·종이 기준 자리차지 표는 흐름 밖 절대 위치의 밴드다. host 줄이 밴드
+            // 위끝에 닿지 않으면 한/글은 host 에서 흐름을 내리지 않고 뒤 문단을 밴드 위에
+            // 먼저 채운 뒤, 밴드에 닿는 줄부터 밴드 아래로 보낸다(그림 밴드 #7696 과 같은
+            // 계약). 흐름은 표가 놓인 host 줄만큼 전진하고 밴드는 뒤 문단 시작 판정에 싣는다.
+            let page_band_below_host = (!table.common.treat_as_char
+                && is_first_placed
+                && is_last_placed
+                && page_band_host_line.is_none())
+            .then(|| {
+                let (top, bottom) = st.page_anchored_table_band(table)?;
+                let line = crate::renderer::layout::control_line_seg_index(para, ctrl_idx)
+                    .and_then(|index| para.line_segs.get(index))
+                    .filter(|seg| !is_synthetic_line_seg(seg))?;
+                let line_advance = crate::renderer::hwpunit_to_px(
+                    line.line_height.max(0) + line.line_spacing.max(0),
+                    self.dpi,
+                );
+                (st.current_height + pre_height + line_advance <= top + 0.5).then_some((
+                    top,
+                    bottom,
+                    line_advance,
+                ))
+            })
+            .flatten();
+            if let Some((top, bottom, line_advance)) = page_band_below_host {
+                st.advance_flow_by(pre_height);
+                st.push_page_anchored_band(para_idx, top, bottom);
+                band_host_line_advance = Some(line_advance);
+            } else if hwp3_topbottom_no_reserve {
                 st.advance_flow_by(pre_height + stored_host_line_px.unwrap_or(0.0));
             } else if hangul_flowed_beside_table {
                 let band_top = st.current_height + pre_height;
@@ -6224,15 +6292,8 @@ impl TypesetEngine {
                     .copied()
                     .unwrap_or(post_height);
                 st.apply_visible_float_exclusions(first_post_line_height, None);
-                if issue2439_visible_host_stack && is_last_table {
-                    // 마지막 표의 exclusion은 표 본체까지만 담는다. 한컴 저장 흐름은
-                    // 그 뒤의 outer-bottom과 host LineSeg 간격을 거친 뒤 서명문을
-                    // 배치하므로, 해당 두 성분을 post-text 앞에서 한 번만 복원한다.
-                    st.advance_flow_by(
-                        hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
-                            + para_line_spacing_px(para, self.dpi),
-                    );
-                }
+                // 확정한 배제 띠에는 표 아래 여백까지 들어 있다. 이 뒤에 놓는
+                // 호스트 글줄의 줄간격은 글줄 진행이 소비한다.
             }
             // [편집 세션] 자리차지(topbottom) 표가 Enter로 자라 post-text가 본문
             // 하한을 넘으면 문구를 새 쪽으로 보낸다. 저장 형상 열람은 저장 vpos를
@@ -6414,6 +6475,19 @@ impl TypesetEngine {
                     });
                 }
                 st.advance_flow_by(fmt.line_advance(0));
+            }
+        }
+
+        // [#9274] 표 뒤 본문·이연 항목으로 나가지 않은 host 줄은 표 항목이 소유한다.
+        if let Some(line_advance) = band_host_line_advance {
+            let host_line_emitted = st.current_items.iter().any(|item| {
+                matches!(item,
+                    PageItem::PartialParagraph { para_index, start_line: 0, .. }
+                    | PageItem::FullParagraph { para_index }
+                    if *para_index == para_idx)
+            });
+            if !host_line_emitted {
+                st.advance_flow_by(line_advance);
             }
         }
 

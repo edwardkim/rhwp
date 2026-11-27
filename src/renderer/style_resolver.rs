@@ -24,7 +24,10 @@ mod missing_fonts;
 mod original_font_slots;
 pub(crate) use missing_fonts::{missing_char_table, missing_latin_default};
 mod page_number;
+mod source_program_rows;
+pub(crate) use source_program_rows::SourceProgramRowOwner;
 mod resolved;
+pub(crate) mod word_compat;
 pub(crate) use crate::storage;
 pub use resolved::{
     ResolvedBorderStyle, ResolvedCharStyle, ResolvedImageFill, ResolvedParaStyle, ResolvedStyleSet,
@@ -45,23 +48,6 @@ pub(crate) fn resolve_styles_for_document(document: &Document, dpi: f64) -> Reso
     }
 }
 
-/// 문서의 호환 대상이 MS 워드인가. HWP5 는 `HWPTAG_COMPATIBLE_DOCUMENT` 의 대상 프로그램 값
-/// (0 = 한/글 현재, 1 = 한/글 2007, 2 = MS 워드), HWPX 는 `hh:compatibleDocument` 의
-/// `targetProgram` 이다.
-fn doc_targets_ms_word(doc_info: &crate::model::document::DocInfo) -> bool {
-    let hwp5_word = doc_info.extra_records.iter().any(|record| {
-        record.tag_id == crate::parser::tags::HWPTAG_COMPATIBLE_DOCUMENT
-            && record.data.get(..4).is_some_and(|bytes| {
-                u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]) == 2
-            })
-    });
-    let hwpx_word = doc_info
-        .hwpx_head_tail
-        .as_deref()
-        .is_some_and(|tail| tail.contains(r#"targetProgram="MS_WORD""#));
-    hwp5_word || hwpx_word
-}
-
 pub(crate) fn try_resolve_styles_for_document<S: storage::Storage>(
     document: &Document,
     dpi: f64,
@@ -71,7 +57,14 @@ pub(crate) fn try_resolve_styles_for_document<S: storage::Storage>(
     let lookup = missing_fonts::try_lookup_context(document, storage)?;
     let mut styles = try_resolve_styles_with_variant(&lookup, dpi, profile.hwp3_layout(), storage)?;
     styles.source_hwp3_native = profile.hwp3_native_layout();
-    styles.word_compat_target = doc_targets_ms_word(&document.doc_info);
+    styles.legacy_body_symbols = document.uses_legacy_body_symbols();
+    let compatibility = crate::model::document_compatibility::DocumentCompatibility::from_records(
+        &document.doc_info,
+    );
+    styles.word_compat_target =
+        compatibility.target == crate::model::document_compatibility::CompatibilityTarget::MsWord;
+    styles.word_spacing =
+        word_compat::WordSpacing::for_document(compatibility, profile.hangul2024_layout());
     if document.provenance.format == crate::model::provenance::SourceFormat::Hwp5
         && !document.provenance.hwpx_lineage
     {
@@ -83,6 +76,13 @@ pub(crate) fn try_resolve_styles_for_document<S: storage::Storage>(
             style.font_families_source_ttf.fill(false);
             style.font_families_print_text_device_frame.fill(false);
         }
+    }
+    // [#8582] 호환 대상이 MS 워드이고 워드 줄 높이를 쓰는 문서면 글꼴별 줄 높이 배율을 둔다
+    // (원본 face 이름 기준).
+    if styles.word_compat_target && compatibility.flags[1] & 0x10 != 0 {
+        styles.word_line_factors = Some(std::sync::Arc::new(word_compat::line_factors(
+            &document.doc_info,
+        )));
     }
     if missing_fonts::missing_char_table(document) {
         styles.page_number_char_style_id = Some(0);
@@ -172,6 +172,12 @@ pub(crate) fn resolve_styles_with_environment(
     styles.inferred_ttf_requires_selection =
         environment.is_some_and(|env| env.explicitly_replaces_source_metrics());
     styles.script_metrics = super::script_metrics::ScriptMetricsContract::for_profile(profile);
+    styles.word_spacing = word_compat::WordSpacing::for_document(
+        crate::model::document_compatibility::DocumentCompatibility::from_records(
+            &document.doc_info,
+        ),
+        profile.hangul2024_layout(),
+    );
     // 독립 동일 입력의 2020은 HCRDotum을 강제하고, 2024는 원 face/대체 face의
     // 자모 전진을 유지한다. 세대는 기존 명시적 출력 profile에서만 받는다.
     styles.isolated_jamo_font = (!profile.hangul2024_layout()
@@ -538,9 +544,11 @@ pub(crate) fn resolve_styles_with_environment(
         Ok(()) => (),
         Err(never) => match never {},
     }
-    match refresh_source_program_projection_slots_with_storage(
+    match source_program_rows::refresh_with_storage(
         &document.doc_info,
         &mut styles,
+        document.provenance.format == crate::model::provenance::SourceFormat::Hwpx,
+        environment,
         &storage::Unbounded,
     ) {
         Ok(()) => (),
@@ -613,7 +621,9 @@ fn try_resolve_styles_with_variant<S: storage::Storage>(
 
     let mut styles = ResolvedStyleSet {
         source_hwp3_native: false,
+        legacy_body_symbols: false,
         word_compat_target: false,
+        word_spacing: Default::default(),
         source_program_projection_slots: Default::default(),
         script_metrics: Default::default(),
         native_pua_fonts: Default::default(),
@@ -661,9 +671,10 @@ fn try_resolve_styles_with_variant<S: storage::Storage>(
         kerning_measurement_context: None,
         horizontal_shaping_context: None,
         supplemental_metrics: None,
+        word_line_factors: None,
     };
     original_font_slots::refresh(doc_info, &mut styles, storage)?;
-    refresh_source_program_projection_slots_with_storage(doc_info, &mut styles, storage)?;
+    source_program_rows::refresh_with_storage(doc_info, &mut styles, false, None, storage)?;
     Ok(styles)
 }
 
@@ -671,98 +682,6 @@ fn try_resolve_styles_with_variant<S: storage::Storage>(
 const TRACK_CHANGE_KEEPS_STORED_ROWS: u32 = 0x08;
 
 /// 대체 선언과 실제 선택을 구분한다. HFT의 원본 전진, 내장 프로그램,
-/// 실제 대체 face 및 폭을 추정하는 face를 원본 TTF의 캐시 갱신 근거로 쓰지 않는다.
-fn refresh_source_program_projection_slots_with_storage<S: storage::Storage>(
-    doc_info: &DocInfo,
-    styles: &mut ResolvedStyleSet,
-    storage: &S,
-) -> Result<(), S::Error> {
-    styles.source_program_projection_slots = Default::default();
-    // [#8639] 한/글은 변경 추적 설정(`HWPTAG_TRACKCHANGE` · `<hh:trackchageConfig flags>`)에
-    // 0x08 이 있으면 가로 상자가 같은 저장 줄을 그대로 쓰고, 없을 때만 현재 글꼴로 다시
-    // 조판한다. 한/글 2020·2024 Print 실측: 86712(flags 0)는 표·문단만 남겨도 재조판하고
-    // flags 를 8 로 바꾸면 저장 줄을 유지한다. 반대로 정책연구과제심의신청서(flags 56)는
-    // 저장 줄을 유지하고 flags 를 0 으로 바꾸면 원본 KoPub 으로 재조판한다(16·32 는 무관).
-    // 저장 줄이 유지되는 문서에서 원본 프로그램으로 다시 짜면 한/글과 어긋난다.
-    if doc_info.track_change_flags() & TRACK_CHANGE_KEEPS_STORED_ROWS != 0 {
-        return Ok(());
-    }
-    let dpi = styles.resolved_dpi.unwrap_or(96.0);
-    let mut fallback_char_styles = None;
-    let mut build_fallback = || -> Result<Vec<ResolvedCharStyle>, S::Error> {
-        let mut fallback_info = storage.clone_doc_info(doc_info)?;
-        for fonts in &mut fallback_info.font_faces {
-            for font in fonts {
-                if let Some(substitute) = font.subst_font.take() {
-                    if substitute.font_type == 1 && !substitute.face.trim().is_empty() {
-                        font.name = substitute.face;
-                    }
-                }
-            }
-        }
-        storage.try_collect(
-            fallback_info
-                .char_shapes
-                .iter()
-                .map(|cs| try_resolve_single_char_style(cs, &fallback_info, dpi, storage)),
-        )
-    };
-    for (shape_id, shape) in doc_info.char_shapes.iter().enumerate() {
-        let Some(style) = styles.char_styles.get(shape_id) else {
-            continue;
-        };
-        for language in 0..LANG_COUNT {
-            let Some(font) = doc_info
-                .font_faces
-                .get(language)
-                .and_then(|fonts| fonts.get(shape.font_ids[language] as usize))
-            else {
-                continue;
-            };
-            let primary = primary_font_name(style.font_family_for_lang(language));
-            if font.alt_type != 1
-                || font.is_embedded
-                || font.native_program.is_some()
-                // 같은 SFNT의 name 6 조회 이름으로 바뀐 것은 다른 원본을
-                // 선택한 것이 아니다. 굵기별 설치 별칭의 동일성만 허용한다.
-                || (primary != font.name.trim()
-                    && !super::installed_font_program_aliases(font.name.trim()).contains(&primary))
-                || !font.subst_font.as_ref().is_some_and(|substitute| {
-                    substitute.font_type == 1
-                        && !substitute.face.trim().is_empty()
-                        && substitute.face.trim() != primary
-                })
-                || style.metric_face_for_lang(language).is_some()
-                || style
-                    .original_glyph_metric_face_for_lang(language)
-                    .is_some()
-            {
-                continue;
-            }
-            // 원본 프로그램의 전진폭이 검증된 경우에만 저장 줄을 다시 구성한다.
-            if style.font_metric_trusted_for_lang(language)
-                || super::layout::verified_source_projection_face(primary, style.bold, style.italic)
-            {
-                if fallback_char_styles.is_none() {
-                    fallback_char_styles = Some(build_fallback()?);
-                }
-                if let Some(fallback) = fallback_char_styles
-                    .as_ref()
-                    .and_then(|values| values.get(shape_id))
-                {
-                    let copied = crate::storage::try_clone(fallback, storage)?;
-                    storage.insert_map(
-                        std::sync::Arc::make_mut(&mut styles.source_program_projection_slots),
-                        (shape_id as u32, language),
-                        copied,
-                    )?;
-                }
-            }
-        }
-    }
-    Ok(())
-}
-
 /// [#7391] 이 face 이름으로 **자기 자신의** 메트릭 표를 찾을 수 있는지.
 ///
 /// 별칭(`layout-metric` 평면)을 타고 남의 표를 빌려 오는 경우는 거짓이다 — 그건
@@ -1637,6 +1556,8 @@ pub(crate) fn lookup_font_name_in_environment(
                     decision.css_family_chain.retain(|face| face != query);
                     decision.css_family_chain.insert(0, query.to_string());
                 }
+                // HFT 논리 이름은 선택한 SFNT의 실제 family 인증이 아니다.
+                // 같은 family의 분할 glyph는 실제 프로그램 공급 경로가 해소한다.
             }
             let canonical_rule = decision.requested_face.as_deref().and_then(|source| {
                 environment.canonical_selection_rule_for(source, lang_index, font_id)

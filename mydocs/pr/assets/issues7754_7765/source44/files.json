@@ -1,0 +1,1202 @@
+{
+  "recorded_at": "2026-11-22T07:14:11.162683+00:00",
+  "scope": "Completed original-font diagnoses and independent source proof, full Native chemical, focus decree and full-page Helvetica checks. Whole protected validation is not declared complete.",
+  "private_source_retention": [
+    {
+      "path": "pdf/private-issue7754-independent-font-specimens-20261122/hanyang-junggothic.hwpx",
+      "sha256": "79c2714845d7ed0941534bc765665e7f0302dac1333abfce84d21daef3d10592"
+    },
+    {
+      "path": "pdf/private-issue7754-independent-font-specimens-20261122/hanyang-sinmyeongjo.hwpx",
+      "sha256": "12559d8965770f3046f492a0cc3e27ff70a9e4c3a5fe0a105f7e9a6e2c8e73a6"
+    },
+    {
+      "path": "pdf/private-issue7754-independent-font-specimens-20261122/independent-symbols-regular.otf",
+      "sha256": "72bd3af45659c2f7bc6eafaf7cd859f525089581b89d2136da99fa0ed93b37f2"
+    }
+  ],
+  "files": [
+    {
+      "source": "output/pr-review/issue7754-nine/source49-win10-palatino-probe.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source49-win10-palatino-probe.json",
+      "sha256": "0c6561cee2f41f14579a45c6e7c69df042bc7f1d069c3fc1ae3327d51a31dffd",
+      "bytes": 767
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source49-win10-palatino-copy.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source49-win10-palatino-copy.json",
+      "sha256": "0b299a3ec17a518cf7b5193e6e943bf0d00a704bb509ec2106491a39f5b3f395",
+      "bytes": 1260
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source50-decree-palatino-exact-ttf-focus-state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source50-decree-palatino-exact-ttf-focus-state.json",
+      "sha256": "2663062a9209da92caafd986cd232912463097ff8ef1430ea88a3d6a1dc40d90",
+      "bytes": 266911
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source50-decree-palatino-exact-ttf-focus/native/base/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source50-decree-palatino-exact-ttf-focus/00/silhouette.tsv",
+      "sha256": "17748deb1b756d5b3343842430545520b11833a21cd9640450922b424ded4307",
+      "bytes": 187
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source50-decree-palatino-exact-ttf-focus/native/base/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source50-decree-palatino-exact-ttf-focus/00/silhouette_manifest.json",
+      "sha256": "0090c4b181be5d0acb1fa5e241ae385c55fb01f705f1342708c5889195881f70",
+      "bytes": 9677
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source50-decree-palatino-exact-ttf-focus/native/base/decree/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source50-decree-palatino-exact-ttf-focus/00/run_manifest.json",
+      "sha256": "f1e74d7b628860e6fcc4e212671a0645fc3a3c655c25d3db6cb0706654e6bb58",
+      "bytes": 4917
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source50-decree-palatino-native-base.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source50-decree-palatino-exact-ttf-focus/00/render.txt",
+      "sha256": "20f7925fb7039e54fb6ce3cb3d87f74ae4bf1032dd2ec154e1b0502db63bef72",
+      "bytes": 3675
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source50-decree-palatino-exact-ttf-focus/native/candidate/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source50-decree-palatino-exact-ttf-focus/01/silhouette.tsv",
+      "sha256": "17748deb1b756d5b3343842430545520b11833a21cd9640450922b424ded4307",
+      "bytes": 187
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source50-decree-palatino-exact-ttf-focus/native/candidate/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source50-decree-palatino-exact-ttf-focus/01/silhouette_manifest.json",
+      "sha256": "909c5f163e052b32ebf329816fc232e3aa00adbe639758fabf1c3264349eb456",
+      "bytes": 9727
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source50-decree-palatino-exact-ttf-focus/native/candidate/decree/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source50-decree-palatino-exact-ttf-focus/01/run_manifest.json",
+      "sha256": "7d8cb810ae9d65c3de58f7d9d9c33ed30970e771377b5c051d151ae7e17b9ae9",
+      "bytes": 4917
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source50-decree-palatino-native-candidate.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source50-decree-palatino-exact-ttf-focus/01/render.txt",
+      "sha256": "c01b1d85af98081abc704b2fde94751c892a41843a1fc22a9802f9620421b09c",
+      "bytes": 3720
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source50-decree-palatino-exact-ttf-focus/wasm/base/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source50-decree-palatino-exact-ttf-focus/02/silhouette.tsv",
+      "sha256": "91eff12f05fde3b34665bd911bc36f1595836aa5df372429c9b36720afcd6a75",
+      "bytes": 189
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source50-decree-palatino-exact-ttf-focus/wasm/base/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source50-decree-palatino-exact-ttf-focus/02/silhouette_manifest.json",
+      "sha256": "ce016b4480004b9e20373a064df11771fd25208f21de5d4223537be7f46c5aa4",
+      "bytes": 10113
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source50-decree-palatino-exact-ttf-focus/wasm/base/decree/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source50-decree-palatino-exact-ttf-focus/02/run_manifest.json",
+      "sha256": "898cf22f7cd84c68afa9df035b76f7221869ebc493a8d9403500c5c1a7bb53d3",
+      "bytes": 5380
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source50-decree-palatino-wasm-base.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source50-decree-palatino-exact-ttf-focus/02/render.txt",
+      "sha256": "1bcf6dc4b30111db1c0bc3ff466f44cc8b67aeb9ab090d22519c69109bc33b19",
+      "bytes": 2843
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source50-decree-palatino-exact-ttf-focus/wasm/candidate/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source50-decree-palatino-exact-ttf-focus/03/silhouette.tsv",
+      "sha256": "91eff12f05fde3b34665bd911bc36f1595836aa5df372429c9b36720afcd6a75",
+      "bytes": 189
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source50-decree-palatino-exact-ttf-focus/wasm/candidate/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source50-decree-palatino-exact-ttf-focus/03/silhouette_manifest.json",
+      "sha256": "f7f6b3241b24d20d77ba9d13021e4bf557001f799999164b1c3f913243cc1e47",
+      "bytes": 10163
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source50-decree-palatino-exact-ttf-focus/wasm/candidate/decree/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source50-decree-palatino-exact-ttf-focus/03/run_manifest.json",
+      "sha256": "e184e2abd5e01b404c4eda2e131b96c97f97d866f939f975766dd349fd7cf007",
+      "bytes": 5380
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source50-decree-palatino-wasm-candidate.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source50-decree-palatino-exact-ttf-focus/03/render.txt",
+      "sha256": "b409b2b368b09a6ae7f416208084846b9a267de0cbe8197db9a3bf5354ed6c0c",
+      "bytes": 2893
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source51-spjgt-wasm-full-focus-state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source51-spjgt-wasm-full-focus-state.json",
+      "sha256": "2e6dafa8caecafdf4d9b87b873fc85f3cd49e8e8848ff8f2ec487277527fd463",
+      "bytes": 187983
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source51-spjgt-wasm-full-focus/wasm/base/chemical/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source51-spjgt-wasm-full-focus/00/silhouette.tsv",
+      "sha256": "a4da092692232b4f2fbe50bf3ade7dcf3257d477eef08277bcf79f168cbed7fe",
+      "bytes": 2148
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source51-spjgt-wasm-full-focus/wasm/base/chemical/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source51-spjgt-wasm-full-focus/00/silhouette_manifest.json",
+      "sha256": "8aedae6c38d4522ccde08fa85051536ba0457763dcb67e333eba0550d5f7f6bb",
+      "bytes": 106053
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source51-spjgt-wasm-full-focus/wasm/base/chemical/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source51-spjgt-wasm-full-focus/00/run_manifest.json",
+      "sha256": "e6244a1670aff2904f4547b8e4dd4b82834f42c5793e81dbf4b7014bc2ae8156",
+      "bytes": 15052
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source51-spjgt-wasm-full-wasm-base.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source51-spjgt-wasm-full-focus/00/render.txt",
+      "sha256": "84bd032308c87670bc7408bc1002a640b816421639941a5a8763adafc76f9fe6",
+      "bytes": 39873
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source51-spjgt-wasm-full-focus/wasm/candidate/chemical/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source51-spjgt-wasm-full-focus/01/silhouette.tsv",
+      "sha256": "a4da092692232b4f2fbe50bf3ade7dcf3257d477eef08277bcf79f168cbed7fe",
+      "bytes": 2148
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source51-spjgt-wasm-full-focus/wasm/candidate/chemical/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source51-spjgt-wasm-full-focus/01/silhouette_manifest.json",
+      "sha256": "44fce364080706c917817f9750b2dcb075f5abaced82f1abf94513f25853b05d",
+      "bytes": 107093
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source51-spjgt-wasm-full-focus/wasm/candidate/chemical/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source51-spjgt-wasm-full-focus/01/run_manifest.json",
+      "sha256": "f0c5f0a83c06b9d8558de4222bf5b74afbe92ec42a008c81a821d4003ef91498",
+      "bytes": 15052
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source51-spjgt-wasm-full-wasm-candidate.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source51-spjgt-wasm-full-focus/01/render.txt",
+      "sha256": "2afb6049ffe1830689041d96b9871343956c6d56ce0629559f4954124b66e336",
+      "bytes": 40438
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source52-decree-current-otf-exact-ttf-focus-state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source52-decree-current-otf-exact-ttf-focus-state.json",
+      "sha256": "db783032de66f6d092b3085cf7c4c84a8d678dde8b43cab788849d0363d10747",
+      "bytes": 24495
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source52-decree-current-otf-exact-ttf-focus/native/base/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source52-decree-current-otf-exact-ttf-focus/00/silhouette.tsv",
+      "sha256": "17748deb1b756d5b3343842430545520b11833a21cd9640450922b424ded4307",
+      "bytes": 187
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source52-decree-current-otf-exact-ttf-focus/native/base/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source52-decree-current-otf-exact-ttf-focus/00/silhouette_manifest.json",
+      "sha256": "e0f0eb58376284ca12080b46ebe45dc5a1c51d9a6afc01727947ae8fee9f110d",
+      "bytes": 9707
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source52-decree-current-otf-exact-ttf-focus/native/base/decree/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source52-decree-current-otf-exact-ttf-focus/00/run_manifest.json",
+      "sha256": "f1e74d7b628860e6fcc4e212671a0645fc3a3c655c25d3db6cb0706654e6bb58",
+      "bytes": 4917
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source52-decree-current-otf-native-base.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source52-decree-current-otf-exact-ttf-focus/00/render.txt",
+      "sha256": "90feb3e06724e12efb63a51a1131f672a94e42ac19664608420bbdda3d2ff74e",
+      "bytes": 3702
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source52-decree-current-otf-exact-ttf-focus/native/candidate/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source52-decree-current-otf-exact-ttf-focus/01/silhouette.tsv",
+      "sha256": "17748deb1b756d5b3343842430545520b11833a21cd9640450922b424ded4307",
+      "bytes": 187
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source52-decree-current-otf-exact-ttf-focus/native/candidate/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source52-decree-current-otf-exact-ttf-focus/01/silhouette_manifest.json",
+      "sha256": "902b42a6b27b93bea7bf261163afd292d2967848cb6c9fd26338c1ba1a0b8af6",
+      "bytes": 9757
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source52-decree-current-otf-exact-ttf-focus/native/candidate/decree/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source52-decree-current-otf-exact-ttf-focus/01/run_manifest.json",
+      "sha256": "7d8cb810ae9d65c3de58f7d9d9c33ed30970e771377b5c051d151ae7e17b9ae9",
+      "bytes": 4917
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source52-decree-current-otf-native-candidate.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source52-decree-current-otf-exact-ttf-focus/01/render.txt",
+      "sha256": "2ff9369572f53f8be4af0db79b2f3349fa1288c80ad4fff4de94ce1e21e40d8c",
+      "bytes": 3747
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source52-decree-current-otf-exact-ttf-focus/wasm/base/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source52-decree-current-otf-exact-ttf-focus/02/silhouette.tsv",
+      "sha256": "91eff12f05fde3b34665bd911bc36f1595836aa5df372429c9b36720afcd6a75",
+      "bytes": 189
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source52-decree-current-otf-exact-ttf-focus/wasm/base/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source52-decree-current-otf-exact-ttf-focus/02/silhouette_manifest.json",
+      "sha256": "3fd6ae36ee6768b797f1648efe1b6cbd91a4f9a0cd93e9fe64a174e23c0f9c29",
+      "bytes": 10143
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source52-decree-current-otf-exact-ttf-focus/wasm/base/decree/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source52-decree-current-otf-exact-ttf-focus/02/run_manifest.json",
+      "sha256": "898cf22f7cd84c68afa9df035b76f7221869ebc493a8d9403500c5c1a7bb53d3",
+      "bytes": 5380
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source52-decree-current-otf-wasm-base.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source52-decree-current-otf-exact-ttf-focus/02/render.txt",
+      "sha256": "6eb94e02143a427f6c559b2953e212208a684e0d2757abb4e48ad5e33776a2e3",
+      "bytes": 2873
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source52-decree-current-otf-exact-ttf-focus/wasm/candidate/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source52-decree-current-otf-exact-ttf-focus/03/silhouette.tsv",
+      "sha256": "91eff12f05fde3b34665bd911bc36f1595836aa5df372429c9b36720afcd6a75",
+      "bytes": 189
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source52-decree-current-otf-exact-ttf-focus/wasm/candidate/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source52-decree-current-otf-exact-ttf-focus/03/silhouette_manifest.json",
+      "sha256": "3a2c5e739558d44f995e06fb022b42b7c35d8c4634c7a8e8f62fc2b458283648",
+      "bytes": 10193
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source52-decree-current-otf-exact-ttf-focus/wasm/candidate/decree/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source52-decree-current-otf-exact-ttf-focus/03/run_manifest.json",
+      "sha256": "e184e2abd5e01b404c4eda2e131b96c97f97d866f939f975766dd349fd7cf007",
+      "bytes": 5380
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source52-decree-current-otf-wasm-candidate.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source52-decree-current-otf-exact-ttf-focus/03/render.txt",
+      "sha256": "8f4284ae690aa0d56d018a2dfd627e81d33c9e33720ef30b61d4e85d8279c62a",
+      "bytes": 2923
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source53-chemical-current-otf-focus-state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source53-chemical-current-otf-focus-state.json",
+      "sha256": "c4f0f0eac122c053105b13329d27ceff30433567fff3592a0ae8501609d7657a",
+      "bytes": 21012
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source53-chemical-current-otf-focus/native/chemical/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source53-chemical-current-otf-focus/00/silhouette.tsv",
+      "sha256": "47eca94f0a408bf2aab76d3b160c2d59101794334eceee949d57f571bdac2761",
+      "bytes": 232
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source53-chemical-current-otf-focus/native/chemical/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source53-chemical-current-otf-focus/00/silhouette_manifest.json",
+      "sha256": "4f4300352c37bc817de7e6247b9ffd978ed12fb96fb3b5308b8e4a499c19aa96",
+      "bytes": 20371
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source53-chemical-current-otf-focus/native/chemical/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source53-chemical-current-otf-focus/00/run_manifest.json",
+      "sha256": "85ef5a0b2d3dcb7c7336a8b4e0525144e83b56713505c797181a355a3a2250c5",
+      "bytes": 13952
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source53-chemical-current-otf-native.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source53-chemical-current-otf-focus/00/render.txt",
+      "sha256": "7e371ebb7379f3b224cb7c6fb2bab96f8e8015cc1875392a7353951e54047768",
+      "bytes": 9332
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source53-chemical-current-otf-focus/wasm/chemical/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source53-chemical-current-otf-focus/01/silhouette.tsv",
+      "sha256": "02f724bb32c0bfcc2ffa4230067688209cf40178b2cf76e9f842679240126f87",
+      "bytes": 230
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source53-chemical-current-otf-focus/wasm/chemical/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source53-chemical-current-otf-focus/01/silhouette_manifest.json",
+      "sha256": "52740c5f9651886e9a2b45b06aa07b46ca8a772f09a91b87466f68787f7943a8",
+      "bytes": 20689
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source53-chemical-current-otf-focus/wasm/chemical/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source53-chemical-current-otf-focus/01/run_manifest.json",
+      "sha256": "2a2a98b0a5d6b82b7f1f92692e6fd5c0047d205e403764de2d78984c2c794dc3",
+      "bytes": 14281
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source53-chemical-current-otf-wasm.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source53-chemical-current-otf-focus/01/render.txt",
+      "sha256": "417442a66e5d5e886437c5f4517f0c7ed9ef11f283a42a6656422a353d0f277a",
+      "bytes": 3622
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source54-font-trace-state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source54-font-trace-state.json",
+      "sha256": "b216f8a20a027087787a7e69a1f90a4cbdd6a09953e9b3b85b298ac800a6ad18",
+      "bytes": 197399
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source56-independent-specimen-jobs.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source56-independent-specimen-jobs.json",
+      "sha256": "9b833dd2fcf017829c233a48ed5bde0e95ced15b8edb962f30997e3e3d9148f7",
+      "bytes": 1098
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source56-independent-print-state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source56-independent-print-state.json",
+      "sha256": "6cec0c5d00a8e80aee36d53772c3037485988659f0dff0fcf6a001dc26a8072f",
+      "bytes": 2744
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source57-independent-symbols-provenance.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source57-independent-symbols-provenance.json",
+      "sha256": "84932173e81e31c7b99851fbf37918f27f7af2ce71f56d1208d6ea7fe56a8c32",
+      "bytes": 2518
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/hanyang-junggothic-source56-independent-glyphs.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/hanyang-junggothic-source56-independent-glyphs.json",
+      "sha256": "32cd7b5ffd62753ef966da8dcbb8b0760ab47f2dcb568e5c5247c188bf500e54",
+      "bytes": 4649
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source58-decree-original-ttf-identity.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source58-decree-original-ttf-identity.json",
+      "sha256": "3a4be4cc1a8078780217e39e1c95afe556549e84819279370bc30bf6e03b5efc",
+      "bytes": 972
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source58-decree-original-ttf-exact-ttf-focus-state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source58-decree-original-ttf-exact-ttf-focus-state.json",
+      "sha256": "a888162885fc2fa999f84e97e8170bbb628cd616968c8fa5078acfe70a4bfc7a",
+      "bytes": 268226
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source58-decree-original-ttf-exact-ttf-focus/native/base/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source58-decree-original-ttf-exact-ttf-focus/00/silhouette.tsv",
+      "sha256": "7fc905261c0f921c3e0b64e9ad03cffef7a83f744cd7052fd1504954d0630787",
+      "bytes": 193
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source58-decree-original-ttf-exact-ttf-focus/native/base/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source58-decree-original-ttf-exact-ttf-focus/00/silhouette_manifest.json",
+      "sha256": "7bdf0748248163f4e6947f77cb3a35861568a99d5ac97b60537cac70d57af633",
+      "bytes": 9885
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source58-decree-original-ttf-exact-ttf-focus/native/base/decree/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source58-decree-original-ttf-exact-ttf-focus/00/run_manifest.json",
+      "sha256": "de429ec8ee01a88585012d68bf4fcb07116e76520bf0f77183a90f6761faf2fe",
+      "bytes": 5106
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source58-decree-original-ttf-native-base.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source58-decree-original-ttf-exact-ttf-focus/00/render.txt",
+      "sha256": "1f8267db0b4bd892ef841b34ed26c5b505a69c570eede1b7f3f63a32a5b37690",
+      "bytes": 3783
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source58-decree-original-ttf-exact-ttf-focus/native/candidate/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source58-decree-original-ttf-exact-ttf-focus/01/silhouette.tsv",
+      "sha256": "7fc905261c0f921c3e0b64e9ad03cffef7a83f744cd7052fd1504954d0630787",
+      "bytes": 193
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source58-decree-original-ttf-exact-ttf-focus/native/candidate/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source58-decree-original-ttf-exact-ttf-focus/01/silhouette_manifest.json",
+      "sha256": "e53245b9ab2afadf2c65f22e2fd9766b1bcd3fe1a0bbc3cfc073e16ae3075ce7",
+      "bytes": 9935
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source58-decree-original-ttf-exact-ttf-focus/native/candidate/decree/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source58-decree-original-ttf-exact-ttf-focus/01/run_manifest.json",
+      "sha256": "000d3b759a76042b1fdf1a53352fc78a5156c722cce889a9792d4d0d11b94cce",
+      "bytes": 5106
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source58-decree-original-ttf-native-candidate.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source58-decree-original-ttf-exact-ttf-focus/01/render.txt",
+      "sha256": "0a83caa4eaa44b456c1a64f436bd000b0e4f1fceb45ccc027cfddf30ee19939f",
+      "bytes": 3828
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source58-decree-original-ttf-exact-ttf-focus/wasm/base/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source58-decree-original-ttf-exact-ttf-focus/02/silhouette.tsv",
+      "sha256": "c861b66068672e46b6da5df8727212364e266f423236b30d4ee761a27aec6b03",
+      "bytes": 189
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source58-decree-original-ttf-exact-ttf-focus/wasm/base/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source58-decree-original-ttf-exact-ttf-focus/02/silhouette_manifest.json",
+      "sha256": "f7ea89d7cff6cfa8ac53f5ce6fbd88344757636e7240666cfb7295dbb1c0ce3f",
+      "bytes": 10333
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source58-decree-original-ttf-exact-ttf-focus/wasm/base/decree/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source58-decree-original-ttf-exact-ttf-focus/02/run_manifest.json",
+      "sha256": "21bdd888b8b1316c2645668c694ddc4993d5ae25b33357b5ebf41dd3a4bdcd08",
+      "bytes": 5569
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source58-decree-original-ttf-wasm-base.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source58-decree-original-ttf-exact-ttf-focus/02/render.txt",
+      "sha256": "5bbe19c1f6ecb4f3b76a15cb1842467aed7932665762fca1e3999d05b3929212",
+      "bytes": 2883
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source58-decree-original-ttf-exact-ttf-focus/wasm/candidate/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source58-decree-original-ttf-exact-ttf-focus/03/silhouette.tsv",
+      "sha256": "c861b66068672e46b6da5df8727212364e266f423236b30d4ee761a27aec6b03",
+      "bytes": 189
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source58-decree-original-ttf-exact-ttf-focus/wasm/candidate/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source58-decree-original-ttf-exact-ttf-focus/03/silhouette_manifest.json",
+      "sha256": "3b411feda11ae1e4ff5f34af3455620ead638314ec6ec0065d5085cbfcd87a69",
+      "bytes": 10383
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source58-decree-original-ttf-exact-ttf-focus/wasm/candidate/decree/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source58-decree-original-ttf-exact-ttf-focus/03/run_manifest.json",
+      "sha256": "98a3fc4df83a535ff289a51628bd7fe034a5d8256338b88da89349cc697f3b47",
+      "bytes": 5569
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source58-decree-original-ttf-wasm-candidate.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source58-decree-original-ttf-exact-ttf-focus/03/render.txt",
+      "sha256": "398591a6649aeff7355bf5ef37bb13771f99944ce3e7f21f2ee6b21caf5df20e",
+      "bytes": 2933
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source59-qualified-symbols-focus-state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source59-qualified-symbols-focus-state.json",
+      "sha256": "0cb74ead495066e60388c556fabe21fe9c2caa82366f2016cc88bd023f99dddd",
+      "bytes": 143757
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source59-qualified-symbols-focus/native/chemical/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source59-qualified-symbols-focus/00/silhouette.tsv",
+      "sha256": "ff627f91e16718b6fc2fa3b08e1dd003b9a5322da570657665f4cae95e3998eb",
+      "bytes": 279
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source59-qualified-symbols-focus/native/chemical/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source59-qualified-symbols-focus/00/silhouette_manifest.json",
+      "sha256": "dcdf608752dedca4157528615f6cf416f10b95c02e9d6e09462ce03cb3b9073b",
+      "bytes": 22483
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source59-qualified-symbols-focus/native/chemical/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source59-qualified-symbols-focus/00/run_manifest.json",
+      "sha256": "5c07cf0044f3a1156dbeab82d12c2f8d5e07631fe20947316fea31d48803c355",
+      "bytes": 14398
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source59-qualified-symbols-native.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source59-qualified-symbols-focus/00/render.txt",
+      "sha256": "cf051c3b93803fcd6a2eb72d89ede6f7b943e14797181703b061549d10d9af01",
+      "bytes": 10285
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source59-qualified-symbols-focus/wasm/chemical/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source59-qualified-symbols-focus/01/silhouette.tsv",
+      "sha256": "288c27d6b8e90200479c0c2e8e8a40f85e884c02150f69090ce616e4f2983daa",
+      "bytes": 275
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source59-qualified-symbols-focus/wasm/chemical/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source59-qualified-symbols-focus/01/silhouette_manifest.json",
+      "sha256": "688457b037144b7f18066f3eaff0fe6edd9abcc47baf002f9b3cff974dff2102",
+      "bytes": 22853
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source59-qualified-symbols-focus/wasm/chemical/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source59-qualified-symbols-focus/01/run_manifest.json",
+      "sha256": "56b400e12c8606ceef4c09d894d639926618248c6672838b245dca1c25c4e2fb",
+      "bytes": 14779
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source59-qualified-symbols-wasm.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source59-qualified-symbols-focus/01/render.txt",
+      "sha256": "f0f0a4c9b08e3425193213672a1b913e4fe140de16498903f009a7d7398d4b7a",
+      "bytes": 4303
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source60-qualified-symbols-full-focus-state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source60-qualified-symbols-full-focus-state.json",
+      "sha256": "e9de480ed0e8fe8eb017179627dff9f70629c544394e9e78de569946ac8e1d2d",
+      "bytes": 376966
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source60-qualified-symbols-full-focus/native/base/chemical/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source60-qualified-symbols-full-focus/00/silhouette.tsv",
+      "sha256": "d55cc0d20d9cf48ab7af6139c63f9c7ce9d90ff2cd4d0c668a810fccb2ae63f3",
+      "bytes": 2268
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source60-qualified-symbols-full-focus/native/base/chemical/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source60-qualified-symbols-full-focus/00/silhouette_manifest.json",
+      "sha256": "e04d08709ede796cafa2e087c58ef12f490ba89b69a08d2359e3216460b8fc5b",
+      "bytes": 107578
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source60-qualified-symbols-full-focus/native/base/chemical/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source60-qualified-symbols-full-focus/00/run_manifest.json",
+      "sha256": "381f5b6c1933a7b45c1bfec3c7d1aa6ce8ee91ad94489c811a4cde76d5d455d0",
+      "bytes": 15154
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source60-qualified-symbols-full-native-base.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source60-qualified-symbols-full-focus/00/render.txt",
+      "sha256": "095b6bc65ce9706ad24bf8d8da261726c350010a79b0e557e8be914f83938045",
+      "bytes": 53293
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source60-qualified-symbols-full-focus/native/candidate/chemical/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source60-qualified-symbols-full-focus/01/silhouette.tsv",
+      "sha256": "d55cc0d20d9cf48ab7af6139c63f9c7ce9d90ff2cd4d0c668a810fccb2ae63f3",
+      "bytes": 2268
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source60-qualified-symbols-full-focus/native/candidate/chemical/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source60-qualified-symbols-full-focus/01/silhouette_manifest.json",
+      "sha256": "6e62d1e7e4e19727ac94172dfb21df1c6191a1c7036d5f707a5afaae20ba00ea",
+      "bytes": 108618
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source60-qualified-symbols-full-focus/native/candidate/chemical/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source60-qualified-symbols-full-focus/01/run_manifest.json",
+      "sha256": "3a4b4ac8412b0ff1d40d8f98595f076f48b0f40e513cca439c63efbddace110e",
+      "bytes": 15154
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source60-qualified-symbols-full-native-candidate.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source60-qualified-symbols-full-focus/01/render.txt",
+      "sha256": "26a1883774f9081ff3128977fbaf1f6e2a3d6188e7f2477176cca67cace03278",
+      "bytes": 53848
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source60-qualified-symbols-full-focus/wasm/base/chemical/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source60-qualified-symbols-full-focus/02/silhouette.tsv",
+      "sha256": "e2843b70804c78b9ff050bc92b84fd12a26459276cc633749808b8952bfed454",
+      "bytes": 2224
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source60-qualified-symbols-full-focus/wasm/base/chemical/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source60-qualified-symbols-full-focus/02/silhouette_manifest.json",
+      "sha256": "82e339ab429da9adcdf6e286044d175e9dc69dd249c4c3200ed622d4513b2206",
+      "bytes": 107768
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source60-qualified-symbols-full-focus/wasm/base/chemical/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source60-qualified-symbols-full-focus/02/run_manifest.json",
+      "sha256": "b56919793e03c947b750ed85a64bdbabe4a284116eff6627192f46cfdf95cf84",
+      "bytes": 15535
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source60-qualified-symbols-full-wasm-base.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source60-qualified-symbols-full-focus/02/render.txt",
+      "sha256": "8bf3e02fd42f73e88d8680d4e6578a8de22c577af72f15cff577227081b7f149",
+      "bytes": 40664
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source60-qualified-symbols-full-focus/wasm/candidate/chemical/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source60-qualified-symbols-full-focus/03/silhouette.tsv",
+      "sha256": "e2843b70804c78b9ff050bc92b84fd12a26459276cc633749808b8952bfed454",
+      "bytes": 2224
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source60-qualified-symbols-full-focus/wasm/candidate/chemical/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source60-qualified-symbols-full-focus/03/silhouette_manifest.json",
+      "sha256": "de5c5e8a1541e049959e308aa27049960d661727ddd72b3a9e2a0adcd95e200e",
+      "bytes": 108808
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source60-qualified-symbols-full-focus/wasm/candidate/chemical/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source60-qualified-symbols-full-focus/03/run_manifest.json",
+      "sha256": "c55a64d356524e433a1380487e0f767b4ef79a7a84408e6503aafa89dcaae46e",
+      "bytes": 15535
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source60-qualified-symbols-full-wasm-candidate.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source60-qualified-symbols-full-focus/03/render.txt",
+      "sha256": "33a397788c24c0cfc469505fd0d5868592fa2858857f6ca51552a7d6531802af",
+      "bytes": 41229
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source61-human-myeongjo-verified-ttc.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source61-human-myeongjo-verified-ttc.json",
+      "sha256": "8926016170c36ed03af640da471a3356afd4b583b3245c169cb130a6cfc90986",
+      "bytes": 1240
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source61-human-myeongjo-original-ttf.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source61-human-myeongjo-original-ttf.json",
+      "sha256": "8df19e383a1cfcffe61bd0cecdddabd22b9e0c7166b48205135b19c78a9b3ce6",
+      "bytes": 681
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source62-decree-original-fonts-exact-ttf-focus-state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source62-decree-original-fonts-exact-ttf-focus-state.json",
+      "sha256": "720e92cfd2d8bc593b61f7f8d15d1c679463bcde754197619e49deb7b8950a63",
+      "bytes": 273093
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source62-decree-original-fonts-exact-ttf-focus/native/base/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source62-decree-original-fonts-exact-ttf-focus/00/silhouette.tsv",
+      "sha256": "8bce7b993969e69106ab7f62fc0504a725a08c7ead5f1f7ada43d10af425087e",
+      "bytes": 269
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source62-decree-original-fonts-exact-ttf-focus/native/base/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source62-decree-original-fonts-exact-ttf-focus/00/silhouette_manifest.json",
+      "sha256": "ab1369161b0899c0673eae0675bcce3c16a04adeb02db4214cc203999bbfddf9",
+      "bytes": 13735
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source62-decree-original-fonts-exact-ttf-focus/native/base/decree/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source62-decree-original-fonts-exact-ttf-focus/00/run_manifest.json",
+      "sha256": "52121e59f13b4e5ac7b40d9be653d93e307a7bbaca8eb23c832e7bf78da55ef2",
+      "bytes": 5320
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source62-decree-original-fonts-native-base.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source62-decree-original-fonts-exact-ttf-focus/00/render.txt",
+      "sha256": "473a87650ab9e8407aeb3614a39e1ea2682cbad3a68fa263575ff30bdd5f66c4",
+      "bytes": 5272
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source62-decree-original-fonts-exact-ttf-focus/native/candidate/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source62-decree-original-fonts-exact-ttf-focus/01/silhouette.tsv",
+      "sha256": "8bce7b993969e69106ab7f62fc0504a725a08c7ead5f1f7ada43d10af425087e",
+      "bytes": 269
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source62-decree-original-fonts-exact-ttf-focus/native/candidate/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source62-decree-original-fonts-exact-ttf-focus/01/silhouette_manifest.json",
+      "sha256": "a172a78c5da97d5df3f08bd449f0bce1bf8502983ed11971b4c0c21614306576",
+      "bytes": 13825
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source62-decree-original-fonts-exact-ttf-focus/native/candidate/decree/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source62-decree-original-fonts-exact-ttf-focus/01/run_manifest.json",
+      "sha256": "0053089bd03be9c4e3fcff8710a70755c31c2d3602da0fadd8bd8094a8550223",
+      "bytes": 5320
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source62-decree-original-fonts-native-candidate.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source62-decree-original-fonts-exact-ttf-focus/01/render.txt",
+      "sha256": "839f5a6ccbdab02c38dd6e2740b3be2d94e2fbd287014710b29ae0a0914b7e90",
+      "bytes": 5337
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source62-decree-original-fonts-exact-ttf-focus/wasm/base/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source62-decree-original-fonts-exact-ttf-focus/02/silhouette.tsv",
+      "sha256": "a07ba1acf57409548e0db8a2611af5379fb2e1438ddf9c0b47ba3f3273d69692",
+      "bytes": 277
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source62-decree-original-fonts-exact-ttf-focus/wasm/base/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source62-decree-original-fonts-exact-ttf-focus/02/silhouette_manifest.json",
+      "sha256": "4fb4503f9dda9096f2d5b837ba94da30cdb014b911408978000ad2c27461962f",
+      "bytes": 14136
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source62-decree-original-fonts-exact-ttf-focus/wasm/base/decree/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source62-decree-original-fonts-exact-ttf-focus/02/run_manifest.json",
+      "sha256": "e7013aca8734dc063f4212c2ee675cb6264142023c1286482485d3453a018112",
+      "bytes": 5783
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source62-decree-original-fonts-wasm-base.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source62-decree-original-fonts-exact-ttf-focus/02/render.txt",
+      "sha256": "b70e5a0e65b54fa9f1d2f04b612a92fbfbc8d1700277ace11e790ed9615b92e3",
+      "bytes": 4279
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source62-decree-original-fonts-exact-ttf-focus/wasm/candidate/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source62-decree-original-fonts-exact-ttf-focus/03/silhouette.tsv",
+      "sha256": "a07ba1acf57409548e0db8a2611af5379fb2e1438ddf9c0b47ba3f3273d69692",
+      "bytes": 277
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source62-decree-original-fonts-exact-ttf-focus/wasm/candidate/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source62-decree-original-fonts-exact-ttf-focus/03/silhouette_manifest.json",
+      "sha256": "6a7384e0369444d3a4223977979dcb3fc5c3ffd2ebd9e5f28e4c1a88c6ca355f",
+      "bytes": 14226
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source62-decree-original-fonts-exact-ttf-focus/wasm/candidate/decree/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source62-decree-original-fonts-exact-ttf-focus/03/run_manifest.json",
+      "sha256": "054d390f17d3946a2430f72b9f81d467a6c1ee2ddca46e64e194459da6d78653",
+      "bytes": 5783
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source62-decree-original-fonts-wasm-candidate.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source62-decree-original-fonts-exact-ttf-focus/03/render.txt",
+      "sha256": "c3d0003432f58c2d17b17d00f9eaf3d580c4a773adcaa7b7d13e6ae8f607d042",
+      "bytes": 4349
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source63-decree-selected-programs-exact-ttf-focus-state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source63-decree-selected-programs-exact-ttf-focus-state.json",
+      "sha256": "93052759f7f932117f22d067ec818300d560a89c511c23e984c41d458e7fe93a",
+      "bytes": 273149
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source63-decree-selected-programs-exact-ttf-focus/native/base/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source63-decree-selected-programs-exact-ttf-focus/00/silhouette.tsv",
+      "sha256": "8bce7b993969e69106ab7f62fc0504a725a08c7ead5f1f7ada43d10af425087e",
+      "bytes": 269
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source63-decree-selected-programs-exact-ttf-focus/native/base/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source63-decree-selected-programs-exact-ttf-focus/00/silhouette_manifest.json",
+      "sha256": "6dd6996c50336fd17f6e2505ac41fa026cbd8969afb3e9c6a3b07c25f6097e6e",
+      "bytes": 13792
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source63-decree-selected-programs-exact-ttf-focus/native/base/decree/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source63-decree-selected-programs-exact-ttf-focus/00/run_manifest.json",
+      "sha256": "b61dc213da9d1a454b245fa49dbfde4398154bacf8c1584788217f388b773a44",
+      "bytes": 5323
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source63-decree-selected-programs-native-base.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source63-decree-selected-programs-exact-ttf-focus/00/render.txt",
+      "sha256": "0977238a57c0162d8a7724f21f0d4e5259068e7a84437b9dd3d4297fa4029e3b",
+      "bytes": 5314
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source63-decree-selected-programs-exact-ttf-focus/native/candidate/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source63-decree-selected-programs-exact-ttf-focus/01/silhouette.tsv",
+      "sha256": "8bce7b993969e69106ab7f62fc0504a725a08c7ead5f1f7ada43d10af425087e",
+      "bytes": 269
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source63-decree-selected-programs-exact-ttf-focus/native/candidate/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source63-decree-selected-programs-exact-ttf-focus/01/silhouette_manifest.json",
+      "sha256": "e155e980760b47275ca25cd336e755a690dc389d1c17fa1fa3b1e8f2e466a1b8",
+      "bytes": 13882
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source63-decree-selected-programs-exact-ttf-focus/native/candidate/decree/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source63-decree-selected-programs-exact-ttf-focus/01/run_manifest.json",
+      "sha256": "b16e20ff384c8a3c013f4d5f63cb51e9e84ac81f070f63aebabef1970179a791",
+      "bytes": 5323
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source63-decree-selected-programs-native-candidate.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source63-decree-selected-programs-exact-ttf-focus/01/render.txt",
+      "sha256": "ae06356722bd0237924f72ea1985155efda795e555f7b6317705d6d137504062",
+      "bytes": 5379
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source63-decree-selected-programs-exact-ttf-focus/wasm/base/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source63-decree-selected-programs-exact-ttf-focus/02/silhouette.tsv",
+      "sha256": "a07ba1acf57409548e0db8a2611af5379fb2e1438ddf9c0b47ba3f3273d69692",
+      "bytes": 277
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source63-decree-selected-programs-exact-ttf-focus/wasm/base/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source63-decree-selected-programs-exact-ttf-focus/02/silhouette_manifest.json",
+      "sha256": "70daf4445a6d986873d0016b29cf4e893239ef85cb860ce6d71d33b293394faf",
+      "bytes": 14193
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source63-decree-selected-programs-exact-ttf-focus/wasm/base/decree/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source63-decree-selected-programs-exact-ttf-focus/02/run_manifest.json",
+      "sha256": "6cafee58cfb74530bb5238e43270e6fdd025a51a748f952b2cbb3c2e67e87b17",
+      "bytes": 5786
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source63-decree-selected-programs-wasm-base.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source63-decree-selected-programs-exact-ttf-focus/02/render.txt",
+      "sha256": "447f15bc63dcfdf81b3a5ef678912cd0bcbbd4ea9a077ea38d31a925d3d134f7",
+      "bytes": 4321
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source63-decree-selected-programs-exact-ttf-focus/wasm/candidate/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source63-decree-selected-programs-exact-ttf-focus/03/silhouette.tsv",
+      "sha256": "a07ba1acf57409548e0db8a2611af5379fb2e1438ddf9c0b47ba3f3273d69692",
+      "bytes": 277
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source63-decree-selected-programs-exact-ttf-focus/wasm/candidate/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source63-decree-selected-programs-exact-ttf-focus/03/silhouette_manifest.json",
+      "sha256": "f0e5792be04186d48ee62c0d4adf45e604443befd3e424221fe787493824e0be",
+      "bytes": 14283
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source63-decree-selected-programs-exact-ttf-focus/wasm/candidate/decree/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source63-decree-selected-programs-exact-ttf-focus/03/run_manifest.json",
+      "sha256": "dab42d960da7c1bcc8b66b76270b810b51198039eaf0a2b3768f324007c6930a",
+      "bytes": 5786
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source63-decree-selected-programs-wasm-candidate.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source63-decree-selected-programs-exact-ttf-focus/03/render.txt",
+      "sha256": "74bb656502f9386c50b2330d398e9fed769abdabf6ee10bb95003428b3f81f38",
+      "bytes": 4391
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source64-decree-palatino-bold-identity.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source64-decree-palatino-bold-identity.json",
+      "sha256": "55f1b876dee013f5aa00513e63c3d1eaba744d9d8f34372a412f5ca3d78cb5f6",
+      "bytes": 1000
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source65-fontconfig-provenance.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source65-fontconfig-provenance.json",
+      "sha256": "df25114c246d273929422de3cef7cb5a789fbe5b883c1d3ecdd88436fda5ab34",
+      "bytes": 1638
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source65-decree-fontconfig-exact-ttf-focus-state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source65-decree-fontconfig-exact-ttf-focus-state.json",
+      "sha256": "a4fd38c0a0005f24c6f58aa7c773e2cd10663214b6650e08f519f413e9f0f0ed",
+      "bytes": 272683
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source65-decree-fontconfig-exact-ttf-focus/native/base/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source65-decree-fontconfig-exact-ttf-focus/00/silhouette.tsv",
+      "sha256": "a07ba1acf57409548e0db8a2611af5379fb2e1438ddf9c0b47ba3f3273d69692",
+      "bytes": 277
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source65-decree-fontconfig-exact-ttf-focus/native/base/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source65-decree-fontconfig-exact-ttf-focus/00/silhouette_manifest.json",
+      "sha256": "1177a82d9a704bc6a1fbf4880ab13a936d4b5cbd7c05bbbff0f9b3acd16a3ab7",
+      "bytes": 12780
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source65-decree-fontconfig-exact-ttf-focus/native/base/decree/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source65-decree-fontconfig-exact-ttf-focus/00/run_manifest.json",
+      "sha256": "080e0b8e64273b60bce7adcf7363bb78ffb1b526b4fe6c882e2e9afddd257141",
+      "bytes": 4463
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source65-decree-fontconfig-native-base.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source65-decree-fontconfig-exact-ttf-focus/00/render.txt",
+      "sha256": "c617a1348d2a97d2d9218c02f89e572ef526f220edcd319a811b101bfc8b082c",
+      "bytes": 4833
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source65-decree-fontconfig-exact-ttf-focus/native/candidate/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source65-decree-fontconfig-exact-ttf-focus/01/silhouette.tsv",
+      "sha256": "a07ba1acf57409548e0db8a2611af5379fb2e1438ddf9c0b47ba3f3273d69692",
+      "bytes": 277
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source65-decree-fontconfig-exact-ttf-focus/native/candidate/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source65-decree-fontconfig-exact-ttf-focus/01/silhouette_manifest.json",
+      "sha256": "2309b566a84f760856c6c17fcd56e35cb64a297097e0447e2970e62de70c76e5",
+      "bytes": 12870
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source65-decree-fontconfig-exact-ttf-focus/native/candidate/decree/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source65-decree-fontconfig-exact-ttf-focus/01/run_manifest.json",
+      "sha256": "f564dba13353abac4bd29d7d643021ca8957d3bbe43b679fd7e1563ec949e974",
+      "bytes": 4463
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source65-decree-fontconfig-native-candidate.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source65-decree-fontconfig-exact-ttf-focus/01/render.txt",
+      "sha256": "bc55d6d4a0183739e43025d6f0c52b212471df3f988354e85901c1796eb1549b",
+      "bytes": 4898
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source65-decree-fontconfig-exact-ttf-focus/wasm/base/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source65-decree-fontconfig-exact-ttf-focus/02/silhouette.tsv",
+      "sha256": "a07ba1acf57409548e0db8a2611af5379fb2e1438ddf9c0b47ba3f3273d69692",
+      "bytes": 277
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source65-decree-fontconfig-exact-ttf-focus/wasm/base/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source65-decree-fontconfig-exact-ttf-focus/02/silhouette_manifest.json",
+      "sha256": "ed3ab09f32f04a2fc20cfa354af1bd9ce9d237f76e09cfac6428d6ae0c3840b7",
+      "bytes": 14067
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source65-decree-fontconfig-exact-ttf-focus/wasm/base/decree/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source65-decree-fontconfig-exact-ttf-focus/02/run_manifest.json",
+      "sha256": "6cafee58cfb74530bb5238e43270e6fdd025a51a748f952b2cbb3c2e67e87b17",
+      "bytes": 5786
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source65-decree-fontconfig-wasm-base.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source65-decree-fontconfig-exact-ttf-focus/02/render.txt",
+      "sha256": "679ccd052b4b7c8955501a3b5fa6d598010b8700ee791a4cfe5b5cc24b6de5d2",
+      "bytes": 4223
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source65-decree-fontconfig-exact-ttf-focus/wasm/candidate/decree/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source65-decree-fontconfig-exact-ttf-focus/03/silhouette.tsv",
+      "sha256": "a07ba1acf57409548e0db8a2611af5379fb2e1438ddf9c0b47ba3f3273d69692",
+      "bytes": 277
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source65-decree-fontconfig-exact-ttf-focus/wasm/candidate/decree/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source65-decree-fontconfig-exact-ttf-focus/03/silhouette_manifest.json",
+      "sha256": "5cd0919e7fe767b372c10b5078bb29f44ebf8adef60604390b511da024a96742",
+      "bytes": 14157
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source65-decree-fontconfig-exact-ttf-focus/wasm/candidate/decree/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source65-decree-fontconfig-exact-ttf-focus/03/run_manifest.json",
+      "sha256": "dab42d960da7c1bcc8b66b76270b810b51198039eaf0a2b3768f324007c6930a",
+      "bytes": 5786
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source65-decree-fontconfig-wasm-candidate.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source65-decree-fontconfig-exact-ttf-focus/03/render.txt",
+      "sha256": "0b9bbb48b558dd7b67a333f20ba1ac6398719a286fd1247c8aa6b88710c67010",
+      "bytes": 4293
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source67-seo-win-arial-state.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source67-seo-win-arial-state.json",
+      "sha256": "0272ce196de1620c5e266da9cc02784373ec1ab101d28e8eebe69c44487c8cfe",
+      "bytes": 253752
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source67-seo-win-arial/native/base/seo-helvetica-styles/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source67-seo-win-arial/00/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source67-seo-win-arial/native/base/seo-helvetica-styles/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source67-seo-win-arial/00/silhouette_manifest.json",
+      "sha256": "4c3007d0736da038d8da480e298c69de96300d929d623c2d9f97018774e4b6bb",
+      "bytes": 6498
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source67-seo-win-arial/native/base/seo-helvetica-styles/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source67-seo-win-arial/00/run_manifest.json",
+      "sha256": "7b4ec569c9c19c387113462887c802ae39b0d79f79c8c185b60a01d923352950",
+      "bytes": 4448
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source67-seo-native-base.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source67-seo-win-arial/00/render.txt",
+      "sha256": "303b76b7c69e1a5bb5962b1495e702e685d40041741628333fc155071e2dc9b1",
+      "bytes": 2338
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source67-seo-win-arial/native/candidate/seo-helvetica-styles/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source67-seo-win-arial/01/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source67-seo-win-arial/native/candidate/seo-helvetica-styles/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source67-seo-win-arial/01/silhouette_manifest.json",
+      "sha256": "8a75ebd214377203ab099f3909911ee89be2ca3f02b6f7bb6f638fbd0b7d9ea8",
+      "bytes": 6518
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source67-seo-win-arial/native/candidate/seo-helvetica-styles/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source67-seo-win-arial/01/run_manifest.json",
+      "sha256": "75371fc9f018c5caa440f9f2daa1d7efcc8f86727c98d35e43dbbb18cd670eb3",
+      "bytes": 4448
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source67-seo-native-candidate.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source67-seo-win-arial/01/render.txt",
+      "sha256": "0597336c3bd42f877a18f669ba33d7b598a5ccd9660b9587a159032d469f0606",
+      "bytes": 2368
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source67-seo-win-arial/wasm/base/seo-helvetica-styles/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source67-seo-win-arial/02/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source67-seo-win-arial/wasm/base/seo-helvetica-styles/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source67-seo-win-arial/02/silhouette_manifest.json",
+      "sha256": "cc528ac9666981d303a1075312c1cbb70581338216aad21825a1d109ba5a974f",
+      "bytes": 6767
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source67-seo-win-arial/wasm/base/seo-helvetica-styles/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source67-seo-win-arial/02/run_manifest.json",
+      "sha256": "c93777a083484c83ae51d875e5370842d2a2c2ac21c1603c94f739a7d481b024",
+      "bytes": 4725
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source67-seo-wasm-base.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source67-seo-win-arial/02/render.txt",
+      "sha256": "f94f0c5e2903c8e9581077946db30fbeeb140b29053a56c2a2e55acd5344a4c3",
+      "bytes": 1788
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source67-seo-win-arial/wasm/candidate/seo-helvetica-styles/silhouette.tsv",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source67-seo-win-arial/03/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source67-seo-win-arial/wasm/candidate/seo-helvetica-styles/silhouette_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source67-seo-win-arial/03/silhouette_manifest.json",
+      "sha256": "782b5a267b79d8701213ea9795aa1ace54e26300ac14e80b96024ddf5512221a",
+      "bytes": 6787
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source67-seo-win-arial/wasm/candidate/seo-helvetica-styles/run_manifest.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source67-seo-win-arial/03/run_manifest.json",
+      "sha256": "a0461c0ec9f973c4534090fe82ccd757f72d1fde4623d31d7b48b8bd642ac703",
+      "bytes": 4725
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/logs/source67-seo-wasm-candidate.txt",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source67-seo-win-arial/03/render.txt",
+      "sha256": "328eaae4ec7a72ed240851f6a446470d7444b7d96e6be5fb91918d192552f4fe",
+      "bytes": 1823
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source68-available-arial-programs.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/source68-available-arial-programs.json",
+      "sha256": "4bf6f4a18d5a147dca3a8146cc685b780f20fe656256fb564684d05a3d4102d3",
+      "bytes": 3566
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source59-direct-review/chemical-074-4x.png",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/direct-review/chemical-074-4x.png",
+      "sha256": "8afdd9171aa2147f9259cea79ad7f9da55f934dbdd77a7514d4c5f4f3083f0b1",
+      "bytes": 23189
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source59-direct-review/regions.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/direct-review/regions.json",
+      "sha256": "fdf025470487a1694bdd7537eb189d2a70c9ec022fa26787ccf05d28d37de292",
+      "bytes": 4559
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source59-direct-review/chemical-061-4x.png",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/direct-review/chemical-061-4x.png",
+      "sha256": "9ece42f730c44c636962ebb4f9a9cb41191c0b2a106bbf5990e6567c2d92d44c",
+      "bytes": 28523
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source59-direct-review/chemical-060-4x.png",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/direct-review/chemical-060-4x.png",
+      "sha256": "fc7da5f27c26b2dcfc364ef70c513e6fbb289bd381c8572fadf467d066561872",
+      "bytes": 8444
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source59-direct-review/chemical-072-4x.png",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/direct-review/chemical-072-4x.png",
+      "sha256": "8e692f8db7cbabb381a3102b006eba9346d9f3eb395ce3db591840d2ec0cd15f",
+      "bytes": 43877
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source59-direct-review/chemical-091-4x.png",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/direct-review/chemical-091-4x.png",
+      "sha256": "fe8e49beb8502fac6e3eb1bb8abb7dbe01f044c0ee91086c2d02c7d96d4b7a34",
+      "bytes": 33167
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/build_source57_independent_symbols.py",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/reproduction/build_source57_independent_symbols.py.txt",
+      "sha256": "23a256cb2bfc691496d3de93e12f0850dbd002a6b994d16b0a8fbf36c32ec12b",
+      "bytes": 4861
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/run_source56_independent_print.py",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/reproduction/run_source56_independent_print.py.txt",
+      "sha256": "77743bf856fd1df16a506556ea27ba7ad14e371d292b9907e88ef0200f5bc007",
+      "bytes": 3460
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source54-font-trace/decree-004.trace.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/font-trace/decree-004.trace.json",
+      "sha256": "1742bc5c7517bf292f439e07e27ca8f0eb22ce868492c70ceec0f77f58ddba73",
+      "bytes": 1135853
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source54-font-trace/decree-004.paint.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/font-trace/decree-004.paint.json",
+      "sha256": "48c953741db5d510c6beb2b1fd3dbd42ffd87f62f81199880853c6fb95debe66",
+      "bytes": 185
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source54-font-trace/chemical-060.trace.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/font-trace/chemical-060.trace.json",
+      "sha256": "3aea7b7c5da72606c7aaef956f7045f81f9c7d84b068a6d7e6db3db80d39c4e4",
+      "bytes": 1769812
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source54-font-trace/chemical-060.paint.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/font-trace/chemical-060.paint.json",
+      "sha256": "be84c5c144f9d74bf3c09af1f0c1515fb37e560971269908da4dba06cdac605f",
+      "bytes": 495
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source54-font-trace/chemical-072.trace.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/font-trace/chemical-072.trace.json",
+      "sha256": "ad6cada419c8ad36b6622c64435888eea59c19c3c547f2d7f1cf96f152460b6f",
+      "bytes": 3474561
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source54-font-trace/chemical-072.paint.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/font-trace/chemical-072.paint.json",
+      "sha256": "4707f2443d458b26aaf8f1419f454e53ed88357417381b35f00f7680e5edf14a",
+      "bytes": 340
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source54-font-trace/chemical-060.environment.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/font-trace/chemical-060.environment.json",
+      "sha256": "3aca5d5af8d57e6fe1fe56660cdc7a93c5aaa06de522fa13ff266f932aee0c74",
+      "bytes": 6108
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source54-font-trace/probe.rs",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/font-trace/probe.rs.txt",
+      "sha256": "df35e747e89272869d9d04c7bfafe8a6f9b1eb320d8369cbbfbc0ab86a57ef5f",
+      "bytes": 1450
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source54-font-trace/environment-probe.rs",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/font-trace/environment-probe.rs.txt",
+      "sha256": "375664e99d9880bdfd47b4c160ac38fc945f80e6005bd53142f5b697cf4d4bf1",
+      "bytes": 1547
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/private-source59-qualified-symbols/environment.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/environments/private-source59-qualified-symbols/environment.json",
+      "sha256": "a18021561187a552c278971b70b3a2a6fdc15a39acbfd7abae969e3d90ee0410",
+      "bytes": 6252
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/private-source63-decree-selected-programs/decree-native.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/environments/private-source63-decree-selected-programs/decree-native.json",
+      "sha256": "751a9c20401b9da40d711240848035806055b7dcd4830e9339d9801fb6031fcf",
+      "bytes": 1179
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/private-source63-decree-selected-programs/decree-wasm.json",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/environments/private-source63-decree-selected-programs/decree-wasm.json",
+      "sha256": "72fa35c7fbb75863be3403be92c5552a00c5227418ff406ad61f833084cda110",
+      "bytes": 1183
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/private-source65-fontconfig/fonts.conf",
+      "path": "mydocs/pr/assets/issues7754_7765/source44/environments/private-source65-fontconfig/fonts.conf",
+      "sha256": "a03da84b0e070506867c819b54525f444fef199c7d164fcdade82830c476c8d9",
+      "bytes": 268
+    }
+  ]
+}

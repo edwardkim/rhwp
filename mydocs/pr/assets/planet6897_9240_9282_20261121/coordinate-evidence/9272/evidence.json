@@ -1,0 +1,53 @@
+{
+  "source_head": "cef9ff9acc08f92431e89450945462514fffa772",
+  "dpi": 96,
+  "raw_metric": "silhouette_raw_match_percent",
+  "origin": "페이지 좌상단",
+  "expected_coordinates_unit": "PDF point",
+  "expected_coordinates": {
+    "6": {
+      "comparison_table_bottom": 505.72
+    },
+    "7": {
+      "following_table_bottom": 499.49
+    }
+  },
+  "tolerance_px": 1,
+  "backends": {
+    "native": {
+      "pages": 7,
+      "minimum_display": "99.98",
+      "displayed_100": 4,
+      "selected_display_raw": {
+        "6": "100.00",
+        "7": "100.00"
+      },
+      "tsv_sha256": "da6c8869a57d141a5a6d92e3a2f34a54c3c36ee3c2a174101de424e74abd69b2",
+      "visual_sweep_manifest_sha256": "50afe87790b4fdecac6ddf1d0eed3af855cd23efded63a73fddeb3ec9143c580",
+      "native_sha256": "6e1935067e80877fc7cb54e49acaa02a3f3ed8a6c6adf428a4530d6933ba29d9"
+    },
+    "wasm": {
+      "pages": 7,
+      "minimum_display": "99.98",
+      "displayed_100": 4,
+      "selected_display_raw": {
+        "6": "100.00",
+        "7": "100.00"
+      },
+      "tsv_sha256": "da6c8869a57d141a5a6d92e3a2f34a54c3c36ee3c2a174101de424e74abd69b2",
+      "visual_sweep_manifest_sha256": "bd705bd1f4d55773936672cab193e3d0d4cced5b640051235e933e2e17d042d9",
+      "wasm_sha256": "18b88fdf2ace019f31d29e00aeef74093860c4aa8f750b1d93b1c435cc2962de",
+      "wasm_js_sha256": "23130c8002fe1aa4e6545910d92ef5716ccb92097747662d2b64ef129ff27b08",
+      "build": "macOS locked web --no-opt"
+    }
+  },
+  "input": {
+    "path": "samples/issue9272/trade-remedy-decree-table-tail-empty-lines.hwpx",
+    "sha256": "37624fffaa34704360298c9edfc3d636f5a0fabd0db040a7bc6a161b73a1301d"
+  },
+  "reference_pdf": {
+    "path": "pdf/issue9272/trade-remedy-decree-table-tail-empty-lines-2024.pdf",
+    "sha256": "25f1443410590604f527e07739b0b33f3f34ba5d207e85b3f2fccac87c859fc7"
+  },
+  "comparison_profile": "print"
+}

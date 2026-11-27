@@ -147,6 +147,7 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
         st,
         para_idx,
         para,
+        paragraphs,
         early_format,
         is_last_in_section,
         available,

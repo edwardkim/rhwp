@@ -73,10 +73,11 @@ export function exportPasswordProtectedDocumentForFormat(
 
 /** 비밀번호 명시 저장에서도 산출 바이트와 보고서를 한 transaction으로 받는다. */
 export function exportPasswordProtectedDocumentWithReportForFormat(
-  exporter: ReportedDocumentFormatPasswordExporter,
+  exporter: Pick<ReportedDocumentFormatPasswordExporter,
+    'exportHwpWithPasswordAndReport' | 'exportHwpxWithPasswordAndReport'>,
   format: Exclude<SaveFormat, 'hml'>,
   password: string,
-): SaveExportArtifact {
+): DocumentExportArtifact {
   return format === 'hwpx'
     ? exporter.exportHwpxWithPasswordAndReport(password)
     : exporter.exportHwpWithPasswordAndReport(password);

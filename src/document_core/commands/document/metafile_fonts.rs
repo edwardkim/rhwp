@@ -6,11 +6,18 @@ impl DocumentCore {
     /// 현재 쪽의 인쇄 트리에서 실제 사용하는 paint 글꼴 자원만 조회한다.
     /// 문서 전체의 사전 적재 목록과 분리하며 원본·줄 구성·쪽 소유를 바꾸지 않는다.
     pub fn get_page_paint_font_requests_native(&self, page: u32) -> Result<String, HwpError> {
-        let tree = self.build_page_tree(page)?;
-        let requests =
-            crate::paint::metafile_fonts::page_requests(&tree.root, self.hangul2024_compat)
-                .map_err(|e| HwpError::RenderError(e.into()))?;
+        let requests = self.page_paint_font_requests(page)?;
         serde_json::to_string(&requests).map_err(|e| HwpError::RenderError(e.to_string()))
+    }
+
+    pub(crate) fn page_paint_font_requests(
+        &self,
+        page: u32,
+    ) -> Result<crate::paint::metafile_fonts::PageFontRequests, HwpError> {
+        self.with_profile_page_tree(page, crate::paint::RenderProfile::Print, |tree| {
+            crate::paint::metafile_fonts::page_requests(&tree.root, self.hangul2024_compat)
+                .map_err(|e| HwpError::RenderError(e.into()))
+        })
     }
 
     /// 공통 텍스트 효과의 실제 SFNT 공급이다. 기존 API 이름은 호환성을 위해 유지한다.

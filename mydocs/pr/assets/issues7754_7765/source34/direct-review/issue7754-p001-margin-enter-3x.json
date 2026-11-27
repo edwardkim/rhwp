@@ -1,0 +1,36 @@
+{
+  "dpi": 96,
+  "crop": [
+    110,
+    620,
+    665,
+    710
+  ],
+  "scale": 3,
+  "created": 1795295179.0878685,
+  "inputs": [
+    {
+      "label": "Independent Hancom Print",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source34-focused-native/issue7754-p001/pdf_png/pdf-001.png",
+      "sha256": "a395bd44c18842bb89135af2466b1702660d805c9495b868a9f1350f9dd093f7"
+    },
+    {
+      "label": "Native before: source33",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/candidate/issue7754-plain/rhwp_png/rhwp_001.png",
+      "sha256": "9645aa849ebd9eaef2a9850a6079b7d09775bf400fa1bdb7733150c224c602c8"
+    },
+    {
+      "label": "Native after: source34",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source34-focused-native/issue7754-p001/rhwp_png/rhwp_001.png",
+      "sha256": "26c76e9f0e0ce487d96baec5f8dfbc2d8bb84db27544505c4c3369bc69a74f47"
+    }
+  ],
+  "panel_sha256": "7d542552f93c030d9ebf954266d2421d33389b149d3d9303e03867640e1107e5",
+  "status": "Native correction confirmed by direct enlarged reading; whole page still needs old-Hangul correction; fresh WASM is pending",
+  "read_at": 1795295229.315972,
+  "observations": [
+    "The source34 paragraph starts beside the icon at the independent Print position; the source33 double-margin and compressed line width are gone.",
+    "The source34 Enter keyboard box, following text and both blue hypertext phrases are present in the same four stored lines and order as independent Print.",
+    "Title old-Hangul and all remaining page details still require completion; 99.59 percent is the full-page numeric score, not a declaration of whole-page completion."
+  ]
+}

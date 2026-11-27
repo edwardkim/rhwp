@@ -1,0 +1,41 @@
+{
+  "reference_font": "INPILL+PalatinoLinotype-Bold",
+  "scope": "Read-only glyph identity, no reference font is supplied.",
+  "files": [
+    {
+      "file": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palab.ttf",
+      "sha256": "8e14668bbae03f78ed668dbe3261218881960dcd9fb80ad6c1d1dfb4226a57c3",
+      "font_revision": 5.029998779296875,
+      "units_per_em": 2048,
+      "reference_units_per_em": 2048,
+      "glyphs": [
+        {
+          "character": "(",
+          "contours_equal": true,
+          "hmtx_equal": true,
+          "reference_hmtx": [
+            682,
+            128
+          ],
+          "supplied_hmtx": [
+            682,
+            128
+          ]
+        },
+        {
+          "character": ")",
+          "contours_equal": true,
+          "hmtx_equal": true,
+          "reference_hmtx": [
+            682,
+            70
+          ],
+          "supplied_hmtx": [
+            682,
+            70
+          ]
+        }
+      ]
+    }
+  ]
+}

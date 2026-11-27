@@ -155,11 +155,12 @@ fn try_serialize_section_inner<S: crate::storage::Storage>(
                 .controls
                 .iter()
                 .any(|c| matches!(c, Control::SectionDef(_)));
-            if !has_real_page_def || (!needs_secd && !needs_default_column) {
+            let needs_definitions = has_real_page_def && (needs_secd || needs_default_column);
+            if !needs_definitions && misplaced_leading_column_def(p).is_none() {
                 Ok(None)
             } else {
                 let mut clone = storage.clone_paragraph(p)?;
-                if needs_secd {
+                if needs_definitions && needs_secd {
                     storage.bytes(std::mem::size_of_val(&section.section_def))?;
                     clone.insert_leading_definition(
                         0,
@@ -169,7 +170,7 @@ fn try_serialize_section_inner<S: crate::storage::Storage>(
                         storage,
                     )?;
                 }
-                if needs_default_column {
+                if needs_definitions && needs_default_column {
                     let leading_defs = clone
                         .controls
                         .iter()
@@ -184,6 +185,14 @@ fn try_serialize_section_inner<S: crate::storage::Storage>(
                         }),
                         storage,
                     )?;
+                }
+                // 한컴 12.30은 구역 정의 바로 뒤에 단 정의가 없으면 첫 구역의 구역 정의(시작 쪽
+                // 번호·기본 탭 간격 등)를 무시한다. 글 앞에 낀 컨트롤(쪽 번호 위치 등) 뒤의 단 정의를
+                // 구역 정의 바로 뒤로 옮긴다. 글 앞 슬롯끼리라 글자 자리는 그대로다.
+                if let Some((secd, cold)) = misplaced_leading_column_def(&clone) {
+                    clone.align_ctrl_data_records();
+                    clone.controls[secd + 1..=cold].rotate_right(1);
+                    clone.ctrl_data_records[secd + 1..=cold].rotate_right(1);
                 }
                 Ok(Some(clone))
             }
@@ -937,6 +946,46 @@ fn push_guide_residue(
         width,
         char_shape_id: residue.char_shape_id,
     });
+}
+
+/// 구역 정의와 그 뒤 첫 단 정의 사이에 다른 컨트롤이 끼었으면 두 차례를 돌려준다.
+/// 단 정의가 글보다 앞 슬롯에 있고 필드·고정폭 빈칸이 그 사이 차례를 가리키지 않을 때만 옮길 수 있다.
+fn misplaced_leading_column_def(para: &Paragraph) -> Option<(usize, usize)> {
+    let secd = para
+        .controls
+        .iter()
+        .position(|c| matches!(c, Control::SectionDef(_)))?;
+    let cold = secd
+        + 1
+        + para.controls[secd + 1..]
+            .iter()
+            .position(|c| matches!(c, Control::ColumnDef(_)))?;
+    if cold == secd + 1 {
+        return None;
+    }
+    let between = |index: &usize| (secd..=cold).contains(index);
+    if para
+        .field_ranges
+        .iter()
+        .any(|range| between(&range.control_idx))
+        || para
+            .nb_space_control_indices
+            .as_ref()
+            .is_some_and(|indices| indices.iter().any(between))
+        || para
+            .layout_field_values
+            .iter()
+            .any(|(index, _)| between(index))
+    {
+        return None;
+    }
+    let text_start = para.char_offsets.first().copied().unwrap_or(u32::MAX);
+    let before_text = control_stream_slots(para)
+        .get(cold)
+        .copied()
+        .flatten()
+        .is_some_and(|(raw, _)| raw < text_start);
+    before_text.then_some((secd, cold))
 }
 
 /// 저장기와 같은 순서로 각 컨트롤의 원본 슬롯 위치를 구한다.

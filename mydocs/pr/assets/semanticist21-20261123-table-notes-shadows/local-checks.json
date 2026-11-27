@@ -1,0 +1,176 @@
+{
+  "base_source": "93e861523623bcd84d57b808edb62af5af2aa82a",
+  "tested_source": "76b905fcaca02693262f1e0621e855c9dacb3568",
+  "native_build_source": "b44b2d4f14dbbf4dfe22a32b7bcbd815be68263f",
+  "checks": [
+    "release-build",
+    "native-lib",
+    "native-picture",
+    "native-pdf",
+    "fmt",
+    "clippy",
+    "clippy-wasm",
+    "workspace-build",
+    "clippy-workspace",
+    "release-lib",
+    "doctest"
+  ],
+  "minimal_font_files": [
+    "NotoSansKR-ExtraLight.ttf",
+    "NotoSansKR-Regular.ttf",
+    "NotoSansSymbols2-Regular.ttf",
+    "RHWPOldHangul-Regular.otf",
+    "RHWPPublicBatang-Regular.ttf"
+  ],
+  "focused": {
+    "passed": 17,
+    "skipped": 2050
+  },
+  "full_regression": {
+    "passed": 13988,
+    "skipped": 45
+  },
+  "native": {
+    "library": {
+      "passed": 4033,
+      "ignored": 12
+    },
+    "picture": {
+      "passed": 2,
+      "skipped": 349
+    },
+    "direct_pdf": {
+      "passed": 37,
+      "skipped": 313
+    }
+  },
+  "native_passed": 4072,
+  "release_library": {
+    "passed": 3976,
+    "ignored": 12
+  },
+  "documentation_tests": {
+    "passed": 8,
+    "ignored": 3
+  },
+  "studio": {
+    "tests": 2834,
+    "pass": 2832,
+    "skipped": 2
+  },
+  "browser_e2e": 5,
+  "visual": {
+    "focus_rows": 38,
+    "protected_rows": 4046,
+    "below": 0,
+    "higher": 0,
+    "missing": 0
+  },
+  "test_topology_checks": {
+    "scripts_passed": 36,
+    "manifest": "[RustTestSuite] 확인 완료: 2482 sources / 10219 static test attrs / 28 suites + 20 exceptions = 48/48 integration targets / nextest 최소 6288 cases / weight 2172639..2177152",
+    "inline": "[RustUnitTier] 확인 완료: 4092 tests / 295 modules / ready 0 / support 85 / white-box 4003 / cfg support items 28"
+  },
+  "new_fixture_validation": {
+    "initial_full_run_failures": [
+      "off_canvas_baseline::off_canvas_does_not_grow_partition_10",
+      "off_canvas_baseline::off_canvas_does_not_grow_partition_3"
+    ],
+    "targeted_passed": 19,
+    "final_full_run_passed": 13988,
+    "independent_page_counts": {
+      "documents": 17,
+      "pages": 19,
+      "all_match": true
+    },
+    "current_source": {
+      "source_files": 17,
+      "page_count": 19,
+      "column_geometry_matches_base": 2,
+      "clean_security_checks": 51,
+      "samples_with_vertical_clipping": 0,
+      "hancom2020_shadow": {
+        "native": "99.86",
+        "wasm": "99.86"
+      }
+    }
+  },
+  "existing_external_clipping_controls": {
+    "measured_from_manifest": 0,
+    "missing_from_manifest_paths": 92,
+    "gate_exit": 1,
+    "supplemental_same_name_comparison": {
+      "matching_names": 5,
+      "same_input_results": 5,
+      "measured": 5,
+      "pages_in_candidate": 6,
+      "clipped_in_base": 0,
+      "clipped_in_candidate": 0,
+      "identity_to_official_source": "not independently established"
+    },
+    "current_source": {
+      "official_measured": 0,
+      "official_missing": 92,
+      "official_exit": 1,
+      "supplemental_files": 5,
+      "pages": 6,
+      "clipped_pages": 0
+    }
+  },
+  "original_pr_checks": {
+    "observed": "2026-11-23T08:20:30.987534+09:00",
+    "originals": [
+      {
+        "number": 9284,
+        "head": "eeff0619f5fa5a8b53c9b7779423ccba7fa74754",
+        "overall": "SUCCESS",
+        "checks": 41,
+        "closing_issues": 0,
+        "failures_or_pending": []
+      },
+      {
+        "number": 9310,
+        "head": "60b610ae6a44cfb745e90313481f9eed53098c29",
+        "overall": "FAILURE",
+        "checks": 41,
+        "closing_issues": 0,
+        "failures_or_pending": [
+          [
+            "Canvas visual diff",
+            "FAILURE",
+            "https://github.com/edwardkim/rhwp/actions/runs/45073060249/job/137364183656"
+          ],
+          [
+            "CI Impact Policy",
+            "FAILURE",
+            "https://github.com/edwardkim/rhwp/actions/runs/45075759883"
+          ]
+        ]
+      },
+      {
+        "number": 9313,
+        "head": "6bf8de80862a9dfc358c8e427361553bdbd0cc38",
+        "overall": "SUCCESS",
+        "checks": 41,
+        "closing_issues": 0,
+        "failures_or_pending": []
+      },
+      {
+        "number": 9315,
+        "head": "5a463d48a7f01565426fc710ea36a275005c5c69",
+        "overall": "SUCCESS",
+        "checks": 37,
+        "closing_issues": 0,
+        "failures_or_pending": []
+      },
+      {
+        "number": 9323,
+        "head": "7c505b07e44baa8f1cb3b49c06409c84186fbad1",
+        "overall": "SUCCESS",
+        "checks": 39,
+        "closing_issues": 0,
+        "failures_or_pending": []
+      }
+    ]
+  }
+}

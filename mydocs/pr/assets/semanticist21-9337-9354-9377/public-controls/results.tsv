@@ -1,0 +1,9 @@
+input	backend	raw_minimum_percent	tsv	example_page	review	overlay
+samples/re-03-latin-only-hancom.hwp	native	100.0	re-03-latin-only-hancom-native.tsv	1	re-03-latin-only-hancom-native-review.png	re-03-latin-only-hancom-native-overlay.png
+samples/re-03-latin-only-hancom.hwp	wasm	100.0	re-03-latin-only-hancom-wasm.tsv	1	re-03-latin-only-hancom-wasm-review.png	re-03-latin-only-hancom-wasm-overlay.png
+mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx	native	100.0	angle-2400-native.tsv	1	angle-2400-native-review.png	angle-2400-native-overlay.png
+mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx	wasm	100.0	angle-2400-wasm.tsv	1	angle-2400-wasm-review.png	angle-2400-wasm-overlay.png
+samples/pic-crop-01.hwp	native	99.99756	pic-crop-01-native.tsv	1	pic-crop-01-native-review.png	pic-crop-01-native-overlay.png
+samples/pic-crop-01.hwp	wasm	99.99756	pic-crop-01-wasm.tsv	1	pic-crop-01-wasm-review.png	pic-crop-01-wasm-overlay.png
+samples/shape-group-02.hwp	native	100.0	shape-group-02-native.tsv	1	shape-group-02-native-review.png	shape-group-02-native-overlay.png
+samples/shape-group-02.hwp	wasm	100.0	shape-group-02-wasm.tsv	1	shape-group-02-wasm-review.png	shape-group-02-wasm-overlay.png

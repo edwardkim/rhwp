@@ -1,0 +1,399 @@
+{
+  "started": 1795337886.0168245,
+  "scope": "Completed review-only debug incremental caches; all Cargo/Rust work terminated before rebuilding the corrected candidate. No profile/deps/binary or visual evidence removed.",
+  "processes": [],
+  "roots": [
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_027-3j2a9xdh0tn4z",
+      "bytes": 51437568
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_001-2cbamrniuxna0",
+      "bytes": 50065408
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_028-1rbpf0ltaeu1d",
+      "bytes": 49364992
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_015-3dw3c4x8i3giq",
+      "bytes": 49352704
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_006-2cwgmbgp16qdy",
+      "bytes": 46874624
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_014-0g8ol3lgchlrg",
+      "bytes": 45891584
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4969_shaping_glyph_lowering-298azh7b9bsny",
+      "bytes": 44318720
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4969_shaping_request_contract-30at8lq1c5o6e",
+      "bytes": 43905024
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4969_shaping_shadow_context-14p15bru12tsw",
+      "bytes": 42950656
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/hayro_jpeg2000-2jgt9vylgak9i",
+      "bytes": 39186432
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4969_shaping_emitted_run_mapping-2k1t9hd9r18m6",
+      "bytes": 38240256
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4969_shaping_composition_handoff-3nbcivci3e4mw",
+      "bytes": 36548608
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_native_ffi-20nawc0k6nuon",
+      "bytes": 36122624
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_native_ffi-2ols8k5egmka4",
+      "bytes": 35991552
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4969_shaping_paragraph_transaction-3kq8y9og81b0v",
+      "bytes": 35131392
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/host_panic-0nmn3qb5ow832",
+      "bytes": 34775040
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4969_shaping_page_sidecar-1iwtrfv3fdcmr",
+      "bytes": 33316864
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/hayro_jbig2-0p4r17bpajqon",
+      "bytes": 32018432
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_q-25k0vl2ucj2a6",
+      "bytes": 30023680
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_q-26z4wpbba8zkp",
+      "bytes": 29917184
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_q-21o6df6lvoz44",
+      "bytes": 29872128
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_ooxml_chart-0d4ub2k8j8b3i",
+      "bytes": 29220864
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_password_crypto-2tk4s81tpl6ox",
+      "bytes": 28286976
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/svg2pdf-36ug736y7zerg",
+      "bytes": 28237824
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4100_chart_data_edit-08jirppdsvrmg",
+      "bytes": 26726400
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/jpeg_decoder_limited-0ep9ilc747bkc",
+      "bytes": 24956928
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/batch_convert-20cqruurr7dox",
+      "bytes": 24539136
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/zune_jpeg_limited-35gx73lf8nj7g",
+      "bytes": 24068096
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_agent-299qu4cff12se",
+      "bytes": 21057536
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_agent-275lthx27cub2",
+      "bytes": 20979712
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_agent-318fuwig7oe4k",
+      "bytes": 20905984
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4099_hwpx_chart_to_hwp-3b3zttpsvd4hn",
+      "bytes": 19955712
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4055_b1_chart_edit_probe-1nb79zzopc7zn",
+      "bytes": 19619840
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_claim_bind-355oowp0pfttz",
+      "bytes": 19316736
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_verdict_protocol-0ovw85qkfhnb8",
+      "bytes": 19103744
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/qcms-2f6xfwrp742s7",
+      "bytes": 19009536
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_criteria_decomp-1uzekcns1zo1j",
+      "bytes": 18931712
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/hayro_jpeg2000-3axzu6jfu1n56",
+      "bytes": 18841600
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4098_legacy_chart_grid-3bl9hbifjwdvy",
+      "bytes": 18706432
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_ooxml_chart-22gw20gt8glca",
+      "bytes": 17563648
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/hayro_jbig2-3m2ynylf0g9zy",
+      "bytes": 15753216
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/svg2pdf-3bqk6vie236mr",
+      "bytes": 14606336
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/svg2pdf-0a1a1ymvkx530",
+      "bytes": 14602240
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/zune_jpeg_limited-13jv3w1c7xll2",
+      "bytes": 14028800
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_contracts-2s64mcuq253uk",
+      "bytes": 12820480
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/jpeg_encoder-3oqu2pyaarceb",
+      "bytes": 12570624
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_ooxml_chart-0al9by4bnl46h",
+      "bytes": 12525568
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/jpeg_decoder_limited-3qwi2sv1a6dxy",
+      "bytes": 11829248
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/batch_convert-0u3yi7ikyp8ym",
+      "bytes": 9928704
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/batch_convert-0ec3yyjxbo3mw",
+      "bytes": 9826304
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_claim_bind-2awhnhoop8nej",
+      "bytes": 9048064
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_verdict_protocol-19d0rbwc5zoqx",
+      "bytes": 9015296
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_claim_bind-3j3itfliq3w7u",
+      "bytes": 9011200
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/qcms-182zubcej54re",
+      "bytes": 8962048
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_verdict_protocol-3n7hblmxffiac",
+      "bytes": 8871936
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/jpeg_encoder-0j9tengo6a23o",
+      "bytes": 8712192
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/edit_sweep-26xvepsou9ch8",
+      "bytes": 8691712
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_criteria_decomp-36qfy0za9rb0w",
+      "bytes": 8495104
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_criteria_decomp-1q0z01qk6scwc",
+      "bytes": 8278016
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/overflow_cell_baseline-09pkdf157cgho",
+      "bytes": 8101888
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/pdf_isolation_host-3dpk9f0yxsu51",
+      "bytes": 7364608
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_password_crypto-01jgkr6okjoxy",
+      "bytes": 7274496
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_password_crypto-16ny5oga8j0lx",
+      "bytes": 7270400
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_password_crypto-13up4fpbxzz9i",
+      "bytes": 7233536
+    }
+  ],
+  "locks": [
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_027-3j2a9xdh0tn4z/s-hoe02d08z9-076e3nn.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_027-3j2a9xdh0tn4z/s-hodu8bxq4e-130tw2e.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_001-2cbamrniuxna0/s-hodu7y1ykh-1101law.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_001-2cbamrniuxna0/s-hoe02pyuu8-0ol75yy.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_028-1rbpf0ltaeu1d/s-hodu766otu-0hsktr3.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_028-1rbpf0ltaeu1d/s-hoe031sh7l-0jnvbhy.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_015-3dw3c4x8i3giq/s-hodu7uk0rl-1x63ipr.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_015-3dw3c4x8i3giq/s-hoe02v29oa-1cmos0g.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_006-2cwgmbgp16qdy/s-hoe01oqf13-03o8wmh.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_006-2cwgmbgp16qdy/s-hodu8iznkc-1bz1iuo.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_014-0g8ol3lgchlrg/s-hodu82wllb-0l1jl94.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/regression_suite_014-0g8ol3lgchlrg/s-hoe032wd0v-0lb9lsq.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4969_shaping_glyph_lowering-298azh7b9bsny/s-hodu6zeh4o-1l9r2ko.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4969_shaping_glyph_lowering-298azh7b9bsny/s-hoe02yhzi9-039zh24.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4969_shaping_request_contract-30at8lq1c5o6e/s-hodu7tnvsj-0j5o5i4.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4969_shaping_request_contract-30at8lq1c5o6e/s-hoe03lqmjg-01dr3le.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4969_shaping_shadow_context-14p15bru12tsw/s-hoe03scx6g-0lyy4yd.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4969_shaping_shadow_context-14p15bru12tsw/s-hodu7w16cg-1n8hrl4.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/hayro_jpeg2000-2jgt9vylgak9i/s-hodh2na4ja-16cm0c1.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/hayro_jpeg2000-2jgt9vylgak9i/s-hoducuz2h8-1lgjh23.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4969_shaping_emitted_run_mapping-2k1t9hd9r18m6/s-hodu7nxe3e-13eh4sa.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4969_shaping_emitted_run_mapping-2k1t9hd9r18m6/s-hoe02onqrh-1dp10vi.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4969_shaping_composition_handoff-3nbcivci3e4mw/s-hoe03kleq0-06zt92w.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4969_shaping_composition_handoff-3nbcivci3e4mw/s-hodu82ehpw-0yyarkn.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_native_ffi-20nawc0k6nuon/s-hoe02r5jpn-1q2z67h.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_native_ffi-20nawc0k6nuon/s-hodu8gxi60-1odah5a.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_native_ffi-2ols8k5egmka4/s-hodu83sdx2-1sunkg3.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_native_ffi-2ols8k5egmka4/s-hoe03n55vf-0i81nz9.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4969_shaping_paragraph_transaction-3kq8y9og81b0v/s-hoe02pljn7-1lemce4.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4969_shaping_paragraph_transaction-3kq8y9og81b0v/s-hodu7ryjv2-0csfgnx.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/host_panic-0nmn3qb5ow832/s-hodu87g05w-0qu47gr.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/host_panic-0nmn3qb5ow832/s-hoe02hd6e2-016tjcg.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4969_shaping_page_sidecar-1iwtrfv3fdcmr/s-hoe03navti-1dmgl98.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4969_shaping_page_sidecar-1iwtrfv3fdcmr/s-hodu7poqb9-0o3ratk.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/hayro_jbig2-0p4r17bpajqon/s-hodh2ib6ai-1jnjzo1.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/hayro_jbig2-0p4r17bpajqon/s-hoducu58ov-0enzm6b.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_q-25k0vl2ucj2a6/s-hoe03llcg8-1i8nivc.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_q-25k0vl2ucj2a6/s-hodu836dth-1rnbygl.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_q-26z4wpbba8zkp/s-hoe030ex8y-1nt6t9p.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_q-26z4wpbba8zkp/s-hodu6sfz3s-0fvp8i2.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_q-21o6df6lvoz44/s-hodgu0aupp-1473rhe.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_q-21o6df6lvoz44/s-hodwsgbnlz-085crdb.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_ooxml_chart-0d4ub2k8j8b3i/s-hodh2xftyb-08r8kfk.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_ooxml_chart-0d4ub2k8j8b3i/s-hoduczp9gk-0cq55vr.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_password_crypto-2tk4s81tpl6ox/s-hodh2u4obb-0hwfxza.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_password_crypto-2tk4s81tpl6ox/s-hoducvz0dh-18278rg.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/svg2pdf-36ug736y7zerg/s-hoducxduwn-0g4fhsk.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/svg2pdf-36ug736y7zerg/s-hodh2vbiy9-1r6yqel.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4100_chart_data_edit-08jirppdsvrmg/s-hoe01ym3jg-12d8xun.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4100_chart_data_edit-08jirppdsvrmg/s-hodu8aiyxe-1o96sv7.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/jpeg_decoder_limited-0ep9ilc747bkc/s-hodh2pzuy9-13cuicn.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/jpeg_decoder_limited-0ep9ilc747bkc/s-hoduct22q6-1p1s4vw.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/batch_convert-20cqruurr7dox/s-hodh355m4q-07zuceh.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/batch_convert-20cqruurr7dox/s-hodud2rs1g-0uqt5bp.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/zune_jpeg_limited-35gx73lf8nj7g/s-hodh2qkf1a-0a3g0le.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/zune_jpeg_limited-35gx73lf8nj7g/s-hoduct2gil-0tn8r6g.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_agent-299qu4cff12se/s-hodu8e9y9z-0ldg975.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_agent-299qu4cff12se/s-hoe020og07-0srayqe.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_agent-275lthx27cub2/s-hoe02sneso-1stx6e0.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_agent-275lthx27cub2/s-hodu7x32g8-0u51yn1.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_agent-318fuwig7oe4k/s-hodwsgbnk4-1lzeiuq.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_agent-318fuwig7oe4k/s-hodgu0au9e-1dj51v5.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4099_hwpx_chart_to_hwp-3b3zttpsvd4hn/s-hoe02a82nd-0p9wsg3.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4099_hwpx_chart_to_hwp-3b3zttpsvd4hn/s-hodu76x2c1-12rusjw.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4055_b1_chart_edit_probe-1nb79zzopc7zn/s-hodu7t45iz-07er0pm.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4055_b1_chart_edit_probe-1nb79zzopc7zn/s-hoe02zv0wr-1tie009.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_claim_bind-355oowp0pfttz/s-hodud4tobj-0m6mkqq.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_claim_bind-355oowp0pfttz/s-hodh35xd0g-0a56aun.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_verdict_protocol-0ovw85qkfhnb8/s-hodh337eeu-1lbnk9w.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_verdict_protocol-0ovw85qkfhnb8/s-hodud2l1un-0nh2os8.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/qcms-2f6xfwrp742s7/s-hoduculom3-01de1g5.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/qcms-2f6xfwrp742s7/s-hodh2ozmat-1ailxtg.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_criteria_decomp-1uzekcns1zo1j/s-hodh33v9e6-0mqmynn.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_criteria_decomp-1uzekcns1zo1j/s-hodud65jdw-0ag687l.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/hayro_jpeg2000-3axzu6jfu1n56/s-hodgqn01ca-0t5us64.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/hayro_jpeg2000-3axzu6jfu1n56/s-hodu3hp33m-1vrm4zm.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4098_legacy_chart_grid-3bl9hbifjwdvy/s-hodu85irwd-0llrvm3.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/issue_4098_legacy_chart_grid-3bl9hbifjwdvy/s-hoe02ozz6d-1jigtki.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_ooxml_chart-22gw20gt8glca/s-hodiu6rdjt-1jvx6yn.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_ooxml_chart-22gw20gt8glca/s-hodu3nzync-0r6q2mr.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/hayro_jbig2-3m2ynylf0g9zy/s-hodu3hauoy-1lcckhv.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/hayro_jbig2-3m2ynylf0g9zy/s-hodgqj4or6-1jem4ds.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/svg2pdf-3bqk6vie236mr/s-hoditu90ph-11yl7qw.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/svg2pdf-3bqk6vie236mr/s-hodu3iesmk-0rnaixn.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/svg2pdf-0a1a1ymvkx530/s-hodgqqih65-1lwxbmr.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/svg2pdf-0a1a1ymvkx530/s-hodwopbivn-064e6nh.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/zune_jpeg_limited-13jv3w1c7xll2/s-hodu3gq71n-1h8p1ov.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/zune_jpeg_limited-13jv3w1c7xll2/s-hodgqndmld-0m9hn3r.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_contracts-2s64mcuq253uk/s-hodh2zvdd2-1259lrs.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_contracts-2s64mcuq253uk/s-hodud1emyo-1rn2rzr.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/jpeg_encoder-3oqu2pyaarceb/s-hodh300irt-1cdt84q.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/jpeg_encoder-3oqu2pyaarceb/s-hodud1thtu-0y1bui5.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_ooxml_chart-0al9by4bnl46h/s-hodgqrh0fr-0rv9hjr.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_ooxml_chart-0al9by4bnl46h/s-hodu3k3q9a-01xi0x9.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/jpeg_decoder_limited-3qwi2sv1a6dxy/s-hodgqmdx27-1ifswv2.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/jpeg_decoder_limited-3qwi2sv1a6dxy/s-hodu3gq72x-0tacuan.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/batch_convert-0u3yi7ikyp8ym/s-hodu3mqmuk-166eovg.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/batch_convert-0u3yi7ikyp8ym/s-hodiu4k7of-0tsuncv.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/batch_convert-0ec3yyjxbo3mw/s-hodiu5ir13-0jsdoxt.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/batch_convert-0ec3yyjxbo3mw/s-hodu3n0qkd-1apv303.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_claim_bind-2awhnhoop8nej/s-hodu3otlzm-1tt6fq1.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_claim_bind-2awhnhoop8nej/s-hodiu5zhpa-0vuxmy2.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_verdict_protocol-19d0rbwc5zoqx/s-hodiu35jns-10qo5gt.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_verdict_protocol-19d0rbwc5zoqx/s-hodu3l86lf-0omg1d0.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_claim_bind-3j3itfliq3w7u/s-hodiu4hi69-1e6bue7.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_claim_bind-3j3itfliq3w7u/s-hodu3ly16v-1uqxe8w.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/qcms-182zubcej54re/s-hodgqmwuc2-0mg8h22.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/qcms-182zubcej54re/s-hodu3hoa6t-1vcsrbr.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_verdict_protocol-3n7hblmxffiac/s-hodiu62h1y-019bu38.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_verdict_protocol-3n7hblmxffiac/s-hodu3pdyrg-1pgz4uo.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/jpeg_encoder-0j9tengo6a23o/s-hodu3l2xnv-0rchcde.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/jpeg_encoder-0j9tengo6a23o/s-hodgqsrx29-08udjpj.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/edit_sweep-26xvepsou9ch8/s-hoe02gxf0u-0zmo7z8.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/edit_sweep-26xvepsou9ch8/s-hodu8gixid-1wuz6co.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_criteria_decomp-36qfy0za9rb0w/s-hodiu4fi45-0u9a57d.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_criteria_decomp-36qfy0za9rb0w/s-hodu3lm5ca-1sdsk0r.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_criteria_decomp-1q0z01qk6scwc/s-hodu3o7ed2-0kzr2wl.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/llm_verifier_criteria_decomp-1q0z01qk6scwc/s-hodiu5zcr9-1wx7dud.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/overflow_cell_baseline-09pkdf157cgho/s-hoe03x8cj1-0uq7r8y.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/overflow_cell_baseline-09pkdf157cgho/s-hodu76cqwg-18lkr2n.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/pdf_isolation_host-3dpk9f0yxsu51/s-hodu6uyg9w-0jgtvfu.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/pdf_isolation_host-3dpk9f0yxsu51/s-hoe02qszu5-04t7ppp.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_password_crypto-01jgkr6okjoxy/s-hodu3ilu9x-0i6iw28.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_password_crypto-01jgkr6okjoxy/s-hoditut4rv-06qypll.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_password_crypto-16ny5oga8j0lx/s-hodgqq4kn9-0wpmebx.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_password_crypto-16ny5oga8j0lx/s-hodwopcxdn-16mck2i.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_password_crypto-13up4fpbxzz9i/s-hodu3nv0rt-0h9cwya.lock",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_password_crypto-13up4fpbxzz9i/s-hodiu6jnf2-1l526ws.lock"
+  ],
+  "references": [],
+  "free_before": 1699229696,
+  "ended": 1795337889.3866146,
+  "free_after": 3186593792,
+  "complete": true,
+  "actual_free_delta": 1487364096
+}

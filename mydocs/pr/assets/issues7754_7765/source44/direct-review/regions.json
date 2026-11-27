@@ -1,0 +1,132 @@
+[
+  {
+    "page": 60,
+    "dpi": 96,
+    "crop_px": [
+      180,
+      302,
+      217,
+      335
+    ],
+    "magnification": 4,
+    "image": "output/pr-review/issue7754-nine/source59-direct-review/chemical-060-4x.png",
+    "inputs": [
+      {
+        "path": "output/pr-review/issue7754-nine/source59-qualified-symbols-focus/native/chemical/pdf_png/pdf-060.png",
+        "sha256": "e157f9611043ad3ea53c614dca7b0d10f74bdf751ececc6f868e485bfcd7646b"
+      },
+      {
+        "path": "output/pr-review/issue7754-nine/source59-qualified-symbols-focus/native/chemical/rhwp_png/rhwp_060.png",
+        "sha256": "e6873c4cf95ed174920cf09c151f007c5bb2cde9033c56ac98890341834ad87b"
+      },
+      {
+        "path": "output/pr-review/issue7754-nine/source59-qualified-symbols-focus/wasm/chemical/rhwp_png/rhwp_060.png",
+        "sha256": "1acf09efc41652feaad96fd86cda19166800ba250c435e65ccb7875a591a2ffa"
+      }
+    ]
+  },
+  {
+    "page": 61,
+    "dpi": 96,
+    "crop_px": [
+      165,
+      306,
+      231,
+      352
+    ],
+    "magnification": 4,
+    "image": "output/pr-review/issue7754-nine/source59-direct-review/chemical-061-4x.png",
+    "inputs": [
+      {
+        "path": "output/pr-review/issue7754-nine/source59-qualified-symbols-focus/native/chemical/pdf_png/pdf-061.png",
+        "sha256": "a36d8fd61846df216abe07948a5ceca858f8726db23d4dea3e350233b676bc00"
+      },
+      {
+        "path": "output/pr-review/issue7754-nine/source59-qualified-symbols-focus/native/chemical/rhwp_png/rhwp_061.png",
+        "sha256": "639efacf9ddc0df249ce93bffccb241c13683fdda55508aa0e2a027c2bc38029"
+      },
+      {
+        "path": "output/pr-review/issue7754-nine/source59-qualified-symbols-focus/wasm/chemical/rhwp_png/rhwp_061.png",
+        "sha256": "7f3713f43eb2ff673778892f22efdaa538de7b15362bf9644bfbe05eb6c9eac2"
+      }
+    ]
+  },
+  {
+    "page": 72,
+    "dpi": 96,
+    "crop_px": [
+      440,
+      935,
+      472,
+      1017
+    ],
+    "magnification": 4,
+    "image": "output/pr-review/issue7754-nine/source59-direct-review/chemical-072-4x.png",
+    "inputs": [
+      {
+        "path": "output/pr-review/issue7754-nine/source59-qualified-symbols-focus/native/chemical/pdf_png/pdf-072.png",
+        "sha256": "55504d08927b0c08a9f63583e9c26fd2f81c3644c22844ac49f178fc012fd5a4"
+      },
+      {
+        "path": "output/pr-review/issue7754-nine/source59-qualified-symbols-focus/native/chemical/rhwp_png/rhwp_072.png",
+        "sha256": "f83e116e01744075af40496e0b504088aa9b3d6dc3eb7c1550d289106d5cbe2c"
+      },
+      {
+        "path": "output/pr-review/issue7754-nine/source59-qualified-symbols-focus/wasm/chemical/rhwp_png/rhwp_072.png",
+        "sha256": "d0883f7fc87f627d853228f3a92529f3ee8b78da633c47311dca4daa6d25e8cc"
+      }
+    ]
+  },
+  {
+    "page": 74,
+    "dpi": 96,
+    "crop_px": [
+      520,
+      260,
+      599,
+      316
+    ],
+    "magnification": 4,
+    "image": "output/pr-review/issue7754-nine/source59-direct-review/chemical-074-4x.png",
+    "inputs": [
+      {
+        "path": "output/pr-review/issue7754-nine/source59-qualified-symbols-focus/native/chemical/pdf_png/pdf-074.png",
+        "sha256": "6fc040c64acb99a30f569e7fe3c11a7c0851fe462b09fdd733c87d24b0e09b89"
+      },
+      {
+        "path": "output/pr-review/issue7754-nine/source59-qualified-symbols-focus/native/chemical/rhwp_png/rhwp_074.png",
+        "sha256": "fea4247ae0f44d7934dc761ef5b5d2a61ac89e7d0c0760845c3365472b79e78a"
+      },
+      {
+        "path": "output/pr-review/issue7754-nine/source59-qualified-symbols-focus/wasm/chemical/rhwp_png/rhwp_074.png",
+        "sha256": "3bfcd9b618a2eb24a5fa82aae71f67fadaa7b3d4b8bb13ad2e536cd8b492eaad"
+      }
+    ]
+  },
+  {
+    "page": 91,
+    "dpi": 96,
+    "crop_px": [
+      346,
+      711,
+      399,
+      752
+    ],
+    "magnification": 4,
+    "image": "output/pr-review/issue7754-nine/source59-direct-review/chemical-091-4x.png",
+    "inputs": [
+      {
+        "path": "output/pr-review/issue7754-nine/source59-qualified-symbols-focus/native/chemical/pdf_png/pdf-091.png",
+        "sha256": "98d14f8f5744362bca905986a6f4064b18e2a8231b615ee2db3a64aa7ad2b96f"
+      },
+      {
+        "path": "output/pr-review/issue7754-nine/source59-qualified-symbols-focus/native/chemical/rhwp_png/rhwp_091.png",
+        "sha256": "94c10e7e0a46f36ccd495715328a293cb677d28f8cbe885f0df334ead68a452a"
+      },
+      {
+        "path": "output/pr-review/issue7754-nine/source59-qualified-symbols-focus/wasm/chemical/rhwp_png/rhwp_091.png",
+        "sha256": "258f92aa1098a92219ec9b219d2742a2d82e36f0bfa517bcf98d3ab73d57affb"
+      }
+    ]
+  }
+]

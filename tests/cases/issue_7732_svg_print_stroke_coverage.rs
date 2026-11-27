@@ -126,6 +126,7 @@ fn a_skewed_group_does_not_apply_axis_hints_or_leak_its_state_to_the_next_line()
             section_index: None,
             para_index: None,
             control_index: None,
+            cell_context: None,
         }),
     );
     let root = LayerNode::group(

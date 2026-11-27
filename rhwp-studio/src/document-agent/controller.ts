@@ -338,14 +338,18 @@ export class DocumentAgentController {
     this.offMutation();
   }
 
-  getDocumentState(): RhwpDocumentStateV1 {
+  getDocumentRevision(): Pick<RhwpDocumentStateV1, 'documentEpoch' | 'changeSeq'> {
     this.syncGeneration();
+    return { documentEpoch: this.documentEpoch, changeSeq: this.changeSeq };
+  }
+
+  getDocumentState(): RhwpDocumentStateV1 {
+    const revision = this.getDocumentRevision();
     const format = this.currentFormat();
     return {
       schemaVersion: 1,
       format,
-      documentEpoch: this.documentEpoch,
-      changeSeq: this.changeSeq,
+      ...revision,
       dirty: this.deps.isDirty(),
       pageCount: this.deps.wasm.pageCount,
       documentSha256: exportDocumentSha256(this.deps.wasm, format),

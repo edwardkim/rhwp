@@ -1,0 +1,9 @@
+warning: unused import: `image::GenericImageView`
+  --> /home/tsjang/rhwp/tests/issue_938.rs:17:5
+   |
+17 | use image::GenericImageView;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: 1 warning emitted

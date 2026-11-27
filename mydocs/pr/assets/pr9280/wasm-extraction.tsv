@@ -1,0 +1,17 @@
+file	captured_page	input_sha256	expected_render_glyphs	wrong_symbol_count
+samples/issue5140-version-boundary/legacy-symbols-v5.0.1.5.hwp	1	bd45ac8a92eefc77695a0800130215452cd83f9a2f312e41d4c09385e31857f2	┬ ┘ │ ═	0
+tests/fixtures/issue5140-version-boundary/rhwp-save/v5.hwpx	1	5bdd71ec32501c8cdfd9651fd5aa29998705d2bfa2257f9bb6d21ef3b3edbd17	┬ ┘ │ ═	0
+tests/fixtures/issue5140-version-boundary/hancom/legacy-symbols-v5.0.1.5-2020.hwpx	1	94ee2e7f58dfa328cf4f43b84632f4efb7c7396bad1e880a1b16bab3c79b257f	┬ ┘ │ ═	0
+tests/fixtures/issue5140-version-boundary/rhwp-save/v5.hwpx	1	5bdd71ec32501c8cdfd9651fd5aa29998705d2bfa2257f9bb6d21ef3b3edbd17	┬ ┘ │ ═	0
+tests/fixtures/issue5140-version-boundary/wasm-edit/ref-v5-via-hwp.hwpx	1	135e7bd9a7b49196c5ba7c4f76a6e03c762cf22db84d92fbb614cd071d18ef3e	┬ ┘ │ ═	0
+tests/fixtures/issue5140-version-boundary/wasm-edit/ref-v5-via-hwpx.hwpx	1	7f9a6acfddb959382f1ccbc7b7722761af97204d08338c71ce770f8180bacc36	┬ ┘ │ ═	0
+samples/issue5140-version-boundary/legacy-symbols-v5.0.1.6.hwp	1	7ccb9736edbfbd727c8fdcaa4eff44f4e196168254b3f22c539193e4d78f79d3	ꠇ ꠎ ꠐ ꠲	0
+tests/fixtures/issue5140-version-boundary/rhwp-save/v6.hwpx	1	d546b9bcde769bfda82659b95100443eed5a7c9ea9cb29b09ee6575333fcebec	ꠇ ꠎ ꠐ ꠲	0
+tests/fixtures/issue5140-version-boundary/hancom/legacy-symbols-v5.0.1.6-2020.hwpx	1	ee1e2197d12727f0470c6c0bb8a44efdbd932b6978de57841fa0b8840d9a62ea	ꠇ ꠎ ꠐ ꠲	0
+tests/fixtures/issue5140-version-boundary/rhwp-save/v6.hwpx	1	d546b9bcde769bfda82659b95100443eed5a7c9ea9cb29b09ee6575333fcebec	ꠇ ꠎ ꠐ ꠲	0
+tests/fixtures/issue5140-version-boundary/wasm-edit/ref-v6-via-hwp.hwpx	1	8b8393750928d0fb4720854309b299a64a30812a303c77c2fd611f915a1a9931	ꠇ ꠎ ꠐ ꠲	0
+tests/fixtures/issue5140-version-boundary/wasm-edit/ref-v6-via-hwpx.hwpx	1	108ca02a6f4dfe2e86976e05062b4acfe2d5380dd6fd24bbd1094b26221d88ec	ꠇ ꠎ ꠐ ꠲	0
+samples/issue5800-hancom-symbol.hwp	1	e09951a7ac179344a9f9c3dd9625a6de757a5d5cc5cee2fcb7c76c040959476d	꠲	0
+tests/fixtures/issue5140-version-boundary/rhwp-save/sealmodern.hwpx	1	a7b442eef59fbf46b197d7ef2dbe8f55b743eb0c2159fab175946760df1ec700	꠲	0
+samples/issue5140-version-boundary/issue5800-v5.0.1.5.hwp	1	f3898d64da3f8cf8307fa29bd52d9f3c8339b6003e5ab6610b2325684c32c3c1	═	0
+tests/fixtures/issue5140-version-boundary/rhwp-save/seallegacy.hwpx	1	4eeb0fcf6950e565ebf34d7ae6b04a889fc4a506e39145b8d83baeff27a6b134	═	0

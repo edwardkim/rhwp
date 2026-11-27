@@ -1,0 +1,163 @@
+{
+  "fixed_base": "d7b5286cbf6401678a70eed3d66236a68dd2a72c",
+  "product_source_head": "cef9ff9acc08f92431e89450945462514fffa772",
+  "local_build": "macOS locked web --no-opt",
+  "base_package_sha256": "c32305fcccd7a18bef0f67305cc4674c51b9e4b052d15097038b31c7be7e26cd",
+  "candidate_package_sha256": "18b88fdf2ace019f31d29e00aeef74093860c4aa8f750b1d93b1c435cc2962de",
+  "results": [
+    {
+      "key": "886",
+      "pages": 64,
+      "input_sha256": "a2a6d53dad049bf27c4855e05227e467aba7b71184f43a0dbd1136d972bea13f",
+      "reference_pdf_sha256": "d0fcc123cf3c73aa68ecd6e3ecd7676c887b0c21b6eb13833fce00a3278d6f59",
+      "compat": "2022",
+      "dpi": 96,
+      "font_program_file_count": 1218,
+      "base_tsv": "886/base.tsv",
+      "candidate_tsv": "886/candidate.tsv",
+      "base_tsv_sha256": "a5293673c64a626cf971c2d621d1dd21428b6dec7f8433fe2eafe67a55c4b088",
+      "candidate_tsv_sha256": "62e9bf6e9bea17c71e18a5d8bef4ade1d7452319ee7f703aa586d5923e0a1248",
+      "base_below_gate_exit": 0,
+      "base_minimum_display": "97.53",
+      "candidate_minimum_display": "98.15",
+      "changes": [
+        {
+          "page": 2,
+          "base": "97.53",
+          "candidate": "99.87",
+          "delta_pp": "2.34"
+        }
+      ],
+      "declines_over_two_pp": []
+    },
+    {
+      "key": "9239",
+      "pages": 62,
+      "input_sha256": "7ee3c3ef43b95204383b800fbe36644e7eb5730f399065ebc90bab3c269082a2",
+      "reference_pdf_sha256": "2f7fbdd3cc9f9fe94b02b8ad524667fec96672609e324ec2fe6bfba7698f6151",
+      "compat": "2022",
+      "dpi": 96,
+      "font_program_file_count": 1218,
+      "base_tsv": "9239/base.tsv",
+      "candidate_tsv": "9239/candidate.tsv",
+      "base_tsv_sha256": "8331d76bae684f790ebd4f71cdb6ea5f09b5a6e862f56a00da6b7ff7bbbff690",
+      "candidate_tsv_sha256": "9320f8d36fe2a75cfc73dcbb2b9cd0e2e2dc4f6d6e1d7cf59c2082945db6dd24",
+      "base_below_gate_exit": 1,
+      "base_minimum_display": "0.00",
+      "candidate_minimum_display": "98.86",
+      "changes": [
+        {
+          "page": 11,
+          "base": "93.52",
+          "candidate": "99.99",
+          "delta_pp": "6.47"
+        },
+        {
+          "page": 12,
+          "base": "34.49",
+          "candidate": "99.97",
+          "delta_pp": "65.48"
+        },
+        {
+          "page": 15,
+          "base": "97.04",
+          "candidate": "99.89",
+          "delta_pp": "2.85"
+        },
+        {
+          "page": 16,
+          "base": "97.02",
+          "candidate": "99.97",
+          "delta_pp": "2.95"
+        },
+        {
+          "page": 21,
+          "base": "95.32",
+          "candidate": "99.98",
+          "delta_pp": "4.66"
+        },
+        {
+          "page": 43,
+          "base": "0.00",
+          "candidate": "99.61",
+          "delta_pp": "99.61"
+        }
+      ],
+      "declines_over_two_pp": []
+    },
+    {
+      "key": "9272",
+      "pages": 7,
+      "input_sha256": "37624fffaa34704360298c9edfc3d636f5a0fabd0db040a7bc6a161b73a1301d",
+      "reference_pdf_sha256": "25f1443410590604f527e07739b0b33f3f34ba5d207e85b3f2fccac87c859fc7",
+      "compat": "2024",
+      "dpi": 96,
+      "font_program_file_count": 1218,
+      "base_tsv": "9272/base.tsv",
+      "candidate_tsv": "9272/candidate.tsv",
+      "base_tsv_sha256": "456108f4f1f6c55171c967e8fef01b70648e4ed3dee0de7e348e8344a848efb6",
+      "candidate_tsv_sha256": "da6c8869a57d141a5a6d92e3a2f34a54c3c36ee3c2a174101de424e74abd69b2",
+      "base_below_gate_exit": 1,
+      "base_minimum_display": "0.90",
+      "candidate_minimum_display": "99.98",
+      "changes": [
+        {
+          "page": 6,
+          "base": "82.73",
+          "candidate": "100.00",
+          "delta_pp": "17.27"
+        },
+        {
+          "page": 7,
+          "base": "0.90",
+          "candidate": "100.00",
+          "delta_pp": "99.10"
+        }
+      ],
+      "declines_over_two_pp": []
+    },
+    {
+      "key": "9279",
+      "pages": 3,
+      "input_sha256": "4763ea3fac592f39dccc36808d022edd0be57db2746e38a50cb9dfe5e6726ea9",
+      "reference_pdf_sha256": "1a5a6c2d74197b6e691807b86e1bf3f346779abe623f2ee7e687054de5bde097",
+      "compat": "2024",
+      "dpi": 96,
+      "font_program_file_count": 1218,
+      "base_tsv": "9279/base.tsv",
+      "candidate_tsv": "9279/candidate.tsv",
+      "base_tsv_sha256": "8121c7cb1c3861f46cd45422d50a77c1ab7e7bd436c5ac2f777594a3c609087b",
+      "candidate_tsv_sha256": "469cad8dc2f9a9b3afab10d1d29914f11045fc6d4f2c620aa5ef57f421259607",
+      "base_below_gate_exit": 1,
+      "base_minimum_display": "86.20",
+      "candidate_minimum_display": "100.00",
+      "changes": [
+        {
+          "page": 2,
+          "base": "86.20",
+          "candidate": "100.00",
+          "delta_pp": "13.80"
+        }
+      ],
+      "declines_over_two_pp": []
+    },
+    {
+      "key": "547",
+      "pages": 22,
+      "input_sha256": "bcc0ac10f2410a85b677efea2ed034789820781bed5379109a987de28168924f",
+      "reference_pdf_sha256": "60c46d0c41bd739a7f3609cf5bee2fc0e2178216ce89a9ee602bdd89512d5885",
+      "compat": "2024",
+      "dpi": 96,
+      "font_program_file_count": 1218,
+      "base_tsv": "547/base.tsv",
+      "candidate_tsv": "547/candidate.tsv",
+      "base_tsv_sha256": "d460b6dc98116621a6cdcbad717f77861606b95d26091165efb2bfd043703458",
+      "candidate_tsv_sha256": "d460b6dc98116621a6cdcbad717f77861606b95d26091165efb2bfd043703458",
+      "base_below_gate_exit": 0,
+      "base_minimum_display": "99.68",
+      "candidate_minimum_display": "99.68",
+      "changes": [],
+      "declines_over_two_pp": []
+    }
+  ]
+}

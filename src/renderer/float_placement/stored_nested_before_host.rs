@@ -1,4 +1,4 @@
-//! 원본의 빈 호스트 줄 앞에 저장된 표 상자를 측정·배치에서 공유한다.
+//! 원본 호스트 줄 앞에 저장된 표 상자를 측정·배치에서 공유한다.
 
 use super::{
     hwpunit_to_px, is_para_topbottom_float, signed_hwpunit, ParagraphFloatFlow,
@@ -6,6 +6,7 @@ use super::{
 };
 use crate::model::control::Control;
 use crate::model::paragraph::{LineSeg, Paragraph};
+use crate::model::shape::VertAlign;
 use crate::model::table::{Cell, Table};
 use crate::renderer::style_resolver::ResolvedStyleSet;
 
@@ -167,6 +168,7 @@ pub(crate) fn stored_table_before_host_frame(
         table_height,
         styles,
         dpi,
+        false,
     )
     .or_else(|| {
         terminal_table_before_host_frame(
@@ -180,6 +182,31 @@ pub(crate) fn stored_table_before_host_frame(
             dpi,
         )
     })
+}
+
+/// 첫 글자보다 앞에 저장된 표는 앞뒤 줄이 바깥 상자를 닫을 때만 같은 흐름을 쓴다.
+pub(crate) fn stored_visible_table_before_host_frame(
+    cell: &Cell,
+    para_index: usize,
+    table: &Table,
+    table_height: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<ParagraphFloatPlacement> {
+    if cell.dirty_flag {
+        return None;
+    }
+    stored_table_between_host_frames(
+        &cell.paragraphs,
+        para_index,
+        table,
+        0,
+        0.0,
+        table_height,
+        styles,
+        dpi,
+        true,
+    )
 }
 
 /// [#8560] 뒤 문단이 글자 없는 문단 기준 자리차지 표 하나의 host 여도 그 저장 줄은 뒤 문단의
@@ -202,6 +229,7 @@ fn stored_table_between_host_frames(
     table_height: f64,
     styles: &ResolvedStyleSet,
     dpi: f64,
+    visible_host: bool,
 ) -> Option<ParagraphFloatPlacement> {
     let para = paragraphs.get(para_index)?;
     let previous = paragraphs.get(para_index.checked_sub(1)?)?;
@@ -218,7 +246,18 @@ fn stored_table_between_host_frames(
         || !is_para_topbottom_float(&table.common)
         || !table.common.flow_with_text
         || (table.common.vertical_offset as i32) < 0
-        || !para.text.trim().is_empty()
+        || (!visible_host && !para.text.trim().is_empty())
+        || (visible_host
+            && (!para
+                .text
+                .chars()
+                .any(|ch| !ch.is_whitespace() && !ch.is_control())
+                || para.char_offsets.is_empty()
+                || para.control_text_positions().first().copied() != Some(0)
+                || table.common.vert_align != VertAlign::Top
+                || table.common.vertical_offset != 0
+                || table.outer_margin_top < 0
+                || table.outer_margin_bottom < 0))
         || control_index != 0
         || !matches!(para.controls.as_slice(), [Control::Table(_)])
         || !previous.controls.is_empty()
@@ -227,7 +266,15 @@ fn stored_table_between_host_frames(
                 && match next.controls.as_slice() {
                     [Control::Table(next_table)] => {
                         crate::renderer::composer::stored_first_tac_line(next).is_some()
-                            || next_textless_para_float_host(next, next_table)
+                            || (next_textless_para_float_host(next, next_table)
+                                && (!visible_host
+                                    || (next_table.common.flow_with_text
+                                        && next_table.common.vert_align == VertAlign::Top
+                                        && next_table.common.vertical_offset == 0
+                                        && next
+                                            .line_segs
+                                            .first()
+                                            .is_some_and(|line| line.segment_width == 0))))
                     }
                     _ => false,
                 }))
@@ -242,7 +289,24 @@ fn stored_table_between_host_frames(
         .iter()
         .flat_map(|paragraph| &paragraph.line_segs)
         .collect();
-    if !paragraphs[..=para_index].iter().all(original_lines)
+    // 셀 첫 줄의 단일 단 선언은 저장 좌표를 되감지 않는다.
+    let original_prefix = paragraphs[..=para_index]
+        .iter()
+        .enumerate()
+        .all(|(index, paragraph)| {
+            original_lines(paragraph)
+                || (visible_host
+                    && index == 0
+                    && paragraph.raw_break_type == 0x02
+                    && matches!(paragraph.controls.as_slice(), [Control::ColumnDef(columns)]
+                        if columns.column_count == 1)
+                    && paragraph
+                        .line_segs
+                        .first()
+                        .is_some_and(|line| line.vertical_pos == 0)
+                    && original_line_metrics(paragraph))
+        });
+    if !original_prefix
         || prefix
             .windows(2)
             .any(|pair| pair[1].vertical_pos < pair[0].vertical_pos)
@@ -253,6 +317,9 @@ fn stored_table_between_host_frames(
     let previous_style = styles.para_styles.get(previous.para_shape_id as usize)?;
     let style = styles.para_styles.get(para.para_shape_id as usize)?;
     let next_style = styles.para_styles.get(next.para_shape_id as usize)?;
+    if visible_host && (style.spacing_before != 0.0 || style.spacing_after != 0.0) {
+        return None;
+    }
     let declared = hwpunit_to_px(table.common.height as i32, dpi);
     let epsilon = hwpunit_to_px(2, dpi);
     let lead = hwpunit_to_px(i32::from(table.outer_margin_top), dpi);
@@ -283,7 +350,7 @@ fn stored_table_between_host_frames(
     Some(ParagraphFloatPlacement {
         flow: ParagraphFloatFlow::NextLine,
         anchor_y,
-        stored_host_origin: None,
+        stored_host_origin: visible_host.then_some(host_origin),
         stored_successor_line_origin: None,
         table_left: None,
         table_top: anchor_y + offset + lead,

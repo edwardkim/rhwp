@@ -1,0 +1,221 @@
+{
+  "current_original_9310_browser": {
+    "original_pr": 9310,
+    "head": "60b610ae6a44cfb745e90313481f9eed53098c29",
+    "render_job": "https://github.com/edwardkim/rhwp/actions/runs/45073060249/job/137364183656",
+    "failed_step": "Validate Visual Sweep Canvas font registration",
+    "logged_error": "Timed out after 30000 ms while waiting for the WS endpoint URL to appear in stdout!",
+    "pixel_comparison_ran": false,
+    "policy_job": "https://github.com/edwardkim/rhwp/actions/runs/45075455871/job/137371564639",
+    "policy_reason": "workflow-not-success:Render Diff:failure",
+    "local_source": "76b905fcaca02693262f1e0621e855c9dacb3568",
+    "command": "node --test scripts/tests/visual-sweep-font-registration-browser.test.mjs",
+    "local_browser": "Chrome 156.0.8078.47",
+    "passed": 2,
+    "failed": 0,
+    "verified_at": "2026-11-23T07:04:45.270151+09:00",
+    "sources_checked": [
+      "93e861523623bcd84d57b808edb62af5af2aa82a",
+      "60b610ae6a44cfb745e90313481f9eed53098c29",
+      "76b905fcaca02693262f1e0621e855c9dacb3568"
+    ],
+    "identical_source_blobs": {
+      "scripts/tests/visual-sweep-font-registration-browser.test.mjs": "37430831f21a6fbe3883ece68c3701f1f1ef4cf1",
+      "scripts/visual-sweep-font-registration.mjs": "6729a69c346c29e4804ab32b0730fd4881ba051c",
+      "rhwp-studio/src/core/canvas-intrinsic-font.mjs": "01e677c2194b7ad734b1c33c50c42bac7cb0bf45",
+      "scripts/rasterize-svg-webfonts.mjs": "592a8694582092386f8de8633c5748ed42e3aa6d",
+      "scripts/export-wasm-png-for-sweep.mjs": "737cb7815ce045764e349467e80d1425246d2de9",
+      "rhwp-studio/package-lock.json": "8527895c1e03644a657baa9c25c653fed8e90982",
+      ".github/workflows/render-diff.yml": "a321fe8a3e64703c5bb08e5a04c48a08a56de50d"
+    }
+  },
+  "previous_local_results": {
+    "focused": {
+      "passed": 14,
+      "skipped": 1354
+    },
+    "full_regression": {
+      "passed": 13985,
+      "skipped": 45
+    },
+    "checks": [
+      "release-build",
+      "native-lib",
+      "native-picture",
+      "native-pdf",
+      "fmt",
+      "clippy",
+      "clippy-wasm",
+      "workspace-build",
+      "clippy-workspace",
+      "release-lib",
+      "doctest"
+    ],
+    "native": {
+      "library": {
+        "passed": 4033,
+        "ignored": 12
+      },
+      "picture": {
+        "passed": 2,
+        "skipped": 347
+      },
+      "direct_pdf": {
+        "passed": 37,
+        "skipped": 318
+      }
+    },
+    "release_library": {
+      "passed": 3976,
+      "ignored": 12
+    },
+    "documentation_tests": {
+      "passed": 8,
+      "ignored": 3
+    }
+  },
+  "shadow": {
+    "previous_submission_candidate": "8dd83bbb9072dbfb4c9cb3116cade7d61e0d63ce",
+    "original_head_before": "963407d677ab76691dfaf9c65ba74241356b3851",
+    "original_head_after": "6bf8de80862a9dfc358c8e427361553bdbd0cc38",
+    "merged_product_source": "b44b2d4f14dbbf4dfe22a32b7bcbd815be68263f",
+    "merge_parents": [
+      "8dd83bbb9072dbfb4c9cb3116cade7d61e0d63ce",
+      "6bf8de80862a9dfc358c8e427361553bdbd0cc38"
+    ],
+    "changed_files": [
+      "src/model/shape.rs",
+      "src/model/shape/shadow.rs",
+      "tests/cases/shape_shadow_shear_scale.rs"
+    ],
+    "visibility_only_lines": {
+      "src/model/shape.rs": 1,
+      "src/model/shape/shadow.rs": 3
+    },
+    "new_public_module": "rhwp::model::shape::shadow",
+    "new_public_functions": [
+      "matrix",
+      "transformed_box",
+      "body_origin_hu"
+    ],
+    "source_calculations_identical": true,
+    "prior_public_rendering_tests": 5,
+    "contributor_exact_geometry_tests_verbatim": [
+      "body_origin_moves_past_left_and_top_shadow",
+      "front_shear_mirrors_the_body",
+      "preset_shadow_boxes_match_hancom_screen"
+    ],
+    "total_shadow_tests": 8
+  },
+  "nested_note": {
+    "original_head_before": "67395e38c06ba805b3dee596e4c19bff99018776",
+    "original_head_after": "60b610ae6a44cfb745e90313481f9eed53098c29",
+    "merge_source": "76b905fcaca02693262f1e0621e855c9dacb3568",
+    "merged_parents": [
+      "b44b2d4f14dbbf4dfe22a32b7bcbd815be68263f",
+      "60b610ae6a44cfb745e90313481f9eed53098c29"
+    ],
+    "changed_files": [
+      "tests/cases/endnote_by_path.rs",
+      "tests/cases/footnote_by_path.rs"
+    ],
+    "production_files_changed": [],
+    "exact_test_assertion_lines": 16,
+    "final_copies_of_footnote_test": 1,
+    "textbox_setup": "insert_text_in_cell_by_path",
+    "product_build_source": "b44b2d4f14dbbf4dfe22a32b7bcbd815be68263f"
+  },
+  "previous_sources": {
+    "observed": "2026-11-23T06:12:51.144753+09:00",
+    "originals": [
+      {
+        "number": 9284,
+        "head": "eeff0619f5fa5a8b53c9b7779423ccba7fa74754",
+        "checks": 41,
+        "closing_issues": 0,
+        "overall": "SUCCESS",
+        "failures": []
+      },
+      {
+        "number": 9310,
+        "head": "67395e38c06ba805b3dee596e4c19bff99018776",
+        "checks": 41,
+        "closing_issues": 0,
+        "overall": "FAILURE",
+        "failures": [
+          [
+            "Lint (fmt, clippy, WASM check)",
+            "FAILURE",
+            "https://github.com/edwardkim/rhwp/actions/runs/45042231478/job/137269131371"
+          ],
+          [
+            "Build & Test",
+            "FAILURE",
+            "https://github.com/edwardkim/rhwp/actions/runs/45042231478/job/137278632146"
+          ],
+          [
+            "CI Impact Policy",
+            "FAILURE",
+            "https://github.com/edwardkim/rhwp/actions/runs/45045384434"
+          ]
+        ]
+      },
+      {
+        "number": 9313,
+        "head": "963407d677ab76691dfaf9c65ba74241356b3851",
+        "checks": 39,
+        "closing_issues": 0,
+        "overall": "FAILURE",
+        "failures": [
+          [
+            "Lint (fmt, clippy, WASM check)",
+            "FAILURE",
+            "https://github.com/edwardkim/rhwp/actions/runs/44991383066/job/137113040611"
+          ],
+          [
+            "Build & Test",
+            "FAILURE",
+            "https://github.com/edwardkim/rhwp/actions/runs/44991383066/job/137119063008"
+          ],
+          [
+            "CI Impact Policy",
+            "FAILURE",
+            "https://github.com/edwardkim/rhwp/actions/runs/44993535503"
+          ]
+        ]
+      },
+      {
+        "number": 9315,
+        "head": "5a463d48a7f01565426fc710ea36a275005c5c69",
+        "checks": 37,
+        "closing_issues": 0,
+        "overall": "SUCCESS",
+        "failures": []
+      },
+      {
+        "number": 9323,
+        "head": "7c505b07e44baa8f1cb3b49c06409c84186fbad1",
+        "checks": 39,
+        "closing_issues": 0,
+        "overall": "SUCCESS",
+        "failures": []
+      }
+    ]
+  },
+  "previous_full_regression_passed": 13985,
+  "previous_native_passed": 4072,
+  "before_renderers": {
+    "native": "235db686ea1f073ae35651200f9b4ed4b40dace95965bf1c7b47634021ba50dd",
+    "wasm": "a3872e5dcc47614a84e4db0a7d5f99a74969101213cad09eda8d346cd93f094b"
+  },
+  "after_renderers": {
+    "native": "d21e5482a49ae96cf3011ca8192d04ca0326669ebef32bc27913facf3e9354bb",
+    "wasm": "e7ed8f68fb0e5c27866177ba0a4b98ee2b919752c8102d7237196af964b4b3db"
+  },
+  "rerendered_pages_with_identical_raw_and_png": {
+    "focus_native": 19,
+    "focus_wasm": 19,
+    "protected_native": 2023,
+    "protected_wasm": 2023
+  }
+}

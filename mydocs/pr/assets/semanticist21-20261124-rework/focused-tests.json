@@ -1,0 +1,36 @@
+{
+  "source": "327be655a1d4d95486bec4b2f0c76b2fd1169e7c",
+  "command": "cargo nextest run --locked --cargo-profile release-test -p rhwp --test regression_suite_018 --test regression_suite_026 -E \"test(section_settings_hancom::) | test(shape_line_fill_alpha::) | test(connector_midpoint::)\" --no-fail-fast --test-threads 6",
+  "fonts": [
+    "NotoSansKR-ExtraLight.ttf",
+    "NotoSansKR-Regular.ttf",
+    "NotoSansSymbols2-Regular.ttf",
+    "RHWPOldHangul-Regular.otf",
+    "RHWPPublicBatang-Regular.ttf"
+  ],
+  "passed": [
+    "connector_midpoint::floating_connector_in_a_cell_keeps_the_row_and_following_text",
+    "connector_midpoint::midpoint_moves_inner_points_along_its_axis",
+    "connector_midpoint::moved_arc_midpoint_is_on_two_quarter_ellipses",
+    "connector_midpoint::moving_a_connected_shape_reroutes_the_connector",
+    "connector_midpoint::single_bend_connector_has_no_midpoint",
+    "connector_midpoint::unrelated_connector_update_keeps_a_moved_midpoint",
+    "section_settings_hancom::first_section_def_split_from_column_def_falls_back_like_hancom",
+    "section_settings_hancom::hwp_page_start_bits_follow_hancom",
+    "section_settings_hancom::hwp_save_puts_column_def_right_after_section_def",
+    "section_settings_hancom::odd_even_page_start_skips_one_number_without_a_blank_page",
+    "section_settings_hancom::section_object_start_numbers_renumber_captions_on_edit",
+    "shape_line_fill_alpha::arc_border_kind_is_read_and_set",
+    "shape_line_fill_alpha::arrow_fill_keeps_start_and_end_through_hwp_and_hwpx",
+    "shape_line_fill_alpha::hancom_alpha_one_without_rhwp_marker_stays_nearly_opaque",
+    "shape_line_fill_alpha::hancom_integer_alpha_is_a_byte",
+    "shape_line_fill_alpha::horizontal_inside_and_outside_alignment_is_set",
+    "shape_line_fill_alpha::hwpx_writes_alpha_as_hancom_integers",
+    "shape_line_fill_alpha::hwpx_writes_filled_arrow_as_hancom_does",
+    "shape_line_fill_alpha::line_alpha_draws_only_the_stroke_transparent",
+    "shape_line_fill_alpha::line_and_fill_alpha_survive_hwp_and_hwpx",
+    "shape_line_fill_alpha::new_rhwp_hwpx_from_hwp_reads_alpha_one_as_a_byte",
+    "shape_line_fill_alpha::old_rhwp_hwpx_keeps_its_transparent_fill",
+    "shape_line_fill_alpha::restricted_front_and_behind_shape_ignores_negative_para_offset"
+  ]
+}

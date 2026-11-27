@@ -1,0 +1,24 @@
+✔ W1 candidate identity vectors produce the exact candidateId and ruleId (9.719892ms)
+✔ every golden rule joins to the W1 ledger with the exact evidence anchor (1.438588ms)
+✔ a missing ledger row is explicit and never receives a guessed ruleId (0.532263ms)
+✔ limits use 1024 by default and reject invalid or oversized values without clamping (1.796813ms)
+✔ valid v1 envelope passes and missing fields, inconsistent counts and silent truncation fail (11.784255ms)
+✔ observed glyph miss requires an explicit failure instead of a guessed face (3.558749ms)
+✔ 활성 v2 직접 규칙의 앵커는 과거 W1 후보 링크와 구분해 검증한다 (89.350174ms)
+✔ v2 앵커의 후보·규칙·소유자·관계가 바뀌거나 비활성 규칙이면 거절한다 (41.221965ms)
+✔ W1 source digest drift is detected without exposing an absolute checkout path (330.639809ms)
+✔ hashes ignore object key order and unordered diagnostics but preserve fallback chain order (3.144232ms)
+✔ portable layout hash ignores backend state while normalized hash preserves it (1.092157ms)
+✔ absolute host paths, user directories, tokens and error stacks are rejected (1.283754ms)
+✔ public fixture manifest is tracked, byte-stable and excludes private corpus paths (649.577792ms)
+✔ schema fixes v1 enums and the 4096 hard record limit (9.364082ms)
+✔ WASM 공개 런의 글꼴 계보와 실제 원문 주소 경계를 함께 검증한다 (10780.99114ms)
+✔ WASM 상한과 backend 미지원은 silent clamp나 빈 성공 없이 fail-closed한다 (36.983122ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 13061.213882

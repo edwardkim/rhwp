@@ -1,0 +1,416 @@
+{
+  "column_addition": [
+    {
+      "source": "samples/semanticist21-20261123/merged-grid-column.hwp",
+      "source_sha256": "53e15b001f3961635b15c5a89b215ac6204f05042a3101040d800e45f2b12234",
+      "pdf": "pdf/semanticist21-20261123/merged-grid-column-hwp-2020.pdf",
+      "pdf_sha256": "375b481a4f4c2928884604f5014e5119c957384bd0cf5e8b4663af90f1f17fad",
+      "hancom_page_right_pt": 595.0,
+      "hancom_rule_right_pt": 645.37,
+      "hancom_printed_labels": [
+        "용역명",
+        "규격 및 세부사항",
+        "금액",
+        "대상",
+        "합계"
+      ],
+      "table_bounds_same_on_devel_and_candidate": {
+        "bbox": {
+          "h": 34.66666666666666,
+          "w": 743.8666666666668,
+          "x": 116.92,
+          "y": 135.8
+        },
+        "boundary": {
+          "h": 1122.48,
+          "w": 793.7066666666667,
+          "x": 0.0,
+          "y": 0.0
+        },
+        "maxOver": 67.08000000000004,
+        "nodeType": "Table",
+        "overBottom": 0.0,
+        "overLeft": 0.0,
+        "overRight": 67.08000000000004,
+        "overTop": 0.0,
+        "path": "Page/Body/Column0/Table0"
+      },
+      "devel_count": 1,
+      "candidate_count": 1
+    },
+    {
+      "source": "samples/semanticist21-20261123/merged-grid-column.hwpx",
+      "source_sha256": "4e811a22711e2e958effecc71386e0ed10591f92ac6cc463fbc72a1adb41cddc",
+      "pdf": "pdf/semanticist21-20261123/merged-grid-column-hwpx-2020.pdf",
+      "pdf_sha256": "f1e1c8b10e31f9eb32d080d5692d766afd914c4c2e72c783cea46b076f095a04",
+      "hancom_page_right_pt": 595.0,
+      "hancom_rule_right_pt": 645.37,
+      "hancom_printed_labels": [
+        "용역명",
+        "규격 및 세부사항",
+        "금액",
+        "대상",
+        "합계"
+      ],
+      "table_bounds_same_on_devel_and_candidate": {
+        "bbox": {
+          "h": 34.66666666666666,
+          "w": 743.8666666666668,
+          "x": 116.92,
+          "y": 135.8
+        },
+        "boundary": {
+          "h": 1122.48,
+          "w": 793.7066666666667,
+          "x": 0.0,
+          "y": 0.0
+        },
+        "maxOver": 67.08000000000004,
+        "nodeType": "Table",
+        "overBottom": 0.0,
+        "overLeft": 0.0,
+        "overRight": 67.08000000000004,
+        "overTop": 0.0,
+        "path": "Page/Body/Column0/Table0"
+      },
+      "devel_count": 1,
+      "candidate_count": 1
+    }
+  ],
+  "oracle": {
+    "documents": 17,
+    "pages": 19,
+    "all_match": true
+  },
+  "security": [
+    {
+      "sample": "samples/semanticist21-20261123/inline-shape.hwp",
+      "hidden": true,
+      "injection": true,
+      "unicode": true
+    },
+    {
+      "sample": "samples/semanticist21-20261123/inline-shape.hwpx",
+      "hidden": true,
+      "injection": true,
+      "unicode": true
+    },
+    {
+      "sample": "samples/semanticist21-20261123/merged-grid-column.hwp",
+      "hidden": true,
+      "injection": true,
+      "unicode": true
+    },
+    {
+      "sample": "samples/semanticist21-20261123/merged-grid-column.hwpx",
+      "hidden": true,
+      "injection": true,
+      "unicode": true
+    },
+    {
+      "sample": "samples/semanticist21-20261123/merged-grid-row.hwp",
+      "hidden": true,
+      "injection": true,
+      "unicode": true
+    },
+    {
+      "sample": "samples/semanticist21-20261123/merged-grid-row.hwpx",
+      "hidden": true,
+      "injection": true,
+      "unicode": true
+    },
+    {
+      "sample": "samples/semanticist21-20261123/merged-grid-source.hwp",
+      "hidden": true,
+      "injection": true,
+      "unicode": true
+    },
+    {
+      "sample": "samples/semanticist21-20261123/merged-grid-source.hwpx",
+      "hidden": true,
+      "injection": true,
+      "unicode": true
+    },
+    {
+      "sample": "samples/semanticist21-20261123/nested-table.hwp",
+      "hidden": true,
+      "injection": true,
+      "unicode": true
+    },
+    {
+      "sample": "samples/semanticist21-20261123/nested-table.hwpx",
+      "hidden": true,
+      "injection": true,
+      "unicode": true
+    },
+    {
+      "sample": "samples/semanticist21-20261123/shadow-presets.hwpx",
+      "hidden": true,
+      "injection": true,
+      "unicode": true
+    },
+    {
+      "sample": "samples/semanticist21-20261123/single-row-resize.hwp",
+      "hidden": true,
+      "injection": true,
+      "unicode": true
+    },
+    {
+      "sample": "samples/semanticist21-20261123/single-row-resize.hwpx",
+      "hidden": true,
+      "injection": true,
+      "unicode": true
+    },
+    {
+      "sample": "samples/semanticist21-20261123/table-cell-notes.hwp",
+      "hidden": true,
+      "injection": true,
+      "unicode": true
+    },
+    {
+      "sample": "samples/semanticist21-20261123/table-cell-notes.hwpx",
+      "hidden": true,
+      "injection": true,
+      "unicode": true
+    },
+    {
+      "sample": "samples/semanticist21-20261123/textbox-notes.hwp",
+      "hidden": true,
+      "injection": true,
+      "unicode": true
+    },
+    {
+      "sample": "samples/semanticist21-20261123/textbox-notes.hwpx",
+      "hidden": true,
+      "injection": true,
+      "unicode": true
+    }
+  ],
+  "vertical_clipping": [
+    {
+      "source": "samples/semanticist21-20261123/inline-shape.hwp",
+      "devel": [
+        0,
+        1,
+        0.0
+      ],
+      "candidate": [
+        0,
+        1,
+        0.0
+      ]
+    },
+    {
+      "source": "samples/semanticist21-20261123/inline-shape.hwpx",
+      "devel": [
+        0,
+        1,
+        0.0
+      ],
+      "candidate": [
+        0,
+        1,
+        0.0
+      ]
+    },
+    {
+      "source": "samples/semanticist21-20261123/merged-grid-column.hwp",
+      "devel": [
+        0,
+        1,
+        0.0
+      ],
+      "candidate": [
+        0,
+        1,
+        0.0
+      ]
+    },
+    {
+      "source": "samples/semanticist21-20261123/merged-grid-column.hwpx",
+      "devel": [
+        0,
+        1,
+        0.0
+      ],
+      "candidate": [
+        0,
+        1,
+        0.0
+      ]
+    },
+    {
+      "source": "samples/semanticist21-20261123/merged-grid-row.hwp",
+      "devel": [
+        0,
+        1,
+        0.0
+      ],
+      "candidate": [
+        0,
+        1,
+        0.0
+      ]
+    },
+    {
+      "source": "samples/semanticist21-20261123/merged-grid-row.hwpx",
+      "devel": [
+        0,
+        1,
+        0.0
+      ],
+      "candidate": [
+        0,
+        1,
+        0.0
+      ]
+    },
+    {
+      "source": "samples/semanticist21-20261123/merged-grid-source.hwp",
+      "devel": [
+        0,
+        1,
+        0.0
+      ],
+      "candidate": [
+        0,
+        1,
+        0.0
+      ]
+    },
+    {
+      "source": "samples/semanticist21-20261123/merged-grid-source.hwpx",
+      "devel": [
+        0,
+        1,
+        0.0
+      ],
+      "candidate": [
+        0,
+        1,
+        0.0
+      ]
+    },
+    {
+      "source": "samples/semanticist21-20261123/nested-table.hwp",
+      "devel": [
+        0,
+        1,
+        0.0
+      ],
+      "candidate": [
+        0,
+        1,
+        0.0
+      ]
+    },
+    {
+      "source": "samples/semanticist21-20261123/nested-table.hwpx",
+      "devel": [
+        0,
+        1,
+        0.0
+      ],
+      "candidate": [
+        0,
+        1,
+        0.0
+      ]
+    },
+    {
+      "source": "samples/semanticist21-20261123/shadow-presets.hwpx",
+      "devel": [
+        0,
+        1,
+        0.0
+      ],
+      "candidate": [
+        0,
+        1,
+        0.0
+      ]
+    },
+    {
+      "source": "samples/semanticist21-20261123/single-row-resize.hwp",
+      "devel": [
+        0,
+        1,
+        0.0
+      ],
+      "candidate": [
+        0,
+        1,
+        0.0
+      ]
+    },
+    {
+      "source": "samples/semanticist21-20261123/single-row-resize.hwpx",
+      "devel": [
+        0,
+        1,
+        0.0
+      ],
+      "candidate": [
+        0,
+        1,
+        0.0
+      ]
+    },
+    {
+      "source": "samples/semanticist21-20261123/table-cell-notes.hwp",
+      "devel": [
+        0,
+        2,
+        0.0
+      ],
+      "candidate": [
+        0,
+        2,
+        0.0
+      ]
+    },
+    {
+      "source": "samples/semanticist21-20261123/table-cell-notes.hwpx",
+      "devel": [
+        0,
+        2,
+        0.0
+      ],
+      "candidate": [
+        0,
+        2,
+        0.0
+      ]
+    },
+    {
+      "source": "samples/semanticist21-20261123/textbox-notes.hwp",
+      "devel": [
+        0,
+        1,
+        0.0
+      ],
+      "candidate": [
+        0,
+        1,
+        0.0
+      ]
+    },
+    {
+      "source": "samples/semanticist21-20261123/textbox-notes.hwpx",
+      "devel": [
+        0,
+        1,
+        0.0
+      ],
+      "candidate": [
+        0,
+        1,
+        0.0
+      ]
+    }
+  ],
+  "existing_clipping_controlset": {
+    "size": 92,
+    "matching_candidate_inputs": 0
+  }
+}

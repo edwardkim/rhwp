@@ -184,7 +184,7 @@ fn unrelated_or_legacy_program_does_not_inherit_verified_truetype_metrics() {
     let legacy = alias_metric_style("HY헤드라인M", 2, "HY헤드라인M", "HYHeadLine M");
     assert!(
         !legacy.font_metric_trusted,
-        "원본 HFT에는 주 TTF의 신뢰를 새로 부여하지 않는다"
+        "구형 글꼴 선언에 별도 TrueType 프로그램의 폭을 적용하지 않는다"
     );
     let different_query = alias_metric_style("HY헤드라인M", 1, "HYHeadLine-Medium", "HYHeadLine M");
     assert!(

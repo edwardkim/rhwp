@@ -28,6 +28,7 @@ pub(in crate::renderer::typeset) struct EmptyFloatPage<'a> {
     pub current_items: &'a [PageItem],
     pub visible_float_exclusions: &'a [super::super::VisibleFloatExclusion],
     pub original_column_origin: bool,
+    pub source_prefix_origin_hu: Option<i32>,
 }
 
 pub(in crate::renderer::typeset) struct EmptyFloatPlacement {
@@ -245,7 +246,12 @@ pub(super) fn prepare(
                     page.profile.hwpx_stored_layout(),
                 )
             })
-            .flatten();
+            .flatten()
+            .map(|top| {
+                top - page
+                    .source_prefix_origin_hu
+                    .map_or(0.0, |origin| hwpunit_to_px(origin, dpi))
+            });
     // 다음 저장 위치와의 차이는 높이 증거이며 절대 쪽 원점의 증거가 아니다.
     // 새로 수용하는 바깥 상자는 현재 문단의 흐름 원점에서 배치한다.
     let mut restored_stored_outer_box = false;

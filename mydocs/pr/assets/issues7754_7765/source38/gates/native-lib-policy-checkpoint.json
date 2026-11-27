@@ -1,0 +1,89 @@
+{
+  "candidate": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
+  "base": "bd3cd171331e80e79881dc8e9ed37f837ef6be77",
+  "results": [
+    {
+      "label": "candidate-prepare",
+      "command": [
+        "/usr/local/bin/node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 5.991381693165749,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-candidate-prepare.log",
+      "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064"
+    },
+    {
+      "label": "manifest-policy",
+      "command": [
+        "/usr/local/bin/node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "bd3cd171331e80e79881dc8e9ed37f837ef6be77"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 1.371046245796606,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-manifest-policy.log",
+      "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064"
+    },
+    {
+      "label": "unit-tier-policy",
+      "command": [
+        "/usr/local/bin/node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "bd3cd171331e80e79881dc8e9ed37f837ef6be77"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 38.300491999834776,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-unit-tier-policy.log",
+      "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064"
+    },
+    {
+      "label": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 47.668927690945566,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-format.log",
+      "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064"
+    },
+    {
+      "label": "native-unfiltered-lib",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "12"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 1594.012185426196,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-native-unfiltered-lib.log",
+      "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064"
+    }
+  ],
+  "scope": "Five completed gates only; official Native CI cases, focused oracle and full nextest remain pending."
+}

@@ -9,7 +9,7 @@ mod stored_nested_text_frames;
 pub(crate) use stored_nested_text_frames::{StoredNestedTextFrames, StoredTextFrame};
 
 use crate::model::control::Control;
-use crate::model::document::Document;
+use crate::model::document::{DocInfo, Document};
 use crate::model::table::{Cell, Table};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
@@ -101,6 +101,7 @@ pub struct RenderNormalizationOverlay {
     nested_table_widths_by_pointer: HashMap<usize, Arc<NestedTableWidthProjection>>,
     text_reflowed_tables_by_pointer: HashSet<usize>,
     rendered_cell_frame_changes: HashMap<usize, HashSet<(u16, u16)>>,
+    cell_text_reflow_starts: HashMap<usize, (u16, usize)>,
     rebased_table_frames_by_pointer: HashSet<usize>,
     expanded_inline_host_tables_by_pointer: HashSet<usize>,
     nested_tables_with_reflowed_hosts: HashSet<usize>,
@@ -184,6 +185,7 @@ impl RenderNormalizationOverlay {
                                 && f64::from(body_width) >= f64::from(source_width) * 0.9
                                 && stored_first_cell_line_says_shrunk(
                                     table,
+                                    &document.doc_info,
                                     body_width,
                                     source_width,
                                 )
@@ -413,6 +415,66 @@ impl RenderNormalizationOverlay {
             .insert(table as *const Table as usize);
 
         Ok(())
+    }
+
+    /// A direct text edit in a full-width, non-spanning row can invalidate
+    /// this cell's downstream frames while leaving earlier source lines valid.
+    pub(crate) fn register_cell_text_reflow_start<S: crate::storage::Storage>(
+        &mut self,
+        source: &Table,
+        table: &Table,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        let mut edited = source.cells.iter().filter_map(|cell| {
+            cell.paragraphs
+                .iter()
+                .position(|para| para.cell_lines_edited)
+                .map(|first| (cell, first))
+        });
+        let Some((source_cell, first)) = edited.next() else {
+            return Ok(());
+        };
+        if edited.next().is_some()
+            || first == 0
+            || source_cell.row_span != 1
+            || source_cell.col != 0
+            || source_cell.col_span != source.col_count
+            || source.common.treat_as_char
+            || source.layout_page_break() != crate::model::table::TablePageBreak::RowBreak
+        {
+            return Ok(());
+        }
+        let Some(cell) = table
+            .cells
+            .iter()
+            .find(|cell| cell.row == source_cell.row && cell.col == 0)
+        else {
+            return Ok(());
+        };
+        let Some(prefix) = cell.paragraphs.get(..first) else {
+            return Ok(());
+        };
+        if prefix
+            .iter()
+            .zip(&source_cell.paragraphs)
+            .any(|(current, original)| {
+                current.stored_text_partition_is_dirty()
+                    || current.cell_format_vpos_dirty
+                    || current.line_segs != original.line_segs
+            })
+        {
+            return Ok(());
+        }
+        storage.reserve_map(&mut self.cell_text_reflow_starts, 1)?;
+        self.cell_text_reflow_starts
+            .insert(table as *const Table as usize, (cell.row, first));
+        Ok(())
+    }
+
+    pub(crate) fn cell_text_reflow_start(&self, table: &Table, cell: &Cell) -> Option<usize> {
+        self.cell_text_reflow_starts
+            .get(&(table as *const Table as usize))
+            .and_then(|&(row, first)| (cell.row == row && cell.col == 0).then_some(first))
     }
 
     /// render-only 재조판이 물리 슬롯도 바꾼 표는 원본 쪽 컷을 다시 인증할 수 없다.
@@ -768,14 +830,19 @@ impl RenderNormalizationOverlay {
 ///
 /// 합성 줄(`TAG_IMPLEMENTATION_PROPERTY`)은 저장으로 치지 않는다 — 우리가 만든 값으로
 /// 우리 규칙을 판정하면 순환이다. 저장 줄이 없으면 축소하지 않는다(근거 없음).
-fn stored_first_cell_line_says_shrunk(table: &Table, body_width: u32, source_width: u32) -> bool {
+fn stored_first_cell_line_says_shrunk(
+    table: &Table,
+    doc_info: &DocInfo,
+    body_width: u32,
+    source_width: u32,
+) -> bool {
     let Some(cell) = table.cells.iter().find(|c| c.row == 0 && c.col == 0) else {
         return false;
     };
-    let Some(seg) = cell
+    let Some((paragraph, seg)) = cell
         .paragraphs
         .iter()
-        .find_map(|paragraph| paragraph.line_segs.first())
+        .find_map(|paragraph| paragraph.line_segs.first().map(|line| (paragraph, line)))
     else {
         return false;
     };
@@ -783,14 +850,19 @@ fn stored_first_cell_line_says_shrunk(table: &Table, body_width: u32, source_wid
         return false;
     }
     let padding = cell.effective_padding(&table.padding);
-    let padding_h = i64::from(padding.left) + i64::from(padding.right);
-    let declared_inner = i64::from(cell.width) - padding_h;
+    let padding_h = f64::from(padding.left) + f64::from(padding.right);
+    let declared_inner = f64::from(cell.width) - padding_h;
     let scale = f64::from(body_width) / f64::from(source_width);
-    let shrunk_inner = (f64::from(cell.width) * scale) as i64 - padding_h;
-    // 저장 줄은 칸 안쪽 왼끝에서 `column_start` 만큼 들어가 시작한다(문단 왼쪽 여백·들여쓰기).
-    // 칸 폭과 비교할 값은 줄의 오른끝(`column_start + segment_width`)이다. 줄 폭만 쓰면 왼쪽
-    // 여백만큼 좁게 읽어 축소로 오판한다(docs#658 첫 칸: 252 + 11572 = 11824 = 선언 안쪽 11823).
-    let stored = i64::from(seg.column_start.max(0)) + i64::from(seg.segment_width);
+    let shrunk_inner = (f64::from(cell.width) * scale).trunc() - padding_h;
+    let right_margin = doc_info
+        .para_shapes
+        .get(paragraph.para_shape_id as usize)
+        .map_or(0.0, |shape| {
+            super::style_resolver::paragraph_margin_hwpunit(shape.margin_right, doc_info)
+        });
+    // 저장 줄 오른끝에 문단 오른쪽 여백을 더해야 칸 내부의 전체 폭이 된다.
+    // 왼쪽 여백과 들여쓰기는 이미 column_start에 반영되어 있다.
+    let stored = f64::from(seg.column_start.max(0)) + f64::from(seg.segment_width) + right_margin;
     (stored - shrunk_inner).abs() < (stored - declared_inner).abs()
 }
 

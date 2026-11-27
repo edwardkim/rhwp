@@ -1,0 +1,566 @@
+ 1:  6630c8779c =  1:  85961b0546 문서: 9개 이관 이슈의 원본과 독립 인쇄 근거 복원
+ 2:  c728084fdc =  2:  1f3291af56 fix: 원본 글꼴 공백과 저장 프레임·빈 줄 흐름 보정
+ 3:  bfb4b81c12 =  3:  a3443b94b6 wip: HWPX 여백 단위·저장 줄 출처 보정과 실패 분석 보존
+ 4:  722a6b6a11 =  4:  1ac70aa2ba docs: 시장구조조사 Native·WASM 전315쪽 98% 검증 보존
+ 5:  e97142d772 =  5:  bb6fa2f77d wip: 줄 재현 프로브의 원본 출처 보존과 HWPX 실패 기록
+ 6:  e3ccfc9f3e =  6:  9cc27a9411 wip: 구판 여백 인증과 원본 TTF 줄 소유의 분리 진단
+ 7:  2de2574ff6 =  7:  c4d2273c43 wip: 원본 TTF 줄 소유 계약 분리와 미해결 조각 진단
+ 8:  5e3eae8184 =  8:  91f4f7f018 test: 98% 전쪽 검증한 시장구조조사 내용·분할 회귀 복원
+ 9:  23ac2756dc =  9:  c04a711c00 wip: 저장 reset의 float 프레임 소유 인증과 미해결 입력 추적
+10:  64ab502f52 = 10:  6097c4741f wip: 저장 원점 출처 보존과 빈 꼬리 소비 경로 계측
+11:  7d33677d77 = 11:  5f799f0375 wip: 빈 꼬리와 쪽 경계의 프레임 인증 공유 및 10쪽 개선 기록
+12:  87ad488c43 = 12:  3470d4d063 wip: 앞 쪽에서 소비한 저장 prefix의 표 원점 보존
+13:  582dace742 = 13:  61e49b5a40 fix: 저장 prefix 원점을 lane과 공유해 규제분석 HWPX 64쪽 복원
+14:  110a0917dd = 14:  36f69d844c fix: 완전한 빈 문단이 여는 저장 단 원점을 후속 표와 공유
+15:  816041ec32 = 15:  9c207ac5d9 wip: 셀 이어받기 컷의 원본 prefix와 종료 축 인증
+16:  07991cc655 = 16:  7165b5cd04 fix: 끝 셀 조각의 원점 소유를 후속 block과 lane에 전달
+17:  990e136d80 = 17:  a9d595d61a 양수 저장 원점의 셀 문단을 공통 reset 인증으로 배치
+18:  813a0bed4c = 18:  c8ed7a3129 중첩 표 꼬리 높이 회수에서 양의 빈 줄 소유를 보존
+19:  18dad87ea7 = 19:  0d9414955c 실제 전체 표 뒤에서 소비한 양수 저장 prefix의 소유를 공유
+20:  157b8f4f12 = 20:  0ef5f63717 검증한 맑은 고딕 원본 전진으로 저장 줄 경계를 재검토
+21:  56f5cc4b20 = 21:  f6d721be23 현재 재조판 행이 산출한 중첩 표 컷의 소유를 보존
+22:  2a6f21cc2f = 22:  b1b2aedf11 재귀 자식 첫 컷의 선언 최소와 빈 물리 띠 계획을 공유
+23:  0a84258b9e = 23:  ef1c538d71 빈 저장 호스트의 실제 기하로 자식 첫 최소 상자를 수용
+24:  4741479fb0 = 24:  a31829e783 규제분석 전64쪽 교차 검증과 정상 보존 대조를 기록
+25:  7c99b6c503 = 25:  eb2230312d 98% 이상 Print 근거로 복학원서·배포용 문서 회귀를 복원
+26:  9b132f48a3 = 26:  74362f3663 규제분석 HWPX의 중첩 컷·빈 공간·전쪽 내용 소유 회귀를 등록
+27:  59f54a4301 = 27:  fda402791a 98% 이상 원본에서 암호 문서와 폰트 추적 회귀를 복원
+28:  3b0bf52e30 = 28:  3b7758ce90 규제분석 dash 글리프와 셀 포함 회귀 다섯 건을 복원
+29:  3c80172568 ! 29:  02b1750bb3 규제분석 원본별 내용 회귀와 수용 문서의 공통 corpus를 복원
+    @@ tests/cases/text_overlap_baseline.rs: const DEFERRED_TEXT_OVERLAP_FIXTURES: &[&s
+      ];
+
+      ## tests/fixtures/body_overflow_baseline.tsv ##
+    +@@
+    ++# #7754~#7765: source32 독립 Print·전쪽 두 경로98% 이상. 106쪽 두 줄은 Print에도 같은 간격이다.
+    ++143E433F503322BD33.hwp	0
+    ++86712_regulatory_analysis.hwp	0
+    ++[2027] 온새미로 1 본교재.hwp	0
+    ++[2027] 온새미로 1 본교재.hwpx	0
+    ++issue1891/86712_regulatory_analysis.hwpx	0
+    ++복학원서.hwp	0
+    ++
+    + # #7727: 전204쪽 Native/fresh WASM 최저92.05/92.16% 수용 후 복원. fixed170b/후보의 기존 계산식 실측 모두0; 다른 원장은 유지.
+    + # 조이기 (#6976 단계): devel 236a601da 실측으로 85행을 내렸다 — 대상 행 합계 1,037 -> 667,
+    + # 원장 전체 1,386 -> 1,016. 증가·신규는 0 이라 완화가 아니다. 측정은 이 게이트 자신의
+     @@ tests/fixtures/body_overflow_baseline.tsv: issue6133/156483831_poster_title_above_offset_float.hwp	1
+      issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	0
+      issue6782/1480000-201900042-chemical-product-labeling-study.hwp	6
+    @@ tests/fixtures/body_overflow_baseline.tsv: task1718/table_giant_cell_overfill.hw
+      task2070/hy_ladder3.hwpx	2
+      task2093/1192000_hydrogen_policy_research.hwp	1
+      task2097/18095317_eogu_geumji.hwp	1
+    -@@ tests/fixtures/body_overflow_baseline.tsv: issue8993/31675-rowbreak-overflowing-frame.hwp	2
+    - # (pdf/issue8660/picture_unrestricted_over_12px-hwp-2020.pdf, 데스크톱 한컴 2020 Print 1쪽).
+    - # Native/fresh WASM 전쪽 raw 100.00%로 같은 배치를 확인했다. 의도된 넘침 1건.
+    - issue8660/picture_unrestricted_over_12px.hwp	1
+    -+# #7754~#7765: source32 독립 Print·전쪽 두 경로98% 이상. 106쪽 두 줄은 Print에도 같은 간격이다.
+    -+143E433F503322BD33.hwp	0
+    -+86712_regulatory_analysis.hwp	0
+    -+[2027] 온새미로 1 본교재.hwp	0
+    -+[2027] 온새미로 1 본교재.hwpx	0
+    -+issue1891/86712_regulatory_analysis.hwpx	0
+    -+복학원서.hwp	0
+
+      ## tests/fixtures/deferred_visual_regression_inputs.tsv ##
+     @@ tests/fixtures/deferred_visual_regression_inputs.tsv: mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwpx.
+    @@ tests/fixtures/deferred_visual_regression_inputs.tsv: samples/table_giant_cell_o
+      tests/fixtures/issue6923/156645214_240812(조간)_4개_아이돌굿즈_판매사업자_전상법의_위반행위_제재.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7771
+
+      ## tests/fixtures/off_canvas_baseline.tsv ##
+    -@@ tests/fixtures/off_canvas_baseline.tsv: rowbreak-problem-pages.hwpx	2
+    - task1718/table_giant_cell_overfill.hwp	2
+    - task1725/text_footnote_tail_overpagination.hwp	17
+    - task1725/text_footnote_tail_overpagination.hwpx	18
+    --task1768/distribution_doc.hwpx	1
+    -+task1768/distribution_doc.hwpx	0
+    - task2070/hy_ladder3.hwpx	2
+    - task2097/18095317_eogu_geumji.hwp	1
+    - task2097/21217935_simsa_jipyo.hwp	3
+    -@@ tests/fixtures/off_canvas_baseline.tsv: issue8842/1351000-201800239_hpv_cohort_final_report.hwp	12
+    - # #8573 신규 재현물 2종: 표 폭(711px)이 용지 오른쪽을 34px 넘는다. 한컴 웹한글기안기 인쇄 PDF 도 같은 자리에서 잘리며, 수정 전(06181802e)과 수정 후의 값이 같다 — 재현물 자체 형상이다.
+    - issue8573/text-host-topbottom-line-below.hwp	1
+    - issue8573/whitespace-host-topbottom-line-below.hwp	1
+    +@@
+     +# #7754~#7765: source32 독립 Print·전쪽 두 경로98% 이상. 106쪽 두 줄은 Print에도 같은 간격이다.
+     +143E433F503322BD33.hwp	0
+     +156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp	0
+    @@ tests/fixtures/off_canvas_baseline.tsv: issue8842/1351000-201800239_hpv_cohort_f
+     +issue1891/86712_regulatory_analysis.hwpx	0
+     +task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	0
+     +복학원서.hwp	0
+    ++
+    + # #7727: 전204쪽 Native/fresh WASM 최저92.05/92.16% 수용 후 복원. fixed170b/후보의 기존 계산식 실측 모두0; 다른 원장은 유지.
+    + 2025년 기부·답례품 실적 지자체 보고서_양식.hwpx	2
+    + basic/Hyper(hwp2010).hwp	2
+    +@@ tests/fixtures/off_canvas_baseline.tsv: rowbreak-problem-pages.hwpx	2
+    + task1718/table_giant_cell_overfill.hwp	2
+    + task1725/text_footnote_tail_overpagination.hwp	17
+    + task1725/text_footnote_tail_overpagination.hwpx	18
+    +-task1768/distribution_doc.hwpx	1
+    ++task1768/distribution_doc.hwpx	0
+    + task2070/hy_ladder3.hwpx	2
+    + task2097/18095317_eogu_geumji.hwp	1
+    + task2097/21217935_simsa_jipyo.hwp	3
+
+      ## tests/fixtures/oracle_page_count_baseline.tsv ##
+     @@ tests/fixtures/oracle_page_count_baseline.tsv: samples/pr4093/outline_navigation_table_cell_number.hwpx	1	1
+    @@ tests/fixtures/oracle_page_count_baseline.tsv: samples/pr4093/outline_navigation
+
+      ## tests/fixtures/oracle_page_count_verified_references.json ##
+     @@
+    -       "pages": 215,
+    -       "provenance": "desktop_hancom_print",
+    -       "evidence": "mydocs/pr/assets/issues7749_7753_20261121/print-references.json"
+    -+    },
+    +   "schema_version": 1,
+    +   "purpose": "이미 독립 검증한 과거 경로의 원본/PDF를 바이트 신원으로 고정한다. 일반 canonical 형식·엔진 선택 규칙은 유지한다.",
+    +   "references": [
+     +    {
+     +      "sample": "samples/issue1891/86712_regulatory_analysis.hwpx",
+     +      "source_sha256": "0f4f055c74a3d39f70e417ca6c700880d9645a202798cd0e5c11f6e32c180a19",
+    @@ tests/fixtures/oracle_page_count_verified_references.json
+     +      "pdf_sha256": "5a04f0ffdbfcde8d707ea6fe6e99bb446236daa7ae2c0b32830ae4303aec395b",
+     +      "pages": 19,
+     +      "provenance": "desktop_hancom_print",
+    -+      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    ++      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md",
+    ++      "logical_page_comparison": {
+    ++        "native": {
+    ++          "tsv": "mydocs/pr/assets/issues7754_7765/source36/issues/native/candidate/issue7760/silhouette.tsv",
+    ++          "sha256": "172585033d8a550d1ac6120b2d27fe6d7b131ba54b6ce3cb36b695a7c93100d3"
+    ++        },
+    ++        "wasm": {
+    ++          "tsv": "mydocs/pr/assets/issues7754_7765/source36/issues/wasm/candidate/issue7760/all-pages.tsv",
+    ++          "sha256": "bf0d5f934fbc5797056a59c34cd0d1aaf9c4b898fb5a3bdf217aa2638ef7c837"
+    ++        }
+    ++      }
+     +    },
+     +    {
+     +      "sample": "samples/HWP5-nopassword-123456.hwpx",
+    @@ tests/fixtures/oracle_page_count_verified_references.json
+     +      "pdf_sha256": "89e32b43af21bde3cf869e76b816d214fa0bc30e3f14512c4c3af184430cd616",
+     +      "pages": 315,
+     +      "provenance": "desktop_hancom_print",
+    -+      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    -     }
+    -   ]
+    - }
+    ++      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md",
+    ++      "logical_page_comparison": {
+    ++        "native": {
+    ++          "tsv": "mydocs/pr/assets/issues7754_7765/source36/issues/native/candidate/issue7755/silhouette.tsv",
+    ++          "sha256": "539562fe370c1da57c258c31c24f1f14ac00f96045295a5da8b0952a0c5a35d2"
+    ++        },
+    ++        "wasm": {
+    ++          "tsv": "mydocs/pr/assets/issues7754_7765/source36/issues/wasm/candidate/issue7755/all-pages.tsv",
+    ++          "sha256": "5ddbea24d26e328cf51c79396366c03f51b87b4639c338f28b71e997cd63132a"
+    ++        }
+    ++      }
+    ++    },
+    +     {
+    +       "sample": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+    +       "source_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+
+      ## tests/fixtures/overflow_cell_baseline.tsv ##
+    -@@ tests/fixtures/overflow_cell_baseline.tsv: issue7216/tall_table_before.hwpx	21
+    - # #8462 새 시험 고정본 2행 — 용지 밖으로 오프셋된 글상자 안의 글줄(한/글은 그 글상자를 그리지 않는다). 수정 전후 같은 자리이며 이 PR 은 흐름 밂만 바꾼다.
+    - issue8462/156552561-offpage-textbox.hwpx	1
+    - issue8462/156633674-offpage-logo.hwpx	1
+    +@@
+     +# #7754~#7765: source32 독립 Print·전쪽 두 경로98% 이상. 106쪽 두 줄은 Print에도 같은 간격이다.
+     +143E433F503322BD33.hwp	0
+     +156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp	0
+    @@ tests/fixtures/overflow_cell_baseline.tsv: issue7216/tall_table_before.hwpx	21
+     +task1768/distribution_doc.hwpx	0
+     +task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	0
+     +복학원서.hwp	0
+    ++
+    + issue1891_external_bindata_link.hwpx	32
+    + issue1921/59043_regulatory_analysis.hwp	1
+    + issue7062/tac_object_host_line_height.hwp	1
+
+      ## tests/fixtures/render_page_samples.tsv ##
+     @@ tests/fixtures/render_page_samples.tsv: mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.h
+30:  ca8f0dbf10 = 30:  c869e0ac1a 소스32 공식 교차 검증과 Studio fresh WASM 바인딩을 고정
+31:  776db81aac = 31:  6bdb0fc2ab 9개 이슈 전쪽 98% 검증과 독립 셀 최소 높이 인과 증거를 보존
+32:  a57c18538e = 32:  3a83482743 최신 devel 검증 생산물과 보호 글꼴 환경 복원 근거를 기록
+33:  72c228e1f2 = 33:  7a90b78a09 복원한 회귀 검사의 자동 수집 경로와 최신 WASM 공개 바인딩을 보정
+34:  b70e7c7727 ! 34:  e5b48eb8cc 중첩 표 편집 보존 증거를 고정하고 원장의 병합 충돌을 해소
+    @@ mydocs/working/task_m100_7754_stage3.md: Native의 이전 보호표23문서2023
+     +모든 행·수치·해시·타 문서 순서를 보존했다. 격리된 Git index의 가상 커밋으로
+     +동일 #9293 head와 다시 병합 시뮬레이션한 결과 exit0이다. 다른 원격 브랜치는
+     +수정하지 않았다. 이 순서 변경은 필수 전체 회귀 실행 전에 적용했다.
+    -
+    - ## tests/fixtures/body_overflow_baseline.tsv ##
+    -@@
+    -+# #7754~#7765: source32 독립 Print·전쪽 두 경로98% 이상. 106쪽 두 줄은 Print에도 같은 간격이다.
+    -+143E433F503322BD33.hwp	0
+    -+86712_regulatory_analysis.hwp	0
+    -+[2027] 온새미로 1 본교재.hwp	0
+    -+[2027] 온새미로 1 본교재.hwpx	0
+    -+issue1891/86712_regulatory_analysis.hwpx	0
+    -+복학원서.hwp	0
+    -+
+    - # #7727: 전204쪽 Native/fresh WASM 최저92.05/92.16% 수용 후 복원. fixed170b/후보의 기존 계산식 실측 모두0; 다른 원장은 유지.
+    - # 조이기 (#6976 단계): devel 236a601da 실측으로 85행을 내렸다 — 대상 행 합계 1,037 -> 667,
+    - # 원장 전체 1,386 -> 1,016. 증가·신규는 0 이라 완화가 아니다. 측정은 이 게이트 자신의
+    -@@ tests/fixtures/body_overflow_baseline.tsv: issue8993/31675-rowbreak-overflowing-frame.hwp	2
+    - # (pdf/issue8660/picture_unrestricted_over_12px-hwp-2020.pdf, 데스크톱 한컴 2020 Print 1쪽).
+    - # Native/fresh WASM 전쪽 raw 100.00%로 같은 배치를 확인했다. 의도된 넘침 1건.
+    - issue8660/picture_unrestricted_over_12px.hwp	1
+    --# #7754~#7765: source32 독립 Print·전쪽 두 경로98% 이상. 106쪽 두 줄은 Print에도 같은 간격이다.
+    --143E433F503322BD33.hwp	0
+    --86712_regulatory_analysis.hwp	0
+    --[2027] 온새미로 1 본교재.hwp	0
+    --[2027] 온새미로 1 본교재.hwpx	0
+    --issue1891/86712_regulatory_analysis.hwpx	0
+    --복학원서.hwp	0
+    -
+    - ## tests/fixtures/off_canvas_baseline.tsv ##
+    -@@
+    -+# #7754~#7765: source32 독립 Print·전쪽 두 경로98% 이상. 106쪽 두 줄은 Print에도 같은 간격이다.
+    -+143E433F503322BD33.hwp	0
+    -+156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp	0
+    -+86712_regulatory_analysis.hwp	0
+    -+HWP5-nopassword-123456.hwpx	0
+    -+[2027] 온새미로 1 본교재.hwp	0
+    -+[2027] 온새미로 1 본교재.hwpx	0
+    -+issue1891/86712_regulatory_analysis.hwpx	0
+    -+task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	0
+    -+복학원서.hwp	0
+    -+
+    - # #7727: 전204쪽 Native/fresh WASM 최저92.05/92.16% 수용 후 복원. fixed170b/후보의 기존 계산식 실측 모두0; 다른 원장은 유지.
+    - 2025년 기부·답례품 실적 지자체 보고서_양식.hwpx	2
+    - basic/Hyper(hwp2010).hwp	2
+    -@@ tests/fixtures/off_canvas_baseline.tsv: issue8842/1351000-201800239_hpv_cohort_final_report.hwp	12
+    - # #8573 신규 재현물 2종: 표 폭(711px)이 용지 오른쪽을 34px 넘는다. 한컴 웹한글기안기 인쇄 PDF 도 같은 자리에서 잘리며, 수정 전(06181802e)과 수정 후의 값이 같다 — 재현물 자체 형상이다.
+    - issue8573/text-host-topbottom-line-below.hwp	1
+    - issue8573/whitespace-host-topbottom-line-below.hwp	1
+    --# #7754~#7765: source32 독립 Print·전쪽 두 경로98% 이상. 106쪽 두 줄은 Print에도 같은 간격이다.
+    --143E433F503322BD33.hwp	0
+    --156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp	0
+    --86712_regulatory_analysis.hwp	0
+    --HWP5-nopassword-123456.hwpx	0
+    --[2027] 온새미로 1 본교재.hwp	0
+    --[2027] 온새미로 1 본교재.hwpx	0
+    --issue1891/86712_regulatory_analysis.hwpx	0
+    --task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	0
+    --복학원서.hwp	0
+    -
+    - ## tests/fixtures/oracle_page_count_verified_references.json ##
+    -@@
+    -   "schema_version": 1,
+    -   "purpose": "이미 독립 검증한 과거 경로의 원본/PDF를 바이트 신원으로 고정한다. 일반 canonical 형식·엔진 선택 규칙은 유지한다.",
+    -   "references": [
+    -+    {
+    -+      "sample": "samples/issue1891/86712_regulatory_analysis.hwpx",
+    -+      "source_sha256": "0f4f055c74a3d39f70e417ca6c700880d9645a202798cd0e5c11f6e32c180a19",
+    -+      "pdf": "pdf/issue7765/regulatory-86712-hwpx-original-print-2024.pdf",
+    -+      "pdf_sha256": "369cf882ad36c1aea27ff4f4ad6fa9d66720d7638a6e8793b0b9b79f75a443f8",
+    -+      "pages": 64,
+    -+      "provenance": "desktop_hancom_print",
+    -+      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    -+    },
+    -+    {
+    -+      "sample": "samples/복학원서.hwp",
+    -+      "source_sha256": "da81b4010331bcac290f900c7cf224c97ee8355399614725ce46c197ff1a22a4",
+    -+      "pdf": "pdf/issue7756/bokhak-original-print-2024.pdf",
+    -+      "pdf_sha256": "38ff94fabff9672417bef2d17986b3d9944e7818fe42e091294024f737e104f4",
+    -+      "pages": 1,
+    -+      "provenance": "desktop_hancom_print",
+    -+      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    -+    },
+    -+    {
+    -+      "sample": "samples/143E433F503322BD33.hwp",
+    -+      "source_sha256": "1bcdc7a2de38680cdb715556f40c8477f8242131d28de949b09e945022bf35fa",
+    -+      "pdf": "pdf/143E433F503322BD33-hwp-2020.pdf",
+    -+      "pdf_sha256": "41451dd4d1b6a43b78cc532500a54a310314da84fc1b2963e49485443d0b4d0d",
+    -+      "pages": 1,
+    -+      "provenance": "desktop_hancom_print",
+    -+      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    -+    },
+    -+    {
+    -+      "sample": "samples/task1768/distribution_doc.hwpx",
+    -+      "source_sha256": "f217c02af7bc2a6641b9544afd29765ddccdd15021507b7554521f68b9d560dc",
+    -+      "pdf": "pdf/issue7642-failed-regression-print-20261015/distribution_doc-2020.pdf",
+    -+      "pdf_sha256": "0299869bf040b01e07a19dde600852e44aec406257916b781eabdfbce6ed5aba",
+    -+      "pages": 3,
+    -+      "provenance": "desktop_hancom_print",
+    -+      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    -+    },
+    -+    {
+    -+      "sample": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+    -+      "source_sha256": "83fca0151c67e2adeb7a85203f5c75204d8e53af4e44902958c96b85adf6845e",
+    -+      "pdf": "pdf/156636617-monthly-trade-hwp-2020.pdf",
+    -+      "pdf_sha256": "5a04f0ffdbfcde8d707ea6fe6e99bb446236daa7ae2c0b32830ae4303aec395b",
+    -+      "pages": 19,
+    -+      "provenance": "desktop_hancom_print",
+    -+      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    -+    },
+    -+    {
+    -+      "sample": "samples/HWP5-nopassword-123456.hwpx",
+    -+      "source_sha256": "20ed90f48c6501cad99f6aa1f82d81d2a2132eb04f2d1d32805ac251749e4d0e",
+    -+      "pdf": "pdf/HWP5-nopassword-123456-hwpx-2024.pdf",
+    -+      "pdf_sha256": "b20bd5c0b3716818113cc6bc2a18ba768325b338a3a16840e3680e124cfea01d",
+    -+      "pages": 24,
+    -+      "provenance": "desktop_hancom_print",
+    -+      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    -+    },
+    -+    {
+    -+      "sample": "samples/[2027] 온새미로 1 본교재.hwpx",
+    -+      "source_sha256": "85071b419b3467466ec391ecde187ad25723ce564178c2ed37c53b09e731138c",
+    -+      "pdf": "pdf/[2027] 온새미로 1 본교재-hwpx-2024.pdf",
+    -+      "pdf_sha256": "051aa8c4b94ca7cddc21e18d7fdc45b370e492b65c711c801d2c95479117cbab",
+    -+      "pages": 46,
+    -+      "provenance": "desktop_hancom_print",
+    -+      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    -+    },
+    -+    {
+    -+      "sample": "samples/[2027] 온새미로 1 본교재.hwp",
+    -+      "source_sha256": "e8592e74c9a8425c4ee2c5824d012ebe45e9f6dd36880b784ba594b4fd0a31ce",
+    -+      "pdf": "pdf/issue7761/onsaemiro-hwp-original-print-2024.pdf",
+    -+      "pdf_sha256": "8015d2d28ee20ba66579f9375a0e36dfdd8e8725228015dc807748110bc09219",
+    -+      "pages": 46,
+    -+      "provenance": "desktop_hancom_print",
+    -+      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    -+    },
+    -+    {
+    -+      "sample": "samples/86712_regulatory_analysis.hwp",
+    -+      "source_sha256": "ee82c7755617003cb972ba398da9cffadfed24ac0fa068eee1a5347da7658a88",
+    -+      "pdf": "pdf/issue7382-regression-review/86712_regulatory_analysis-font-supplied-2024.pdf",
+    -+      "pdf_sha256": "ac34bb60492e3749a53183cfb63c814f86379895937dd1309d3bc3d2d1b8126a",
+    -+      "pages": 64,
+    -+      "provenance": "desktop_hancom_print",
+    -+      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    -+    },
+    -+    {
+    -+      "sample": "samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp",
+    -+      "source_sha256": "84d297375c48e1e903247a389e9ec3907e3cdc57a4a7e29a819a01c2a1e3a341",
+    -+      "pdf": "pdf/issue7755/market-2017-manual-print-2024.pdf",
+    -+      "pdf_sha256": "89e32b43af21bde3cf869e76b816d214fa0bc30e3f14512c4c3af184430cd616",
+    -+      "pages": 315,
+    -+      "provenance": "desktop_hancom_print",
+    -+      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    -+    },
+    -     {
+    -       "sample": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+    -       "source_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+    -@@
+    -       "pages": 215,
+    -       "provenance": "desktop_hancom_print",
+    -       "evidence": "mydocs/pr/assets/issues7749_7753_20261121/print-references.json"
+    --    },
+    --    {
+    --      "sample": "samples/issue1891/86712_regulatory_analysis.hwpx",
+    --      "source_sha256": "0f4f055c74a3d39f70e417ca6c700880d9645a202798cd0e5c11f6e32c180a19",
+    --      "pdf": "pdf/issue7765/regulatory-86712-hwpx-original-print-2024.pdf",
+    --      "pdf_sha256": "369cf882ad36c1aea27ff4f4ad6fa9d66720d7638a6e8793b0b9b79f75a443f8",
+    --      "pages": 64,
+    --      "provenance": "desktop_hancom_print",
+    --      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    --    },
+    --    {
+    --      "sample": "samples/복학원서.hwp",
+    --      "source_sha256": "da81b4010331bcac290f900c7cf224c97ee8355399614725ce46c197ff1a22a4",
+    --      "pdf": "pdf/issue7756/bokhak-original-print-2024.pdf",
+    --      "pdf_sha256": "38ff94fabff9672417bef2d17986b3d9944e7818fe42e091294024f737e104f4",
+    --      "pages": 1,
+    --      "provenance": "desktop_hancom_print",
+    --      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    --    },
+    --    {
+    --      "sample": "samples/143E433F503322BD33.hwp",
+    --      "source_sha256": "1bcdc7a2de38680cdb715556f40c8477f8242131d28de949b09e945022bf35fa",
+    --      "pdf": "pdf/143E433F503322BD33-hwp-2020.pdf",
+    --      "pdf_sha256": "41451dd4d1b6a43b78cc532500a54a310314da84fc1b2963e49485443d0b4d0d",
+    --      "pages": 1,
+    --      "provenance": "desktop_hancom_print",
+    --      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    --    },
+    --    {
+    --      "sample": "samples/task1768/distribution_doc.hwpx",
+    --      "source_sha256": "f217c02af7bc2a6641b9544afd29765ddccdd15021507b7554521f68b9d560dc",
+    --      "pdf": "pdf/issue7642-failed-regression-print-20261015/distribution_doc-2020.pdf",
+    --      "pdf_sha256": "0299869bf040b01e07a19dde600852e44aec406257916b781eabdfbce6ed5aba",
+    --      "pages": 3,
+    --      "provenance": "desktop_hancom_print",
+    --      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    --    },
+    --    {
+    --      "sample": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+    --      "source_sha256": "83fca0151c67e2adeb7a85203f5c75204d8e53af4e44902958c96b85adf6845e",
+    --      "pdf": "pdf/156636617-monthly-trade-hwp-2020.pdf",
+    --      "pdf_sha256": "5a04f0ffdbfcde8d707ea6fe6e99bb446236daa7ae2c0b32830ae4303aec395b",
+    --      "pages": 19,
+    --      "provenance": "desktop_hancom_print",
+    --      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    --    },
+    --    {
+    --      "sample": "samples/HWP5-nopassword-123456.hwpx",
+    --      "source_sha256": "20ed90f48c6501cad99f6aa1f82d81d2a2132eb04f2d1d32805ac251749e4d0e",
+    --      "pdf": "pdf/HWP5-nopassword-123456-hwpx-2024.pdf",
+    --      "pdf_sha256": "b20bd5c0b3716818113cc6bc2a18ba768325b338a3a16840e3680e124cfea01d",
+    --      "pages": 24,
+    --      "provenance": "desktop_hancom_print",
+    --      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    --    },
+    --    {
+    --      "sample": "samples/[2027] 온새미로 1 본교재.hwpx",
+    --      "source_sha256": "85071b419b3467466ec391ecde187ad25723ce564178c2ed37c53b09e731138c",
+    --      "pdf": "pdf/[2027] 온새미로 1 본교재-hwpx-2024.pdf",
+    --      "pdf_sha256": "051aa8c4b94ca7cddc21e18d7fdc45b370e492b65c711c801d2c95479117cbab",
+    --      "pages": 46,
+    --      "provenance": "desktop_hancom_print",
+    --      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    --    },
+    --    {
+    --      "sample": "samples/[2027] 온새미로 1 본교재.hwp",
+    --      "source_sha256": "e8592e74c9a8425c4ee2c5824d012ebe45e9f6dd36880b784ba594b4fd0a31ce",
+    --      "pdf": "pdf/issue7761/onsaemiro-hwp-original-print-2024.pdf",
+    --      "pdf_sha256": "8015d2d28ee20ba66579f9375a0e36dfdd8e8725228015dc807748110bc09219",
+    --      "pages": 46,
+    --      "provenance": "desktop_hancom_print",
+    --      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    --    },
+    --    {
+    --      "sample": "samples/86712_regulatory_analysis.hwp",
+    --      "source_sha256": "ee82c7755617003cb972ba398da9cffadfed24ac0fa068eee1a5347da7658a88",
+    --      "pdf": "pdf/issue7382-regression-review/86712_regulatory_analysis-font-supplied-2024.pdf",
+    --      "pdf_sha256": "ac34bb60492e3749a53183cfb63c814f86379895937dd1309d3bc3d2d1b8126a",
+    --      "pages": 64,
+    --      "provenance": "desktop_hancom_print",
+    --      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    --    },
+    --    {
+    --      "sample": "samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp",
+    --      "source_sha256": "84d297375c48e1e903247a389e9ec3907e3cdc57a4a7e29a819a01c2a1e3a341",
+    --      "pdf": "pdf/issue7755/market-2017-manual-print-2024.pdf",
+    --      "pdf_sha256": "89e32b43af21bde3cf869e76b816d214fa0bc30e3f14512c4c3af184430cd616",
+    --      "pages": 315,
+    --      "provenance": "desktop_hancom_print",
+    --      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    -     }
+    -   ]
+    - }
+    -
+    - ## tests/fixtures/overflow_cell_baseline.tsv ##
+    -@@
+    --issue1891_external_bindata_link.hwpx	32
+    --issue1921/59043_regulatory_analysis.hwp	1
+    --issue7062/tac_object_host_line_height.hwp	1
+    --issue7500/tac_table_host_spaces.hwp	3
+    --issue8755/46551_road_traffic_rule_amendment.hwp	2
+    --rowbreak-problem-pages.hwpx	14
+    --task2097/75544_pii_bunseok.hwpx	2
+    --issue7216/tall_table_before.hwpx	21
+    --# #8462 새 시험 고정본 2행 — 용지 밖으로 오프셋된 글상자 안의 글줄(한/글은 그 글상자를 그리지 않는다). 수정 전후 같은 자리이며 이 PR 은 흐름 밂만 바꾼다.
+    --issue8462/156552561-offpage-textbox.hwpx	1
+    --issue8462/156633674-offpage-logo.hwpx	1
+    - # #7754~#7765: source32 독립 Print·전쪽 두 경로98% 이상. 106쪽 두 줄은 Print에도 같은 간격이다.
+    - 143E433F503322BD33.hwp	0
+    - 156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp	0
+    -@@ tests/fixtures/overflow_cell_baseline.tsv: issue1891/86712_regulatory_analysis.hwpx	0
+    - task1768/distribution_doc.hwpx	0
+    - task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	0
+    - 복학원서.hwp	0
+    -+
+    -+issue1891_external_bindata_link.hwpx	32
+    -+issue1921/59043_regulatory_analysis.hwp	1
+    -+issue7062/tac_object_host_line_height.hwp	1
+    -+issue7500/tac_table_host_spaces.hwp	3
+    -+issue8755/46551_road_traffic_rule_amendment.hwp	2
+    -+rowbreak-problem-pages.hwpx	14
+    -+task2097/75544_pii_bunseok.hwpx	2
+    -+issue7216/tall_table_before.hwpx	21
+    -+# #8462 새 시험 고정본 2행 — 용지 밖으로 오프셋된 글상자 안의 글줄(한/글은 그 글상자를 그리지 않는다). 수정 전후 같은 자리이며 이 PR 은 흐름 밂만 바꾼다.
+    -+issue8462/156552561-offpage-textbox.hwpx	1
+    -+issue8462/156633674-offpage-logo.hwpx	1
+35:  24bd18ce4d = 35:  f455ec4276 소스33 Studio·글꼴 추적 검증과 복학원서 확대 판독을 기록
+36:  f802d71d4e = 36:  3d52fe3252 새 기준의 표·인용 부호 판독과 원장 의미 보존을 기록
+37:  84e49a13d8 = 37:  d37906d43f 최소 글꼴 Native lib 4033개 통과와 정책 검증 근거를 보존
+38:  67844fe3ea = 38:  cdbcb1264f 암호 원본 첫 쪽의 여백 중복과 원 glyph 누락을 독립 Print로 확인
+39:  755363e76e = 39:  1ddbc32675 완성 문단 상자의 여백 중복과 Enter 원 글리프 공급을 보정
+40:  6fc8d32466 = 40:  31b286a36b 안내문 첫 쪽 99.59% 개선과 어울림 대조군·분할 글꼴 근거를 기록
+41:  e3aac69be2 = 41:  927d17c882 분할 글꼴의 옛한글 glyph와 전진폭을 원문 주소 보존 경로에서 공유
+42:  a21aca8e27 = 42:  3c62c97304 최신 devel 동기화와 양쪽 어울림 대조 완료를 고정하고 최종 검증 계획 수립
+43:  ec27bb9a72 = 43:  7b969e0802 원 HFT 전진폭을 보존하고 분할 원 glyph 관계 검사와 전쪽 측정 근거 고정
+44:  f927d3442f = 44:  d169790afc 평문 583쪽의 수정 전 양쪽 결과와 폭 보정 후 Native 대조 근거 기록
+45:  69673f12ee = 45:  bf221feb0d 99.99% 완료 쪽의 독립 좌표 회귀와 분할 glyph의 기존 Native CI 연결
+46:  4e1928033c = 46:  3ef2055ac1 전쪽 583쪽 Native 완료를 기록하고 기준 대조·정식 회귀 실행 계획 고정
+47:  57ca8249a0 = 47:  cbdd80539f 전쪽 583쪽 Native와 암호 원본·유입 Studio 및 CTRL_DATA 검증 근거 고정
+48:  9d5d4b19d7 = 48:  c4af97fa5c 새 devel과 후보의 Native 583쪽 무하락 및 소스 동일성 검증 기록
+49:  f309cb42ee = 49:  e92a11cad1 유입 편집 기능의 저장 원본 33개 조건 Native 출력 보존 검증
+50:  0a6a5279c8 = 50:  fe00120310 Native 정식 검사 통과와 정본 보호 환경 복원 근거 기록
+51:  627ff8ca67 = 51:  b2665fb376 전쪽 WASM 583쪽과 Native 실제 편집 재열기 보존 검증
+52:  a983fbf3ec = 52:  8098712f38 원본 OTF 복구와 보호 기호의 글꼴 문맥 원인 입증
+53:  9c0d52bdca = 53:  8625688bd7 전체 회귀 종료와 HFT 논리 별칭의 빈 글리프 회귀 입증
+54:  b53c29b61c ! 54:  c56ad5d9bf HFT 논리 별칭의 잘못된 family 승격과 독립 논리 쪽 참조 계약 보정
+    @@ tests/cases/oracle_page_count_baseline.rs: fn page_counts_do_not_drift_from_hanc
+                          continue;
+                      }
+
+    - ## tests/fixtures/oracle_page_count_verified_references.json ##
+    -@@
+    -       "pdf_sha256": "5a04f0ffdbfcde8d707ea6fe6e99bb446236daa7ae2c0b32830ae4303aec395b",
+    -       "pages": 19,
+    -       "provenance": "desktop_hancom_print",
+    --      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    -+      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md",
+    -+      "logical_page_comparison": {
+    -+        "native": {
+    -+          "tsv": "mydocs/pr/assets/issues7754_7765/source36/issues/native/candidate/issue7760/silhouette.tsv",
+    -+          "sha256": "172585033d8a550d1ac6120b2d27fe6d7b131ba54b6ce3cb36b695a7c93100d3"
+    -+        },
+    -+        "wasm": {
+    -+          "tsv": "mydocs/pr/assets/issues7754_7765/source36/issues/wasm/candidate/issue7760/all-pages.tsv",
+    -+          "sha256": "bf0d5f934fbc5797056a59c34cd0d1aaf9c4b898fb5a3bdf217aa2638ef7c837"
+    -+        }
+    -+      }
+    -     },
+    -     {
+    -       "sample": "samples/HWP5-nopassword-123456.hwpx",
+    -@@
+    -       "pdf_sha256": "89e32b43af21bde3cf869e76b816d214fa0bc30e3f14512c4c3af184430cd616",
+    -       "pages": 315,
+    -       "provenance": "desktop_hancom_print",
+    --      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
+    -+      "evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md",
+    -+      "logical_page_comparison": {
+    -+        "native": {
+    -+          "tsv": "mydocs/pr/assets/issues7754_7765/source36/issues/native/candidate/issue7755/silhouette.tsv",
+    -+          "sha256": "539562fe370c1da57c258c31c24f1f14ac00f96045295a5da8b0952a0c5a35d2"
+    -+        },
+    -+        "wasm": {
+    -+          "tsv": "mydocs/pr/assets/issues7754_7765/source36/issues/wasm/candidate/issue7755/all-pages.tsv",
+    -+          "sha256": "5ddbea24d26e328cf51c79396366c03f51b87b4639c338f28b71e997cd63132a"
+    -+        }
+    -+      }
+    -     },
+    -     {
+    -       "sample": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+    -
+      ## tests/support/oracle_logical_page_reference.rs (new) ##
+     @@
+     +// 관계형·고정형: 등록한 원본/PDF/전쪽 TSV의 바이트·쪽 대응 계약이다.
+55:  89cee1195d = 55:  14ce415780 별칭 수정 전 실패와 논리 쪽 참조의 실제 계약 검사 로그 보존
+56:  602bc32b3a = 56:  6ce8d33e6f 새 Native에서 별칭 회귀 수정과 중첩 표 17쪽 정본 복원 검증
+57:  9c39329273 = 57:  0513d8c8d5 논리 family 계약을 public 통합 검사로 이관하고 단위 검사 정책 재검증
+58:  9cf5a6f49e = 58:  92455f3bf9 devel 동기화와 Native 583쪽·양쪽 별칭 경계·최소 글꼴 검증 확정
+59:  53e6487710 = 59:  edd0cb08c7 리베이스 후 Native 221건 통과와 종료 캐시 정리 근거 고정
+60:  eaa03dc039 = 60:  5188b78de9 검증 로그를 정식 txt 증거로 포함하고 참조 경로 보정
+61:  da16c7b48c = 61:  4c8d6bc0ed Clippy와 workspace 빌드 통과 및 글꼴 환경 생성 경로 분석 고정
+62:  34c00b546d = 62:  1012d72279 승인된 Windows 글꼴 복사와 9293 고지 보정 push 증거 고정
+63:  9bb172c09a = 63:  f204abca37 양쪽 원본 583쪽 통과와 9293 이후 보호 하한 75행 변경 대조
+64:  f25ed1f908 = 64:  fced916616 전체 Rust 13972건과 SPJGT 공급 대조 및 PR 제출 대기 조건 고정
+65:  d0de9169c0 = 65:  8f250c89e9 유입 기능 전쪽 보존과 Studio 및 CTRL_DATA 실사용 검증 고정
+66:  2eedb7824d = 66:  e3873b767c 독립 기호 Print 원본과 TTF 신원 및 보호 글꼴 공급 회복 근거 고정
+67:  383c475aee = 67:  889080b900 9293 머지 대기와 충돌 없는 로컬 통합 준비 및 검증 범위 정정
+68:  8f9fd0414f = 68:  d4d53d36dc 리베이스된 공통 글꼴 조회 서명으로 원 glyph 공급 호출 보정
+69:  403f760756 = 69:  5edb81c5f7 리베이스 전 완료 증거 보존과 새 head 교차 검증 단계 기록
+70:  f9b3d5604b = 70:  9e3602e71b Windows 직접 PDF 검증 제외와 PR 후속 처리 승인 범위 반영
+71:  920365e72e = 71:  066b6ac43b 독립 중고딕 전 글자표 공급과 미세 보호 차이 개선 근거 보존
+72:  f80e8c9727 = 72:  48d16d340c 공유 캐시의 잘못된 후보 재사용을 거부하고 실제 재빌드 검증 기록
+73:  a971405d3f = 73:  7a2e21d411 실제 재빌드 후보와 원 글꼴 전쪽 100% 검증 근거 보존
+74:  cf01c7315e = 74:  46bb93ff18 테스트: 글꼴 입력 예열의 지연 배치 완료 후 호출 수 측정
+75:  77d6d756fe = 75:  2393eb7ae6 검증: 9318 병합 전 완료 결과와 리베이스 전환 상태 보존

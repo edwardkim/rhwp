@@ -146,7 +146,7 @@ fn unclassified_slot_keeps_an_existing_legacy_program_for_the_same_family() {
     let style = style(&tree.root).unwrap();
     assert!(!style.source_font_is_ttf && !style.source_font_is_hft);
     let metrics = style.native_otf_metrics.expect(
-        "미분류 원본의 새 TrueType 전진만 차단하며 기존 동일 family의 HFT 표시 프로그램은 보존한다",
+        "유형 미상 원본에 새 TrueType 전진폭을 적용하지 않고 같은 이름의 표시용 글꼴을 유지한다",
     );
     assert!(!metrics.uses_original_truetype());
 }

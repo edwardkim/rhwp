@@ -1,0 +1,35 @@
+{
+  "base_source": "93e861523623bcd84d57b808edb62af5af2aa82a",
+  "candidate_product_source": "76b905fcaca02693262f1e0621e855c9dacb3568",
+  "class": "HwpDocument",
+  "named_method_counts": {
+    "base_checked_in": 601,
+    "base_fresh": 609,
+    "candidate_fresh": 614
+  },
+  "removed_methods": [],
+  "new_methods": [
+    "getCursorRectInNoteByPath",
+    "getEndnoteSourceAt",
+    "getFootnoteInfoByPath",
+    "insertEndnoteByPath",
+    "insertFootnoteByPath"
+  ],
+  "base_methods_absent_in_checked_in_declarations": [
+    "addBlockBookmark",
+    "addBookmarkAt",
+    "deleteBookmarkAt",
+    "getHftOutlineFontContext",
+    "renameBookmarkAt",
+    "setNumbering",
+    "setPrintJobContext",
+    "setPrintPngRgb555"
+  ],
+  "base_wasm_sha256": "6f32e7030550bd7a8230bdba4e38d869b2e1c7018161a1d8578765f6ce09845a",
+  "result_hashes": {
+    "rhwp.d.ts": "13210d65155993791cd67a130e1400aeb89f7a5865a58d6a49e74677ffdfc6b4",
+    "rhwp.js": "d2d2b445cf853cf162c7664288fe34f4bb1468f0fba5512cbe79441bb53345b2",
+    "rhwp_bg.wasm": "e7ed8f68fb0e5c27866177ba0a4b98ee2b919752c8102d7237196af964b4b3db",
+    "rhwp_bg.wasm.d.ts": "cc739b51cf49fac2effed7cf5fe6ee74ce18733204922b5e96f296064ea35590"
+  }
+}

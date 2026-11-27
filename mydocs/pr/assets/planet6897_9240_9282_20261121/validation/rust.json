@@ -1,0 +1,75 @@
+{
+  "head": "0d15538887cc44d11eb909975109c22acb197f47",
+  "scope": "full",
+  "steps": [
+    {
+      "name": "full-nextest",
+      "started": "2026-11-21T19:13:03.416538+09:00",
+      "exit": 0,
+      "finished": "2026-11-21T19:29:28.348716+09:00"
+    },
+    {
+      "name": "fmt",
+      "started": "2026-11-21T19:29:28.357926+09:00",
+      "exit": 0,
+      "finished": "2026-11-21T19:30:02.494527+09:00"
+    },
+    {
+      "name": "native-clippy",
+      "started": "2026-11-21T19:30:02.495003+09:00",
+      "exit": 0,
+      "finished": "2026-11-21T19:32:36.587732+09:00"
+    },
+    {
+      "name": "wasm-clippy",
+      "started": "2026-11-21T19:32:36.588592+09:00",
+      "exit": 0,
+      "finished": "2026-11-21T19:34:20.937632+09:00"
+    },
+    {
+      "name": "workspace-build",
+      "started": "2026-11-21T19:34:20.941536+09:00",
+      "exit": 0,
+      "finished": "2026-11-21T19:37:12.880445+09:00"
+    },
+    {
+      "name": "workspace-clippy",
+      "started": "2026-11-21T19:37:12.890907+09:00",
+      "exit": 0,
+      "finished": "2026-11-21T19:39:21.404484+09:00"
+    },
+    {
+      "name": "native-skia-lib",
+      "started": "2026-11-21T19:39:21.409431+09:00",
+      "exit": 0,
+      "finished": "2026-11-21T19:50:11.799759+09:00"
+    }
+  ],
+  "nextest": {
+    "executed": 13874,
+    "passed": 13874,
+    "skipped": 45,
+    "seconds": 669.507
+  },
+  "native_skia_lib": {
+    "passed": 4034,
+    "failed": 0,
+    "ignored": 12
+  },
+  "suite_manifest": {
+    "source_count": 2456,
+    "static_test_attributes": 10111,
+    "generated_suite_count": 28,
+    "separate_targets": 20,
+    "registered_targets": 48,
+    "generated_sources_same_before_and_after_prepare": 2439,
+    "exit": 0
+  },
+  "unit_tier_exit": 0,
+  "handbook_native_gate": {
+    "pages": 383,
+    "minimum": "99.97",
+    "exact_display_100": 380,
+    "exit": 0
+  }
+}

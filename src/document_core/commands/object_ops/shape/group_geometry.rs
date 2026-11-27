@@ -48,6 +48,45 @@ pub(super) fn finish_top_level_edit(
     if matches!(shape, ShapeObject::Polygon(_)) {
         return;
     }
+    // 독립 도형의 너비·높이는 기울기까지 포함한 외접 상자다. 한컴의 크기 편집은
+    // 저장 행렬의 행에 외접 상자의 배율을 합성하며 원본 꼭짓점과 로컬 offset을 보존한다.
+    let (w, h) = (shape.common().width, shape.common().height);
+    let standalone = matches!(
+        shape,
+        ShapeObject::Rectangle(_)
+            | ShapeObject::Ellipse(_)
+            | ShapeObject::Arc(_)
+            | ShapeObject::Curve(_)
+    );
+    let sa = shape.shape_attr_mut();
+    if standalone
+        && (w, h) != (before.0, before.1)
+        && before.0 > 0
+        && before.1 > 0
+        && before.6.rem_euclid(360) == 0
+        && sa.rotation_angle == before.6
+        && !before.7
+        && !before.8
+        && !sa.horz_flip
+        && !sa.vert_flip
+        && (sa.render_b != 0.0 || sa.render_c != 0.0)
+        && sa.has_saved_affine_geometry()
+    {
+        let kx = f64::from(w) / f64::from(before.0);
+        let ky = f64::from(h) / f64::from(before.1);
+        scale_rendering(sa, kx, ky);
+        if w != before.0 {
+            sa.current_width = (f64::from(sa.original_width) * sa.render_sx) as u32;
+            sa.current_width_was_zero = false;
+        }
+        if h != before.1 {
+            sa.current_height = (f64::from(sa.original_height) * sa.render_sy) as u32;
+            sa.current_height_was_zero = false;
+        }
+        sa.rotation_center.x = (w / 2) as i32;
+        sa.rotation_center.y = (h / 2) as i32;
+        return;
+    }
     let after =
         super::super::common::shape_transform_fingerprint(shape.common(), shape.shape_attr());
     // common offset은 문단/셀의 앵커 이동이다. 로컬 행렬의 이동·배율까지 지우면

@@ -360,7 +360,7 @@ fn unknown_non_emoji_glyph_uses_provider_width_not_square_rule() {
             let p = positions("용․편", &protected);
             assert!(
                 p[2] - p[1] >= (p[3] - p[2]) / 2.0,
-                "HFT 또는 확인하지 않은 style 프로그램의 glyph 부재를 추정하지 않음"
+                "구형 글꼴 선언이나 확인하지 않은 스타일만으로 글리프 부재를 추정하지 않는다"
             );
         }
     }

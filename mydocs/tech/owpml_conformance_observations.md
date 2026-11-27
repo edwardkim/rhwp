@@ -184,6 +184,31 @@ last_verified: 2026-11-12
   소비하는 렌더러 때문에 HWPX 타입을 버리는 것으로 대신하지 않는다. 실제 보간과 기존 기대값의
   정리는 원본 두 형식·독립 Print·정상 대조군 검증을 마친 후 판정한다.
 
+## 19. HwpUnitChar case의 명시 단위와 fallback 원본은 별도 계약
+
+- **관찰 (2026-11-21, 이슈 #7765)**: `86712` HWPX의 패키지는 xmlVersion 1.5이고
+  header version은 1.2다. 문단모양 24의 case는 `intent=-1233 HWPUNIT`, default는
+  `-2467`이다. 한컴 2020·2024에서 각각 HWP로 저장한 실제 DocInfo의 intent는 두 제품
+  모두 `-2466`이다. fallback의 홀수 값을 선택하면 CHAR 단위 표지가 켜지므로 다른
+  길이가 된다. 같은 표지 계약을 사용하는 문단모양 35·40·43도 두 제품에서 확인했다.
+- **사양과의 관계**: 로컬 Core 스키마의 `HWPValue`는 값과 단위를 함께 정의하고,
+  unit을 생략하면 HWPUNIT으로 정한다. `HwpUnitChar` namespace 자체가 모든 값을 CHAR나
+  비율로 만든다는 뜻은 아니다. 여백의 case 단위를 먼저 보존하며, fallback의 홀수 값을
+  정밀도 복원이라는 이유로 재주입하지 않는다. fixed lineSpacing의 정밀도 계약과 구분한다.
+- **판본 대조군**: `80168`의 실제 패키지 xmlVersion은 1.2다. 두 한컴 제품의 저장 결과에서
+  문단모양 34·35·43의 intent는 각각 case 값 그대로다. header version만으로 패키지의
+  단위 판본을 판단하거나, 이번 결과를 근거로 기존 판본 변환을 일괄 제거하지 않는다.
+- **캐시 경계**: 옛 자체 변환본은 HWP 원본의 LineSeg를 보존하면서 case 단위 선언을
+  잃었을 수 있다. fallback 값만 case 단위에 맞춘 진단 사본은 한컴 2024 Print의 전64쪽이
+  원본 Print와 96DPI 래스터 바이트까지 같았다. 현재 스타일을 바로잡는 것과 옛 줄 경계를
+  갱신하는 것은 별도 단계다. 원본 fallback으로 모든 저장 줄 경계를 재현한 경우에만
+  기존 공통 프레임이 새 줄과 후속 문단 원점을 함께 발행한다. 단위가 다르거나 줄 수가
+  줄었다는 이유만으로 저장 캐시를 일괄 폐기하지 않는다.
+- **근거**: [작업 기록](../working/task_m100_7754_stage2.md),
+  [공식 로컬 Core 스키마](<../manual/OWPML SCHEMA/Core XML schema.xml>),
+  `src/parser/hwpx/header.rs`와 `src/renderer/composer/stored_margin_context.rs`.
+  이 관찰은 독립 단위·Print 계약의 입증이며, 해당 문서의 최종 전쪽 시각 통과 선언이 아니다.
+
 ## 이 문서가 하지 않는 것
 
 - 위 항목은 **한컴 특정 버전(202x 계열 위주)의 실측**이지, OWPML/HWPX 표준 자체의 결함 판정이

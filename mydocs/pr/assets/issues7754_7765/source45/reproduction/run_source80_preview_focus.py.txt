@@ -1,0 +1,51 @@
+from pathlib import Path
+from decimal import Decimal
+import subprocess, json, time, hashlib, os
+
+R = Path('/home/tsjang/rhwp')
+O = R / 'output/pr-review/issue7754-nine'
+P = O / 'source80-preview-focus-state.json'
+s = {'started': time.time(), 'pid': os.getpid(), 'scope': 'Local preparation preview only; PR9293 is unmerged. Compare identical font conditions with the previous frozen candidate. Not a final merged-head or whole-document gate.', 'results': []}
+
+def save():
+    P.write_text(json.dumps(s, ensure_ascii=False, indent=2) + '\n')
+
+try:
+    jobs = json.loads((O / 'source80-preview-focus-jobs.json').read_text())
+    for job in jobs:
+        s['waiting'] = job['backend'] + ' preview producer'
+        save()
+        deadline = time.monotonic() + 14400
+        while True:
+            build = json.loads((O / 'source74-preview-build-state.json').read_text())
+            found = next((r for r in build['results'] if r['label'] == 'candidate-' + job['backend'] and r.get('exit_code') == 0), None)
+            if found and (found.get('binary_sha256') if job['backend'] == 'native' else found.get('files')):
+                break
+            assert not build.get('error'), 'preview_producer_failed'
+            assert time.monotonic() < deadline, 'preview_producer_timeout'
+            time.sleep(5)
+        binary = O / 'bin/rhwp-source74-preview-optimized'
+        assert hashlib.sha256(binary.read_bytes()).hexdigest() == next(r['binary_sha256'] for r in build['results'] if r['label'] == 'candidate-native')
+        s['waiting'] = None
+        s['running'] = {'backend': job['backend'], 'key': job['key']}
+        save()
+        log = O / 'logs' / f"source78-preview-{job['backend']}-{job['key']}.txt"
+        with log.open('w') as stream:
+            result = subprocess.run(job['command'], cwd=Path('/home/tsjang/rhwp-worktrees/task-7754-pr9293-preview'), stdout=stream, stderr=subprocess.STDOUT, timeout=1800)
+        assert result.returncode == 0, 'preview_render_failed'
+        import csv
+        tsv = O / 'source80-preview-focus' / job['backend'] / job['key'] / 'silhouette.tsv'
+        rows = list(csv.DictReader(tsv.open(), delimiter='\t'))
+        assert [r['page'] for r in rows] == [r['page'] for r in job['expected_rows']]
+        differences = [{'page': a['page'], 'previous': a['silhouette_raw_match_percent'], 'preview': b['silhouette_raw_match_percent']} for a, b in zip(job['expected_rows'], rows) if a['silhouette_raw_match_percent'] != b['silhouette_raw_match_percent']]
+        declines = [r for r in differences if Decimal(r['preview']) < Decimal(r['previous'])]
+        s['results'].append(dict(job, rows=rows, differences=differences, declines=declines, exit_code=result.returncode, source_head=build['candidate'], binary_sha256=hashlib.sha256(binary.read_bytes()).hexdigest(), tsv=str(tsv), log=str(log)))
+        save()
+    s['complete'] = True
+    s['passed'] = not any(r['declines'] for r in s['results'])
+except Exception as error:
+    s['error'] = str(error)
+finally:
+    s['running'] = None
+    s['ended'] = time.time()
+    save()

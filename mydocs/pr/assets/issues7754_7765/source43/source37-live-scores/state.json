@@ -1,0 +1,1130 @@
+{
+  "started": 1795319741.3337193,
+  "results": [
+    {
+      "backend": "native",
+      "role": "base",
+      "key": "origin-30-live",
+      "source": "samples/inner-table-01.hwp",
+      "input_sha256": "15c24b0dabec0353da4e8445155f16a46eac6d370d5d65c81e8aa1cf47759bc1",
+      "print": "pdf/pr9273-nested-row-split/edited/origin-30-hwpx-2020.pdf",
+      "print_sha256": "e1bf2b28422c70c92648fbaf671f21840e8ba551db97c6b43cd6a29b5739379b",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-30/live/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/origin-30-live/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/origin-30-live",
+        "--key",
+        "origin-30-live",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/origin-30-live/silhouette.tsv",
+      "tsv_sha256": "36902c7854b7c9fb53e87587a058d265c2c9eaf2305e3e8fa82c7a71dcfe0663",
+      "minimum": 98.22,
+      "values": [
+        "100.00",
+        "100.00",
+        "98.22"
+      ]
+    },
+    {
+      "backend": "native",
+      "role": "base",
+      "key": "origin-30-reopen-hwp",
+      "source": "samples/inner-table-01.hwp",
+      "input_sha256": "15c24b0dabec0353da4e8445155f16a46eac6d370d5d65c81e8aa1cf47759bc1",
+      "print": "pdf/pr9273-nested-row-split/edited/origin-30-hwp-2020.pdf",
+      "print_sha256": "1d0fec0baadfd29cae5b0882240a835ecf721ee900b2438c85ea9fc8f6f84ab2",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-30/reopen-hwp/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/origin-30-reopen-hwp/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/origin-30-reopen-hwp",
+        "--key",
+        "origin-30-reopen-hwp",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/origin-30-reopen-hwp/silhouette.tsv",
+      "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "minimum": 100.0,
+      "values": [
+        "100.00",
+        "100.00",
+        "100.00"
+      ]
+    },
+    {
+      "backend": "native",
+      "role": "base",
+      "key": "origin-30-reopen-hwpx",
+      "source": "samples/inner-table-01.hwp",
+      "input_sha256": "15c24b0dabec0353da4e8445155f16a46eac6d370d5d65c81e8aa1cf47759bc1",
+      "print": "pdf/pr9273-nested-row-split/edited/origin-30-hwpx-2020.pdf",
+      "print_sha256": "e1bf2b28422c70c92648fbaf671f21840e8ba551db97c6b43cd6a29b5739379b",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-30/reopen-hwpx/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/origin-30-reopen-hwpx/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/origin-30-reopen-hwpx",
+        "--key",
+        "origin-30-reopen-hwpx",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/origin-30-reopen-hwpx/silhouette.tsv",
+      "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "minimum": 100.0,
+      "values": [
+        "100.00",
+        "100.00",
+        "100.00"
+      ]
+    },
+    {
+      "backend": "native",
+      "role": "base",
+      "key": "origin-70-live",
+      "source": "samples/inner-table-01.hwp",
+      "input_sha256": "15c24b0dabec0353da4e8445155f16a46eac6d370d5d65c81e8aa1cf47759bc1",
+      "print": "pdf/pr9273-nested-row-split/edited/origin-70-hwpx-2020.pdf",
+      "print_sha256": "7407bfa05d1a86fa63e20d5fd93c95f941bd59452a948ffb6f0b124e1ae8157b",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-70/live/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/origin-70-live/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/origin-70-live",
+        "--key",
+        "origin-70-live",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/origin-70-live/silhouette.tsv",
+      "tsv_sha256": "5b9473addff79cba4b50155cb52a03c9f83b14a4a68be52275b48b134d373a92",
+      "minimum": 98.28,
+      "values": [
+        "100.00",
+        "100.00",
+        "100.00",
+        "98.28"
+      ]
+    },
+    {
+      "backend": "native",
+      "role": "base",
+      "key": "origin-70-reopen-hwp",
+      "source": "samples/inner-table-01.hwp",
+      "input_sha256": "15c24b0dabec0353da4e8445155f16a46eac6d370d5d65c81e8aa1cf47759bc1",
+      "print": "pdf/pr9273-nested-row-split/edited/origin-70-hwp-2020.pdf",
+      "print_sha256": "b0305a67299ef5fb2032e49a065484fd68b44d4f943c3f82d3f0ea6b4c1838c6",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-70/reopen-hwp/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/origin-70-reopen-hwp/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/origin-70-reopen-hwp",
+        "--key",
+        "origin-70-reopen-hwp",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/origin-70-reopen-hwp/silhouette.tsv",
+      "tsv_sha256": "18c3218f9c1f9d579a7f6cf3333ac572189e0f2944c87aba9164496dfd272c48",
+      "minimum": 99.59,
+      "values": [
+        "100.00",
+        "100.00",
+        "100.00",
+        "99.59"
+      ]
+    },
+    {
+      "backend": "native",
+      "role": "base",
+      "key": "origin-70-reopen-hwpx",
+      "source": "samples/inner-table-01.hwp",
+      "input_sha256": "15c24b0dabec0353da4e8445155f16a46eac6d370d5d65c81e8aa1cf47759bc1",
+      "print": "pdf/pr9273-nested-row-split/edited/origin-70-hwpx-2020.pdf",
+      "print_sha256": "7407bfa05d1a86fa63e20d5fd93c95f941bd59452a948ffb6f0b124e1ae8157b",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-70/reopen-hwpx/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/origin-70-reopen-hwpx/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/origin-70-reopen-hwpx",
+        "--key",
+        "origin-70-reopen-hwpx",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/origin-70-reopen-hwpx/silhouette.tsv",
+      "tsv_sha256": "18c3218f9c1f9d579a7f6cf3333ac572189e0f2944c87aba9164496dfd272c48",
+      "minimum": 99.59,
+      "values": [
+        "100.00",
+        "100.00",
+        "100.00",
+        "99.59"
+      ]
+    },
+    {
+      "backend": "native",
+      "role": "base",
+      "key": "hancom-30-live",
+      "source": "tests/fixtures/nested-row-split/inner-table-01-2020.hwpx",
+      "input_sha256": "3f888a3ef2ed9a5075bd8df2cd9ee8ac9ad10d24e396309641188f6a9aa927ed",
+      "print": "pdf/pr9273-nested-row-split/edited/hwpx-source-30-hwpx-2020.pdf",
+      "print_sha256": "512a2ad820a126b1ec39ec913ea9c7d2b0ef7a1e134144219721464e0b93d833",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-30/live/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/hancom-30-live/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/hancom-30-live",
+        "--key",
+        "hancom-30-live",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/hancom-30-live/silhouette.tsv",
+      "tsv_sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+      "minimum": 98.07,
+      "values": [
+        "100.00",
+        "100.00",
+        "98.07"
+      ]
+    },
+    {
+      "backend": "native",
+      "role": "base",
+      "key": "hancom-30-reopen-hwp",
+      "source": "tests/fixtures/nested-row-split/inner-table-01-2020.hwpx",
+      "input_sha256": "3f888a3ef2ed9a5075bd8df2cd9ee8ac9ad10d24e396309641188f6a9aa927ed",
+      "print": "pdf/pr9273-nested-row-split/edited/hwpx-source-30-hwp-2020.pdf",
+      "print_sha256": "b791f2f2471e22f64094eff059b6a3c2c2fc9de10c1e61ecd5df7550b908f8db",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-30/reopen-hwp/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/hancom-30-reopen-hwp/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/hancom-30-reopen-hwp",
+        "--key",
+        "hancom-30-reopen-hwp",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/hancom-30-reopen-hwp/silhouette.tsv",
+      "tsv_sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+      "minimum": 98.07,
+      "values": [
+        "100.00",
+        "100.00",
+        "98.07"
+      ]
+    },
+    {
+      "backend": "native",
+      "role": "base",
+      "key": "hancom-30-reopen-hwpx",
+      "source": "tests/fixtures/nested-row-split/inner-table-01-2020.hwpx",
+      "input_sha256": "3f888a3ef2ed9a5075bd8df2cd9ee8ac9ad10d24e396309641188f6a9aa927ed",
+      "print": "pdf/pr9273-nested-row-split/edited/hwpx-source-30-hwpx-2020.pdf",
+      "print_sha256": "512a2ad820a126b1ec39ec913ea9c7d2b0ef7a1e134144219721464e0b93d833",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-30/reopen-hwpx/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/hancom-30-reopen-hwpx/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/hancom-30-reopen-hwpx",
+        "--key",
+        "hancom-30-reopen-hwpx",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/hancom-30-reopen-hwpx/silhouette.tsv",
+      "tsv_sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+      "minimum": 98.07,
+      "values": [
+        "100.00",
+        "100.00",
+        "98.07"
+      ]
+    },
+    {
+      "backend": "native",
+      "role": "base",
+      "key": "hancom-70-live",
+      "source": "tests/fixtures/nested-row-split/inner-table-01-2020.hwpx",
+      "input_sha256": "3f888a3ef2ed9a5075bd8df2cd9ee8ac9ad10d24e396309641188f6a9aa927ed",
+      "print": "pdf/pr9273-nested-row-split/edited/hwpx-source-70-hwpx-2020.pdf",
+      "print_sha256": "89321d2dcd190e7893011c183f72e75aa9e96d4b845a25955822d95f123c53ac",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-70/live/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/hancom-70-live/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/hancom-70-live",
+        "--key",
+        "hancom-70-live",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/hancom-70-live/silhouette.tsv",
+      "tsv_sha256": "52b1b7e10e23981253a3c90358999e23815ce6a4f3f9886054a0b1556255c224",
+      "minimum": 98.24,
+      "values": [
+        "100.00",
+        "100.00",
+        "100.00",
+        "98.24"
+      ]
+    },
+    {
+      "backend": "native",
+      "role": "base",
+      "key": "hancom-70-reopen-hwp",
+      "source": "tests/fixtures/nested-row-split/inner-table-01-2020.hwpx",
+      "input_sha256": "3f888a3ef2ed9a5075bd8df2cd9ee8ac9ad10d24e396309641188f6a9aa927ed",
+      "print": "pdf/pr9273-nested-row-split/edited/hwpx-source-70-hwp-2020.pdf",
+      "print_sha256": "68f915eed7c5a013491d0a2ae491405d7620f8bfd6fc2722ff1c5ebf2c02d630",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-70/reopen-hwp/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/hancom-70-reopen-hwp/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/hancom-70-reopen-hwp",
+        "--key",
+        "hancom-70-reopen-hwp",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/hancom-70-reopen-hwp/silhouette.tsv",
+      "tsv_sha256": "18c3218f9c1f9d579a7f6cf3333ac572189e0f2944c87aba9164496dfd272c48",
+      "minimum": 99.59,
+      "values": [
+        "100.00",
+        "100.00",
+        "100.00",
+        "99.59"
+      ]
+    },
+    {
+      "backend": "native",
+      "role": "base",
+      "key": "hancom-70-reopen-hwpx",
+      "source": "tests/fixtures/nested-row-split/inner-table-01-2020.hwpx",
+      "input_sha256": "3f888a3ef2ed9a5075bd8df2cd9ee8ac9ad10d24e396309641188f6a9aa927ed",
+      "print": "pdf/pr9273-nested-row-split/edited/hwpx-source-70-hwpx-2020.pdf",
+      "print_sha256": "89321d2dcd190e7893011c183f72e75aa9e96d4b845a25955822d95f123c53ac",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-70/reopen-hwpx/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/hancom-70-reopen-hwpx/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/hancom-70-reopen-hwpx",
+        "--key",
+        "hancom-70-reopen-hwpx",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/base/hancom-70-reopen-hwpx/silhouette.tsv",
+      "tsv_sha256": "18c3218f9c1f9d579a7f6cf3333ac572189e0f2944c87aba9164496dfd272c48",
+      "minimum": 99.59,
+      "values": [
+        "100.00",
+        "100.00",
+        "100.00",
+        "99.59"
+      ]
+    },
+    {
+      "backend": "native",
+      "role": "candidate",
+      "key": "origin-30-live",
+      "source": "samples/inner-table-01.hwp",
+      "input_sha256": "15c24b0dabec0353da4e8445155f16a46eac6d370d5d65c81e8aa1cf47759bc1",
+      "print": "pdf/pr9273-nested-row-split/edited/origin-30-hwpx-2020.pdf",
+      "print_sha256": "e1bf2b28422c70c92648fbaf671f21840e8ba551db97c6b43cd6a29b5739379b",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-30/live/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/origin-30-live/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/origin-30-live",
+        "--key",
+        "origin-30-live",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/origin-30-live/silhouette.tsv",
+      "tsv_sha256": "36902c7854b7c9fb53e87587a058d265c2c9eaf2305e3e8fa82c7a71dcfe0663",
+      "minimum": 98.22,
+      "values": [
+        "100.00",
+        "100.00",
+        "98.22"
+      ]
+    },
+    {
+      "backend": "native",
+      "role": "candidate",
+      "key": "origin-30-reopen-hwp",
+      "source": "samples/inner-table-01.hwp",
+      "input_sha256": "15c24b0dabec0353da4e8445155f16a46eac6d370d5d65c81e8aa1cf47759bc1",
+      "print": "pdf/pr9273-nested-row-split/edited/origin-30-hwp-2020.pdf",
+      "print_sha256": "1d0fec0baadfd29cae5b0882240a835ecf721ee900b2438c85ea9fc8f6f84ab2",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-30/reopen-hwp/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/origin-30-reopen-hwp/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/origin-30-reopen-hwp",
+        "--key",
+        "origin-30-reopen-hwp",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/origin-30-reopen-hwp/silhouette.tsv",
+      "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "minimum": 100.0,
+      "values": [
+        "100.00",
+        "100.00",
+        "100.00"
+      ]
+    },
+    {
+      "backend": "native",
+      "role": "candidate",
+      "key": "origin-30-reopen-hwpx",
+      "source": "samples/inner-table-01.hwp",
+      "input_sha256": "15c24b0dabec0353da4e8445155f16a46eac6d370d5d65c81e8aa1cf47759bc1",
+      "print": "pdf/pr9273-nested-row-split/edited/origin-30-hwpx-2020.pdf",
+      "print_sha256": "e1bf2b28422c70c92648fbaf671f21840e8ba551db97c6b43cd6a29b5739379b",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-30/reopen-hwpx/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/origin-30-reopen-hwpx/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/origin-30-reopen-hwpx",
+        "--key",
+        "origin-30-reopen-hwpx",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/origin-30-reopen-hwpx/silhouette.tsv",
+      "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "minimum": 100.0,
+      "values": [
+        "100.00",
+        "100.00",
+        "100.00"
+      ]
+    },
+    {
+      "backend": "native",
+      "role": "candidate",
+      "key": "origin-70-live",
+      "source": "samples/inner-table-01.hwp",
+      "input_sha256": "15c24b0dabec0353da4e8445155f16a46eac6d370d5d65c81e8aa1cf47759bc1",
+      "print": "pdf/pr9273-nested-row-split/edited/origin-70-hwpx-2020.pdf",
+      "print_sha256": "7407bfa05d1a86fa63e20d5fd93c95f941bd59452a948ffb6f0b124e1ae8157b",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-70/live/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/origin-70-live/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/origin-70-live",
+        "--key",
+        "origin-70-live",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/origin-70-live/silhouette.tsv",
+      "tsv_sha256": "5b9473addff79cba4b50155cb52a03c9f83b14a4a68be52275b48b134d373a92",
+      "minimum": 98.28,
+      "values": [
+        "100.00",
+        "100.00",
+        "100.00",
+        "98.28"
+      ]
+    },
+    {
+      "backend": "native",
+      "role": "candidate",
+      "key": "origin-70-reopen-hwp",
+      "source": "samples/inner-table-01.hwp",
+      "input_sha256": "15c24b0dabec0353da4e8445155f16a46eac6d370d5d65c81e8aa1cf47759bc1",
+      "print": "pdf/pr9273-nested-row-split/edited/origin-70-hwp-2020.pdf",
+      "print_sha256": "b0305a67299ef5fb2032e49a065484fd68b44d4f943c3f82d3f0ea6b4c1838c6",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-70/reopen-hwp/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/origin-70-reopen-hwp/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/origin-70-reopen-hwp",
+        "--key",
+        "origin-70-reopen-hwp",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/origin-70-reopen-hwp/silhouette.tsv",
+      "tsv_sha256": "18c3218f9c1f9d579a7f6cf3333ac572189e0f2944c87aba9164496dfd272c48",
+      "minimum": 99.59,
+      "values": [
+        "100.00",
+        "100.00",
+        "100.00",
+        "99.59"
+      ]
+    },
+    {
+      "backend": "native",
+      "role": "candidate",
+      "key": "origin-70-reopen-hwpx",
+      "source": "samples/inner-table-01.hwp",
+      "input_sha256": "15c24b0dabec0353da4e8445155f16a46eac6d370d5d65c81e8aa1cf47759bc1",
+      "print": "pdf/pr9273-nested-row-split/edited/origin-70-hwpx-2020.pdf",
+      "print_sha256": "7407bfa05d1a86fa63e20d5fd93c95f941bd59452a948ffb6f0b124e1ae8157b",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-70/reopen-hwpx/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/origin-70-reopen-hwpx/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/origin-70-reopen-hwpx",
+        "--key",
+        "origin-70-reopen-hwpx",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/origin-70-reopen-hwpx/silhouette.tsv",
+      "tsv_sha256": "18c3218f9c1f9d579a7f6cf3333ac572189e0f2944c87aba9164496dfd272c48",
+      "minimum": 99.59,
+      "values": [
+        "100.00",
+        "100.00",
+        "100.00",
+        "99.59"
+      ]
+    },
+    {
+      "backend": "native",
+      "role": "candidate",
+      "key": "hancom-30-live",
+      "source": "tests/fixtures/nested-row-split/inner-table-01-2020.hwpx",
+      "input_sha256": "3f888a3ef2ed9a5075bd8df2cd9ee8ac9ad10d24e396309641188f6a9aa927ed",
+      "print": "pdf/pr9273-nested-row-split/edited/hwpx-source-30-hwpx-2020.pdf",
+      "print_sha256": "512a2ad820a126b1ec39ec913ea9c7d2b0ef7a1e134144219721464e0b93d833",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-30/live/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/hancom-30-live/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/hancom-30-live",
+        "--key",
+        "hancom-30-live",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/hancom-30-live/silhouette.tsv",
+      "tsv_sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+      "minimum": 98.07,
+      "values": [
+        "100.00",
+        "100.00",
+        "98.07"
+      ]
+    },
+    {
+      "backend": "native",
+      "role": "candidate",
+      "key": "hancom-30-reopen-hwp",
+      "source": "tests/fixtures/nested-row-split/inner-table-01-2020.hwpx",
+      "input_sha256": "3f888a3ef2ed9a5075bd8df2cd9ee8ac9ad10d24e396309641188f6a9aa927ed",
+      "print": "pdf/pr9273-nested-row-split/edited/hwpx-source-30-hwp-2020.pdf",
+      "print_sha256": "b791f2f2471e22f64094eff059b6a3c2c2fc9de10c1e61ecd5df7550b908f8db",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-30/reopen-hwp/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/hancom-30-reopen-hwp/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/hancom-30-reopen-hwp",
+        "--key",
+        "hancom-30-reopen-hwp",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/hancom-30-reopen-hwp/silhouette.tsv",
+      "tsv_sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+      "minimum": 98.07,
+      "values": [
+        "100.00",
+        "100.00",
+        "98.07"
+      ]
+    },
+    {
+      "backend": "native",
+      "role": "candidate",
+      "key": "hancom-30-reopen-hwpx",
+      "source": "tests/fixtures/nested-row-split/inner-table-01-2020.hwpx",
+      "input_sha256": "3f888a3ef2ed9a5075bd8df2cd9ee8ac9ad10d24e396309641188f6a9aa927ed",
+      "print": "pdf/pr9273-nested-row-split/edited/hwpx-source-30-hwpx-2020.pdf",
+      "print_sha256": "512a2ad820a126b1ec39ec913ea9c7d2b0ef7a1e134144219721464e0b93d833",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-30/reopen-hwpx/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/hancom-30-reopen-hwpx/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/hancom-30-reopen-hwpx",
+        "--key",
+        "hancom-30-reopen-hwpx",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/hancom-30-reopen-hwpx/silhouette.tsv",
+      "tsv_sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+      "minimum": 98.07,
+      "values": [
+        "100.00",
+        "100.00",
+        "98.07"
+      ]
+    },
+    {
+      "backend": "native",
+      "role": "candidate",
+      "key": "hancom-70-live",
+      "source": "tests/fixtures/nested-row-split/inner-table-01-2020.hwpx",
+      "input_sha256": "3f888a3ef2ed9a5075bd8df2cd9ee8ac9ad10d24e396309641188f6a9aa927ed",
+      "print": "pdf/pr9273-nested-row-split/edited/hwpx-source-70-hwpx-2020.pdf",
+      "print_sha256": "89321d2dcd190e7893011c183f72e75aa9e96d4b845a25955822d95f123c53ac",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-70/live/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/hancom-70-live/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/hancom-70-live",
+        "--key",
+        "hancom-70-live",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/hancom-70-live/silhouette.tsv",
+      "tsv_sha256": "52b1b7e10e23981253a3c90358999e23815ce6a4f3f9886054a0b1556255c224",
+      "minimum": 98.24,
+      "values": [
+        "100.00",
+        "100.00",
+        "100.00",
+        "98.24"
+      ]
+    },
+    {
+      "backend": "native",
+      "role": "candidate",
+      "key": "hancom-70-reopen-hwp",
+      "source": "tests/fixtures/nested-row-split/inner-table-01-2020.hwpx",
+      "input_sha256": "3f888a3ef2ed9a5075bd8df2cd9ee8ac9ad10d24e396309641188f6a9aa927ed",
+      "print": "pdf/pr9273-nested-row-split/edited/hwpx-source-70-hwp-2020.pdf",
+      "print_sha256": "68f915eed7c5a013491d0a2ae491405d7620f8bfd6fc2722ff1c5ebf2c02d630",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-70/reopen-hwp/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/hancom-70-reopen-hwp/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/hancom-70-reopen-hwp",
+        "--key",
+        "hancom-70-reopen-hwp",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/hancom-70-reopen-hwp/silhouette.tsv",
+      "tsv_sha256": "18c3218f9c1f9d579a7f6cf3333ac572189e0f2944c87aba9164496dfd272c48",
+      "minimum": 99.59,
+      "values": [
+        "100.00",
+        "100.00",
+        "100.00",
+        "99.59"
+      ]
+    },
+    {
+      "backend": "native",
+      "role": "candidate",
+      "key": "hancom-70-reopen-hwpx",
+      "source": "tests/fixtures/nested-row-split/inner-table-01-2020.hwpx",
+      "input_sha256": "3f888a3ef2ed9a5075bd8df2cd9ee8ac9ad10d24e396309641188f6a9aa927ed",
+      "print": "pdf/pr9273-nested-row-split/edited/hwpx-source-70-hwpx-2020.pdf",
+      "print_sha256": "89321d2dcd190e7893011c183f72e75aa9e96d4b845a25955822d95f123c53ac",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-70/reopen-hwpx/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/hancom-70-reopen-hwpx/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/hancom-70-reopen-hwpx",
+        "--key",
+        "hancom-70-reopen-hwpx",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/native/candidate/hancom-70-reopen-hwpx/silhouette.tsv",
+      "tsv_sha256": "18c3218f9c1f9d579a7f6cf3333ac572189e0f2944c87aba9164496dfd272c48",
+      "minimum": 99.59,
+      "values": [
+        "100.00",
+        "100.00",
+        "100.00",
+        "99.59"
+      ]
+    },
+    {
+      "backend": "wasm",
+      "role": "base",
+      "key": "origin-30-live",
+      "source": "samples/inner-table-01.hwp",
+      "input_sha256": "15c24b0dabec0353da4e8445155f16a46eac6d370d5d65c81e8aa1cf47759bc1",
+      "print": "pdf/pr9273-nested-row-split/edited/origin-30-hwpx-2020.pdf",
+      "print_sha256": "e1bf2b28422c70c92648fbaf671f21840e8ba551db97c6b43cd6a29b5739379b",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-wasm-live/base/origin-30/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/wasm/base/origin-30-live/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/wasm/base/origin-30-live",
+        "--key",
+        "origin-30-live",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/wasm/base/origin-30-live/silhouette.tsv",
+      "tsv_sha256": "36902c7854b7c9fb53e87587a058d265c2c9eaf2305e3e8fa82c7a71dcfe0663",
+      "minimum": 98.22,
+      "values": [
+        "100.00",
+        "100.00",
+        "98.22"
+      ]
+    },
+    {
+      "backend": "wasm",
+      "role": "base",
+      "key": "origin-70-live",
+      "source": "samples/inner-table-01.hwp",
+      "input_sha256": "15c24b0dabec0353da4e8445155f16a46eac6d370d5d65c81e8aa1cf47759bc1",
+      "print": "pdf/pr9273-nested-row-split/edited/origin-70-hwpx-2020.pdf",
+      "print_sha256": "7407bfa05d1a86fa63e20d5fd93c95f941bd59452a948ffb6f0b124e1ae8157b",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-wasm-live/base/origin-70/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/wasm/base/origin-70-live/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/wasm/base/origin-70-live",
+        "--key",
+        "origin-70-live",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/wasm/base/origin-70-live/silhouette.tsv",
+      "tsv_sha256": "5b9473addff79cba4b50155cb52a03c9f83b14a4a68be52275b48b134d373a92",
+      "minimum": 98.28,
+      "values": [
+        "100.00",
+        "100.00",
+        "100.00",
+        "98.28"
+      ]
+    },
+    {
+      "backend": "wasm",
+      "role": "base",
+      "key": "hancom-30-live",
+      "source": "tests/fixtures/nested-row-split/inner-table-01-2020.hwpx",
+      "input_sha256": "3f888a3ef2ed9a5075bd8df2cd9ee8ac9ad10d24e396309641188f6a9aa927ed",
+      "print": "pdf/pr9273-nested-row-split/edited/hwpx-source-30-hwpx-2020.pdf",
+      "print_sha256": "512a2ad820a126b1ec39ec913ea9c7d2b0ef7a1e134144219721464e0b93d833",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-wasm-live/base/hancom-30/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/wasm/base/hancom-30-live/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/wasm/base/hancom-30-live",
+        "--key",
+        "hancom-30-live",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/wasm/base/hancom-30-live/silhouette.tsv",
+      "tsv_sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+      "minimum": 98.07,
+      "values": [
+        "100.00",
+        "100.00",
+        "98.07"
+      ]
+    },
+    {
+      "backend": "wasm",
+      "role": "base",
+      "key": "hancom-70-live",
+      "source": "tests/fixtures/nested-row-split/inner-table-01-2020.hwpx",
+      "input_sha256": "3f888a3ef2ed9a5075bd8df2cd9ee8ac9ad10d24e396309641188f6a9aa927ed",
+      "print": "pdf/pr9273-nested-row-split/edited/hwpx-source-70-hwpx-2020.pdf",
+      "print_sha256": "89321d2dcd190e7893011c183f72e75aa9e96d4b845a25955822d95f123c53ac",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-wasm-live/base/hancom-70/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/wasm/base/hancom-70-live/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/wasm/base/hancom-70-live",
+        "--key",
+        "hancom-70-live",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/wasm/base/hancom-70-live/silhouette.tsv",
+      "tsv_sha256": "52b1b7e10e23981253a3c90358999e23815ce6a4f3f9886054a0b1556255c224",
+      "minimum": 98.24,
+      "values": [
+        "100.00",
+        "100.00",
+        "100.00",
+        "98.24"
+      ]
+    },
+    {
+      "backend": "wasm",
+      "role": "candidate",
+      "key": "origin-30-live",
+      "source": "samples/inner-table-01.hwp",
+      "input_sha256": "15c24b0dabec0353da4e8445155f16a46eac6d370d5d65c81e8aa1cf47759bc1",
+      "print": "pdf/pr9273-nested-row-split/edited/origin-30-hwpx-2020.pdf",
+      "print_sha256": "e1bf2b28422c70c92648fbaf671f21840e8ba551db97c6b43cd6a29b5739379b",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-wasm-live/candidate/origin-30/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/wasm/candidate/origin-30-live/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/wasm/candidate/origin-30-live",
+        "--key",
+        "origin-30-live",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/wasm/candidate/origin-30-live/silhouette.tsv",
+      "tsv_sha256": "36902c7854b7c9fb53e87587a058d265c2c9eaf2305e3e8fa82c7a71dcfe0663",
+      "minimum": 98.22,
+      "values": [
+        "100.00",
+        "100.00",
+        "98.22"
+      ]
+    },
+    {
+      "backend": "wasm",
+      "role": "candidate",
+      "key": "origin-70-live",
+      "source": "samples/inner-table-01.hwp",
+      "input_sha256": "15c24b0dabec0353da4e8445155f16a46eac6d370d5d65c81e8aa1cf47759bc1",
+      "print": "pdf/pr9273-nested-row-split/edited/origin-70-hwpx-2020.pdf",
+      "print_sha256": "7407bfa05d1a86fa63e20d5fd93c95f941bd59452a948ffb6f0b124e1ae8157b",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-wasm-live/candidate/origin-70/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/wasm/candidate/origin-70-live/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/wasm/candidate/origin-70-live",
+        "--key",
+        "origin-70-live",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/wasm/candidate/origin-70-live/silhouette.tsv",
+      "tsv_sha256": "5b9473addff79cba4b50155cb52a03c9f83b14a4a68be52275b48b134d373a92",
+      "minimum": 98.28,
+      "values": [
+        "100.00",
+        "100.00",
+        "100.00",
+        "98.28"
+      ]
+    },
+    {
+      "backend": "wasm",
+      "role": "candidate",
+      "key": "hancom-30-live",
+      "source": "tests/fixtures/nested-row-split/inner-table-01-2020.hwpx",
+      "input_sha256": "3f888a3ef2ed9a5075bd8df2cd9ee8ac9ad10d24e396309641188f6a9aa927ed",
+      "print": "pdf/pr9273-nested-row-split/edited/hwpx-source-30-hwpx-2020.pdf",
+      "print_sha256": "512a2ad820a126b1ec39ec913ea9c7d2b0ef7a1e134144219721464e0b93d833",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-wasm-live/candidate/hancom-30/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/wasm/candidate/hancom-30-live/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/wasm/candidate/hancom-30-live",
+        "--key",
+        "hancom-30-live",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/wasm/candidate/hancom-30-live/silhouette.tsv",
+      "tsv_sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+      "minimum": 98.07,
+      "values": [
+        "100.00",
+        "100.00",
+        "98.07"
+      ]
+    },
+    {
+      "backend": "wasm",
+      "role": "candidate",
+      "key": "hancom-70-live",
+      "source": "tests/fixtures/nested-row-split/inner-table-01-2020.hwpx",
+      "input_sha256": "3f888a3ef2ed9a5075bd8df2cd9ee8ac9ad10d24e396309641188f6a9aa927ed",
+      "print": "pdf/pr9273-nested-row-split/edited/hwpx-source-70-hwpx-2020.pdf",
+      "print_sha256": "89321d2dcd190e7893011c183f72e75aa9e96d4b845a25955822d95f123c53ac",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--png-pair",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-wasm-live/candidate/hancom-70/rhwp_png",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/wasm/candidate/hancom-70-live/pdf_png",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/wasm/candidate/hancom-70-live",
+        "--key",
+        "hancom-70-live",
+        "--page-workers",
+        "1"
+      ],
+      "exit_code": 0,
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-live-scores/wasm/candidate/hancom-70-live/silhouette.tsv",
+      "tsv_sha256": "52b1b7e10e23981253a3c90358999e23815ce6a4f3f9886054a0b1556255c224",
+      "minimum": 98.24,
+      "values": [
+        "100.00",
+        "100.00",
+        "100.00",
+        "98.24"
+      ]
+    }
+  ],
+  "comparisons": [
+    {
+      "backend": "native",
+      "key": "origin-30-live",
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "origin-30-reopen-hwp",
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "origin-30-reopen-hwpx",
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "origin-70-live",
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "origin-70-reopen-hwp",
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "origin-70-reopen-hwpx",
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "hancom-30-live",
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "hancom-30-reopen-hwp",
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "hancom-30-reopen-hwpx",
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "hancom-70-live",
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "hancom-70-reopen-hwp",
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "hancom-70-reopen-hwpx",
+      "declines": []
+    },
+    {
+      "backend": "wasm",
+      "key": "origin-30-live",
+      "declines": []
+    },
+    {
+      "backend": "wasm",
+      "key": "origin-70-live",
+      "declines": []
+    },
+    {
+      "backend": "wasm",
+      "key": "hancom-30-live",
+      "declines": []
+    },
+    {
+      "backend": "wasm",
+      "key": "hancom-70-live",
+      "declines": []
+    }
+  ],
+  "complete": true,
+  "passed": true,
+  "ended": 1795328359.5776362
+}

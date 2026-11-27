@@ -1,0 +1,20 @@
+{
+  "pkg": {
+    "exit": 0,
+    "lines": []
+  },
+  "studio-public": {
+    "exit": 1,
+    "lines": [
+      "Property 'findNearestControlAt' does not exist on type 'HwpDocument'. Did you mean 'findNearestControlForward'?",
+      "Property 'setActiveFieldAt' does not exist on type 'HwpDocument'. Did you mean 'setActiveField'?"
+    ]
+  },
+  "studio-dist": {
+    "exit": 1,
+    "lines": [
+      "Property 'findNearestControlAt' does not exist on type 'HwpDocument'. Did you mean 'findNearestControlForward'?",
+      "Property 'setActiveFieldAt' does not exist on type 'HwpDocument'. Did you mean 'setActiveField'?"
+    ]
+  }
+}

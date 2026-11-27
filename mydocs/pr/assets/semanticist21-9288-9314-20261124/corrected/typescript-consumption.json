@@ -1,0 +1,14 @@
+{
+  "pkg": {
+    "exit": 0,
+    "lines": []
+  },
+  "studio-public": {
+    "exit": 0,
+    "lines": []
+  },
+  "studio-dist": {
+    "exit": 0,
+    "lines": []
+  }
+}

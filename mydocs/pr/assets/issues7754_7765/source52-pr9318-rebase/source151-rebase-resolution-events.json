@@ -1,0 +1,24 @@
+[
+  {
+    "time": 1795345280.095899,
+    "rebase_head": "3c80172568357862337cf144750c6dc3511b55c6",
+    "conflicts": [
+      "tests/fixtures/body_overflow_baseline.tsv",
+      "tests/fixtures/off_canvas_baseline.tsv",
+      "tests/fixtures/oracle_page_count_verified_references.json",
+      "tests/fixtures/overflow_cell_baseline.tsv"
+    ],
+    "resolved_from_tree": "3bd2061f201d32ad716d2868c216796a5ec8d3b5"
+  },
+  {
+    "time": 1795345312.8740199,
+    "rebase_head": "b70e7c7727ba63d723bd04c5df26cbfb93748431",
+    "conflicts": [
+      "tests/fixtures/body_overflow_baseline.tsv",
+      "tests/fixtures/off_canvas_baseline.tsv",
+      "tests/fixtures/oracle_page_count_verified_references.json",
+      "tests/fixtures/overflow_cell_baseline.tsv"
+    ],
+    "resolved_from_tree": "3bd2061f201d32ad716d2868c216796a5ec8d3b5"
+  }
+]

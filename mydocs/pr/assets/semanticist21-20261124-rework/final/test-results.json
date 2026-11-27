@@ -1,0 +1,367 @@
+{
+  "product_commit": "e4ce75728af706c8fdab93882172ad07843b00b8",
+  "test_commit": "d963618d5f04f67502bdb8a6125fd60d3e65bbd8",
+  "exposed_font_files": [
+    "NotoSansKR-ExtraLight.ttf",
+    "NotoSansKR-Regular.ttf",
+    "NotoSansSymbols2-Regular.ttf",
+    "RHWPOldHangul-Regular.otf",
+    "RHWPPublicBatang-Regular.ttf"
+  ],
+  "rust": {
+    "focused": {
+      "exit": 0,
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--test",
+        "regression_suite_008",
+        "--test",
+        "regression_suite_009",
+        "--test",
+        "regression_suite_018",
+        "-E",
+        "test(/(^|::)section_settings_hancom::/) | test(/(^|::)shape_line_fill_alpha::/) | test(/(^|::)connector_midpoint::/)",
+        "--test-threads",
+        "4",
+        "--no-fail-fast"
+      ],
+      "result": [
+        "27 tests run: 27 passed, 1055 skipped"
+      ]
+    },
+    "devel-focused": {
+      "exit": 0,
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--test",
+        "regression_suite_002",
+        "--test",
+        "regression_suite_003",
+        "--test",
+        "regression_suite_007",
+        "--test",
+        "regression_suite_008",
+        "--test",
+        "regression_suite_010",
+        "--test",
+        "regression_suite_014",
+        "--test",
+        "regression_suite_021",
+        "--test",
+        "regression_suite_026",
+        "-E",
+        "test(/(^|::)issue_8495_para_float_sibling_host_origin::/) | test(/(^|::)issue_8997_stored_picture_and_tac_reset_lines::/) | test(/(^|::)issue_9039_hwpx_origin_hwp_line_rules::/) | test(/(^|::)issue_9210_paper_shape_on_opening_table_page::/) | test(/(^|::)issue_9274_page_anchored_table_band::/) | test(/(^|::)issue_9290_table_opened_page_margin_origin::/) | test(/(^|::)issue_9291_stored_page_start_empty_line::/) | test(/(^|::)issue_9353_negative_line_step_row_split::/)",
+        "--test-threads",
+        "4",
+        "--no-fail-fast"
+      ],
+      "result": [
+        "18 tests run: 18 passed, 2742 skipped"
+      ]
+    },
+    "affected": {
+      "exit": 0,
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--test",
+        "regression_suite_001",
+        "--test",
+        "regression_suite_006",
+        "--test",
+        "regression_suite_008",
+        "--test",
+        "regression_suite_009",
+        "-E",
+        "test(/(^|::)section_settings_hancom::/) | test(/(^|::)shape_line_fill_alpha::/) | test(/(^|::)connector_midpoint::/) | test(/(^|::)issue_5598_cell_hanging_indent_clamp::/) | test(/(^|::)text_overlap_baseline::/) | test(/(^|::)ir_field_sweep_baseline::/)",
+        "--test-threads",
+        "3",
+        "--no-fail-fast"
+      ],
+      "result": [
+        "46 tests run: 46 passed (1 slow), 1399 skipped"
+      ]
+    },
+    "full": {
+      "exit": 0,
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--tests",
+        "--test-threads",
+        "6",
+        "--no-fail-fast"
+      ],
+      "result": [
+        "14066 tests run: 14066 passed (3 slow), 45 skipped"
+      ]
+    },
+    "native-lib": {
+      "exit": 0,
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib"
+      ],
+      "result": [
+        "test result: ok. 3851 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 30.15s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ]
+    },
+    "native-picture": {
+      "exit": 0,
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "result": [
+        "2 tests run: 2 passed, 361 skipped"
+      ]
+    },
+    "native-pdf": {
+      "exit": 0,
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "result": [
+        "37 tests run: 37 passed, 307 skipped"
+      ]
+    },
+    "fmt": {
+      "exit": 0,
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ]
+    },
+    "clippy": {
+      "exit": 0,
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    "clippy-wasm": {
+      "exit": 0,
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    "workspace-build": {
+      "exit": 0,
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace"
+      ]
+    },
+    "clippy-workspace": {
+      "exit": 0,
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    "release-lib": {
+      "exit": 0,
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--release",
+        "--lib"
+      ],
+      "result": [
+        "test result: ok. 3794 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 18.10s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ]
+    },
+    "doctest": {
+      "exit": 0,
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--doc"
+      ],
+      "result": [
+        "test result: ok. 8 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 2.62s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ]
+    }
+  },
+  "initial_rust_suite": {
+    "exit": 100,
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--tests",
+      "--test-threads",
+      "6",
+      "--no-fail-fast"
+    ],
+    "result": [
+      "14064 tests run: 14055 passed (3 slow), 9 failed, 45 skipped"
+    ]
+  },
+  "initial_native_picture_check": {
+    "exit": 4,
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_2225_missing_picture_placeholder",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--features",
+      "native-skia"
+    ],
+    "result": [
+      "0 tests run: 0 passed, 373 skipped"
+    ]
+  },
+  "suite_refresh": {
+    "case": "tests/issue_2225_missing_picture_placeholder.rs",
+    "checked_in_product": "unchanged",
+    "grouped_sources": 2481,
+    "source_paths_equal": true,
+    "before_target": "regression_suite_020",
+    "after_target": "regression_suite_001",
+    "before_manifest_sha256": "57d73bdd9ecffbcbb273900cf80f759cb82d892972220192a4930843251fbc4e",
+    "after_manifest_sha256": "7b690791d278349a8e4e4d2acc0a6b5307e7ae2c9cef6474d42ccd372ee2bf96",
+    "commands": [
+      {
+        "exit": 0,
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ]
+      },
+      {
+        "exit": 0,
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check"
+        ]
+      }
+    ]
+  },
+  "studio": [
+    {
+      "check": "section-roundtrip",
+      "returncode": 0,
+      "seconds": 3.68
+    },
+    {
+      "check": "studio-drag",
+      "returncode": 0,
+      "seconds": 42.52
+    },
+    {
+      "check": "studio-line-control",
+      "returncode": 0,
+      "seconds": 29.36
+    },
+    {
+      "check": "studio-types",
+      "returncode": 0,
+      "seconds": 4.72
+    },
+    {
+      "check": "studio-tests",
+      "returncode": 0,
+      "seconds": 49.37
+    },
+    {
+      "check": "studio-build",
+      "returncode": 0,
+      "seconds": 20.08
+    }
+  ],
+  "studio_test_summary": {
+    "tests": 2834,
+    "pass": 2832,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 2,
+    "todo": 0
+  }
+}

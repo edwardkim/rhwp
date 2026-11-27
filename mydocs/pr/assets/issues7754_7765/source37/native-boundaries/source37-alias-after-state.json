@@ -1,0 +1,31 @@
+{
+  "started": 1795317679.3043342,
+  "pid": 1771277,
+  "source_head": "68b4f6bdfda465aaafd0634c587cd6a17252fed6",
+  "library_sha256": "d0b6e0a2eb5421bc0e69e77c6886b771ebe547dd58b278522b213c37f7802df3",
+  "build_command": [
+    "rustc",
+    "--edition=2021",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37_logical_alias_contract.rs",
+    "-o",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-logical-alias-contract-after",
+    "--extern",
+    "rhwp=/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-native-library/librhwp.rlib",
+    "-L",
+    "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps",
+    "--extern",
+    "serde_json=/home/tsjang/rhwp/target/pr-review/release-test/deps/libserde_json-01a0026680b78649.rlib",
+    "-L",
+    "native=/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-079888cb8874cccd/out/skia",
+    "-L",
+    "native=/home/tsjang/rhwp/target/pr-review/release-test/build/ring-62411559129b98e5/out"
+  ],
+  "build_exit_code": 0,
+  "run_command": [
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-logical-alias-contract-after"
+  ],
+  "run_exit_code": 0,
+  "passed": true,
+  "ended": 1795318036.6455626
+}

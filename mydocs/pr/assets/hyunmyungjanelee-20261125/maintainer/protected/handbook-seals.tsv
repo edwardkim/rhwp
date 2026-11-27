@@ -1,0 +1,9 @@
+document	backend	page	hancom_top_rule_y_px	devel_cell_y_px	candidate_cell_y_px	changed_color_pixels	devel_abs_rgb_error_in_changed_pixels	candidate_abs_rgb_error_in_changed_pixels
+handbook-hwp	native	86	654.336	654.1	654.4	224	26038	21200
+handbook-hwp	native	87	686.333	685.4	686.4	315	85935	22918
+handbook-hwp	wasm	86	654.336	654.1	654.4	177	21391	16583
+handbook-hwp	wasm	87	686.333	685.4	686.4	312	85335	21046
+handbook-hwpx	native	86	654.336	654.1	654.4	224	26038	21200
+handbook-hwpx	native	87	686.333	685.4	686.4	315	85935	22918
+handbook-hwpx	wasm	86	654.336	654.1	654.4	177	21391	16583
+handbook-hwpx	wasm	87	686.333	685.4	686.4	312	85335	21046

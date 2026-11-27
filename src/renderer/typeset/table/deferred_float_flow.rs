@@ -3,8 +3,9 @@
 use crate::model::paragraph::ColumnBreakType;
 use crate::renderer::typeset::{
     is_para_topbottom_float, is_synthetic_line_seg, next_boundary_reverts_spacing_trim,
-    para_has_visible_text, para_near_rowbreak_table, spacing_trim_restorable, ComposedParagraph,
-    PageItem, Paragraph, ResolvedStyleSet, TypesetEngine, TypesetState,
+    para_has_non_whitespace_text, para_has_visible_text, para_near_rowbreak_table,
+    spacing_trim_restorable, ComposedParagraph, PageItem, Paragraph, ResolvedStyleSet,
+    TypesetEngine, TypesetState,
 };
 
 pub(in crate::renderer::typeset) const MAX_PREFILL: usize = 8;
@@ -52,7 +53,15 @@ impl TypesetEngine {
         // 표와 함께 다음 쪽으로 밀려 그 쪽 흐름표 위에 겹쳐 그려진다. 한글은 같은
         // 줄을 1031.2..1047.2 로 본문 하단(1046.9)을 0.3px 넘겨 놓는다 — 말미
         // 간격을 요구하지 않는다는 뜻이다. 누적(advance)은 종전대로 전량.
-        let host_fit = host_fmt.height_for_fit.min(host_h);
+        // [#8997] 글자가 없는(공백뿐인) host 줄은 그린 높이가 없어 쪽 아래 띠와 겹치지 않는다
+        // (한/글 쪽 아래 판정은 줄 상자가 아니라 그린 글자 아래끝). 줄 전진은 그대로 소비한다
+        // (1543000-202100035 s2 pi893: 공백 한 칸 host 줄 [710.7, 725.0] 이 89쪽에 남고 뒤 빈
+        // 문단 pi894 저장 vpos 55334 = host 53304 + 줄 하나).
+        let host_fit = if para_has_non_whitespace_text(para) {
+            host_fmt.height_for_fit.min(host_h)
+        } else {
+            0.0
+        };
         if host_lines == 0 || st.current_height + host_fit > st.available_height() {
             return false;
         }

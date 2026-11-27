@@ -1,4 +1,4 @@
-//! Synthetic font/resource contracts, not page geometry or Hancom goldens.
+//! Font resource contracts with stored fonts and bounded PDF parser fixtures.
 #![cfg(feature = "pdf-import")]
 
 use pdf_oxide::{
@@ -403,56 +403,27 @@ fn legacy_cjk_fallbacks_keep_character_values_and_charge_cached_copies() {
     }
 }
 
-fn glyph_font() -> Vec<u8> {
-    // Minimal sfnt with a Format 2 post custom name. Per the TrueType post
-    // contract, index 258 addresses the first Pascal string, not a codepoint.
-    let mut head = vec![0; 54];
-    head[18..20].copy_from_slice(&2048u16.to_be_bytes());
-    let mut hhea = vec![0; 36];
-    hhea[34..36].copy_from_slice(&1u16.to_be_bytes());
-    let mut maxp = vec![0; 32];
-    maxp[..4].copy_from_slice(&0x00010000u32.to_be_bytes());
-    maxp[4..6].copy_from_slice(&66u16.to_be_bytes());
-    let mut post = vec![0; 32];
-    post[..4].copy_from_slice(&0x00020000u32.to_be_bytes());
-    post.extend(66u16.to_be_bytes());
-    for gid in 0..66 {
-        post.extend((if gid == 65 { 258u16 } else { 0 }).to_be_bytes());
-    }
-    post.extend(b"\x06period");
-    let tables = [
-        (b"head", head),
-        (b"hhea", hhea),
-        (b"maxp", maxp),
-        (b"post", post),
-    ];
-    let mut output = vec![0; 12 + tables.len() * 16];
-    output[..4].copy_from_slice(&0x00010000u32.to_be_bytes());
-    output[4..6].copy_from_slice(&(tables.len() as u16).to_be_bytes());
-    for (i, (tag, bytes)) in tables.iter().enumerate() {
-        let offset = output.len();
-        let record = &mut output[12 + i * 16..28 + i * 16];
-        record[..4].copy_from_slice(*tag);
-        record[8..12].copy_from_slice(&(offset as u32).to_be_bytes());
-        record[12..16].copy_from_slice(&(bytes.len() as u32).to_be_bytes());
-        output.extend(bytes);
-        output.resize(output.len().next_multiple_of(4), 0);
-    }
-    output
-}
-
 #[test]
 fn embedded_post_names_are_reserved_before_once_lock_expansion() {
+    // DejaVu Sans 원본의 post format 2는 마침표의 글리프 이름을 제공한다.
+    const FONT: &[u8] =
+        include_bytes!("../../vendor/rhwp-pdf-import-backend/src/fonts/assets/DejaVuSans.ttf");
+    let face = ttf_parser::Face::parse(FONT, 0).unwrap();
+    let glyph = face.glyph_index('.').unwrap();
+    assert_eq!(glyph.0, 17);
+    assert_eq!(face.glyph_name(glyph), Some("period"));
     let bytes = pdf(b"<< /Type /Font /Subtype /TrueType /BaseFont /GlyphBudget /FontDescriptor 6 0 R /ToUnicode 8 0 R >>", &[
-        b"<< /Type /FontDescriptor /FontFile2 7 0 R >>".to_vec(), stream(&glyph_font()),
-        stream(b"1 beginbfchar <41> <00AC> endbfchar"),
+        b"<< /Type /FontDescriptor /FontFile2 7 0 R >>".to_vec(), stream(FONT),
+        stream(b"1 beginbfchar <11> <00AC> endbfchar"),
     ]);
-    let (doc, font) = load(bytes.clone(), 1000);
-    let font = font.unwrap();
-    assert_eq!(font.char_to_unicode(65).as_deref(), Some("."));
+    let (doc, font) = load(bytes.clone(), 100_000);
+    assert_eq!(
+        font.unwrap().char_to_unicode(u32::from(glyph.0)).as_deref(),
+        Some(".")
+    );
     assert!(doc.check_import_budget().is_ok());
-    let (doc, font) = load(bytes, 65);
-    assert!(font.unwrap().char_to_unicode(65).is_none());
+    let (doc, font) = load(bytes, usize::from(face.number_of_glyphs()) - 1);
+    assert!(font.unwrap().char_to_unicode(u32::from(glyph.0)).is_none());
     assert_eq!(
         doc.import_budget()
             .unwrap()
@@ -462,22 +433,6 @@ fn embedded_post_names_are_reserved_before_once_lock_expansion() {
             .reason,
         "font metric entries"
     );
-}
-
-fn donation_cmap() -> pdf_oxide::fonts::TrueTypeCMap {
-    // A one-glyph independent format-12 table: Unicode A -> GID 1.
-    let mut data = vec![0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0];
-    data.extend(b"cmap");
-    data.extend(0u32.to_be_bytes());
-    data.extend(28u32.to_be_bytes());
-    data.extend(40u32.to_be_bytes());
-    data.extend([0, 0, 0, 1, 0, 3, 0, 10]);
-    data.extend(12u32.to_be_bytes());
-    data.extend([0, 12, 0, 0]);
-    for value in [28u32, 0, 1, 65, 65, 1] {
-        data.extend(value.to_be_bytes());
-    }
-    pdf_oxide::fonts::TrueTypeCMap::from_font_data(&data).unwrap()
 }
 
 #[test]
@@ -496,7 +451,10 @@ fn donated_cmap_rejects_owned_font_copy_before_detaching_shared_recipient() {
         let mut donor = recipient.clone();
         donor.base_font = "BBBBBB+DonatedFace".into();
         donor.widths = None;
-        donor.set_truetype_cmap(Some(donation_cmap()));
+        let program = include_bytes!("../fixtures/fonts/RHWPExactKerningSmoke.ttf");
+        let cmap = pdf_oxide::fonts::TrueTypeCMap::from_font_data(program).unwrap();
+        assert_eq!(cmap.get_unicode(2), Some('A'));
+        donor.set_truetype_cmap(Some(cmap));
         let mut extractor = TextExtractor::new();
         extractor.add_font("Recipient".into(), recipient);
         extractor.add_font("Donor".into(), donor);
@@ -535,7 +493,7 @@ fn donated_cmap_rejects_owned_font_copy_before_detaching_shared_recipient() {
                 .find(|(name, _)| name == "Recipient")
                 .unwrap()
                 .1;
-            assert_eq!(copied.truetype_cmap().unwrap().get_unicode(1), Some('A'));
+            assert_eq!(copied.truetype_cmap().unwrap().get_unicode(2), Some('A'));
             assert_eq!(copied.widths.as_ref().unwrap().len(), 1024);
             assert!(
                 Arc::ptr_eq(

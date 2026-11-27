@@ -1,0 +1,56 @@
+{
+  "timestamp": 1795317285.715568,
+  "free_before": 1636335616,
+  "active_builds_before": [],
+  "deleted": [
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp-1j64n382z2daz/s-hodh3wku96-0ppcv6h-1boo7m4v8s0gwz744wfp7naep",
+      "mtime": 1795282497.7820766,
+      "latest_file_mtime": 1795282497.8320765,
+      "lock": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp-1j64n382z2daz/s-hodh3wku96-0ppcv6h.lock",
+      "du_bytes": 1213276160,
+      "uid": 1000,
+      "unused_basis": "No Cargo/rustc/wasm-pack/wasm-opt processes; exclusive session lock acquired. Older completed session retained alongside a newer session of same crate; Source36 Cargo receipts terminal."
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp-3hfcj3hs02cn0/s-hodiufotvp-0q9z8mj-dbew0xppitw0utv5qf7hfqy0x",
+      "mtime": 1795285873.6424537,
+      "latest_file_mtime": 1795285873.6424537,
+      "lock": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp-3hfcj3hs02cn0/s-hodiufotvp-0q9z8mj.lock",
+      "du_bytes": 504659968,
+      "uid": 1000,
+      "unused_basis": "No Cargo/rustc/wasm-pack/wasm-opt processes; exclusive session lock acquired. Older completed session retained alongside a newer session of same crate; Source36 Cargo receipts terminal."
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp-1armcfpe4vv0t/s-hodiufou20-0fvw9ci-4p3j7ndegxw1gp3h0xtuxqdwp",
+      "mtime": 1795285832.4270139,
+      "latest_file_mtime": 1795285832.4270139,
+      "lock": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp-1armcfpe4vv0t/s-hodiufou20-0fvw9ci.lock",
+      "du_bytes": 499949568,
+      "uid": 1000,
+      "unused_basis": "No Cargo/rustc/wasm-pack/wasm-opt processes; exclusive session lock acquired. Older completed session retained alongside a newer session of same crate; Source36 Cargo receipts terminal."
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp-0o6btuubjfu4v/s-hodgrbjc6d-0pm460n-b8oa3assix3y41ngjfhjfshh1",
+      "mtime": 1795281277.5661542,
+      "latest_file_mtime": 1795281277.5671544,
+      "lock": "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp-0o6btuubjfu4v/s-hodgrbjc6d-0pm460n.lock",
+      "du_bytes": 499941376,
+      "uid": 1000,
+      "unused_basis": "No Cargo/rustc/wasm-pack/wasm-opt processes; exclusive session lock acquired. Older completed session retained alongside a newer session of same crate; Source36 Cargo receipts terminal."
+    },
+    {
+      "path": "/home/tsjang/rhwp/target/pr-review/debug/incremental/pdf_oxide-0aa2qo7fjd8ec/s-hodh2uh157-1t84d7k-7y4tf8izcqcs5w4jjm9oqg1oi",
+      "mtime": 1795281875.9734123,
+      "latest_file_mtime": 1795281875.9744122,
+      "lock": "/home/tsjang/rhwp/target/pr-review/debug/incremental/pdf_oxide-0aa2qo7fjd8ec/s-hodh2uh157-1t84d7k.lock",
+      "du_bytes": 378834944,
+      "uid": 1000,
+      "unused_basis": "No Cargo/rustc/wasm-pack/wasm-opt processes; exclusive session lock acquired. Older completed session retained alongside a newer session of same crate; Source36 Cargo receipts terminal."
+    }
+  ],
+  "scope": "Only five older finished incremental session directories, newer sessions and all deps/binaries/fingerprints retained.",
+  "free_after": 4683182080,
+  "actual_free_delta": 3046846464,
+  "all_removed": true
+}

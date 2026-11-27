@@ -1,0 +1,12 @@
+{
+  "package": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source105-candidate",
+  "expected_sha256": "d02f8e1661a0eb51fbbe33212998755fb1f5c221ae1fac78b2083297461d9896",
+  "served": [
+    {
+      "url": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source105-candidate/rhwp_bg.wasm",
+      "bytes": 29755117,
+      "sha256": "d02f8e1661a0eb51fbbe33212998755fb1f5c221ae1fac78b2083297461d9896"
+    }
+  ],
+  "all_match": true
+}

@@ -1,0 +1,4 @@
+area	model_before	inline_cursor	returned_cursor	model_after_input	model_after_inverse	restored
+trailing-header	앞뒤	3	4	앞뒤X	앞뒤X	False
+trailing-footer	앞뒤	3	4	앞뒤X	앞뒤X	False
+field-header	앞뒤	2	3	앞뒤X	앞뒤	True

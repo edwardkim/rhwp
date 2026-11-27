@@ -1,0 +1,56 @@
+{
+  "key": "issue7754-plain",
+  "page": 1,
+  "dpi": 96,
+  "crop_box": [
+    145,
+    610,
+    670,
+    718
+  ],
+  "scale": 4,
+  "method": "nearest-neighbor",
+  "inputs": [
+    {
+      "label": "Independent Hancom Print",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/candidate/issue7754-plain/pdf_png/pdf-001.png",
+      "sha256": "a395bd44c18842bb89135af2466b1702660d805c9495b868a9f1350f9dd093f7"
+    },
+    {
+      "label": "devel Native",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7754-plain/rhwp_png/rhwp_001.png",
+      "sha256": "e7fb98a3273cc8fd49580aefb8cb3c1e66eba59b976cceacb0c062ef44205eca"
+    },
+    {
+      "label": "candidate Native",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/candidate/issue7754-plain/rhwp_png/rhwp_001.png",
+      "sha256": "9645aa849ebd9eaef2a9850a6079b7d09775bf400fa1bdb7733150c224c602c8"
+    },
+    {
+      "label": "devel WASM",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-wasm/base/issue7754-plain/rhwp_png/rhwp_001.png",
+      "sha256": "f340702bf21b861cb7e38ce0bb516887acd86c216b4c3ca7405b342e894fa03e"
+    },
+    {
+      "label": "candidate WASM",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-wasm/candidate/issue7754-plain/rhwp_png/rhwp_001.png",
+      "sha256": "44341efb839827648e28c80b736c15235ca37f1025e971919136fa991b0e283b"
+    }
+  ],
+  "panel": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-direct-review/issue7754-p001-inline-enter-and-following-text-4x.png",
+  "panel_sha256": "d6b61a7629e622df87f6daa2be54cb89f6b446a61d9c59b08c1eb87fd5b939c7",
+  "created": 1795292617.2887745,
+  "direct_reading_status": "reviewed_issues_found",
+  "reviewed": 1795293323.9572423,
+  "source": "samples/HWP5-nopassword-123456.hwpx",
+  "input_sha256": "20ed90f48c6501cad99f6aa1f82d81d2a2132eb04f2d1d32805ac251749e4d0e",
+  "independent_pdf": "pdf/HWP5-nopassword-123456-hwpx-2024.pdf",
+  "pdf_sha256": "b20bd5c0b3716818113cc6bc2a18ba768325b338a3a16840e3680e124cfea01d",
+  "production_source": "adaa1963674e1a69c4369b80160ac6eb873bec1b",
+  "findings": [
+    "Both base and candidate double-apply paragraph left/right margins on original p1 paragraph8 with a Square picture outside the text frame. Stored cs=3500, sw=36520, style left=3500, right=2500, column width=42520 HU.",
+    "Original expected frame x=160.0533px, width=486.9333px from source and independent Print; candidate render tree reports x=206.7px, width=406.9px.",
+    "U+F03A0 is projected to an arrow although the available Haansoft Batang/HCR programs contain the actual original keyboard glyph.",
+    "Original source Jamo in the title must be retained; restoring the removed product-name rewrite is not a correction. Legacy HFT composition and actual fallback supply need investigation."
+  ]
+}

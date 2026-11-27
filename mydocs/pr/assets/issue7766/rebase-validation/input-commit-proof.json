@@ -1,0 +1,242 @@
+{
+  "verified_head": "953b43187325496645683fcc15ca989a815b0596",
+  "documents": {
+    "1853": {
+      "issue": 7766,
+      "source": {
+        "path": "samples/issue1853_caption_precedes_body_split.hwpx",
+        "sha256": "46bd0142f7fe2f68dffb9768e08d65488feeb19f5fd6916f9ad90ae5d72a96a9"
+      },
+      "independent_print": {
+        "path": "pdf/issue1853_caption_precedes_body_split-2024.pdf",
+        "bytes": 749771,
+        "sha256": "c3befae95a2135761066c44435a331bb55d0d27bac2f97d8487358f1b9f2bd9b",
+        "pages": 52
+      }
+    },
+    "husbandry-2024-one-up": {
+      "issue": 7767,
+      "source": {
+        "path": "samples/issue6778/156757920-animal-welfare-husbandry-guidelines.hwp",
+        "sha256": "309494bf58da7c092eca2c6fe55918063d2f538820cbc3fc6f8c8196fcd3586a"
+      },
+      "independent_print": {
+        "path": "pdf/issue7767/animal-welfare-husbandry-one-up-2024.pdf",
+        "bytes": 925808,
+        "sha256": "3c86ba0cb8d57587c8c4be95e8babde1b119bb9147dd617d83d7ce4081368896",
+        "pages": 12
+      }
+    },
+    "synam": {
+      "issue": 7769,
+      "source": {
+        "path": "samples/synam-001.hwp",
+        "sha256": "1dce9356ec316407b6c684d5a11190a44bb26da643a7749626763e781ab0c13b"
+      },
+      "independent_print": {
+        "path": "pdf/synam-001-hwp-2020.pdf",
+        "bytes": 837269,
+        "sha256": "d199640be90cb39acfde965bbeb66c787d01d179b6759c5d797cf91043c7d09d",
+        "pages": 35
+      }
+    },
+    "chemical": {
+      "issue": 7769,
+      "source": {
+        "path": "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+        "sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860"
+      },
+      "independent_print": {
+        "path": "pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf",
+        "bytes": 2208597,
+        "sha256": "f8e5c0408e221080ede9a9a67b153d02d792d22961c738e46749641f32a32e79",
+        "pages": 103
+      }
+    },
+    "ktx": {
+      "issue": 7769,
+      "source": {
+        "path": "samples/basic/KTX-003.hwp",
+        "sha256": "619bc919de3f2b8113fb9af0fcc808c754dc601ed9e66e49226280fd3d1ae032"
+      },
+      "independent_print": {
+        "path": "pdf/basic/KTX-003-hwp-2020.pdf",
+        "bytes": 719180,
+        "sha256": "a0798bc093be8521908d9d0e5f2bf557013370f12de455fb9886d4f4d6419787",
+        "pages": 1
+      }
+    },
+    "2439": {
+      "issue": 7769,
+      "source": {
+        "path": "samples/issue2439/issue2439_repeat_table_overlap.hwp",
+        "sha256": "674eabe66ea0ba783ad2cd398519c9893ba94956a22d9cb94b084db00d4d2c3d"
+      },
+      "independent_print": {
+        "path": "pdf/issue2439/issue2439_hancom2024_landscape.pdf",
+        "bytes": 199809,
+        "sha256": "f36a747c5f848d90e755abe2e730d932429a324fad9b7e822964934cd8f8eca4",
+        "pages": 10
+      }
+    },
+    "pig-hwp": {
+      "issue": 7770,
+      "source": {
+        "path": "samples/issue6797/156160455-social-pig-farm-income.hwp",
+        "sha256": "1b99b763aac36a14a9f463e35ee894a23eb1083780040eab5e0f02a481c694b8"
+      },
+      "independent_print": {
+        "path": "pdf/156160455-social-pig-farm-income-2020.pdf",
+        "bytes": 533249,
+        "sha256": "4d5abf857476fca43befe528d10221b668a85bb2d7497a2165da34e46c11b002",
+        "pages": 11
+      }
+    },
+    "center": {
+      "issue": 7771,
+      "source": {
+        "path": "tests/fixtures/issue6923/156645214_240812(조간)_4개_아이돌굿즈_판매사업자_전상법의_위반행위_제재.hwp",
+        "sha256": "cb36c862d3d41757d15fb322b1733f0e0ce27bf20142db0a25c57a624739e23b"
+      },
+      "independent_print": {
+        "path": "tests/fixtures/issue6923/156645214_240812(조간)_4개_아이돌굿즈_판매사업자_전상법의_위반행위_제재-2020.pdf",
+        "bytes": 2232190,
+        "sha256": "71261bcb218eabc6f1b2af5ce81797a3505f417d1c2482ee5441dec11b6ba943",
+        "pages": 20
+      }
+    },
+    "hwpspec-2024-one-up": {
+      "issue": 7772,
+      "source": {
+        "path": "samples/hwpspec.hwp",
+        "sha256": "64df877f3c4accda0111ecf39d837da889741bb821b220cf61b6c126dc88364d"
+      },
+      "independent_print": {
+        "path": "pdf/issue7772/hwpspec-hancom-one-up-2024.pdf",
+        "bytes": 1915882,
+        "sha256": "a4f52594ead9e292f6d124a362f91ed28d84fa29a3e23858232b1a95f7bedd39",
+        "pages": 178
+      }
+    },
+    "cbta-verified-2020": {
+      "issue": 7772,
+      "source": {
+        "path": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+        "sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7"
+      },
+      "independent_print": {
+        "path": "pdf/issue7727/cbta-original-hancom2020-print-20261106.pdf",
+        "bytes": 4970756,
+        "sha256": "0db1eb55eda0f1a4985eeaf187656c23499616b7dccddcbb7c874c0937e1b2e0",
+        "pages": 204
+      }
+    },
+    "policy-verified-2024": {
+      "issue": 7772,
+      "source": {
+        "path": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+        "sha256": "50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113"
+      },
+      "independent_print": {
+        "path": "pdf/issue7753/policy-donor-screening-hwp-2024-print.pdf",
+        "bytes": 3785323,
+        "sha256": "fed7aef74005a175baac87ad1415be126b881633390ec04b6b557447c164060d",
+        "pages": 215
+      }
+    },
+    "sql-hwp5": {
+      "issue": 7774,
+      "source": {
+        "path": "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwp5.hwp",
+        "sha256": "a660a0d41898c8316479392c9687d81a15555431a581bdda988bf3598f6f0d51"
+      },
+      "independent_print": {
+        "local_path_relative_to_home": "rhwp-local-pdf/issue7774/hwp3-sample10-hwp5-hancom-2024-combined.pdf",
+        "bytes": 105687267,
+        "sha256": "e3e33b3bbe3370cb64f3775ea7f87d25ece53e1d4f4272ef2d713977e535e857",
+        "pages": 763,
+        "source_splits": {
+          "source_files": [
+            {
+              "path": "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwp5-p001-300-2024.pdf",
+              "pages": 300,
+              "sha256": "650f210c1d4127b404beab774e445651d463b00ac774c84f68210f42773a391a",
+              "bytes": 42328968
+            },
+            {
+              "path": "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwp5-p301-600-2024.pdf",
+              "pages": 300,
+              "sha256": "ee223ef5a83e1349ed24af1a56fc3c786221df6c0f45c0100d65acd64d824e25",
+              "bytes": 40344499
+            },
+            {
+              "path": "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwp5-p601-763-2024.pdf",
+              "pages": 163,
+              "sha256": "52d42e6c96ce8c3631302ea9787e505f9639fd38ab7f01dc41f3140e4ee8954f",
+              "bytes": 21264303
+            }
+          ],
+          "same_page_content_streams": 763,
+          "same_raster_pages": [
+            1,
+            16,
+            125,
+            243,
+            299,
+            300,
+            301,
+            302,
+            489,
+            554,
+            599,
+            600,
+            601,
+            744,
+            757,
+            763
+          ]
+        }
+      }
+    },
+    "sql-hwpx-2024-one-up": {
+      "issue": 7774,
+      "source": {
+        "path": "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwpx.hwpx",
+        "sha256": "3395e19bebea8b6689f383df1f4ea1ddb253dee91c4320392cc40e90e2e4f191"
+      },
+      "independent_print": {
+        "local_path_relative_to_home": "rhwp-local-pdf/issue7774/hwp3-sample10-hwpx-hancom-2024-one-up.pdf",
+        "bytes": 96144250,
+        "sha256": "ad6c03db8a81c5a65ba064ef0933b8a37446f1b106fa4b09757bc8b4bb7f04a9",
+        "pages": 763
+      }
+    },
+    "pig-hwpx": {
+      "issue": 7775,
+      "source": {
+        "path": "samples/hwpx/156160455-social-pig-farm-income.hwpx",
+        "sha256": "3194188fb93047684c560f346d13015f31bf77a4d1ca02eed6ba3a19f0fa9f53"
+      },
+      "independent_print": {
+        "path": "pdf/hwpx/156160455-social-pig-farm-income-hwpx-2020.pdf",
+        "bytes": 533249,
+        "sha256": "a3cd4b32d3539729650e3754407ffb2c876e1e1a75873d6e32454f24bff354f0",
+        "pages": 11
+      }
+    },
+    "pr1674": {
+      "issue": 7776,
+      "source": {
+        "path": "samples/pr-1674.hwp",
+        "sha256": "e8b4027cbb6cbec47ccaa70de4aa4111dbb39bcdcce6b8399386d5e28974524c"
+      },
+      "independent_print": {
+        "path": "pdf/pr-1674-hwp-2020.pdf",
+        "bytes": 801827,
+        "sha256": "374d92ed8747d363601f3a76d5120d5afab705cbcfb103f8ed1283bf4260d69d",
+        "pages": 35
+      }
+    }
+  },
+  "binary_source_head": "953b43187325496645683fcc15ca989a815b0596"
+}

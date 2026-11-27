@@ -2014,6 +2014,40 @@ impl DocumentCore {
             super::cursor_rect::resolve_x_on_line(&views, x)
         }
 
+        /// 후보 run 가운데 클릭이 속한 시각 줄(line)을 고르고 그 줄에서 x 를 글자 위치로 푼다.
+        ///   1순위: 클릭 y 가 글리프 bbox 안에 드는 run 의 줄
+        ///   2순위: (행간 여백 클릭) 클릭 y 에 세로로 가장 가까운 run 의 줄
+        /// 줄 식별은 run 의 bbox_y(줄 윗변)로 한다. 같은 줄의 run 은 bbox_y 가 같다.
+        fn nearest_line_hit<'a>(
+            candidates: &[&'a RunInfo],
+            x: f64,
+            y: f64,
+        ) -> Option<(&'a RunInfo, usize)> {
+            let line_y = candidates
+                .iter()
+                .filter(|r| y >= r.bbox_y && y <= r.bbox_y + r.bbox_h)
+                .map(|r| r.bbox_y)
+                .next()
+                .or_else(|| {
+                    candidates
+                        .iter()
+                        .min_by(|a, b| {
+                            let da = (y - (a.bbox_y + a.bbox_h / 2.0)).abs();
+                            let db = (y - (b.bbox_y + b.bbox_h / 2.0)).abs();
+                            da.partial_cmp(&db).unwrap()
+                        })
+                        .map(|r| r.bbox_y)
+                })?;
+            let mut line_runs: Vec<&RunInfo> = candidates
+                .iter()
+                .copied()
+                .filter(|r| (r.bbox_y - line_y).abs() < 1.0)
+                .collect();
+            line_runs.sort_by(|a, b| a.bbox_x.partial_cmp(&b.bbox_x).unwrap());
+            let (idx, offset) = resolve_x_on_line(&line_runs, x);
+            Some((line_runs[idx], offset))
+        }
+
         fn format_hit(run: &RunInfo, offset: usize, page_num: u32) -> String {
             let base = format!(
                 "\"sectionIndex\":{},\"paragraphIndex\":{},\"charOffset\":{}",
@@ -2125,6 +2159,22 @@ impl DocumentCore {
                     && y >= tb.y
                     && y <= tb.y + tb.h
             })
+        }
+
+        // 같은 칸 또는 글상자의 다른 문단은 허용하되, 자식·형제 컨테이너의 글은 고르지 않는다.
+        fn same_text_container(a: &CellContext, b: &CellContext) -> bool {
+            a.parent_para_index == b.parent_para_index
+                && a.path.len() == b.path.len()
+                && a.path
+                    .iter()
+                    .zip(&b.path)
+                    .enumerate()
+                    .all(|(i, (left, right))| {
+                        left.control_index == right.control_index
+                            && left.cell_index == right.cell_index
+                            && (i + 1 == a.path.len()
+                                || left.cell_para_index == right.cell_para_index)
+                    })
         }
 
         fn same_cell_context(a: &Option<CellContext>, b: &Option<CellContext>) -> bool {
@@ -2702,27 +2752,34 @@ impl DocumentCore {
             .filter(|cb| x >= cb.x && x <= cb.x + cb.w && y >= cb.y && y <= cb.y + cb.h)
             .min_by_key(|cb| ((cb.w.max(0.0) * cb.h.max(0.0)) * 1000.0) as i64);
 
+        // [Task #919] 클릭을 품은 글상자. 후보 여럿이면 가장 작은 (가장 specific) 것 선택.
+        let textbox_hit: Option<&TextBoxBboxInfo> = textbox_bboxes
+            .iter()
+            .filter(|tb| x >= tb.x && x <= tb.x + tb.w && y >= tb.y && y <= tb.y + tb.h)
+            .min_by_key(|tb| ((tb.w.max(0.0) * tb.h.max(0.0)) * 1000.0) as i64);
+
         // [#7442] 중첩 표를 품은 바깥 칸의 run은 TAC 줄 높이만큼 bbox가 커서 안쪽 칸의
         // 빈 영역·괘선까지 덮는다. hit_cell이 있어도 클릭된 칸이 그 run보다 더 깊은
         // 경로(같은 parent_para_index 아래 run 경로를 (control,cell) 접두사로 갖는
         // 자손 칸)를 가리키면 run hit를 건너뛰고 그 칸 분기를 사용한다. 같은 깊이나
         // 무관한 경로에서는 지금처럼 텍스트 run 정밀도가 우선한다.
+        // 칸 안 글상자(`[표 셀, 글상자]`)가 클릭을 품을 때도 같다.
         let hit_cell = hit_cell.filter(|&(idx, _)| {
-            match (
-                runs[idx].cell_context.as_ref(),
-                clicked_cell.and_then(|cb| cb.cell_context.as_ref()),
-            ) {
-                (Some(run_ctx), Some(cell_ctx)) => {
-                    let clicked_is_descendant = cell_ctx.parent_para_index
-                        == run_ctx.parent_para_index
-                        && cell_ctx.path.len() > run_ctx.path.len()
-                        && run_ctx.path.iter().zip(&cell_ctx.path).all(|(r, c)| {
-                            r.control_index == c.control_index && r.cell_index == c.cell_index
-                        });
-                    !clicked_is_descendant
-                }
-                _ => true,
-            }
+            let Some(run_ctx) = runs[idx].cell_context.as_ref() else {
+                return true;
+            };
+            let is_descendant = |target: &CellContext| {
+                target.parent_para_index == run_ctx.parent_para_index
+                    && target.path.len() > run_ctx.path.len()
+                    && run_ctx.path.iter().zip(&target.path).all(|(r, c)| {
+                        r.control_index == c.control_index && r.cell_index == c.cell_index
+                    })
+            };
+            let clicked_is_descendant = clicked_cell
+                .and_then(|cb| cb.cell_context.as_ref())
+                .is_some_and(is_descendant);
+            let textbox_is_descendant = textbox_hit.is_some_and(|tb| is_descendant(&tb.context));
+            !clicked_is_descendant && !textbox_is_descendant
         });
 
         if let Some((idx, offset)) = hit_cell {
@@ -2732,51 +2789,34 @@ impl DocumentCore {
         // 클릭 좌표가 속한 칼럼 결정 (다단 지원)
         let click_column = self.find_column_at_x(page_num, x);
 
+        // 칸과 글상자가 함께 클릭을 품으면 더 깊은 쪽이 받는다. 표 칸 안 글상자
+        // (`[표 셀, 글상자]`)는 글상자, 글상자 안 표 칸(`[글상자, 표 셀]`)은 그 칸이다.
+        // 칸 분기는 `innermost().cell_index`로 run을 고르므로, 칸 안 글상자를 칸으로 보면
+        // 묶음의 다른 글상자나 바깥 칸 글로 커서가 간다.
+        let textbox_beats_cell = match (clicked_cell, textbox_hit) {
+            (Some(cb), Some(tb)) => {
+                let cell_depth = cb.cell_context.as_ref().map_or(1, |ctx| ctx.path.len());
+                tb.context.path.len() > cell_depth
+            }
+            _ => false,
+        };
+
         // 셀 내부 클릭이면: 해당 셀의 run만 검색하여 가장 가까운 위치 반환
-        if let Some(cb) = clicked_cell {
-            let cell_runs: Vec<&RunInfo> = runs
-                .iter()
-                .filter(|r| {
-                    r.cell_context.as_ref().is_some_and(|ctx| {
-                        r.table_id == cb.table_id
-                            && ctx.parent_para_index == cb.parent_para_index
-                            && ctx
-                                .innermost()
-                                .is_some_and(|e| e.cell_index == cb.cell_index)
+        if let Some(cb) = clicked_cell.filter(|_| !textbox_beats_cell) {
+            let cell_runs: Vec<&RunInfo> = runs.iter().filter(|r| {
+                r.section_index == cb.section_index && r.table_id == cb.table_id
+                    && r.cell_context.as_ref().is_some_and(|ctx| match &cb.cell_context {
+                        Some(owner) => same_text_container(ctx, owner),
+                        None => ctx.parent_para_index == cb.parent_para_index
+                            && matches!(ctx.path.as_slice(), [entry]
+                                if entry.control_index == cb.control_index && entry.cell_index == cb.cell_index),
                     })
-                })
+            })
                 .collect();
 
             if !cell_runs.is_empty() {
-                // 클릭이 속한 시각 줄(line)을 고른다.
-                //   1순위: 클릭 y 가 글리프 bbox 안에 드는 run 의 줄
-                //   2순위: (행간 여백 클릭) 클릭 y 에 세로로 가장 가까운 run 의 줄
-                // 줄 식별은 run 의 bbox_y(줄 윗변)로 한다. 같은 줄의 run 은 bbox_y 가 같다.
-                let line_y = cell_runs
-                    .iter()
-                    .filter(|r| y >= r.bbox_y && y <= r.bbox_y + r.bbox_h)
-                    .map(|r| r.bbox_y)
-                    .next()
-                    .or_else(|| {
-                        cell_runs
-                            .iter()
-                            .min_by(|a, b| {
-                                let da = (y - (a.bbox_y + a.bbox_h / 2.0)).abs();
-                                let db = (y - (b.bbox_y + b.bbox_h / 2.0)).abs();
-                                da.partial_cmp(&db).unwrap()
-                            })
-                            .map(|r| r.bbox_y)
-                    });
-
-                if let Some(ly) = line_y {
-                    let mut line_runs: Vec<&RunInfo> = cell_runs
-                        .iter()
-                        .copied()
-                        .filter(|r| (r.bbox_y - ly).abs() < 1.0)
-                        .collect();
-                    line_runs.sort_by(|a, b| a.bbox_x.partial_cmp(&b.bbox_x).unwrap());
-                    let (idx, offset) = resolve_x_on_line(&line_runs, x);
-                    return Ok(format_hit(line_runs[idx], offset, page_num));
+                if let Some((run, offset)) = nearest_line_hit(&cell_runs, x, y) {
+                    return Ok(format_hit(run, offset, page_num));
                 }
                 return Ok(format_hit(cell_runs[0], cell_runs[0].char_start, page_num));
             }
@@ -2826,12 +2866,21 @@ impl DocumentCore {
 
         // [Task #919] 글상자 빈 영역 매칭 — clicked_cell 매칭 안 됐으면 글상자 시도.
         // 글상자 안 표 셀은 위쪽 clicked_cell 분기에서 이미 처리됨.
-        // 후보 여럿이면 가장 작은 (가장 specific) 것 선택.
-        let textbox_hit: Option<&TextBoxBboxInfo> = textbox_bboxes
-            .iter()
-            .filter(|tb| x >= tb.x && x <= tb.x + tb.w && y >= tb.y && y <= tb.y + tb.h)
-            .min_by_key(|tb| ((tb.w.max(0.0) * tb.h.max(0.0)) * 1000.0) as i64);
+        // 글 끝 뒤·줄 사이·안쪽 여백을 누르면 칸 분기처럼 그 글상자 글의 가장 가까운 줄과
+        // 글자로 간다. 글이 없는 글상자만 첫 문단 시작으로 들어간다.
         if let Some(tb) = textbox_hit {
+            let textbox_runs: Vec<&RunInfo> = runs
+                .iter()
+                .filter(|r| {
+                    r.section_index == tb.section_index
+                        && r.cell_context
+                            .as_ref()
+                            .is_some_and(|ctx| same_text_container(ctx, &tb.context))
+                })
+                .collect();
+            if let Some((run, offset)) = nearest_line_hit(&textbox_runs, x, y) {
+                return Ok(format_hit(run, offset, page_num));
+            }
             return Ok(format_textbox_entry(tb, page_num));
         }
 
@@ -6468,6 +6517,19 @@ impl DocumentCore {
         control_idx: usize,
         note_para_idx: usize,
     ) -> Option<(u32, usize, usize, usize)> {
+        self.find_endnote_edit_target_in(section_idx, para_idx, control_idx, &[], note_para_idx)
+    }
+
+    /// `cell_path`는 표 셀·글상자 안 미주의 소유 경로(`EndnoteRef::cell_path` 규약, `control_idx`는
+    /// 최상위 표·도형)다. 본문 미주는 빈 경로다.
+    fn find_endnote_edit_target_in(
+        &self,
+        section_idx: usize,
+        para_idx: usize,
+        control_idx: usize,
+        cell_path: &[crate::renderer::pagination::TableFootnotePathEntry],
+        note_para_idx: usize,
+    ) -> Option<(u32, usize, usize, usize)> {
         // 미주는 원본 구역이 아니라 모아 찍는 구역(문서 끝이면 마지막 구역)의 페이지에
         // 그려진다. 그래서 모든 구역의 미주 출처에서 원본 위치를 찾고, 가상 문단 번호와
         // 페이지는 그 미주를 그린 구역 기준으로 계산한다.
@@ -6478,7 +6540,12 @@ impl DocumentCore {
                 .find_map(|(render_section_idx, pr)| {
                     let local_idx = pr.endnote_para_sources.iter().position(|src| {
                         src.section_index == section_idx
-                            && src.cell_path.is_empty()
+                            && src.cell_path.len() == cell_path.len()
+                            && src.cell_path.iter().zip(cell_path).all(|(a, b)| {
+                                a.cell_index == b.cell_index
+                                    && a.cell_para_index == b.cell_para_index
+                                    && a.control_index == b.control_index
+                            })
                             && src.para_index == para_idx
                             && src.control_index == control_idx
                             && src.note_para_index == note_para_idx
@@ -6615,6 +6682,103 @@ impl DocumentCore {
                 "지정된 컨트롤이 각주/미주가 아닙니다".to_string(),
             )),
         }
+    }
+
+    /// 표 셀·글상자(중첩 포함) 안 미주 안의 커서 렉트. `path`는 미주 번호가 든 문단까지의 셀 경로
+    /// (`...ByPath` API 꼴), `control_idx`는 그 문단의 미주 컨트롤이다. 미주는 모아 그린 자리에서 찾는다.
+    pub fn get_cursor_rect_in_note_by_path_native(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        control_idx: usize,
+        note_para_idx: usize,
+        char_offset: usize,
+    ) -> Result<String, HwpError> {
+        let para = self.resolve_paragraph_by_path(section_idx, parent_para_idx, path)?;
+        let Some(Control::Endnote(endnote)) = para.controls.get(control_idx) else {
+            return Err(HwpError::RenderError(
+                "지정된 컨트롤이 미주가 아닙니다".to_string(),
+            ));
+        };
+        // 셀 경로를 미주 소유 경로(앞 단계는 다음 표·도형, 마지막 단계는 미주 컨트롤)로 바꾼다.
+        let cell_path: Vec<_> = path
+            .iter()
+            .enumerate()
+            .map(|(i, &(_, cell_index, cell_para_index))| {
+                crate::renderer::pagination::TableFootnotePathEntry {
+                    cell_index,
+                    cell_para_index,
+                    control_index: path.get(i + 1).map_or(control_idx, |next| next.0),
+                }
+            })
+            .collect();
+        let top = path.first().map_or(control_idx, |step| step.0);
+        let (page_num, _, virtual_para_idx, render_section_idx) = self
+            .find_endnote_edit_target_in(
+                section_idx,
+                parent_para_idx,
+                top,
+                &cell_path,
+                note_para_idx,
+            )
+            .ok_or_else(|| {
+                HwpError::RenderError("미주 렌더 위치를 찾을 수 없습니다".to_string())
+            })?;
+        let render_char_offset = if note_para_idx == 0 {
+            crate::renderer::typeset::endnote_first_para_render_offset(endnote, char_offset)
+        } else {
+            char_offset
+        };
+        self.cursor_rect_for_render_paragraph(
+            page_num,
+            render_section_idx,
+            virtual_para_idx,
+            render_char_offset,
+        )?
+        .ok_or_else(|| HwpError::RenderError("미주 커서 위치를 찾을 수 없습니다".to_string()))
+    }
+
+    /// 구역 `section_idx` 끝(문서 끝이면 마지막 구역)에 모아 그린 미주 가상 문단 `virtual_para_idx`
+    /// (히트 테스트가 주는 문단 번호)의 원본 미주. 반환: `{"ok":true,"sectionIdx","paraIdx","notePath",
+    /// "noteControlIdx","noteParaIdx"}`. `notePath`는 미주 번호가 든 문단까지의 셀 경로(`...ByPath` API 꼴,
+    /// 본문 미주는 빈 배열)이고 `noteControlIdx`는 그 문단의 미주 컨트롤이다. 미주가 아니면 `{"ok":false}`.
+    pub fn get_endnote_source_at_native(
+        &self,
+        section_idx: usize,
+        virtual_para_idx: usize,
+    ) -> Result<String, HwpError> {
+        let src = self
+            .document
+            .sections
+            .get(section_idx)
+            .and_then(|section| virtual_para_idx.checked_sub(section.paragraphs.len()))
+            .and_then(|local| {
+                self.pagination
+                    .get(section_idx)?
+                    .endnote_para_sources
+                    .get(local)
+            });
+        let Some(src) = src else {
+            return Ok("{\"ok\":false}".to_string());
+        };
+        let mut steps = Vec::new();
+        let mut control = src.control_index;
+        for entry in &src.cell_path {
+            steps.push(format!(
+                "{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}",
+                control, entry.cell_index, entry.cell_para_index
+            ));
+            control = entry.control_index;
+        }
+        Ok(format!(
+            "{{\"ok\":true,\"sectionIdx\":{},\"paraIdx\":{},\"notePath\":[{}],\"noteControlIdx\":{},\"noteParaIdx\":{}}}",
+            src.section_index,
+            src.para_index,
+            steps.join(","),
+            control,
+            src.note_para_index
+        ))
     }
 
     /// 각주 내 커서 위치 (커서 렉트) 계산
@@ -6926,9 +7090,60 @@ impl DocumentCore {
             } => (*para_index, *shape_control_index, "shape"),
         };
 
+        // 각주 번호가 든 문단까지의 셀 경로(`...ByPath` API 꼴)와 그 문단의 각주 컨트롤 번호.
+        // 표 셀·글상자 안 각주도 이 경로에 각주 단계를 이어 편집한다. 본문 각주는 빈 경로다.
+        let step = |control: usize, cell: usize, para: usize| {
+            format!(
+                "{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}",
+                control, cell, para
+            )
+        };
+        let (steps, note_control_idx) = match &fn_ref.source {
+            FootnoteSource::Body { control_index, .. } => (Vec::new(), *control_index),
+            FootnoteSource::TableCell {
+                table_control_index,
+                cell_index,
+                cell_para_index,
+                cell_control_index,
+                ..
+            } => (
+                vec![step(*table_control_index, *cell_index, *cell_para_index)],
+                *cell_control_index,
+            ),
+            FootnoteSource::NestedTableCell {
+                table_control_index,
+                cell_path,
+                ..
+            } => {
+                // 첫 항목은 바깥 표의 셀이고, 다음 항목마다 앞 셀 문단의 표 컨트롤 번호를 단다.
+                // 마지막 항목의 컨트롤 번호가 각주다.
+                let mut steps = Vec::new();
+                let mut control = *table_control_index;
+                for entry in cell_path {
+                    steps.push(step(control, entry.cell_index, entry.cell_para_index));
+                    control = entry.control_index;
+                }
+                (steps, control)
+            }
+            FootnoteSource::ShapeTextBox {
+                shape_control_index,
+                tb_para_index,
+                tb_control_index,
+                ..
+            } => (
+                vec![step(*shape_control_index, 0, *tb_para_index)],
+                *tb_control_index,
+            ),
+        };
+
         Ok(format!(
-            "{{\"ok\":true,\"sectionIdx\":{},\"paraIdx\":{},\"controlIdx\":{},\"sourceType\":\"{}\"}}",
-            section_idx, para_idx, control_idx, source_type
+            "{{\"ok\":true,\"sectionIdx\":{},\"paraIdx\":{},\"controlIdx\":{},\"sourceType\":\"{}\",\"notePath\":[{}],\"noteControlIdx\":{}}}",
+            section_idx,
+            para_idx,
+            control_idx,
+            source_type,
+            steps.join(","),
+            note_control_idx
         ))
     }
 }

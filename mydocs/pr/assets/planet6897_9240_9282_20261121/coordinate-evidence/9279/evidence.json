@@ -1,0 +1,49 @@
+{
+  "source_head": "cef9ff9acc08f92431e89450945462514fffa772",
+  "dpi": 96,
+  "raw_metric": "silhouette_raw_match_percent",
+  "origin": "페이지 좌상단",
+  "expected_coordinates_unit": "PDF point",
+  "expected_coordinates": {
+    "2": {
+      "table_top": 273.54,
+      "shape_top": 315.86
+    }
+  },
+  "tolerance_px": 1,
+  "backends": {
+    "native": {
+      "pages": 3,
+      "minimum_display": "100.00",
+      "displayed_100": 3,
+      "selected_display_raw": {
+        "2": "100.00"
+      },
+      "tsv_sha256": "469cad8dc2f9a9b3afab10d1d29914f11045fc6d4f2c620aa5ef57f421259607",
+      "visual_sweep_manifest_sha256": "70ec210fe568cc09bcfd7e182e3cc0589e2baa8fe49c4923ede661056333e797",
+      "native_sha256": "6e1935067e80877fc7cb54e49acaa02a3f3ed8a6c6adf428a4530d6933ba29d9"
+    },
+    "wasm": {
+      "pages": 3,
+      "minimum_display": "100.00",
+      "displayed_100": 3,
+      "selected_display_raw": {
+        "2": "100.00"
+      },
+      "tsv_sha256": "469cad8dc2f9a9b3afab10d1d29914f11045fc6d4f2c620aa5ef57f421259607",
+      "visual_sweep_manifest_sha256": "b34e59981d41f70c09956d8edc9319b33557b9e71d1621a40b645e7a5e83818e",
+      "wasm_sha256": "18b88fdf2ace019f31d29e00aeef74093860c4aa8f750b1d93b1c435cc2962de",
+      "wasm_js_sha256": "23130c8002fe1aa4e6545910d92ef5716ccb92097747662d2b64ef129ff27b08",
+      "build": "macOS locked web --no-opt"
+    }
+  },
+  "input": {
+    "path": "samples/issue9279/forest-press-release-tac-table-shape-tail.hwpx",
+    "sha256": "4763ea3fac592f39dccc36808d022edd0be57db2746e38a50cb9dfe5e6726ea9"
+  },
+  "reference_pdf": {
+    "path": "pdf/issue9279/forest-press-release-tac-table-shape-tail-2024.pdf",
+    "sha256": "1a5a6c2d74197b6e691807b86e1bf3f346779abe623f2ee7e687054de5bde097"
+  },
+  "comparison_profile": "print"
+}

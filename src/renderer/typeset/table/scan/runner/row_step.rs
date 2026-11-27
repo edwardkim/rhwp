@@ -906,6 +906,47 @@ impl TypesetEngine {
                 r, budget, padding, res.consumed_height, res.fully_consumed, res.end_cut
             );
             }
+            // 한 쪽의 기존 각주 위에서 가른 첫 조각은 표의 종료 바깥 여백을
+            // 아직 소비하지 않는다. 칸 모두의 저장 되감김이 선언 상자를 닫고
+            // 그 상자가 각주 영역 전에 들어갈 때에만 원본 컷과 물리 높이를 받는다.
+            let existing_note_opening_band = (!is_continuation
+                && cursor_row == 0
+                && r > cursor_row
+                && row_start_cut.is_empty()
+                && st.profile.hwp5_stored_pagination_layout()
+                && !st.profile.session_edited()
+                && !v.source_frame_origin_unverified
+                && v.existing_note_opening_rows.is_some()
+                && v.unreserved_outer_bottom > 0.0
+                && res.consumed_height > 0.0
+                && !res.fully_consumed)
+                .then(|| {
+                    layout_engine.stored_joint_row_opening_height(
+                        table,
+                        r,
+                        whole_row_fit_h,
+                        row_start_cut,
+                        &res.end_cut,
+                        styles,
+                    )
+                })
+                .flatten()
+                .filter(|height| {
+                    let frame_end = consumed + cs_before + height;
+                    frame_end > avail_for_rows
+                        && frame_end <= avail_for_rows + v.unreserved_outer_bottom
+                        && frame_end <= v.avail_for_rows
+                        && v.existing_note_opening_rows
+                            .is_some_and(|rows| frame_end <= rows)
+                });
+            if let Some(height) = existing_note_opening_band {
+                consumed += cs_before + height;
+                end_row = r + 1;
+                split_end_limit = res.consumed_height;
+                split_end_cut = res.end_cut;
+                end_row_height_override = Some(height);
+                return false;
+            }
             // Native HWP5의 empty-host → 1×1 child → 내부 표 형상은 child 본문의
             // 앞 몇 줄만 쪽 끝에 두면 실제 ink가 다음 internal table보다 한 쪽 먼저
             // 누출한다. 선행 묶음 전체가 새 본문에는 들어가는 경우에만, 현재 row를
@@ -1446,6 +1487,19 @@ impl TypesetEngine {
             // 분할 행의 표시 높이(per-cell content+visible pad). advance_row_cut 의
             // consumed_height 는 패딩을 제외하므로, 좁은 #2439 strict 경로의 orphan
             // 판정은 렌더러가 실제로 그리는 이 높이를 사용한다(content 24px + pad 3.8px).
+            if !res.fully_consumed && !res.hit_hard_break && !rowspan_touched[r] {
+                let available = (v.blank_row_available_height() - consumed - cs_before).max(0.0);
+                if let Some(band) = layout_engine.reflow_nested_opening_minimum_band(
+                    table,
+                    r,
+                    row_start_cut,
+                    &res.end_cut,
+                    available,
+                    styles,
+                ) {
+                    res.physical_height = Some(band.parent_height);
+                }
+            }
             let split_total = saved_opening_frame_height.unwrap_or_else(|| {
                 res.physical_height.unwrap_or_else(|| {
                     layout_engine.row_cut_content_height(

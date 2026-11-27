@@ -26,6 +26,7 @@ pub(crate) mod footnote_frames;
 #[cfg(target_arch = "wasm32")]
 pub(crate) mod mipmap_sampling;
 pub use conjoining_jamo::IsolatedJamoFont;
+pub(crate) mod ellipse;
 pub(crate) mod emphasis;
 pub(crate) mod enclosed_pua_geometry;
 pub(crate) mod endnote_spacing;
@@ -51,8 +52,6 @@ pub(crate) mod gradient_geometry;
 pub(crate) mod hancom_pua;
 pub mod height_cursor;
 pub mod height_measurer;
-pub(crate) mod hft_ascii_evidence;
-pub(crate) mod hft_outline;
 pub(crate) mod hidden_pictures;
 pub mod html;
 pub(crate) mod hwp3_caption_host;
@@ -68,7 +67,9 @@ pub mod kitty;
 pub mod layer_renderer;
 pub mod layout;
 pub(crate) mod layout_frame;
+pub(crate) mod legacy_ascii_evidence;
 pub(crate) mod legacy_font_advances;
+pub(crate) mod legacy_font_outline;
 pub(crate) mod line_style;
 mod measured_glyph_supplier;
 pub(crate) mod metafile_geometry;
@@ -955,10 +956,22 @@ pub struct ShapeStyle {
     pub stroke_width: f64,
     /// 테두리 종류
     pub stroke_dash: StrokeDash,
-    /// 투명도 (0.0=완전투명, 1.0=불투명)
+    /// 채우기 불투명도 (0.0=완전 투명, 1.0=불투명).
     pub opacity: f64,
+    /// 선 투명도 (0=불투명 ~ 255=투명). 채우기 투명도와 따로 선에만 건다.
+    #[serde(skip_serializing_if = "is_opaque")]
+    pub stroke_alpha: u8,
     /// 그림자 (None이면 그림자 없음)
     pub shadow: Option<ShadowStyle>,
+}
+
+fn is_opaque(alpha: &u8) -> bool {
+    *alpha == 0
+}
+
+/// 선 투명도(0=불투명 ~ 255=투명)를 그리기 불투명도(1.0=불투명)로 바꾼다.
+pub fn alpha_to_opacity(alpha: u8) -> f64 {
+    1.0 - f64::from(alpha) / 255.0
 }
 
 /// 도형 그림자 스타일
@@ -985,6 +998,7 @@ impl Default for ShapeStyle {
             stroke_width: 0.0,
             stroke_dash: StrokeDash::default(),
             opacity: 1.0,
+            stroke_alpha: 0,
             shadow: None,
         }
     }
@@ -1301,6 +1315,9 @@ pub struct LineStyle {
     pub end_arrow_size: u8,
     /// 그림자
     pub shadow: Option<ShadowStyle>,
+    /// 선 투명도 (0=불투명 ~ 255=투명). 화살표도 같이 옅어진다.
+    #[serde(skip_serializing_if = "is_opaque")]
+    pub alpha: u8,
 }
 
 /// 테두리 점선 종류
@@ -4530,11 +4547,17 @@ pub(crate) fn textless_host_line_above_topbottom_float(
 }
 
 /// 띠에 흡수된 빈 host 줄([`empty_host_line_absorbed_by_topbottom_float`])이 흐름에서 돌려받는
-/// 높이(px). 문단 측정은 `위 간격 + 줄 높이 + 줄간격 + 아래 간격` 을 이미 더했고, 띠는 문단
-/// 시작에서 `max(위 간격, 세로 오프셋)` 아래에 놓이므로 위 간격을 넘는 오프셋만큼은 돌려주지
-/// 않는다. 다음 문단은 띠 아래끝에서 시작하므로 host 의 아래 간격도 띠 안에 든다([#8795]
+/// 높이(px). 문단 측정은 `위 간격 + 줄 높이 + 줄간격 + 아래 간격` 을 이미 더했고, 띠(바깥 여백을
+/// 포함한 개체 상자)는 배치 `layout_body_picture` 와 같이 문단 시작 + 세로 오프셋에서 시작해
+/// 위 여백 뒤에 개체를 둔다. 그래서 측정이 더한 높이 가운데 `세로 오프셋 + 위 여백` 을 넘는
+/// 부분을 돌려준다. 다음 문단은 띠 아래끝에서 시작하므로 host 의 아래 간격도 띠 안에 든다([#8795]
 /// 1351000-201500141 pi975: 아래 간격 1000HU, 다음 저장 vpos 32185 = 오프셋 307 + 그림 31878.
 /// 배치 `layout_shape_item` 도 그림 아래끝에서 다음 문단을 잇는다).
+///
+/// 위 간격은 띠 시작을 미루지 않는다([#8997] 1543000-202100035 s2 pi952: 위 간격 500·오프셋 0·
+/// 위아래 여백 283HU 의 캡션 그림, 다음 문단 저장 vpos 20984 = 500 + 283 + 19918 + 283 —
+/// 문단 시작은 저장 줄 vpos 500 에서 위 간격을 뺀 0 이고, 한컴 Print 의 캡션 위끝도 본문 위끝 +
+/// 위 여백이다).
 pub(crate) fn absorbed_host_line_return_px(
     para: &crate::model::paragraph::Paragraph,
     common: &crate::model::shape::CommonObjAttr,
@@ -4552,9 +4575,12 @@ pub(crate) fn absorbed_host_line_return_px(
         crate::renderer::float_placement::signed_hwpunit(common.vertical_offset),
         dpi,
     );
-    (hwpunit_to_px(seg.line_height + seg.line_spacing, dpi) + spacing_after_px.max(0.0)
-        - (offset - spacing_before_px.max(0.0)).max(0.0))
-    .max(0.0)
+    let margin_top = hwpunit_to_px(common.margin.top as i32, dpi);
+    spacing_before_px.max(0.0)
+        + hwpunit_to_px(seg.line_height + seg.line_spacing, dpi)
+        + spacing_after_px.max(0.0)
+        - offset
+        - margin_top
 }
 
 /// 앞 문단이 저장 사다리에서 차지한 끝 — 마지막 줄 아래끝과, 앞 문단 자신의 문단 기준

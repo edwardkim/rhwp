@@ -1,3 +1,16 @@
+import {
+  validateHostSaveRequest,
+  validateHostSaveResult,
+  validatePasswordExportRequest,
+  validateSaveProtectionQuery,
+  validateSaveProtectionState,
+} from '../../../npm/editor/password-save-contract.js';
+import type {
+  HostSaveAcknowledgment,
+  PasswordProtectedDocumentExport,
+  PasswordProtectedDocumentRequest,
+  SaveProtectionState,
+} from '../../../npm/editor/index.js';
 import type { HmlSaveState } from '../core/hml-save-capability.ts';
 import type { EmbedFontDecisionTraceV1 } from '../core/font-decision-trace.ts';
 import {
@@ -51,6 +64,11 @@ export interface EmbedRpcHandlers {
   getHmlSaveState(): Promise<HmlSaveState>;
   exportHwpVerify(): Promise<unknown>;
   notifySaved(fileName?: string): Promise<EmbedNotifySavedResult>;
+  passwordSave?: {
+    getState(): Promise<SaveProtectionState>;
+    export(request: PasswordProtectedDocumentRequest): Promise<PasswordProtectedDocumentExport>;
+    acknowledge(request: HostSaveAcknowledgment): Promise<EmbedNotifySavedResult>;
+  };
   getDocumentState(): Promise<RhwpDocumentStateV1>;
   getSelectionContext(): Promise<RhwpSelectionContextV1>;
   applyTextCommand(command: RhwpApplyTextCommandV1): Promise<RhwpTextCommandReceiptV1>;
@@ -185,6 +203,13 @@ export async function routeEmbedRequest(
         ? params.fileName
         : undefined,
     );
+    case 'getSaveProtectionState':
+      validateSaveProtectionQuery(rawParams);
+      return validateSaveProtectionState(await handlers.passwordSave?.getState());
+    case 'exportPasswordProtectedDocument':
+      return handlers.passwordSave?.export(validatePasswordExportRequest(rawParams));
+    case 'acknowledgeHostSave':
+      return validateHostSaveResult(await handlers.passwordSave?.acknowledge(validateHostSaveRequest(rawParams)));
     case 'getDocumentState':
       assertEmptyParams(params, 'getDocumentState params');
       return handlers.getDocumentState();

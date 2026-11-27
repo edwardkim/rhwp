@@ -1,7 +1,10 @@
-//! 관계형: 실제 암호 HWPX의 인증·복호화·CLI 진단 출력 경계.
-//! 주석 갱신: 2026-11-05T08:02:40+09:00; 직전 파일 변경 커밋: 2026-11-04T17:56:25+09:00 5e374d01f641745d20bc9424ce233021a327ed16.
-//! 입력: samples/HWP5-password-123456.hwpx와 평문 대응 문서. 실제 암호 fixture를 재사용한다.
-//! 시각 측정 비해당: 암호·직렬화·출력 채널 계약이며 배치의 절대 좌표를 고정하지 않는다.
+//! 관계형·고정형: 독립 Print의 수용 범위에서 원본·공개 API·내용 소유를 보호한다.
+//! 주석 갱신: 2026-11-22T02:35:34+09:00; 직전 파일 변경 커밋: 2026-11-05T08:04:33+09:00 d75809517f9185277248dd6be995e89792563222.
+//! 측정: 2026-11-22 KST, Print profile, 96DPI, PDFium, 보정 전2px raw.
+//! 실제 암호 HWPX와 평문 대응본 전24쪽: Native 최저98.29%, fresh WASM 최저98.22%; 양쪽에서 암호/평문24쪽 PNG가 각각 동일.
+//! 근거: mydocs/pr/assets/issues7754_7765/source32/README.md와 문서별 Native/WASM 전쪽 TSV.
+//! 암호 문서의 쪽수는 독립 Print의24쪽이며 실제 API·CLI·MCP 경로에서 확인한다.
+//!
 //!
 //! HWPX는 manifest의 `encryption-data`마다 raw-deflate → AES-256-CBC를 적용한다.
 //! 합성 ZIP만으로는 PBKDF2 PRF·manifest checksum·lazy BinData 재열기 회귀를 막을 수
@@ -201,9 +204,32 @@ fn actual_odf_hwpx_fixture_requires_the_password_and_matches_plain_counterpart()
             .expect("평문 HWPX는 전달된 비밀번호를 무시하고 열어야 함");
     assert_eq!(document_shape(&plain_with_password), document_shape(&plain));
 
-    // 쪽수 고정은 독립 PDF·시각 검증 미달로 #7445에서 다시 검토한다.
-    let _document = HwpDocument::from_bytes_with_password(&encrypted, FIXTURE_PASSWORD)
+    let document = HwpDocument::from_bytes_with_password(&encrypted, FIXTURE_PASSWORD)
         .expect("공개 HwpDocument API도 암호 HWPX fixture를 열어야 함");
+    let plain_document =
+        HwpDocument::from_bytes(&fixture_bytes(PLAIN_FIXTURE)).expect("같은 원본의 평문 대응본");
+    assert_eq!(document.page_count(), 24, "독립 Print의 전체 쪽수");
+    assert_eq!(document.page_count(), plain_document.page_count());
+    for page in 0..document.page_count() {
+        let protected: serde_json::Value = serde_json::from_str(
+            &document
+                .get_page_text_layout_native(page)
+                .expect("암호 문서의 실제 쪽 내용"),
+        )
+        .unwrap();
+        let plain: serde_json::Value = serde_json::from_str(
+            &plain_document
+                .get_page_text_layout_native(page)
+                .expect("평문 대응본의 실제 쪽 내용"),
+        )
+        .unwrap();
+        assert_eq!(
+            protected["runs"],
+            plain["runs"],
+            "{}쪽 내용·소유·순서를 보존한다",
+            page + 1
+        );
+    }
 }
 
 #[test]
@@ -232,6 +258,8 @@ fn cli_password_exit_contract_uses_the_actual_odf_hwpx_fixture() {
 
     let opened = run_with_password_stdin(&["info", fixture, "--password-stdin"], FIXTURE_PASSWORD);
     assert_eq!(opened.status.code(), Some(0));
+    let stdout = String::from_utf8_lossy(&opened.stdout);
+    assert!(stdout.contains("페이지 수: 24"), "CLI stdout: {stdout}");
 }
 
 #[test]

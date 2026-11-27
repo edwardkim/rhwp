@@ -1,0 +1,9 @@
+build	format	generation	pages_reopened	reported_loss	p8_images	jpeg_count	unchanged_jpeg_sha256_multiset	target_sha256	target_exif
+base	hwp	1	37	0	8	15	True	f086a28321e8902efe93dc2d509a8f8a521b89fa8b1b933f7998dabb754f0649	6
+base	hwp	2	37	0	8	15	True	f086a28321e8902efe93dc2d509a8f8a521b89fa8b1b933f7998dabb754f0649	6
+base	hwpx	1	37	0	8	15	True	f086a28321e8902efe93dc2d509a8f8a521b89fa8b1b933f7998dabb754f0649	6
+base	hwpx	2	37	0	8	15	True	f086a28321e8902efe93dc2d509a8f8a521b89fa8b1b933f7998dabb754f0649	6
+candidate	hwp	1	37	0	8	15	True	f086a28321e8902efe93dc2d509a8f8a521b89fa8b1b933f7998dabb754f0649	6
+candidate	hwp	2	37	0	8	15	True	f086a28321e8902efe93dc2d509a8f8a521b89fa8b1b933f7998dabb754f0649	6
+candidate	hwpx	1	37	0	8	15	True	f086a28321e8902efe93dc2d509a8f8a521b89fa8b1b933f7998dabb754f0649	6
+candidate	hwpx	2	37	0	8	15	True	f086a28321e8902efe93dc2d509a8f8a521b89fa8b1b933f7998dabb754f0649	6

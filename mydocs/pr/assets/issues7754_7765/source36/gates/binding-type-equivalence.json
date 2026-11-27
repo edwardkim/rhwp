@@ -1,0 +1,18 @@
+[
+  {
+    "file": "rhwp-studio/public/rhwp.d.ts",
+    "comparison": "readonly/interface members and export const declarations compare as multisets; remaining text equals after whitespace normalization",
+    "declarations_equal": true,
+    "source35_generated_members": 681,
+    "source36_generated_members": 681,
+    "source36_sha256": "2bb1b9441ea1c8088b279718a25880d4563a9ea2b875fb684883625141574f0e"
+  },
+  {
+    "file": "rhwp-studio/public/rhwp_bg.wasm.d.ts",
+    "comparison": "readonly/interface members and export const declarations compare as multisets; remaining text equals after whitespace normalization",
+    "declarations_equal": true,
+    "source35_generated_members": 681,
+    "source36_generated_members": 681,
+    "source36_sha256": "e3bdabbd5217cd33120246d06a424c60d7f2de69b5594be445ab9b25f2f0233d"
+  }
+]

@@ -1,0 +1,38 @@
+{
+  "source_head": "65b6fe383c3bd8cbcf83de7909c7a6c24eb32c35",
+  "source_sha256": "7ee3c3ef43b95204383b800fbe36644e7eb5730f399065ebc90bab3c269082a2",
+  "print_pdf_sha256": "2f7fbdd3cc9f9fe94b02b8ad524667fec96672609e324ec2fe6bfba7698f6151",
+  "capture_tsv_sha256": "ff3abd370b3dd4dff98bca0fc5fc31c413c24466ca2a0f317531ac10ee0b47ce",
+  "pages": {
+    "15": {
+      "raw": {
+        "path": "raw_015.png",
+        "sha256": "f9aa2b8112b1997b1e5ce768958244b969372df800808cb3d7e0662515c189cb"
+      },
+      "reference": {
+        "path": "reference_015.png",
+        "sha256": "18067a4f24d1c673a16ec20f82d2d5e9e51b4a51b9af1bc1ff4af84a47604cec"
+      }
+    },
+    "16": {
+      "raw": {
+        "path": "raw_016.png",
+        "sha256": "af6fc376912f4faaa16ac323513437965d228236078c645cddf9ba599abc9fd5"
+      },
+      "reference": {
+        "path": "reference_016.png",
+        "sha256": "300731e794283b582dc42376f231eb57244abf2f481aead938d36f44911e462d"
+      }
+    },
+    "21": {
+      "raw": {
+        "path": "raw_021.png",
+        "sha256": "1d000c46a9d9bd20f741cad3f3da38fcd53d2e66200a89452c42943d4ef00be4"
+      },
+      "reference": {
+        "path": "reference_021.png",
+        "sha256": "71dcc7a36b68a5237cffe31eb8969cc2c051e7cc831a8db93054e088b6dec895"
+      }
+    }
+  }
+}

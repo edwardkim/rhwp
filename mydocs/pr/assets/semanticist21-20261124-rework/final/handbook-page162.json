@@ -1,0 +1,90 @@
+[
+  {
+    "document": "handbook-hwp",
+    "backend": "native",
+    "page": 162,
+    "changed_pixels": 203,
+    "difference_bbox_ltrb": [
+      247,
+      422,
+      271,
+      455
+    ],
+    "source_png": [
+      "577d0964bd3271ec017dd4661399a3c87e7c303f1d0800e2aca3876edd3a8e8a",
+      "a36e62dbe5aa505ff87b2153b4fe77b56000d1a4af6550dfa59645930bebf555",
+      "459d8be5cec3cb77026ea3c3b9d6d4f469e581cfc459233ae7894c55c8c7d0b1"
+    ],
+    "within_change_rgb_mean_absolute_difference_to_print": {
+      "devel": 97.557,
+      "candidate": 45.837
+    },
+    "all_three_scores": "100.00 official floor/devel/candidate"
+  },
+  {
+    "document": "handbook-hwp",
+    "backend": "wasm",
+    "page": 162,
+    "changed_pixels": 203,
+    "difference_bbox_ltrb": [
+      247,
+      422,
+      271,
+      455
+    ],
+    "source_png": [
+      "577d0964bd3271ec017dd4661399a3c87e7c303f1d0800e2aca3876edd3a8e8a",
+      "31e9b052a79c99d27b3e5e4e087d7002612272a9d59fa64628d677557aa861c5",
+      "4e30f87a92bfdf18e0548aac788c685a4aedc675495cedfd9696dc9506b16bff"
+    ],
+    "within_change_rgb_mean_absolute_difference_to_print": {
+      "devel": 97.557,
+      "candidate": 45.837
+    },
+    "all_three_scores": "100.00 official floor/devel/candidate"
+  },
+  {
+    "document": "handbook-hwpx",
+    "backend": "native",
+    "page": 162,
+    "changed_pixels": 203,
+    "difference_bbox_ltrb": [
+      247,
+      422,
+      271,
+      455
+    ],
+    "source_png": [
+      "577d0964bd3271ec017dd4661399a3c87e7c303f1d0800e2aca3876edd3a8e8a",
+      "a36e62dbe5aa505ff87b2153b4fe77b56000d1a4af6550dfa59645930bebf555",
+      "459d8be5cec3cb77026ea3c3b9d6d4f469e581cfc459233ae7894c55c8c7d0b1"
+    ],
+    "within_change_rgb_mean_absolute_difference_to_print": {
+      "devel": 97.557,
+      "candidate": 45.837
+    },
+    "all_three_scores": "100.00 official floor/devel/candidate"
+  },
+  {
+    "document": "handbook-hwpx",
+    "backend": "wasm",
+    "page": 162,
+    "changed_pixels": 203,
+    "difference_bbox_ltrb": [
+      247,
+      422,
+      271,
+      455
+    ],
+    "source_png": [
+      "577d0964bd3271ec017dd4661399a3c87e7c303f1d0800e2aca3876edd3a8e8a",
+      "31e9b052a79c99d27b3e5e4e087d7002612272a9d59fa64628d677557aa861c5",
+      "4e30f87a92bfdf18e0548aac788c685a4aedc675495cedfd9696dc9506b16bff"
+    ],
+    "within_change_rgb_mean_absolute_difference_to_print": {
+      "devel": 97.557,
+      "candidate": 45.837
+    },
+    "all_three_scores": "100.00 official floor/devel/candidate"
+  }
+]

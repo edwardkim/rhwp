@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-11-18
+last_verified: 2026-11-24
 ---
 
 # PDF/PNG visual sweep 가이드
@@ -10,9 +10,9 @@ last_verified: 2026-11-18
 ## 목적
 
 일반 사용자·외부 contributor는 변경 범위의 일반 시각 검증과 증적 제출을 수행한다.
-**조판 영향 PR의 편람 `--handbook-gate` 실행·통과는 일반 기여자도 준수한다.** 필요한 글꼴은
+**조판 영향 PR의 편람 HWPX Native 383쪽 검사는 일반 기여자에게도 적용한다.** 필요한 글꼴은
 지원 웹폰트 공급 경로를 사용할 수 있다. **정본 보호 TSV 전체의 특별 하락 금지 검증은 통합 담당
-collaborator·maintainer의 추가 책임이다.** 일반 기여자에게 비공개 원본 OTF 보유·설치나
+collaborator·maintainer의 추가 책임이다.** 일반 기여자에게 비공개 기준 글꼴 보유·설치나
 이 특별 검증 전체의 재현을 요구하지 않는다.
 일반 90%·쪽수·내용 보존·페이지별 98% px 회귀 조건의 적용 범위는 유지한다.
 
@@ -24,12 +24,17 @@ collaborator·maintainer의 추가 책임이다.** 일반 기여자에게 비공
 쪽수·페이지 분할 변경은 전체 문서를 비교하며 평균값·높은 페이지 선별로 미달을 숨기지 않는다.
 기준 PDF는 [원본 저장 버전에 맞는 한컴 Print 출력](../mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)을 따른다.
 공식 대조 자료는 같은 원본을 Windows 데스크톱 **한컴 2020 또는 2024의 `Hancom PDF`
-프린터로 인쇄(Print)**한 PDF만 사용한다. 실제 제품·버전·프린터·출력 경로를 확인한다.
-웹한글기안기, Cairo, `Microsoft Print to PDF`, PDF 저장·내보내기, 다른 한컴 버전의
+프린터로 인쇄(Print)**한 PDF를 기본으로 사용한다. 실제 제품·버전·프린터·출력 경로를 확인한다.
+MCP가 인쇄 오류로 대체 저장한 PDF는 [한컴 Print 버그 예외](visual_verification_governance.md#한컴-print-오류-시-mcp-대체-저장본-수용)를 적용한다.
+웹한글기안기, Cairo, `Microsoft Print to PDF`, 위 예외에 해당하지 않는 PDF 저장·내보내기, 다른 한컴 버전의
 출력은 출처를 명시한 참고 자료로 활용한다.
 Cairo는 원본 저장 제품에 맞는 MCP 엔진으로, `Creator: Hwp 2022`는 MCP 2024로 다시
 인쇄한 후 전쪽을 비교한다.
 [기준 PDF 출처와 재출력](../pr_review/visual_fixture_evidence.md#35-시각-검증-원칙)을 따른다.
+새 기준 PDF를 만들거나 기존 쌍의 출처를 확인할 때는
+[Print 영수증 작성·대조 절차](../mcp_hwp2024Convert_usage.md#print-영수증을-남기고-다시-확인하기)에
+따라 생성 기록과 원본·PDF의 SHA-256을 대조한다. MCP 대체 저장본은
+[대체 저장 응답 보존 절차](../mcp_hwp2024Convert_usage.md#인쇄-오류-시-pdf-대체-저장본-확인)를 따른다.
 작업 중 TSV·실행 로그·중간 JSON은 ignored `output/pr-review/<id>/`에 보존한다.
 최종 제출용 TSV는 PR 본문에 전체 원문을 넣거나, 본문 크기 제한 시 원본 asset의 링크로 제출한다.
 아래 [본문 삽입·저장소 링크](#tsv-원문-본문-삽입과-저장소-링크)를 따른다. 실행 로그·중간 JSON은 Git에 커밋하지 않는다.
@@ -62,9 +67,21 @@ RGBA·LA·팔레트 PNG의 투명 영역은 **흰 종이 위에 합성한 RGB**�
 - **명시적 SVG clip이 glyph 근사 band의 상·하단을 2px 이상 부분 절단하는 후보**
 - **구조 heuristic에 걸리지 않는 glyph·PUA·제품명 표시 차이**의 review 후보
 
+### MCP가 PDF 인쇄 오류로 대체 저장한 경우
+
+1. 성공 상태·다운로드 응답에서 같은 job ID·요청 엔진과 `pdf_output_mode`·`comment`를 확인하고
+   [거버넌스의 수용 조건](visual_verification_governance.md#한컴-print-오류-시-mcp-대체-저장본-수용)을 충족하는지 판정한다.
+2. 저장본의 실제 파일·해시·쪽수와 전쪽 래스터화 결과를 확인한다. 구조 검사는 OLE 차트의
+   모양·내용·미세 간격까지 보증하지 않으므로 알려진 오류 영역도 직접 판독한다.
+3. 「한컴 Print 버그 예외 — MCP PDF 대체 저장본」과 응답의 `comment` 원문을 review에 남기고
+   그 PDF를 기존 비교 명령의 기준 PDF로 지정한다. 실제 엔진에 맞는 `--compat`와
+   rhwp의 `print` 프로필을 유지한다.
+4. 같은 저장본으로 base·후보의 전쪽 Native/fresh WASM TSV와 대표 review·overlay를 산출한다.
+   기존 일치율·쪽수·내용 보존·확대 판독 기준에 따라 검증을 계속한다.
+
 ### 기여자 공통 보호 검사
 
-조판 영향 PR은 변경 대상 자체의 전쪽 검증과 편람 `--handbook-gate` 외에 아래 공통 검사도
+조판 영향 PR은 변경 대상 자체의 전쪽 검증과 편람 HWPX Native 전쪽 검증에 더해 아래 공통 검사도
 최종 제출 source에서 실행한다. 공개 시스템 글꼴·등록 웹폰트가 있는 Linux 환경과 Windows 기본 글꼴을 추가한 환경에서
 Native/fresh WASM의 재현을 확인한 짧은 보호 문서를 사용한다. 원본·독립 Print PDF는 이미
 저장소에 있으므로 다시 출력하거나 MCP로 변환하지 않는다.
@@ -96,7 +113,7 @@ venv/bin/python scripts/visual_sweep_contributor.py \
 
 Windows에서는 준비한 Python과 Native `.exe`의 실제 경로를 같은 인수로 전달한다.
 macOS·Windows도 해당 OS에 설치된 로컬 글꼴을 사용할 수 있으며, 미설치 글꼴은 기존 등록
-웹폰트 공급 경로로 준비한다. 비공개 한컴 OTF/HFT를 설치하거나 다른 OS의 글꼴 파일을
+웹폰트 공급 경로로 준비한다. 비공개 기준 글꼴를 설치하거나 다른 OS의 글꼴 파일을
 복사하도록 요구하지 않는다. 글꼴 파일을 Git·배포물에 추가하지 않는다. 이 등록의 OS 글꼴 실험은
 Linux에서 정품 Windows 기본 글꼴을 추가한 측정이며, Windows/macOS에서 직접 실행한 증거는 아니다.
 
@@ -238,18 +255,19 @@ RHWP 조판 개선으로 바꾸어 보고하지 않는다. 실루엣 임계값·
 기본 경로는 비교용 Native/WASM PNG와 PDF raster를 생성하며, 이미 있는 PNG는
 `--png-pair`로 재사용해 원문 export·raster 작업도 생략할 수 있다.
 행정업무운영 편람 HWPX의 Native 383쪽 기준 비교는 일반 실행에 자동 포함되지 않는다.
-**조판에 영향을 주는 변경이 포함된 PR은 일반 기여자를 포함하여 제출 전에 최종 head에서
-`--handbook-gate`를 반드시 실행해 통과해야 한다.** 지원 웹폰트를 사용할 수 있으며 비공개
-원본 OTF 보유는 요구하지 않는다. 이 gate의 실행 의무와 통합 담당자의 정본 보호 TSV 전체에
-대한 특별 하락 금지 검증은 구분한다.
-다른 대상 실행에 옵션을 추가하거나 해당 옵션만 지정해 별도로 실행할 수 있다.
-383쪽 전체의 90% 및 [정본 보호 TSV](../../pr/assets/visual-protected-baseline/final.tsv)의
-편람 HWPX Native 페이지별 기준 하락 검사를 적용하며 미실행·실패·누락·쪽수
-불일치이면 PR 제출을 보류한다. 실행 head·명령·결과와 TSV를 검증 기록에 남긴다.
+**조판에 영향을 주는 변경이 포함된 PR은 일반 기여자를 포함하여 제출 전에 최종 head의
+편람 HWPX Native 383쪽 검증을 통과해야 한다.** 정본 보호 검증으로 같은 head·Native Skia·
+원본·기준 Print PDF·조판 세대·96 DPI·2px raw 실루엣의 전쪽 결과를 확보했다면 그 TSV와
+실행 기록을 편람 증적으로 사용한다. 해당 결과가 없으면 `--handbook-gate`를 별도로 지정하거나
+다른 대상 실행에 추가한다. 지원 웹폰트를 사용할 수 있다.
+두 경로 모두 383쪽 전체의 90% 하한 및 [정본 보호 TSV](../../pr/assets/visual-protected-baseline/final.tsv)의
+편람 HWPX Native 페이지별 하락 검사를 적용한다. 미달·누락·쪽수 불일치이면 제출을 보류한다.
+실행 head·명령·결과와 TSV를 검증 기록에 남긴다. 상세 기준은
+[로컬 사전 검증](../pr_review/local_validation.md)을 따른다.
 편람 PDF 130쪽(TSV `page=130`, 인쇄 쪽 번호 122)의 알려진 WMF 렌더링 차이는 100%
 일치 대상으로 삼지 않는다. 2026-11-07 실제 raw는 HWP/HWPX의 Native·fresh WASM 모두
 **99.96%**이며 경계 보정 후 보조값은 99.97%다. **나머지 382쪽은 네 결과 모두 raw
-100.00%다.** 일반 기여자도 실행하는 편람 gate는 HWPX Native의 이 페이지별 보호값을 유지한다.
+100.00%다.** 일반 기여자에게도 적용되는 편람 검증은 HWPX Native의 이 페이지별 보호값을 유지한다.
 130쪽은 raw 99.96% 대비 하락 여부를 확인하고 실제
 raw·review·overlay를 보존한다. [130쪽 검토 범위](../pr_review/local_validation.md#편람-130쪽의-wmf-렌더링-차이)를 따른다.
 실행이 중단되면 같은 명령에 `--resume`을 추가해 이어간다. Native와 fresh WASM은
@@ -327,7 +345,7 @@ overlay의 일치율도 동일한 입력의 `silhouette_raw_match_percent`를 �
 `silhouette_manifest.json`에 기록된 페이지별 정밀값을 사용한다.
 단, collaborator·maintainer의 [정본 보호 TSV 비교](visual_verification_governance.md#정본-보호-tsv의-공식-표시값-보존)는
 해당 정본이 지정한 공식 두 자리 표시값으로 상승·동일 여부를 판정한다. 일반 사용자·외부 contributor에게
-원본 OTF 설치나 이 특별 보호 검증의 재현을 요구하지 않는다.
+비공개 기준 글꼴 설치나 이 특별 보호 검증의 재현을 요구하지 않는다.
 raw도2px 이웃을 허용하며, RGB까지 동일해야 하는 엄격 픽셀 지표와는 다르다.
 232 이진화 경계가 유색 PDF 픽셀을 빈 영역으로 오판하는 경우를 구분하기 위해 원값을 보존한다.
 내용 마스크232·2px 반경은 유지하며, 원래 불일치 픽셀 중 같은 위치 양쪽 모두 흰 배경
@@ -390,152 +408,51 @@ PR을 재검토한다.** Native/WASM 교차 비교나 다른 backend 점수의 �
 [devel 대비 실루엣 하락 재검토](visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)를 따른다.
 현재 자동90% gate 또는 `not_evaluated`만으로 이 비교를 완료했다고 쓰지 않는다.
 
-### macOS에서 정본 보호 문서의 글꼴 공급 재현
+### 정본 보호 문서의 글꼴 공급 재현
 
-**이 절은 정본 보호 TSV 전체를 비교하는 통합 담당 collaborator·maintainer의 절차다.**
-일반 기여자의 비공개 원본 글꼴 보유 의무를 추가하지 않는다.
-다른 호스트의 수용 결과를 Mac에서 비교할 때는 누락된 기준 글꼴을 먼저 확보한다.
-환경 차이를 하락 허용 사유로 쓰거나 점수가 높은 대체 글꼴을 임의로 선택하지 않는다.
-중첩 표 `issue2007_nested_cell_pagination_42065.hwp`에는
-[한양중고딕 기호 공급 조건](#중첩-표-보호-문서의-한양중고딕-기호-공급)을 적용한다.
+정본 보호 전쪽을 비교하는 collaborator·maintainer는 Linux·Windows·macOS 모두
+[공식 글꼴 공급 자료](../../verification/protected-font-supply/README.md)를 따른다.
+문서 key와 backend로 `manifest.json`의 조건을 선택해 공급 방식과 환경 JSON을 적용한다.
+파일명·프로그램 SHA·face와 실제 선택 기록을 대조한다. 일반 기여자에게 비공개 글꼴 확보를 요구하지 않는다.
 
-1. 정본 manifest의 해당 데이터셋 `source.evidence_commit`에서 `condition_evidence`를 읽고
-   기록된 SHA-256을 확인한다. 최신 작업 폴더의 같은 이름 JSON으로 대신하지 않는다.
-   연결된 수용 기록의 `condition_sets` 등에서 실제 `font_supply.files`와
-   `font_environment.configuration`을 확인한다. 파일 경로뿐 아니라 프로그램 SHA-256,
-   TTC/OTC의 face index, family/PostScript 이름과 대체·메트릭 설정을 함께 대조한다.
-2. 기준 프로그램과 Mac 사용자 글꼴을 SHA-256으로 대조한다. 필요한 파일이 없으면 출처를
-   확인할 수 있는 동일 파일을 확보하고 원본·공급본의 SHA-256을 확인한다.
-   파일명·family가 같다는 이유로 다른 버전을 같은 프로그램으로 취급하지 않는다.
-   수용 당시 임시 경로가 없어졌어도 기록된 SHA로 파일의 동일성을 확인한다.
-   동일 파일을 확보하지 못하면 미확보로 기록하며 비슷한 글꼴로 기준 재현을 선언하지 않는다.
-3. 이관한 검증용 파일은 Git에서 제외된 `output/pr-review/<검증명>/fonts/`에 두고,
-   Mac에서 읽을 수 있는 디렉터리를 `--font-path`로 명시한다. 기준 JSON의 호스트 전용 경로만
-   로컬 경로로 대응시키고 대체 규칙·`preserveSourceMetrics` 등의 의미는 유지한다.
-   출처 경로와 로컬 경로, 원본·복사본 해시의 대응표를 기록한다. 전체 시스템 글꼴 목록을
-   무조건 설치하지 않고 해당 검증의 필요한 프로그램을 공급한다. 비공개 글꼴은 커밋하지 않는다.
-4. 사용자 폰트 등록이 요청된 경우에는 `~/Library/Fonts`에서 동일 SHA의 기존 파일을 재사용하고,
-   누락 파일만 기존 파일을 덮어쓰지 않는 경로에 복사해 CoreText 사용자 범위로 등록한다.
-   별도 프로세스에서 각 face의 사용 가능 여부와 실제 선택 파일·SHA를 다시 확인한다.
-   등록 성공이나 `fc-list`만으로 CoreText·Native·브라우저의 실제 선택을 입증하지 않는다.
-   설치·재등록은 진행 중인 캡처가 끝난 뒤 수행해 한 실행에 다른 글꼴 조건이 섞이지 않게 한다.
-5. 같은 원본·독립 Print PDF·글꼴 프로그램·설정·DPI·compat로 고정 base와 후보를 각각 실행한다.
-   Native/fresh WASM의 공급 방식 차이는 기록하되 실제 선택 face를 확인한다.
-   Visual Sweep은 기준 글꼴을 공급한 일반 환경에서 실행한다. Rust 회귀 검사의
-   [최소 글꼴 격리](../pr_review/local_validation.md#회귀-테스트의-최소-글꼴-환경)를
-   보호 문서 시각 비교에 적용하지 않는다. 글꼴 공급·설정이 바뀌면 새 output에 다시 산출하고,
-   이전 조건의 TSV·PNG·resume 결과와 섞지 않는다.
-6. 파일이 같아도 실제 선택 face가 다르면 먼저 선택 경로를 확인한다. 예를 들어 기준 환경에 없는
-   요청 글꼴이 현재 환경에 설치돼 있으면 독립 Print와 다른 프로그램이 선택될 수 있다.
-   원본 공급과 PDF가 실제 사용한 대체를 구분하고, 대체가 확인된 경우에만 아래
-   [대체 글꼴 설정과 비교 조건](#대체-글꼴-설정과-비교-조건)에 따라 같은 설정을 양쪽에 적용한다.
-   점수 상승만으로 대체의 정당성을 판단하지 않는다.
-7. 조건을 맞춘 뒤에도 하락하면 같은 Mac의 base/head 전쪽 TSV와 해당 쪽의 review·overlay,
-   실제 선택 프로그램을 대조한다. base에서도 같은 하락이면 후보 수정의 새 회귀와 구분해
-   기록하되, **보호 기준 통과로 처리하지 않는다.** 파일·face·배치·래스터 경로 중 원인을
-   확인하고 보정·재검증한다. OS 차이라는 추정, 미세 하락 또는 평균 상승으로 면제하지 않는다.
+Native·fresh WASM 모두 실제 경로의 파일명이 `_MAC.otf`로 끝나는 글꼴을 공급 및 선택에서
+제외한다. 대소문자를 구분하지 않으며, 파일명을 바꾸거나 링크를 만들어 사용할 수 없다.
+보호 글꼴의 허용 조건을 변경할 때는 macOS·Windows·Linux에서 각각 모든 등록 문서를 두
+backend로 출력하고, 실제 선택과 페이지별 보호 하한을 확인한 뒤 PR을 제출한다.
 
-글꼴·render tree·기준 PDF가 같은데도 브라우저의 가속 경로가 다르면 Chrome 버전과
-CDP `SystemInfo.getInfo`의 `gpu.featureStatus`를 함께 기록한다. 최종 Canvas의
-`willReadFrequently: true`만으로 같은 래스터 경로라고 판단하지 않는다. 기준 환경의
-소프트웨어 재생을 Mac에서 재현해야 하면 `VISUAL_SWEEP_CHROME`에
-`--disable-gpu`를 전달하는 실행 wrapper를 지정하고, 같은 고정 조건으로 base와 후보의
-전쪽을 다시 산출한다. 원 GPU 결과와 조건 대조도 보존하며 다른 조건의 쪽별 최고값을
-합치지 않는다. wrapper·브라우저·JS/WASM·글꼴의 실행 신원과 별도 output을 기록하고,
-기존 보호 하한과 판정 기준을 그대로 적용한다. 실제 Studio의 GPU 소비 경로 검증은
-이 소프트웨어 Print 비교와 구분해 수행한다.
+manifest 최상위의 `accepted_sha256_pairs`는 공통 허용 쌍이고, 문서 항목의 같은 필드는 해당 문서에만 적용한다.
+문서별 허용 쌍은 `scripts/check_protected_font.py --document <문서 key>`로 확인한다.
+기준과 후보에는 같은 파일을 같은 순서로 공급하고, 실제 사용한 SHA-256을 기록한다.
 
-공용 `target/pr-review`에서 base/head를 순차 빌드할 때는 다음 빌드 전에 실행 파일·WASM package를
-서로 다른 output 경로에 고정하고 source/build 명령·실제 파일 SHA를 기록한다. 빠른 Cargo 성공만으로
-원하는 producer가 만들어졌다고 판단하지 않는다. 변경 경계의 실제 출력으로 생산자를 확인하고,
-이전 producer가 잘못 복사됐으면 해당 결과를 무효로 구분한 뒤 올바른 산출물로 재검증한다.
-정상 결과와 무효 결과를 섞거나 공유 target 전체를 삭제해 해결하지 않는다.
+이 대체 해시 등록과 검증 산출물 보존 절차는 정본 보호 문서에만 적용한다.
+전쪽 비교를 통과한 대체 해시는 공급 `manifest.json`의 해당 보호 문서 항목에 등록한다.
+대체 해시 확인을 위한 파일별 상세 SHA-256, 쪽별 비교 결과 등 실행 JSON과 로그는
+`output/pr-review/<작업명>/`에만 보존한다. `protected-font-supply/records/`에는 이 실행 산출물을 추가하지 않는다.
 
-### Helvetica 스타일 보호 문서의 Arial 공급
+글꼴 공급·설정이 바뀌면 새 output에서 같은 조건의 고정 base와 후보를 전쪽 비교한다.
+Rust 회귀의 [최소 글꼴 환경](../pr_review/local_validation.md#회귀-테스트의-최소-글꼴-환경)을
+보호 문서 시각 비교에 적용하지 않는다. 같은 호스트의 base에서도 하락했다는 사실이나
+OS 차이를 보호 기준 통과 사유로 쓰지 않는다.
 
-`seo-helvetica-styles`는 원본의 Helvetica 네 스타일과 문서에 선언된 대체 family인 Arial을 확인하는
-1쪽 보호 문서다. Native와 fresh WASM을 검증할 때 같은 Arial 네 스타일의 실제 파일을 준비해
-이미 공급 중인 다른 글꼴 경로와 함께 `--font-path`로 지정한다.
-[원본 HWP](../../../tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp) ·
-[데스크톱 한컴 2020 Hancom PDF Print](../../../pdf/issue8109/print/control-styles-hwp-2020.pdf)
+#### 동명 글꼴과 실제 사용 글리프 확인
 
-| 공급 글꼴 | 파일명 예 | Print에 내장된 PostScript 이름 |
-| --- | --- | --- |
-| Arial Regular | `arial.ttf` | `ArialMT` |
-| Arial Bold | `arialbd.ttf` | `Arial-BoldMT` |
-| Arial Italic | `ariali.ttf` | `Arial-ItalicMT` |
-| Arial Bold Italic | `arialbi.ttf` | `Arial-BoldItalicMT` |
+전쪽 실행 전에 공식 공급 목록과 Native의 실제 선택 기록, fresh WASM의 `font-catalog.json`·
+`wasm-export-complete.json`을 대조한다. 초기 준비와 paint 중 추가 등록을 모두 확인한다.
+파일명·설치 목록·적재 성공만으로 특정 문자의 실제 공급 프로그램을 확정하지 않는다.
 
-파일의 SHA-256과 face를 수용 기록에 대조하고, 고정 base와 후보 양쪽에서 같은 프로그램을 공급한다.
-원문의 `Helvetica`, `Helvetica-Bold`, `Helvetica-Oblique`, `Helvetica-BoldOblique`가
-문서에 선언된 `Arial` family와 각각의 스타일로 실제 출력되는지 선택 기록에서 확인한다.
-Mac에 설치된 Helvetica가 선택되는 경우에는 아래 [대체 글꼴 설정과 비교 조건](#대체-글꼴-설정과-비교-조건)에
-따라 `--font-environment`를 양쪽에 같은 내용으로 지정한다. `substitutions`의 네 대상을 모두
-`Arial` family로 지정하고 `preserveSourceMetrics: true`를 사용해 원본 스타일과 메트릭을 유지한다.
-표의 PostScript 이름으로 실제 프로그램을 확인한 뒤 재측정한다.
-[기존 Arial 공급 검증](../../pr/assets/jinho-von-choi-20261114/protected-environment-review.md)
+차이가 난 쪽은 독립 Print와 review·overlay에서 같은 글리프의 윤곽·전진·원점을 확인한다.
+원본의 글꼴 ID·언어 슬롯과 실제 프로그램을 대응시키고, 같은 이름의 다른 버전이나 누락된
+프로그램을 구분한다. 공급 내역이 개수·집계 해시로만 남아 있으면 실제 파일 목록부터 복구한다.
+조건을 바로잡은 뒤 영향을 받는 문서를 양쪽 backend에서 전쪽 재검증한다.
 
-### 원본 글꼴 프로그램의 형식 순서와 명시적 환경 설정
+글꼴·render tree·기준 PDF가 같은데 브라우저 래스터 결과가 다르면 Chrome 버전과
+CDP `SystemInfo.getInfo`의 `gpu.featureStatus`를 함께 확인한다. 소프트웨어 재생이 필요하면
+`VISUAL_SWEEP_CHROME`의 실행 wrapper에 `--disable-gpu`를 지정하고 base와 후보를 같은 조건으로
+다시 산출한다. 원 GPU 결과도 보존하며 다른 실행의 쪽별 최고값을 합치지 않는다.
 
-문서의 글꼴 이름·저장 형식과 실제 설치 프로그램의 이름·형식을 구분한다.
-`H2GTRM.TTF`는 `HY중고딕`·`HYGothic-Medium`이며 PostScript 이름은 `H2gtrM`이다.
-문서에 HFT로 선언된 `한양중고딕`과는 별개 글꼴이다. 현재 검증에서는 `.HFT` 파일을
-직접 로드하지 않고 이 계열을 공급하는 OTF(CFF)를 사용한다. 해당 OTF의 실제 영문 이름은
-`HY Junggothic`이며 `SPJGT.otf` 같은 기호 분할 프로그램을 포함한다. 한양 계열의 이름 아래에 HY TTF를
-같은 파일의 별칭으로 등록하거나, 형식 순서만으로 서로 다른 글꼴을 교체하지 않는다.
-문서의 HFT 선언과 실제 공급 프로그램의 OTF 형식을 구분한다. 신명조·견고딕·견명조·그래픽·궁서도
-실제 파일의 SFNT 이름과 글리프를 대조한다.
-반대로 한양해서·HYhaeseo처럼 같은 파일의 실제 이름은 보존한다. 접두어만으로 합치거나 나누지 않는다.
-
-로컬 재감지도 각 프로그램의 family·full name·PostScript 이름과 SFNT의 검증된 별칭을
-구분해 수집한다. 문서 CSS나 웹폰트 때문에 Canvas 폭이 달라졌다는 사실을 로컬 원본의
-설치 증거로 취급하지 않는다. 존재 확인용 `local()` 검사와 실제 프로그램 바이트의 신원도
-구분하며, 명시 재감지 후 이전 CSS face·프로그램 캐시가 새 목록에 섞이지 않는지 확인한다.
-
-자동 선택은 **같은 원본 글꼴과 검증된 별칭의 읽을 수 있는 프로그램** 안에서
-TTF → TTC의 해당 face → OpenType 프로그램 순서로 수행하고, 원본을 찾지 못하면 대체 글꼴로
-진행한다. OTF는 컨테이너이며 CFF는 그 안의 윤곽 형식일 수 있으므로 OTF와 CFF를 서로 다른
-두 단계로 검증했다고 쓰지 않는다. 다른 family의 TTF가 원본 OTF보다 우선한다는 뜻도 아니다.
-실제 파일 형식·face index와 글리프 포함 여부를 확인한다.
-
-`--font-environment`를 지정하면 자동 선택보다 명시적 설정이 먼저 소비될 수 있다.
-`selectedPrograms`의 `trueType`·`openTypeCff`·프로그램 신원뿐 아니라 `substitutions`,
-`documentSubstitutions`, `glyphFallbacks`, `trueTypeFaces`, `preserveSourceMetrics`를 확인한다.
-과거 JSON이 CFF를 고정했다면 설치된 TTF나 `--font-path` 순서만 바꾸어도 같은 선택이 남을 수 있다.
-과거 수용 JSON은 당시 증거로 보존하고, 변경한 조건은 새 JSON과 별도 output에 기록한다.
-
-1. JSON 없는 자동 선택과, 다른 Print 대체·메트릭 설정을 유지한 조건 대조를 구분해 실행한다.
-   JSON 전체를 제거하면 다른 글꼴·기호·메트릭도 바뀔 수 있으므로 전체 점수 차이를 한 글꼴의
-   형식 선택 때문이라고 단정하지 않는다. 원본 별칭 누락은 공통 선택 경로에서 보정한다.
-2. Native의 실제 선택 영수증과 WASM의 `font-catalog.json`·`wasm-export-complete.json`을
-   확인한다. 파일 SHA-256, face index를 포함한 프로그램 신원, 브라우저 공급을 위해 정규화한
-   바이트 SHA는 각각 구분한다. 설치 목록이나 로드 성공만으로 원본 프로그램 선택을 입증하지 않는다.
-3. 글꼴 조건을 바꿨으면 같은 조건의 고정 base와 후보로 Native/fresh WASM 전쪽 TSV를 산출한다.
-   쪽수·내용 소속·누락·중복과 같은 페이지의 review·overlay를 직접 대조하며 기존 보호 하한을
-   유지한다. 한쪽의 최고값이나 부분 페이지 결과로 전쪽 수용을 대신하지 않는다.
-
-비공개 글꼴 바이너리는 제출하지 않는다. 검증용 공급 파일은 ignored output에 두고 출처와
-프로그램 대응 근거만 기록한다. 일반 기여자에게 비공개 원본 보유를 요구하는 규칙은 아니다.
-
-### 중첩 표 보호 문서의 한양중고딕 기호 공급
-
-[`issue2007_nested_cell_pagination_42065.hwp`](../../../samples/basic/issue2007_nested_cell_pagination_42065.hwp)의
-`※`(U+203B)는 원본 기호 슬롯에 `한양중고딕`으로 지정되어 있다. 유사한 기호 모양이나 한컴 Print의
-Type 3 글꼴 이름으로 원본 글꼴을 추정하기 전에 원본의 문자 위치, 글자 모양, 기호 슬롯을 확인한다.
-
-Native와 fresh WASM 모두 기존 한양중고딕 OTF 공급을 유지하고, 그 프로그램에 빠진 기호는
-`H2GTRM.TTF`(`HY중고딕`, family `HYGothic-Medium`, PostScript `H2gtrM`)에서 공급한다.
-실제 파일의 이름과 U+203B의 cmap을 확인한 뒤, 개별 `--font-path`에 파일을 먼저 지정하고
-나머지 글꼴 디렉터리를 뒤에 지정한다.
-
-이 문서의 [이전 글꼴 환경](../../pr/assets/jinho-von-choi-20261114/font-supply/nested-symbol-slot-environment.json)을
-검증용으로 복사하고 `glyphFallbacks`의 `HY Junggothic`과 `한양중고딕` 항목을 각각
-`["HYGothic-Medium"]`으로 지정한다. 이전 환경과 당시 증적은 보존한다. 이 문서의 새 검증에는
-`RHWPIndependentHFTSymbols.otf`를 공급하지 않는다. 다른 문서의 글꼴 매핑은 각 원본과 독립 Print로 확인한다.
-
-[한컴 2020 Print](../../../pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf)와
-compat 2022, 96 DPI로 17쪽 전체를 비교한다. 5쪽의 `※` 세 곳을 직접 판독하고,
-고정 base와 후보에 같은 글꼴 조건을 적용해 전쪽 TSV와 기존 보호 하한을 대조한다.
+기준·후보 빌드의 고정과 재사용은 [최신 devel 비교용 빌드 보존](../pr_review/local_validation.md#최신-devel-비교용-빌드-보존)을
+따른다. 로컬 `devel`이 최신 `upstream/devel`과 일치하면 기본 작업공간에서 빌드하고 기준을 `output`에
+고정한다. 실제 변경 경계의 출력으로 각 산출물의 소유를 확인한 뒤 시각 비교에 사용한다.
 
 ### macOS 외부 연결 그림 공급
 
@@ -692,7 +609,7 @@ RHWP_FONT_PATH="/절대/경로/검증된-한컴-글꼴" python3 scripts/visual_s
 ```
 
 실행 전에 `RHWP_FONT_PATH`의 모든 디렉터리가 실제로 존재하고, 입력 문서가 요구한 face가 그 경로 또는
-운영체제에 설치됐는지 확인한다. 존재하지 않는 `ttfs/hwp`, `ttfs/windows` 같은 과거 경로를 설정하면
+운영체제에 설치됐는지 확인한다. 존재하지 않는 과거 글꼴 경로를 설정하면
 환경변수 자체는 전달돼도 renderer가 fallback face로 조판해 낮은 지표를 만들어 낸다. 이 경우에는
 `--font-mismatch-evidence` 기록으로 통과 처리하지 말고, 먼저 올바른 글꼴 공급으로 다시 실행한다.
 
@@ -734,15 +651,12 @@ venv/bin/python scripts/visual_sweep.py \
   --pages 21,49,75-77,108-109 --compat 2024 --dpi 96 --out output/wasm-review
 ```
 
-직접 PNG 경로는 `--font-path`의 실제 name/weight/face-index를 읽어 Canvas가 요청한 family
-사다리에 공급한다. `font-catalog.json`과 `wasm-export-complete.json`의 작업자별 `fonts`에
-원본·공급 바이트 SHA를 남긴다. Unicode cmap의 U+FFFF 종료 항목이 글리프 범위를 벗어난
-legacy TTF는 종료 비문자만 `.notdef`로 고친 공급 사본을 사용하며 원본은 수정하지 않는다.
-문자 매핑·윤곽선·advance는 유지한다. FontFace 적재와 비동기 그림 decode가 끝난 뒤 다시
-그려 캡처하고, 준비 실패·쪽 누락·중복이면 중단한다. 내장 글꼴은 WASM의 기존 Canvas API가
-소비한다. private 공급 글꼴과 `font_resources`는 공개 증적이나 Git에 포함하지 않는다.
+직접 PNG 경로는 `--font-path`의 프로그램을 Canvas가 요청한 family에 공급한다.
+`font-catalog.json`과 `wasm-export-complete.json`의 작업자별 `fonts`에 원본·공급 바이트 SHA를
+남긴다. 글꼴 적재와 비동기 그림 decode가 끝난 뒤 다시 그려 캡처하며, 준비 실패·쪽 누락·중복이면
+중단한다. 비공개 공급 파일과 `font_resources`는 공개 증적이나 Git에 포함하지 않는다.
 
-원본의 명시 대체 TTF를 실제 공급자가 선택한 경우, Native `export-png --json`은
+문서의 명시적 대체 글꼴을 실제 공급자가 선택한 경우, Native `export-png --json`은
 `observedFontFallbacks`에 요청·선택 family·원본 프로그램 SHA-256·collection face index를
 기록한다. 사용자 선언 환경은 `declaredFontEnvironment`, 입력 바이트는 `sourceSha256`으로
 별도 고정한다. WASM 직접 PNG에 같은 관측을 전달하려면 그 JSON을
@@ -755,18 +669,9 @@ legacy TTF는 종료 비문자만 `.notdef`로 고친 공급 사본을 사용하
 실행은 조건을 구분하고 동일 조건으로 base/head를 비교한다. 이 옵션은 글꼴 예외나 시각
 gate 면제가 아니며, WASM의 쪽수·트리·PNG는 계속 같은 WASM 문서에서 산출한다.
 
-일반 검증은 자동 탐색으로 시작한다. 공급 목록에서 문서가 요청한 family·style·weight를
-찾고, 같은 원본의 프로그램이 여럿이면 TTF → TTC의 일치 face → CFF OpenType 순으로
-확인한다. 실제 문자를 지원하는 원본 후보가 없을 때 대체 글꼴을 사용한다.
-`--font-environment`로 글꼴을 고정하면 자동 해석과 다른 프로그램이 선택될 수 있다.
-보호값을 재현할 때는 기준 실행에서 사용한 글꼴 환경을 먼저 확인한다.
-
-고정 글꼴 목록을 사용하는 비교에서는 Native가 선택한 프로그램 SHA와 WASM 공급 목록을
-대조한다. WASM 직접 PNG의 `--font-path`에 명시한 목록은 자동 탐색 목록을 대신하므로, 설치된
-프로그램도 그 목록에 없으면 WASM에 공급되지 않을 수 있다. 선택한 원본이나 버전이 누락된
-경우에만 검증한 기존 시스템 파일을 목록에 추가한다. 직접 PNG는 단일 TTF/OTF/TTC/WOFF/WOFF2
-파일과 디렉터리를 모두 받으며, 원본 SHA와 컬렉션 face를 확인한다. 목록을 수정하면 같은 공급
-조건으로 base/head를 다시 대조하고 이전 TSV와 구분한다. 글꼴은 검증 환경에 보관한다.
+정본 보호 문서는 [공식 공급 자료](../../verification/protected-font-supply/README.md)의 조건을 적용한다.
+WASM에 명시한 공급 목록은 자동 탐색 목록을 대신하므로, Native에서 선택한 프로그램이
+실제 포함됐는지 확인한다. 목록을 바꾸면 같은 조건으로 base/head를 다시 비교한다.
 
 WASM PNG 작업자는 출력 폴더 아래 `chrome-worker-<번호>-*`에 전용 Chrome 프로필을
 만들고, 브라우저 종료를 확인한 뒤 제거한다. Snap Chromium도 host와 같은 경로를
@@ -788,105 +693,25 @@ render tree 중 한 쪽이 누락되면 성공으로 처리하지 않는다. 패
 
 ## 대체 글꼴 설정과 비교 조건
 
-원본 글꼴 공급과 다른 글꼴로의 대체를 구분한다. 문서의 실제 사용 언어 슬롯·글자 모양,
-설치된 family/PostScript 이름과 실제 선택 프로그램을 먼저 확인한다. 파일명이나
-`document.fonts.check()`만으로 원본 공급을 확정하지 않는다. 원본 프로그램이 없으면
-등록된 공개 웹폰트의 원본 동일성·실제 다운로드·적재를 확인한다.
+대체 설정은 독립 한컴 Print의 실제 사용 프로그램과 윤곽·전진폭을 확인한 근거로 정한다.
+점수 상승만으로 대체 글꼴을 고르지 않는다. 설정 형식과 원본 메트릭 보존 규칙은
+[명시적 글꼴 환경 가이드](../font_environment.md)를 따른다.
 
-독립 한컴 Print PDF가 실제 대체 글꼴을 사용했다면 PDF 리소스·윤곽·전진폭 등의 근거를
-남기고, 그 비교에만 `--font-environment`를 지정한다. 점수가 오른다는 이유로 대체 글꼴을
-고르거나 문서·페이지별 제품 예외를 추가하지 않는다. PDF가 실제 Haansoft Batang을 썼다고
-확인된 경우의 설정 예시는 다음과 같다.
-
-```json
-{
-  "id": "independent-print-font-environment",
-  "substitutions": {"원본 요청 글꼴": "Haansoft Batang"},
-  "trueTypeFaces": ["Haansoft Batang"],
-  "preserveSourceMetrics": true
-}
-```
-
-`preserveSourceMetrics: true`는 표시 글꼴을 바꾸어도 원본 전진폭·줄 구성의 소유를 유지한다.
-Print가 대체 프로그램의 전진폭으로 재조판했다는 독립 근거가 있을 때만 `false`를 사용하고
-그 이유를 기록한다. `trueTypeFaces`는 선택 선언이며 설치·다운로드 명령이 아니다.
-`glyphFallbacks`도 필요한 문자별 프로그램을 확인한 경우에만 추가한다.
-
-검증된 파일은 `--embed-fonts full --font-path <경로>`로 공급한다. 같은 JSON을 base/후보와
-Native/fresh WASM에 적용하고 원본·PDF·설정·공급 파일 및 선택 프로그램의 해시,
-backend·DPI·compat, 전쪽 TSV와 대표 review/overlay를 함께 기록한다. 변경 전 조건은 보존하며
-명시적 비교 환경의 개선을 기본 환경의 자동 대체 개선으로 확대하지 않는다.
-
-대체 대상도 없으면 다른 가용 후보가 선택될 수 있다. Haansoft Batang 뒤에는 Batang·바탕·
-Nanum Myeongjo·AppleMyungjo·Noto Serif KR 등의 후보가 이어지지만 실제 선택은 호스트의
-공급 상태에 달려 있다. 명시적 비교 환경을 지정한 Native 출력은 일반 자동 웹폰트 준비를
-건너뛰므로 같은 대체 프로그램이 자동 공급된다고 가정하지 않는다. 누락 시 실제 선택을 확인하고
-전쪽을 다시 산출한다. 설치 환경의 98% 이상 결과를 미설치 환경의 통과로 재사용하지 않는다.
-시스템 글꼴 설치만을 전제로 회귀 검사를 건너뛰거나 글꼴 바이너리를 증적에 임의로 포함하지 않는다.
+같은 설정을 고정 base/후보와 Native/fresh WASM에 적용하고, 프로그램·환경 SHA와 전쪽 TSV,
+대표 review·overlay를 기록한다. 명시적 비교 환경의 개선을 기본 환경의 자동 선택 개선으로
+확대하지 않으며, 설치 환경의 결과를 미설치 환경에 재사용하지 않는다.
 
 ## 원 글꼴을 명시적으로 공급하는 진단
 
-로컬 글꼴 이름이 존재해도 Chrome이 실제로 같은 face를 사용하는지는 별도 확인한다.
-글꼴 굵기 검토에서 대체 face를 원 face의 증거로 세지 않는다. 필요한 경우 CLI와 같은
-`--embed-fonts=full --font-path <디렉터리>`를 sweep에 전달한다. `--embed-fonts`만 지정해도
-전체 임베딩이며 `=subset`은 거부한다. 현재 CLI의 PDF용 subsetter는 Unicode `cmap`을
-제거하므로 SVG `<text>`용 검증 폰트로 사용할 수 없다. Native와 WASM에
-같은 `@font-face` 공급을 적용하며 WASM의 text·좌표·render tree는 Native 것으로 대체하지 않는다.
-mode와 해당 디렉터리의 폰트 파일 hash가 바뀌면 `--resume`은 이전 증적을 거부한다.
+공급 조건은 [공식 자료](../../verification/protected-font-supply/README.md)에서 확인한다.
+SVG 진단에서 직접 공급하려면 `--embed-fonts=full --font-path <검증 경로>`를 사용한다.
+`--embed-fonts`만 지정해도 full이며 `=subset`은 지원하지 않는다. mode·프로그램 SHA가
+달라지면 기존 `--resume` 증적을 재사용하지 않는다. Native의 트리를 WASM 출력으로 대신하지 않는다.
 
-본문과 수식의 face를 각각 확인한다. 수식에 `HYhwpEQ` 또는 `HancomEQN`을 사용하면 설치된
-`HYHWPEQ.TTF`·`HancomEQN.ttf` 중 해당 프로그램도 명시한 경로에 공급한다. 두 face의
-메트릭은 서로 다르므로 임의로 치환하지 않는다. base/후보와 Native/fresh WASM 모두 같은
-원본 프로그램·우선순위로 다시 출력하고, 글꼴 공급 전의 미달 결과와 구분해 기록한다.
-
-같은 원본을 한컴 2020 또는 2024의 `Hancom PDF` 프린터로 인쇄한 경로를 지정한다.
-
-```bash
-venv/bin/python scripts/visual_sweep.py \
-  --file-target bold samples/issue2470/36382471_masked.hwpx "${BOLD_PRINT_PDF:?기준 PDF 경로를 지정하세요}" \
-  --rhwp-bin target/pr-review/release-test/rhwp --pages 1,2 \
-  --embed-fonts=full --font-path /path/to/private/validated-font-subsets --out output/bold-review
-```
-
-폰트 소유·사용 범위가 확인된 파일만 검증용 scratch에 둔다. embedded SVG/폰트 바이너리를
-공개 증적에 추가하지 않고 PNG와 source font/subset 해시·실제 선택 face를 기록한다.
-사용 glyph의 outline/advance를 유지한 유효한 subset은 full 모드로 전달할 수 있다. 브라우저
-OTS 오류나 LastResort가 있으면 성공 캡처로 세지 않는다. 원 face를 공급한 정합성 검증과
-실제 Studio fallback 환경의 비교는 서로 다른 증거로 구분한다.
-
-원본이 HFT `한양신명조`이고 같은 이름의 TTF 대체 윤곽이 실제 원본과 다르면,
-[독립 전체 한글 표본으로 원본 HFT 글꼴 공급 준비](hft_original_font_supply.md)를 사용할 수 있다.
-대상 정답 PDF를 글꼴 소스로 쓰지 않는다. 기존 대체 공급 결과를 보존하고, 준비한 같은 원본
-글꼴을 공급한 devel/head의 전쪽 Native/fresh WASM을 모두 다시 비교한다.
-
-직접 PNG의 Print/HighQuality 경로는 원본 언어 슬롯이 HFT이고 실제 공급 face가 일반 CFF1일 때,
-기존 글자 원점·크기·장평에서 같은 윤곽을 재생한다. Native는 실제 선택 Typeface를 확인한다.
-fresh WASM의 exporter는 `FontFace.load()`·`document.fonts.add()` 뒤 같은 바이트를
-`doc.registerHftOutlineFont(family, bytes, faceIndex)`에 전달한다. 구형 WASM에 이 메서드가
-없으면 기존 FontFace 경로를 사용한다. 글꼴 파일의 이름만 보고 다른 프로그램을 찾지 않는다.
-
-다른 호스트에서 이 선택 경로를 사용할 때도 실제 적재한 바이트를 등록해야 한다.
-등록은 paint 세션만 갱신하며 문서·측정·줄 구성은 변경하지 않는다. 반환 boolean은 바인딩 변경
-여부다. 지원하지 않는 프로그램으로 교체하면 이전 윤곽 바인딩을 해제한다. 일반 TTF,
-화면 프로필, 지원하지 않는 효과·복합 cluster·누락 glyph는 기존 글꼴 painter를 사용한다.
-원본 HFT 윤곽의 공급 정합성은 위 독립 표본 절차와 전쪽 비교로 별도 확인한다.
-
-Sweep은 Native/WASM의 선택 SVG를 캡처하거나 resume checkpoint를 재사용하기 전에
-임베딩 폰트의 Unicode `cmap`을 검사한다. 이를 위해 임베딩 모드는 Python `fonttools`가
-필요하다(`python -m pip install fonttools`). 손상된 폰트·없는/빈 `cmap`·검사 의존성 누락은
-`analysis/embedded_font_check.json`에 face·폰트 SHA-256·실패 이유를 남기고 중단한다.
-기존 성공 요약도 `re_review_required`로 바꾸며 `--font-mismatch-evidence`로 우회할 수 없다.
-이 검사는 Unicode 매핑의 존재를 확인할 뿐 모든 글자 표시나 실제 선택 face를 입증하지 않는다.
-설치 폰트·외부 URL 폰트도 검사 범위 밖이다. 대표 review/overlay PNG를 열어 한글·숫자·기호,
-표 안 글자와 각주까지 확인한 뒤 나머지 Sweep을 진행한다. 두부나 누락이 보이면 점수와
-무관하게 그 캡처를 실패 증거로 보존하고 올바른 원본 폰트로 재산출한다.
-
-`--embed-fonts=full`에서 `--font-path`를 생략하면 `RHWP_FONT_PATH`의 디렉터리를 사용한다.
-이 환경변수도 없고 macOS 사용자 글꼴 폴더 `~/Library/Fonts`가 있으면 그 폴더를
-자동으로 사용한다. 실제 공급 경로·글꼴 파일 SHA-256·선택 출처는 `run_manifest.json`의
-`font_supply`에 기록한다. 명시한 경로 또는 환경변수 경로가 없거나 글꼴 파일이 비어 있으면
-캡처 전에 실패한다. 입력 문서에 필요한 face가 실제로 공급되는지와 대표 PNG의 글꼴 표시를
-직접 확인해야 한다. 한글 두부가 있어도 실루엣 점수만으로 gate가 통과할 수 있다.
+임베딩 글꼴의 문자 매핑 검사는 `fonttools`가 필요하다. 손상·매핑 누락·검사 의존성 누락은
+`analysis/embedded_font_check.json`에 기록하고 중단하며 글꼴 예외로 우회하지 않는다.
+프로그램 적재 성공과 실제 표시를 구분하고, 대표 PNG의 본문·기호·수식에 두부나 누락이 있으면
+점수와 무관하게 실패 증거를 보존한 뒤 다시 산출한다. 비공개 프로그램 바이트는 공개 증적에 넣지 않는다.
 
 ### 쪽 작업자 수와 Chrome 캡처 재사용
 
@@ -988,6 +813,8 @@ cargo build --locked --target-dir /home/tsjang/rhwp/target/pr-review -j 8 --feat
 다른 host에서는 해당 host의 기본 rhwp 작업공간 아래 공용 `target/pr-review`로 바꾼다.
 Native PNG에는 Node·Chrome·SVG 임베딩 검사가 필요 없다. 한글 라벨의 cmap 확인에는
 Native·WASM 모두 Python `fonttools`가 필요하다(`python -m pip install fonttools`).
+WOFF2 글꼴을 공급하는 검증은 스윕과 같은 Python 환경에 `brotli`도 설치한다
+(`python -m pip install brotli`).
 WASM PNG에는 Node·Chrome과 외부 공급 글꼴 catalogue도 필요하다. SVG 진단의 필수 도구는 다음과 같다.
 
 스크립트는 실행 시작 시 다음 CLI와 Python 패키지가 있는지 확인한다.
@@ -1037,7 +864,7 @@ which pdftotext
 review·overlay의 한글 범례와 판정 문구는 문서 본문과 별도의 라벨 글꼴로 그린다.
 `RHWP_VISUAL_SWEEP_LABEL_FONT` 후보, Fontconfig 및 OS 기본 후보를 순서대로 확인하되,
 로드에 성공해도 범례에 필요한 Unicode 글리프가 없으면 건너뛴다. 지원하는 설치 글꼴이
-없으면 저장소의 공개 `ttfs/opensource/NotoSansKR-Regular.ttf`를 사용한다. 이 글꼴도
+없으면 저장소의 공개 한국어 글꼴를 사용한다. 이 글꼴도
 없거나 사용할 수 없으면 두부 문자를 포함한 증적을 만들지 않고 오류를 알린다.
 이 선택은 라벨에만 적용하며 문서의 글꼴·래스터·일치율 계산은 바꾸지 않는다.
 
@@ -1058,11 +885,11 @@ fc-list :lang=ko | head
 
 ```bash
 rhwp export-svg samples/exam_kor.hwp \
-  --font-path /path/to/ttfs \
+  --font-path /path/to/verified-fonts \
   --output output/font-check/
 ```
 
-`--font-path`는 여러 번 지정할 수 있으며, 기본 탐색 경로(`ttfs/`, 시스템 폰트)보다
+`--font-path`는 여러 번 지정할 수 있으며, 기본 탐색 경로(저장소·시스템 글꼴)보다
 우선한다. 자세한 폰트 fallback 동작은 [export-png 명령 가이드](../export_png_command.md)의
 폰트 섹션을 참고한다.
 

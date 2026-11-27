@@ -352,9 +352,28 @@ impl DocumentCore {
             )));
         }
 
+        // 바탕쪽이 아닌 머리말·꼬리말의 활성 누름틀 주소는 그 정의를 가진 본문 문단에서 시작한다.
+        let active = master_page_slot(apply_to)
+            .is_none()
+            .then(|| {
+                self.find_header_footer_control(
+                    section_idx,
+                    is_header,
+                    header_footer_apply_from_u8(apply_to),
+                )
+            })
+            .flatten()
+            .and_then(|(host, control)| {
+                super::text_editing::active_field_control(
+                    self.active_field.as_ref(),
+                    section_idx,
+                    host,
+                    Some(&[(control, 0, hf_para_idx)]),
+                )
+            });
         let hf_para = self.get_hf_paragraph_mut(section_idx, is_header, apply_to, hf_para_idx)?;
         let new_chars_count = text.chars().count();
-        let inserted_at = hf_para.insert_text_at(char_offset, text);
+        let inserted_at = super::text_editing::insert_area_text(hf_para, char_offset, text, active);
 
         // 리플로우 (머리말/꼬리말 영역 폭 기반)
         self.reflow_hf_paragraph(section_idx, is_header, apply_to, hf_para_idx);
