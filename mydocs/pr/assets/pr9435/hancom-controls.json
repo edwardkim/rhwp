@@ -1,0 +1,26 @@
+[
+  {
+    "control": "protected",
+    "changed_entry": "Contents/section1.xml",
+    "attribute": [
+      "sz",
+      "protect",
+      "0",
+      "1"
+    ],
+    "source_sha256": "1ec0c769828dac15f2e25367e34a5386e3b1b2670c73778e4007e5d0f92bc811",
+    "print_sha256": "6e4f9d4c371c15edb96735b9cd073540f2f30f3909c12e1213e89759836a0b14"
+  },
+  {
+    "control": "explicit-width",
+    "changed_entry": "Contents/section1.xml",
+    "attribute": [
+      "curSz",
+      "width",
+      "0",
+      "47685"
+    ],
+    "source_sha256": "acd6412167a69a6fbcd6ca423caa0aa065607121df339efd3ed1945c5b364260",
+    "print_sha256": "3166fe57de260660ca5a8351e8b7db42922e096ca22d0cad5b0d85c4879b982e"
+  }
+]
