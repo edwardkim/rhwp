@@ -43,11 +43,13 @@ use crate::renderer::render_tree::{
 
 mod jpeg_orientation;
 mod picture_adjustments;
+mod picture_shadow;
 mod picture_soft_edge;
 pub use jpeg_orientation::upright_jpeg;
 pub(crate) use picture_adjustments::{
     adjusted_picture_bytes, picture_tone_parameters, resolve_page_background_tone,
 };
+pub(crate) use picture_shadow::prepare_picture_shadow;
 pub(crate) use picture_soft_edge::prepare_picture_soft_edge;
 mod wmf_picture;
 pub(crate) use wmf_picture::adjust_pixels as adjust_wmf_device_pixels;
@@ -134,6 +136,13 @@ const MAX_MEMO_ENTRIES: usize = 64;
 /// 변환 종류. 같은 바이트라도 어떤 변환을 거쳤느냐에 따라 결과가 다르다.
 #[derive(Clone, Copy, Hash)]
 enum Conversion {
+    PictureShadow {
+        radius: u64,
+        dimensions: [u32; 3],
+        crop: [u64; 4],
+        rgb: [u8; 3],
+        opacity: u64,
+    },
     PictureSoftEdge {
         radius: u64,
         width: u32,

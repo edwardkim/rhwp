@@ -505,6 +505,7 @@ impl LayerBuilder {
         }
 
         let mut image_fill_clip = None;
+        let mut picture_shadow = None;
         let own_ops = match &node.node_type {
             RenderNodeType::PageBackground(background) => Some(vec![PaintOp::page_background(
                 node.bbox,
@@ -656,6 +657,11 @@ impl LayerBuilder {
                     self.page_context
                         .map_or(node.bbox, |context| context.image_frame(node, image, pixel))
                 };
+                picture_shadow = crate::renderer::image_resolver::prepare_picture_shadow(
+                    image,
+                    frame,
+                    self.layout_dpi,
+                );
                 if image_fill_clip.is_none()
                     && !node.layer.as_ref().is_some_and(|layer| layer.master_page)
                     && (self.hancom2024_print_bitmap
@@ -980,6 +986,20 @@ impl LayerBuilder {
                     ClipKind::PrintBitmapFill,
                 )
                 .with_layer(node.layer);
+            }
+            if let Some(shadow) = picture_shadow {
+                let shadow =
+                    LayerNode::leaf(shadow.bounds(), None, vec![shadow]).with_layer(node.layer);
+                let mut group = LayerNode::group(
+                    node.bbox,
+                    Some(node.id),
+                    vec![shadow, own_leaf],
+                    CacheHint::None,
+                    GroupKind::Generic,
+                )
+                .with_layer(node.layer);
+                group.bounds = group.visual_bounds(true);
+                own_leaf = group;
             }
             // 내부 문단이 없는 사각형도 원본 컨트롤 부호를 출력해야 한다.
             let has_source_marker = self.output_options.show_control_codes
