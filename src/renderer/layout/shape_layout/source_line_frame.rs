@@ -1,6 +1,44 @@
 //! 저장 아핀의 단일 축과 공통 물리 상자가 이미 정한 직선 방향.
 
-use crate::model::shape::LineShape;
+use crate::model::shape::{LineShape, ShapeObject, TextWrap};
+
+/// 글자 기준 머리말·꼬리말 선의 저장 점과 물리 상자가 같은 원점을 갖는다.
+/// 한/글 변환본과 Print에서 확인한 문단 원점의 선으로 투영한다.
+pub(super) fn hwp3_running_rule(shape: &ShapeObject) -> Option<ShapeObject> {
+    let ShapeObject::Line(line) = shape else {
+        return None;
+    };
+    let common = &line.common;
+    let top = crate::renderer::float_placement::signed_hwpunit(common.vertical_offset);
+    let left = crate::renderer::float_placement::signed_hwpunit(common.horizontal_offset);
+    let left_point = line.start.x.min(line.end.x);
+    let width = line.start.x.abs_diff(line.end.x);
+    // 선의 상자 폭·높이는 끝점/굵기 바깥을 원본 단위 하나까지 감싼다.
+    if !common.treat_as_char
+        || common.affect_line_spacing
+        || top <= 0
+        || left_point != left
+        || line.start.y != top
+        || line.end.y != top
+        || width == 0
+        || common.width.abs_diff(width) > 4
+        || line.drawing.border_line.width <= 0
+        || common
+            .height
+            .abs_diff(line.drawing.border_line.width as u32)
+            > 4
+    {
+        return None;
+    }
+    let mut line = line.clone();
+    line.common.treat_as_char = false;
+    line.common.text_wrap = TextWrap::BehindText;
+    line.start.x = line.start.x.checked_sub(left)?;
+    line.end.x = line.end.x.checked_sub(left)?;
+    line.start.y = 0;
+    line.end.y = 0;
+    Some(ShapeObject::Line(line))
+}
 
 /// 축을 접은 원본 행렬의 실제 선이 저장 물리 상자와 일치하는데,
 /// 회전 메타데이터를 다시 적용하면 다른 축의 상자가 되는 경우다.

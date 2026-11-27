@@ -2172,6 +2172,7 @@ fn parse_hwp3_object_dispatch(
         line.common.horz_rel_to = horz_rel_to;
         line.common.vert_rel_to = vert_rel_to;
         line.common.treat_as_char = base_pos == 0;
+        line.common.affect_line_spacing = info_buf[60] == 1;
 
         line.common.horizontal_offset =
             ((&info_buf[10..12]).read_i16::<LittleEndian>().unwrap_or(0) as i32 * 4) as u32;
@@ -2192,6 +2193,8 @@ fn parse_hwp3_object_dispatch(
 
         line.drawing.border_line.width = thickness as i32 * 4;
         line.drawing.border_line.color = color as u32;
+        // HWP3 표 47에는 선 종류 필드가 없다. 저장한 굵기의 연속선을 그린다.
+        line.drawing.border_line.attr = u32::from(thickness != 0);
 
         if shade > 0 && shade <= 100 {
             let mut fill = crate::model::style::Fill::default();
