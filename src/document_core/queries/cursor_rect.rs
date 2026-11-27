@@ -5565,7 +5565,8 @@ impl DocumentCore {
                         runs.push(HfRunInfo {
                             hf_para_idx,
                             char_start: cs,
-                            char_count: text_run.text.chars().count(),
+                            // 덧말·겹침 run은 본말 글자 수가 아니라 한 칸이다(선택 조회와 같다).
+                            char_count: effective_char_count(text_run),
                             char_positions: positions,
                             bbox_x: node.bbox.x,
                             bbox_y: node.bbox.y,
@@ -5806,8 +5807,9 @@ impl DocumentCore {
                     paragraphs.len()
                 )));
             }
-            let start_len = paragraphs[start_hf_para_idx].text.chars().count();
-            let end_len = paragraphs[end_hf_para_idx].text.chars().count();
+            // 선택 자리는 덧말·겹침·글자처럼 둔 개체를 한 칸으로 센다(아래 run 좌표와 같다).
+            let start_len = navigable_text_len(&paragraphs[start_hf_para_idx]);
+            let end_len = navigable_text_len(&paragraphs[end_hf_para_idx]);
             if start_char_offset > start_len || end_char_offset > end_len {
                 return Err(HwpError::RenderError(format!(
                     "머리말/꼬리말 문자 범위 초과 (start={}/{}, end={}/{})",
