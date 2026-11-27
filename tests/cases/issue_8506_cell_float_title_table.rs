@@ -48,7 +48,11 @@ fn load() -> DocumentCore {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
     let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
     let core = DocumentCore::from_bytes(&bytes).unwrap_or_else(|e| panic!("parse: {e:?}"));
-    assert_eq!(core.page_count(), HANCOM_PAGES, "한/글 2020 Print 와 같은 쪽수");
+    assert_eq!(
+        core.page_count(),
+        HANCOM_PAGES,
+        "한/글 2020 Print 와 같은 쪽수"
+    );
     core
 }
 
@@ -70,7 +74,9 @@ fn cell_of<'a>(table: &'a RenderNode, row: u16) -> &'a RenderNode {
     table
         .children
         .iter()
-        .find(|child| matches!(&child.node_type, RenderNodeType::TableCell(cell) if cell.row == row))
+        .find(
+            |child| matches!(&child.node_type, RenderNodeType::TableCell(cell) if cell.row == row),
+        )
         .unwrap_or_else(|| panic!("바깥 표 r={row} 칸"))
 }
 
@@ -96,7 +102,11 @@ fn model(core: &DocumentCore) -> (&Table, &Table) {
             _ => None,
         })
         .expect("바깥 4×1 표");
-    let cell = outer.cells.iter().find(|cell| cell.row == 1).expect("r=1 칸");
+    let cell = outer
+        .cells
+        .iter()
+        .find(|cell| cell.row == 1)
+        .expect("r=1 칸");
     let host = &cell.paragraphs[0];
     let title = host
         .controls
@@ -107,8 +117,14 @@ fn model(core: &DocumentCore) -> (&Table, &Table) {
         })
         .expect("제목 표");
     // 입력 조건: 빈 호스트에 단 정의·제목 표·글자처럼 취급 그림이 함께 있다.
-    assert!(host.text.chars().all(|ch| ch.is_whitespace() || ch.is_control()));
-    assert!(host.controls.iter().any(|c| matches!(c, Control::ColumnDef(_))));
+    assert!(host
+        .text
+        .chars()
+        .all(|ch| ch.is_whitespace() || ch.is_control()));
+    assert!(host
+        .controls
+        .iter()
+        .any(|c| matches!(c, Control::ColumnDef(_))));
     assert!(host
         .controls
         .iter()
@@ -186,7 +202,8 @@ fn cover_title_table_sits_at_its_paragraph_offset_and_grows_the_row() {
     for (node, text) in [first, second] {
         assert!(
             node.bbox.y >= title_node.bbox.y - 0.5
-                && node.bbox.y + node.bbox.height <= title_node.bbox.y + title_node.bbox.height + 0.5,
+                && node.bbox.y + node.bbox.height
+                    <= title_node.bbox.y + title_node.bbox.height + 0.5,
             "제목 줄 {text:?} 은 제목 표 안"
         );
     }
