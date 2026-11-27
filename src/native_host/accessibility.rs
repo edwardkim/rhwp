@@ -40,6 +40,8 @@ pub struct NativeAccessibilityRequest {
     pub range: Option<NativeAccessibilityRange>,
     /// False performs no caret/selection geometry queries.
     pub geometry: bool,
+    /// Include structural grid coordinates for paragraphs inside table cells.
+    pub include_cell_layout: bool,
     pub max_nodes: usize,
     pub max_text_bytes: usize,
     /// Zero requests body paragraphs only; skipped table subtrees are reported.
@@ -53,6 +55,7 @@ impl Default for NativeAccessibilityRequest {
         Self {
             range: None,
             geometry: false,
+            include_cell_layout: false,
             max_nodes: MAX_ACCESSIBILITY_NODES,
             max_text_bytes: MAX_ACCESSIBILITY_TEXT_BYTES,
             max_depth: MAX_ACCESSIBILITY_DEPTH,
@@ -105,6 +108,18 @@ pub struct NativeAccessibilityNodeGeometry {
     pub status: NativeAccessibilityGeometryStatus,
 }
 
+/// Zero-based cell origin and spans in the immediate containing table.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NativeAccessibilityCellLayout {
+    pub row: u16,
+    pub column: u16,
+    pub row_span: u16,
+    pub column_span: u16,
+    pub row_count: u16,
+    pub column_count: u16,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NativeAccessibilityNode {
@@ -116,6 +131,8 @@ pub struct NativeAccessibilityNode {
     pub text: String,
     pub text_complete: bool,
     pub geometry: Option<NativeAccessibilityNodeGeometry>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cell_layout: Option<NativeAccessibilityCellLayout>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -230,6 +247,7 @@ impl NativeDocumentSession {
                         scalar_offset: 0,
                         cell_path: Vec::new(),
                     },
+                    None,
                 )?;
             }
         }
@@ -279,6 +297,7 @@ impl SnapshotWalk<'_> {
         &mut self,
         paragraph: &Paragraph,
         start: NativeTextPosition,
+        cell_layout: Option<NativeAccessibilityCellLayout>,
     ) -> Result<(), NativeHostError> {
         if !self.charge() {
             return Ok(());
@@ -314,6 +333,7 @@ impl SnapshotWalk<'_> {
             text,
             text_complete,
             geometry,
+            cell_layout,
         });
         if !text_complete {
             self.note(NativeAccessibilityLimitation::TextLimit);
@@ -340,6 +360,16 @@ impl SnapshotWalk<'_> {
                         if !self.charge() {
                             break;
                         }
+                        let layout = self.request.include_cell_layout.then_some(
+                            NativeAccessibilityCellLayout {
+                                row: cell.row,
+                                column: cell.col,
+                                row_span: cell.row_span,
+                                column_span: cell.col_span,
+                                row_count: table.row_count,
+                                column_count: table.col_count,
+                            },
+                        );
                         for (paragraph_index, paragraph) in cell.paragraphs.iter().enumerate() {
                             if self.stopped {
                                 break;
@@ -350,7 +380,7 @@ impl SnapshotWalk<'_> {
                                 cell: address_index(cell_index)?,
                                 paragraph: address_index(paragraph_index)?,
                             });
-                            self.paragraph(paragraph, child)?;
+                            self.paragraph(paragraph, child, layout)?;
                         }
                     }
                 }

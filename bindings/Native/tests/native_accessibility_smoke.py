@@ -90,6 +90,35 @@ class NativeAccessibilityContracts(unittest.TestCase):
         self.assertEqual(raised.exception.code, "invalidArgument")
         self.assertEqual(self.host.request(self.handle, op="info"), before)
 
+    def test_worker_cell_layout_is_opt_in_and_describes_the_nested_table(self):
+        fixture = (Path(__file__).resolve().parents[3]
+                   / "samples/issue5599_oracle/3191107_leave_request_form.hwpx")
+        with NativeWorker(self.library) as worker:
+            self.assertIs(worker.host.call("capabilities")["accessibilityCellLayout"], True)
+            opened = worker.wait(worker.open_bytes(fixture.read_bytes()))
+            self.assertIs(opened.get("ok"), True, opened)
+            target = {key: opened["info"][key] for key in ("documentId", "revision")}
+
+            def snapshot(request):
+                return self.worker_call(worker, {
+                    "op": "accessibility", "target": target, "request": request
+                })["snapshot"]
+
+            baseline = snapshot({})
+            self.assertTrue(all("cellLayout" not in node for node in baseline["nodes"]))
+            with_layout = snapshot({"includeCellLayout": True})
+            labels = [node for node in with_layout["nodes"]
+                      if node["text"] == "생년월일" and len(node["start"]["cellPath"]) == 2]
+            self.assertEqual(len(labels), 2, labels)
+            self.assertNotEqual(labels[0]["start"]["cellPath"][0], labels[1]["start"]["cellPath"][0])
+            for label in labels:
+                cell_layout = label["cellLayout"]
+                self.assertLess(cell_layout["row"], cell_layout["rowCount"])
+                self.assertLess(cell_layout["column"], cell_layout["columnCount"])
+                self.assertGreaterEqual(cell_layout["rowSpan"], 1)
+                self.assertGreaterEqual(cell_layout["columnSpan"], 1)
+            self.assertEqual(snapshot({}), baseline)
+
     def test_worker_matches_sync_and_rejects_stale_revision(self):
         self.edit()
         expected = self.snapshot()

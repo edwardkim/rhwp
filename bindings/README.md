@@ -161,7 +161,12 @@ HWPX는 기존 serializer의 source settings.xml 또는 기본값 정책을 유�
 실제 경로를 확인한다. caretPreservedFromSource는 원본 settings.xml 바이트가 있을 때만 true이며,
 그 안의 CaretPosition 존재나 현재 focus 저장까지 증명하지 않는다. 저장 확인은 편집 history를 지우지 않으며 undo 후에는 revision 기준 dirty다.
 
-## Native worker 텍스트 검색
+## Native worker 검색과 표 접근성
+
+`accessibilityCellLayout`을 제공하는 호스트에서는 접근성 요청에 `includeCellLayout: true`를
+넣을 수 있습니다. 표 셀 문단의 `cellLayout`은 해당 셀을 직접 담고 있는 표의 `row`, `column`,
+`rowSpan`, `columnSpan`, `rowCount`, `columnCount`를 포함합니다. 행과 열은 0부터 셉니다.
+요청을 생략하면 기존 노드 응답을 그대로 반환합니다.
 
 `workerTextSearch`가 활성화된 worker는
 `searchText{target,request:{query,caseSensitive,maxMatches,range?}}`를 지원한다.
