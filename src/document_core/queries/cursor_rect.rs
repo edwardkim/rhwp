@@ -3781,7 +3781,7 @@ impl DocumentCore {
                 .is_some_and(|placement| placement.split_host_prefix().is_some()),
             *end_row_height_override,
             *start_row_height_override,
-            *remaining_child_row,
+            remaining_child_row.as_deref().copied(),
             straddle_row_relief,
             straddle_page_bands,
             pt_margin_left,

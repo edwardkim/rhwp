@@ -13273,7 +13273,7 @@ impl LayoutEngine {
                     *row_cursor_is_nested,
                     *end_row_height_override,
                     *start_row_height_override,
-                    *remaining_child_row,
+                    remaining_child_row.as_deref().copied(),
                     straddle_row_relief,
                     straddle_page_bands,
                     fragment_row_heights.as_deref(),

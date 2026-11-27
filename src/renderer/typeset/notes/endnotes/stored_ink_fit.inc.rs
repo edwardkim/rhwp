@@ -376,7 +376,7 @@ impl TypesetEngine {
                     end_row_height_override: *end_row_height_override,
                     start_row_height_override: *start_row_height_override,
                     straddle_row_relief: straddle_row_relief.clone(),
-                    remaining_child_row: *remaining_child_row,
+                    remaining_child_row: remaining_child_row.clone(),
                     straddle_page_bands: straddle_page_bands.clone(),
                     fragment_row_heights: fragment_row_heights.clone(),
                     fragment_block_frames: fragment_block_frames.clone(),
