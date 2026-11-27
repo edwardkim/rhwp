@@ -1,0 +1,11 @@
+control	backend	page	devel_raw	candidate_raw
+focus	native	36	95.50307	100.00000
+explicit-width	native	36	100.00000	100.00000
+protected	native	36	99.96496	99.96496
+base-reopened	native	36	95.50307	100.00000
+exported-hwp	native	36	100.00000	100.00000
+focus	wasm	36	95.43079	100.00000
+explicit-width	wasm	36	100.00000	100.00000
+protected	wasm	36	99.96395	99.96395
+base-reopened	wasm	36	95.43079	100.00000
+exported-hwp	wasm	36	100.00000	100.00000
