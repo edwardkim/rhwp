@@ -13,7 +13,7 @@
 //!   위·아래 + 본체 + 안 여백 = 18304HU)로 자란 만큼이다.
 //!
 //! 측정: 2026-11-27, `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96`
-//! (`silhouette_raw_match_percent`, 색상 경계 보정 전 2px 실루엣), base devel `f941c1df67`.
+//! (`silhouette_raw_match_percent`, 색상 경계 보정 전 2px 실루엣), base devel `3e97980785`.
 //!
 //! | 쪽 | Native base | Native head | fresh WASM base | fresh WASM head |
 //! |---|---|---|---|---|
