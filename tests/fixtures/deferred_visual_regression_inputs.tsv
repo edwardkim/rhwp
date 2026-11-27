@@ -63,7 +63,7 @@ samples/issue6023/30269_reform_recommendation.hwp	body,off_canvas,oracle,overflo
 samples/issue6025/3232693_employment_support_criteria.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7822
 samples/issue6111/56345_regulatory_impact_analysis.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7806
 samples/issue6575/tac_picture_line_top.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7864
-samples/issue6712/중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7789
+samples/issue6712/중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp	off_canvas,oracle,overflow_cell,render_page,text_overlap	7789
 samples/issue6778/156757920-animal-welfare-husbandry-guidelines.hwp	off_canvas,oracle,overflow_cell,render_page,text_overlap	7767
 samples/issue6797/156160455-social-pig-farm-income.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7770
 samples/issue6800/1192000-202100017-policy-research-report.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7922
