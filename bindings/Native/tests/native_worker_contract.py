@@ -22,6 +22,69 @@ def position(offset=0):
     return {"section": 0, "paragraph": 0, "scalarOffset": offset, "cellPath": []}
 
 
+def cell_edit_baseline(library):
+    fixture = Path(__file__).resolve().parents[3] / "samples/hwpx/basic-table-01.hwpx"
+    with NativeWorker(library) as worker:
+        opened = worker.wait(worker.open_bytes(fixture.read_bytes()))
+        assert opened["ok"], opened
+        info = opened["info"]
+        target = {"documentId": info["documentId"], "revision": info["revision"]}
+
+        def snapshot():
+            return accepted(worker, {"op": "accessibility", "target": target, "request": {}})[
+                "snapshot"
+            ]
+
+        before = snapshot()
+        cell, = (node for node in before["nodes"]
+                 if node["role"] == "tableCellParagraph" and node["text"] == "10")
+        assert len(cell["start"]["cellPath"]) == 1, cell
+        selection = {"anchor": cell["start"], "focus": cell["end"]}
+        rect, = accepted(worker, {"op": "selectionRects", "target": target,
+                                  "selection": selection})["rects"]
+        bounds = rect["bounds"]
+        assert bounds["width"] > 0 and bounds["height"] > 0, rect
+        hit = accepted(worker, {
+            "op": "hitTest", "target": target, "page": rect["page"],
+            "x": bounds["x"] + bounds["width"] / 2,
+            "y": bounds["y"] + bounds["height"] / 2,
+        })["hit"]
+        hit_position = hit["position"]
+        assert {**hit_position, "scalarOffset": 0} == cell["start"], hit
+        assert 0 <= hit_position["scalarOffset"] <= cell["end"]["scalarOffset"], hit
+        caret = accepted(worker, {"op": "caretRect", "target": target,
+                                  "position": hit_position})["caret"]
+        assert caret["page"] == rect["page"] and caret["height"] > 0, caret
+
+        rejected = worker.wait(worker.submit({"op": "beginEdit", "target": target,
+                                              "selection": selection}))
+        assert rejected["ok"] is False and rejected["code"] == "unsupported", rejected
+        assert accepted(worker, {"op": "info"})["info"] == info
+        assert snapshot() == before
+
+        # The fixture has an empty body paragraph after the table.
+        body = before["nodes"][-1]
+        assert body["role"] == "bodyParagraph" and body["text"] == "", body
+        accepted(worker, {"op": "beginEdit", "target": target,
+                          "selection": {"anchor": body["start"], "focus": body["end"]}})
+        edited = accepted(worker, {"op": "replace", "target": target, "text": "본문"})["outcome"]
+        target["revision"] = edited["revision"]
+        edited_info = accepted(worker, {"op": "info"})["info"]
+        edited_snapshot = snapshot()
+        assert edited_info["canUndo"] and edited_snapshot["nodes"][-1]["text"] == "본문"
+
+        rejected = worker.wait(worker.submit({"op": "setSelection", "target": target,
+                                              "selection": selection}))
+        assert rejected["ok"] is False and rejected["code"] == "unsupported", rejected
+        assert accepted(worker, {"op": "info"})["info"] == edited_info
+        assert snapshot() == edited_snapshot
+        undone = accepted(worker, {"op": "undo", "target": target})["outcome"]
+        target["revision"] = undone["revision"]
+        assert [node["text"] for node in snapshot()["nodes"]] == [
+            node["text"] for node in before["nodes"]
+        ]
+
+
 def buffer_quota_contract(library):
     # Exercise the handle-count limit using only 256 retained pixel bytes. Each
     # completion is received before another render, so coalescing cannot hide it.
@@ -224,7 +287,9 @@ def run(library):
     buffer_quota_contract(library)
     viewport_budget_contract(library)
     tiled_cancellation_contract(library)
-    print('{"ok":true,"contract":"native-worker","queueCredit":true,"saveRevision":true,"threadOwnership":true,"saveBufferQuotaCleanup":true}')
+    cell_edit_baseline(library)
+    print('{"ok":true,"contract":"native-worker","queueCredit":true,"saveRevision":true,'
+          '"threadOwnership":true,"saveBufferQuotaCleanup":true,"cellEditBaseline":true}')
 
 
 if __name__ == "__main__":
