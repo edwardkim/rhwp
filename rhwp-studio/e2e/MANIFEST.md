@@ -200,6 +200,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `theme-bootstrap.test.mjs` | 상시 | active | 초기 테마 bootstrap | — | 수동 |  |
 | `theme-mode.test.mjs` | 상시 | active | 보기 > 테마 | — | 수동 |  |
 | `toolbar-color-activation-issue6635.test.mjs` | 상시 | active | #6635 색상 버튼 Enter/Space·마우스 활성화, Tab 이동·Esc 닫기·포커스 복원, 선택 보존과 색 적용·undo | 없음 | npm e2e:issue-6635 | dev server 필요, native picker 창 표시는 별도 검증 |
+| `style-combo-issue9452.test.mjs` | 상시 | active | #9452 스타일 목록 열림 유지, 재클릭·Escape·외부 클릭 닫기, 선택 적용 | hwp3-sample16-hwp5-2024.hwp | 수동 | 실제 Studio 마우스·키 입력, 스타일·실행 취소 기록 확인 |
 | `toolbox-visibility.test.mjs` | 상시 | active | 기본 도구 상자 접기/펴기와 표시 상태 저장·복원 | — | npm e2e:toolbox-visibility |  |
 | `topmost-hittest.test.mjs` | 상시 | active | E2E 테스트 (Issue #1280 v2): 겹침 클릭 = "최상단 개체" 선택 | textbox-under-image.hwp | 수동 |  |
 | `topmost-lifecycle.test.mjs` | 상시 | active | E2E 테스트 (Issue #1280 v2): 겹침 최상단 선택 → 연산 lifecycle | textbox-under-image.hwp | 수동 |  |
