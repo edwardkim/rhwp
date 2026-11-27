@@ -1,5 +1,7 @@
 //! 관계형.
-//! 주석 갱신: 2026-11-10T18:02:22+09:00; 직전 파일 커밋: 2026-10-11T22:35:38+09:00 (defe8d69faccfca9691e197d91b4dc4a61151904).
+//! 주석 갱신 2026-11-26T17:55:42+09:00. 직전 파일 커밋 23625f834e19eac689a823902c818a2652c61b5e (2026-11-10T19:14:08+09:00).
+//! #9139의 두 HWPX에서 실제 Studio 드래그 16건과 인라인 수식의 키보드 선택을 대조했다.
+//! 편집 오버레이의 공개 표본은 `mydocs/pr/assets/issue_9139/`에 있다. 인쇄 좌표를 고정하지 않는다.
 //! 합성 문서로 선택 사각형 API의 계약(쪽 트리 재사용, 캐럿·단 경계와 사각형의 관계)을 검사한다.
 //! 실제 문서 쪽의 시각 출력을 검증하지 않으므로 raw 일치율을 적지 않는다. 문단 부호 폭 2.5pt는
 //! 한글 12.30 Mac 화면에서 10pt·20pt 글자로 확인했다(#8908).
@@ -170,4 +172,99 @@ fn cell_selection_ends_lines_at_the_paragraph_mark() {
         );
     }
     assert!((right(&selected[2]) - caret_x(2, 3)).abs() < 0.15);
+}
+
+/// 첫 문단과 표 셀의 각 캐럿이 놓인 실제 줄을 모두 칠해야 한다(#9139).
+#[test]
+fn wrapped_selection_covers_the_rendered_rows_in_body_and_cell() {
+    let body = HwpDocument::from_bytes(include_bytes!(
+        "../../mydocs/pr/assets/issue_9139/para0-wrap.hwpx"
+    ))
+    .unwrap();
+    let table = HwpDocument::from_bytes(include_bytes!(
+        "../../mydocs/pr/assets/issue_9139/one-cell.hwpx"
+    ))
+    .unwrap();
+
+    fn assert_rows(end: usize, caret: impl Fn(usize) -> String, selection: &str) {
+        let selected = rects(selection);
+        let mut line_centers = Vec::new();
+        for offset in 0..=end {
+            let hit: serde_json::Value = serde_json::from_str(&caret(offset)).unwrap();
+            let center = hit["y"].as_f64().unwrap() + hit["height"].as_f64().unwrap() * 0.5;
+            if line_centers.last() != Some(&center) {
+                line_centers.push(center);
+            }
+        }
+        assert!(
+            line_centers.len() >= 2,
+            "입력이 실제로 자동 줄바꿈돼야 한다"
+        );
+        assert_eq!(selected.len(), line_centers.len(), "{selected:?}");
+        for (rect, center) in selected.iter().zip(line_centers) {
+            let y = rect["y"].as_f64().unwrap();
+            assert!((y..=y + rect["height"].as_f64().unwrap()).contains(&center));
+        }
+        let end_caret: serde_json::Value = serde_json::from_str(&caret(end)).unwrap();
+        assert!((right(selected.last().unwrap()) - end_caret["x"].as_f64().unwrap()).abs() < 0.2);
+    }
+    let body_end = body.get_paragraph_length_native(0, 0).unwrap() - 1;
+    assert_rows(
+        body_end,
+        |off| body.get_cursor_rect_native(0, 0, off).unwrap(),
+        &body
+            .get_selection_rects(0, 0, 0, 0, body_end as u32)
+            .unwrap(),
+    );
+    let cell_end = table
+        .get_cell_paragraph_length_native(0, 0, 2, 0, 0)
+        .unwrap()
+        - 1;
+    assert_rows(
+        cell_end,
+        |off| {
+            table
+                .get_cursor_rect_in_cell_native(0, 0, 2, 0, 0, off)
+                .unwrap()
+        },
+        &table
+            .get_selection_rects_in_cell(0, 0, 2, 0, 0, 0, 0, cell_end as u32)
+            .unwrap(),
+    );
+}
+
+/// 공개 편집 API가 저장한 첫 문단의 수식과 다음 글자는 서로 다른 선택 한 칸이다.
+#[test]
+fn selection_separates_a_leading_inline_equation_from_its_following_text() {
+    let mut draft = HwpDocument::create_empty();
+    draft.create_blank_document_native().unwrap();
+    draft.insert_text_native(0, 0, 0, "next").unwrap();
+    draft
+        .insert_equation_native(0, 0, 0, "x+1", 1200, 0)
+        .unwrap();
+    let doc = HwpDocument::from_bytes(&draft.export_hwpx_native().unwrap()).unwrap();
+
+    let equation = rects(&doc.get_selection_rects(0, 0, 0, 0, 1).unwrap());
+    let letter = rects(&doc.get_selection_rects(0, 0, 1, 0, 2).unwrap());
+    assert_eq!(equation.len(), 1, "수식 한 개의 선택 표시");
+    assert_eq!(letter.len(), 1, "수식 다음 글자의 선택 표시");
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+    fn find_equation(node: &RenderNode) -> Option<&RenderNode> {
+        if matches!(&node.node_type, RenderNodeType::Equation(_)) {
+            Some(node)
+        } else {
+            node.children.iter().find_map(find_equation)
+        }
+    }
+    let page = doc.build_page_render_tree(0).unwrap();
+    let object = &find_equation(&page.root)
+        .expect("저장 후 다시 연 본문 수식")
+        .bbox;
+    let object_right = object.x + object.width;
+    assert!(object.width > 0.0);
+    assert!(equation[0]["x"].as_f64().unwrap() <= object.x + 0.1);
+    assert!((right(&equation[0]) - object_right).abs() < 0.2);
+    let letter_start = letter[0]["x"].as_f64().unwrap();
+    assert!((letter_start - object_right).abs() < 0.2);
+    assert!((right(&letter[0]) - caret_x(&doc, 0, 2)).abs() < 0.2);
 }

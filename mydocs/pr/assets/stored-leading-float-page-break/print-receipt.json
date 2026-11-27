@@ -1,0 +1,74 @@
+{
+  "cases": [
+    {
+      "input": "tests/fixtures/stored_leading_float/stored-negative-title-anchor.hwp",
+      "input_sha256": "2b1afd69301b50e7ec4de3f242c5ccf390e48de69908e2462b59b03815a552e1",
+      "pdf": "pdf/stored-leading-float-page-break/stored-negative-title-anchor-2020.pdf",
+      "pdf_sha256": "de0626833427c8ad3f8dadc2e7067ce8e1689743953932971bfb4063eeb3ec7f",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "fabf19cc-a2f2-4d1b-9112-15c0ed355e04",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 3,
+          "logical_page_count": null,
+          "input_preprocess": "none",
+          "backend": "hwp-managed-direct-dll-host",
+          "engine_profile": "2020",
+          "font_scope": {
+            "mode": "session0",
+            "status": "verified",
+            "profile_source": "protected_config",
+            "session_id": 0,
+            "mapped_font_count": 2,
+            "registered_font_count": 2,
+            "failed_font_count": 0,
+            "parent_visibility": "verified",
+            "child_visibility": "verified"
+          },
+          "worker_bits": 32,
+          "preprocess": null
+        }
+      }
+    },
+    {
+      "input": "tests/fixtures/stored_leading_float/stored-negative-title-fits.hwp",
+      "input_sha256": "42aba64a9157abc7f3d0fa6f3636ccfcd1be0be1d75d57cfa36b013192c60581",
+      "pdf": "pdf/stored-leading-float-page-break/stored-negative-title-fits-2020.pdf",
+      "pdf_sha256": "326c7615f640b5ae880185064525a725688b20d4f32559dd0c269bb0b2947b88",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "3c71ca89-2aca-418a-b32c-b667fd9b03ed",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 2,
+          "logical_page_count": null,
+          "input_preprocess": "none",
+          "backend": "hwp-managed-direct-dll-host",
+          "engine_profile": "2020",
+          "font_scope": {
+            "mode": "session0",
+            "status": "verified",
+            "profile_source": "protected_config",
+            "session_id": 0,
+            "mapped_font_count": 2,
+            "registered_font_count": 2,
+            "failed_font_count": 0,
+            "parent_visibility": "verified",
+            "child_visibility": "verified"
+          },
+          "worker_bits": 32,
+          "preprocess": null
+        }
+      }
+    }
+  ]
+}

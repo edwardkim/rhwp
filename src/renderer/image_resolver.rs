@@ -56,7 +56,8 @@ pub(crate) fn resolved_image_crop_reference_size(image: &ImageNode) -> Option<(u
         let data = image.data.as_deref()?;
         (image.crop.is_some()
             && crate::renderer::svg::detect_image_mime_type(data) == "image/x-wmf")
-            .then_some((15_000, 15_000))
+            .then(|| image_crop_reference(image))
+            .flatten()
     })
 }
 
@@ -784,7 +785,11 @@ pub(crate) fn image_crop_reference(image: &ImageNode) -> Option<(u32, u32)> {
         .as_deref()
         .is_some_and(|data| detect_image_mime_type(data) == "image/x-wmf")
     {
-        super::metafile_geometry::wmf_crop_reference(image.original_size_hu)
+        super::metafile_geometry::wmf_crop_reference(
+            image.original_size_hu,
+            image.data.as_deref(),
+            image.crop,
+        )
     } else {
         image.original_size_hu
     }

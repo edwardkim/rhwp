@@ -780,3 +780,119 @@ samples/86712_regulatory_analysis.hwp	64	64
 samples/HWP5-nopassword-123456.hwpx	24	24
 samples/issue1891/86712_regulatory_analysis.hwpx	64	64
 samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	315	315
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper-split-behind-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_cell_paper_shape/paper-split-behind.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper-split-front-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_cell_paper_shape/paper-split-front.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper_front-hwp5-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_cell_paper_shape/paper_front.hwp	1	1
+# 검증한 과거 경로: pdf/paper_front-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_cell_paper_shape/paper_front.hwpx	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper_square-hwp5-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_cell_paper_shape/paper_square.hwp	1	1
+# 검증한 과거 경로: pdf/paper_square-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_cell_paper_shape/paper_square.hwpx	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper_square_nested-hwp5-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_cell_paper_shape/paper_square_nested.hwp	1	1
+# 검증한 과거 경로: pdf/paper_square_nested-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_cell_paper_shape/paper_square_nested.hwpx	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper_square_split-hwp5-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_cell_paper_shape/paper_square_split.hwp	2	2
+# 검증한 과거 경로: pdf/paper_square_split-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_cell_paper_shape/paper_square_split.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-bottom-margin10mm-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_overlay_nested/grow-bottom-margin10mm.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-last-row-content-fit-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_overlay_nested/grow-last-row-content-fit.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-tail-only-continuation-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_overlay_nested/grow-tail-only-continuation.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/overlay_nested_anchor_offset-hwp5-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_overlay_nested/overlay_nested_anchor_offset.hwp	1	1
+# 검증한 과거 경로: pdf/overlay_nested_anchor_offset-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_overlay_nested/overlay_nested_anchor_offset.hwpx	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/overlay_nested_center-hwp5-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_overlay_nested/overlay_nested_center.hwp	1	1
+# 검증한 과거 경로: pdf/overlay_nested_center-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_overlay_nested/overlay_nested_center.hwpx	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/overlay_nested_grow_split-hancom-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_overlay_nested/overlay_nested_grow_split-hancom.hwp	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/overlay_nested_grow_split-hwp5-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_overlay_nested/overlay_nested_grow_split.hwp	2	2
+# 검증한 과거 경로: pdf/overlay_nested_grow_split-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_overlay_nested/overlay_nested_grow_split.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/overlay_nested_split-hancom-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_overlay_nested/overlay_nested_split-hancom.hwp	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/overlay_nested_split-hwp5-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_overlay_nested/overlay_nested_split.hwp	2	2
+# 검증한 과거 경로: pdf/overlay_nested_split-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pk40991_overlay_nested/overlay_nested_split.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-bottom-align-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-bottom-align.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-bottom-margin0-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-bottom-margin0.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-declared-fit-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-declared-fit.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-declared-near-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-declared-near.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-declared-short-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-declared-short.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-declared-under-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-declared-under.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-inner-top0-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-inner-top0.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-inner-top900-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-inner-top900.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-page-before-large-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-page-before-large.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-page-before-small-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-page-before-small.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-page-near-large-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-page-near-large.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-page-near-small-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-page-near-small.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-parent-padding0-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-parent-padding0.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/grow-parent-padding300-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/grow-parent-padding300.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/overlay_nested_anchor_offset-hancom-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/overlay_nested_anchor_offset-hancom.hwp	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/overlay_nested_center-hancom-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/overlay_nested_center-hancom.hwp	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper-103300-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/paper-103300.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper-103900-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/paper-103900.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper-104500-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/paper-104500.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper-104800-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/paper-104800.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper-106000-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/paper-106000.hwpx	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper-107200-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/paper-107200.hwpx	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper-split-latin-default-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/paper-split-latin-default.hwp	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper-split-latin-explicit-hcr-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/paper-split-latin-explicit-hcr.hwp	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper_front-hancom-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/paper_front-hancom.hwp	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper_square-hancom-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/paper_square-hancom.hwp	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper_square_nested-hancom-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/paper_square_nested-hancom.hwp	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/paper_square_split-hancom-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/paper_square_split-hancom.hwp	2	2
+# 검증한 과거 경로: pdf/pr9349-cell-floats/photo-a5-height-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/photo-a5-height.hwp	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/photo-right-overlap-neg-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/photo-right-overlap-neg.hwp	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/photo-short-page-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/pr9349-cell-floats/photo-short-page.hwp	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/photo-center-overlap-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/side_by_side_photo_cell/photo-center-overlap.hwp	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/photo-left-touch-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/side_by_side_photo_cell/photo-left-touch.hwp	1	1
+# 검증한 과거 경로: pdf/pr9349-cell-floats/photo-right-overlap-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/side_by_side_photo_cell/photo-right-overlap.hwp	1	1
+# 검증한 과거 경로: pdf/side-by-side-photo-rows-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/side_by_side_photo_cell/side-by-side-photo-rows.hwp	1	1

@@ -436,6 +436,7 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
                     ctrl_idx,
                     order_pos,
                     next_para,
+                    paragraphs_all.get(para_idx + 1..).unwrap_or(&[]),
                     measured_tables,
                     has_tac,
                     host_col_w,

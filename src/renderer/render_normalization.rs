@@ -101,6 +101,7 @@ pub struct RenderNormalizationOverlay {
     nested_table_widths_by_pointer: HashMap<usize, Arc<NestedTableWidthProjection>>,
     text_reflowed_tables_by_pointer: HashSet<usize>,
     rendered_cell_frame_changes: HashMap<usize, HashSet<(u16, u16)>>,
+    cell_text_reflow_starts: HashMap<usize, (u16, usize)>,
     rebased_table_frames_by_pointer: HashSet<usize>,
     expanded_inline_host_tables_by_pointer: HashSet<usize>,
     nested_tables_with_reflowed_hosts: HashSet<usize>,
@@ -414,6 +415,66 @@ impl RenderNormalizationOverlay {
             .insert(table as *const Table as usize);
 
         Ok(())
+    }
+
+    /// A direct text edit in a full-width, non-spanning row can invalidate
+    /// this cell's downstream frames while leaving earlier source lines valid.
+    pub(crate) fn register_cell_text_reflow_start<S: crate::storage::Storage>(
+        &mut self,
+        source: &Table,
+        table: &Table,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        let mut edited = source.cells.iter().filter_map(|cell| {
+            cell.paragraphs
+                .iter()
+                .position(|para| para.cell_lines_edited)
+                .map(|first| (cell, first))
+        });
+        let Some((source_cell, first)) = edited.next() else {
+            return Ok(());
+        };
+        if edited.next().is_some()
+            || first == 0
+            || source_cell.row_span != 1
+            || source_cell.col != 0
+            || source_cell.col_span != source.col_count
+            || source.common.treat_as_char
+            || source.layout_page_break() != crate::model::table::TablePageBreak::RowBreak
+        {
+            return Ok(());
+        }
+        let Some(cell) = table
+            .cells
+            .iter()
+            .find(|cell| cell.row == source_cell.row && cell.col == 0)
+        else {
+            return Ok(());
+        };
+        let Some(prefix) = cell.paragraphs.get(..first) else {
+            return Ok(());
+        };
+        if prefix
+            .iter()
+            .zip(&source_cell.paragraphs)
+            .any(|(current, original)| {
+                current.stored_text_partition_is_dirty()
+                    || current.cell_format_vpos_dirty
+                    || current.line_segs != original.line_segs
+            })
+        {
+            return Ok(());
+        }
+        storage.reserve_map(&mut self.cell_text_reflow_starts, 1)?;
+        self.cell_text_reflow_starts
+            .insert(table as *const Table as usize, (cell.row, first));
+        Ok(())
+    }
+
+    pub(crate) fn cell_text_reflow_start(&self, table: &Table, cell: &Cell) -> Option<usize> {
+        self.cell_text_reflow_starts
+            .get(&(table as *const Table as usize))
+            .and_then(|&(row, first)| (cell.row == row && cell.col == 0).then_some(first))
     }
 
     /// render-only 재조판이 물리 슬롯도 바꾼 표는 원본 쪽 컷을 다시 인증할 수 없다.

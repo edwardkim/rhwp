@@ -859,6 +859,17 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
             }
         }
     }
+    let paragraph_end_trailing = alignment::paragraph_end_aligned_trailing_spaces(
+        &row,
+        &chars,
+        style.alignment,
+        |char_style| {
+            styles
+                .char_styles
+                .get(char_style as usize)
+                .is_some_and(|cs| cs.underline != crate::model::style::UnderlineType::None)
+        },
+    );
     let Some(()) = finish_row_with_storage(
         &mut result,
         &mut row,
@@ -866,7 +877,7 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
         &exclusions,
         style,
         frame.dpi,
-        RowEnding::ParagraphEnd(&chars),
+        RowEnding::ParagraphEnd(&chars, paragraph_end_trailing),
         float_tail_hung_from,
         storage,
     )?
@@ -932,6 +943,14 @@ fn finish_row_with_storage<S: crate::storage::Storage>(
             .map(|item| item.width)
             .sum::<f64>();
     }
+    // 문단 끝 줄은 호출자가 정한 말미 공백만 정렬 폭에서 뺀다. 상자의 전진량은
+    // 그대로 두어 글자 원점·커서 위치는 바뀌지 않는다.
+    row_metrics.width -= row
+        .iter()
+        .rev()
+        .take(ending.paragraph_end_trimmed_boxes())
+        .map(|item| item.width)
+        .sum::<f64>();
     let row_horizontal = paragraph_row_horizontal(horizontal, style, plan.boxes.is_empty());
     let Some((mut x, y, carved, available_width)) = row_geometry_with_storage(
         row_metrics,

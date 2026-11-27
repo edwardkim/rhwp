@@ -2479,7 +2479,7 @@ impl SvgRenderer {
                     .flatten()
             });
         let crop_reference = if mime_type == "image/x-wmf" {
-            super::metafile_geometry::wmf_crop_reference(img.original_size_hu)
+            super::metafile_geometry::wmf_crop_reference(img.original_size_hu, Some(data), img.crop)
         } else {
             img.original_size_hu
         };

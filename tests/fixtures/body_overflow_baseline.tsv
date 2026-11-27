@@ -4,6 +4,9 @@
 [2027] 온새미로 1 본교재.hwp	0
 [2027] 온새미로 1 본교재.hwpx	0
 issue1891/86712_regulatory_analysis.hwpx	0
+# #9000 파생 표본(KAF 회의자료 표 구간 44쪽, 한/글 2020 Print 44쪽): 21~26쪽 표 개체가 저장 높이대로 본문 아래 끝을 넘는다
+# (23쪽 마지막 글줄 「호, 건물번호, …」 가 한컴 PDF 에서도 쪽 번호 줄 아래 약 723px 에 인쇄, Native raw 99.34~99.93). 수정 전(devel 9ee9a5b0b1)과 같은 5건.
+issue9000/kaf_table_section.hwp	5
 복학원서.hwp	0
 
 # #7727: 전204쪽 Native/fresh WASM 최저92.05/92.16% 수용 후 복원. fixed170b/후보의 기존 계산식 실측 모두0; 다른 원장은 유지.
@@ -283,3 +286,14 @@ issue8993/31675-rowbreak-overflowing-frame.hwp	2
 issue8660/picture_unrestricted_over_12px.hwp	1
 # #9239 신규 공개 샘플(고령자 취업지원 제도개선 30023, 한/글 Print 62쪽): 43쪽 문단 519 의 글자처럼 취급 표는 위 캡션이 285문단(5408px)이라 캡션 뒤쪽과 바깥 표(21×7)가 쪽 아래로 넘는다. 한 줄이라 나뉘지 않으며 한/글 Print 도 같다 — 기준 PDF 전체에 바깥 표의 글자(「이탈리아」)가 없고 43쪽에는 캡션 첫 문단의 표만 보인다. 수정 전(devel 411a9f944c)과 수정 후의 값이 같다.
 issue9239/senior-employment-policy-caption-float-table.hwp	3
+# #9379 파생 표본(KAF 회의자료 부록 54쪽, 한/글 2020 Print 54쪽): 21~26쪽 표 개체가 저장 높이대로 본문 아래 끝을 넘는다.
+# 원본 1~32쪽을 그대로 가진 #9000 파생 표본(issue9000/kaf_table_section.hwp)의 같은 5건이다 — 한컴 PDF 도 23쪽 마지막 글줄을
+# 쪽 번호 줄 아래에 인쇄한다. 수정 전(devel 8a26c00869)과 수정 후의 쪽·경로·넘침 값이 같다.
+issue9379/kaf_appendix.hwp	5
+# #9419 같은 문서를 한/글 2020 으로 HWPX 로 다시 저장한 표본(54쪽, 한/글 2020 Print 54쪽): layout-anomaly 의 쪽·경로·넘침 값이
+# 위 issue9379/kaf_appendix.hwp 와 같은 5건이다(수정 후 기준; 수정 전에는 21·23쪽 표가 위 간격만큼 올라가 있었다).
+issue9419/kaf_appendix_2020.hwpx	5
+
+# #9384 용지 끝 사진 대조. 한컴 2020 인쇄에서 같은 위치에서 잘리는 의도적 입력이다.
+pr9349-cell-floats/photo-a5-height.hwp	1
+pr9349-cell-floats/photo-short-page.hwp	1

@@ -1,0 +1,2507 @@
+{
+  "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+  "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+  "rebased_validation_head": "f37b89739d9336b75232e7642e1c50f707f387df",
+  "rebased_upstream_devel": "28541762d2e3b8be09221c2c02359440b241d472",
+  "rebase_print_equivalence": {
+    "pages_compared": 4046,
+    "different_rgb_pages": 0,
+    "different_raw_score_pages": 0,
+    "table": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/rebase-print-parity.tsv",
+    "table_sha256": "c1aa47bcd4d4e7f73606a3b81267e51ccbbadf4145f65996da96398a94cb1345"
+  },
+  "rebased_editing_e2e": {
+    "fixture": "tests/fixtures/group_textbox_cell/table-inline-equation.hwpx",
+    "check": "rhwp-studio/e2e/nested-text-box-editing.test.mjs",
+    "result": "pass",
+    "wasm_sha256": "2b0fef56e465a8aae5e1debd956373d379c7cff7427db98679d2e5f15f732105"
+  },
+  "observations": 12138,
+  "page_conditions": 4046,
+  "measurement_table": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/page-floors.tsv",
+  "measurement_table_sha256": "c89d7bef4170053f825870f2c7b19014c13c54d8e81e61c7467e0b9076fe2559",
+  "original_supply_sha256": "7615caa7343c4d65a0368235b4e3dbb92b506e610221cfa00d43d6b481420273",
+  "final_supply_sha256": "7315fd9d73447023dc6ea5c2e31026c30b1acd46e4b90322d6608baa68a7fe04",
+  "unique_font_programs": 331,
+  "supply_slots": 1690,
+  "excluded_filename_suffixes": [
+    "_MAC.otf"
+  ],
+  "role": "사용자 승인에 따라 세 OS의 같은 입력·PDF·2px raw 실측 중 적용 가능한 공통 하한 확인",
+  "runs": {
+    "mac": {
+      "native": {
+        "rows": 2023,
+        "documents": {
+          "outline-minimal": {
+            "document_id": "12ba0f8dcb5ba0f5",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "binary_sha256": "3836d3cbe4b058db3a7d19098fa67afc18773cbed480dea994b1159126b5836a"
+            }
+          },
+          "angle-narrow": {
+            "document_id": "59f6ab1155623bda",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "binary_sha256": "3836d3cbe4b058db3a7d19098fa67afc18773cbed480dea994b1159126b5836a"
+            }
+          },
+          "nested": {
+            "document_id": "78e1720edfe2277d",
+            "pages": 17,
+            "minimum_display": "99.64",
+            "measured_tsv_sha256": "ea49f7e5926a0c11d72479c0aa92536c385256e02561fb882cd5e2f2508af8b3",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "binary_sha256": "3836d3cbe4b058db3a7d19098fa67afc18773cbed480dea994b1159126b5836a"
+            }
+          },
+          "chemical": {
+            "document_id": "b6541b8c57c46090",
+            "pages": 103,
+            "minimum_display": "99.65",
+            "measured_tsv_sha256": "c1216111701f1353d02cfb4cbbca746114c1d1e43d2acee9944b777fb3123d21",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "binary_sha256": "3836d3cbe4b058db3a7d19098fa67afc18773cbed480dea994b1159126b5836a"
+            }
+          },
+          "decree": {
+            "document_id": "61c6ae96913006c5",
+            "pages": 74,
+            "minimum_display": "97.20",
+            "measured_tsv_sha256": "f3ec6ce45a3c0ad8bdc9495112eec2ac4c44471551fcbd2d6e8f43ef11881cb3",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "binary_sha256": "3836d3cbe4b058db3a7d19098fa67afc18773cbed480dea994b1159126b5836a"
+            }
+          },
+          "outline": {
+            "document_id": "69bcf084e2ae31a5",
+            "pages": 9,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "binary_sha256": "3836d3cbe4b058db3a7d19098fa67afc18773cbed480dea994b1159126b5836a"
+            }
+          },
+          "sample10": {
+            "document_id": "b1a9055c4c7e6f09",
+            "pages": 763,
+            "minimum_display": "99.57",
+            "measured_tsv_sha256": "24a4c3bc3368f412242846a5523b7d733c95be9a9f92bf30643388ac27290e2f",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "binary_sha256": "3836d3cbe4b058db3a7d19098fa67afc18773cbed480dea994b1159126b5836a"
+            }
+          },
+          "handbook-hwp": {
+            "document_id": "2fb2575d58042dcf",
+            "pages": 383,
+            "minimum_display": "99.97",
+            "measured_tsv_sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "binary_sha256": "3836d3cbe4b058db3a7d19098fa67afc18773cbed480dea994b1159126b5836a"
+            }
+          },
+          "handbook-hwpx": {
+            "document_id": "941fe0c3549c0017",
+            "pages": 383,
+            "minimum_display": "99.97",
+            "measured_tsv_sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "binary_sha256": "3836d3cbe4b058db3a7d19098fa67afc18773cbed480dea994b1159126b5836a"
+            }
+          },
+          "yeongwol": {
+            "document_id": "0b7e7d0538284271",
+            "pages": 4,
+            "minimum_display": "99.98",
+            "measured_tsv_sha256": "2c75da366ae71cf267bf7a0183884be22afb42e97edc25041479cde66751d575",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "binary_sha256": "3836d3cbe4b058db3a7d19098fa67afc18773cbed480dea994b1159126b5836a"
+            }
+          },
+          "seo-body-list-typed": {
+            "document_id": "2b43ec3782a748e1",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "binary_sha256": "3836d3cbe4b058db3a7d19098fa67afc18773cbed480dea994b1159126b5836a"
+            }
+          },
+          "seo-helvetica-styles": {
+            "document_id": "4314830495cfde87",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "binary_sha256": "3836d3cbe4b058db3a7d19098fa67afc18773cbed480dea994b1159126b5836a"
+            }
+          },
+          "sample16-hwpx": {
+            "document_id": "43c0a207f6daa0bb",
+            "pages": 64,
+            "minimum_display": "99.43",
+            "measured_tsv_sha256": "5a7cd135a78fd4c490a8e225b8d07b56fccad537baf4db9f0f18ecb69751f7d5",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "binary_sha256": "3836d3cbe4b058db3a7d19098fa67afc18773cbed480dea994b1159126b5836a"
+            }
+          },
+          "sample16-hwp2022": {
+            "document_id": "4bac5a5d1702df5f",
+            "pages": 64,
+            "minimum_display": "99.44",
+            "measured_tsv_sha256": "48900dbeba3e1970b02b74d28dcc79800337545d588cbafeaaa847a850c854dc",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "binary_sha256": "3836d3cbe4b058db3a7d19098fa67afc18773cbed480dea994b1159126b5836a"
+            }
+          },
+          "seo-re-03-latin": {
+            "document_id": "52ee61fe7201e36b",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "binary_sha256": "3836d3cbe4b058db3a7d19098fa67afc18773cbed480dea994b1159126b5836a"
+            }
+          },
+          "issue8040-insert": {
+            "document_id": "71f98206e45c354a",
+            "pages": 4,
+            "minimum_display": "99.99",
+            "measured_tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "binary_sha256": "3836d3cbe4b058db3a7d19098fa67afc18773cbed480dea994b1159126b5836a"
+            }
+          },
+          "sample16-hwp2024": {
+            "document_id": "7df4af8174abd82a",
+            "pages": 64,
+            "minimum_display": "99.43",
+            "measured_tsv_sha256": "5a7cd135a78fd4c490a8e225b8d07b56fccad537baf4db9f0f18ecb69751f7d5",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "binary_sha256": "3836d3cbe4b058db3a7d19098fa67afc18773cbed480dea994b1159126b5836a"
+            }
+          },
+          "issue7905": {
+            "document_id": "a8e95b4accc79fa8",
+            "pages": 6,
+            "minimum_display": "98.86",
+            "measured_tsv_sha256": "f6879a02ba8764cd58d12fdc6514c1336bcc5dbd3c22631bf0e6aa85f72fa893",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "binary_sha256": "3836d3cbe4b058db3a7d19098fa67afc18773cbed480dea994b1159126b5836a"
+            }
+          },
+          "issue8040-insert-delete": {
+            "document_id": "ccd0cd0b7e76fe2f",
+            "pages": 4,
+            "minimum_display": "99.99",
+            "measured_tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "binary_sha256": "3836d3cbe4b058db3a7d19098fa67afc18773cbed480dea994b1159126b5836a"
+            }
+          },
+          "seo-pic-crop-01": {
+            "document_id": "cdacd874b6e6ac66",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "binary_sha256": "3836d3cbe4b058db3a7d19098fa67afc18773cbed480dea994b1159126b5836a"
+            }
+          },
+          "seo-shape-group-02": {
+            "document_id": "d03a9dde3d5dc7ac",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "binary_sha256": "3836d3cbe4b058db3a7d19098fa67afc18773cbed480dea994b1159126b5836a"
+            }
+          },
+          "spec13": {
+            "document_id": "3298ed895b9a645c",
+            "pages": 71,
+            "minimum_display": "99.92",
+            "measured_tsv_sha256": "8872491efcc58b013f7647fcabdf0c9be12fdf14677b74410227ab3c4cdb477e",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "binary_sha256": "3836d3cbe4b058db3a7d19098fa67afc18773cbed480dea994b1159126b5836a"
+            }
+          },
+          "outline-demo": {
+            "document_id": "6456507d769ec90b",
+            "pages": 3,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "binary_sha256": "3836d3cbe4b058db3a7d19098fa67afc18773cbed480dea994b1159126b5836a"
+            }
+          }
+        }
+      },
+      "wasm": {
+        "rows": 2023,
+        "documents": {
+          "outline-minimal": {
+            "document_id": "12ba0f8dcb5ba0f5",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "angle-narrow": {
+            "document_id": "59f6ab1155623bda",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "nested": {
+            "document_id": "78e1720edfe2277d",
+            "pages": 17,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "ecb048af51ad821884726d567a4f747feb05a3965bf51b2f49b9777e953ed0d1",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "chemical": {
+            "document_id": "b6541b8c57c46090",
+            "pages": 103,
+            "minimum_display": "99.65",
+            "measured_tsv_sha256": "c1216111701f1353d02cfb4cbbca746114c1d1e43d2acee9944b777fb3123d21",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "decree": {
+            "document_id": "61c6ae96913006c5",
+            "pages": 74,
+            "minimum_display": "99.91",
+            "measured_tsv_sha256": "1593bff9198676c8ecdedd878429e0493f6e38ea8d68b8866db07fd6cc730309",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "outline": {
+            "document_id": "69bcf084e2ae31a5",
+            "pages": 9,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "sample10": {
+            "document_id": "b1a9055c4c7e6f09",
+            "pages": 763,
+            "minimum_display": "99.57",
+            "measured_tsv_sha256": "a6662096d4b2222b6d29a36e547c5842bf25120b8b199149883635f348030bad",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "handbook-hwp": {
+            "document_id": "2fb2575d58042dcf",
+            "pages": 383,
+            "minimum_display": "99.96",
+            "measured_tsv_sha256": "42d98e13b63b2cdaa6b49f2b313e53fd2b281214a5b4b46caeabc92ab186b97a",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "handbook-hwpx": {
+            "document_id": "941fe0c3549c0017",
+            "pages": 383,
+            "minimum_display": "99.96",
+            "measured_tsv_sha256": "42d98e13b63b2cdaa6b49f2b313e53fd2b281214a5b4b46caeabc92ab186b97a",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "yeongwol": {
+            "document_id": "0b7e7d0538284271",
+            "pages": 4,
+            "minimum_display": "99.99",
+            "measured_tsv_sha256": "b6b1ffe9fea23444d7678ec5e5cb78474d71569b3fee154d962ad95b9adf5f60",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "seo-body-list-typed": {
+            "document_id": "2b43ec3782a748e1",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "seo-helvetica-styles": {
+            "document_id": "4314830495cfde87",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "sample16-hwpx": {
+            "document_id": "43c0a207f6daa0bb",
+            "pages": 64,
+            "minimum_display": "99.97",
+            "measured_tsv_sha256": "355bd7db77b7b2cf65bd32d526a8b8676d41ce63233a127b072ce8c5c06cae39",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "sample16-hwp2022": {
+            "document_id": "4bac5a5d1702df5f",
+            "pages": 64,
+            "minimum_display": "99.97",
+            "measured_tsv_sha256": "2fde839d6e31df3b962909d373a8119dfe06e582f3d5e8f771060a809b653360",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "seo-re-03-latin": {
+            "document_id": "52ee61fe7201e36b",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "issue8040-insert": {
+            "document_id": "71f98206e45c354a",
+            "pages": 4,
+            "minimum_display": "99.99",
+            "measured_tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "sample16-hwp2024": {
+            "document_id": "7df4af8174abd82a",
+            "pages": 64,
+            "minimum_display": "99.97",
+            "measured_tsv_sha256": "355bd7db77b7b2cf65bd32d526a8b8676d41ce63233a127b072ce8c5c06cae39",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "issue7905": {
+            "document_id": "a8e95b4accc79fa8",
+            "pages": 6,
+            "minimum_display": "98.86",
+            "measured_tsv_sha256": "2bffc1537a24f58a1447d9211be6c987290b133882b6336c97ac762d6a222c56",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "issue8040-insert-delete": {
+            "document_id": "ccd0cd0b7e76fe2f",
+            "pages": 4,
+            "minimum_display": "99.99",
+            "measured_tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "seo-pic-crop-01": {
+            "document_id": "cdacd874b6e6ac66",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "seo-shape-group-02": {
+            "document_id": "d03a9dde3d5dc7ac",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "spec13": {
+            "document_id": "3298ed895b9a645c",
+            "pages": 71,
+            "minimum_display": "99.92",
+            "measured_tsv_sha256": "8872491efcc58b013f7647fcabdf0c9be12fdf14677b74410227ab3c4cdb477e",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "outline-demo": {
+            "document_id": "6456507d769ec90b",
+            "pages": 3,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          }
+        }
+      }
+    },
+    "win10-ted": {
+      "native": {
+        "rows": 2023,
+        "documents": {
+          "outline-minimal": {
+            "document_id": "12ba0f8dcb5ba0f5",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "c977cbb4746e5906fc7384b09d68324a959a5c693cbf18b1c0907375c6e60f42",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fd081f453d0d46039d3fb2ac4effa46b69102d41960a9dbc95235092a05d7bcf"
+            }
+          },
+          "angle-narrow": {
+            "document_id": "59f6ab1155623bda",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "c977cbb4746e5906fc7384b09d68324a959a5c693cbf18b1c0907375c6e60f42",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fd081f453d0d46039d3fb2ac4effa46b69102d41960a9dbc95235092a05d7bcf"
+            }
+          },
+          "nested": {
+            "document_id": "78e1720edfe2277d",
+            "pages": 17,
+            "minimum_display": "99.64",
+            "measured_tsv_sha256": "f3573d706a29f4a0f650b30f5fe6326c539272d8d56a7afcfd1a13136272ebe9",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fd081f453d0d46039d3fb2ac4effa46b69102d41960a9dbc95235092a05d7bcf"
+            }
+          },
+          "chemical": {
+            "document_id": "b6541b8c57c46090",
+            "pages": 103,
+            "minimum_display": "99.06",
+            "measured_tsv_sha256": "015b120170ac52b2c0c1a835870c26398eb0a918fc325452595ae44f8675e82d",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fd081f453d0d46039d3fb2ac4effa46b69102d41960a9dbc95235092a05d7bcf"
+            }
+          },
+          "decree": {
+            "document_id": "61c6ae96913006c5",
+            "pages": 74,
+            "minimum_display": "97.27",
+            "measured_tsv_sha256": "6584e7e70a40b5b679328709fe6ef8d44abc01f486235f93f9e4dc6cfe0cff9c",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fd081f453d0d46039d3fb2ac4effa46b69102d41960a9dbc95235092a05d7bcf"
+            }
+          },
+          "outline": {
+            "document_id": "69bcf084e2ae31a5",
+            "pages": 9,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "41bf10be881021eb2a318289aa74b3346a868ceb73e72e517752350e35ce62cd",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fd081f453d0d46039d3fb2ac4effa46b69102d41960a9dbc95235092a05d7bcf"
+            }
+          },
+          "sample10": {
+            "document_id": "b1a9055c4c7e6f09",
+            "pages": 763,
+            "minimum_display": "99.57",
+            "measured_tsv_sha256": "f93c4993970254e71f9bf0eab292753c74f18331e45b9d7c3638b95c5369325b",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fd081f453d0d46039d3fb2ac4effa46b69102d41960a9dbc95235092a05d7bcf"
+            }
+          },
+          "handbook-hwp": {
+            "document_id": "2fb2575d58042dcf",
+            "pages": 383,
+            "minimum_display": "99.97",
+            "measured_tsv_sha256": "280777dbf3a6e56df074f3924abf14042b7badea426ec412d050c4a55e08f6d7",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fd081f453d0d46039d3fb2ac4effa46b69102d41960a9dbc95235092a05d7bcf"
+            }
+          },
+          "handbook-hwpx": {
+            "document_id": "941fe0c3549c0017",
+            "pages": 383,
+            "minimum_display": "99.97",
+            "measured_tsv_sha256": "280777dbf3a6e56df074f3924abf14042b7badea426ec412d050c4a55e08f6d7",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fd081f453d0d46039d3fb2ac4effa46b69102d41960a9dbc95235092a05d7bcf"
+            }
+          },
+          "yeongwol": {
+            "document_id": "0b7e7d0538284271",
+            "pages": 4,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "d1519b824b3ce428de7e93f083b8c6ddda96a8c8599cb421111a7fa4166db67b",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fd081f453d0d46039d3fb2ac4effa46b69102d41960a9dbc95235092a05d7bcf"
+            }
+          },
+          "seo-body-list-typed": {
+            "document_id": "2b43ec3782a748e1",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "c977cbb4746e5906fc7384b09d68324a959a5c693cbf18b1c0907375c6e60f42",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fd081f453d0d46039d3fb2ac4effa46b69102d41960a9dbc95235092a05d7bcf"
+            }
+          },
+          "seo-helvetica-styles": {
+            "document_id": "4314830495cfde87",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "c977cbb4746e5906fc7384b09d68324a959a5c693cbf18b1c0907375c6e60f42",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fd081f453d0d46039d3fb2ac4effa46b69102d41960a9dbc95235092a05d7bcf"
+            }
+          },
+          "sample16-hwpx": {
+            "document_id": "43c0a207f6daa0bb",
+            "pages": 64,
+            "minimum_display": "99.44",
+            "measured_tsv_sha256": "f14c5b4da751d6b62ea79c6cfa354809a659d0de31a555b61932ba8d6d2afefd",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fd081f453d0d46039d3fb2ac4effa46b69102d41960a9dbc95235092a05d7bcf"
+            }
+          },
+          "sample16-hwp2022": {
+            "document_id": "4bac5a5d1702df5f",
+            "pages": 64,
+            "minimum_display": "99.44",
+            "measured_tsv_sha256": "8df5c20b8d90c5e268cfa6d5fb11df801f17467c0a6b324e971e666232731f6d",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fd081f453d0d46039d3fb2ac4effa46b69102d41960a9dbc95235092a05d7bcf"
+            }
+          },
+          "seo-re-03-latin": {
+            "document_id": "52ee61fe7201e36b",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "c977cbb4746e5906fc7384b09d68324a959a5c693cbf18b1c0907375c6e60f42",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fd081f453d0d46039d3fb2ac4effa46b69102d41960a9dbc95235092a05d7bcf"
+            }
+          },
+          "issue8040-insert": {
+            "document_id": "71f98206e45c354a",
+            "pages": 4,
+            "minimum_display": "99.99",
+            "measured_tsv_sha256": "2538e3d4587d14730f393fc5c4c18adc64b8d8c09ac629aa0bb43e228cf7e9f7",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fd081f453d0d46039d3fb2ac4effa46b69102d41960a9dbc95235092a05d7bcf"
+            }
+          },
+          "sample16-hwp2024": {
+            "document_id": "7df4af8174abd82a",
+            "pages": 64,
+            "minimum_display": "99.44",
+            "measured_tsv_sha256": "f14c5b4da751d6b62ea79c6cfa354809a659d0de31a555b61932ba8d6d2afefd",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fd081f453d0d46039d3fb2ac4effa46b69102d41960a9dbc95235092a05d7bcf"
+            }
+          },
+          "issue7905": {
+            "document_id": "a8e95b4accc79fa8",
+            "pages": 6,
+            "minimum_display": "98.86",
+            "measured_tsv_sha256": "e6de7da35cd999cea9fb6102f815175c70a1e8cb1711d91429d616ff986cc84c",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fd081f453d0d46039d3fb2ac4effa46b69102d41960a9dbc95235092a05d7bcf"
+            }
+          },
+          "issue8040-insert-delete": {
+            "document_id": "ccd0cd0b7e76fe2f",
+            "pages": 4,
+            "minimum_display": "99.99",
+            "measured_tsv_sha256": "2538e3d4587d14730f393fc5c4c18adc64b8d8c09ac629aa0bb43e228cf7e9f7",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fd081f453d0d46039d3fb2ac4effa46b69102d41960a9dbc95235092a05d7bcf"
+            }
+          },
+          "seo-pic-crop-01": {
+            "document_id": "cdacd874b6e6ac66",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "c977cbb4746e5906fc7384b09d68324a959a5c693cbf18b1c0907375c6e60f42",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fd081f453d0d46039d3fb2ac4effa46b69102d41960a9dbc95235092a05d7bcf"
+            }
+          },
+          "seo-shape-group-02": {
+            "document_id": "d03a9dde3d5dc7ac",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "c977cbb4746e5906fc7384b09d68324a959a5c693cbf18b1c0907375c6e60f42",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fd081f453d0d46039d3fb2ac4effa46b69102d41960a9dbc95235092a05d7bcf"
+            }
+          },
+          "spec13": {
+            "document_id": "3298ed895b9a645c",
+            "pages": 71,
+            "minimum_display": "99.92",
+            "measured_tsv_sha256": "fbb76bda693efaec409e2ac2510ba33b7b09b3790755901522286ec17064ed4e",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fd081f453d0d46039d3fb2ac4effa46b69102d41960a9dbc95235092a05d7bcf"
+            }
+          },
+          "outline-demo": {
+            "document_id": "6456507d769ec90b",
+            "pages": 3,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "379aa1b1c421973cd5138875c75d1c80b7b577542213a39ee3cc192cfa06fef8",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fd081f453d0d46039d3fb2ac4effa46b69102d41960a9dbc95235092a05d7bcf"
+            }
+          }
+        }
+      },
+      "wasm": {
+        "rows": 2023,
+        "documents": {
+          "outline-minimal": {
+            "document_id": "12ba0f8dcb5ba0f5",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "c977cbb4746e5906fc7384b09d68324a959a5c693cbf18b1c0907375c6e60f42",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "angle-narrow": {
+            "document_id": "59f6ab1155623bda",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "c977cbb4746e5906fc7384b09d68324a959a5c693cbf18b1c0907375c6e60f42",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "nested": {
+            "document_id": "78e1720edfe2277d",
+            "pages": 17,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "d9c7ee3d2b31af9968227ad788384305a83f6305c55eaeeced5ca6f6ef8e14dd",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "chemical": {
+            "document_id": "b6541b8c57c46090",
+            "pages": 103,
+            "minimum_display": "99.66",
+            "measured_tsv_sha256": "90455e19c20c1229225aabf092f7ae6464628b01231050cf6714446af657366b",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "decree": {
+            "document_id": "61c6ae96913006c5",
+            "pages": 74,
+            "minimum_display": "99.41",
+            "measured_tsv_sha256": "ba995f24bcd6ade456977eb44e642f27576d1cba8fb7586ebbc350aaaa2f808e",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "outline": {
+            "document_id": "69bcf084e2ae31a5",
+            "pages": 9,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "41bf10be881021eb2a318289aa74b3346a868ceb73e72e517752350e35ce62cd",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "sample10": {
+            "document_id": "b1a9055c4c7e6f09",
+            "pages": 763,
+            "minimum_display": "99.57",
+            "measured_tsv_sha256": "45663d5260ab83ad3056ddbd41c04cc08deac282d73d1419a23e78029130aa86",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "handbook-hwp": {
+            "document_id": "2fb2575d58042dcf",
+            "pages": 383,
+            "minimum_display": "99.96",
+            "measured_tsv_sha256": "1cfc1814575f257b3bb5a7a2426801163ba4c76d535ce35a9762f3d9792f00c1",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "handbook-hwpx": {
+            "document_id": "941fe0c3549c0017",
+            "pages": 383,
+            "minimum_display": "99.96",
+            "measured_tsv_sha256": "1cfc1814575f257b3bb5a7a2426801163ba4c76d535ce35a9762f3d9792f00c1",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "yeongwol": {
+            "document_id": "0b7e7d0538284271",
+            "pages": 4,
+            "minimum_display": "99.95",
+            "measured_tsv_sha256": "5ecaee946f73b8d8270fb3b79d0fc2998d1b67bd150bbf4ec91c307b09227ba5",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "seo-body-list-typed": {
+            "document_id": "2b43ec3782a748e1",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "c977cbb4746e5906fc7384b09d68324a959a5c693cbf18b1c0907375c6e60f42",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "seo-helvetica-styles": {
+            "document_id": "4314830495cfde87",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "c977cbb4746e5906fc7384b09d68324a959a5c693cbf18b1c0907375c6e60f42",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "sample16-hwpx": {
+            "document_id": "43c0a207f6daa0bb",
+            "pages": 64,
+            "minimum_display": "99.97",
+            "measured_tsv_sha256": "a16c6d5c795e721091867a9b063bf078808d0c986a91dd397dbf26d30a1f9496",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "sample16-hwp2022": {
+            "document_id": "4bac5a5d1702df5f",
+            "pages": 64,
+            "minimum_display": "99.97",
+            "measured_tsv_sha256": "322a6c1feb049d45bc0fe6b2b26d408e4cfc8f0b022cd914b62a1cf0f12810e3",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "seo-re-03-latin": {
+            "document_id": "52ee61fe7201e36b",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "c977cbb4746e5906fc7384b09d68324a959a5c693cbf18b1c0907375c6e60f42",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "issue8040-insert": {
+            "document_id": "71f98206e45c354a",
+            "pages": 4,
+            "minimum_display": "99.99",
+            "measured_tsv_sha256": "2538e3d4587d14730f393fc5c4c18adc64b8d8c09ac629aa0bb43e228cf7e9f7",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "sample16-hwp2024": {
+            "document_id": "7df4af8174abd82a",
+            "pages": 64,
+            "minimum_display": "99.97",
+            "measured_tsv_sha256": "a16c6d5c795e721091867a9b063bf078808d0c986a91dd397dbf26d30a1f9496",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "issue7905": {
+            "document_id": "a8e95b4accc79fa8",
+            "pages": 6,
+            "minimum_display": "98.86",
+            "measured_tsv_sha256": "72aa22f79b5219313f5d15c0c830f7aac97cc12d822b680cd09513b0194a638a",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "issue8040-insert-delete": {
+            "document_id": "ccd0cd0b7e76fe2f",
+            "pages": 4,
+            "minimum_display": "99.99",
+            "measured_tsv_sha256": "2538e3d4587d14730f393fc5c4c18adc64b8d8c09ac629aa0bb43e228cf7e9f7",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "seo-pic-crop-01": {
+            "document_id": "cdacd874b6e6ac66",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "c977cbb4746e5906fc7384b09d68324a959a5c693cbf18b1c0907375c6e60f42",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "seo-shape-group-02": {
+            "document_id": "d03a9dde3d5dc7ac",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "c977cbb4746e5906fc7384b09d68324a959a5c693cbf18b1c0907375c6e60f42",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "spec13": {
+            "document_id": "3298ed895b9a645c",
+            "pages": 71,
+            "minimum_display": "99.91",
+            "measured_tsv_sha256": "5df02abe0e35e0d1225345b76e7699a720dab66142db375b836382aca8fb9dca",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "outline-demo": {
+            "document_id": "6456507d769ec90b",
+            "pages": 3,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "379aa1b1c421973cd5138875c75d1c80b7b577542213a39ee3cc192cfa06fef8",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          }
+        }
+      }
+    },
+    "ubuntu-ted": {
+      "native": {
+        "rows": 2023,
+        "documents": {
+          "outline-minimal": {
+            "document_id": "12ba0f8dcb5ba0f5",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fe0415c81d33721c3ed63a84444798f526c13134c8158b0370e333cf35915303"
+            }
+          },
+          "angle-narrow": {
+            "document_id": "59f6ab1155623bda",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fe0415c81d33721c3ed63a84444798f526c13134c8158b0370e333cf35915303"
+            }
+          },
+          "nested": {
+            "document_id": "78e1720edfe2277d",
+            "pages": 17,
+            "minimum_display": "99.64",
+            "measured_tsv_sha256": "b70dcd411039318e7d6177ca1095ae126dfda97cf988a463c21a842b8366c15d",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fe0415c81d33721c3ed63a84444798f526c13134c8158b0370e333cf35915303"
+            }
+          },
+          "chemical": {
+            "document_id": "b6541b8c57c46090",
+            "pages": 103,
+            "minimum_display": "99.65",
+            "measured_tsv_sha256": "c1216111701f1353d02cfb4cbbca746114c1d1e43d2acee9944b777fb3123d21",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fe0415c81d33721c3ed63a84444798f526c13134c8158b0370e333cf35915303"
+            }
+          },
+          "decree": {
+            "document_id": "61c6ae96913006c5",
+            "pages": 74,
+            "minimum_display": "99.98",
+            "measured_tsv_sha256": "71762c0b40f0cb54b8b352b2c6865fbe64bc9c3a3d1f8e469f6e33541bdf2ed5",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fe0415c81d33721c3ed63a84444798f526c13134c8158b0370e333cf35915303"
+            }
+          },
+          "outline": {
+            "document_id": "69bcf084e2ae31a5",
+            "pages": 9,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fe0415c81d33721c3ed63a84444798f526c13134c8158b0370e333cf35915303"
+            }
+          },
+          "sample10": {
+            "document_id": "b1a9055c4c7e6f09",
+            "pages": 763,
+            "minimum_display": "99.56",
+            "measured_tsv_sha256": "49ff5be1089b4ba2c23d0e25a61efb95c0f7b8027efa7acbe39a840c94d13a79",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fe0415c81d33721c3ed63a84444798f526c13134c8158b0370e333cf35915303"
+            }
+          },
+          "handbook-hwp": {
+            "document_id": "2fb2575d58042dcf",
+            "pages": 383,
+            "minimum_display": "99.97",
+            "measured_tsv_sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fe0415c81d33721c3ed63a84444798f526c13134c8158b0370e333cf35915303"
+            }
+          },
+          "handbook-hwpx": {
+            "document_id": "941fe0c3549c0017",
+            "pages": 383,
+            "minimum_display": "99.97",
+            "measured_tsv_sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fe0415c81d33721c3ed63a84444798f526c13134c8158b0370e333cf35915303"
+            }
+          },
+          "yeongwol": {
+            "document_id": "0b7e7d0538284271",
+            "pages": 4,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fe0415c81d33721c3ed63a84444798f526c13134c8158b0370e333cf35915303"
+            }
+          },
+          "seo-body-list-typed": {
+            "document_id": "2b43ec3782a748e1",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fe0415c81d33721c3ed63a84444798f526c13134c8158b0370e333cf35915303"
+            }
+          },
+          "seo-helvetica-styles": {
+            "document_id": "4314830495cfde87",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fe0415c81d33721c3ed63a84444798f526c13134c8158b0370e333cf35915303"
+            }
+          },
+          "sample16-hwpx": {
+            "document_id": "43c0a207f6daa0bb",
+            "pages": 64,
+            "minimum_display": "99.43",
+            "measured_tsv_sha256": "7bfa6be73e1bf816be55f391b3adcce0ae8914008a425973b116f1c8c6959aa6",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fe0415c81d33721c3ed63a84444798f526c13134c8158b0370e333cf35915303"
+            }
+          },
+          "sample16-hwp2022": {
+            "document_id": "4bac5a5d1702df5f",
+            "pages": 64,
+            "minimum_display": "99.44",
+            "measured_tsv_sha256": "48900dbeba3e1970b02b74d28dcc79800337545d588cbafeaaa847a850c854dc",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fe0415c81d33721c3ed63a84444798f526c13134c8158b0370e333cf35915303"
+            }
+          },
+          "seo-re-03-latin": {
+            "document_id": "52ee61fe7201e36b",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fe0415c81d33721c3ed63a84444798f526c13134c8158b0370e333cf35915303"
+            }
+          },
+          "issue8040-insert": {
+            "document_id": "71f98206e45c354a",
+            "pages": 4,
+            "minimum_display": "99.77",
+            "measured_tsv_sha256": "93ec35df9cee8ef3332e9d56e8d7b811d0a88f967f2cbb936e90808983277db5",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fe0415c81d33721c3ed63a84444798f526c13134c8158b0370e333cf35915303"
+            }
+          },
+          "sample16-hwp2024": {
+            "document_id": "7df4af8174abd82a",
+            "pages": 64,
+            "minimum_display": "99.43",
+            "measured_tsv_sha256": "7bfa6be73e1bf816be55f391b3adcce0ae8914008a425973b116f1c8c6959aa6",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fe0415c81d33721c3ed63a84444798f526c13134c8158b0370e333cf35915303"
+            }
+          },
+          "issue7905": {
+            "document_id": "a8e95b4accc79fa8",
+            "pages": 6,
+            "minimum_display": "98.86",
+            "measured_tsv_sha256": "f6879a02ba8764cd58d12fdc6514c1336bcc5dbd3c22631bf0e6aa85f72fa893",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fe0415c81d33721c3ed63a84444798f526c13134c8158b0370e333cf35915303"
+            }
+          },
+          "issue8040-insert-delete": {
+            "document_id": "ccd0cd0b7e76fe2f",
+            "pages": 4,
+            "minimum_display": "99.77",
+            "measured_tsv_sha256": "93ec35df9cee8ef3332e9d56e8d7b811d0a88f967f2cbb936e90808983277db5",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fe0415c81d33721c3ed63a84444798f526c13134c8158b0370e333cf35915303"
+            }
+          },
+          "seo-pic-crop-01": {
+            "document_id": "cdacd874b6e6ac66",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fe0415c81d33721c3ed63a84444798f526c13134c8158b0370e333cf35915303"
+            }
+          },
+          "seo-shape-group-02": {
+            "document_id": "d03a9dde3d5dc7ac",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fe0415c81d33721c3ed63a84444798f526c13134c8158b0370e333cf35915303"
+            }
+          },
+          "spec13": {
+            "document_id": "3298ed895b9a645c",
+            "pages": 71,
+            "minimum_display": "99.92",
+            "measured_tsv_sha256": "8872491efcc58b013f7647fcabdf0c9be12fdf14677b74410227ab3c4cdb477e",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fe0415c81d33721c3ed63a84444798f526c13134c8158b0370e333cf35915303"
+            }
+          },
+          "outline-demo": {
+            "document_id": "6456507d769ec90b",
+            "pages": 3,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "native-skia",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "binary_sha256": "fe0415c81d33721c3ed63a84444798f526c13134c8158b0370e333cf35915303"
+            }
+          }
+        }
+      },
+      "wasm": {
+        "rows": 2023,
+        "documents": {
+          "outline-minimal": {
+            "document_id": "12ba0f8dcb5ba0f5",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "angle-narrow": {
+            "document_id": "59f6ab1155623bda",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "nested": {
+            "document_id": "78e1720edfe2277d",
+            "pages": 17,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "ecb048af51ad821884726d567a4f747feb05a3965bf51b2f49b9777e953ed0d1",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "chemical": {
+            "document_id": "b6541b8c57c46090",
+            "pages": 103,
+            "minimum_display": "99.65",
+            "measured_tsv_sha256": "50fbcf95bab0beff2ec88a06f54d80615388953df19995919bf7572cbdb5b9cd",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "decree": {
+            "document_id": "61c6ae96913006c5",
+            "pages": 74,
+            "minimum_display": "99.98",
+            "measured_tsv_sha256": "71762c0b40f0cb54b8b352b2c6865fbe64bc9c3a3d1f8e469f6e33541bdf2ed5",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "outline": {
+            "document_id": "69bcf084e2ae31a5",
+            "pages": 9,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "sample10": {
+            "document_id": "b1a9055c4c7e6f09",
+            "pages": 763,
+            "minimum_display": "99.57",
+            "measured_tsv_sha256": "4e519b6639b1e7483ac1682c4be6b44030dbb7896e487eb98a22a55136c9e081",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "handbook-hwp": {
+            "document_id": "2fb2575d58042dcf",
+            "pages": 383,
+            "minimum_display": "99.96",
+            "measured_tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "handbook-hwpx": {
+            "document_id": "941fe0c3549c0017",
+            "pages": 383,
+            "minimum_display": "99.96",
+            "measured_tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "yeongwol": {
+            "document_id": "0b7e7d0538284271",
+            "pages": 4,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "seo-body-list-typed": {
+            "document_id": "2b43ec3782a748e1",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "seo-helvetica-styles": {
+            "document_id": "4314830495cfde87",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "sample16-hwpx": {
+            "document_id": "43c0a207f6daa0bb",
+            "pages": 64,
+            "minimum_display": "99.97",
+            "measured_tsv_sha256": "355bd7db77b7b2cf65bd32d526a8b8676d41ce63233a127b072ce8c5c06cae39",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "sample16-hwp2022": {
+            "document_id": "4bac5a5d1702df5f",
+            "pages": 64,
+            "minimum_display": "99.97",
+            "measured_tsv_sha256": "2fde839d6e31df3b962909d373a8119dfe06e582f3d5e8f771060a809b653360",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "seo-re-03-latin": {
+            "document_id": "52ee61fe7201e36b",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "issue8040-insert": {
+            "document_id": "71f98206e45c354a",
+            "pages": 4,
+            "minimum_display": "99.99",
+            "measured_tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "sample16-hwp2024": {
+            "document_id": "7df4af8174abd82a",
+            "pages": 64,
+            "minimum_display": "99.97",
+            "measured_tsv_sha256": "355bd7db77b7b2cf65bd32d526a8b8676d41ce63233a127b072ce8c5c06cae39",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "issue7905": {
+            "document_id": "a8e95b4accc79fa8",
+            "pages": 6,
+            "minimum_display": "98.86",
+            "measured_tsv_sha256": "2bffc1537a24f58a1447d9211be6c987290b133882b6336c97ac762d6a222c56",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "issue8040-insert-delete": {
+            "document_id": "ccd0cd0b7e76fe2f",
+            "pages": 4,
+            "minimum_display": "99.99",
+            "measured_tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "seo-pic-crop-01": {
+            "document_id": "cdacd874b6e6ac66",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "seo-shape-group-02": {
+            "document_id": "d03a9dde3d5dc7ac",
+            "pages": 1,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "spec13": {
+            "document_id": "3298ed895b9a645c",
+            "pages": 71,
+            "minimum_display": "99.92",
+            "measured_tsv_sha256": "8872491efcc58b013f7647fcabdf0c9be12fdf14677b74410227ab3c4cdb477e",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          },
+          "outline-demo": {
+            "document_id": "6456507d769ec90b",
+            "pages": 3,
+            "minimum_display": "100.00",
+            "measured_tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+            "producer": {
+              "source_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+              "validation_head": "e41e1e9c81240481433aa12f6d86531df489d9cd",
+              "raster_backend": "wasm-canvas2d",
+              "pdfium_library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+              "pdfium_wrapper_version": "5.13.0",
+              "pdfium_script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+              "source_archive_sha256": "1ac23bb08ad37a957db6db311fc45c0ed14d7e50f19d3284a648f2d675817ba0",
+              "exporter_sha256": "28bad8992d8217c12b5dc6aa252afc2040c9f8ed88a1a12ac748fd5d1afa416e",
+              "package_sha256": {
+                "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+                "rhwp_bg.wasm": "8b80da80cd52e23b8eb159c02185c3c6e1c6dbcf05995f82225db100d528c410"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

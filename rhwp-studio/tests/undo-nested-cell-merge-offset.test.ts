@@ -12,8 +12,7 @@ import { fileURLToPath } from 'node:url';
 //   cellPath[last].cellParaIndex 다. 셀 문단 커맨드가 ...ByPath API 를 부르면서 인덱스만
 //   flat 에서 가져오면, 올바른 셀의 **엉뚱한 문단**을 병합/분할한다.
 //
-// (축 2) API 축: 뮤테이션이 ...ByPath 로 분기하면 길이 조회도 ...ByPath 여야 한다.
-//   flat getCellParagraphLength 는 "외부 표 기준" 레거시 좌표를 쓴다(core/types.ts).
+// (축 2) 병합 위치는 같은 뮤테이션에서 반환한 논리 커서 위치다. 수식은 한 자리를 차지한다.
 //
 //   중첩 표 안쪽 셀의 2번째 문단에서 Enter → Ctrl+Z
 //   기대: 방금 분할한 문단이 다시 합쳐짐
@@ -58,19 +57,11 @@ test('셀 문단 커맨드가 flat cellParaIndex 를 직접 쓰지 않는다', (
   }
 });
 
-test('중첩 셀 병합은 길이 조회도 ByPath 축으로 읽는다', () => {
+test('셀 문단 병합 커서와 실행 취소 분할은 같은 논리 위치를 쓴다', () => {
   const block = classBlock('MergeParagraphInCellCommand');
-  const executeBlock = block.slice(
-    block.indexOf('execute(wasm: WasmBridge): DocumentPosition {'),
-    block.indexOf('undo(wasm: WasmBridge): DocumentPosition {'),
-  );
-
-  assert.match(executeBlock, /getCellParagraphLengthByPath\s*\(/,
-    '중첩 셀에서는 ByPath 로 안쪽 셀 문단 길이를 읽어야 함');
-  assert.match(executeBlock, /mergeParagraphInCellByPath\s*\(/, '중첩 뮤테이션 분기 유지');
-
-  const flatAt = executeBlock.search(/wasm\.getCellParagraphLength\(/);
-  const byPathAt = executeBlock.search(/wasm\.getCellParagraphLengthByPath\(/);
-  assert.ok(flatAt >= 0 && byPathAt >= 0, '두 조회 경로가 모두 존재해야 함');
-  assert.ok(byPathAt < flatAt, 'ByPath(중첩) 분기가 flat(비중첩) 분기보다 앞에 와야 함');
+  assert.match(block, /mergeParagraphInCellByPath\(/);
+  assert.match(block, /wasm\.mergeParagraphInCell\(/);
+  assert.doesNotMatch(block, /getCellParagraphLength/);
+  assert.match(block, /this\.mergePointOffset = result\.charOffset/);
+  assert.match(block, /splitParagraphInCellByPath\([^;]+this\.mergePointOffset/);
 });

@@ -155,6 +155,12 @@ fn textbox_contains_non_tac_picture(text_box: &TextBox) -> bool {
     })
 }
 
+/// 종이를 세로 기준으로 쓰는 자식 도형은 글상자 밖에서 그린다.
+/// 글상자 안의 텍스트를 정렬할 때도 같은 좌표계 소유를 사용한다.
+fn textbox_child_uses_paper_origin(common: &CommonObjAttr) -> bool {
+    !common.treat_as_char && common.vert_rel_to == VertRelTo::Paper
+}
+
 fn textbox_vpos_origin_hu(common: &CommonObjAttr, matrix_positioned: bool) -> Option<i32> {
     if matrix_positioned || common.treat_as_char {
         return None;
@@ -374,9 +380,8 @@ fn push_placeholder_render_node(
     parent.children.push(node);
 }
 
-/// [#4694] 셀/글상자 안 ole 의 컨테이너 문맥. 비어 있으면(본문 직속) None —
-/// 방출도 비어 selection ref 가 3좌표로 유지된다(회귀 0).
-fn ole_cell_context(
+/// OLE와 묶음의 편집 주소에 셀 경로를 포함한다. 본문 직속 개체에는 경로가 없다.
+fn control_cell_context(
     parent_cell_path: &[CellPathEntry],
     para_index: usize,
 ) -> Option<crate::renderer::layout::CellContext> {
@@ -409,7 +414,7 @@ fn push_ole_placeholder_render_node(
             section_index,
             para_index,
             control_index,
-            ole_cell_context(parent_cell_path, para_index),
+            control_cell_context(parent_cell_path, para_index),
         )),
         bbox,
     );
@@ -449,7 +454,7 @@ fn push_ole_raw_svg_render_node(
             section_index,
             para_index,
             control_index,
-            ole_cell_context(parent_cell_path, para_index),
+            control_cell_context(parent_cell_path, para_index),
         )),
         bbox,
     );
@@ -997,7 +1002,7 @@ impl LayoutEngine {
                 section_index,
                 para_index,
                 control_index,
-                ole_cell_context(parent_cell_path, para_index),
+                control_cell_context(parent_cell_path, para_index),
             )),
             bbox,
         );
@@ -1271,6 +1276,9 @@ impl LayoutEngine {
             self.resolve_object_size(common, col_area, body_area, paper_area);
         if let Some(required) = shape.restricted_textbox_table_height_hu() {
             shape_h = shape_h.max(hwpunit_to_px(required, self.dpi));
+        }
+        if let Some(saved_height) = overlay_textbox::saved_line_box_height(shape, self.dpi) {
+            shape_h = shape_h.max(saved_height);
         }
 
         if shape
@@ -2062,6 +2070,14 @@ impl LayoutEngine {
 
         match shape {
             ShapeObject::Rectangle(rect) => {
+                // 본문에서 바로 배치하는 도형도 같은 글줄 높이를 소비한다.
+                let render_h = if !matrix_positioned && !transform.has_transform() {
+                    overlay_textbox::refreshed_line_box_height(shape, self.dpi)
+                        .or_else(|| overlay_textbox::saved_line_box_height(shape, self.dpi))
+                        .map_or(render_h, |height| render_h.max(height))
+                } else {
+                    render_h
+                };
                 // 글상자의 텍스트·채우기와 선의 가시성은 별개다.
                 // 그룹 자식도 원본의 명시된 SOLID/NONE을 그대로 소비한다.
                 let (style, gradient) = drawing_to_shape_style(&rect.drawing, self.dpi);
@@ -2799,6 +2815,7 @@ impl LayoutEngine {
                         section_index: Some(section_index),
                         para_index: Some(para_index),
                         control_index: Some(control_index),
+                        cell_context: control_cell_context(&textbox_parent_path, para_index),
                     }),
                     BoundingBox::new(base_x, base_y, w, h),
                 );
@@ -3694,6 +3711,9 @@ impl LayoutEngine {
                 inner_area.height,
             ),
         );
+        // 글상자 안 종이 기준 개체는 글상자 밖 종이 좌표에 놓인다. 글상자 clip·내용 높이에
+        // 들지 않도록 따로 모아 글상자 노드 뒤에 싣는다.
+        let mut paper_children: Vec<RenderNode> = Vec::new();
 
         if let Some(paths) = &text_box.paint_clip {
             let scale = self.dpi / 7200.0;
@@ -3781,6 +3801,27 @@ impl LayoutEngine {
                 .paragraphs
                 .iter()
                 .any(hidden_guide_object_rows_need_reflow);
+        // 폭을 줄이고 높이를 늘린 독립 인라인 글상자는 이미 현재 크기의
+        // 세로 행을 저장한다. 실제 폭으로 줄 경계만 다시 나눈다.
+        let refolds_resized_inline = text_direction == 0
+            && parent_treat_as_char
+            && self.profile.get().hwp5_stored_pagination_layout()
+            && !self.profile.get().session_edited()
+            && matches!(shape_node.node_type, RenderNodeType::Rectangle(_))
+            && sa.group_level == 0
+            && sa.render_sx > 0.0
+            && sa.render_sx < 1.0
+            && sa.render_sy > 1.0
+            && sa.render_b == 0.0
+            && sa.render_c == 0.0
+            && !sa.horz_flip
+            && !sa.vert_flip
+            && sa.rotation_angle.rem_euclid(360) == 0
+            && text_box.vertical_align == crate::model::table::VerticalAlign::Center
+            && text_box.paint_clip.is_none()
+            && matches!(text_box.paragraphs.as_slice(), [para]
+                if matrix_textbox_lines_need_reflow(para) && !para.stored_text_partition_is_dirty()
+                    && !para.cell_format_vpos_dirty);
         let reflowed_textbox_paragraphs = if reflows_matrix_lines || reflows_hidden_guide_rows {
             let mut paragraphs = text_box.paragraphs.clone();
             for index in 0..paragraphs.len() {
@@ -3823,6 +3864,15 @@ impl LayoutEngine {
                     );
                 }
             }
+            Some(paragraphs)
+        } else if refolds_resized_inline {
+            let mut paragraphs = text_box.paragraphs.clone();
+            textbox_reflow::refold_preserving_row_geometry(
+                &mut paragraphs[0],
+                inner_area.width,
+                styles,
+                self.dpi,
+            );
             Some(paragraphs)
         } else {
             None
@@ -4138,8 +4188,11 @@ impl LayoutEngine {
                                 Control::Picture(pic) if !pic.common.treat_as_char => {
                                     Some(&pic.common)
                                 }
-                                Control::Shape(shape) if !shape.as_ref().common().treat_as_char => {
-                                    Some(shape.as_ref().common())
+                                Control::Shape(shape)
+                                    if !shape.common().treat_as_char
+                                        && !textbox_child_uses_paper_origin(shape.common()) =>
+                                {
+                                    Some(shape.common())
                                 }
                                 _ => None,
                             };
@@ -4756,12 +4809,28 @@ impl LayoutEngine {
                         let child_w = hwpunit_to_px(child_common.width as i32, self.dpi);
                         let child_h = hwpunit_to_px(child_common.height as i32, self.dpi);
 
+                        // 웹한글기안기는 글상자 안 종이 기준 사각형(세로 597px)을 글상자 위끝이
+                        // 아니라 종이 위끝에서 잰 자리에 그린다.
+                        let paper_anchored = textbox_child_uses_paper_origin(child_common);
                         let (child_x, child_y) = if child_common.treat_as_char {
                             // 인라인 도형: 텍스트 내 삽입 위치까지의 advance를 반영하여 배치
                             advance_to_control(&mut inline_x);
                             let x = inline_x;
                             inline_x += child_w;
                             (x, inline_obj_y)
+                        } else if paper_anchored {
+                            let x = if matches!(
+                                child_common.horz_rel_to,
+                                crate::model::shape::HorzRelTo::Paper
+                            ) {
+                                0.0
+                            } else {
+                                base_x
+                            };
+                            (
+                                x + hwpunit_to_px(child_common.horizontal_offset as i32, self.dpi),
+                                hwpunit_to_px(child_common.vertical_offset as i32, self.dpi),
+                            )
                         } else {
                             // 절대 위치 도형 — 세로 기준이 Para(앵커 문단)이면 글상자
                             // 상단이 아니라 앵커 문단의 시작 y 에서 오프셋을 적용한다.
@@ -4805,6 +4874,7 @@ impl LayoutEngine {
                             text_direction: 0,
                         });
                         let empty_map = std::collections::HashMap::new();
+                        let first_new_child = textbox_node.children.len();
                         self.layout_shape_object(
                             tree,
                             &mut textbox_node,
@@ -4823,6 +4893,9 @@ impl LayoutEngine {
                             None, // [Task #1138] TODO: layout_textbox_content 에 cell ctx propagate (별도 후속)
                             false,
                         );
+                        if paper_anchored {
+                            paper_children.extend(textbox_node.children.drain(first_new_child..));
+                        }
                     }
                     Control::Picture(pic) => {
                         // [Task #1171] 글상자 내부 picture — cellPath sentinel(cell_index=0)을
@@ -5216,6 +5289,7 @@ impl LayoutEngine {
             }
             shape_node.children.push(textbox_node);
         }
+        shape_node.children.extend(paper_children);
     }
 
     /// 글상자 세로쓰기 레이아웃

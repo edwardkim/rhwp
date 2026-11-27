@@ -1,0 +1,7 @@
+입력	다시_연_형식	수식	나눈_위치	반환한_병합_위치	원래_문단	나눈_문단	합친_문단	병합_취소_후
+textbox_floating_table_offset.hwpx	input	false	1	1	["BOX"]	["B", "OX"]	["BOX"]	["B", "OX"]
+textbox_floating_table_offset.hwpx	HWP	false	1	1	["BOX"]	["B", "OX"]	["BOX"]	["B", "OX"]
+textbox_floating_table_offset.hwpx	HWPX	false	1	1	["BOX"]	["B", "OX"]	["BOX"]	["B", "OX"]
+textbox-inline-equation.hwpx	input	true	2	1	["BOX"]	["B", "OX"]	["BOX"]	["", "BOX"]
+textbox-inline-equation.hwpx	HWP	true	2	1	["BOX"]	["B", "OX"]	["BOX"]	["", "BOX"]
+textbox-inline-equation.hwpx	HWPX	true	2	1	["BOX"]	["B", "OX"]	["BOX"]	["", "BOX"]

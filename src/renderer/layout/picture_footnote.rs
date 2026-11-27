@@ -865,8 +865,10 @@ impl LayoutEngine {
         // [Task #1079] 파일 vpos 가 이미 그림 공간을 반영(그림 para 줄 앞 gap ≥ 그림 높이)하면
         // 그림을 그 gap 안(바닥이 그림 para 줄에 정렬)에 그리고 flow 를 그림 높이만큼 추가
         // 진행하지 않는다. 이중 계상(gap + draw-advance) 방지.
-        vpos_accounts_for_height: bool,
+        // 그 경우의 값은 상자 바닥이 닿는 host 저장 줄 윗변(px)이다.
+        stored_gap_line_y: Option<f64>,
     ) -> BodyPicturePlacement {
+        let vpos_accounts_for_height = stored_gap_line_y.is_some();
         // 그림 크기 (HWPUNIT → 픽셀)
         // [Issue #1230] 측면흐름 wrap 은 common(개체 틀) 프레임으로 그린다.
         let (pic_width_hu, pic_height_hu) = super::utils::picture_flow_frame_size_hu(picture);
@@ -936,12 +938,13 @@ impl LayoutEngine {
         let adjusted_pic_x = box_x + margin_left + caption_left_offset;
         // [Task #1079] already_accounted: 상자를 gap 안에 그림(상자 바닥이 base_y=그림 para
         // 줄에 정렬되도록 box_height 만큼 위로). flow 진행은 아래 return 에서 생략.
-        let vpos_shift = if vpos_accounts_for_height {
-            box_height
-        } else {
-            0.0
+        // 저장 줄 = 문단 원점 + 세로 오프셋 + 상자이므로 상자 바닥은 그 줄 윗변에 닿는다.
+        // 원점 계산이 더한 오프셋을 다시 더하지 않는다(1741000-202200045 15쪽 pi244: 앞 저장 줄
+        // 끝 35680 + 오프셋 250 = 한컴 그림 윗변, 저장 줄 52215 = 그 + 그림 + 캡션).
+        let content_top = match stored_gap_line_y {
+            Some(line_y) => line_y - box_height + margin_top,
+            None => base_y + margin_top,
         };
-        let content_top = base_y + margin_top - vpos_shift;
         let pic_y = content_top + caption_top_offset;
 
         // BinData에서 이미지 데이터 찾기 (bin_data_id는 1-indexed 순번)
@@ -1853,9 +1856,7 @@ impl LayoutEngine {
             paragraphs,
             styles,
             area_width,
-            hwpunit_to_px(shape.separator_above_margin_hu() as i32, self.dpi)
-                + border_width_to_px(shape.separator_line_width).max(0.5)
-                + hwpunit_to_px(shape.separator_below_margin_hu() as i32, self.dpi),
+            crate::renderer::pagination::footnote_separator_overhead_px(shape, self.dpi),
             hwpunit_to_px(shape.between_notes_margin_hu() as i32, self.dpi),
         )
     }
@@ -2024,7 +2025,8 @@ impl LayoutEngine {
             super::note_separator::append(
                 tree, fn_node, shape, fn_area.x, y, sep_length, line_width,
             );
-            y += line_width;
+            // 구분선 중심 아래는 굵기와 관계없이 같은 띠다(`footnote_separator_overhead_px`).
+            y += crate::renderer::pagination::footnote_separator_band_px(shape, self.dpi);
 
             // (3) 구분선 아래 여백
             y += hwpunit_to_px(shape.separator_below_margin_hu() as i32, self.dpi);

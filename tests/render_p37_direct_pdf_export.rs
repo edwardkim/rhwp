@@ -1002,6 +1002,7 @@ mod connector_arrow_regressions {
                         section_index: None,
                         para_index: None,
                         control_index: None,
+                        cell_context: None,
                     }),
                 ),
                 RenderProfile::Print,

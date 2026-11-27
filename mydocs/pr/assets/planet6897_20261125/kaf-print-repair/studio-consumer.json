@@ -1,0 +1,306 @@
+{
+  "source_head": "a0bca426057bb80dca3f7fcea0baf4eeee76edd2",
+  "browser": "Chrome/158.0.8127.88",
+  "host": "macOS",
+  "wasm_sha256": "d74e8b306ff25553fdcdf68355e97505fa7f670ec1d5d8e786a6b1779ae01f69",
+  "wasm_inits_verified": 24,
+  "package_js_sha256": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+  "transformed_js_sha256": [
+    "e62b3d5d3dd997bd0963fe0d377264be12c4b73dfe798cd515cd1110b6eccdcb"
+  ],
+  "fonts": [
+    {
+      "family": "Arial",
+      "postscriptName": "ArialMT",
+      "sha256": "525979822591a3447cfc49d943d6f7683508e25543407871c0ed8fed05fd2bd9"
+    },
+    {
+      "family": "한양신명조",
+      "postscriptName": "HYSinmyeongjo-HGSMJ",
+      "sha256": "70eea663348fc3b3818d588c7ee8ab6241e434aac26facf37664618a41eb1710"
+    }
+  ],
+  "capture_error": null,
+  "captures": [
+    {
+      "page": 24,
+      "system": "canvas2d",
+      "requested": "canvas2d",
+      "requested_profile": "screen",
+      "actual_profile": "screen",
+      "surface": "canvas2d",
+      "fallback": null,
+      "image_sha256": "35c35f1f13da86daea685b7f4fc1e19bd6c83fce8ba36a144bf804559cc5174f"
+    },
+    {
+      "page": 24,
+      "system": "canvaskit-compat",
+      "requested": "canvaskit-compat",
+      "requested_profile": "screen",
+      "actual_profile": "screen",
+      "surface": "software",
+      "fallback": null,
+      "image_sha256": "63599fe44ee14fe705295117075b2097d77d1334676df1dd357861b55f0d2e4c"
+    },
+    {
+      "page": 24,
+      "system": "canvaskit-default",
+      "requested": "canvaskit-default",
+      "requested_profile": "screen",
+      "actual_profile": "screen",
+      "surface": "software",
+      "fallback": null,
+      "image_sha256": "63599fe44ee14fe705295117075b2097d77d1334676df1dd357861b55f0d2e4c"
+    },
+    {
+      "page": 24,
+      "system": "canvas2d",
+      "requested": "canvas2d",
+      "requested_profile": "print",
+      "actual_profile": "print",
+      "surface": "canvas2d",
+      "fallback": null,
+      "image_sha256": "0bb7dc2ce25a3721f7e0b718fecd3b332a1af072efe89b9550926d9b63be397d"
+    },
+    {
+      "page": 24,
+      "system": "canvaskit-compat",
+      "requested": "canvaskit-compat",
+      "requested_profile": "print",
+      "actual_profile": "print",
+      "surface": "software",
+      "fallback": null,
+      "image_sha256": "8666b5a46f4227dbd050538718670ce555a2119fda12c3a1bbc12700a6aad60e"
+    },
+    {
+      "page": 24,
+      "system": "canvaskit-default",
+      "requested": "canvaskit-default",
+      "requested_profile": "print",
+      "actual_profile": "print",
+      "surface": "software",
+      "fallback": null,
+      "image_sha256": "8666b5a46f4227dbd050538718670ce555a2119fda12c3a1bbc12700a6aad60e"
+    },
+    {
+      "page": 36,
+      "system": "canvas2d",
+      "requested": "canvas2d",
+      "requested_profile": "screen",
+      "actual_profile": "screen",
+      "surface": "canvas2d",
+      "fallback": null,
+      "image_sha256": "c5b5288ba4d3ca899fdc7cb2e738be5167f71560a4b07999695ab0b10457e8bb"
+    },
+    {
+      "page": 36,
+      "system": "canvaskit-compat",
+      "requested": "canvaskit-compat",
+      "requested_profile": "screen",
+      "actual_profile": "screen",
+      "surface": "software",
+      "fallback": null,
+      "image_sha256": "5a8c49da0d243dba06cb9d63ead021f870a1538502e6726c4067fab852231192"
+    },
+    {
+      "page": 36,
+      "system": "canvaskit-default",
+      "requested": "canvaskit-default",
+      "requested_profile": "screen",
+      "actual_profile": "screen",
+      "surface": "software",
+      "fallback": null,
+      "image_sha256": "5a8c49da0d243dba06cb9d63ead021f870a1538502e6726c4067fab852231192"
+    },
+    {
+      "page": 36,
+      "system": "canvas2d",
+      "requested": "canvas2d",
+      "requested_profile": "print",
+      "actual_profile": "print",
+      "surface": "canvas2d",
+      "fallback": null,
+      "image_sha256": "fa5568750cc1f4c70f0bcb110bd92b03af5cf75945072b1206048c3456d265c0"
+    },
+    {
+      "page": 36,
+      "system": "canvaskit-compat",
+      "requested": "canvaskit-compat",
+      "requested_profile": "print",
+      "actual_profile": "print",
+      "surface": "software",
+      "fallback": null,
+      "image_sha256": "b1c89553b9aa352657420745a6fc6720c270693c3ca5a73087094ad8ddfb1ee0"
+    },
+    {
+      "page": 36,
+      "system": "canvaskit-default",
+      "requested": "canvaskit-default",
+      "requested_profile": "print",
+      "actual_profile": "print",
+      "surface": "software",
+      "fallback": null,
+      "image_sha256": "b1c89553b9aa352657420745a6fc6720c270693c3ca5a73087094ad8ddfb1ee0"
+    },
+    {
+      "page": 38,
+      "system": "canvas2d",
+      "requested": "canvas2d",
+      "requested_profile": "screen",
+      "actual_profile": "screen",
+      "surface": "canvas2d",
+      "fallback": null,
+      "image_sha256": "c566c645ccab358f84f11c3596ff5f7e2fb81e7f7e274ca236f0ce9b2c4732b7"
+    },
+    {
+      "page": 38,
+      "system": "canvaskit-compat",
+      "requested": "canvaskit-compat",
+      "requested_profile": "screen",
+      "actual_profile": "screen",
+      "surface": "software",
+      "fallback": null,
+      "image_sha256": "d5eb9147d8811317075b8263191d4c8de2ac637a282b7fbc44a1c9a1d3652899"
+    },
+    {
+      "page": 38,
+      "system": "canvaskit-default",
+      "requested": "canvaskit-default",
+      "requested_profile": "screen",
+      "actual_profile": "screen",
+      "surface": "software",
+      "fallback": null,
+      "image_sha256": "d5eb9147d8811317075b8263191d4c8de2ac637a282b7fbc44a1c9a1d3652899"
+    },
+    {
+      "page": 38,
+      "system": "canvas2d",
+      "requested": "canvas2d",
+      "requested_profile": "print",
+      "actual_profile": "print",
+      "surface": "canvas2d",
+      "fallback": null,
+      "image_sha256": "4a77b92c0443ae86f201eae02cd2ed2be8840e808720443e2e557487a5c330e1"
+    },
+    {
+      "page": 38,
+      "system": "canvaskit-compat",
+      "requested": "canvaskit-compat",
+      "requested_profile": "print",
+      "actual_profile": "print",
+      "surface": "software",
+      "fallback": null,
+      "image_sha256": "fcae9824c5fdf42dc4eed27b5ff92d1dcf86355a3300003cffa720be810a791c"
+    },
+    {
+      "page": 38,
+      "system": "canvaskit-default",
+      "requested": "canvaskit-default",
+      "requested_profile": "print",
+      "actual_profile": "print",
+      "surface": "software",
+      "fallback": null,
+      "image_sha256": "fcae9824c5fdf42dc4eed27b5ff92d1dcf86355a3300003cffa720be810a791c"
+    },
+    {
+      "page": 39,
+      "system": "canvas2d",
+      "requested": "canvas2d",
+      "requested_profile": "screen",
+      "actual_profile": "screen",
+      "surface": "canvas2d",
+      "fallback": null,
+      "image_sha256": "b04643f2fb9de98c59aac5740e2bfc2389e9c5176d97c1f1ef7a89b36777df0a"
+    },
+    {
+      "page": 39,
+      "system": "canvaskit-compat",
+      "requested": "canvaskit-compat",
+      "requested_profile": "screen",
+      "actual_profile": "screen",
+      "surface": "software",
+      "fallback": null,
+      "image_sha256": "b2e780e9e7fc62f89a0c607dd1164ca25b38b1a4823c4f8484e29bb98f89405c"
+    },
+    {
+      "page": 39,
+      "system": "canvaskit-default",
+      "requested": "canvaskit-default",
+      "requested_profile": "screen",
+      "actual_profile": "screen",
+      "surface": "software",
+      "fallback": null,
+      "image_sha256": "b2e780e9e7fc62f89a0c607dd1164ca25b38b1a4823c4f8484e29bb98f89405c"
+    },
+    {
+      "page": 39,
+      "system": "canvas2d",
+      "requested": "canvas2d",
+      "requested_profile": "print",
+      "actual_profile": "print",
+      "surface": "canvas2d",
+      "fallback": null,
+      "image_sha256": "60f379fdd9ba240a91ae0b90d7c9b98856160f5b71a51b0d9203b1d8a73b1cb6"
+    },
+    {
+      "page": 39,
+      "system": "canvaskit-compat",
+      "requested": "canvaskit-compat",
+      "requested_profile": "print",
+      "actual_profile": "print",
+      "surface": "software",
+      "fallback": null,
+      "image_sha256": "8cb666894036fab8c89230d7a60e921548753228768a7fe370e9cbbdc3e64b15"
+    },
+    {
+      "page": 39,
+      "system": "canvaskit-default",
+      "requested": "canvaskit-default",
+      "requested_profile": "print",
+      "actual_profile": "print",
+      "surface": "software",
+      "fallback": null,
+      "image_sha256": "8cb666894036fab8c89230d7a60e921548753228768a7fe370e9cbbdc3e64b15"
+    }
+  ],
+  "before_wasm_sha256": "97941d5ccdcc47cf237f5adfb515d9f941bc01302ad12c4e25bb1051975b355c",
+  "canvas_kit_replay_contract_failures": {
+    "before": [
+      "former-print-width-p39 canvaskit-compat@screen runtimeImageReplayFailure",
+      "former-print-width-p39 canvaskit-compat@screen runtimeUnexpectedUnsupportedOps",
+      "former-print-width-p39 canvaskit-default@screen runtimeImageReplayFailure",
+      "former-print-width-p39 canvaskit-default@screen runtimeUnexpectedUnsupportedOps",
+      "full-bitmap-p38 canvaskit-compat@screen runtimeImageReplayFailure",
+      "full-bitmap-p38 canvaskit-compat@screen runtimeUnexpectedUnsupportedOps",
+      "full-bitmap-p38 canvaskit-default@screen runtimeImageReplayFailure",
+      "full-bitmap-p38 canvaskit-default@screen runtimeUnexpectedUnsupportedOps",
+      "overflow-text-p36 canvaskit-compat@print runtimeImageReplayFailure",
+      "overflow-text-p36 canvaskit-compat@print runtimeUnexpectedUnsupportedOps",
+      "overflow-text-p36 canvaskit-compat@screen runtimeImageReplayFailure",
+      "overflow-text-p36 canvaskit-compat@screen runtimeUnexpectedUnsupportedOps",
+      "overflow-text-p36 canvaskit-default@print runtimeImageReplayFailure",
+      "overflow-text-p36 canvaskit-default@print runtimeUnexpectedUnsupportedOps",
+      "overflow-text-p36 canvaskit-default@screen runtimeImageReplayFailure",
+      "overflow-text-p36 canvaskit-default@screen runtimeUnexpectedUnsupportedOps"
+    ],
+    "after": [
+      "former-print-width-p39 canvaskit-compat@screen runtimeImageReplayFailure",
+      "former-print-width-p39 canvaskit-compat@screen runtimeUnexpectedUnsupportedOps",
+      "former-print-width-p39 canvaskit-default@screen runtimeImageReplayFailure",
+      "former-print-width-p39 canvaskit-default@screen runtimeUnexpectedUnsupportedOps",
+      "full-bitmap-p38 canvaskit-compat@screen runtimeImageReplayFailure",
+      "full-bitmap-p38 canvaskit-compat@screen runtimeUnexpectedUnsupportedOps",
+      "full-bitmap-p38 canvaskit-default@screen runtimeImageReplayFailure",
+      "full-bitmap-p38 canvaskit-default@screen runtimeUnexpectedUnsupportedOps",
+      "overflow-text-p36 canvaskit-compat@print runtimeImageReplayFailure",
+      "overflow-text-p36 canvaskit-compat@print runtimeUnexpectedUnsupportedOps",
+      "overflow-text-p36 canvaskit-compat@screen runtimeImageReplayFailure",
+      "overflow-text-p36 canvaskit-compat@screen runtimeUnexpectedUnsupportedOps",
+      "overflow-text-p36 canvaskit-default@print runtimeImageReplayFailure",
+      "overflow-text-p36 canvaskit-default@print runtimeUnexpectedUnsupportedOps",
+      "overflow-text-p36 canvaskit-default@screen runtimeImageReplayFailure",
+      "overflow-text-p36 canvaskit-default@screen runtimeUnexpectedUnsupportedOps"
+    ],
+    "new_cases": []
+  }
+}

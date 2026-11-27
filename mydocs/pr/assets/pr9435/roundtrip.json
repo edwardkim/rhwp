@@ -1,0 +1,71 @@
+{
+  "files": {
+    "base-reopened.hwp": "02d1052b656c1ba8c3dc4e3b148ae2060a3d3f7c5414c0344cb5b91dd24bb3e8",
+    "candidate-reopened.hwp": "02d1052b656c1ba8c3dc4e3b148ae2060a3d3f7c5414c0344cb5b91dd24bb3e8",
+    "base-reopened.hwpx": "7dca72b8e7aafb1dba18c5c38a6372302ebe77010ac28c000e74274e93e6151e",
+    "candidate-reopened.hwpx": "7dca72b8e7aafb1dba18c5c38a6372302ebe77010ac28c000e74274e93e6151e"
+  },
+  "hwpx_entry_count": 30,
+  "hwpx_different_entries": [],
+  "hwp_byte_identical": true,
+  "checks": {
+    "base-hwp": {
+      "bytes": 2194432,
+      "format": "hwp5",
+      "passwordProtected": false,
+      "schemaVersion": "1.0",
+      "source": "samples/issue9419/kaf_appendix_2020.hwpx",
+      "untrustedContent": false,
+      "untrustedFields": [],
+      "verify": {
+        "diffCount": 0,
+        "identical": true
+      },
+      "verifyPages": null,
+      "wasDistribution": false
+    },
+    "base-hwpx": {
+      "bytes": 2314498,
+      "format": "hwpx",
+      "passwordProtected": false,
+      "schemaVersion": "1.0",
+      "source": "samples/issue9419/kaf_appendix_2020.hwpx",
+      "untrustedContent": false,
+      "untrustedFields": [],
+      "verify": {
+        "diffCount": 0,
+        "identical": true
+      },
+      "verifyPages": null
+    },
+    "candidate-hwp": {
+      "bytes": 2194432,
+      "format": "hwp5",
+      "passwordProtected": false,
+      "schemaVersion": "1.0",
+      "source": "samples/issue9419/kaf_appendix_2020.hwpx",
+      "untrustedContent": false,
+      "untrustedFields": [],
+      "verify": {
+        "diffCount": 0,
+        "identical": true
+      },
+      "verifyPages": null,
+      "wasDistribution": false
+    },
+    "candidate-hwpx": {
+      "bytes": 2314498,
+      "format": "hwpx",
+      "passwordProtected": false,
+      "schemaVersion": "1.0",
+      "source": "samples/issue9419/kaf_appendix_2020.hwpx",
+      "untrustedContent": false,
+      "untrustedFields": [],
+      "verify": {
+        "diffCount": 0,
+        "identical": true
+      },
+      "verifyPages": null
+    }
+  }
+}

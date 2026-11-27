@@ -12,6 +12,7 @@
 //! 합성 fixture의 계약 검사와 실제 문서의 한컴 출력 판독은 별도다.
 //! Linux Fontconfig의 합성 Bold 재현은 유지하며, Mac·Windows도 명시 공급한 분할 CFF의
 //! 글리프 소유를 실제 Native backend에서 검사한다. 이 합성 계약의 raw·독립 PDF는 비해당이다.
+//! 주석 갱신: 2026-11-25T20:30:09+09:00. 명시 선택한 원본의 구두점 소유는 관계형 검사로 확인한다.
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::style::Font;
@@ -402,6 +403,62 @@ fn hwp3_punctuation_uses_the_latin_program_only_when_its_glyph_is_needed() {
                 .all(|family| family.contains("fixture-korean")),
             "한글 글꼴 소유를 유지한다"
         );
+    }
+
+    #[cfg(feature = "native-skia")]
+    {
+        use rhwp::renderer::font_environment::FontEnvironment;
+        use rhwp::renderer::skia::SkiaLayerRenderer;
+        use sha2::{Digest, Sha256};
+
+        let latin_family = "RHWP Equation Contract";
+        let mut supplied_document = core.document().clone();
+        for (slot, faces) in supplied_document.doc_info.font_faces.iter_mut().enumerate() {
+            if let Some(face) = faces.first_mut() {
+                face.name = if slot == 1 { latin_family } else { FAMILY }.into();
+            }
+        }
+        core.set_document(supplied_document);
+        let digest: String = Sha256::digest(korean_missing)
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect();
+        let renderer = SkiaLayerRenderer::new()
+            .try_with_font_data(&[korean_missing.to_vec(), latin.to_vec()])
+            .unwrap();
+        let mut environment = serde_json::json!({
+            "id": "selected-punctuation-owner",
+            "preserveSourceMetrics": true,
+            "substitutions": {(FAMILY): FAMILY, (latin_family): latin_family},
+            "glyphFallbacks": {(FAMILY): [latin_family]},
+        });
+        for expected in [FAMILY, latin_family] {
+            if expected == latin_family {
+                environment["selectedPrograms"] = serde_json::json!({
+                    (FAMILY): {
+                        "query": FAMILY,
+                        "family": FAMILY,
+                        "programId": format!("sweep-{digest}"),
+                        "trueType": false,
+                        "openTypeCff": true,
+                    },
+                });
+            }
+            core.set_font_environment(Some(
+                FontEnvironment::from_json(&environment.to_string()).unwrap(),
+            ))
+            .unwrap();
+            renderer.prepare_native_otf_fonts(&mut core).unwrap();
+            let tree = core.build_page_render_tree(0).unwrap();
+            let mut punctuation = Vec::new();
+            families(&tree.root, '(', &mut punctuation);
+            assert_eq!(punctuation.len(), 1);
+            assert_eq!(
+                punctuation[0].split(',').next(),
+                Some(expected),
+                "다른 공급 글꼴의 구두점이 명시 선택한 프로그램의 결측을 가리지 않는다"
+            );
+        }
     }
 }
 

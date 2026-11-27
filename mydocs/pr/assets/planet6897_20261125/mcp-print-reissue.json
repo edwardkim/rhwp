@@ -1,0 +1,168 @@
+{
+  "date": "2026-11-25",
+  "workflow_devel": "50324d194d1cd7c46d168f07a58515086530f03b",
+  "client": "tools/hwp-convert-mcp-2024-client-0.10.0.tgz",
+  "method": "start (engine 2020, target pdf, timeout 1800초) → status → download",
+  "reference_decision": "최초 제출 PDF는 원 PR 수치 재현에 사용했다. 최종 제출 판정은 한컴 2020 11.0.0.9172에서 재산출한 PDF를 양쪽 head에 같은 조건으로 적용한 결과를 따른다.",
+  "datasets": {
+    "kaf-table": {
+      "existing_pdf": {
+        "path": "pdf/issue9000/kaf_table_section-2020.pdf",
+        "sha256": "3c526bf9968c9ec90b5174963492762c57662ab16c2c09c62ca182b55d9ed899",
+        "sha1": "6fe089dd432de033559096f1522a1f99bc163a52",
+        "bytes": 738730
+      },
+      "existing_pdfinfo": {
+        "Creator": "Hwp 2018 11.0.0.1623",
+        "Producer": "Hancom PDF 1.3.0.404",
+        "Pages": "44",
+        "Page size": "841 x 595 pts (A4)",
+        "PDF version": "1.4"
+      },
+      "reissued": {
+        "input": "samples/issue9000/kaf_table_section.hwp",
+        "input_sha256": "b03eaad4854504f54eafe8a1aa10eafd56e9ad75db3e40ae2ed43a31dd666c0f",
+        "job_id": "10e19b34-db61-48b3-90a8-1db299c73532",
+        "expected_page_count": 44,
+        "status": "succeeded",
+        "result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9172",
+          "pdf_page_count": 44,
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "comment": "한컴 PDF 출력의 글꼴 이름 공백 문법 오류를 보정했습니다. PDF 구조 및 전체 쪽 검사를 통과했습니다."
+        },
+        "error_code": null,
+        "download_server": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9172",
+          "pdf_page_count": 44,
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "comment": "한컴 PDF 출력의 글꼴 이름 공백 문법 오류를 보정했습니다. PDF 구조 및 전체 쪽 검사를 통과했습니다."
+        },
+        "pdfinfo": {
+          "Creator": "Hwp 2020 11.0.0.9172",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "44",
+          "Page size": "841 x 595 pts (A4)"
+        },
+        "output_sha256": "71c1a67fa80ed3535f3a807acb1d4b26f3e37c7275f61559a8ebbd36641ba0aa",
+        "output_bytes": 705504
+      },
+      "comparison": {
+        "pr": 9386,
+        "pages": 44,
+        "pdfs_byte_equal_png_pages": 0,
+        "pdfs_raw_below_100_display_pages": 22,
+        "pdfs_raw_minimum": 96.52,
+        "dpi": 96,
+        "raster_policy": "pdfium_smooth_rgb_exact_dpi_v2",
+        "focused_candidate": [
+          {
+            "backend": "native",
+            "page": 35,
+            "existing_print_raw": 99.17973,
+            "reissued_print_raw": 99.09101
+          },
+          {
+            "backend": "wasm",
+            "page": 21,
+            "existing_print_raw": 99.22507,
+            "reissued_print_raw": 99.22933
+          },
+          {
+            "backend": "wasm",
+            "page": 36,
+            "existing_print_raw": 98.37635,
+            "reissued_print_raw": 98.08454
+          }
+        ]
+      }
+    },
+    "kaf-appendix": {
+      "existing_pdf": {
+        "path": "pdf/issue9379/kaf_appendix-2020.pdf",
+        "sha256": "7787910c514b5947639fb5857e1a5847616000115f18210a76eff05765c07a2c",
+        "sha1": "629924e0bedc4a0ffee45a370b12c1ec7aa67313",
+        "bytes": 812384
+      },
+      "existing_pdfinfo": {
+        "Creator": "Hwp 2018 11.0.0.1623",
+        "Producer": "Hancom PDF 1.3.0.404",
+        "Pages": "54",
+        "Page size": "841 x 595 pts (A4)",
+        "PDF version": "1.4"
+      },
+      "reissued": {
+        "input": "samples/issue9379/kaf_appendix.hwp",
+        "input_sha256": "f5f835cb60fdb1883f5857bcc0799c22dfe24e4c1b683dfc10e9382da30d77c2",
+        "job_id": "9a8239f3-ea09-46f3-81c5-43b649a29795",
+        "expected_page_count": 54,
+        "status": "succeeded",
+        "result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9172",
+          "pdf_page_count": 54,
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "comment": "한컴 PDF 출력의 글꼴 이름 공백 문법 오류를 보정했습니다. PDF 구조 및 전체 쪽 검사를 통과했습니다."
+        },
+        "error_code": null,
+        "download_server": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9172",
+          "pdf_page_count": 54,
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "comment": "한컴 PDF 출력의 글꼴 이름 공백 문법 오류를 보정했습니다. PDF 구조 및 전체 쪽 검사를 통과했습니다."
+        },
+        "pdfinfo": {
+          "Creator": "Hwp 2020 11.0.0.9172",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "54",
+          "Page size": "841 x 595 pts (A4)"
+        },
+        "output_sha256": "eb36dfb00712626b4aa6abb006ffd81e8aa3fd7932d3e04c6ffa691b337b5bf1",
+        "output_bytes": 784026
+      },
+      "comparison": {
+        "pr": 9400,
+        "pages": 54,
+        "pdfs_byte_equal_png_pages": 0,
+        "pdfs_raw_below_100_display_pages": 23,
+        "pdfs_raw_minimum": 96.52,
+        "dpi": 96,
+        "raster_policy": "pdfium_smooth_rgb_exact_dpi_v2",
+        "focused_candidate": [
+          {
+            "backend": "native",
+            "page": 38,
+            "existing_print_raw": 97.85997,
+            "reissued_print_raw": 96.01337
+          },
+          {
+            "backend": "wasm",
+            "page": 21,
+            "existing_print_raw": 99.22507,
+            "reissued_print_raw": 99.22933
+          },
+          {
+            "backend": "wasm",
+            "page": 38,
+            "existing_print_raw": 97.84556,
+            "reissued_print_raw": 96.00588
+          },
+          {
+            "backend": "wasm",
+            "page": 39,
+            "existing_print_raw": 99.97636,
+            "reissued_print_raw": 99.96676
+          }
+        ]
+      }
+    }
+  },
+  "submission_comparison": "mcp-print-comparison/results.json"
+}

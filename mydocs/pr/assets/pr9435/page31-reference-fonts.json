@@ -1,0 +1,40 @@
+{
+  "pdf/issue9419/kaf_appendix_2020-2020.pdf": {
+    "sha256": "75530096fef8dfc9bf0e569e1189d3dd746367663aeb0d2605eb29b98e453c3d",
+    "pages": 54,
+    "page": 31,
+    "font_names": [
+      "INPILL+H2hdrM",
+      "INPILL+Gulim",
+      "INPILL+Batang",
+      "INPILL+MalgunGothic",
+      "INPILL+HCRDotum",
+      "T4"
+    ],
+    "mupdf_warnings_before": [],
+    "mupdf_render_messages": [
+      "closepath with no current point"
+    ]
+  },
+  "pdf/issue9419/mcp-11.0.0.9172/kaf_appendix_2020-2020.pdf": {
+    "sha256": "d1760ac55a47df2f477e2155ecf7cf21f69dbfa58aca5fdd8efec78719c25d83",
+    "pages": 54,
+    "page": 31,
+    "font_names": [
+      "INPILL+HCRDotum",
+      "HCI Poppy",
+      "INPILL+Batang",
+      "INPILL+MalgunGothic",
+      "INPILL+H2hdrM"
+    ],
+    "font_xref": 31,
+    "descendants": "[347 0 R]",
+    "child_subtype": "/Type1",
+    "descriptor_xref": "343 0 R",
+    "descriptor_font": "/INPILL+Gulim",
+    "mupdf_warnings_before": [],
+    "mupdf_render_messages": [
+      "syntax error: unknown cid font type"
+    ]
+  }
+}

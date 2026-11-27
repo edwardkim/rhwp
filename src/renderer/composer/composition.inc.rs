@@ -312,6 +312,7 @@ fn try_compose_paragraph_with_owners<S: crate::storage::Storage>(
     if let Some(styles) = metric_styles {
         punctuation_slots::try_resolve_run_slots(
             &mut lines,
+            &para.text,
             styles,
             crate::renderer::para_has_no_stored_line_segs(para),
             storage,

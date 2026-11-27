@@ -1,0 +1,99 @@
+{
+  "documentSubstitutions": [],
+  "id": "outline-original-glyph-programs-verified-collection",
+  "preserveSourceMetrics": true,
+  "selectedPrograms": {
+    "KoPubWorld바탕체 Light": {
+      "family": "KoPubWorldBatang Light",
+      "openTypeCff": false,
+      "programId": "2f38ac079f1fd21c13272ccaa528109a17e556dcd80ff291e8f9069f91c6232b",
+      "query": "KoPubWorld바탕체 Light",
+      "trueType": true
+    },
+    "Times New Roman": {
+      "family": "Times New Roman",
+      "openTypeCff": false,
+      "programId": "09d9ee0e2d6700728fbfeb1402177341b8dc6c7e9a5206fb98563c21cba089d4",
+      "query": "Times New Roman",
+      "trueType": true
+    },
+    "돋움": {
+      "collectionFace": true,
+      "family": "Dotum",
+      "openTypeCff": false,
+      "programId": "8b227d162052d30a43bfb3fe8f9f2dd63b7b99c9f0a0a043e95dd5000bcf589f",
+      "query": "돋움",
+      "trueType": true
+    },
+    "돋움체": {
+      "family": "DotumChe",
+      "openTypeCff": false,
+      "programId": "9d34c8b2ac8ea73a7ca6b571fa6b509a1e083504c99d63cd0fe2cb0c3f150ec5",
+      "query": "돋움체",
+      "trueType": true
+    },
+    "명조": {
+      "family": "Myeongjo",
+      "openTypeCff": true,
+      "programId": "273a2975151dbf480c5784f8b57a76287898c0554b37a4b329005b97e2e4d1f6",
+      "query": "명조",
+      "trueType": false
+    },
+    "한양견고딕": {
+      "family": "HY Gyeongothic",
+      "openTypeCff": true,
+      "programId": "d142709eb1e4ba587e6402ab7e00e31ce4c1ed757c7e16a6ebeba2c593b1ed83",
+      "query": "한양견고딕",
+      "trueType": false
+    },
+    "한양신명조": {
+      "family": "HY Sinmyeongjo",
+      "openTypeCff": true,
+      "programId": "5f3e3a8ea3110db5236a7c1953ef166cd2b861d937fc4a854c379038487fbf88",
+      "query": "한양신명조",
+      "trueType": false
+    },
+    "한양중고딕": {
+      "family": "HY Junggothic",
+      "openTypeCff": true,
+      "programId": "fa2c2c06d2f13b539b9e5881e0a0155799350d9bfb569696780a7a1fc65f2d8e",
+      "query": "한양중고딕",
+      "trueType": false
+    },
+    "함초롬바탕": {
+      "family": "HCR Batang",
+      "openTypeCff": false,
+      "programId": "6247c14b4d48d9c44d37124d74a8d3428c822e82dfa2cd3cd66cd74489e0171b",
+      "query": "함초롬바탕",
+      "trueType": true
+    },
+    "휴먼명조": {
+      "family": "휴먼명조",
+      "openTypeCff": false,
+      "programId": "f44febee110ef64620a17f9e884aac284878aef1bdf3cb3f41bc9efb462e629e",
+      "query": "휴먼명조",
+      "trueType": true
+    }
+  },
+  "substitutions": {
+    "#신명조": "NotoSansKR-Regular",
+    "KoPubWorld바탕체 Light": "KoPubWorldBatang Light",
+    "Times New Roman": "Times New Roman",
+    "돋움": "Dotum",
+    "돋움체": "DotumChe",
+    "명조": "Myeongjo",
+    "한양견고딕": "HY Gyeongothic",
+    "한양신명조": "HY Sinmyeongjo",
+    "한양중고딕": "HY Junggothic",
+    "함초롬바탕": "HCR Batang",
+    "휴먼명조": "휴먼명조"
+  },
+  "trueTypeFaces": [
+    "Dotum",
+    "DotumChe",
+    "HCR Batang",
+    "KoPubWorldBatang Light",
+    "Times New Roman",
+    "휴먼명조"
+  ]
+}

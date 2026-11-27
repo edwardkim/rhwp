@@ -58,6 +58,7 @@ pub(super) fn publish(
                             section_index: None,
                             para_index: None,
                             control_index: None,
+                            cell_context: None,
                         }),
                     )
                 })

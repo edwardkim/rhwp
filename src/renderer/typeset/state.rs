@@ -488,20 +488,26 @@ impl TypesetState {
     ) -> Result<(), S::Error> {
         if let Some(continuation) = continuation {
             let fragment = continuation.row_fragment;
-            storage.push(
-                &mut self.data.pending_overlay_continuations,
-                crate::renderer::pagination::OverlayContinuation {
-                    para_index: para_idx,
-                    control_index: ctrl_idx,
-                    start_row: continuation.first_unfit,
-                    start_cut: match &fragment {
-                        Some(f) => storage.copy_slice(&f.end_cut)?,
-                        None => Vec::new(),
+            let resumed = fragment.as_ref().filter(|row| !row.fully_consumed);
+            // 잔여 행이 없는 컷(모든 행을 이 쪽에 그림)은 다음 쪽 대기열에 올리지 않는다.
+            let carries_rows = continuation.remaining_px > 0.0 || resumed.is_some();
+            if carries_rows {
+                storage.push(
+                    &mut self.data.pending_overlay_continuations,
+                    crate::renderer::pagination::OverlayContinuation {
+                        para_index: para_idx,
+                        control_index: ctrl_idx,
+                        start_row: continuation.first_unfit
+                            + usize::from(fragment.as_ref().is_some_and(|f| f.fully_consumed)),
+                        start_cut: match resumed {
+                            Some(f) => storage.copy_slice(&f.end_cut)?,
+                            None => Vec::new(),
+                        },
+                        start_row_height: resumed.map(|f| f.remaining_height),
+                        reserve_px: continuation.reserve_px,
                     },
-                    start_row_height: fragment.as_ref().map(|f| f.remaining_height),
-                    reserve_px: continuation.reserve_px,
-                },
-            )?;
+                )?;
+            }
             storage.push(
                 &mut self.data.current_column_overlay_cuts,
                 (

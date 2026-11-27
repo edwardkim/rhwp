@@ -163,6 +163,32 @@ impl NativeOtfMetrics {
         &self,
         identity: &super::font_environment::FontProgramIdentity,
     ) -> Option<f64> {
+        let face = self.selected_program_face(identity)?;
+        let glyph = face.glyph_index(' ').filter(|glyph| glyph.0 != 0)?;
+        let advance = face
+            .glyph_hor_advance(glyph)
+            .filter(|&advance| advance > 0)?;
+        let em = face.units_per_em();
+        (em > 0).then(|| f64::from(advance) / f64::from(em))
+    }
+
+    /// 명시적으로 선택한 원본 프로그램의 cmap만 확인한다.
+    pub(crate) fn selected_program_has_glyph(
+        &self,
+        identity: &super::font_environment::FontProgramIdentity,
+        character: char,
+    ) -> Option<bool> {
+        let face = self.selected_program_face(identity)?;
+        Some(
+            face.glyph_index(character)
+                .is_some_and(|glyph| glyph.0 != 0),
+        )
+    }
+
+    fn selected_program_face(
+        &self,
+        identity: &super::font_environment::FontProgramIdentity,
+    ) -> Option<ttf_parser::Face<'_>> {
         let program = self.programs.iter().find(|program| {
             identity.matches(
                 &program.source_digest,
@@ -170,13 +196,7 @@ impl NativeOtfMetrics {
                 program.source_face_index,
             )
         })?;
-        let face = ttf_parser::Face::parse(&program.bytes, program.face_index).ok()?;
-        let glyph = face.glyph_index(' ').filter(|glyph| glyph.0 != 0)?;
-        let advance = face
-            .glyph_hor_advance(glyph)
-            .filter(|&advance| advance > 0)?;
-        let em = face.units_per_em();
-        (em > 0).then(|| f64::from(advance) / f64::from(em))
+        ttf_parser::Face::parse(&program.bytes, program.face_index).ok()
     }
 
     /// 뒤 대체 후보가 아닌 실제 주 프로그램의 cmap을 확인한다.
