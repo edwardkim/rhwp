@@ -132,15 +132,17 @@ fn slot(
         && ch.is_ascii_punctuation()
         && uses_hft_source(0)
         && uses_hft_source(1)
-        && style.original_glyph_metric_face_for_lang(1).is_some_and(|face| {
-            use crate::renderer::font_metrics_data::{
-                declared_original_glyph_advance_em, find_metric,
-            };
-            find_metric(face, style.bold, style.italic)
-                .is_some_and(|metric| metric.metric.hangul.is_none())
-                && declared_original_glyph_advance_em(face, style.bold, style.italic, ch)
-                    .is_some()
-        });
+        && style
+            .original_glyph_metric_face_for_lang(1)
+            .is_some_and(|face| {
+                use crate::renderer::font_metrics_data::{
+                    declared_original_glyph_advance_em, find_metric,
+                };
+                find_metric(face, style.bold, style.italic)
+                    .is_some_and(|metric| metric.metric.hangul.is_none())
+                    && declared_original_glyph_advance_em(face, style.bold, style.italic, ch)
+                        .is_some()
+            });
     if supplied_latin_punctuation || hanja_latin_punctuation || measured_latin_punctuation {
         1
     } else if style.explicit_latin_slot && super::is_latin_slot_punct(ch) {
