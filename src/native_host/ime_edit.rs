@@ -1,4 +1,4 @@
-//! Bounded, atomic UTF-16 IME deltas over one plain body paragraph.
+//! Bounded, atomic UTF-16 IME deltas over one plain body or editable cell paragraph.
 //!
 //! Context text includes the active native preview. Qt adapters translate their
 //! preview-excluding offsets using `preedit`; Flutter deltas use this text as
@@ -111,7 +111,9 @@ impl NativeEditor {
         self.session.check_revision(expected_revision)?;
         Self::validate_selection(&self.session.core, &self.selection)?;
         same_paragraph(&self.selection)?;
-        Self::check_body_text_span(&self.session.core, &self.selection)?;
+        if self.selection.focus.cell_path.is_empty() {
+            Self::check_body_text_span(&self.session.core, &self.selection)?;
+        }
         let context = self.ime_context(expected_revision)?;
         if context.anchor_scalar.is_none() || context.selection_truncated {
             return Err(limit("IME selection is outside the bounded context"));
@@ -125,9 +127,7 @@ impl NativeEditor {
                 .unwrap_or(&composition.original_text);
             check_text_bound(text)?;
             let start = Self::ordered(&composition.replacement_range).0;
-            if (start.section, start.paragraph)
-                != (context.position.section, context.position.paragraph)
-            {
+            if !same_text_address(start, &context.position) {
                 return Err(invalid("composition is outside the IME paragraph"));
             }
             let local = start
@@ -384,9 +384,7 @@ impl NativeEditor {
         preview: Option<Range<usize>>,
     ) -> Result<(), NativeHostError> {
         let position = &expected.context.position;
-        let paragraph = &self.session.core.document().sections[position.section as usize]
-            .paragraphs[position.paragraph as usize]
-            .text;
+        let paragraph = &self.session.core.native_text_paragraph(position)?.text;
         let length = paragraph
             .chars()
             .count()
@@ -457,14 +455,14 @@ fn retain_snapshot(core: &mut DocumentCore, allocated: &mut Vec<u32>) -> u32 {
     id
 }
 
+fn same_text_address(a: &NativeTextPosition, b: &NativeTextPosition) -> bool {
+    a.section == b.section && a.paragraph == b.paragraph && a.cell_path == b.cell_path
+}
+
 fn same_paragraph(selection: &NativeTextSelection) -> Result<(), NativeHostError> {
-    if selection.anchor.section != selection.focus.section
-        || selection.anchor.paragraph != selection.focus.paragraph
-        || !selection.anchor.cell_path.is_empty()
-        || !selection.focus.cell_path.is_empty()
-    {
+    if !same_text_address(&selection.anchor, &selection.focus) {
         return Err(NativeHostError::Unsupported(
-            "IME deltas require one plain body paragraph".into(),
+            "IME deltas require one plain body or table-cell paragraph".into(),
         ));
     }
     Ok(())

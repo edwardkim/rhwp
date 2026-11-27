@@ -3930,6 +3930,10 @@ fn parse_paragraph_list_inner(
         } else {
             para.line_segs = line_segs;
         }
+        // [#9426] HWP3 줄 정보에는 하이픈 표지가 없다. 한/글의 HWP3 가져오기는 하이픈(24)
+        // 자리에서 나뉜 줄에 HWP5 LineSeg bit 19 를 세우고, 그 비트가 있어야 줄 끝 하이픈을
+        // 그린다. 비트 없이 저장하면 한/글은 같은 줄 나눔에서 하이픈을 지운다.
+        para.sync_auto_hyphenation_tags();
 
         // TAC 표의 줄 높이는 표 자체 높이지만 뒤 간격은 원래 글자 줄의
         // 간격이다. 표 높이에 배율을 곱하거나 일반 HWP3의 간격을 0으로

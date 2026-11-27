@@ -2,12 +2,15 @@
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::native_interaction::{
-    NativeTextPosition, NativeTextSelection, NativeVerticalDirection,
+    NativeCellPathEntry, NativeTextPosition, NativeTextSelection, NativeVerticalDirection,
 };
 use rhwp::model::control::Control;
-use rhwp::model::table::Table;
-use rhwp::native_host::commands::{NativeCommandOutcome, NativeEditCommand as Command};
+use rhwp::model::{style::Alignment, table::Table};
+use rhwp::native_host::commands::{
+    NativeCommandOutcome, NativeEditCommand as Command, NativeParagraphAlignment,
+};
 use rhwp::native_host::editor::NativeEditor;
+use rhwp::native_host::save::NativeSaveFormat;
 use rhwp::native_host::{NativeDocumentSession, NativeHostError};
 use rhwp::DocumentCore;
 
@@ -703,4 +706,229 @@ fn argument_free_commands_reject_unknown_fields() {
         let input = format!("{{\"command\":\"{command}\",\"unexpected\":true}}");
         assert!(serde_json::from_str::<Command>(&input).is_err());
     }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+struct ParagraphFormatting {
+    text: String,
+    characters: Vec<(bool, i32)>,
+    alignment: Alignment,
+}
+
+fn paragraph_formatting(core: &DocumentCore, point: &NativeTextPosition) -> ParagraphFormatting {
+    let document = core.document();
+    let mut paragraph =
+        &document.sections[point.section as usize].paragraphs[point.paragraph as usize];
+    for entry in &point.cell_path {
+        let Control::Table(table) = &paragraph.controls[entry.control as usize] else {
+            panic!("missing table at {entry:?}");
+        };
+        paragraph = &table.cells[entry.cell as usize].paragraphs[entry.paragraph as usize];
+    }
+    let characters = paragraph
+        .text
+        .chars()
+        .enumerate()
+        .map(|(offset, _)| {
+            let id = paragraph.char_shape_id_at(offset).unwrap_or(0);
+            let shape = &document.doc_info.char_shapes[id as usize];
+            (shape.bold, shape.base_size)
+        })
+        .collect();
+    ParagraphFormatting {
+        text: paragraph.text.clone(),
+        characters,
+        alignment: document.doc_info.para_shapes[paragraph.para_shape_id as usize].alignment,
+    }
+}
+
+fn exercise_native_formatting(
+    mut editor: NativeEditor,
+    target: NativeTextPosition,
+    neighbor: NativeTextPosition,
+) {
+    let current = |editor: &NativeEditor, point: &NativeTextPosition| {
+        paragraph_formatting(editor.session().document(), point)
+    };
+    let before = current(&editor, &target);
+    let neighbor_before = current(&editor, &neighbor);
+
+    let selected_characters = selected(
+        NativeTextPosition {
+            scalar_offset: 2,
+            ..target.clone()
+        },
+        NativeTextPosition {
+            scalar_offset: 1,
+            ..target.clone()
+        },
+    );
+    select(&mut editor, selected_characters.clone());
+    let (bold, font_size) = before.characters[1];
+    let new_size = if font_size == 1500 { 1600 } else { 1500 };
+    let characters = Command::FormatCharacters {
+        bold: Some(!bold),
+        font_size: Some(new_size),
+    };
+    let mut expected = before.clone();
+    expected.characters[1] = (!bold, new_size);
+    let formatted = run(&mut editor, characters.clone());
+    assert!(formatted.outcome.document_changed && formatted.outcome.history_changed);
+    assert_eq!(formatted.outcome.revision, 1);
+    assert_eq!(formatted.outcome.selection, selected_characters);
+    assert_eq!(current(&editor, &target), expected);
+    assert_eq!(current(&editor, &neighbor), neighbor_before);
+
+    let target_caret = selected(target.clone(), target.clone());
+    select(&mut editor, target_caret.clone());
+    let (new_alignment, model_alignment) = if before.alignment == Alignment::Right {
+        (NativeParagraphAlignment::Center, Alignment::Center)
+    } else {
+        (NativeParagraphAlignment::Right, Alignment::Right)
+    };
+    let aligned = run(
+        &mut editor,
+        Command::SetParagraphAlignment {
+            alignment: new_alignment,
+        },
+    );
+    assert!(aligned.outcome.document_changed && aligned.outcome.history_changed);
+    assert_eq!(aligned.outcome.revision, 2);
+    assert_eq!(aligned.outcome.selection, target_caret);
+    let characters_only = expected.clone();
+    expected.alignment = model_alignment;
+    assert_eq!(current(&editor, &target), expected);
+    assert_eq!(current(&editor, &neighbor), neighbor_before);
+
+    let undone = editor.undo(2).unwrap();
+    assert_eq!(undone.selection, target_caret);
+    assert_eq!(current(&editor, &target), characters_only);
+    select(&mut editor, selected_characters.clone());
+    let unchanged = run(&mut editor, characters);
+    assert!(!unchanged.outcome.document_changed && !unchanged.outcome.history_changed);
+    assert_eq!(unchanged.outcome.revision, undone.revision);
+    assert!(editor.can_redo());
+    let undone = editor.undo(unchanged.outcome.revision).unwrap();
+    assert_eq!(undone.selection, selected_characters);
+    assert_eq!(current(&editor, &target), before);
+    assert!(!editor.can_undo());
+    let redone = editor.redo(undone.revision).unwrap();
+    assert_eq!(redone.selection, selected_characters);
+    assert_eq!(current(&editor, &target), characters_only);
+    let redone = editor.redo(redone.revision).unwrap();
+    assert_eq!(redone.selection, target_caret);
+    assert_eq!(current(&editor, &target), expected);
+
+    for format in [NativeSaveFormat::Hwp, NativeSaveFormat::Hwpx] {
+        let prepared = editor.prepare_save(format).unwrap();
+        let reopened = DocumentCore::from_bytes(prepared.bytes()).unwrap();
+        assert_eq!(
+            paragraph_formatting(&reopened, &target),
+            expected,
+            "{format:?}"
+        );
+        assert_eq!(
+            paragraph_formatting(&reopened, &neighbor),
+            neighbor_before,
+            "{format:?}"
+        );
+    }
+}
+
+#[test]
+fn native_formatting_changes_only_the_selected_body_characters_and_paragraph() {
+    exercise_native_formatting(
+        editor(&["가😀나", "neighbor"]),
+        position(0, 0),
+        position(1, 0),
+    );
+}
+
+fn applicant_name_position(cell: u32) -> NativeTextPosition {
+    NativeTextPosition {
+        cell_path: vec![
+            NativeCellPathEntry {
+                control: 0,
+                cell: 1,
+                paragraph: 1,
+            },
+            NativeCellPathEntry {
+                control: 0,
+                cell,
+                paragraph: 0,
+            },
+        ],
+        ..position(1, 0)
+    }
+}
+
+#[test]
+fn native_formatting_changes_only_the_applicant_name_field_in_a_nested_table() {
+    let bytes = include_bytes!("../../samples/issue5599_oracle/3191107_leave_request_form.hwpx");
+    let core = DocumentCore::from_bytes(bytes).unwrap();
+    let target = applicant_name_position(3);
+    let neighbor = applicant_name_position(2);
+    let editor = NativeEditor::new(
+        NativeDocumentSession::from_core(core),
+        selected(target.clone(), target.clone()),
+    )
+    .unwrap();
+    assert!(paragraph_formatting(editor.session().document(), &target)
+        .text
+        .trim()
+        .is_empty());
+    assert_eq!(
+        paragraph_formatting(editor.session().document(), &neighbor)
+            .text
+            .replace(' ', ""),
+        "성명"
+    );
+    exercise_native_formatting(editor, target, neighbor);
+}
+
+#[test]
+fn native_formatting_validates_properties_and_selection_before_mutation() {
+    let mut editor = editor(&["가😀나", "neighbor"]);
+    let span = selected(position(0, 1), position(0, 2));
+    let before = paragraph_formatting(editor.session().document(), &span.focus);
+    select(&mut editor, span);
+    for font_size in [None, Some(0), Some(-1), Some(409_601)] {
+        assert!(matches!(
+            editor.execute_command(
+                0,
+                Command::FormatCharacters {
+                    bold: None,
+                    font_size,
+                }
+            ),
+            Err(NativeHostError::InvalidArgument(_))
+        ));
+    }
+    select(&mut editor, caret(0, 1));
+    assert!(matches!(
+        editor.execute_command(
+            0,
+            Command::FormatCharacters {
+                bold: Some(true),
+                font_size: None
+            }
+        ),
+        Err(NativeHostError::InvalidArgument(_))
+    ));
+    select(&mut editor, selected(position(0, 1), position(1, 1)));
+    assert!(matches!(
+        editor.execute_command(
+            0,
+            Command::SetParagraphAlignment {
+                alignment: NativeParagraphAlignment::Center,
+            }
+        ),
+        Err(NativeHostError::Unsupported(_))
+    ));
+    assert_eq!(editor.session().revision(), 0);
+    assert!(!editor.can_undo() && !editor.can_redo());
+    assert_eq!(
+        paragraph_formatting(editor.session().document(), &position(0, 0)),
+        before
+    );
 }

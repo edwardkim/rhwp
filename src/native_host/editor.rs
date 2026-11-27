@@ -1,14 +1,16 @@
 //! Opt-in native editor state. The document engine itself remains history-free.
 //!
-//! This first surface edits body text only. Offsets are Unicode scalar indices;
-//! cell editing, object-bearing paragraph mutations, inline-control affinity and
-//! tabs are rejected explicitly. Read-only selection may span floating objects.
-//! Paragraph split/join and grapheme navigation live in `commands`. OS IME events
-//! and screen coordinates belong to the host, not to this session.
+//! Offsets are Unicode scalar indices. Plain-text replacement supports body
+//! ranges and a single paragraph of a table cell, including nested tables. Object-bearing
+//! paragraph mutations, inline-control affinity and tabs are rejected explicitly.
+//! Composition and explicit paragraph split/join also support editable cell
+//! paragraphs. The selection addresses one leaf paragraph at a time.
 
 use std::collections::VecDeque;
 
-use crate::document_core::native_interaction::{NativeTextPosition, NativeTextSelection};
+use crate::document_core::native_interaction::{
+    legacy_cell_path, NativeTextPosition, NativeTextSelection,
+};
 use crate::model::control::Control;
 use crate::DocumentCore;
 
@@ -163,18 +165,19 @@ impl NativeEditor {
         self.session.set_font_sources(paths, environment)
     }
 
-    /// Save without committing an unfinished IME preview. HWP stores current
-    /// body focus; HWPX retains its existing source-settings/default policy.
+    /// Save only after IME composition ends. HWP stamps a body focus or
+    /// retains the stored caret when a cell has focus. HWPX uses its source
+    /// settings or the serializer default.
     pub fn prepare_save(
         &mut self,
         format: super::save::NativeSaveFormat,
     ) -> Result<super::save::PreparedSave, NativeHostError> {
         self.require_no_composition()?;
         match format {
-            super::save::NativeSaveFormat::Hwp => self
+            super::save::NativeSaveFormat::Hwp if self.selection.focus.cell_path.is_empty() => self
                 .session
                 .prepare_save_with_caret(format, &self.selection.focus),
-            super::save::NativeSaveFormat::Hwpx => self.session.prepare_save(format),
+            _ => self.session.prepare_save(format),
         }
     }
 
@@ -235,8 +238,8 @@ impl NativeEditor {
     }
 
     /// Insert at a collapsed selection, delete with an empty string, or replace a
-    /// range. The selected body paragraphs may span one section. Newline and tab
-    /// input are not silently interpreted as paragraph/control insertion.
+    /// range. Body ranges may span one section. Cell ranges stay within one
+    /// paragraph. Newlines and tabs are outside this text replacement contract.
     pub fn replace_selection(
         &mut self,
         expected_revision: u64,
@@ -274,6 +277,15 @@ impl NativeEditor {
         Self::validate_selection(&self.session.core, &self.selection)
     }
 
+    pub(super) fn require_body_selection(&self, operation: &str) -> Result<(), NativeHostError> {
+        if !self.selection.focus.cell_path.is_empty() {
+            return Err(NativeHostError::Unsupported(format!(
+                "{operation} currently supports body text only"
+            )));
+        }
+        Ok(())
+    }
+
     /// Commit one known-changing action. The closure can mutate only the core;
     /// editor selection/history are published after every fallible step succeeds.
     /// This does not rewind the core's already-emitted event log on rollback.
@@ -283,7 +295,7 @@ impl NativeEditor {
         edit: impl FnOnce(&mut DocumentCore) -> Result<NativeTextSelection, NativeHostError>,
     ) -> Result<NativeEditOutcome, NativeHostError> {
         self.check_edit_ready(expected_revision)?;
-        Self::check_body_text_span(&self.session.core, &self.selection)?;
+        Self::check_editable_text_span(&self.session.core, &self.selection)?;
         self.check_mutation_capacity()?;
         self.check_snapshot_slots(2)?;
         let selection_before = self.selection.clone();
@@ -317,6 +329,9 @@ impl NativeEditor {
         self.session.check_revision(expected_revision)?;
         self.require_no_composition()?;
         Self::validate_selection(&self.session.core, &self.selection)?;
+        if !self.selection.focus.cell_path.is_empty() {
+            Self::check_editable_text_span(&self.session.core, &self.selection)?;
+        }
         self.check_snapshot_slots(2)?;
         let next_id = self.next_composition_id.checked_add(1).ok_or_else(|| {
             NativeHostError::LimitExceeded("composition identifiers exhausted".into())
@@ -541,7 +556,7 @@ impl NativeEditor {
     fn validate_text(text: &str) -> Result<(), NativeHostError> {
         if text.chars().any(char::is_control) {
             return Err(NativeHostError::Unsupported(
-                "body text input does not insert control characters, tabs or paragraphs".into(),
+                "text input does not insert control characters, tabs or paragraphs".into(),
             ));
         }
         Ok(())
@@ -552,10 +567,18 @@ impl NativeEditor {
         selection: &NativeTextSelection,
     ) -> Result<(), NativeHostError> {
         if !selection.anchor.cell_path.is_empty() || !selection.focus.cell_path.is_empty() {
-            return Err(NativeHostError::Unsupported(
-                "native editor currently supports body text only; cell editing is not supported"
-                    .into(),
-            ));
+            if selection.anchor.section != selection.focus.section
+                || selection.anchor.paragraph != selection.focus.paragraph
+                || selection.anchor.cell_path != selection.focus.cell_path
+            {
+                return Err(NativeHostError::Unsupported(
+                    "cell editing requires one paragraph of the same table cell".into(),
+                ));
+            }
+            for position in [&selection.anchor, &selection.focus] {
+                core.check_native_interaction_support(position)?;
+            }
+            return Ok(());
         }
         for position in [&selection.anchor, &selection.focus] {
             core.validate_native_text_position(position)
@@ -575,6 +598,26 @@ impl NativeEditor {
                 cell_path: Vec::new(),
             })
             .map_err(|error| NativeHostError::Unsupported(error.to_string()))?;
+        }
+        Ok(())
+    }
+
+    pub(super) fn check_editable_text_span(
+        core: &DocumentCore,
+        selection: &NativeTextSelection,
+    ) -> Result<(), NativeHostError> {
+        let position = &selection.anchor;
+        if position.cell_path.is_empty() {
+            return Self::check_body_text_span(core, selection);
+        }
+        if !core
+            .native_editable_text_paragraph(position)?
+            .controls
+            .is_empty()
+        {
+            return Err(NativeHostError::Unsupported(
+                "cell text edits cannot include semantic controls".into(),
+            ));
         }
         Ok(())
     }
@@ -639,6 +682,18 @@ impl NativeEditor {
 
     pub(super) fn selected_text(&self, selection: &NativeTextSelection) -> String {
         let (start, end) = Self::ordered(selection);
+        if !start.cell_path.is_empty() {
+            return self
+                .session
+                .core
+                .native_text_paragraph(start)
+                .expect("validated cell paragraph")
+                .text
+                .chars()
+                .skip(start.scalar_offset as usize)
+                .take((end.scalar_offset - start.scalar_offset) as usize)
+                .collect();
+        }
         let paragraphs = &self.session.core.document().sections[start.section as usize].paragraphs;
         (start.paragraph..=end.paragraph)
             .map(|paragraph| {
@@ -666,8 +721,21 @@ impl NativeEditor {
     ) -> Result<(), NativeHostError> {
         // Also covers IME previews and command edit ranges distinct from the
         // editor's current selection. This check precedes all core mutations.
-        Self::check_body_text_span(core, selection)?;
+        Self::check_editable_text_span(core, selection)?;
         let (start, end) = Self::ordered(selection);
+        if !start.cell_path.is_empty() {
+            let path = legacy_cell_path(&start.cell_path);
+            core.replace_text_in_cell_by_path(
+                start.section as usize,
+                start.paragraph as usize,
+                &path,
+                start.scalar_offset as usize,
+                (end.scalar_offset - start.scalar_offset) as usize,
+                text,
+                false,
+            )?;
+            return Ok(());
+        }
         if start.paragraph == end.paragraph
             && end.scalar_offset - start.scalar_offset <= 8
             && text.chars().count() <= 8
@@ -743,7 +811,11 @@ impl NativeEditor {
         }
     }
 
-    fn outcome(&self, document_changed: bool, history_changed: bool) -> NativeEditOutcome {
+    pub(super) fn outcome(
+        &self,
+        document_changed: bool,
+        history_changed: bool,
+    ) -> NativeEditOutcome {
         NativeEditOutcome {
             revision: self.session.revision(),
             selection: self.selection.clone(),

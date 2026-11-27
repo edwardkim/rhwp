@@ -87,6 +87,13 @@ Docker 또는 호스트 빌드를 선택해 동일한 필수 검증을 완료한
 통합 담당자는 첫 전쪽 실행 전에 [동명 글꼴과 실제 사용 글리프 확인](mydocs/manual/verification/visual_sweep_guide.md#동명-글꼴과-실제-사용-글리프-확인)의
 절차로 수용 당시 공급 파일과 실제 사용 프로그램을 대조한다.
 
+정본 보호는 기본 검증 환경 한 곳에서 등록 문서의 Native·fresh WASM 전쪽을 검사한다.
+OS 전용 경로 변경, 확인된 OS별 출력·공급 차이 또는 작업 지시가 있을 때 해당 환경의 영향 범위를
+추가 검증한다. [정본 보호 TSV의 공식 표시값 보존](mydocs/manual/verification/visual_verification_governance.md#정본-보호-tsv의-공식-표시값-보존)을 따른다.
+공급과 실제 선택에 [글꼴 공급 매니페스트](mydocs/verification/protected-font-supply/manifest.json)의
+파일명·SHA-256 제외 목록을 적용한다. `RHWPLegacyEquation-Original.otf`와 `HYHWPEQ.TTF` 1.10을
+제외하며, 수식 글꼴은 문서에 지정한 `HYHWPEQ.TTF` 1.13을 공급한다.
+
 ## 리뷰어 지정 후 추가 커밋 제한
 
 리뷰어 지정 후 기여자와 그 대행 자동화는 해당 PR에 임의로 추가 커밋을 push하지 않는다.

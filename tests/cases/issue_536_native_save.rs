@@ -4,8 +4,11 @@
 use std::io::{Cursor, Read};
 use std::sync::Arc;
 
-use rhwp::document_core::native_interaction::{NativeTextPosition, NativeTextSelection};
+use rhwp::document_core::native_interaction::{
+    NativeCellPathEntry, NativeTextPosition, NativeTextSelection,
+};
 use rhwp::model::bin_data::{BinDataBytes, BinDataResolver};
+use rhwp::model::control::Control;
 use rhwp::native_host::editor::NativeEditor;
 use rhwp::native_host::save::{NativeSaveCaretPolicy, NativeSaveFormat, NativeSaveToken};
 use rhwp::native_host::{NativeDocumentSession, NativeHostError};
@@ -208,6 +211,91 @@ fn hwp_focus_is_stamped_on_the_snapshot_with_the_same_utf16_and_raw_docinfo_cont
     );
     assert!(!hwpx.caret_saved());
     assert!(!hwpx.caret_preserved_from_source());
+}
+
+#[test]
+fn hwp_save_with_cell_focus_preserves_stored_caret_and_keeps_live_edits() {
+    let mut document = core("본문");
+    document
+        .paste_html_native(
+            0,
+            0,
+            2,
+            "<table><tr><td><p>이름</p></td><td><p>이웃 칸</p></td></tr></table>",
+        )
+        .unwrap();
+    let (paragraph, control) = document.document().sections[0]
+        .paragraphs
+        .iter()
+        .enumerate()
+        .find_map(|(index, paragraph)| {
+            paragraph
+                .controls
+                .iter()
+                .position(|control| matches!(control, Control::Table(_)))
+                .map(|control| (index, control))
+        })
+        .expect("fixture table");
+    let point = NativeTextPosition {
+        section: 0,
+        paragraph: paragraph as u32,
+        scalar_offset: 1,
+        cell_path: vec![NativeCellPathEntry {
+            control: control as u32,
+            cell: 0,
+            paragraph: 0,
+        }],
+    };
+    let caret = |core: &DocumentCore| {
+        let properties = &core.document().doc_properties;
+        (
+            properties.caret_list_id,
+            properties.caret_para_id,
+            properties.caret_char_pos,
+        )
+    };
+
+    let mut session = NativeDocumentSession::from_core(document);
+    let previous = session.prepare_save(NativeSaveFormat::Hwp).unwrap();
+    let previous_hwp = DocumentCore::from_bytes(previous.bytes()).unwrap();
+    let mut editor = NativeEditor::new(
+        session,
+        NativeTextSelection {
+            anchor: point.clone(),
+            focus: point,
+        },
+    )
+    .unwrap();
+    let first = editor.replace_selection(0, "한").unwrap();
+    let stored = caret(editor.session().document());
+    let save = editor.prepare_save(NativeSaveFormat::Hwp).unwrap();
+
+    assert_eq!(save.caret_policy(), NativeSaveCaretPolicy::StoredCore);
+    assert!(!save.caret_saved());
+    assert_eq!(save.revision(), first.revision);
+    assert_eq!(editor.session().revision(), first.revision);
+    assert_eq!(editor.selection(), &first.selection);
+    assert!(editor.session().is_dirty());
+    assert_eq!(caret(editor.session().document()), stored);
+
+    let reopened = DocumentCore::from_bytes(save.bytes()).unwrap();
+    assert_eq!(caret(&reopened), caret(&previous_hwp));
+    let Control::Table(table) =
+        &reopened.document().sections[0].paragraphs[paragraph].controls[control]
+    else {
+        panic!("missing saved table");
+    };
+    assert_eq!(table.cells[0].paragraphs[0].text, "이한름");
+    assert_eq!(table.cells[1].paragraphs[0].text, "이웃 칸");
+
+    let newer = editor.replace_selection(first.revision, "글").unwrap();
+    assert!(editor.acknowledge_save(previous.token()).is_err());
+    let status = editor.acknowledge_save(save.token()).unwrap();
+    assert_eq!(status.saved_revision, Some(first.revision));
+    assert_eq!(status.revision, newer.revision);
+    assert!(status.dirty);
+    assert_eq!(editor.selection(), &newer.selection);
+    assert!(editor.can_undo());
 }
 
 #[derive(Debug)]

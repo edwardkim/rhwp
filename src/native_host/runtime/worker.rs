@@ -244,6 +244,22 @@ fn execute(
             *owner = None;
             Ok(O::DocumentClosed)
         }
+        C::SearchText { target, request } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            if matches!(
+                &doc.owner,
+                DocumentOwner::Editor(editor) if editor.composition_id().is_some()
+            ) {
+                return Err(NativeHostError::Unsupported(
+                    "finish or cancel composition before searching".into(),
+                ));
+            }
+            Ok(O::SearchText {
+                target,
+                result: doc.session().search_text(&request)?,
+            })
+        }
         C::Accessibility { target, request } => {
             let doc = document(owner)?;
             doc.check(target)?;
@@ -276,6 +292,43 @@ fn execute(
                 document_id: doc.id,
                 snapshot: Arc::new(snapshot),
             })
+        }
+        C::ExportPdf {
+            target,
+            font_generation,
+            first_page,
+            page_count,
+            max_output_bytes,
+        } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            if doc.session().font_generation() != font_generation {
+                return Err(invalid("stale font generation"));
+            }
+            #[cfg(feature = "native-skia")]
+            {
+                if matches!(&doc.owner, DocumentOwner::Editor(editor) if editor.composition_id().is_some())
+                {
+                    return Err(NativeHostError::Unsupported(
+                        "complete the active composition before exporting PDF".into(),
+                    ));
+                }
+                let bytes = doc
+                    .session()
+                    .export_pdf(first_page, page_count, max_output_bytes)?;
+                Ok(O::ExportedPdf {
+                    target,
+                    font_generation,
+                    first_page,
+                    page_count,
+                    bytes,
+                })
+            }
+            #[cfg(not(feature = "native-skia"))]
+            {
+                let _ = (first_page, page_count, max_output_bytes);
+                Err(NativeHostError::FeatureDisabled)
+            }
         }
         C::RenderRegion {
             target,
@@ -396,6 +449,19 @@ fn execute(
             doc.editor()?
                 .set_selection(target.revision, selection)
                 .map(O::Edited)
+        }
+        C::ReplaceRange {
+            target,
+            selection,
+            text,
+        } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            Ok(O::Edited(doc.editor()?.replace_range(
+                target.revision,
+                &selection,
+                &text,
+            )?))
         }
         C::Replace { target, text } => {
             let doc = document(owner)?;
@@ -604,6 +670,7 @@ pub(super) fn worker_loop(
                 .capacity()
                 .saturating_add(context.context.selected_text.capacity()),
             Ok(NativeRuntimeOutput::Frame { frame, .. }) => frame.pixels.bytes.capacity(),
+            Ok(NativeRuntimeOutput::ExportedPdf { bytes, .. }) => bytes.len(),
             Ok(NativeRuntimeOutput::PreparedSave { prepared, .. }) => prepared.bytes.len(),
             Ok(NativeRuntimeOutput::SelectionRects { rects, .. }) => rects
                 .capacity()
@@ -612,6 +679,7 @@ pub(super) fn worker_loop(
             Ok(NativeRuntimeOutput::Accessibility { snapshot, .. }) => {
                 accessibility_retained_bytes(snapshot)
             }
+            Ok(NativeRuntimeOutput::SearchText { result, .. }) => result.retained_bytes(),
             Ok(NativeRuntimeOutput::RenderSnapshot { snapshot, .. }) => {
                 snapshot.usage().estimated_bytes
             }

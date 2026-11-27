@@ -1,0 +1,12 @@
+target	page	source_raw	integration_raw	delta_pp	same_png
+axis_residual_set1	1	98.41	98.41	0.00	True
+axis_residual_set1	2	98.55	98.55	0.00	True
+axis_residual_set1	3	98.34	98.34	0.00	True
+axis_residual_set1	4	98.52	98.52	0.00	True
+axis_residual_set1	5	96.22	96.22	0.00	True
+axis_residual_set1	6	93.28	93.28	0.00	True
+axis_residual_set2	1	98.44	98.44	0.00	True
+axis_residual_set2	2	98.54	98.54	0.00	True
+axis_residual_set2	3	98.79	98.79	0.00	True
+axis_residual_set2	4	93.49	93.49	0.00	True
+axis_residual_set2	5	93.70	93.70	0.00	True

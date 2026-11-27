@@ -20,12 +20,15 @@ pub mod gpu_metal;
     all(feature = "native-skia-d3d", target_os = "windows"),
 ))]
 pub(crate) mod gpu_tiles;
+#[cfg(feature = "native-skia")]
+mod live_pdf;
 pub mod presentation;
 #[cfg(feature = "native-skia")]
 pub mod region_cache;
 pub mod render_snapshot;
 pub mod runtime;
 pub mod save;
+pub mod search;
 pub mod view;
 
 use std::marker::PhantomData;

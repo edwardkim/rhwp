@@ -476,18 +476,34 @@ pub(crate) fn captioned_shape_height_px(
 /// 매핑 표: KTUG HanyangPuaTableProject (Public Domain).
 fn try_convert_pua_display_text<S: crate::storage::Storage>(
     composed: &mut ComposedParagraph,
+    para: &Paragraph,
     soft_hyphen_control: bool,
     styles: Option<&ResolvedStyleSet>,
     storage: &S,
 ) -> Result<(), S::Error> {
     use super::pua_oldhangul::map_pua_old_hangul;
 
-    for line in composed.lines.iter_mut() {
+    let total_chars = para.char_offsets.len();
+    let line_starts: Vec<usize> = composed.lines.iter().map(|line| line.char_start).collect();
+    for (line_index, line) in composed.lines.iter_mut().enumerate() {
         // [#7993] 제어 표기 소프트 하이픈은 줄 끝에서만 `-` 로 보이고, 줄 중간에서는
         // 보이지도 폭을 갖지도 않는다(한/글 2020 Print: task1725 162쪽 `<hp:hypen/>` 16개가
         // 줄 첫머리에 아무 자국도 남기지 않는다). 모델 글자는 offset 공간에 남기고
         // 표시 문자열만 바꾼다 — 줄 끝 판정은 이 줄의 마지막 모델 글자다.
         let line_last_run = line.runs.iter().rposition(|run| !run.text.is_empty());
+        // [#9426] 저장 줄 경계의 줄 끝 하이픈은 그 세그먼트의 auto-hyphenation 비트가
+        // 정한다. 한/글 2020·2024 Print 는 비트 없는 줄 끝 코드 24 를 그리지 않는다
+        // (rhwp 가 HWP3 에서 변환한 HWP5, 독일의 법령체계 260쪽). 현재 조판이 새로 나눈
+        // 줄은 세그먼트 발행 때 비트를 맞추며, 저장 경계가 아니면 종전처럼 그린다.
+        let line_end_model_char = line_starts[line_index + 1..]
+            .iter()
+            .copied()
+            .find(|&start| start > line.char_start)
+            .unwrap_or(total_chars)
+            .checked_sub(1);
+        let line_end_hyphen_visible = line_end_model_char
+            .and_then(|index| para.stored_line_end_hyphenation(index))
+            .unwrap_or(true);
         for (run_index, run) in line.runs.iter_mut().enumerate() {
             let program = match styles {
                 Some(styles) => run.try_text_style(styles, storage)?.native_pua_metrics,
@@ -515,7 +531,9 @@ fn try_convert_pua_display_text<S: crate::storage::Storage>(
                 if ch == '\u{00AD}' {
                     // 제어 표기는 줄 끝에서만, 리터럴은 본문에서도 하이픈으로 보인다.
                     // 모델 문자와 offset은 그대로 유지한다.
-                    if !soft_hyphen_control || line_end_char == Some(index) {
+                    if !soft_hyphen_control
+                        || (line_end_char == Some(index) && line_end_hyphen_visible)
+                    {
                         storage.push_char(&mut display, '-')?;
                     }
                     changed = true;

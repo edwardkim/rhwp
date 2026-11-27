@@ -598,6 +598,9 @@ fn worker_output(host: &mut Host, worker: u64, output: NativeRuntimeOutput) -> V
             NativeRuntimeOutput::Clipboard { payload, outcome } => {
                 json!({"ok":true,"kind":"clipboard","payload":payload,"outcome":outcome})
             }
+            NativeRuntimeOutput::SearchText { target, result } => {
+                json!({"ok":true,"kind":"searchText","target":target,"result":result})
+            }
             NativeRuntimeOutput::Accessibility { target, snapshot } => {
                 json!({"ok":true,"kind":"accessibility","target":target,"snapshot":snapshot})
             }
@@ -657,6 +660,18 @@ fn worker_output(host: &mut Host, worker: u64, output: NativeRuntimeOutput) -> V
             }
             NativeRuntimeOutput::Edited(outcome) => {
                 json!({"ok":true,"kind":"edited","outcome":outcome})
+            }
+            NativeRuntimeOutput::ExportedPdf {
+                target,
+                font_generation,
+                first_page,
+                page_count,
+                bytes,
+            } => {
+                let byte_length = bytes.len();
+                let buffer = retain_buffer(host, bytes.into_vec())?;
+                json!({"ok":true,"kind":"exportedPdf","buffer":buffer,"byteLength":byte_length,
+                "target":target,"fontGeneration":font_generation,"firstPage":first_page,"pageCount":page_count})
             }
             NativeRuntimeOutput::Frame { document_id, frame } => {
                 let mut value = frame_result(host, frame)?;
@@ -804,12 +819,21 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
     response(|| {
         Ok(
             json!({"ok":true,"abiVersion":1,"nativeSkia":cfg!(feature="native-skia"),
+        "tableCellParagraphCommands":true,
+        "tableCellNavigation":true,
+        "basicTextFormatting":true,
         "renderTiledRegion":cfg!(feature="native-skia"),"rasterCacheControls":cfg!(feature="native-skia"),
         "cooperativeTiledCancellation":cfg!(feature="native-skia"),"presentation":crate::presentation::capabilities(),"gpuGl":crate::gpu_gl::capabilities(),
         "recoveryOpen":true,
+        "tableCellTextClipboard":true,
         "atomicImeEdits":true,
+        "workerTextSearch":true,
+        "accessibilityCellLayout":true,
         "worker":true,"maxWorkers":4,"hostRequests":true,"viewState":true,"accessibilitySnapshots":true,"threadAffine":true,"maxSessions":MAX_SESSIONS,"maxDocumentBytes":MAX_DOCUMENT_BYTES,
         "maxRequestBytes":MAX_REQUEST_BYTES,"maxBufferBytes":MAX_BUFFER_BYTES,
+        "livePdfExport":cfg!(feature="native-skia"),
+        "maxLivePdfPages":rhwp_core::native_host::runtime::MAX_LIVE_PDF_PAGES,
+        "maxLivePdfBytes":rhwp_core::native_host::runtime::MAX_LIVE_PDF_BYTES,
         "pixelFormat":"rgba8Premultiplied","colorSpace":"srgb"}),
         )
     })

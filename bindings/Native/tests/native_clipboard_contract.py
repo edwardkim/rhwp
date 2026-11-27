@@ -136,10 +136,118 @@ def worker_contract(library):
     assert worker.is_finished()
 
 
+def nested_cell_contract(library, verify_save=False):
+    fixture = (Path(__file__).resolve().parents[3]
+               / "samples/issue5599_oracle/3191107_leave_request_form.hwpx")
+    with NativeWorker(library) as worker:
+        opened = worker.wait(worker.open_bytes(fixture.read_bytes()))
+        assert opened["ok"], opened
+        target = {key: opened["info"][key] for key in ("documentId", "revision")}
+
+        def call(op, **fields):
+            return completed(worker, {"op": op, "target": target, **fields})
+
+        def edit(op, **fields):
+            outcome = call(op, **fields)["outcome"]
+            target["revision"] = outcome["revision"]
+            return outcome
+
+        def nodes(host, current):
+            result = completed(host, {
+                "op": "accessibility", "target": current, "request": {"maxNodes": 128},
+            })["snapshot"]
+            assert not result["truncated"] and all(node["textComplete"] for node in result["nodes"])
+            # Accessibility node keys encode revision. Compare addresses and
+            # content to verify undo and reopened documents across revisions.
+            return [{field: value for field, value in node.items() if field != "key"}
+                    for node in result["nodes"]]
+
+        original = nodes(worker, target)
+        name_label, = (i for i, node in enumerate(original)
+                       if node["text"].replace(" ", "") == "성명")
+        cell = original[name_label + 1]
+        start = cell["start"]
+        assert cell["role"] == "tableCellParagraph" and len(start["cellPath"]) == 2
+        assert not cell["text"].strip(), cell
+        call("beginEdit", selection={"anchor": start, "focus": cell["end"]})
+        pasted = edit("pasteText", text="가😀")
+        end = pasted["selection"]["focus"]
+        assert end == {**start, "scalarOffset": 2}, pasted
+        selected = {"anchor": end, "focus": start}
+        edit("setSelection", selection=selected)
+        copied = call("copySelection")
+        assert copied["payload"] == {"plainText": "가😀", "html": None}, copied
+        assert copied["outcome"] is None
+
+        before = nodes(worker, target)
+        revision = target["revision"]
+        rejected("unsupported", lambda: call("pasteText", text="한\r\n글"))
+        rejected("unsupported", lambda: call("pasteHtml", html="<p>한글</p>"))
+        assert nodes(worker, target) == before
+        info = completed(worker, {"op": "info"})["info"]
+        assert info["revision"] == revision and info["selection"] == selected
+
+        cut = call("cutSelection")
+        assert cut["payload"] == copied["payload"], cut
+        target["revision"] = cut["outcome"]["revision"]
+        assert nodes(worker, target)[name_label + 1]["text"] == ""
+        undone = edit("undo")
+        assert undone["selection"] == selected and nodes(worker, target) == before, undone
+        assert worker.host.call("capabilities").get("tableCellTextClipboard") is True
+
+        if verify_save:
+            def contents(host, current):
+                return [(node["role"], node["start"], node["end"], node["text"])
+                        for node in nodes(host, current)]
+
+            expected = [(node["role"], node["start"], node["end"], node["text"])
+                        for node in original]
+            expected[name_label + 1] = ("tableCellParagraph", start, end, "가😀")
+            assert contents(worker, target) == expected
+
+            for file_format, signature, policy in (
+                ("hwp", bytes.fromhex("d0cf11e0a1b11ae1"), "storedCore"),
+                ("hwpx", b"PK", "hwpxSourceSettings"),
+            ):
+                def save(host, current):
+                    prepared = completed(host, {
+                        "op": "prepareSave", "target": current, "format": file_format,
+                    })
+                    data = host.copy_buffer(prepared)
+                    assert data.startswith(signature) and prepared["report"]["count"] == 0, prepared
+                    assert prepared["caretPolicy"] == policy and prepared["caretSaved"] is False
+                    saved = completed(host, {
+                        "op": "acknowledgeSave", "documentId": current["documentId"],
+                        "token": prepared["token"],
+                    })
+                    assert saved["isDirty"] is False, saved
+                    assert completed(host, {"op": "info"})["info"]["selection"] == selected
+                    return data
+
+                data = save(worker, target)
+                with NativeWorker(library) as verifier:
+                    for cycle in range(2):
+                        reopened = verifier.wait(verifier.open_bytes(data))
+                        assert reopened["ok"] and reopened["info"]["pageCount"] == 1, reopened
+                        current = {key: reopened["info"][key] for key in target}
+                        # Compare every body and nested-cell path and its text. A
+                        # persisted edit must preserve adjoining and child cells.
+                        assert contents(verifier, current) == expected, (file_format, cycle)
+                        if cycle == 0:
+                            completed(verifier, {
+                                "op": "beginEdit", "target": current, "selection": selected,
+                            })
+                            data = save(verifier, current)
+                            completed(verifier, {"op": "closeDocument", "target": current})
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("library", type=Path)
+    parser.add_argument("--verify-save", action="store_true",
+                        help="check two HWP and HWPX save and reopen cycles after nested cell paste")
     args = parser.parse_args()
     sync_contract(args.library)
     worker_contract(args.library)
-    print('{"ok":true,"contract":"native-clipboard","sync":true,"worker":true,"byteReservation":true}')
+    nested_cell_contract(args.library, verify_save=args.verify_save)
+    print('{"ok":true,"contract":"native-clipboard","sync":true,"worker":true,"byteReservation":true,"nestedCellText":true}')

@@ -4,6 +4,10 @@ use crate::model::{paragraph::Paragraph, table::Table};
 
 /// 저장 사다리가 입증한 호스트 줄을 분할 종료 뒤 한 번 소비한다.
 /// 이미 방출한 줄과 편집으로 무효화한 저장 위치는 종료 여백에 다시 더하지 않는다.
+///
+/// `is_continuation` 은 이 끝 조각이 앞 쪽에서 이어받은 조각인지다. 여러 쪽으로 나뉜 표의
+/// 끝 조각만 #687 의 종료 계약(오프셋·다음 문단 개체 조건 없이 접힌 사다리)을 쓰고,
+/// 한 쪽에 통째로 놓인 표는 #2439 계약을 그대로 따른다.
 pub(crate) fn stored_unconsumed_rowbreak_host_advance_hu(
     native_stored_layout: bool,
     para: &Paragraph,
@@ -28,10 +32,19 @@ pub(crate) fn stored_unconsumed_rowbreak_host_advance_hu(
     {
         return None;
     }
-    crate::renderer::float_placement::native_empty_host_rowbreak_line_advance_hu(
-        native_stored_layout,
-        para,
-        table,
-        next_para,
-    )
+    if is_continuation {
+        crate::renderer::float_placement::split_rowbreak_empty_host_terminal_line_advance_hu(
+            native_stored_layout,
+            para,
+            table,
+            next_para,
+        )
+    } else {
+        crate::renderer::float_placement::native_empty_host_rowbreak_line_advance_hu(
+            native_stored_layout,
+            para,
+            table,
+            next_para,
+        )
+    }
 }

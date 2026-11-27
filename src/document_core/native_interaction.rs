@@ -7,7 +7,7 @@
 //! object-side affinity. Text boxes, captions, notes and header/footer editing are
 //! also outside this initial contract. Queries do not change the document/caret.
 
-use super::DocumentCore;
+use super::{DocumentCore, TABLE_CAPTION_CELL_SENTINEL};
 use crate::error::HwpError;
 use crate::model::{control::Control, paragraph::Paragraph};
 use serde::{Deserialize, Serialize};
@@ -322,9 +322,26 @@ impl DocumentCore {
         })
     }
 
-    fn native_text_paragraph<'a>(
+    pub(crate) fn native_text_paragraph<'a>(
         &'a self,
         position: &NativeTextPosition,
+    ) -> Result<&'a Paragraph, NativeInteractionError> {
+        self.resolve_native_text_paragraph(position, false)
+    }
+
+    /// Selection and geometry can still read protected cells.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub(crate) fn native_editable_text_paragraph<'a>(
+        &'a self,
+        position: &NativeTextPosition,
+    ) -> Result<&'a Paragraph, NativeInteractionError> {
+        self.resolve_native_text_paragraph(position, true)
+    }
+
+    fn resolve_native_text_paragraph<'a>(
+        &'a self,
+        position: &NativeTextPosition,
+        for_edit: bool,
     ) -> Result<&'a Paragraph, NativeInteractionError> {
         if position.cell_path.len() > NATIVE_CELL_PATH_MAX_DEPTH {
             return Err(NativeInteractionError::InvalidInput(
@@ -350,10 +367,23 @@ impl DocumentCore {
                     "only table-cell paths are supported",
                 ));
             };
-            paragraph = table
-                .cells
-                .get(entry.cell as usize)
-                .and_then(|cell| cell.paragraphs.get(entry.paragraph as usize))
+            let cell_index = entry.cell as usize;
+            // Legacy caret and edit paths interpret this index as a caption,
+            // even when the cells array is large enough to contain that index.
+            if cell_index == TABLE_CAPTION_CELL_SENTINEL {
+                return Err(NativeInteractionError::Unsupported(
+                    "table-caption paths are not supported by native text positions",
+                ));
+            }
+            let cell = table.cells.get(cell_index).ok_or_else(invalid)?;
+            if for_edit && (table.common.locked || cell.cell_protect()) {
+                return Err(NativeInteractionError::Unsupported(
+                    "protected table cells cannot be edited",
+                ));
+            }
+            paragraph = cell
+                .paragraphs
+                .get(entry.paragraph as usize)
                 .ok_or_else(invalid)?;
         }
         if position.scalar_offset as usize > paragraph.text.chars().count() {
@@ -484,19 +514,20 @@ fn same_container(a: &NativeTextPosition, b: &NativeTextPosition) -> bool {
         }
 }
 
+pub(crate) fn legacy_cell_path(path: &[NativeCellPathEntry]) -> Vec<(usize, usize, usize)> {
+    path.iter()
+        .map(|entry| {
+            (
+                entry.control as usize,
+                entry.cell as usize,
+                entry.paragraph as usize,
+            )
+        })
+        .collect()
+}
+
 fn legacy_path_json(path: &[NativeCellPathEntry]) -> String {
-    DocumentCore::format_path_json(
-        &path
-            .iter()
-            .map(|entry| {
-                (
-                    entry.control as usize,
-                    entry.cell as usize,
-                    entry.paragraph as usize,
-                )
-            })
-            .collect::<Vec<_>>(),
-    )
+    DocumentCore::format_path_json(&legacy_cell_path(path))
 }
 
 fn validate_bounds(bounds: NativeInteractionBounds) -> Result<(), NativeInteractionError> {

@@ -1,11 +1,12 @@
 # 정본 보호 문서의 글꼴 공급 자료
 
-[manifest.json](manifest.json)은 Linux·Windows·macOS의 정본 보호 검증에서 사용하는
+[manifest.json](manifest.json)은 정본 보호 검증에서 사용하는
 문서별 Native·WASM 글꼴 공급 조건이다. 경로는 저장소 루트를 기준으로 해석한다.
 
-- `excluded_filename_suffixes`에 해당하는 `_MAC.otf`는 Native·fresh WASM 공급과 실제 선택에서
-  제외한다. 대소문자를 구분하지 않으며, 파일명 변경이나 링크로 우회하지 않는다. 파일명과 SHA-256을
-  `scripts/check_protected_font.py`로 공급 전에 검사하고, 실행 후 실제 선택 기록을 대조한다.
+- Native·fresh WASM 공급 및 실제 선택에서 `excluded_filename_suffixes`에 해당하는 `_MAC.otf`,
+  `Konghan-HFT.otf`, `RHWPLegacyEquation-Original.otf`를 제외한다. 경로와 링크 대상의 파일명을
+  대소문자 구분 없이 검사한다. `excluded_sha256`에 등록된 구형 수식 OTF와 `HYHWPEQ.TTF` 1.10은
+  파일명을 바꿔도 제외한다. 공급 전에 `scripts/check_protected_font.py`로 확인하고 실행 후 실제 선택 기록을 대조한다.
 - `documents[].backends`에서 문서 key와 backend를 선택한다.
 - `supply_mode`가 `explicit_files`이면 `font_set`의 파일명·SHA-256·배열 순서로
   `--font-path`를 지정한다. 자동 선택 조건에서는 `font_set`을 공급 환경 확인에 사용한다.
@@ -21,9 +22,8 @@
   명시된 해시의 `DotumChe-Regular.ttf`를 공급할 수 있다.
   종합부동산세법(`issue7905`)에는 Windows 10의 Arial·Courier New·Times New Roman 각 4종과
   `gulim.ttc`의 검증된 해시를 허용한다. `sample10`의 Native 공급 목록에도 같은 해시를 허용한다.
-  `yeongwol`과 `sample16` 저장본 3종은 설치본 `HYHWPEQ.TTF`(`a3a3cd992a89…`)를 기준으로 사용한다.
-  이전 해시 `c4f768c176ce…`는 같은 문서의 검증된 공급 파일에서만 허용한다. 수식 글꼴은 다운로드
-  폴더에서 직접 공급하지 않고 사용자·시스템 설치 경로나 해시를 확인한 검증용 사본을 사용한다.
+  `yeongwol`과 `sample16` 저장본 3종은 `HYHWPEQ.TTF` 1.13(`a3a3cd992a89…`)을 사용한다.
+  사용자·시스템 설치 경로나 SHA-256을 확인한 검증용 사본에서 공급한다.
 - 시행령(`decree`)과 중첩 표(`nested`)의 Native·WASM은 Mac 사용자 설치본과 같은
   Palatino Linotype Regular(`pala.ttf`, SHA-256 `e47d594e2e2b…`)를 공급한다.
   시행령의 휴먼고딕 `HMKMG.TTF`와 휴먼명조 `HMKMM.TTF`는 각각 사용자 글꼴 폴더의
@@ -63,13 +63,15 @@
   글꼴 파일은 로컬 검증에 사용했다.
 - `font_environment`가 있으면 해당 JSON을 `--font-environment`로 지정한다.
 - 선택 우선순위는 manifest의 `selection_order`를 따른다.
-- `accepted_font_set`, `accepted_font_environment`와 `records/`는 수용 당시의 비교 근거이며, 현재 전쪽 재검증 상태는
-  `reproduction_validation`에 기록한다.
+- `accepted_font_set`, `accepted_font_environment`와 `records/`는 수용 당시의 비교 근거다.
+  `reproduction_validation`의 실측에도 당시 공급 해시가 남을 수 있다. 현재 공급은 각 backend의
+  `font_set`과 허용·제외 목록에 따른다.
 
 대체 해시 등록과 검증 산출물 보존에 관한 다음 절차는 정본 보호 문서에만 적용한다.
 대체 글꼴 해시를 허용할 때는 `manifest.json`의 해당 보호 문서 항목에 `accepted_sha256_pairs`를 등록한다.
-보호 글꼴의 허용 조건을 변경하는 PR은 macOS·Windows·Linux에서 등록 문서 전체의 Native·fresh WASM
-결과를 각각 대조해 보호 하한을 모두 충족한 뒤 제출한다.
+보호 글꼴의 허용 조건을 변경하는 PR은 기본 검증 환경에서 등록 문서 전체의 Native·fresh WASM
+결과와 글꼴 선택을 확인한다. 추가 OS의 실행 조건과 범위는
+[정본 보호 TSV의 공식 표시값 보존](../../manual/verification/visual_verification_governance.md#정본-보호-tsv의-공식-표시값-보존)을 따른다.
 허용 여부를 판단하기 위한 상세 비교 JSON과 실행 로그는 `output/pr-review/<작업명>/`에만 보존한다.
 `records/`에는 해당 실행 산출물을 추가하지 않는다.
 

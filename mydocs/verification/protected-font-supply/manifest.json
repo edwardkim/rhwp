@@ -1,7 +1,13 @@
 {
   "schema_version": 1,
   "excluded_filename_suffixes": [
-    "_MAC.otf"
+    "_MAC.otf",
+    "Konghan-HFT.otf",
+    "RHWPLegacyEquation-Original.otf"
+  ],
+  "excluded_sha256": [
+    "f92ff78fe7eaf2914e9879966e6a8383d3c525242339b781a117b755df70034a",
+    "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
   ],
   "baseline": {
     "manifest": {
@@ -13694,10 +13700,6 @@
       "compat": "2022",
       "dpi": 96,
       "accepted_sha256_pairs": {
-        "HYHWPEQ.TTF": [
-          "a3a3cd992a89ac38e7707b58143ebdb1da9511d3c462f019cda7f92c30467807",
-          "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
-        ],
         "HMKMM.TTF": [
           "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
           "c7e500aa94e50829339db9d37ca81dae66e663234abed7178d1ee941d0c82e2f"
@@ -14587,10 +14589,6 @@
       "compat": "2024",
       "dpi": 96,
       "accepted_sha256_pairs": {
-        "HYHWPEQ.TTF": [
-          "a3a3cd992a89ac38e7707b58143ebdb1da9511d3c462f019cda7f92c30467807",
-          "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
-        ],
         "HMKMM.TTF": [
           "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
           "c7e500aa94e50829339db9d37ca81dae66e663234abed7178d1ee941d0c82e2f"
@@ -14829,10 +14827,6 @@
       "compat": "2022",
       "dpi": 96,
       "accepted_sha256_pairs": {
-        "HYHWPEQ.TTF": [
-          "a3a3cd992a89ac38e7707b58143ebdb1da9511d3c462f019cda7f92c30467807",
-          "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
-        ],
         "HMKMM.TTF": [
           "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
           "c7e500aa94e50829339db9d37ca81dae66e663234abed7178d1ee941d0c82e2f"
@@ -16025,10 +16019,6 @@
       "compat": "2024",
       "dpi": 96,
       "accepted_sha256_pairs": {
-        "HYHWPEQ.TTF": [
-          "a3a3cd992a89ac38e7707b58143ebdb1da9511d3c462f019cda7f92c30467807",
-          "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
-        ],
         "HMKMM.TTF": [
           "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
           "c7e500aa94e50829339db9d37ca81dae66e663234abed7178d1ee941d0c82e2f"

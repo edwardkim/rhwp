@@ -32,6 +32,7 @@ use super::editor::{NativeEditOutcome, NativeEditor};
 use super::render_snapshot::{NativeRenderSnapshot, NativeRenderSnapshotLimits};
 use super::save::NativeSaveCaretPolicy;
 use super::save::{NativeSaveFormat, NativeSaveStatus, NativeSaveToken, PreparedSave};
+use super::search::{NativeSearchRequest, NativeSearchResult};
 use super::NativePageSize;
 use super::{
     NativeDocumentSession, NativeFrame, NativeHostError, MAX_DOCUMENT_BYTES, MAX_FRAME_PIXELS,
@@ -46,6 +47,8 @@ mod worker;
 use worker::worker_loop;
 
 const MAX_OUTSTANDING: usize = 16;
+pub const MAX_LIVE_PDF_PAGES: u32 = 32;
+pub const MAX_LIVE_PDF_BYTES: usize = 32 * 1024 * 1024;
 // Reserve text, structural addresses/keys and optional geometry, including Vec
 // and String allocator slack. Actual retained allocations are checked below.
 const ACCESSIBILITY_RESERVATION_BYTES: usize = 8 * 1024 * 1024;
@@ -88,7 +91,8 @@ pub struct NativeRuntimeConfig {
     pub max_outstanding: usize,
     /// Aggregate buffer reservations (1..=128 MiB). Renders reserve their exact
     /// enclosing RGBA output size; a save reserves 128 MiB, copy/cut 1 MiB,
-    /// and accessibility 8 MiB before acceptance. Render snapshot input estimates
+    /// and accessibility 8 MiB before acceptance. ExportPdf reserves the
+    /// caller's capped output budget. Render snapshot input estimates
     /// are charged after the bounded query, with its ceiling clamped to this
     /// quota. These estimates exclude transient layout/native memory and RSS.
     pub max_pending_bytes: usize,
@@ -183,6 +187,10 @@ pub enum NativeRuntimeCommand {
         target: NativeRuntimeTarget,
         request: NativeAccessibilityRequest,
     },
+    SearchText {
+        target: NativeRuntimeTarget,
+        request: NativeSearchRequest,
+    },
     /// Export only owned immutable inputs. The worker clamps the input ceiling
     /// to its byte quota and charges the actual estimate before completion.
     ExportRenderSnapshot {
@@ -214,6 +222,14 @@ pub enum NativeRuntimeCommand {
     },
     CloseDocument {
         target: NativeRuntimeTarget,
+    },
+    /// Print the designated live revision. The caller publishes the owned PDF.
+    ExportPdf {
+        target: NativeRuntimeTarget,
+        font_generation: u64,
+        first_page: u32,
+        page_count: u32,
+        max_output_bytes: usize,
     },
     RenderRegion {
         target: NativeRuntimeTarget,
@@ -248,6 +264,12 @@ pub enum NativeRuntimeCommand {
     },
     Replace {
         target: NativeRuntimeTarget,
+        text: String,
+    },
+    /// Replace a caller-named range, preserving the live selection for undo.
+    ReplaceRange {
+        target: NativeRuntimeTarget,
+        selection: NativeTextSelection,
         text: String,
     },
     BeginComposition {
@@ -308,6 +330,25 @@ impl NativeRuntimeCommand {
                 .map_err(|_| NativeRuntimeError::InvalidArgument)?;
             return Ok(0);
         }
+        if let Self::ExportPdf {
+            first_page,
+            page_count,
+            max_output_bytes,
+            ..
+        } = self
+        {
+            if !(1..=MAX_LIVE_PDF_PAGES).contains(page_count)
+                || first_page.checked_add(*page_count).is_none()
+                || !(1..=MAX_LIVE_PDF_BYTES).contains(max_output_bytes)
+            {
+                return Err(NativeRuntimeError::InvalidArgument);
+            }
+            return Ok(if cfg!(feature = "native-skia") {
+                *max_output_bytes
+            } else {
+                0
+            });
+        }
         if let Self::RenderRegion { region, scale, .. }
         | Self::RenderTiledRegion { region, scale, .. } = self
         {
@@ -344,6 +385,9 @@ impl NativeRuntimeCommand {
             Self::BeginEdit { selection, .. } | Self::SetSelection { selection, .. } => {
                 selection_bytes(selection)
             }
+            Self::ReplaceRange {
+                selection, text, ..
+            } => selection_bytes(selection).and_then(|bytes| bytes.checked_add(text.capacity())),
             Self::CaretRect { position, .. } => position
                 .cell_path
                 .capacity()
@@ -388,6 +432,12 @@ impl NativeRuntimeCommand {
                     .and_then(|bytes| bytes.checked_add(replacement_bytes?))
             }
             Self::Accessibility { .. } => Some(ACCESSIBILITY_RESERVATION_BYTES),
+            Self::SearchText { request, .. } => {
+                request
+                    .validate()
+                    .map_err(|_| NativeRuntimeError::InvalidArgument)?;
+                request.reservation_bytes()
+            }
             _ => Some(0),
         };
         bytes.ok_or(NativeRuntimeError::ByteCapacity)
@@ -488,6 +538,10 @@ pub enum NativeRuntimeOutput {
         target: NativeRuntimeTarget,
         snapshot: NativeAccessibilitySnapshot,
     },
+    SearchText {
+        target: NativeRuntimeTarget,
+        result: NativeSearchResult,
+    },
     RenderSnapshot {
         document_id: NativeRequestId,
         snapshot: Arc<NativeRenderSnapshot>,
@@ -520,6 +574,13 @@ pub enum NativeRuntimeOutput {
         rects: Vec<NativeSelectionRect>,
     },
     Edited(NativeEditOutcome),
+    ExportedPdf {
+        target: NativeRuntimeTarget,
+        font_generation: u64,
+        first_page: u32,
+        page_count: u32,
+        bytes: Box<[u8]>,
+    },
     Frame {
         document_id: NativeRequestId,
         frame: NativeFrame,
@@ -545,6 +606,7 @@ impl fmt::Debug for NativeRuntimeOutput {
             Self::ImeEditContext(_) => "ImeEditContext",
             Self::Clipboard { .. } => "Clipboard",
             Self::Accessibility { .. } => "Accessibility",
+            Self::SearchText { .. } => "SearchText",
             Self::RenderSnapshot { .. } => "RenderSnapshot",
             Self::DocumentClosed => "DocumentClosed",
             Self::RasterCacheLimit { .. } => "RasterCacheLimit",
@@ -555,6 +617,7 @@ impl fmt::Debug for NativeRuntimeOutput {
             Self::HitTest { .. } => "HitTest",
             Self::SelectionRects { .. } => "SelectionRects",
             Self::Edited(_) => "Edited",
+            Self::ExportedPdf { .. } => "ExportedPdf",
             Self::Frame { .. } => "Frame",
             Self::PreparedSave { .. } => "PreparedSave",
             Self::SaveStatus { .. } => "SaveStatus",

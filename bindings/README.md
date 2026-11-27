@@ -37,6 +37,24 @@ profile 또는 compatibility backend 선택 옵션을 노출하지 않는다.
 Linux에서 native ABI를 검증해도 Apple XCFramework build/link가 검증된 것은 아니다.
 Apple 산출물과 독립 한컴 PDF 출력 대조는 별도 검증 대상이다.
 
+### 전용 worker에서 PDF 내보내기
+
+`workerSubmit`의 `exportPdf`는 열려 있는 문서의 저장 전 편집을 포함해 지정한 revision을
+Print profile로 출력한다. `target`과 `fontGeneration`을 전달하고 `firstPage`는 0부터,
+`pageCount`는 1부터 32까지 지정한다. `maxOutputBytes`는 1부터 32 MiB까지 지정한다.
+요청을 받으면 이 크기를 worker의 `maxPendingBytes`에서 예약하며, 완료를 poll하면 예약을
+반납한다. 활성 IME 조합이 있으면 `unsupported`를 반환한다.
+
+성공 완료의 `kind`는 `exportedPdf`이며 `target`, `fontGeneration`, `firstPage`,
+`pageCount`, `buffer`, `byteLength`를 포함한다. 호스트는 `sessionBufferCopy/Release`로
+PDF를 가져와 미리보기나 파일 출력에 사용한다. 미리보기를 현재 문서에 표시할 때는 완료의
+target 및 font generation을 현재 값과 비교한다. Worker는 출력 파일을 만들거나 문서의
+저장 상태를 변경하지 않는다. 대기 중 요청만 취소할 수 있으며 실행을 시작한 요청은
+`tooLate`를 반환한다. Worker를 닫으면 아직 받지 않은 완료를 폐기한다.
+
+`livePdfExport`가 활성화된 `native-skia` 빌드에서 실행할 수 있다. 상한은 capabilities의
+`maxLivePdfPages`와 `maxLivePdfBytes`로 조회한다.
+
 ## 지속 문서 세션 (P51)
 
 Rust의 `native_host::NativeDocumentSession`은 `DocumentCore`와 Skia renderer를 소유한다.
@@ -154,10 +172,35 @@ content-loss `report`, revision과 일회용 token을 반환한다. host가 보�
 보관 한도로 buffer를 반환하지 못하면 새 checkpoint를 취소하며 이전 superseded token은 복원하지 않는다.
 
 편집 세션은 활성 IME를 먼저 commit/cancel해야 저장할 수 있다. HWP는 현재 본문 focus를 export
-snapshot에만 기록한다. HWPX는 기존 serializer의 source settings.xml 또는 기본값 정책을 유지하며
-현재 focus 저장을 보장하지 않는다. `caretSaved`, `caretPreservedFromSource`, `caretPolicy`로
+snapshot에만 기록한다. 셀에 focus가 있으면 현재 셀 내용과 기존 HWP 커서 메타데이터를 저장하며,
+`caretPolicy: "storedCore"`와 `caretSaved: false`를 반환한다. 편집기의 라이브 선택은 유지된다.
+HWPX는 기존 serializer의 source settings.xml 또는 기본값 정책을 유지한다.
+`caretSaved`, `caretPreservedFromSource`, `caretPolicy`로
 실제 경로를 확인한다. caretPreservedFromSource는 원본 settings.xml 바이트가 있을 때만 true이며,
 그 안의 CaretPosition 존재나 현재 focus 저장까지 증명하지 않는다. 저장 확인은 편집 history를 지우지 않으며 undo 후에는 revision 기준 dirty다.
+
+## Native worker 검색과 표 접근성
+
+`accessibilityCellLayout`을 제공하는 호스트에서는 접근성 요청에 `includeCellLayout: true`를
+넣을 수 있습니다. 표 셀 문단의 `cellLayout`은 해당 셀을 직접 담고 있는 표의 `row`, `column`,
+`rowSpan`, `columnSpan`, `rowCount`, `columnCount`를 포함합니다. 행과 열은 0부터 셉니다.
+요청을 생략하면 기존 노드 응답을 그대로 반환합니다.
+
+`workerTextSearch`가 활성화된 worker는
+`searchText{target,request:{query,caseSensitive,maxMatches,range?}}`를 지원한다.
+검색어는 1~256 UTF-8 바이트이며 결과 수는 1~128개다. `range`는 접근성 조회와 같은
+`{section,startParagraph,endParagraph}` 형식이며 끝 문단은 범위에 포함되지 않는다.
+
+응답은 조회한 `target`과 `result.matches[]`의 `selection`, `editable`을 반환한다.
+본문과 표 셀의 문자 범위를 문서 순서대로 돌려주며, 문자 오프셋은 Unicode scalar 기준이다.
+보호된 셀은 선택할 수 있고 `editable: false`로 표시된다. 출력·순회·텍스트 한도에 도달하면
+`truncated`가 설정된다. 검색 범위 일부에 선택으로 표현할 수 없는 개체가 있으면
+`omittedContent`로 알려준다. 검색은 문서 버전이나 라이브 선택을 바꾸지 않는다.
+
+찾은 범위로 이동할 때는 `setSelection`을 사용한다. 이 범위만 바꿀 때는 같은 `target`과
+`selection`으로 `replaceRange{target,selection,text}`를 보낸다. 편집 세션에서 한 번의
+편집으로 기록되며 실행 취소는 치환 전 라이브 선택을 복원한다. 이전 revision이나 종료되지
+않은 입력기 조합 상태에서 요청하면 오류가 반환된다.
 
 ## Reference host (P57)
 
@@ -223,11 +266,25 @@ CLI/test 전용 wait/wait_closed를 구분한다. 실제 OS별 thread 종료·ar
 moveUp/moveDown, deleteBackward/deleteForward, splitParagraph/joinPreviousParagraph/selectAll을
 지원한다. 주소는 scalar지만 collapsed caret의 이동·삭제는 extended grapheme 경계를 따른다.
 Home/End는 현재 문단 경계, selectAll은 현재 본문 구역이다. 좌우는 논리 문자열 순서다.
-셀·inline-control affinity·탭 삽입은 이 계약에 포함되지 않는다.
+`tableCellParagraphCommands`가 활성화되어 있으면 표 셀에서도 `splitParagraph`와
+`joinPreviousParagraph`를 사용할 수 있다. 중첩 표에서는 가장 안쪽 셀 안에서 처리한다.
 
 문단 split/join과 선택 삭제는 한 revision/한 undo 단위이며 실패하면 문서·선택·history를 복원한다.
 IME 조합 중 일반 명령은 commit/cancel을 먼저 요구한다. vertical 응답의 preferredX를 다음
 vertical 입력에 전달하고 다른 명령 뒤에는 초기화한다.
+
+셀 안에서 `splitParagraph`는 한 문단에 속한 선택을 지운 뒤 그 자리를 나누고 새 문단의
+시작에 커서를 둔다. `joinPreviousParagraph`는 커서가 속한 문단을 같은 셀의 바로 앞 문단과
+합친 뒤 접합점에 커서를 둔다. 셀의 첫 문단에서 합치기를 요청하면 현재 선택을 반환한다.
+편집 대상은 보호되지 않은 셀 안에 있으며, 컨트롤이나 필드 경계가 없는 문단이어야 한다.
+
+`tableCellNavigation` capability를 지원하면 Tab과 Shift+Tab을 각각
+`{command:"navigateTableCell",direction:"next"}`와
+`{command:"navigateTableCell",direction:"previous"}`로 전달할 수 있다.
+현재 위치가 속한 가장 안쪽 표에서 실제 셀의 시작 행과 열을 기준으로 이동한다.
+보호된 셀을 건너뛰고, 컨트롤이 없는 문단이 있는 셀로 이동한다.
+해당 셀에서 조건을 만족하는 첫 문단의 시작에 커서를 둔다.
+표 경계에서는 현재 선택을 반환한다. 이동 결과는 기존 문서 revision과 함께 반환한다.
 
 `imeContext`는 조합 중에도 읽을 수 있는 최대4096 scalar 주변 문맥과 scalar cursor/anchor,
 선택 텍스트 및 truncation 정보를 반환한다. worker는 target, 동기 세션은 expectedRevision을
@@ -235,11 +292,26 @@ vertical 입력에 전달하고 다른 명령 뒤에는 초기화한다.
 이 조회 자체는 문서·선택·revision을 바꾸지 않는다.
 
 
+### Native 텍스트 서식
+
+호스트 기능 목록의 `basicTextFormatting`으로 지원을 확인할 수 있다.
+`executeCommand`에서 `{command:"formatCharacters",bold:true,fontSize:1500}`은 선택한 글자의 서식을
+바꾼다. `bold`와 `fontSize`는 각각 생략할 수 있으며 하나 이상 필요하다. 크기는
+HWPUNIT 단위(1pt = 100 HWPUNIT, 범위 1–409600)다.
+`{command:"setParagraphAlignment",alignment:"right"}`는 선택 또는 캐럿이 있는 문단을 정렬한다.
+정렬값은 `justify`, `left`, `right`, `center`, `distribute`, `split`이다.
+
+두 명령은 본문 또는 중첩 표의 단일 텍스트 문단을 대상으로 한다. 글자 서식은 비어 있지 않은
+선택이 필요하다. 보호된 셀과 편집할 수 없는 컨트롤이 있는 문단은 거부한다. 변경 시 선택을
+유지하면서 revision과 undo를 한 번 갱신하며, 현재 서식과 같은 값은 history를 유지한다.
+
 ### Native clipboard (P61)
 
 동기 session의 `copySelection`/`cutSelection`/`pasteText`/`pasteHtml`은 `expectedRevision`을 필수로 받습니다. worker에서는 같은 이름에 `target`을 전달합니다. 복사/잘라내기 응답의 `payload`는 `{plainText, html}`이며 `outcome`은 복사 시 null, 잘라내기 시 편집 결과입니다. 붙여넣기는 기존 편집 결과를 반환합니다. OS clipboard 소유권은 host가 관리합니다.
 
-본문 section의 텍스트만 지원하며 출력 payload와 입력은 1 MiB, 한 번의 붙여넣기는 256 문단으로 제한합니다. CRLF/CR을 LF로 정규화하며 하나의 undo로 복원합니다. HTML은 기존 core importer/exporter를 사용하고 object/control/table의 미지원 결과는 rollback합니다. HTML parser의 peak RSS까지 제한하는 계약은 아닙니다. 빈 문단을 HTML exporter가 생략하는 선택은 정확한 plain text와 `html:null`을 반환합니다.
+본문은 section 안의 텍스트를 지원하며 출력 payload와 입력은 1 MiB, 한 번의 붙여넣기는 256 문단으로 제한합니다. CRLF/CR을 LF로 정규화하며 하나의 undo로 복원합니다. HTML은 기존 core importer/exporter를 사용하고 object/control/table의 미지원 결과는 rollback합니다. HTML parser의 peak RSS까지 제한하는 계약은 아닙니다. 빈 문단을 HTML exporter가 생략하는 선택은 정확한 plain text와 `html:null`을 반환합니다.
+
+capabilities의 `tableCellTextClipboard`가 `true`면 표 셀은 중첩 경로를 포함해 같은 셀의 한 문단에서 텍스트를 복사하거나 잘라낼 수 있으며 `html:null`을 반환합니다. `pasteText`는 한 줄을 지원합니다. 셀에서 여러 문단이나 HTML을 붙여넣으면 `unsupported`를 반환합니다. 보호된 셀의 텍스트는 읽을 수 있으며 잘라내기와 붙여넣기는 편집 권한을 확인합니다.
 
 P61의 텍스트 편집·clipboard는 전체 대상 문단에 floating object나 필드/책갈피 등 semantic control이 있으면 명시적으로 거절합니다(구조용 SectionDef/ColumnDef는 예외). 문단 합치기와 IME에도 같은 guard를 적용하며 선택 조회와 동일 텍스트 no-op는 보존합니다. HTML은 lexical preflight로 객체 태그를 거절하고 주석을 제거한 뒤 기존 importer에 전달합니다. 일반 HTML sanitizer나 객체/필드 복사 기능은 아닙니다.
 
