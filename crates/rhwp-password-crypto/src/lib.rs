@@ -173,11 +173,11 @@ const HWP5_MEMO_MIN_BYTES: usize = 4 * 1024;
 /// 기억해 두는 암호문의 합계 상한. 넘치면 오래된 것부터 버린다.
 const HWP5_MEMO_MAX_BYTES: usize = 256 * 1024 * 1024;
 
-/// 같은 키·평문의 암호문 기억. 키는 SHA-1(유도 키, 길이, 평문)이라 키 자체는 남기지 않는다.
+/// 같은 키·평문의 암호문 기억. 캐시 식별자는 유도 키·길이·평문의 SHA-256이다.
 #[derive(Default)]
 struct Hwp5Memo {
-    ciphertexts: HashMap<[u8; 20], Vec<u8>>,
-    order: std::collections::VecDeque<[u8; 20]>,
+    ciphertexts: HashMap<[u8; 32], Vec<u8>>,
+    order: std::collections::VecDeque<[u8; 32]>,
     bytes: usize,
 }
 
@@ -185,17 +185,17 @@ thread_local! {
     static HWP5_MEMO: std::cell::RefCell<Hwp5Memo> = std::cell::RefCell::default();
 }
 
-fn hwp5_memo_id(key: &[u8; 16], plaintext: &[u8]) -> [u8; 20] {
-    let mut hasher = Sha1::new();
+fn hwp5_memo_id(key: &[u8; 16], plaintext: &[u8]) -> [u8; 32] {
+    let mut hasher = Sha256::new();
     hasher.update(key);
     hasher.update((plaintext.len() as u64).to_le_bytes());
     hasher.update(plaintext);
-    let mut id = [0_u8; 20];
+    let mut id = [0_u8; 32];
     id.copy_from_slice(&hasher.finalize());
     id
 }
 
-fn hwp5_memo_remember(id: [u8; 20], ciphertext: &[u8]) {
+fn hwp5_memo_remember(id: [u8; 32], ciphertext: &[u8]) {
     if ciphertext.len() > HWP5_MEMO_MAX_BYTES {
         return;
     }
