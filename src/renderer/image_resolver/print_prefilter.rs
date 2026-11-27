@@ -89,6 +89,33 @@ pub(super) fn resize_opaque(
 /// 잘린 창의 표본 중심은 원본 좌표에 두고, 필터는 원본 창 밖의 유효 픽셀도 소비한다.
 pub(super) fn resize_opaque_window(
     source: &image::RgbaImage,
+    bounds: [u32; 4],
+    destination: (u32, u32),
+) -> Option<image::RgbaImage> {
+    if source.pixels().any(|p| p[3] != 255) {
+        return None;
+    }
+    resize_premultiplied_window(source, bounds, destination)
+}
+
+/// 연속 알파 그림의 RGB는 두 축을 표본화하기 전에 premultiply한다.
+/// 투명 픽셀의 숨은 색은 장치 마스크의 경계에 영향을 주지 않는다.
+pub(super) fn resize_alpha(
+    mut source: image::RgbaImage,
+    destination: (u32, u32),
+) -> Option<image::RgbaImage> {
+    let (width, height) = source.dimensions();
+    for pixel in source.pixels_mut() {
+        let alpha = u16::from(pixel[3]);
+        for channel in &mut pixel.0[..3] {
+            *channel = ((u16::from(*channel) * alpha + 127) / 255) as u8;
+        }
+    }
+    resize_premultiplied_window(&source, [0, 0, width, height], destination)
+}
+
+fn resize_premultiplied_window(
+    source: &image::RgbaImage,
     [left, top, right, bottom]: [u32; 4],
     (dw, dh): (u32, u32),
 ) -> Option<image::RgbaImage> {
@@ -99,9 +126,6 @@ pub(super) fn resize_opaque_window(
     length(width, height)?;
     let temporary_len = length(dw, height)?;
     let output_len = length(dw, dh)?;
-    if source.pixels().any(|p| p[3] != 255) {
-        return None;
-    }
     let horizontal = weights(width, dw, left, right - left);
     let vertical = weights(height, dh, top, bottom - top);
     let mut temporary = vec![0_u8; temporary_len];

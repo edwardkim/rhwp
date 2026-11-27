@@ -1,3 +1,25 @@
+//! 검사 유형: 관계형(저장 위치·중첩 표 소속·호스트 외곽선과 전진).
+//! 주석 갱신: 2026-11-27 17:57:02 KST. 직전 변경: 2026-10-11 22:35:43 +0900, 4c9026ccb9b25481a01f338ea28649faf7934e65.
+//! 측정: 2026-11-27, 한컴 2020 Print PDFium 96dpi, compat2022, 색상 경계 보정 전 2px raw.
+//! 7787-top 전 1쪽 최저는 Native 98.27%, fresh WASM 98.27%였다.
+//! 1쪽은 Native 98.27%, fresh WASM 98.27%였다.
+//! 원본은 samples/stored-nested-content-flow/overlay-top.hwpx이다.
+//! 독립 Print PDF는 pdf/pr7200/pr7200-overlay-top-2020.pdf다.
+//! 전쪽 TSV는 mydocs/pr/assets/issues7777_7787/native/7787-top/silhouette.tsv에 있다.
+//! 전쪽 TSV는 mydocs/pr/assets/issues7777_7787/wasm/7787-top/silhouette.tsv에 있다.
+//! 7787-center 전 1쪽 최저는 Native 100.00%, fresh WASM 100.00%였다.
+//! 1쪽은 Native 100.00%, fresh WASM 100.00%였다.
+//! 원본은 samples/stored-nested-content-flow/overlay-center.hwpx이다.
+//! 독립 Print PDF는 pdf/pr7200/pr7200-overlay-center-2020.pdf다.
+//! 전쪽 TSV는 mydocs/pr/assets/issues7777_7787/native/7787-center/silhouette.tsv에 있다.
+//! 전쪽 TSV는 mydocs/pr/assets/issues7777_7787/wasm/7787-center/silhouette.tsv에 있다.
+//! 7787-bottom 전 1쪽 최저는 Native 100.00%, fresh WASM 100.00%였다.
+//! 1쪽은 Native 100.00%, fresh WASM 100.00%였다.
+//! 원본은 samples/stored-nested-content-flow/overlay-bottom.hwpx이다.
+//! 독립 Print PDF는 pdf/pr7200/pr7200-overlay-bottom-2020.pdf다.
+//! 전쪽 TSV는 mydocs/pr/assets/issues7777_7787/native/7787-bottom/silhouette.tsv에 있다.
+//! 전쪽 TSV는 mydocs/pr/assets/issues7777_7787/wasm/7787-bottom/silhouette.tsv에 있다.
+//!
 //! 저장 위치가 없는 셀의 세로 정렬과 본문 표 뒤 흐름의 독립 합성 계약.
 //!
 //! 빈 문서에서 생성한 fixture이며 사용자 양식의 내용은 포함하지 않는다.
@@ -236,9 +258,25 @@ fn nested_alignment_uses_rewrapped_text_and_actual_float_flow() {
         if kind == "overlay" {
             let behind = table(&top, 160.0);
             let following = table(&top, 10000.0 / 75.0);
-            // #7445: overlay-top의 실패한 세로 advance assertion만 이관.
-            // upstream 74f9b71b1의 동일1쪽 Native/fresh WASM 최저89.44020%.
-            // 가로/포함 관계 및 Center/Bottom·다른 kind 정상 검사는 유지한다.
+            // 한컴 Print에서 뒤 표는 앞 표 높이 대신 빈 호스트 줄(1000+200 HU)만큼 전진한다.
+            assert!((following.y - behind.y - (1000.0 + 200.0) / 75.0).abs() < 0.6);
+            let mut host_outlines: Vec<_> = top
+                .iter()
+                .filter(|node| {
+                    matches!(node.node_type, RenderNodeType::Rectangle(_))
+                        && (node.bbox.width - outer.width).abs() < 0.5
+                        && node.bbox.height < behind.height
+                })
+                .map(|node| node.bbox)
+                .collect();
+            host_outlines.sort_by(|a, b| a.y.total_cmp(&b.y));
+            assert_eq!(host_outlines.len(), 2, "overlay-top: 두 호스트 외곽선");
+            for (outline, table) in host_outlines.iter().zip([behind, following]) {
+                assert!(
+                    (outline.y - table.y).abs() < 0.6,
+                    "overlay-top: 호스트 외곽선과 소유 표의 위쪽이 일치해야 한다"
+                );
+            }
             assert!((following.x - behind.x - behind.width).abs() < 0.6);
             assert!(following.x + following.width <= outer.x + outer.width + 0.6);
         }

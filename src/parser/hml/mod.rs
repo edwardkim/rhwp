@@ -2,6 +2,7 @@ mod adapter;
 pub mod encoding;
 mod envelope;
 pub mod error;
+pub(crate) mod implicit_equation_print;
 mod reader;
 mod warnings;
 

@@ -1,0 +1,174 @@
+{
+  "artifacts": {
+    "base": {
+      "product_sha": "8a26c00869e5a15cc11efa715b3687b600a61c0b",
+      "native_sha256": "ad847003d343131ba957e095b83e10e56ea06d746cad71cfa59ea9d24cb702c9",
+      "wasm_sha256": "e3e92b46b449eff438f23313e540e8506b529d70839efa89e5b9b40b8c96d6fb",
+      "js_sha256": "5ec4c5ce9ed9b852cb5e0d97a4baa6eb6fbe734cebdbb321709088d794678406"
+    },
+    "candidate": {
+      "product_sha": "09abb57777876e0c2f1ca9e138a5534dc73d9f1b",
+      "native_sha256": "5a632d52e6b7ea92064f4f0d6b5914de8f75a73310d14b0b783fb91ed0b29735",
+      "wasm_sha256": "5476e7a8e15d932efc7cf7579e86e9a7c9235ac2fbc08593262fb1ed381d928b",
+      "js_sha256": "5ec4c5ce9ed9b852cb5e0d97a4baa6eb6fbe734cebdbb321709088d794678406"
+    }
+  },
+  "regression_branch": "review/pr-9298-jpeg-exif",
+  "reviewed_source_pr": "a5884818331908d5d6085aac3f9ca3430f27a098",
+  "target": {
+    "native/photo": {
+      "pages": 1,
+      "below": [],
+      "minimum": "99.98",
+      "changed": [],
+      "lower": [],
+      "photo_page": "99.98"
+    },
+    "native/padded": {
+      "pages": 1,
+      "below": [],
+      "minimum": "99.98",
+      "changed": [],
+      "lower": [],
+      "photo_page": "99.98"
+    },
+    "native/source-2024": {
+      "pages": 37,
+      "below": [
+        12,
+        14,
+        15,
+        16,
+        20,
+        25,
+        28,
+        37
+      ],
+      "minimum": "38.23",
+      "changed": [],
+      "lower": [],
+      "photo_page": "92.93"
+    },
+    "native/source-2022": {
+      "pages": 37,
+      "below": [
+        12,
+        14,
+        15,
+        16,
+        20,
+        25,
+        28,
+        37
+      ],
+      "minimum": "38.23",
+      "changed": [],
+      "lower": [],
+      "photo_page": "94.32"
+    },
+    "wasm/photo": {
+      "pages": 1,
+      "below": [],
+      "minimum": "99.98",
+      "changed": [],
+      "lower": [],
+      "photo_page": "99.98"
+    },
+    "wasm/padded": {
+      "pages": 1,
+      "below": [],
+      "minimum": "99.98",
+      "changed": [],
+      "lower": [],
+      "photo_page": "99.98"
+    },
+    "wasm/source-2024": {
+      "pages": 37,
+      "below": [
+        12,
+        14,
+        15,
+        16,
+        20,
+        25,
+        28,
+        37
+      ],
+      "minimum": "38.20",
+      "changed": [],
+      "lower": [],
+      "photo_page": "92.94"
+    },
+    "wasm/source-2022": {
+      "pages": 37,
+      "below": [
+        12,
+        14,
+        15,
+        16,
+        20,
+        25,
+        28,
+        37
+      ],
+      "minimum": "37.56",
+      "changed": [],
+      "lower": [],
+      "photo_page": "94.34"
+    }
+  },
+  "nested": {
+    "base": {
+      "protected/native": {
+        "pages": 17,
+        "minimum": "100.00",
+        "font_count": 21,
+        "png_set_sha256": "68b35bca70a16af005afff357b07170ce215deffe72746a9ced1281c14895e4e"
+      },
+      "protected-extra/native": {
+        "pages": 17,
+        "minimum": "100.00",
+        "font_count": 16,
+        "png_set_sha256": "a0adfee9476b3aa065413636111e662ac95e373be00ddcd37960c492285711fa"
+      },
+      "protected/wasm": {
+        "pages": 17,
+        "minimum": "99.98",
+        "font_count": 16,
+        "png_set_sha256": "31443db522af53372a5a62cc50d44ea7c522ca2c81f4de170ed457bf366d24ea"
+      },
+      "protected-extra/wasm": {
+        "pages": 17,
+        "minimum": "99.98",
+        "font_count": 21,
+        "png_set_sha256": "758c040ce785d272754ef682aac9e02e979a4c17f49373cebf3dbc5698debb84"
+      }
+    },
+    "candidate": {
+      "protected/native": {
+        "pages": 17,
+        "minimum": "100.00",
+        "font_count": 21,
+        "png_set_sha256": "68b35bca70a16af005afff357b07170ce215deffe72746a9ced1281c14895e4e"
+      },
+      "protected-extra/native": {
+        "pages": 17,
+        "minimum": "100.00",
+        "font_count": 16,
+        "png_set_sha256": "a0adfee9476b3aa065413636111e662ac95e373be00ddcd37960c492285711fa"
+      },
+      "protected/wasm": {
+        "pages": 17,
+        "minimum": "99.98",
+        "font_count": 16,
+        "png_set_sha256": "31443db522af53372a5a62cc50d44ea7c522ca2c81f4de170ed457bf366d24ea"
+      },
+      "protected-extra/wasm": {
+        "pages": 17,
+        "minimum": "99.98",
+        "font_count": 21,
+        "png_set_sha256": "758c040ce785d272754ef682aac9e02e979a4c17f49373cebf3dbc5698debb84"
+      }
+    }
+  }
+}

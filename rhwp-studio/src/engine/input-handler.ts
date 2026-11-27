@@ -52,6 +52,7 @@ import * as _keyboard from './input-handler-keyboard';
 import * as _text from './input-handler-text';
 import * as _picture from './input-handler-picture';
 import { computeHangingIndentPx } from './hanging-indent';
+import { paragraphLengthFromPx } from '@/core/paragraph-spacing';
 import { isPageLocalTextEditCommand, type PageLocalTextEditOptions } from './input-edit-invalidation';
 import type { NavigationKeyInput } from './navigation-keymap';
 import { isPointNearBoxBorder } from './table-border-hit';
@@ -70,7 +71,6 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 const DRAG_SCROLL_EDGE_PX = 48;
 const DRAG_SCROLL_MIN_STEP_PX = 2;
 const DRAG_SCROLL_MAX_STEP_PX = 20;
-const PX_TO_RAW_2X = 150;
 const PX_TO_HWPUNIT = 75;
 const DOCUMENT_PAGINATION_IDLE_FLUSH_DELAY_MS = 120;
 // 최초 입력의 paint 기회를 확보하고 반복 입력이 이 추가 예약 지연을 연장하지 않게 한다.
@@ -171,9 +171,6 @@ const FORMAT_COPY_PARA_KEYS: Array<keyof ParaProperties> = [
   'alignment',
   'lineSpacing',
   'lineSpacingType',
-  'marginLeft',
-  'marginRight',
-  'indent',
   'headType',
   'paraLevel',
   'numberingId',
@@ -213,10 +210,6 @@ function pickDefined<T extends object, K extends keyof T>(source: T, keys: K[]):
     if (source[key] !== undefined) result[key] = source[key];
   }
   return result;
-}
-
-function pxToRaw2x(px: number): number {
-  return Math.round(px * PX_TO_RAW_2X);
 }
 
 function availableDropWidthPx(pageInfo: PageInfo, pageX: number): number {
@@ -263,10 +256,10 @@ function fitDroppedImageSizeRaw(
 
 function normalizeFormatCopyParaProps(props: Partial<ParaProperties>): Partial<ParaProperties> {
   const normalized = pickDefined(props, FORMAT_COPY_PARA_KEYS);
-  if (props.marginLeft !== undefined) normalized.marginLeft = pxToRaw2x(props.marginLeft);
-  if (props.marginRight !== undefined) normalized.marginRight = pxToRaw2x(props.marginRight);
-  if (props.indent !== undefined) normalized.indent = pxToRaw2x(props.indent);
   // 구 엔진의 반올림된 px는 단위 비트를 잃는다. 확인된 저장값만 복사한다.
+  if (props.marginLeftRaw !== undefined) normalized.marginLeft = props.marginLeftRaw;
+  if (props.marginRightRaw !== undefined) normalized.marginRight = props.marginRightRaw;
+  if (props.indentRaw !== undefined) normalized.indent = props.indentRaw;
   if (props.spacingBeforeRaw !== undefined) normalized.spacingBefore = props.spacingBeforeRaw;
   if (props.spacingAfterRaw !== undefined) normalized.spacingAfter = props.spacingAfterRaw;
   return normalized;
@@ -2820,7 +2813,7 @@ export class InputHandler {
             cellIdx: cellIndex,
             cellParaIdx: cellParaIndex,
           }],
-          { indent: -pxToRaw2x(hangingPx) },
+          { indent: -paragraphLengthFromPx(hangingPx) },
         );
         return true;
       }
@@ -2836,7 +2829,7 @@ export class InputHandler {
       const hangingPx = computeHangingIndentPx(cursorRect.x, firstLineStartRect.x);
       this.executeParaFormatCommand(
         [{ kind: 'body', sec: pos.sectionIndex, para: pos.paragraphIndex }],
-        { indent: -pxToRaw2x(hangingPx) },
+        { indent: -paragraphLengthFromPx(hangingPx) },
       );
       return true;
     } catch (err) {
@@ -4559,7 +4552,7 @@ export class InputHandler {
   /** 클릭 좌표가 글상자의 경계선 위인지 판정한다 */
   private isShapeBorderClick(
     pageX: number, pageY: number,
-    shape: { sec: number; ppi: number; ci: number },
+    shape: { sec: number; ppi: number; ci: number; type?: 'shape' | 'group' },
   ): boolean {
     return _picture.isShapeBorderClick.call(this, pageX, pageY, shape);
   }

@@ -12,7 +12,7 @@
 
 - [final.tsv](final.tsv): 입력·기준 PDF·backend·페이지별 공식 두 자리 raw 보호값.
 - [manifest.json](manifest.json): 입력/PDF SHA-256·크기·측정 조건·전쪽 수·출처 commit/TSV/열/해시와 중복 제거 내역.
-- TSV SHA-256: `be050f801ed2f2152017357249f4b7c1068dc83c50347266d16599d61a1f4a5c`.
+- TSV SHA-256: `8141acb297ce2f39148f9014e463986431d266120629e8f368665e5917138f9d`.
 - 입력 23개, Native/fresh WASM 각 23개 데이터셋·2,023쪽, 총 46개 데이터셋·4,046행.
 - 최초 통합 당시 수용 자료 56개 데이터셋 중 중복 20개를 정리했다. 이전 자료보다 공식 표시값이 낮아진 페이지는 0쪽이다.
 
@@ -27,24 +27,24 @@ HWP와 HWPX는 같은 제목이어도 별도 입력이다. 아래 최저값은 �
 | [jongbu_law.hwpx](<../legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx>) | 6 | 98.86% | 98.86% |
 | [2025 행정업무운영 편람(최종).hwp](<../../../../samples/2025 행정업무운영 편람(최종).hwp>) | 383 | 99.97% | 99.96% |
 | [2025 행정업무운영 편람(최종).hwpx](<../../../../samples/2025 행정업무운영 편람(최종).hwpx>) | 383 | 99.97% | 99.96% |
-| [issue2007_nested_cell_pagination_42065.hwp](<../../../../samples/basic/issue2007_nested_cell_pagination_42065.hwp>) | 17 | 100.00% | 100.00% |
-| [hwp3-sample10.hwp](<../../../../samples/hwp3-sample10.hwp>) | 763 | 99.57% | 99.57% |
-| [hwp3-sample16-hwp5-2022.hwp](<../../../../samples/hwp3-sample16-hwp5-2022.hwp>) | 64 | 100.00% | 100.00% |
-| [hwp3-sample16-hwp5-2024.hwp](<../../../../samples/hwp3-sample16-hwp5-2024.hwp>) | 64 | 99.99% | 99.99% |
-| [hwp3-sample16-hwp5.hwpx](<../../../../samples/hwp3-sample16-hwp5.hwpx>) | 64 | 99.99% | 99.99% |
-| [20099369_yeongwol_forms.hwp](<../../../../samples/issue5699/20099369_yeongwol_forms.hwp>) | 4 | 100.00% | 100.00% |
+| [issue2007_nested_cell_pagination_42065.hwp](<../../../../samples/basic/issue2007_nested_cell_pagination_42065.hwp>) | 17 | 99.64% | 100.00% |
+| [hwp3-sample10.hwp](<../../../../samples/hwp3-sample10.hwp>) | 763 | 99.56% | 99.57% |
+| [hwp3-sample16-hwp5-2022.hwp](<../../../../samples/hwp3-sample16-hwp5-2022.hwp>) | 64 | 99.44% | 99.97% |
+| [hwp3-sample16-hwp5-2024.hwp](<../../../../samples/hwp3-sample16-hwp5-2024.hwp>) | 64 | 99.43% | 99.97% |
+| [hwp3-sample16-hwp5.hwpx](<../../../../samples/hwp3-sample16-hwp5.hwpx>) | 64 | 99.43% | 99.97% |
+| [20099369_yeongwol_forms.hwp](<../../../../samples/issue5699/20099369_yeongwol_forms.hwp>) | 4 | 99.98% | 99.95% |
 | [pic-crop-01.hwp](<../../../../samples/pic-crop-01.hwp>) | 1 | 100.00% | 100.00% |
-| [exam-social-insert-delete.hwp](<../../../../samples/pr8040/exam-social-insert-delete.hwp>) | 4 | 99.99% | 99.99% |
-| [exam-social-insert.hwp](<../../../../samples/pr8040/exam-social-insert.hwp>) | 4 | 99.99% | 99.99% |
+| [exam-social-insert-delete.hwp](<../../../../samples/pr8040/exam-social-insert-delete.hwp>) | 4 | 99.77% | 99.99% |
+| [exam-social-insert.hwp](<../../../../samples/pr8040/exam-social-insert.hwp>) | 4 | 99.77% | 99.99% |
 | [re-03-latin-only-hancom.hwp](<../../../../samples/re-03-latin-only-hancom.hwp>) | 1 | 100.00% | 100.00% |
 | [shape-group-02.hwp](<../../../../samples/shape-group-02.hwp>) | 1 | 100.00% | 100.00% |
 | [issue3307_outline_number.hwpx](<../../../../samples/task3307/issue3307_outline_number.hwpx>) | 9 | 100.00% | 100.00% |
 | [body-list-typed-hwp.hwp](<../../../../tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp>) | 1 | 100.00% | 100.00% |
 | [control-styles-hwp.hwp](<../../../../tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp>) | 1 | 100.00% | 100.00% |
-| [1480000-201900042-chemical-labeling-standards.hwp](<../../../../samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp>) | 103 | 100.00% | 100.00% |
-| [한글문서파일형식_5.0_revision1.3.hwp](<../../../../samples/한글문서파일형식_5.0_revision1.3.hwp>) | 71 | 99.92% | 99.92% |
+| [1480000-201900042-chemical-labeling-standards.hwp](<../../../../samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp>) | 103 | 99.06% | 99.65% |
+| [한글문서파일형식_5.0_revision1.3.hwp](<../../../../samples/한글문서파일형식_5.0_revision1.3.hwp>) | 71 | 99.92% | 99.91% |
 | [outline_navigation_panel_demo.hwpx](<../../../../samples/pr4093/outline_navigation_panel_demo.hwpx>) | 3 | 100.00% | 100.00% |
-| [78494-virtual-convergence-industry-decree.hwpx](<../../../../samples/issue6776/78494-virtual-convergence-industry-decree.hwpx>) | 74 | 99.98% | 99.98% |
+| [78494-virtual-convergence-industry-decree.hwpx](<../../../../samples/issue6776/78494-virtual-convergence-industry-decree.hwpx>) | 74 | 97.20% | 99.41% |
 | [outline_navigation_table_cell_number.hwpx](<../../../../samples/pr4093/outline_navigation_table_cell_number.hwpx>) | 1 | 100.00% | 100.00% |
 
 `exam-social-insert.hwp`와 `exam-social-insert-delete.hwp`는 캡처 전에
@@ -183,3 +183,45 @@ Hancom PDF Print 기준을 사용하며 웹한글기안기 출력으로 대체�
 같은 입력·한컴 Print·측정 조건에서 정본 글꼴 21개로 중첩 표 Native 17쪽을 재검증했다.
 2·7·17쪽이 100.00%로 올라 세 행을 상향했다.
 [전쪽 결과](../issue_9326/20261124/protected/README.md) · [갱신 영수증](updates/issue9326-20261124.json)
+
+## 2026-11-25 시행령·중첩 표 Native 보호값 개별 조정
+
+사용자 승인에 따라 시행령 9·32·50·66쪽과 중첩 표 1·2·5–10·16·17쪽의 Native 보호값을 실측 표시값으로 조정했다. 같은 입력·Print PDF·Mac 글꼴 공급으로 보정 전후 91쪽을 다시 생성했으며 PNG와 점수는 전부 일치했다. 이 조정은 승인된 14행에 적용한다.
+
+[전쪽 검증과 대표 판독](../planet6897_20261125/protected-native-mac/README.md) · [이전값·조정값과 해시](updates/planet6897-mac-native-20261125.json)
+
+## 2026-11-25 시행령 Native 휴먼고딕 검증과 보호값 복원
+
+원본 및 한컴 Print에서 확인한 휴먼고딕 `HMKMG.TTF`를 Native에 공급하자 시행령의 9·32·50·66쪽이 100.00%로 복원됐다. 기존 PDF에 대한 시행령 74쪽이 조정 전 정본값과 모두 일치했다. 중첩 표 Native 10쪽에는 개별 승인한 값을 적용한다.
+
+[전쪽 검증](../planet6897_20261125/protected-native-mac/decree-ttf/README.md) · [복원 영수증](updates/planet6897-decree-hmkmg-20261125.json)
+
+## 2026-11-25 화학물질 표시 기준의 브라우저 출력
+
+보호 문서 23종의 Native·fresh WASM 4,046행에서 하락과 누락이 없었다. 화학물질 표시 기준의 브라우저 26쪽을 99.99%에서 100.00%로 상향했다. [최신 기준과 후보의 전쪽 대조](../hyunmyungjanelee-20261125/maintainer/current-9415/protection-pages.tsv) · [갱신 영수증](updates/pr9352-9384-9407-20261125.json)
+
+## 2026-11-26 화학물질 표시 기준의 한컴 Print 교체
+
+사용자 승인에 따라 화학물질 표시 기준의 PDF를 한컴 2020 11.0.0.9172의 한 쪽씩 인쇄본으로 교체했다.
+103쪽의 이전·새 인쇄본에서 픽셀이 달라진 19·20·21·91·92쪽의 Native·fresh WASM 보호값을
+각각 99.93·99.86·99.89·99.65·99.99%로 조정했다. 새 PDF를 기준으로 같은 Mac 글꼴 조건의
+devel과 후보 Native·WASM 출력은 206행 모두 픽셀이 같았다. 26쪽 WASM은 새 인쇄본과
+이전 인쇄본이 픽셀 단위로 같았고, Mac에서는 두 버전이 모두 99.99%였다.
+
+[새 한컴 Print](../../../../pdf/issue6782/mcp-11.0.0.9172/1480000-201900042-chemical-labeling-standards-2020.pdf) · [전쪽 비교](../issue_6782/mcp-print-20261126/page-comparison.tsv) · [갱신 영수증](updates/issue6782-mcp-print-20261126.json)
+
+사용자 승인에 따라 같은 PDF와 Mac 글꼴로 대조한 WASM 26쪽 한 행의 하한을
+100.00%에서 99.99%로 조정했다. 기준 devel과 통합 후보는 WASM 103쪽의 점수와
+PNG 해시가 모두 일치했다.
+
+[승인 하한 103쪽](../issue_6782/mcp-print-20261126/wasm-floor-mac-approved.tsv) · [26쪽 갱신 영수증](updates/issue6782-wasm-p26-20261126.json)
+
+## 2026-11-27 sample16 수식 6쪽 보호값 개별 조정
+
+사용자 승인에 따라 sample16 HWP 2022·HWP 2024·HWPX의 Native·fresh WASM 6쪽만 한컴 설치본 HYHWPEQ.TTF 1.13의 실측 표시값으로 조정했다. 같은 원본과 독립 한컴 Print를 사용한 devel·#9306 병합 후보의 384쪽은 PNG 해시가 모두 같았다. HWP 2022 Native는 99.96%, 나머지 다섯 행은 각각 99.97%를 적용한다.
+
+[전쪽 비교와 공급 조건](../issue_7114/sample16-mac-protection-20261127/README.md) · [갱신 영수증](updates/issue7114-sample16-mac-20261127.json)
+
+## 2026-11-27 교차 OS 보호값
+
+macOS, Windows, Linux 대표 환경에서 같은 입력과 독립 한컴 Print PDF의 Native 및 fresh WASM 전체 페이지를 비교했다. 각 환경의 4,046행을 합쳐 12,138개 실측을 확인했다. 사용자 승인에 따라 기존 하한보다 낮게 측정된 193행에 세 환경의 두 자리 실측 최저값을 적용했다. 96 DPI와 2px raw 측정 조건을 유지했다. 편람 HWP·HWPX의 WASM에는 함초롬바탕 TTF 두 파일을 같은 해시로 추가 공급했다. [페이지별 실측](updates/cross-os-20261127/page-floors.tsv) · [실행 조건과 소스 신원](updates/cross-os-20261127/conditions.json)

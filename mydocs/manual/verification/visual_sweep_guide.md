@@ -408,12 +408,28 @@ PR을 재검토한다.** Native/WASM 교차 비교나 다른 backend 점수의 �
 [devel 대비 실루엣 하락 재검토](visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)를 따른다.
 현재 자동90% gate 또는 `not_evaluated`만으로 이 비교를 완료했다고 쓰지 않는다.
 
+### 시각 검증의 글꼴 선택 순서
+
+Native와 fresh WASM 시각 검증에서는 **TTF → TTC → OTF → 대체 글꼴** 순서로 공급할
+글꼴을 선택한다. 각 단계에서 문서의 글꼴 이름·언어 슬롯과 실제 face를 대조한다.
+일치하는 face가 없거나 해당 face에 필요한 글리프가 없으면 다음 단계를 확인한다.
+선택한 파일명과 SHA-256을 기록하고 TTC는 컬렉션 내 face 인덱스도 기록한다.
+양쪽 backend의 실제 글리프 선택은 [동명 글꼴 확인](#동명-글꼴과-실제-사용-글리프-확인) 절차로 확인한다.
+
+이미 확정한 비교를 재현할 때는 기록된 공급 프로그램을 사용한다. 이 순서에 따라 공급 프로그램을
+바꾼 경우에는 같은 파일과 face를 기준·후보 양쪽에 공급하고 새 경로에서 두 결과를 다시 산출한다.
+
 ### 정본 보호 문서의 글꼴 공급 재현
 
 정본 보호 전쪽을 비교하는 collaborator·maintainer는 Linux·Windows·macOS 모두
 [공식 글꼴 공급 자료](../../verification/protected-font-supply/README.md)를 따른다.
 문서 key와 backend로 `manifest.json`의 조건을 선택해 공급 방식과 환경 JSON을 적용한다.
 파일명·프로그램 SHA·face와 실제 선택 기록을 대조한다. 일반 기여자에게 비공개 글꼴 확보를 요구하지 않는다.
+
+Native·fresh WASM 모두 실제 경로의 파일명이 `_MAC.otf`로 끝나는 글꼴을 공급 및 선택에서
+제외한다. 대소문자를 구분하지 않으며, 파일명을 바꾸거나 링크를 만들어 사용할 수 없다.
+보호 글꼴의 허용 조건을 변경할 때는 macOS·Windows·Linux에서 각각 모든 등록 문서를 두
+backend로 출력하고, 실제 선택과 페이지별 보호 하한을 확인한 뒤 PR을 제출한다.
 
 manifest 최상위의 `accepted_sha256_pairs`는 공통 허용 쌍이고, 문서 항목의 같은 필드는 해당 문서에만 적용한다.
 문서별 허용 쌍은 `scripts/check_protected_font.py --document <문서 key>`로 확인한다.
@@ -808,6 +824,8 @@ cargo build --locked --target-dir /home/tsjang/rhwp/target/pr-review -j 8 --feat
 다른 host에서는 해당 host의 기본 rhwp 작업공간 아래 공용 `target/pr-review`로 바꾼다.
 Native PNG에는 Node·Chrome·SVG 임베딩 검사가 필요 없다. 한글 라벨의 cmap 확인에는
 Native·WASM 모두 Python `fonttools`가 필요하다(`python -m pip install fonttools`).
+WOFF2 글꼴을 공급하는 검증은 스윕과 같은 Python 환경에 `brotli`도 설치한다
+(`python -m pip install brotli`).
 WASM PNG에는 Node·Chrome과 외부 공급 글꼴 catalogue도 필요하다. SVG 진단의 필수 도구는 다음과 같다.
 
 스크립트는 실행 시작 시 다음 CLI와 Python 패키지가 있는지 확인한다.

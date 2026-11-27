@@ -1,0 +1,24 @@
+{
+  "previous_table_sha256": "1f7ac7a52290acef829c03e15f2dd27e23c6a3450415266d4cc4067b70dfdcc8",
+  "table_sha256": "56c0b80121c204e4f1c2f025b7a6720661773deb9aadbfa9fe8b4229601f51c1",
+  "evidence_commit": "d388231783ed697fefdb1b6cbc5d79a5f72e2518",
+  "code_commit": "f3d137d9cbe36cae93f859baac3a29ae4a543f75",
+  "producers": {
+    "native": "994db540b977052dc4dc6b2a82e4239c5b62497104f2585fcff67b30267a4cef",
+    "wasm": "b3ff79999b9b9613c706cd6b0c47a3e03406860fd79af65db518f7276cde58af"
+  },
+  "accepted_at": "2026-11-26T04:01:25+09:00",
+  "conditions": 46,
+  "compared_rows": 4046,
+  "declines": [],
+  "increases": [
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 26,
+      "previous": "99.99",
+      "current": "100.00"
+    }
+  ]
+}

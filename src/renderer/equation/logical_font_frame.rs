@@ -276,14 +276,11 @@ fn frame_with_style(value: &LayoutBox, fs: f64, dpi: f64, roman: bool) -> Option
             return frame_with_style(body, fs, dpi, roman);
         }
         LayoutKind::Row(items) if !items.is_empty() && horizontal_row(value, items) => {
-            let mut ascent = 0.0_f64;
-            let mut descent = 0.0_f64;
+            let mut frames = Vec::with_capacity(items.len());
             for item in items {
-                let (height, baseline) = frame_with_style(item, fs, dpi, roman)?;
-                ascent = ascent.max(baseline);
-                descent = descent.max(height - baseline);
+                frames.push(frame_with_style(item, fs, dpi, roman)?);
             }
-            return Some((ascent + descent, ascent));
+            return Some(super::font_frame_metrics::combine_row_frames(&frames));
         }
         LayoutKind::Decoration {
             kind: DecoKind::Vec,
@@ -427,14 +424,11 @@ fn frame_with_style(value: &LayoutBox, fs: f64, dpi: f64, roman: bool) -> Option
         | LayoutKind::FontStyle { body, .. }
         | LayoutKind::Paren { body, .. } => frame(body, fs, dpi),
         LayoutKind::Row(items) if horizontal_row(value, items) => {
-            let mut ascent = 0.0_f64;
-            let mut descent = 0.0_f64;
+            let mut frames = Vec::with_capacity(items.len());
             for item in items {
-                let (height, baseline) = frame(item, fs, dpi)?;
-                ascent = ascent.max(baseline);
-                descent = descent.max(height - baseline);
+                frames.push(frame(item, fs, dpi)?);
             }
-            Some((ascent + descent, ascent))
+            Some(super::font_frame_metrics::combine_row_frames(&frames))
         }
         _ => None,
     }

@@ -1,0 +1,9 @@
+fixture	backend	gate_status	min_raw	pages	regressions
+samples/re-03-latin-only-hancom.hwp	native	passed	100.0	1	0
+samples/re-03-latin-only-hancom.hwp	wasm	passed	100.0	1	0
+mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx	native	passed	100.0	1	0
+mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx	wasm	passed	100.0	1	0
+samples/pic-crop-01.hwp	native	passed	99.99756	1	0
+samples/pic-crop-01.hwp	wasm	passed	99.99756	1	0
+samples/shape-group-02.hwp	native	passed	100.0	1	0
+samples/shape-group-02.hwp	wasm	passed	100.0	1	0

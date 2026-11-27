@@ -181,6 +181,31 @@ fn parse_bmp_header(bytes: &[u8]) -> Option<CanvasKitEncodedImageHeader> {
 }
 
 fn parse_jpeg_header(bytes: &[u8]) -> Option<CanvasKitEncodedImageHeader> {
+    let range = find_jpeg_segment(bytes, |marker, _| {
+        (0xc0..=0xcf).contains(&marker) && !matches!(marker, 0xc4 | 0xc8 | 0xcc)
+    })?;
+    let frame = &bytes[range];
+    let component_count = usize::from(*frame.get(5)?);
+    if component_count == 0 || frame.len() != 6 + component_count * 3 {
+        return None;
+    }
+    let height = u32::from(read_be_u16(frame, 1)?);
+    let width = u32::from(read_be_u16(frame, 3)?);
+    if width == 0 || height == 0 {
+        return None;
+    }
+    Some(CanvasKitEncodedImageHeader {
+        format: CanvasKitEncodedImageFormat::Jpeg,
+        width,
+        height,
+    })
+}
+
+/// 압축 영상(SOS) 앞에서 조건에 맞는 첫 JPEG 세그먼트의 payload 범위를 구한다.
+pub(super) fn find_jpeg_segment(
+    bytes: &[u8],
+    matches: impl Fn(u8, &[u8]) -> bool,
+) -> Option<std::ops::Range<usize>> {
     if bytes.len() < 4 || !bytes.starts_with(b"\xff\xd8") {
         return None;
     }
@@ -212,30 +237,10 @@ fn parse_jpeg_header(bytes: &[u8]) -> Option<CanvasKitEncodedImageHeader> {
             return None;
         }
 
-        let is_start_of_frame =
-            (0xc0..=0xcf).contains(&marker) && !matches!(marker, 0xc4 | 0xc8 | 0xcc);
-        if is_start_of_frame {
-            if segment_len < 11 {
-                return None;
-            }
-            let component_count = usize::from(*bytes.get(offset + 7)?);
-            if component_count == 0
-                || segment_len != 8usize.checked_add(component_count.checked_mul(3)?)?
-            {
-                return None;
-            }
-            let height = u32::from(read_be_u16(bytes, offset + 3)?);
-            let width = u32::from(read_be_u16(bytes, offset + 5)?);
-            if width == 0 || height == 0 {
-                return None;
-            }
-            return Some(CanvasKitEncodedImageHeader {
-                format: CanvasKitEncodedImageFormat::Jpeg,
-                width,
-                height,
-            });
+        let payload = offset + 2..segment_end;
+        if matches(marker, &bytes[payload.clone()]) {
+            return Some(payload);
         }
-
         offset = segment_end;
     }
     None

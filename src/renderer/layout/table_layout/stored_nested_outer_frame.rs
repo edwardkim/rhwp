@@ -88,8 +88,20 @@ impl LayoutEngine {
                             run_start = run_end;
                             continue;
                         }
-                        if start > run_start {
-                            extra += hwpunit_to_px(child.outer_margin_top as i32, self.dpi);
+                        // [#9000] 한/글이 저장한 쪽 프레임 시작(되감김 유닛)에서 이어받는
+                        // 자식 표의 위 바깥 여백은 `nested_continuation_header_height` 가
+                        // 이미 예약한다(배치도 그 여백을 한 번 그린다 — KAF 36쪽 칸 r6·c5
+                        // 중첩 표 위 괘선 119.0px = 칸 내용 위 117.13 + 1.88). 용량 컷에서
+                        // 이어받는 조각은 이 프레임 인증이 없어 종전 예약을 유지한다.
+                        let om_top = hwpunit_to_px(child.outer_margin_top as i32, self.dpi);
+                        let header_reserves_top = start == lo
+                            && units[lo].hard_break_before
+                            && units[lo].stored_frame_break_before
+                            && !child.common.treat_as_char
+                            && self.nested_continuation_header_height(cell, units, lo, styles)
+                                >= om_top - 0.01;
+                        if start > run_start && !header_reserves_top {
+                            extra += om_top;
                         }
                         if end < run_end {
                             extra += hwpunit_to_px(child.outer_margin_bottom as i32, self.dpi);

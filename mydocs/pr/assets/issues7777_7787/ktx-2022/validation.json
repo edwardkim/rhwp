@@ -1,0 +1,53 @@
+{
+  "head": "930e6f77a5433d6b254969acda078cd73f8b5597",
+  "measurements": {
+    "native": {
+      "pages": 27,
+      "pdf_sha256": "f6fad0448109ee477f7b259e947408314f2c6e12a0defde21d25e01dfb1e9d78",
+      "current_print_manifest_sha256": "9c67237bf2db5413e6e4bbe155ea005bf67830646edfe7750dfe6cbcf5c7886e",
+      "reference_manifest_sha256": "57bc790b1e53daac590e5b0026f4ea9c245284c0a6705cf44dcc134c834fe013",
+      "tsv_sha256": "b0269202f8c8228e230656affa6f90dc62f146927728168daf523ce4cbaf0577",
+      "previous_tsv_sha256": "b0269202f8c8228e230656affa6f90dc62f146927728168daf523ce4cbaf0577",
+      "declines": [],
+      "minimum": "100.00",
+      "previous_minimum": "100.00",
+      "passed": true
+    },
+    "wasm": {
+      "pages": 27,
+      "pdf_sha256": "f6fad0448109ee477f7b259e947408314f2c6e12a0defde21d25e01dfb1e9d78",
+      "current_print_manifest_sha256": "e7c5b83995131070c131b3b82f4712144151a022333495dff45658a6d77459c7",
+      "reference_manifest_sha256": "57bc790b1e53daac590e5b0026f4ea9c245284c0a6705cf44dcc134c834fe013",
+      "tsv_sha256": "ddb72c9fa1819f5ed63cc05f2b26871a4fee2886dd29af5242d665ccbd46f138",
+      "previous_tsv_sha256": "ddb72c9fa1819f5ed63cc05f2b26871a4fee2886dd29af5242d665ccbd46f138",
+      "declines": [],
+      "minimum": "99.87",
+      "previous_minimum": "99.87",
+      "passed": true
+    }
+  },
+  "toc": {
+    "native": {
+      "backend": "native",
+      "complete_pages": 27,
+      "worst_page": 18,
+      "min_raw": 99.99921,
+      "page_2_raw": 100.0,
+      "page_26_raw": 100.0,
+      "page_number_count": 17,
+      "page_number_right_edges_spread_px": 0.10000000000002274,
+      "page_number_max_abs_print_right_edge_error_px": 0.057910156250045475
+    },
+    "wasm": {
+      "backend": "wasm",
+      "complete_pages": 27,
+      "worst_page": 8,
+      "min_raw": 99.87075,
+      "page_2_raw": 100.0,
+      "page_26_raw": 99.99701,
+      "page_number_count": 17,
+      "page_number_right_edges_spread_px": 0.10000000000002274,
+      "page_number_max_abs_print_right_edge_error_px": 0.057910156250045475
+    }
+  }
+}

@@ -1,6 +1,7 @@
 //! 머리말·꼬리말 문단과 혼합 컨트롤의 배치.
 
 use super::*;
+use crate::renderer::layout_frame::{FrameExclusion, FrameExclusionPolicy, LayoutFrame};
 
 impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
@@ -172,6 +173,7 @@ impl LayoutEngine {
         // 로고를 33.3px 아래로 밀었다(한/글은 밴드 위끝에 그린다). 문서 IR 은 바꾸지 않는다.
         // 위의 세로 정렬 판정은 계속 **저장** 줄만 읽는다 — 합성 줄 높이는 추정이라 그
         // 계약(줄 높이 합을 정확히 알 때만)을 채우지 못한다.
+        let source_paragraphs = hf_paragraphs;
         let reflowed_hf_paragraphs: Vec<Paragraph>;
         let hf_paragraphs = if hf_paragraphs.iter().any(|para| para.line_segs.is_empty()) {
             reflowed_hf_paragraphs = hf_paragraphs
@@ -216,6 +218,48 @@ impl LayoutEngine {
                 .controls
                 .iter()
                 .any(|c| matches!(c, Control::Picture(_)));
+            let mut reflowed_with_bands =
+                if crate::renderer::para_has_no_stored_line_segs(&source_paragraphs[i])
+                    && para_has_visible_text(para)
+                    && para.controls.iter().any(header_footer_topbottom_band)
+                    && para.controls.iter().all(|control| match control {
+                        Control::Picture(pic) => {
+                            !pic.common.treat_as_char
+                                && matches!(
+                                    pic.common.text_wrap,
+                                    TextWrap::BehindText | TextWrap::InFrontOfText
+                                )
+                        }
+                        Control::Shape(shape) => {
+                            !shape.common().treat_as_char
+                                && (header_footer_topbottom_band(control)
+                                    || matches!(
+                                        shape.common().text_wrap,
+                                        TextWrap::BehindText | TextWrap::InFrontOfText
+                                    ))
+                        }
+                        _ => crate::renderer::composer::control_is_width_neutral_marker(control),
+                    })
+                {
+                    Some(self.reflow_header_footer_bands(
+                        tree,
+                        area_node,
+                        hf_paragraphs,
+                        i,
+                        styles,
+                        area,
+                        &frame,
+                        paragraph_origin_y,
+                        bin_data_content,
+                        is_header,
+                    ))
+                } else {
+                    None
+                };
+            let (para, mut placed_shapes) = match reflowed_with_bands.as_mut() {
+                Some((paragraph, shapes)) => (&*paragraph, Some(shapes)),
+                None => (para, None),
+            };
             if has_table
                 && para.controls.iter().all(|control| {
                     !matches!(control, Control::Table(table) if !table.common.treat_as_char)
@@ -487,26 +531,30 @@ impl LayoutEngine {
                 // Paper-Left/Right 글상자가 본문 여백 밖으로 이동한다.
                 // 꼬리말 틀의 높이는 꼬리말 여백이다(`header_footer_frame`) — `area` 는
                 // 아래 여백까지 품어 아래 정렬 글상자가 쪽 맨 아래로 내려갔다.
-                for (ci, ctrl) in para.controls.iter().enumerate() {
-                    if let Control::Shape(_) = ctrl {
-                        self.layout_shape(
-                            tree,
-                            area_node,
-                            hf_paragraphs,
-                            i,
-                            ci,
-                            if has_tac_shape { hf_shape_section } else { 0 },
-                            styles,
-                            area,
-                            &frame,
-                            &frame,
-                            y_offset,
-                            Alignment::Left,
-                            bin_data_content,
-                            &std::collections::HashMap::new(),
-                            is_header,
-                            None,
-                        );
+                if let Some(shapes) = placed_shapes.as_mut() {
+                    area_node.children.append(shapes);
+                } else {
+                    for (ci, ctrl) in para.controls.iter().enumerate() {
+                        if let Control::Shape(_) = ctrl {
+                            self.layout_shape(
+                                tree,
+                                area_node,
+                                hf_paragraphs,
+                                i,
+                                ci,
+                                if has_tac_shape { hf_shape_section } else { 0 },
+                                styles,
+                                area,
+                                &frame,
+                                &frame,
+                                y_offset,
+                                Alignment::Left,
+                                bin_data_content,
+                                &std::collections::HashMap::new(),
+                                is_header,
+                                None,
+                            );
+                        }
                     }
                 }
                 // 텍스트도 함께 렌더링 (TAC 도형 경로는 위에서 이미 문단을 레이아웃함)
@@ -548,6 +596,10 @@ impl LayoutEngine {
             // 표/그림과 함께 있는 부동 도형도 같은 머리말·꼬리말 문단의 컨트롤이다.
             // 표 전진 뒤의 커서를 새 앵커로 쓰지 않고 원래 문단 원점을 소비한다.
             if has_shape && (has_table || has_picture) {
+                if let Some(shapes) = placed_shapes {
+                    area_node.children.append(shapes);
+                    continue;
+                }
                 for (ci, control) in para.controls.iter().enumerate() {
                     if matches!(control, Control::Shape(shape) if !shape.common().treat_as_char) {
                         self.layout_shape(
@@ -597,6 +649,88 @@ impl LayoutEngine {
         );
         *self.para_border_ranges.borrow_mut() = parent_border_ranges;
         self.border_box_override.set(parent_border_override);
+    }
+
+    /// 자리차지 도형을 원래 문단 원점에 한 번 배치한다. 그 바깥 상자를 재조판
+    /// 줄의 배제 띠로 쓰고, 같은 노드를 기존 그리기 순서에 돌려준다.
+    #[allow(clippy::too_many_arguments)]
+    fn reflow_header_footer_bands(
+        &self,
+        tree: &mut PageLayoutContext,
+        parent: &mut RenderNode,
+        paragraphs: &[Paragraph],
+        index: usize,
+        styles: &ResolvedStyleSet,
+        area: &LayoutRect,
+        frame: &LayoutRect,
+        y: f64,
+        bin_data_content: &[BinDataContent],
+        is_header: bool,
+    ) -> (Paragraph, Vec<RenderNode>) {
+        let mut para = paragraphs[index].clone();
+        let first_node = parent.children.len();
+        let hu = |px| px_to_hwpunit(px, self.dpi);
+        let px = |hu| hwpunit_to_px(hu, self.dpi);
+        let horizontal = hu(area.x)..hu(area.x + area.width);
+        let mut exclusions = Vec::new();
+        for (ci, control) in para.controls.iter().enumerate() {
+            let Control::Shape(shape) = control else {
+                continue;
+            };
+            let first_shape_node = parent.children.len();
+            self.layout_shape(
+                tree,
+                parent,
+                paragraphs,
+                index,
+                ci,
+                0,
+                styles,
+                area,
+                frame,
+                frame,
+                y,
+                Alignment::Left,
+                bin_data_content,
+                &std::collections::HashMap::new(),
+                is_header,
+                None,
+            );
+            if header_footer_topbottom_band(control) {
+                let margin = &shape.common().margin;
+                for node in &parent.children[first_shape_node..] {
+                    let bbox = node.bbox;
+                    if bbox.width <= 0.0
+                        || bbox.height <= 0.0
+                        || bbox.x - px(i32::from(margin.left)) >= area.x + area.width
+                        || bbox.x + bbox.width + px(i32::from(margin.right)) <= area.x
+                    {
+                        continue;
+                    }
+                    exclusions.push(FrameExclusion {
+                        horizontal: horizontal.clone(),
+                        vertical: hu(bbox.y - area.y - px(i32::from(margin.top)))
+                            ..hu(bbox.y + bbox.height - area.y + px(i32::from(margin.bottom))),
+                        policy: FrameExclusionPolicy::BothSides,
+                    });
+                }
+            }
+        }
+        if !exclusions.is_empty() {
+            let origin = hu(y - area.y);
+            let mut text_frame = LayoutFrame::new(horizontal, origin, exclusions);
+            let mut carry = 0_i32;
+            for line in &mut para.line_segs {
+                let original_top = origin
+                    .saturating_add(line.vertical_pos)
+                    .saturating_add(carry);
+                text_frame.top = original_top;
+                text_frame.carve(line.line_height);
+                line.vertical_pos = text_frame.top;
+                carry = carry.saturating_add(text_frame.top.saturating_sub(original_top));
+            }
+        }
+        (para, parent.children.split_off(first_node))
     }
 
     /// 줄을 다시 나눠야 하는 TAC 표는 본문과 같은 상자·줄 소속·점유 결과를 사용한다.
@@ -770,4 +904,21 @@ impl LayoutEngine {
         );
         Some((x, top))
     }
+}
+
+/// 저장 줄을 다시 만드는 문단에서 자리차지 사각형의 바깥 상자가 차지하는 띠.
+fn header_footer_topbottom_band(control: &Control) -> bool {
+    let Control::Shape(shape) = control else {
+        return false;
+    };
+    let common = shape.common();
+    !common.treat_as_char
+        && common.text_wrap == TextWrap::TopAndBottom
+        && common.vert_rel_to == VertRelTo::Para
+        && matches!(common.vert_align, VertAlign::Top | VertAlign::Inside)
+        && matches!(shape.as_ref(), ShapeObject::Rectangle(_))
+        && shape
+            .drawing()
+            .is_some_and(|drawing| drawing.text_box.is_none())
+        && crate::renderer::composer::shape_caption_for_layout(shape).is_none()
 }

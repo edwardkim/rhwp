@@ -1,0 +1,39 @@
+{
+  "cases": [
+    {
+      "input": "tests/fixtures/coanchored_inline_tail/negative-spacing.hwp",
+      "input_sha256": "5ce948af486c1c745153fa21e49479dcba1031bd2eefa97f1a889795b8261f18",
+      "pdf": "pdf/coanchored-inline-tail-negative-spacing/negative-spacing-2020.pdf",
+      "pdf_sha256": "56f20f5abfdce8ccf3555d6e73b487de2c603b9b0d647f04fdc91d6cd3c4763d",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "98165e71-2b17-4025-adb9-24a9855ae24c",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 2,
+          "logical_page_count": null,
+          "input_preprocess": "none",
+          "backend": "hwp-managed-direct-dll-host",
+          "engine_profile": "2020",
+          "font_scope": {
+            "mode": "session0",
+            "status": "verified",
+            "profile_source": "protected_config",
+            "session_id": 0,
+            "mapped_font_count": 2,
+            "registered_font_count": 2,
+            "failed_font_count": 0,
+            "parent_visibility": "verified",
+            "child_visibility": "verified"
+          },
+          "worker_bits": 32,
+          "preprocess": null
+        }
+      }
+    }
+  ]
+}

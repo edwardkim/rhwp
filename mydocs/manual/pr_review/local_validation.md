@@ -49,6 +49,8 @@ Native·fresh WASM 양쪽 모두 전쪽 98% 이상으로 보정하고, 가능한
 해당 문서의 정본 raw 표시값 하락이면 제출을 보류한다. 이 검사는 변경 대상 문서 자체의
 시각 검증과 통합 담당자의 정본 전체 특별 검증을 대체하지 않는다.
 
+Native와 fresh WASM 시각 검증에서 원본 글꼴을 고를 때는
+[시각 검증의 글꼴 선택 순서](../verification/visual_sweep_guide.md#시각-검증의-글꼴-선택-순서)를 따른다.
 보호 문서의 글꼴 조건은 [공식 공급 자료](../../verification/protected-font-supply/README.md),
 실행·재검증은 [공급 재현 절차](../verification/visual_sweep_guide.md#정본-보호-문서의-글꼴-공급-재현)를 따른다.
 보호 시각 비교에는 필요한 기준 글꼴을 공급하고, Rust 회귀에는 아래 최소 글꼴 환경을 사용한다.

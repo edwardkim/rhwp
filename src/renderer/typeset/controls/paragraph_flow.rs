@@ -395,6 +395,15 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
         .flatten();
     let mut para_float_lanes = FloatLaneSet::new();
 
+    let preserve_split_pair_order = engine.profile.get().hwp5_stored_pagination_layout()
+        && !engine.profile.get().session_edited()
+        && controls::order::stored_split_float_pair_closes_host(
+            para,
+            para_idx,
+            measured_tables,
+            st.available_height() - height_before,
+            engine.dpi,
+        );
     let controls::order::ControlPlacementOrder {
         ctrl_order,
         first_placed_table,
@@ -404,6 +413,7 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
         &fmt,
         engine.tac_flow_query(),
         st.base_available_height(),
+        preserve_split_pair_order,
         storage,
     )?;
 
@@ -436,6 +446,7 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
                     ctrl_idx,
                     order_pos,
                     next_para,
+                    paragraphs_all.get(para_idx + 1..).unwrap_or(&[]),
                     measured_tables,
                     has_tac,
                     host_col_w,

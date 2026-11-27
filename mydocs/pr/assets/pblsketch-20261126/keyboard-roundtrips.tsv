@@ -1,0 +1,9 @@
+case	caret	after input	saved HWP	saved HWPX
+group-left	1	["첫K 상자"]	["첫K 상자"]	["첫K 상자"]
+group-right	1	["둘K째 상자"]	["둘K째 상자"]	["둘K째 상자"]
+table-in-box	1	["BKOX"]	["BKOX"]	["BKOX"]
+equation-before-B	2	["BKOX"]	["BKOX"]	["BKOX"]
+group-tail	5	["둘째 상자K"]	—	—
+group-tail-second	5	["둘째 상자K"]	—	—
+body-tail	12	["", " * 새 노래", " - 우주여행", "", " * 미술", " - 빨대 로켓 만들기K", ""]	—	—
+mixed-body-right	12	["", " * 새 노래", " - 우주여행", "", " * 미술", " - 빨대 로켓 만들기K", ""]	—	—

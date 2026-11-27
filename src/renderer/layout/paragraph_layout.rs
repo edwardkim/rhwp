@@ -1064,6 +1064,14 @@ pub(super) fn empty_no_lineseg_paragraph_metrics(
     let line_spacing_type = para_style
         .map(|style| style.line_spacing_type)
         .unwrap_or(LineSpacingType::Percent);
+    // [#8582] 워드 호환 문서의 빈 문단은 끝 표지(영문 슬롯 글꼴)의 배율로 잰 크기다.
+    // typeset·height_measurer 의 같은 보정과 맞춰 그리기 y 가 장부와 갈라지지 않게 한다.
+    let font_size = crate::renderer::composer::word_compat_empty_paragraph_font_size(
+        para,
+        styles,
+        line_spacing_type,
+    )
+    .map_or(font_size, |scaled| font_size.max(scaled));
     let (line_height, line_spacing_px) = crate::renderer::corrected_line_metrics(
         0.0,
         0.0,
@@ -6948,10 +6956,33 @@ impl LayoutEngine {
                 .filter(|run| crate::renderer::composed_run_reserves_font_height(run))
                 .map(|r| r.line_box_font_size(styles))
                 .fold(0.0f64, f64::max);
+            // [#8582] 워드 호환 문서의 글자 줄 한 줄 높이(px). 기준선을 그 3/4 에 둔다.
+            let mut word_line_size = None;
             if let Some(paragraph) = para {
                 max_fs = max_fs.max(crate::renderer::composed_line_reference_font_size(
                     comp_line, paragraph, styles,
                 ));
+                // [#8582] 워드 호환 문서는 줄 글자 크기 자리에 한 줄 높이를 쓴다. 저장 줄 높이를
+                // 쓰지 않고 글자 크기로 줄 상자를 다시 뽑는 경로(칸 문단 등)가 배율을 잃지 않게 한다.
+                let line_end = comp_line.char_start
+                    + comp_line
+                        .runs
+                        .iter()
+                        .map(|run| run.text.chars().count())
+                        .sum::<usize>();
+                if let Some(size) = crate::renderer::composer::word_compat_line_font_size(
+                    paragraph,
+                    styles,
+                    para_style
+                        .map(|style| style.line_spacing_type)
+                        .unwrap_or(LineSpacingType::Percent),
+                    comp_line.char_start..line_end,
+                    // 문단 끝 표지 배율·보정은 줄 상자(저장·재조판 줄 높이)가 이미 담는다.
+                    false,
+                ) {
+                    max_fs = max_fs.max(size);
+                    word_line_size = (size > 0.0).then_some(max_fs);
+                }
             }
             if let Some((_, _, font_size)) = empty_no_lineseg_metrics {
                 max_fs = font_size;
@@ -7259,6 +7290,17 @@ impl LayoutEngine {
                 baseline + max_fs * (0.85 - 0.5)
             } else {
                 baseline
+            };
+            // [#8582] 워드 호환 문서의 글자 줄(개체 없음)은 기준선이 한 줄 높이의 3/4 이다.
+            let baseline = match word_line_size {
+                Some(size)
+                    if line_tac_offsets_for_width.is_empty()
+                        && text_center.is_none()
+                        && empty_no_lineseg_metrics.is_none() =>
+                {
+                    size * 0.75
+                }
+                _ => baseline,
             };
             // 들여쓰기/내어쓰기: 문단 여백은 무조건 적용
             // - 보통(ind=0): 모든 줄 margin_left
@@ -8014,9 +8056,10 @@ impl LayoutEngine {
                 } else {
                     line_spacing_px
                 };
-            if equation_tac_extra_rows > 0 {
-                line_node.bbox.height = line_flow_height;
-                if let RenderNodeType::TextLine(ref mut text_line) = line_node.node_type {
+            if let RenderNodeType::TextLine(text_line) = &mut line_node.node_type {
+                text_line.source_flow = Some((comp_line.char_start, render_line_spacing_px));
+                if equation_tac_extra_rows > 0 {
+                    line_node.bbox.height = line_flow_height;
                     text_line.line_height = line_flow_height;
                 }
             }
@@ -12323,6 +12366,11 @@ impl LayoutEngine {
                         // 셀의 그림·표는 기존 소유 경로가 출력한다. 앞 도형의 가로
                         // 줄 소속만 공유하고, 다른 개체를 여기서 중복 출력하지 않는다.
                         if !empty_line_tac_allowed {
+                            if let Control::Picture(picture) = ctrl {
+                                let (left, _, _, _) =
+                                    tac_picture_outer_margins_px(picture, self.dpi);
+                                tree.defer_picture_left(line_node, tac_ci, img_x + left);
+                            }
                             img_x += tac_w;
                             empty_line_mark_x = img_x;
                             empty_line_logical_end += 1;

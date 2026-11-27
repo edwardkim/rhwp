@@ -163,6 +163,32 @@ impl NativeOtfMetrics {
         &self,
         identity: &super::font_environment::FontProgramIdentity,
     ) -> Option<f64> {
+        let face = self.selected_program_face(identity)?;
+        let glyph = face.glyph_index(' ').filter(|glyph| glyph.0 != 0)?;
+        let advance = face
+            .glyph_hor_advance(glyph)
+            .filter(|&advance| advance > 0)?;
+        let em = face.units_per_em();
+        (em > 0).then(|| f64::from(advance) / f64::from(em))
+    }
+
+    /// 명시적으로 선택한 원본 프로그램의 cmap만 확인한다.
+    pub(crate) fn selected_program_has_glyph(
+        &self,
+        identity: &super::font_environment::FontProgramIdentity,
+        character: char,
+    ) -> Option<bool> {
+        let face = self.selected_program_face(identity)?;
+        Some(
+            face.glyph_index(character)
+                .is_some_and(|glyph| glyph.0 != 0),
+        )
+    }
+
+    fn selected_program_face(
+        &self,
+        identity: &super::font_environment::FontProgramIdentity,
+    ) -> Option<ttf_parser::Face<'_>> {
         let program = self.programs.iter().find(|program| {
             identity.matches(
                 &program.source_digest,
@@ -170,13 +196,7 @@ impl NativeOtfMetrics {
                 program.source_face_index,
             )
         })?;
-        let face = ttf_parser::Face::parse(&program.bytes, program.face_index).ok()?;
-        let glyph = face.glyph_index(' ').filter(|glyph| glyph.0 != 0)?;
-        let advance = face
-            .glyph_hor_advance(glyph)
-            .filter(|&advance| advance > 0)?;
-        let em = face.units_per_em();
-        (em > 0).then(|| f64::from(advance) / f64::from(em))
+        ttf_parser::Face::parse(&program.bytes, program.face_index).ok()
     }
 
     /// 뒤 대체 후보가 아닌 실제 주 프로그램의 cmap을 확인한다.
@@ -288,6 +308,31 @@ impl NativeOtfMetrics {
         self.glyph_metric(character)
             .is_some_and(|(_, faux, _, _)| faux)
     }
+
+    /// 원본 전진을 유지하는 한양중고딕의 검증된 표시용 TrueType이다.
+    pub(crate) fn uses_h2gtrm_faux_bold(&self) -> bool {
+        const H2GTRM_SOURCE_SHA256: [u8; 32] = [
+            0x0b, 0x18, 0xf8, 0x1f, 0x9d, 0x46, 0x3f, 0x6c, 0x49, 0x88, 0x53, 0xaf, 0x3b, 0xda,
+            0xd5, 0x77, 0xe9, 0xc8, 0x81, 0xa5, 0xb5, 0x9d, 0xc7, 0xef, 0x4c, 0x43, 0x28, 0x75,
+            0x88, 0xd6, 0x96, 0xd5,
+        ];
+        // 브라우저용 SFNT는 format 4의 끝 .notdef 항목과 head 체크섬을
+        // 보정한다. 원본과 실제 문자 매핑, 윤곽, hmtx는 같다.
+        const H2GTRM_BROWSER_SHA256: [u8; 32] = [
+            0xfe, 0xbb, 0x15, 0xc4, 0xb7, 0x9d, 0xff, 0xd4, 0x8f, 0x74, 0x24, 0xd6, 0x56, 0xfa,
+            0x84, 0x56, 0x58, 0x65, 0x75, 0x21, 0x6f, 0x00, 0x7a, 0x40, 0xd9, 0x62, 0x80, 0x1d,
+            0x0a, 0x52, 0x80, 0xfd,
+        ];
+        self.programs.first().is_some_and(|program| {
+            program.static_truetype
+                && program.faux_bold
+                && matches!(
+                    program.source_digest,
+                    H2GTRM_SOURCE_SHA256 | H2GTRM_BROWSER_SHA256
+                )
+        })
+    }
+
     pub fn advance_em(&self, character: char) -> Option<f64> {
         self.glyph_metric(character)
             .map(|(advance, _, _, _)| advance)

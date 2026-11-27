@@ -1,6 +1,7 @@
 //! 구역 문단 처리의 place_paragraph_flow 단계. 조건·예약·발행 순서를 유지한다.
 use crate::renderer::typeset::{
-    hwpunit_to_px, is_synthetic_line_seg, native_hwp5_first_footnote_overlap_break_line, notes,
+    controls::wrap_flow, hwpunit_to_px, is_synthetic_line_seg,
+    native_hwp5_first_footnote_overlap_break_line, notes,
     original_hwpx_tac_filled_page_keeps_short_trail, synth_square_wrap_rects, ComposedParagraph,
     Control, Issue2424TypesetProfile, MeasuredTable, PageDef, PageItem, Paragraph,
     ResolvedStyleSet, TypesetEngine, TypesetState,
@@ -290,6 +291,14 @@ impl TypesetEngine {
                     st.advance_column_or_new_page_with_storage(storage)?;
                 }
             }
+            let body_row_after_square = wrap_flow::empty_body_row_after_square(
+                st,
+                para_idx,
+                para,
+                composed.get(para_idx),
+                styles,
+                formatted.spacing_before,
+            );
             if !self.typeset_inline_flow_with_storage(
                 st,
                 para_idx,
@@ -308,6 +317,13 @@ impl TypesetEngine {
                     is_last_in_section,
                     storage,
                 )?;
+            }
+            if let Some((composed, body_box)) = body_row_after_square.filter(|_| {
+                !st.hidden_empty_paras.contains(&para_idx)
+                    && matches!(st.current_items.last(), Some(PageItem::FullParagraph { para_index })
+                        if *para_index == para_idx)
+            }) {
+                st.record_square_blank_body_row(para_idx, composed, body_box, storage)?;
             }
             if let Some(origin) = opening_float_line.filter(|_| {
                 opening_page == (st.pages.len(), st.current_column)

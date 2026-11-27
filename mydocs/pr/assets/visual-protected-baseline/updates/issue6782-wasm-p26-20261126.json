@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "user_approved": true,
+  "accepted_at": "2026-11-26T21:45:42+09:00",
+  "previous_table_sha256": "bbbe4e76122840cd32ea40d1068d29e32700db2a3f9b6152dcebee02657c7193",
+  "table_sha256": "5d5ef7ac531f3d038757636920cb4af0267796f3631a68d2b5fece77291a5e13",
+  "previous_manifest_sha256": "fb70531415c76c9b732278fe8fd4e1bd8f5796c8f3cc1defbf7f09279ca0f8e9",
+  "manifest_sha256": "1079abdeb8972df94f7216dc7944ad22cf0ead764f84beac36a2c1d238d09a7d",
+  "evidence_commit": "41d9768d126e694c26d67830538682bbed04a3d6",
+  "comparison_evidence_commit": "3d862da4355ea9e93f8fb78fafe3663ec6775184",
+  "measured_sources": {
+    "devel": "3fdaa042588cce42006d17e958a7f34d7c205b2e",
+    "candidate": "5c216e8e657309f9bb33928c6a6cd2747df77217"
+  },
+  "reference_pdf": {
+    "path": "pdf/issue6782/mcp-11.0.0.9172/1480000-201900042-chemical-labeling-standards-2020.pdf",
+    "sha256": "26e40ca45d384a083750e6edeb6c36506c2079774a2735edd374c87acc7fbfdd",
+    "bytes": 1226700
+  },
+  "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+  "compat": "2022",
+  "dpi": 96,
+  "radius_px": 2,
+  "compared_rows": 103,
+  "compared_backend": "wasm",
+  "devel_candidate_png_pairs_equal": 103,
+  "decreased_rows": [
+    {
+      "document_id": "b6541b8c57c46090",
+      "key": "chemical",
+      "backend": "wasm",
+      "page": 26,
+      "previous": "100.00",
+      "accepted": "99.99"
+    }
+  ],
+  "source": {
+    "pr": null,
+    "evidence_commit": "41d9768d126e694c26d67830538682bbed04a3d6",
+    "code_commit": "5c216e8e657309f9bb33928c6a6cd2747df77217",
+    "path": "mydocs/pr/assets/issue_6782/mcp-print-20261126/wasm-floor-mac-approved.tsv",
+    "sha256": "bf705fa2b36d8338bffe974ca0c193a9802286781a94b332526bfffea1c59f1d",
+    "metric_column": "silhouette_raw_match_percent",
+    "page_column": "page",
+    "document_filter": null,
+    "condition_evidence": "mydocs/pr/assets/issue_6782/mcp-print-20261126/validation.json",
+    "condition_evidence_sha256": "99d03c3a995de7d6e8126c3f452ac2a9e858f5bc133f5a035ca94aaf4fefe610",
+    "precision": "같은 Mac 글꼴 조건의 devel·후보 전쪽이 일치한 결과에서 승인한 소수 둘째 자리 표시값"
+  }
+}

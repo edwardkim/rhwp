@@ -3091,6 +3091,7 @@ impl Paginator {
                             end_row_height_override: None,
                             start_row_height_override: None,
                             straddle_row_relief: Vec::new(),
+                            remaining_child_row: None,
                             straddle_page_bands: Vec::new(),
                             fragment_row_heights: None,
                             fragment_block_frames: Vec::new(),
@@ -3122,6 +3123,7 @@ impl Paginator {
                     end_row_height_override: None,
                     start_row_height_override: None,
                     straddle_row_relief: Vec::new(),
+                    remaining_child_row: None,
                     straddle_page_bands: Vec::new(),
                     fragment_row_heights: None,
                     fragment_block_frames: Vec::new(),
@@ -3162,7 +3164,8 @@ impl Paginator {
             pages, paragraphs, storage,
         )?;
         let mut assigner =
-            crate::renderer::page_number::PageNumberAssigner::new_for_pages(&events.new_numbers, 1);
+            crate::renderer::page_number::PageNumberAssigner::new_for_pages(&events.new_numbers, 1)
+                .with_parity_adjusts(&events.parity_adjusts);
         // 머리말/꼬리말은 한번 설정되면 이후 페이지에도 유지 (누적).
         // 선택 규칙은 typeset.rs 와 공유한다 (#3234).
         let mut active_hf = crate::renderer::pagination::ActiveHeaderFooter::default();

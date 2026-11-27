@@ -30,11 +30,8 @@ impl DocumentCore {
                 let source_ttf = self
                     .styles
                     .requests_original_truetype(style_id as u32, lang);
-                if !self.styles.allows_native_otf_metrics(style_id as u32, lang) {
-                    continue;
-                }
-                let family = style.font_family_for_lang(lang).to_owned();
-                let primary = family.split(',').next().unwrap_or(&family).trim();
+                let family = style.font_family_for_lang(lang);
+                let primary = family.split(',').next().unwrap_or(family).trim();
                 let needs_ttf = source_ttf
                     && crate::renderer::font_metrics_data::find_metric(
                         primary,
@@ -42,21 +39,30 @@ impl DocumentCore {
                         style.italic,
                     )
                     .is_none();
-                if !style.source_hft_for_lang(lang) && !needs_ttf {
-                    continue;
+                let original_request = self.styles.allows_native_otf_metrics(style_id as u32, lang)
+                    && (style.source_hft_for_lang(lang) || needs_ttf);
+                // 검증용 TrueType 공급은 기존 HFT 및 자연 폭 요청과 별도다.
+                let tracking_request = style.requests_h2gtrm_bold_tracking(lang);
+                for source_ttf in [
+                    original_request.then_some(source_ttf),
+                    tracking_request.then_some(true),
+                ]
+                .into_iter()
+                .flatten()
+                {
+                    requests
+                        .entry((family.to_owned(), style.bold, style.italic, source_ttf))
+                        .or_insert_with(|| NativePuaFontRequest {
+                            paint_families: crate::renderer::render_font_family_names_for_weight(
+                                family, style.bold,
+                            ),
+                            family: family.to_owned(),
+                            bold: style.bold,
+                            italic: style.italic,
+                            source_ttf,
+                            literal_figure_space: false,
+                        });
                 }
-                requests
-                    .entry((family.clone(), style.bold, style.italic, source_ttf))
-                    .or_insert(NativePuaFontRequest {
-                        paint_families: crate::renderer::render_font_family_names_for_weight(
-                            &family, style.bold,
-                        ),
-                        family,
-                        bold: style.bold,
-                        italic: style.italic,
-                        source_ttf,
-                        literal_figure_space: false,
-                    });
             }
         }
         requests.into_values().collect()

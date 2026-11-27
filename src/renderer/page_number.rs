@@ -18,6 +18,8 @@ use crate::renderer::pagination::{PageContent, PageItem};
 /// 쪽번호를 1회성 NewNumber 적용 + 단조 증가로 계산하는 어시스턴트.
 pub(crate) struct PageNumberAssigner<'a> {
     new_page_numbers: &'a [(usize, u16)],
+    /// 홀/짝수 조정(`pgct`) 이벤트 — (구역 내 쪽 순번, 시작 쪽 홀짝).
+    parity_adjusts: &'a [(usize, crate::model::control::PageStartsOn)],
     consumed: HashSet<usize>,
     counter: u32,
     /// production은 배치 후 확정된 쪽 이벤트를 사용한다.
@@ -36,6 +38,7 @@ impl<'a> PageNumberAssigner<'a> {
     pub fn new(new_page_numbers: &'a [(usize, u16)], initial: u32) -> Self {
         Self {
             new_page_numbers,
+            parity_adjusts: &[],
             consumed: HashSet::new(),
             counter: initial,
             targets_are_pages: false,
@@ -50,6 +53,15 @@ impl<'a> PageNumberAssigner<'a> {
         let mut assigner = Self::new(new_page_numbers, initial);
         assigner.targets_are_pages = true;
         assigner
+    }
+
+    /// 홀/짝수 조정 이벤트를 함께 쓴다(배치 후 쪽 순번 기준).
+    pub fn with_parity_adjusts(
+        mut self,
+        parity_adjusts: &'a [(usize, crate::model::control::PageStartsOn)],
+    ) -> Self {
+        self.parity_adjusts = parity_adjusts;
+        self
     }
 
     /// 페이지에 쪽번호를 할당하고, 다음 페이지를 위해 카운터를 1 증가시킨다.
@@ -83,6 +95,26 @@ impl<'a> PageNumberAssigner<'a> {
                 storage.insert_set(&mut self.consumed, idx)?;
                 self.numbering_started = true;
                 self.last_restarted = true;
+            }
+        }
+        // [#8482] 홀/짝수 조정(HWP5 `pgct`, HWP3 제어 문자 21 종류 0): 이 쪽의 번호가 지정한
+        // 홀짝과 다르면 번호를 하나 건너뛴다. 빈 쪽을 끼우지 않는다 — 한/글은 쪽 수를 그대로
+        // 두고 번호만 넘긴다(독일의 법령체계 264쪽: 제3장 시작 쪽 140 → 141, 쪽 수 같음).
+        // 같은 쪽의 새 번호 지정 뒤에 본다.
+        if self.targets_are_pages {
+            use crate::model::control::PageStartsOn;
+            let want = self
+                .parity_adjusts
+                .iter()
+                .rev()
+                .find(|(page, _)| *page == self.page_ordinal)
+                .map(|(_, want)| *want);
+            let odd = self.counter % 2 == 1;
+            if matches!(
+                (want, odd),
+                (Some(PageStartsOn::Odd), false) | (Some(PageStartsOn::Even), true)
+            ) {
+                self.counter += 1;
             }
         }
         let assigned = self.counter;
@@ -135,6 +167,8 @@ impl<'a> PageNumberAssigner<'a> {
 #[derive(Default)]
 pub(crate) struct PageControlEvents {
     pub new_numbers: Vec<(usize, u16)>,
+    /// 홀/짝수 조정 — (쪽 순번, 시작 쪽 홀짝).
+    pub parity_adjusts: Vec<(usize, crate::model::control::PageStartsOn)>,
     pub hides: Vec<(usize, crate::model::control::PageHide)>,
     pub positions: Vec<(usize, crate::model::control::PageNumberPos)>,
 }
@@ -176,6 +210,7 @@ impl PageControlEvents {
                     control,
                     Control::PageHide(_)
                         | Control::NewNumber(_)
+                        | Control::PageNumCtrl(_)
                         | Control::PageNumberPos(_)
                         | Control::Table(_)
                 ) {
@@ -220,6 +255,9 @@ impl PageControlEvents {
             )?,
             Control::NewNumber(number) if number.number_type == AutoNumberType::Page => {
                 storage.push(&mut self.new_numbers, (page, number.number))?;
+            }
+            Control::PageNumCtrl(ctrl) => {
+                storage.push(&mut self.parity_adjusts, (page, ctrl.page_starts_on))?;
             }
             // #6206: 셀 안 metadata는 외부 표의 첫 배치 쪽에 적용하는 기존 계약 유지.
             Control::Table(table) => {
@@ -517,6 +555,22 @@ mod tests {
         // page 4: para 7 — 12
         let p4 = mk_page(vec![PageItem::FullParagraph { para_index: 7 }]);
         assert_eq!(a.assign(&p4), 12);
+
+        // [#8482] 홀/짝수 조정은 새 번호를 적용한 뒤 그 쪽 번호의 홀짝이 다르면 하나만 건너뛴다.
+        // 쪽 순번 0: 13 + 홀수 → 그대로. 2: 15 + 홀수 → 그대로. 3: 16 + 홀수 → 17.
+        // 5: 19 + 짝수 → 20. 6: 양쪽 → 조정 없음. 쪽을 끼우지 않으므로 순번은 하나씩만 는다.
+        use crate::model::control::PageStartsOn;
+        let nns = vec![(0usize, 13u16)];
+        let parity = vec![
+            (0usize, PageStartsOn::Odd),
+            (2, PageStartsOn::Odd),
+            (3, PageStartsOn::Odd),
+            (5, PageStartsOn::Even),
+            (6, PageStartsOn::Both),
+        ];
+        let mut a = PageNumberAssigner::new_for_pages(&nns, 1).with_parity_adjusts(&parity);
+        let got: Vec<u32> = (0..8).map(|_| a.assign(&p4)).collect();
+        assert_eq!(got, vec![13, 14, 15, 17, 18, 20, 21, 22]);
     }
 
     #[test]
@@ -577,6 +631,7 @@ mod tests {
             end_row_height_override: None,
             start_row_height_override: None,
             straddle_row_relief: Vec::new(),
+            remaining_child_row: None,
             straddle_page_bands: Vec::new(),
             fragment_row_heights: None,
             fragment_block_frames: Vec::new(),
@@ -599,6 +654,7 @@ mod tests {
             end_row_height_override: None,
             start_row_height_override: None,
             straddle_row_relief: Vec::new(),
+            remaining_child_row: None,
             straddle_page_bands: Vec::new(),
             fragment_row_heights: None,
             fragment_block_frames: Vec::new(),

@@ -7,6 +7,7 @@ use quick_xml::events::Event;
 use quick_xml::Reader;
 
 use crate::model::document::{DocInfo, DocProperties, RawRecord};
+use crate::model::document_compatibility::CompatibilityTarget;
 use crate::model::style::*;
 use crate::parser::tags;
 
@@ -255,6 +256,22 @@ pub(super) fn parse_hwpx_header_with_plain_margin_units(
     // compatibleDocument/docOption/trackchageConfig 등은 본문과 무관한 전역
     // 설정이라 헤더 재생성 시 splice 로 무손실 복원한다.
     doc_info.hwpx_head_tail = extract_head_tail(xml);
+    let target = match doc_info.hwpx_head_tail.as_deref() {
+        Some(tail) => parse_compatibility_target(tail, 0),
+        None => parse_compatibility_target(xml, 1),
+    };
+    let track_change = doc_info
+        .extra_records
+        .iter()
+        .position(|r| r.tag_id == tags::HWPTAG_TRACKCHANGE);
+    if target.is_some() || track_change.is_some() {
+        // linkinfo만 있는 구형 헤더도 한컴의 기본 호환 레코드 두 개를 생성한다.
+        let before = track_change.unwrap_or(doc_info.extra_records.len());
+        target
+            .unwrap_or_default()
+            .preset()
+            .insert_hwpx_records(&mut doc_info, before);
+    }
     doc_info.memo_properties_xml = extract_memo_properties(xml);
 
     Ok((doc_info, doc_props))
@@ -289,6 +306,31 @@ fn extract_head_tail(xml: &str) -> Option<String> {
     let start = xml.find(REF_END)? + REF_END.len();
     let end = xml[start..].find(HEAD_END)? + start;
     Some(xml[start..end].to_string())
+}
+
+/// `<head>`의 직접 자식만 읽는다. 다른 요소의 문자열·주석·하위 동명 요소는 무관하다.
+fn parse_compatibility_target(xml: &str, parent_depth: usize) -> Option<CompatibilityTarget> {
+    let mut reader = Reader::from_str(xml);
+    let mut depth = 0usize;
+    loop {
+        let event = reader.read_event().ok()?;
+        match &event {
+            Event::Start(node) | Event::Empty(node)
+                if depth == parent_depth
+                    && local_name(node.name().as_ref()) == b"compatibleDocument" =>
+            {
+                return node
+                    .attributes()
+                    .flatten()
+                    .find(|a| a.key.as_ref() == "targetProgram")
+                    .and_then(|a| CompatibilityTarget::from_xml(&attr_str(&a)));
+            }
+            Event::Start(_) => depth += 1,
+            Event::End(_) => depth = depth.saturating_sub(1),
+            Event::Eof => return None,
+            _ => {}
+        }
+    }
 }
 
 fn parse_doc_option_linkinfo(e: &quick_xml::events::BytesStart, doc_info: &mut DocInfo) {
@@ -339,17 +381,6 @@ fn parse_doc_option_linkinfo(e: &quick_xml::events::BytesStart, doc_info: &mut D
         tag_id: tags::HWPTAG_FORBIDDEN_CHAR,
         level: 1,
         data: vec![0; 16],
-    });
-
-    doc_info.extra_records.push(RawRecord {
-        tag_id: tags::HWPTAG_COMPATIBLE_DOCUMENT,
-        level: 0,
-        data: vec![0; 4],
-    });
-    doc_info.extra_records.push(RawRecord {
-        tag_id: tags::HWPTAG_LAYOUT_COMPATIBILITY,
-        level: 1,
-        data: vec![0; 20],
     });
 
     let mut track_change = vec![0; 1032];

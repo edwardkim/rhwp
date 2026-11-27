@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "created_at": "2026-11-08T22:37:56.286882+09:00",
-  "baseline_kind": "수용된 최종 전쪽 검증의 상승분을 반영한 보호 하한. CI·병합 상태는 별도 기록한다.",
+  "baseline_kind": "수용된 전쪽 검증과 개별 승인 조정을 반영한 보호 하한. CI·병합 상태는 별도 기록한다.",
   "table": "final.tsv",
-  "table_sha256": "be050f801ed2f2152017357249f4b7c1068dc83c50347266d16599d61a1f4a5c",
+  "table_sha256": "8141acb297ce2f39148f9014e463986431d266120629e8f368665e5917138f9d",
   "row_count": 4046,
   "document_count": 23,
   "dataset_count": 46,
@@ -48,8 +48,25 @@
         "radius_px": 2
       },
       "page_count": 4,
-      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
+      "accepted_at": "2026-11-27T07:27:30+09:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "4bfe028b7b8cb670360dc7b86ad7e78d00c60492",
+        "code_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+        "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/conditions.json",
+        "condition_evidence_sha256": "c5686a602a77e16322cb05fe20a9137773f46a540647b44f33ea9c13dddcfbe1",
+        "path": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/page-floors.tsv",
+        "sha256": "c89d7bef4170053f825870f2c7b19014c13c54d8e81e61c7467e0b9076fe2559",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": {
+          "document_id": "0b7e7d0538284271",
+          "backend": "native"
+        },
+        "precision": "기존 공식 하한과 교차 OS 두 자리 표시값의 최솟값"
+      },
+      "minimum_display": "99.98",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
         "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
@@ -60,20 +77,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
         "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "100.00",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
-        "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/native/yeongwol.tsv",
-        "sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -127,6 +130,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+          "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+          "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/yeongwol.tsv",
+          "sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+          "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -154,8 +170,25 @@
         "radius_px": 2
       },
       "page_count": 4,
-      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
+      "accepted_at": "2026-11-27T07:27:30+09:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "4bfe028b7b8cb670360dc7b86ad7e78d00c60492",
+        "code_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+        "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/conditions.json",
+        "condition_evidence_sha256": "c5686a602a77e16322cb05fe20a9137773f46a540647b44f33ea9c13dddcfbe1",
+        "path": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/page-floors.tsv",
+        "sha256": "c89d7bef4170053f825870f2c7b19014c13c54d8e81e61c7467e0b9076fe2559",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": {
+          "document_id": "0b7e7d0538284271",
+          "backend": "wasm"
+        },
+        "precision": "기존 공식 하한과 교차 OS 두 자리 표시값의 최솟값"
+      },
+      "minimum_display": "99.95",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
         "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
@@ -166,20 +199,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
         "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "100.00",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
-        "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/yeongwol.tsv",
-        "sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -232,6 +251,19 @@
           "document_filter": null,
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+          "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+          "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/yeongwol.tsv",
+          "sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+          "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
@@ -896,33 +928,36 @@
         "radius_px": 2
       },
       "page_count": 64,
-      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
+      "accepted_at": "2026-11-27T07:27:30+09:00",
       "source": {
         "pr": null,
-        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
-        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
-        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/sample16-hwpx.tsv",
-        "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+        "evidence_commit": "4bfe028b7b8cb670360dc7b86ad7e78d00c60492",
+        "code_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+        "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/conditions.json",
+        "condition_evidence_sha256": "c5686a602a77e16322cb05fe20a9137773f46a540647b44f33ea9c13dddcfbe1",
+        "path": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/page-floors.tsv",
+        "sha256": "c89d7bef4170053f825870f2c7b19014c13c54d8e81e61c7467e0b9076fe2559",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
-        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
+        "document_filter": {
+          "document_id": "43c0a207f6daa0bb",
+          "backend": "native"
+        },
+        "precision": "기존 공식 하한과 교차 OS 두 자리 표시값의 최솟값"
       },
-      "minimum_display": "99.99",
+      "minimum_display": "99.43",
       "previous_source": {
-        "pr": null,
-        "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
-        "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/native/sample16-hwpx.tsv",
-        "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+        "pr": 9306,
+        "evidence_commit": "ffd25475b61f59928403d8f4e8ef0ebdba32c587",
+        "code_commit": "a782a31267e70ad5f3c0188e7a997de0c0dfb676",
+        "path": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/sample16-hwpx-native-floor.tsv",
+        "sha256": "eed6745a765410df0f7f11ca6d942802b29d493acdccb807dff8a32400ecfea4",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
+        "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
+        "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
+        "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
       },
       "source_history": [
         {
@@ -975,6 +1010,32 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+          "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+          "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/sample16-hwpx.tsv",
+          "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+          "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": 9306,
+          "evidence_commit": "ffd25475b61f59928403d8f4e8ef0ebdba32c587",
+          "code_commit": "a782a31267e70ad5f3c0188e7a997de0c0dfb676",
+          "path": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/sample16-hwpx-native-floor.tsv",
+          "sha256": "eed6745a765410df0f7f11ca6d942802b29d493acdccb807dff8a32400ecfea4",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
+          "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
+          "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
         }
       ]
     },
@@ -1002,8 +1063,22 @@
         "radius_px": 2
       },
       "page_count": 64,
-      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
+      "accepted_at": "2026-11-27T01:38:48+09:00",
       "source": {
+        "pr": 9306,
+        "evidence_commit": "ffd25475b61f59928403d8f4e8ef0ebdba32c587",
+        "code_commit": "a782a31267e70ad5f3c0188e7a997de0c0dfb676",
+        "path": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/sample16-hwpx-wasm-floor.tsv",
+        "sha256": "eed6745a765410df0f7f11ca6d942802b29d493acdccb807dff8a32400ecfea4",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
+        "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
+        "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
+      },
+      "minimum_display": "99.97",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
         "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
@@ -1014,20 +1089,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
         "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "99.99",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
-        "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/sample16-hwpx.tsv",
-        "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -1081,6 +1142,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+          "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+          "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/sample16-hwpx.tsv",
+          "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+          "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -1108,33 +1182,36 @@
         "radius_px": 2
       },
       "page_count": 64,
-      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
+      "accepted_at": "2026-11-27T07:27:30+09:00",
       "source": {
         "pr": null,
-        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
-        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
-        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/sample16-hwp2022.tsv",
-        "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+        "evidence_commit": "4bfe028b7b8cb670360dc7b86ad7e78d00c60492",
+        "code_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+        "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/conditions.json",
+        "condition_evidence_sha256": "c5686a602a77e16322cb05fe20a9137773f46a540647b44f33ea9c13dddcfbe1",
+        "path": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/page-floors.tsv",
+        "sha256": "c89d7bef4170053f825870f2c7b19014c13c54d8e81e61c7467e0b9076fe2559",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
-        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
+        "document_filter": {
+          "document_id": "4bac5a5d1702df5f",
+          "backend": "native"
+        },
+        "precision": "기존 공식 하한과 교차 OS 두 자리 표시값의 최솟값"
       },
-      "minimum_display": "100.00",
+      "minimum_display": "99.44",
       "previous_source": {
-        "pr": null,
-        "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
-        "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/native/sample16-hwp2022.tsv",
-        "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+        "pr": 9306,
+        "evidence_commit": "ffd25475b61f59928403d8f4e8ef0ebdba32c587",
+        "code_commit": "a782a31267e70ad5f3c0188e7a997de0c0dfb676",
+        "path": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/sample16-hwp2022-native-floor.tsv",
+        "sha256": "19fe25c667fc9bbb44a3338cad7ff1e1e9e028a32a319982e5c58ca45d0a6513",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
+        "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
+        "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
+        "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
       },
       "source_history": [
         {
@@ -1187,6 +1264,32 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+          "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+          "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/sample16-hwp2022.tsv",
+          "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+          "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": 9306,
+          "evidence_commit": "ffd25475b61f59928403d8f4e8ef0ebdba32c587",
+          "code_commit": "a782a31267e70ad5f3c0188e7a997de0c0dfb676",
+          "path": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/sample16-hwp2022-native-floor.tsv",
+          "sha256": "19fe25c667fc9bbb44a3338cad7ff1e1e9e028a32a319982e5c58ca45d0a6513",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
+          "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
+          "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
         }
       ]
     },
@@ -1214,8 +1317,22 @@
         "radius_px": 2
       },
       "page_count": 64,
-      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
+      "accepted_at": "2026-11-27T01:38:48+09:00",
       "source": {
+        "pr": 9306,
+        "evidence_commit": "ffd25475b61f59928403d8f4e8ef0ebdba32c587",
+        "code_commit": "a782a31267e70ad5f3c0188e7a997de0c0dfb676",
+        "path": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/sample16-hwp2022-wasm-floor.tsv",
+        "sha256": "a98bfe0b8341d29847527beb1d2e8a432662813d16822a35a1d6965a56c541f4",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
+        "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
+        "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
+      },
+      "minimum_display": "99.97",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
         "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
@@ -1226,20 +1343,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
         "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "100.00",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
-        "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/sample16-hwp2022.tsv",
-        "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -1292,6 +1395,19 @@
           "document_filter": null,
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+          "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+          "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/sample16-hwp2022.tsv",
+          "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+          "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
@@ -1956,8 +2072,25 @@
         "radius_px": 2
       },
       "page_count": 4,
-      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
+      "accepted_at": "2026-11-27T07:27:30+09:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "4bfe028b7b8cb670360dc7b86ad7e78d00c60492",
+        "code_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+        "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/conditions.json",
+        "condition_evidence_sha256": "c5686a602a77e16322cb05fe20a9137773f46a540647b44f33ea9c13dddcfbe1",
+        "path": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/page-floors.tsv",
+        "sha256": "c89d7bef4170053f825870f2c7b19014c13c54d8e81e61c7467e0b9076fe2559",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": {
+          "document_id": "71f98206e45c354a",
+          "backend": "native"
+        },
+        "precision": "기존 공식 하한과 교차 OS 두 자리 표시값의 최솟값"
+      },
+      "minimum_display": "99.77",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
         "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
@@ -1968,20 +2101,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
         "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "99.99",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
-        "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/native/issue8040-insert.tsv",
-        "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -2034,6 +2153,19 @@
           "document_filter": null,
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+          "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+          "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/issue8040-insert.tsv",
+          "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+          "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
@@ -2168,32 +2300,35 @@
         "radius_px": 2
       },
       "page_count": 17,
-      "accepted_at": "2026-11-24T18:00:30.260001+09:00",
+      "accepted_at": "2026-11-27T07:27:30+09:00",
       "source": {
         "pr": null,
-        "evidence_commit": "b5cca33aabe090f0b38172bcb10f82d404cd2efd",
-        "code_commit": "24ec51a6f9186d509d3f3285faa6f9f6e067af5e",
-        "path": "mydocs/pr/assets/issue_9326/20261124/protected/nested-native-candidate.tsv",
-        "sha256": "ecb048af51ad821884726d567a4f747feb05a3965bf51b2f49b9777e953ed0d1",
+        "evidence_commit": "4bfe028b7b8cb670360dc7b86ad7e78d00c60492",
+        "code_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+        "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/conditions.json",
+        "condition_evidence_sha256": "c5686a602a77e16322cb05fe20a9137773f46a540647b44f33ea9c13dddcfbe1",
+        "path": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/page-floors.tsv",
+        "sha256": "c89d7bef4170053f825870f2c7b19014c13c54d8e81e61c7467e0b9076fe2559",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9326/20261124/protected/README.md",
-        "condition_evidence_sha256": "6fb7cc795632cf3560c48204e6589a85c2c50042b25fac9be77c85fa122ca736",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
+        "document_filter": {
+          "document_id": "78e1720edfe2277d",
+          "backend": "native"
+        },
+        "precision": "기존 공식 하한과 교차 OS 두 자리 표시값의 최솟값"
       },
-      "minimum_display": "100.00",
+      "minimum_display": "99.64",
       "previous_source": {
         "pr": null,
-        "evidence_commit": "3495ecbb2806aa87fc1a781a8d6c1517edd47b0f",
-        "code_commit": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c",
-        "path": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/native/nested.tsv",
-        "sha256": "065e29b177f9d5d2f16bfe073d878c98cc03399681ae727daf0a15a845b1f592",
+        "evidence_commit": "882451d176d43e9571f5ba3bdaf0f4be555bfeea",
+        "code_commit": "8355876d60cb96ff9ec36104202aef208aec7df1",
+        "path": "mydocs/pr/assets/planet6897_20261125/protected-native-mac/nested/silhouette.tsv",
+        "sha256": "bbc2d3d1346b20d67d12fcb4e56839581437e41d50d160c5f0f198116c5aa487",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/validation.json",
-        "condition_evidence_sha256": "067ea7e42ff4b33b1069645fc9da12414a42b7c2b64e844da028bf54b287e401",
+        "condition_evidence": "mydocs/pr/assets/planet6897_20261125/protected-native-mac/validation.json",
+        "condition_evidence_sha256": "111ca6ee6a6a95e2601bc8673a3e5fb88ee55351dbceedb05b8974a1e1c2802c",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -2285,6 +2420,32 @@
           "document_filter": null,
           "condition_evidence": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/validation.json",
           "condition_evidence_sha256": "067ea7e42ff4b33b1069645fc9da12414a42b7c2b64e844da028bf54b287e401",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "b5cca33aabe090f0b38172bcb10f82d404cd2efd",
+          "code_commit": "24ec51a6f9186d509d3f3285faa6f9f6e067af5e",
+          "path": "mydocs/pr/assets/issue_9326/20261124/protected/nested-native-candidate.tsv",
+          "sha256": "ecb048af51ad821884726d567a4f747feb05a3965bf51b2f49b9777e953ed0d1",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9326/20261124/protected/README.md",
+          "condition_evidence_sha256": "6fb7cc795632cf3560c48204e6589a85c2c50042b25fac9be77c85fa122ca736",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "882451d176d43e9571f5ba3bdaf0f4be555bfeea",
+          "code_commit": "8355876d60cb96ff9ec36104202aef208aec7df1",
+          "path": "mydocs/pr/assets/planet6897_20261125/protected-native-mac/nested/silhouette.tsv",
+          "sha256": "bbc2d3d1346b20d67d12fcb4e56839581437e41d50d160c5f0f198116c5aa487",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/planet6897_20261125/protected-native-mac/validation.json",
+          "condition_evidence_sha256": "111ca6ee6a6a95e2601bc8673a3e5fb88ee55351dbceedb05b8974a1e1c2802c",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
@@ -2458,33 +2619,36 @@
         "radius_px": 2
       },
       "page_count": 64,
-      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
+      "accepted_at": "2026-11-27T07:27:30+09:00",
       "source": {
         "pr": null,
-        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
-        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
-        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/sample16-hwp2024.tsv",
-        "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+        "evidence_commit": "4bfe028b7b8cb670360dc7b86ad7e78d00c60492",
+        "code_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+        "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/conditions.json",
+        "condition_evidence_sha256": "c5686a602a77e16322cb05fe20a9137773f46a540647b44f33ea9c13dddcfbe1",
+        "path": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/page-floors.tsv",
+        "sha256": "c89d7bef4170053f825870f2c7b19014c13c54d8e81e61c7467e0b9076fe2559",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
-        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
+        "document_filter": {
+          "document_id": "7df4af8174abd82a",
+          "backend": "native"
+        },
+        "precision": "기존 공식 하한과 교차 OS 두 자리 표시값의 최솟값"
       },
-      "minimum_display": "99.99",
+      "minimum_display": "99.43",
       "previous_source": {
-        "pr": null,
-        "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
-        "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/native/sample16-hwp2024.tsv",
-        "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+        "pr": 9306,
+        "evidence_commit": "ffd25475b61f59928403d8f4e8ef0ebdba32c587",
+        "code_commit": "a782a31267e70ad5f3c0188e7a997de0c0dfb676",
+        "path": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/sample16-hwp2024-native-floor.tsv",
+        "sha256": "eed6745a765410df0f7f11ca6d942802b29d493acdccb807dff8a32400ecfea4",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
+        "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
+        "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
+        "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
       },
       "source_history": [
         {
@@ -2537,6 +2701,32 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+          "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+          "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/sample16-hwp2024.tsv",
+          "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+          "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": 9306,
+          "evidence_commit": "ffd25475b61f59928403d8f4e8ef0ebdba32c587",
+          "code_commit": "a782a31267e70ad5f3c0188e7a997de0c0dfb676",
+          "path": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/sample16-hwp2024-native-floor.tsv",
+          "sha256": "eed6745a765410df0f7f11ca6d942802b29d493acdccb807dff8a32400ecfea4",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
+          "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
+          "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
         }
       ]
     },
@@ -2564,8 +2754,22 @@
         "radius_px": 2
       },
       "page_count": 64,
-      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
+      "accepted_at": "2026-11-27T01:38:48+09:00",
       "source": {
+        "pr": 9306,
+        "evidence_commit": "ffd25475b61f59928403d8f4e8ef0ebdba32c587",
+        "code_commit": "a782a31267e70ad5f3c0188e7a997de0c0dfb676",
+        "path": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/sample16-hwp2024-wasm-floor.tsv",
+        "sha256": "eed6745a765410df0f7f11ca6d942802b29d493acdccb807dff8a32400ecfea4",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
+        "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
+        "precision": "같은 Mac 글꼴 조건의 전쪽 비교에서 확인한 6쪽의 승인 표시값과 나머지 쪽의 기존 하한"
+      },
+      "minimum_display": "99.97",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
         "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
@@ -2576,20 +2780,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
         "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "99.99",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
-        "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/sample16-hwp2024.tsv",
-        "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -2642,6 +2832,19 @@
           "document_filter": null,
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+          "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+          "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/sample16-hwp2024.tsv",
+          "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+          "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
@@ -3120,8 +3323,25 @@
         "radius_px": 2
       },
       "page_count": 763,
-      "accepted_at": "2026-11-21T16:41:02.609001+09:00",
+      "accepted_at": "2026-11-27T07:27:30+09:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "4bfe028b7b8cb670360dc7b86ad7e78d00c60492",
+        "code_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+        "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/conditions.json",
+        "condition_evidence_sha256": "c5686a602a77e16322cb05fe20a9137773f46a540647b44f33ea9c13dddcfbe1",
+        "path": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/page-floors.tsv",
+        "sha256": "c89d7bef4170053f825870f2c7b19014c13c54d8e81e61c7467e0b9076fe2559",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": {
+          "document_id": "b1a9055c4c7e6f09",
+          "backend": "native"
+        },
+        "precision": "기존 공식 하한과 교차 OS 두 자리 표시값의 최솟값"
+      },
+      "minimum_display": "99.56",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "3495ecbb2806aa87fc1a781a8d6c1517edd47b0f",
         "code_commit": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c",
@@ -3132,20 +3352,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/validation.json",
         "condition_evidence_sha256": "067ea7e42ff4b33b1069645fc9da12414a42b7c2b64e844da028bf54b287e401",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "99.57",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
-        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
-        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/sample10.tsv",
-        "sha256": "248740c943667ee2121afdfc125ed838ae7e196e1c90265284613afc48f508bd",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
-        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -3212,6 +3418,19 @@
           "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
           "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "3495ecbb2806aa87fc1a781a8d6c1517edd47b0f",
+          "code_commit": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c",
+          "path": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/native/sample10.tsv",
+          "sha256": "248740c943667ee2121afdfc125ed838ae7e196e1c90265284613afc48f508bd",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/validation.json",
+          "condition_evidence_sha256": "067ea7e42ff4b33b1069645fc9da12414a42b7c2b64e844da028bf54b287e401",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -3239,8 +3458,25 @@
         "radius_px": 2
       },
       "page_count": 763,
-      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
+      "accepted_at": "2026-11-27T07:27:30+09:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "4bfe028b7b8cb670360dc7b86ad7e78d00c60492",
+        "code_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+        "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/conditions.json",
+        "condition_evidence_sha256": "c5686a602a77e16322cb05fe20a9137773f46a540647b44f33ea9c13dddcfbe1",
+        "path": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/page-floors.tsv",
+        "sha256": "c89d7bef4170053f825870f2c7b19014c13c54d8e81e61c7467e0b9076fe2559",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": {
+          "document_id": "b1a9055c4c7e6f09",
+          "backend": "wasm"
+        },
+        "precision": "기존 공식 하한과 교차 OS 두 자리 표시값의 최솟값"
+      },
+      "minimum_display": "99.57",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
         "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
@@ -3251,20 +3487,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
         "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "99.57",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
-        "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/sample10.tsv",
-        "sha256": "f0ff5f22ed2dfb65f1063f73a3b80fad44ba4f331d714a4acc16657628498de5",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -3318,6 +3540,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+          "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+          "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/sample10.tsv",
+          "sha256": "f0ff5f22ed2dfb65f1063f73a3b80fad44ba4f331d714a4acc16657628498de5",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+          "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -3345,8 +3580,25 @@
         "radius_px": 2
       },
       "page_count": 4,
-      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
+      "accepted_at": "2026-11-27T07:27:30+09:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "4bfe028b7b8cb670360dc7b86ad7e78d00c60492",
+        "code_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+        "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/conditions.json",
+        "condition_evidence_sha256": "c5686a602a77e16322cb05fe20a9137773f46a540647b44f33ea9c13dddcfbe1",
+        "path": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/page-floors.tsv",
+        "sha256": "c89d7bef4170053f825870f2c7b19014c13c54d8e81e61c7467e0b9076fe2559",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": {
+          "document_id": "ccd0cd0b7e76fe2f",
+          "backend": "native"
+        },
+        "precision": "기존 공식 하한과 교차 OS 두 자리 표시값의 최솟값"
+      },
+      "minimum_display": "99.77",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
         "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
@@ -3357,20 +3609,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
         "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "99.99",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
-        "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/native/issue8040-insert-delete.tsv",
-        "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -3423,6 +3661,19 @@
           "document_filter": null,
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+          "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+          "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/issue8040-insert-delete.tsv",
+          "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+          "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
@@ -3958,7 +4209,7 @@
       ]
     },
     {
-      "document_id": "870eabd0a7d9534c",
+      "document_id": "b6541b8c57c46090",
       "logical_key": "chemical",
       "backend": "native",
       "input": {
@@ -3967,13 +4218,13 @@
         "bytes": 193536
       },
       "reference_pdf": {
-        "path": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
-        "sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
-        "bytes": 1245068
+        "path": "pdf/issue6782/mcp-11.0.0.9172/1480000-201900042-chemical-labeling-standards-2020.pdf",
+        "sha256": "26e40ca45d384a083750e6edeb6c36506c2079774a2735edd374c87acc7fbfdd",
+        "bytes": 1226700
       },
       "identity": {
         "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
-        "reference_pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+        "reference_pdf_sha256": "26e40ca45d384a083750e6edeb6c36506c2079774a2735edd374c87acc7fbfdd",
         "compat": "2022",
         "dpi": 96,
         "profile": "print",
@@ -3981,21 +4232,24 @@
         "radius_px": 2
       },
       "page_count": 103,
-      "accepted_at": "2026-11-23T21:57:49.920882+09:00",
+      "accepted_at": "2026-11-27T07:27:30+09:00",
       "source": {
         "pr": null,
-        "evidence_commit": "dc5368b3932bd39293a3e0067d809ec90ce641b1",
-        "code_commit": "330af8608ac741b14041d3e372284a6111346b9c",
-        "condition_evidence": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected-validation.json",
-        "condition_evidence_sha256": "3fc96e934c4918ae75ea10331b901e6ffc1c70d076c4fde80fdc8a9365cfe04b",
-        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/chemical/native/silhouette.tsv",
-        "sha256": "d55cc0d20d9cf48ab7af6139c63f9c7ce9d90ff2cd4d0c668a810fccb2ae63f3",
+        "evidence_commit": "4bfe028b7b8cb670360dc7b86ad7e78d00c60492",
+        "code_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+        "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/conditions.json",
+        "condition_evidence_sha256": "c5686a602a77e16322cb05fe20a9137773f46a540647b44f33ea9c13dddcfbe1",
+        "path": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/page-floors.tsv",
+        "sha256": "c89d7bef4170053f825870f2c7b19014c13c54d8e81e61c7467e0b9076fe2559",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
-        "document_filter": null,
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
+        "document_filter": {
+          "document_id": "b6541b8c57c46090",
+          "backend": "native"
+        },
+        "precision": "기존 공식 하한과 교차 OS 두 자리 표시값의 최솟값"
       },
-      "minimum_display": "99.99",
+      "minimum_display": "99.06",
       "source_history": [
         {
           "pr": null,
@@ -4036,24 +4290,50 @@
           "page_column": "page",
           "document_filter": null,
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "dc5368b3932bd39293a3e0067d809ec90ce641b1",
+          "code_commit": "330af8608ac741b14041d3e372284a6111346b9c",
+          "condition_evidence": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected-validation.json",
+          "condition_evidence_sha256": "3fc96e934c4918ae75ea10331b901e6ffc1c70d076c4fde80fdc8a9365cfe04b",
+          "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/chemical/native/silhouette.tsv",
+          "sha256": "d55cc0d20d9cf48ab7af6139c63f9c7ce9d90ff2cd4d0c668a810fccb2ae63f3",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "d1a51d27c37db47d06190506990171b54d021620",
+          "code_commit": "5c216e8e657309f9bb33928c6a6cd2747df77217",
+          "path": "mydocs/pr/assets/issue_6782/mcp-print-20261126/native-floor.tsv",
+          "sha256": "bf705fa2b36d8338bffe974ca0c193a9802286781a94b332526bfffea1c59f1d",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_6782/mcp-print-20261126/validation.json",
+          "condition_evidence_sha256": "99d03c3a995de7d6e8126c3f452ac2a9e858f5bc133f5a035ca94aaf4fefe610",
+          "precision": "새 한컴 Print의 픽셀이 달라진 쪽에서 사용자가 승인한 두 자리 표시값과 나머지 쪽의 기존 보호 하한"
         }
       ],
       "previous_source": {
         "pr": null,
-        "evidence_commit": "70fca853bee65aba00820c5dbe39d0f4aa899d86",
-        "code_commit": "521f69d19da9176e7947ceb318cf9838bec5ca75",
-        "condition_evidence": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json",
-        "condition_evidence_sha256": "96f0acd6b6345f20f5667d0515eab42b21baa79774eeee5760c9644127d56f81",
-        "path": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/chemical.tsv",
-        "sha256": "29b4f5e65e65a6955fe74cc9bb0d95f48d2e671d58e1206b73c5f0220df5bcb6",
+        "evidence_commit": "d1a51d27c37db47d06190506990171b54d021620",
+        "code_commit": "5c216e8e657309f9bb33928c6a6cd2747df77217",
+        "path": "mydocs/pr/assets/issue_6782/mcp-print-20261126/native-floor.tsv",
+        "sha256": "bf705fa2b36d8338bffe974ca0c193a9802286781a94b332526bfffea1c59f1d",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
+        "condition_evidence": "mydocs/pr/assets/issue_6782/mcp-print-20261126/validation.json",
+        "condition_evidence_sha256": "99d03c3a995de7d6e8126c3f452ac2a9e858f5bc133f5a035ca94aaf4fefe610",
+        "precision": "새 한컴 Print의 픽셀이 달라진 쪽에서 사용자가 승인한 두 자리 표시값과 나머지 쪽의 기존 보호 하한"
       }
     },
     {
-      "document_id": "870eabd0a7d9534c",
+      "document_id": "b6541b8c57c46090",
       "logical_key": "chemical",
       "backend": "wasm",
       "input": {
@@ -4062,13 +4342,13 @@
         "bytes": 193536
       },
       "reference_pdf": {
-        "path": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
-        "sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
-        "bytes": 1245068
+        "path": "pdf/issue6782/mcp-11.0.0.9172/1480000-201900042-chemical-labeling-standards-2020.pdf",
+        "sha256": "26e40ca45d384a083750e6edeb6c36506c2079774a2735edd374c87acc7fbfdd",
+        "bytes": 1226700
       },
       "identity": {
         "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
-        "reference_pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+        "reference_pdf_sha256": "26e40ca45d384a083750e6edeb6c36506c2079774a2735edd374c87acc7fbfdd",
         "compat": "2022",
         "dpi": 96,
         "profile": "print",
@@ -4076,21 +4356,24 @@
         "radius_px": 2
       },
       "page_count": 103,
-      "accepted_at": "2026-11-23T21:57:49.920882+09:00",
+      "accepted_at": "2026-11-27T07:27:30+09:00",
       "source": {
         "pr": null,
-        "evidence_commit": "dc5368b3932bd39293a3e0067d809ec90ce641b1",
-        "code_commit": "330af8608ac741b14041d3e372284a6111346b9c",
-        "condition_evidence": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected-validation.json",
-        "condition_evidence_sha256": "3fc96e934c4918ae75ea10331b901e6ffc1c70d076c4fde80fdc8a9365cfe04b",
-        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/chemical/wasm/silhouette.tsv",
-        "sha256": "d55cc0d20d9cf48ab7af6139c63f9c7ce9d90ff2cd4d0c668a810fccb2ae63f3",
+        "evidence_commit": "4bfe028b7b8cb670360dc7b86ad7e78d00c60492",
+        "code_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+        "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/conditions.json",
+        "condition_evidence_sha256": "c5686a602a77e16322cb05fe20a9137773f46a540647b44f33ea9c13dddcfbe1",
+        "path": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/page-floors.tsv",
+        "sha256": "c89d7bef4170053f825870f2c7b19014c13c54d8e81e61c7467e0b9076fe2559",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
-        "document_filter": null,
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
+        "document_filter": {
+          "document_id": "b6541b8c57c46090",
+          "backend": "wasm"
+        },
+        "precision": "기존 공식 하한과 교차 OS 두 자리 표시값의 최솟값"
       },
-      "minimum_display": "99.99",
+      "minimum_display": "99.65",
       "source_history": [
         {
           "pr": null,
@@ -4131,20 +4414,72 @@
           "page_column": "page",
           "document_filter": null,
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "dc5368b3932bd39293a3e0067d809ec90ce641b1",
+          "code_commit": "330af8608ac741b14041d3e372284a6111346b9c",
+          "condition_evidence": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected-validation.json",
+          "condition_evidence_sha256": "3fc96e934c4918ae75ea10331b901e6ffc1c70d076c4fde80fdc8a9365cfe04b",
+          "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/chemical/wasm/silhouette.tsv",
+          "sha256": "d55cc0d20d9cf48ab7af6139c63f9c7ce9d90ff2cd4d0c668a810fccb2ae63f3",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": 9412,
+          "evidence_commit": "d388231783ed697fefdb1b6cbc5d79a5f72e2518",
+          "code_commit": "f3d137d9cbe36cae93f859baac3a29ae4a543f75",
+          "path": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/current-9415/chemical-wasm.tsv",
+          "sha256": "2b4dc472b3c8267e03c34e0a4a62fe65c3987f7caab39ce1cde6c6d744bcd573",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/current-9415/runs.tsv",
+          "condition_evidence_sha256": "ca3607ec633db47dc2500306fecd603487c50bcec0a972bff94464a3c737b333",
+          "precision": "최종 전쪽 TSV의 공식 소수 둘째 자리 표시값"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "d1a51d27c37db47d06190506990171b54d021620",
+          "code_commit": "5c216e8e657309f9bb33928c6a6cd2747df77217",
+          "path": "mydocs/pr/assets/issue_6782/mcp-print-20261126/wasm-floor.tsv",
+          "sha256": "105e77fc891b9d4d9b1f83d13c49f4a63874526b324a9bb825fe65155809b272",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_6782/mcp-print-20261126/validation.json",
+          "condition_evidence_sha256": "99d03c3a995de7d6e8126c3f452ac2a9e858f5bc133f5a035ca94aaf4fefe610",
+          "precision": "새 한컴 Print의 픽셀이 달라진 쪽에서 사용자가 승인한 두 자리 표시값과 나머지 쪽의 기존 보호 하한"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "41d9768d126e694c26d67830538682bbed04a3d6",
+          "code_commit": "5c216e8e657309f9bb33928c6a6cd2747df77217",
+          "path": "mydocs/pr/assets/issue_6782/mcp-print-20261126/wasm-floor-mac-approved.tsv",
+          "sha256": "bf705fa2b36d8338bffe974ca0c193a9802286781a94b332526bfffea1c59f1d",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_6782/mcp-print-20261126/validation.json",
+          "condition_evidence_sha256": "99d03c3a995de7d6e8126c3f452ac2a9e858f5bc133f5a035ca94aaf4fefe610",
+          "precision": "같은 Mac 글꼴 조건의 devel·후보 전쪽이 일치한 결과에서 승인한 소수 둘째 자리 표시값"
         }
       ],
       "previous_source": {
         "pr": null,
-        "evidence_commit": "70fca853bee65aba00820c5dbe39d0f4aa899d86",
-        "code_commit": "521f69d19da9176e7947ceb318cf9838bec5ca75",
-        "condition_evidence": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json",
-        "condition_evidence_sha256": "96f0acd6b6345f20f5667d0515eab42b21baa79774eeee5760c9644127d56f81",
-        "path": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/chemical.tsv",
-        "sha256": "29b4f5e65e65a6955fe74cc9bb0d95f48d2e671d58e1206b73c5f0220df5bcb6",
+        "evidence_commit": "41d9768d126e694c26d67830538682bbed04a3d6",
+        "code_commit": "5c216e8e657309f9bb33928c6a6cd2747df77217",
+        "path": "mydocs/pr/assets/issue_6782/mcp-print-20261126/wasm-floor-mac-approved.tsv",
+        "sha256": "bf705fa2b36d8338bffe974ca0c193a9802286781a94b332526bfffea1c59f1d",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
+        "condition_evidence": "mydocs/pr/assets/issue_6782/mcp-print-20261126/validation.json",
+        "condition_evidence_sha256": "99d03c3a995de7d6e8126c3f452ac2a9e858f5bc133f5a035ca94aaf4fefe610",
+        "precision": "같은 Mac 글꼴 조건의 devel·후보 전쪽이 일치한 결과에서 승인한 소수 둘째 자리 표시값"
       }
     },
     {
@@ -4241,21 +4576,24 @@
         "radius_px": 2
       },
       "page_count": 71,
-      "accepted_at": "2026-11-22T00:23:36.733586+09:00",
+      "accepted_at": "2026-11-27T07:27:30+09:00",
       "source": {
         "pr": null,
-        "evidence_commit": "70fca853bee65aba00820c5dbe39d0f4aa899d86",
-        "code_commit": "521f69d19da9176e7947ceb318cf9838bec5ca75",
-        "condition_evidence": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json",
-        "condition_evidence_sha256": "96f0acd6b6345f20f5667d0515eab42b21baa79774eeee5760c9644127d56f81",
-        "path": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/spec13.tsv",
-        "sha256": "8872491efcc58b013f7647fcabdf0c9be12fdf14677b74410227ab3c4cdb477e",
+        "evidence_commit": "4bfe028b7b8cb670360dc7b86ad7e78d00c60492",
+        "code_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+        "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/conditions.json",
+        "condition_evidence_sha256": "c5686a602a77e16322cb05fe20a9137773f46a540647b44f33ea9c13dddcfbe1",
+        "path": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/page-floors.tsv",
+        "sha256": "c89d7bef4170053f825870f2c7b19014c13c54d8e81e61c7467e0b9076fe2559",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
-        "document_filter": null,
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
+        "document_filter": {
+          "document_id": "3298ed895b9a645c",
+          "backend": "wasm"
+        },
+        "precision": "기존 공식 하한과 교차 OS 두 자리 표시값의 최솟값"
       },
-      "minimum_display": "99.92",
+      "minimum_display": "99.91",
       "source_history": [
         {
           "pr": null,
@@ -4270,20 +4608,32 @@
           "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
           "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "70fca853bee65aba00820c5dbe39d0f4aa899d86",
+          "code_commit": "521f69d19da9176e7947ceb318cf9838bec5ca75",
+          "condition_evidence": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json",
+          "condition_evidence_sha256": "96f0acd6b6345f20f5667d0515eab42b21baa79774eeee5760c9644127d56f81",
+          "path": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/spec13.tsv",
+          "sha256": "8872491efcc58b013f7647fcabdf0c9be12fdf14677b74410227ab3c4cdb477e",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ],
       "previous_source": {
         "pr": null,
-        "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
-        "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
-        "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
-        "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/head/spec13.tsv",
-        "sha256": "b620227f2a2aac18809adb5258d89dd84f25206c0db156e07861e257887a7a3a",
+        "evidence_commit": "70fca853bee65aba00820c5dbe39d0f4aa899d86",
+        "code_commit": "521f69d19da9176e7947ceb318cf9838bec5ca75",
+        "condition_evidence": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json",
+        "condition_evidence_sha256": "96f0acd6b6345f20f5667d0515eab42b21baa79774eeee5760c9644127d56f81",
+        "path": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/spec13.tsv",
+        "sha256": "8872491efcc58b013f7647fcabdf0c9be12fdf14677b74410227ab3c4cdb477e",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
-        "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       }
     },
@@ -4395,21 +4745,24 @@
         "radius_px": 2
       },
       "page_count": 74,
-      "accepted_at": "2026-11-22T00:23:36.733586+09:00",
+      "accepted_at": "2026-11-27T07:27:30+09:00",
       "source": {
         "pr": null,
-        "evidence_commit": "70fca853bee65aba00820c5dbe39d0f4aa899d86",
-        "code_commit": "521f69d19da9176e7947ceb318cf9838bec5ca75",
-        "condition_evidence": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json",
-        "condition_evidence_sha256": "96f0acd6b6345f20f5667d0515eab42b21baa79774eeee5760c9644127d56f81",
-        "path": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/decree.tsv",
-        "sha256": "71762c0b40f0cb54b8b352b2c6865fbe64bc9c3a3d1f8e469f6e33541bdf2ed5",
+        "evidence_commit": "4bfe028b7b8cb670360dc7b86ad7e78d00c60492",
+        "code_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+        "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/conditions.json",
+        "condition_evidence_sha256": "c5686a602a77e16322cb05fe20a9137773f46a540647b44f33ea9c13dddcfbe1",
+        "path": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/page-floors.tsv",
+        "sha256": "c89d7bef4170053f825870f2c7b19014c13c54d8e81e61c7467e0b9076fe2559",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
-        "document_filter": null,
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
+        "document_filter": {
+          "document_id": "61c6ae96913006c5",
+          "backend": "native"
+        },
+        "precision": "기존 공식 하한과 교차 OS 두 자리 표시값의 최솟값"
       },
-      "minimum_display": "99.98",
+      "minimum_display": "97.20",
       "source_history": [
         {
           "pr": null,
@@ -4437,19 +4790,58 @@
           "page_column": "page",
           "document_filter": null,
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "70fca853bee65aba00820c5dbe39d0f4aa899d86",
+          "code_commit": "521f69d19da9176e7947ceb318cf9838bec5ca75",
+          "condition_evidence": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json",
+          "condition_evidence_sha256": "96f0acd6b6345f20f5667d0515eab42b21baa79774eeee5760c9644127d56f81",
+          "path": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/decree.tsv",
+          "sha256": "71762c0b40f0cb54b8b352b2c6865fbe64bc9c3a3d1f8e469f6e33541bdf2ed5",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "882451d176d43e9571f5ba3bdaf0f4be555bfeea",
+          "code_commit": "8355876d60cb96ff9ec36104202aef208aec7df1",
+          "path": "mydocs/pr/assets/planet6897_20261125/protected-native-mac/decree/silhouette.tsv",
+          "sha256": "66433cdacda5567ec1afa2ba8f8d5db06247bda10f9a64a5e6f945d6bf08021d",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/planet6897_20261125/protected-native-mac/validation.json",
+          "condition_evidence_sha256": "111ca6ee6a6a95e2601bc8673a3e5fb88ee55351dbceedb05b8974a1e1c2802c",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "d10cd17985e2051647d0263d60fac4d351ce43c3",
+          "code_commit": "8355876d60cb96ff9ec36104202aef208aec7df1",
+          "path": "mydocs/pr/assets/planet6897_20261125/protected-native-mac/decree-ttf/silhouette.tsv",
+          "sha256": "71762c0b40f0cb54b8b352b2c6865fbe64bc9c3a3d1f8e469f6e33541bdf2ed5",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/planet6897_20261125/protected-native-mac/decree-ttf/validation.json",
+          "condition_evidence_sha256": "a62e656d2fb8919e066a7fbe125d4462501acc21327ee6b52c7cdaa6f6222931",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ],
       "previous_source": {
         "pr": null,
-        "evidence_commit": "57fd9bb6e2",
-        "code_commit": "3901aa782d4445efb171ec4ffb026f2a459c2daf",
-        "condition_evidence": "mydocs/pr/assets/integration_open_prs_20261120/final-protected/validation.json",
-        "condition_evidence_sha256": "4c0a5ab6ea7e006ba068a182738f09cc0e550dc7c7c3d4a438a73a1299f4495d",
-        "path": "mydocs/pr/assets/integration_open_prs_20261120/final-protected/native/decree.tsv",
-        "sha256": "13fd69cf4aa56e9069352bdec023c1ff1554329e84ea8025632734ced6397e2e",
+        "evidence_commit": "d10cd17985e2051647d0263d60fac4d351ce43c3",
+        "code_commit": "8355876d60cb96ff9ec36104202aef208aec7df1",
+        "path": "mydocs/pr/assets/planet6897_20261125/protected-native-mac/decree-ttf/silhouette.tsv",
+        "sha256": "71762c0b40f0cb54b8b352b2c6865fbe64bc9c3a3d1f8e469f6e33541bdf2ed5",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/planet6897_20261125/protected-native-mac/decree-ttf/validation.json",
+        "condition_evidence_sha256": "a62e656d2fb8919e066a7fbe125d4462501acc21327ee6b52c7cdaa6f6222931",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       }
     },
@@ -4477,21 +4869,24 @@
         "radius_px": 2
       },
       "page_count": 74,
-      "accepted_at": "2026-11-22T00:23:36.733586+09:00",
+      "accepted_at": "2026-11-27T07:27:30+09:00",
       "source": {
         "pr": null,
-        "evidence_commit": "70fca853bee65aba00820c5dbe39d0f4aa899d86",
-        "code_commit": "521f69d19da9176e7947ceb318cf9838bec5ca75",
-        "condition_evidence": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json",
-        "condition_evidence_sha256": "96f0acd6b6345f20f5667d0515eab42b21baa79774eeee5760c9644127d56f81",
-        "path": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/decree.tsv",
-        "sha256": "71762c0b40f0cb54b8b352b2c6865fbe64bc9c3a3d1f8e469f6e33541bdf2ed5",
+        "evidence_commit": "4bfe028b7b8cb670360dc7b86ad7e78d00c60492",
+        "code_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+        "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/conditions.json",
+        "condition_evidence_sha256": "c5686a602a77e16322cb05fe20a9137773f46a540647b44f33ea9c13dddcfbe1",
+        "path": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/page-floors.tsv",
+        "sha256": "c89d7bef4170053f825870f2c7b19014c13c54d8e81e61c7467e0b9076fe2559",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
-        "document_filter": null,
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
+        "document_filter": {
+          "document_id": "61c6ae96913006c5",
+          "backend": "wasm"
+        },
+        "precision": "기존 공식 하한과 교차 OS 두 자리 표시값의 최솟값"
       },
-      "minimum_display": "99.98",
+      "minimum_display": "99.41",
       "source_history": [
         {
           "pr": null,
@@ -4532,16 +4927,29 @@
           "page_column": "page",
           "document_filter": null,
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "70fca853bee65aba00820c5dbe39d0f4aa899d86",
+          "code_commit": "521f69d19da9176e7947ceb318cf9838bec5ca75",
+          "condition_evidence": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json",
+          "condition_evidence_sha256": "96f0acd6b6345f20f5667d0515eab42b21baa79774eeee5760c9644127d56f81",
+          "path": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/decree.tsv",
+          "sha256": "71762c0b40f0cb54b8b352b2c6865fbe64bc9c3a3d1f8e469f6e33541bdf2ed5",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ],
       "previous_source": {
         "pr": null,
-        "evidence_commit": "57fd9bb6e2",
-        "code_commit": "3901aa782d4445efb171ec4ffb026f2a459c2daf",
-        "condition_evidence": "mydocs/pr/assets/integration_open_prs_20261120/final-protected/validation.json",
-        "condition_evidence_sha256": "4c0a5ab6ea7e006ba068a182738f09cc0e550dc7c7c3d4a438a73a1299f4495d",
-        "path": "mydocs/pr/assets/integration_open_prs_20261120/final-protected/wasm/decree.tsv",
-        "sha256": "1cadf36ede0470da44a9a273286a891c3a1b18624502213a2a05f24025bf6d19",
+        "evidence_commit": "70fca853bee65aba00820c5dbe39d0f4aa899d86",
+        "code_commit": "521f69d19da9176e7947ceb318cf9838bec5ca75",
+        "condition_evidence": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json",
+        "condition_evidence_sha256": "96f0acd6b6345f20f5667d0515eab42b21baa79774eeee5760c9644127d56f81",
+        "path": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/decree.tsv",
+        "sha256": "71762c0b40f0cb54b8b352b2c6865fbe64bc9c3a3d1f8e469f6e33541bdf2ed5",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
@@ -5395,9 +5803,83 @@
       "registration_receipt": "mydocs/pr/assets/visual-protected-baseline/updates/issue9326-20261124.json",
       "increased_row_count": 3,
       "evaluated_row_count": 17
+    },
+    {
+      "pr": null,
+      "code_commit": "8355876d60cb96ff9ec36104202aef208aec7df1",
+      "evidence_commit": "882451d176d43e9571f5ba3bdaf0f4be555bfeea",
+      "accepted_at": "2026-11-25T20:45:01.506105+09:00",
+      "condition_evidence": "mydocs/pr/assets/planet6897_20261125/protected-native-mac/validation.json",
+      "condition_evidence_sha256": "111ca6ee6a6a95e2601bc8673a3e5fb88ee55351dbceedb05b8974a1e1c2802c",
+      "registration_receipt": "mydocs/pr/assets/visual-protected-baseline/updates/planet6897-mac-native-20261125.json",
+      "acceptance_basis": "사용자 개별 승인에 따라 같은 입력과 글꼴 공급으로 보정 전에도 재현된 시행령·중첩 표 Native 미달을 실측값으로 조정했다.",
+      "evaluated_row_count": 91,
+      "decreased_row_count": 14,
+      "increased_row_count": 0
+    },
+    {
+      "pr": null,
+      "code_commit": "8355876d60cb96ff9ec36104202aef208aec7df1",
+      "evidence_commit": "d10cd17985e2051647d0263d60fac4d351ce43c3",
+      "accepted_at": "2026-11-25T20:59:46.983722+09:00",
+      "condition_evidence": "mydocs/pr/assets/planet6897_20261125/protected-native-mac/decree-ttf/validation.json",
+      "condition_evidence_sha256": "a62e656d2fb8919e066a7fbe125d4462501acc21327ee6b52c7cdaa6f6222931",
+      "registration_receipt": "mydocs/pr/assets/visual-protected-baseline/updates/planet6897-decree-hmkmg-20261125.json",
+      "acceptance_basis": "휴먼고딕 TTF 공급으로 시행령 Native 74쪽의 조정 전 보호값을 복원했다.",
+      "evaluated_row_count": 74,
+      "increased_row_count": 4,
+      "decreased_row_count": 0
+    },
+    {
+      "pr": 9412,
+      "evidence_commit": "d388231783ed697fefdb1b6cbc5d79a5f72e2518",
+      "code_commit": "f3d137d9cbe36cae93f859baac3a29ae4a543f75",
+      "condition_evidence": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/current-9415/runs.tsv",
+      "condition_evidence_sha256": "ca3607ec633db47dc2500306fecd603487c50bcec0a972bff94464a3c737b333",
+      "accepted_at": "2026-11-26T04:01:25+09:00",
+      "acceptance_basis": "46개 전쪽 데이터셋의 공식 표시값을 대조했다. 화학물질 표시 기준의 브라우저 26쪽이 99.99%에서 100.00%로 올랐다.",
+      "registration_receipt": "mydocs/pr/assets/visual-protected-baseline/updates/pr9352-9384-9407-20261125.json",
+      "increased_row_count": 1,
+      "evaluated_row_count": 4046
+    },
+    {
+      "pr": null,
+      "evidence_commit": "d1a51d27c37db47d06190506990171b54d021620",
+      "code_commit": "5c216e8e657309f9bb33928c6a6cd2747df77217",
+      "condition_evidence": "mydocs/pr/assets/issue_6782/mcp-print-20261126/validation.json",
+      "condition_evidence_sha256": "99d03c3a995de7d6e8126c3f452ac2a9e858f5bc133f5a035ca94aaf4fefe610",
+      "accepted_at": "2026-11-26T21:08:27+09:00",
+      "acceptance_basis": "사용자 승인으로 화학물질 표시 기준의 독립 한컴 Print PDF를 교체했다. 두 인쇄본의 픽셀이 달라진 19·20·21·91·92쪽만 새 실측값으로 조정했다.",
+      "registration_receipt": "mydocs/pr/assets/visual-protected-baseline/updates/issue6782-mcp-print-20261126.json",
+      "decreased_row_count": 10,
+      "evaluated_row_count": 206
+    },
+    {
+      "pr": 9306,
+      "evidence_commit": "ffd25475b61f59928403d8f4e8ef0ebdba32c587",
+      "code_commit": "a782a31267e70ad5f3c0188e7a997de0c0dfb676",
+      "condition_evidence": "mydocs/pr/assets/issue_7114/sample16-mac-protection-20261127/conditions.json",
+      "condition_evidence_sha256": "e93766e9749d5b4bf2741ce33ba25d1cd0e75df306e5f57b9ccc7d1fc4199d88",
+      "accepted_at": "2026-11-27T01:38:48+09:00",
+      "acceptance_basis": "사용자 승인에 따라 같은 Mac 글꼴 조건에서 확인한 sample16 6쪽의 두 자리 표시값을 수용했다.",
+      "registration_receipt": "mydocs/pr/assets/visual-protected-baseline/updates/issue7114-sample16-mac-20261127.json",
+      "decreased_row_count": 6,
+      "evaluated_row_count": 384
+    },
+    {
+      "pr": null,
+      "evidence_commit": "4bfe028b7b8cb670360dc7b86ad7e78d00c60492",
+      "code_commit": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+      "condition_evidence": "mydocs/pr/assets/visual-protected-baseline/updates/cross-os-20261127/conditions.json",
+      "condition_evidence_sha256": "c5686a602a77e16322cb05fe20a9137773f46a540647b44f33ea9c13dddcfbe1",
+      "accepted_at": "2026-11-27T07:27:30+09:00",
+      "acceptance_basis": "사용자 승인에 따라 같은 보호 조건의 macOS, Windows, Linux 대표 호스트에서 실측한 두 자리 최저값을 적용했다.",
+      "decreased_row_count": 193,
+      "evaluated_row_count": 4046,
+      "cross_os_observation_count": 12138
     }
   ],
-  "updated_at": "2026-11-24T18:00:30.260001+09:00",
-  "previous_table_sha256": "ae4559e3d3d04f60da7887a11e889bfb4f6c5fa86df1e6c47745e9f6bb796a68",
+  "updated_at": "2026-11-27T07:27:30+09:00",
+  "previous_table_sha256": "5eadaea8bca4b2bdb0ed5795933e203d12cdaa83e0436e29bd9e0e65954db57d",
   "deduplication_scope": "source_dataset_count·removed_duplicate_datasets·deduplicated_sources는 최초 통합의 이력이다. 현행 46개 데이터셋은 기존 18문서·36개 데이터셋의 수용 출처와 후속 상승 기록을 보존하고, 2026-11-18의 동일 최종 전쪽 실행에서 다섯 원본·10개 데이터셋을 추가한 결과다. 각 데이터셋의 source와 source_history를 따른다."
 }

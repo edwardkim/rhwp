@@ -376,6 +376,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     ),
     (
         "mod.rs",
+        "set_print_png_full_color",
+        Exempt::SessionState,
+        "인쇄용 PNG의 색상 정책과 출력 캐시만 갱신한다. 저장 문서의 IR과 원본 스트림은 유지한다.",
+    ),
+    (
+        "mod.rs",
         "set_print_job_context",
         Exempt::SessionState,
         "인쇄 작업의 파일명·현지 시각과 출력 레이어 캐시만 갱신한다. 원본 DocInfo와 본문 스트림은 유지한다.",
@@ -816,6 +822,18 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "[#7866] 지운 글자의 모양을 잇는 한 단계 바꾸기 — 무효화·재조판은 `delete_text_native` \
          와 같은 `apply_body_text_edit` 가 수행한다. issue_7866_replace_inherits_char_shapes 가 \
          저장·재열기 뒤 모양 보존을 검사한다.",
+    ),
+    (
+        "commands/text_editing.rs",
+        "insert_text_in_cell_by_path",
+        Exempt::DelegatesTo("replace_text_in_cell_by_path"),
+        "[#9398] 단일 칸은 insert_text_in_cell_native에 위임한다. 중첩 칸은 replace_text_in_cell_by_path가 변경한 구역의 raw_stream을 무효화한다.",
+    ),
+    (
+        "commands/text_editing.rs",
+        "delete_text_in_cell_by_path",
+        Exempt::DelegatesTo("replace_text_in_cell_by_path"),
+        "[#9398] 단일 칸은 delete_text_in_cell_native에 위임한다. 중첩 칸은 replace_text_in_cell_by_path가 변경한 구역의 raw_stream을 무효화한다.",
     ),
     (
         "commands/text_editing.rs",

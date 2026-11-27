@@ -270,9 +270,8 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band_with_storag
                     && crate::renderer::para_has_no_stored_line_segs(para)
                     && line_breaking::supports_tac_table_band_frame_controls(para)
                 {
-                    frame_table_heights = reflow_inline_table_heights_with_storage(
-                        para, styles, dpi, storage,
-                    )?;
+                    frame_table_heights =
+                        reflow_inline_table_heights_with_storage(para, styles, dpi, storage)?;
                     frame_table_heights.as_slice()
                 } else {
                     measured_inline_table_heights
@@ -1138,15 +1137,18 @@ pub(crate) fn shrunk_cell_horizontal_padding(
         // 70833 pi=83 4행: 3줄 56.0(말미 5.33 포함) > 안높이 55.4 로 여백을 깎아 한/글보다
         // 5.7px 왼쪽에서 시작하고 줄 끝이 달라졌다. 말미를 빼면 50.7 ≤ 55.4 다.
         wrapped_height_hu -= last_line_spacing_hu.max(0);
-        let wrapped_height = wrapped_height_hu as f64 * dpi / crate::renderer::HWPUNIT_PER_INCH;
         if std::env::var_os("RHWP_DIAG_SHRINK").is_some() {
+            let wrapped_height = wrapped_height_hu as f64 * dpi / crate::renderer::HWPUNIT_PER_INCH;
             println!(
                 "D_SHRINK cell_w={cell_w:.1} avail={available:.1} inner_h={inner_height_px:.15} wrapped_h={wrapped_height:.15} max_line_w={max_line_w:.1}"
             );
         }
-        // 줄 피치를 더하고 셀 여백을 빼면 같은 물리 높이가 인접한 f64 값으로 반올림될 수 있다.
-        // 표현 가능한 값 한 단계의 차이는 여백을 축소할 오버플로우가 아니라 연산 오차다.
-        if wrapped_height <= inner_height_px.next_up() && !stored_fits_fewer_lines {
+        // 필요한 높이는 정수 HU다. 셀 상자에서 양쪽 여백을 뺀 값은 다시 HU로
+        // 비교하되, 여러 번의 축 변환과 뺄셈에서 생긴 부동소수점 오차만 허용한다.
+        let inner_height_hu = inner_height_px * crate::renderer::HWPUNIT_PER_INCH / dpi;
+        let required_hu = wrapped_height_hu as f64;
+        let roundoff = f64::EPSILON * 4.0 * required_hu.abs().max(inner_height_hu.abs());
+        if required_hu - inner_height_hu <= roundoff && !stored_fits_fewer_lines {
             return (pad_left, pad_right);
         }
     }

@@ -109,6 +109,7 @@ impl TypesetEngine {
                     )
                 })
                 .flatten();
+        let closes_blank_source_row = input.closes_blank_source_row();
         let repeat_fragment_outer_margin = !detached_child_fragment && (
             prepared.computed_host_tail.is_some() ||
             crate::renderer::float_placement::stored_empty_offset_rowbreak_fragment_repeats_outer_margin(
@@ -131,6 +132,7 @@ impl TypesetEngine {
                 host_spacing_before,
                 is_continuation,
                 strict_following_plain_text_fit || single_cell_page_fragment
+                    || closes_blank_source_row
                     || repeat_fragment_outer_margin || repeated_header_outer_frame,
                 prepared.computed_host_tail.is_some() || crate::renderer::float_placement::empty_host_cellbreak_fragment_repeats_outer_margin(
                     self.profile.get().hwp5_stored_pagination_layout() || self.profile.get().hwpx_stored_layout(),
@@ -320,7 +322,9 @@ impl TypesetEngine {
                 self.dpi,
             )
         };
-        let mut terminal_outer_bottom_overhead = if single_cell_page_fragment {
+        let mut terminal_outer_bottom_overhead = if closes_blank_source_row {
+            fragment_outer_bottom_overhead
+        } else if single_cell_page_fragment {
             partial_rowbreak_fragment_spacing_px(
                 table,
                 host_spacing_before,
@@ -1143,7 +1147,8 @@ impl TypesetEngine {
         // paint가 문단 오프셋을 다시 적용해 같은 조각이 예약 영역 밖에 놓인다.
         // 유효한 저장/캡션 원점은 그대로 우선하며, 없는 경우에만 예산이 쓰는
         // 현재 프레임의 원점을 확정 배치와 공유한다.
-        if fragment_placement.is_none() && anchor_offset_already_spent {
+        if fragment_placement.is_none() && (anchor_offset_already_spent || closes_blank_source_row)
+        {
             let top = st.current_height + host_before_overhead;
             fragment_placement = Some(crate::renderer::float_placement::ParagraphFloatPlacement {
                 flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
@@ -1535,7 +1540,8 @@ impl TypesetEngine {
                 prepared
                     .source_text_first_frame_height
                     .or(prepared
-                        .source_single_cell_row_frames
+                        .source_row_frames
+                        .as_ref()
                         .map(|frame| frame.opening_height))
                     .map_or(base, |height| {
                         base.min(
@@ -1892,7 +1898,38 @@ impl TypesetEngine {
             (Some(a), Some(b)) => Some(a.min(b)),
             (a, b) => a.or(b),
         };
-        let avail_for_rows = accepted_frame_bottom.map_or(avail_for_rows, |bottom| {
+        // A floating RowBreak continuation leaves room for its bottom caption
+        // at the page limit, including a stored blank caption line. Only the
+        // terminal fragment places the caption in flow.
+        let continued_caption_bottom = if is_continuation
+            && !input.row_cursor_is_nested
+            && std::ptr::eq(row_geometry_table, table)
+            && !table.common.treat_as_char
+            && table.layout_page_break() == crate::model::table::TablePageBreak::RowBreak
+            && mt.caption_height > 0.0
+        {
+            table
+                .caption
+                .as_ref()
+                .filter(|caption| {
+                    caption.direction == crate::model::shape::CaptionDirection::Bottom
+                })
+                .map(|caption| {
+                    crate::renderer::float_placement::single_cell_page_fragment_bottom(
+                        table,
+                        st.available_height().min(st.inline_flow_column().height),
+                        self.dpi,
+                    ) - mt.caption_height
+                        - hwpunit_to_px(i32::from(caption.spacing), self.dpi)
+                })
+        } else {
+            None
+        };
+        let scan_bottom = match (accepted_frame_bottom, continued_caption_bottom) {
+            (Some(a), Some(b)) => Some(a.min(b)),
+            (a, b) => a.or(b),
+        };
+        let avail_for_rows = scan_bottom.map_or(avail_for_rows, |bottom| {
             let top = fragment_placement.map_or(
                 st.current_height + host_before_overhead + vert_offset_overhead,
                 |placement| placement.table_top,
@@ -1938,9 +1975,9 @@ impl TypesetEngine {
             );
             // 내용 컷이 이미 소비한 원본 하단 inset을 빈 띠 예산에서 되돌리지 않는다.
             // 현재 각주 등으로 좁아진 본문과 인증한 이어받기 프레임의 교집합이다.
-            let bottom = accepted_frame_bottom
+            let bottom = scan_bottom
                 .map_or(bounds.content_bottom, |saved| bounds.content_bottom.min(saved));
-            let blank_bottom = accepted_frame_bottom
+            let blank_bottom = scan_bottom
                 .map_or(bounds.blank_bottom, |saved| bounds.blank_bottom.min(saved));
             let top = fragment_placement.map_or(
                 fragment_flow_origin + host_before_overhead + vert_offset_overhead,

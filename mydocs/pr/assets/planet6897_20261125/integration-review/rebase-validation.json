@@ -1,0 +1,357 @@
+{
+  "base": "48a678399072d0df11380e1ad6a3b6aa77dd677a",
+  "head": "74f3fc1eca55612f8c3675ce0811bdde0dd32dbc",
+  "table_sha256": "5d5ef7ac531f3d038757636920cb4af0267796f3631a68d2b5fece77291a5e13",
+  "protected_conditions": 46,
+  "protected_rows": 4046,
+  "font_conditions": {
+    "official": 4046,
+    "mac_alternative": 0
+  },
+  "protected_below": [],
+  "protected_above": [],
+  "chemical_wasm_p26": {
+    "base": "99.99",
+    "head": "99.99"
+  },
+  "chemical_wasm_same_png": true,
+  "direct": {
+    "8735/native": {
+      "pages": 138,
+      "base_min": "27.04",
+      "head_min": "95.77",
+      "below_90": [],
+      "down_vs_base": [],
+      "down_vs_original": [],
+      "changes_vs_prior_run": [],
+      "png_changes_vs_prior_run": []
+    },
+    "8735/wasm": {
+      "pages": 138,
+      "base_min": "27.19",
+      "head_min": "95.65",
+      "below_90": [],
+      "down_vs_base": [],
+      "down_vs_original": [],
+      "changes_vs_prior_run": [],
+      "png_changes_vs_prior_run": []
+    },
+    "9396/native": {
+      "pages": 7,
+      "base_min": "84.55",
+      "head_min": "99.93",
+      "below_90": [],
+      "down_vs_base": [],
+      "down_vs_original": [],
+      "changes_vs_prior_run": [],
+      "png_changes_vs_prior_run": []
+    },
+    "9396/wasm": {
+      "pages": 7,
+      "base_min": "84.56",
+      "head_min": "99.94",
+      "below_90": [],
+      "down_vs_base": [],
+      "down_vs_original": [],
+      "changes_vs_prior_run": [],
+      "png_changes_vs_prior_run": []
+    },
+    "8482/native": {
+      "pages": 11,
+      "base_min": "93.73",
+      "head_min": "95.53",
+      "below_90": [],
+      "down_vs_base": [],
+      "down_vs_original": [],
+      "changes_vs_prior_run": [],
+      "png_changes_vs_prior_run": []
+    },
+    "8482/wasm": {
+      "pages": 11,
+      "base_min": "93.74",
+      "head_min": "95.54",
+      "below_90": [],
+      "down_vs_base": [],
+      "down_vs_original": [],
+      "changes_vs_prior_run": [],
+      "png_changes_vs_prior_run": []
+    },
+    "9419/native": {
+      "pages": 54,
+      "base_min": "60.56",
+      "head_min": "95.37",
+      "below_90": [],
+      "down_vs_base": [],
+      "down_vs_original": [],
+      "changes_vs_prior_run": [],
+      "png_changes_vs_prior_run": []
+    },
+    "9419/wasm": {
+      "pages": 54,
+      "base_min": "60.50",
+      "head_min": "95.37",
+      "below_90": [],
+      "down_vs_base": [],
+      "down_vs_original": [],
+      "changes_vs_prior_run": [],
+      "png_changes_vs_prior_run": [
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54
+      ]
+    }
+  },
+  "protected_tsv_sha256": "dfb12001dd0a63b08b46c1030a9c79b0da151e04b58b9788e0b1be6193b22708",
+  "kaf_wasm_rebase_png_differences": [
+    {
+      "page": 42,
+      "pixel_differences": 97,
+      "max_rgb_delta": 49,
+      "nontrivial_differences": 11,
+      "bounds": [
+        541,
+        723,
+        580,
+        734
+      ],
+      "new_base_rgbs_equal": true,
+      "new_base_png_equal": true
+    },
+    {
+      "page": 43,
+      "pixel_differences": 113,
+      "max_rgb_delta": 49,
+      "nontrivial_differences": 12,
+      "bounds": [
+        541,
+        723,
+        580,
+        734
+      ],
+      "new_base_rgbs_equal": true,
+      "new_base_png_equal": true
+    },
+    {
+      "page": 44,
+      "pixel_differences": 117,
+      "max_rgb_delta": 58,
+      "nontrivial_differences": 15,
+      "bounds": [
+        541,
+        723,
+        580,
+        734
+      ],
+      "new_base_rgbs_equal": true,
+      "new_base_png_equal": true
+    },
+    {
+      "page": 45,
+      "pixel_differences": 115,
+      "max_rgb_delta": 49,
+      "nontrivial_differences": 14,
+      "bounds": [
+        541,
+        723,
+        580,
+        734
+      ],
+      "new_base_rgbs_equal": true,
+      "new_base_png_equal": true
+    },
+    {
+      "page": 46,
+      "pixel_differences": 119,
+      "max_rgb_delta": 58,
+      "nontrivial_differences": 21,
+      "bounds": [
+        541,
+        723,
+        580,
+        734
+      ],
+      "new_base_rgbs_equal": true,
+      "new_base_png_equal": true
+    },
+    {
+      "page": 47,
+      "pixel_differences": 120,
+      "max_rgb_delta": 49,
+      "nontrivial_differences": 13,
+      "bounds": [
+        541,
+        723,
+        580,
+        734
+      ],
+      "new_base_rgbs_equal": true,
+      "new_base_png_equal": true
+    },
+    {
+      "page": 48,
+      "pixel_differences": 107,
+      "max_rgb_delta": 49,
+      "nontrivial_differences": 12,
+      "bounds": [
+        541,
+        723,
+        580,
+        734
+      ],
+      "new_base_rgbs_equal": true,
+      "new_base_png_equal": true
+    },
+    {
+      "page": 49,
+      "pixel_differences": 131,
+      "max_rgb_delta": 49,
+      "nontrivial_differences": 15,
+      "bounds": [
+        541,
+        723,
+        580,
+        734
+      ],
+      "new_base_rgbs_equal": true,
+      "new_base_png_equal": true
+    },
+    {
+      "page": 50,
+      "pixel_differences": 117,
+      "max_rgb_delta": 50,
+      "nontrivial_differences": 15,
+      "bounds": [
+        541,
+        723,
+        580,
+        734
+      ],
+      "new_base_rgbs_equal": true,
+      "new_base_png_equal": true
+    },
+    {
+      "page": 51,
+      "pixel_differences": 115,
+      "max_rgb_delta": 39,
+      "nontrivial_differences": 12,
+      "bounds": [
+        541,
+        723,
+        580,
+        734
+      ],
+      "new_base_rgbs_equal": true,
+      "new_base_png_equal": true
+    },
+    {
+      "page": 52,
+      "pixel_differences": 90,
+      "max_rgb_delta": 106,
+      "nontrivial_differences": 33,
+      "bounds": [
+        541,
+        724,
+        580,
+        733
+      ],
+      "new_base_rgbs_equal": true,
+      "new_base_png_equal": true
+    },
+    {
+      "page": 53,
+      "pixel_differences": 106,
+      "max_rgb_delta": 41,
+      "nontrivial_differences": 14,
+      "bounds": [
+        541,
+        723,
+        580,
+        733
+      ],
+      "new_base_rgbs_equal": true,
+      "new_base_png_equal": true
+    },
+    {
+      "page": 54,
+      "pixel_differences": 109,
+      "max_rgb_delta": 106,
+      "nontrivial_differences": 38,
+      "bounds": [
+        541,
+        723,
+        580,
+        734
+      ],
+      "new_base_rgbs_equal": true,
+      "new_base_png_equal": true
+    }
+  ],
+  "focused_nextest": 19,
+  "full_nextest": 14196,
+  "full_nextest_skipped": 45,
+  "rustfmt": "passed",
+  "clippy": [
+    "native",
+    "wasm32",
+    "workspace all-targets"
+  ],
+  "workspace_build": "passed",
+  "native_skia": {
+    "cli_exit_codes_native": 2,
+    "issue_1144_native": 1,
+    "issue_2083_hide_fill_page_background": 1,
+    "issue_2225_missing_picture_placeholder": 2,
+    "issue_2292_chart_png_clip": 1,
+    "issue_2293_chart_png_text": 2,
+    "issue_4961_font_decision_trace": 12,
+    "issue_536_native_region_cache": 39,
+    "issue_7820_sixel_contract": 7,
+    "issue_7902_original_frame_and_content": 7,
+    "issue_7950_pdf_paint": 4,
+    "issue_8150_kitty_contract": 8,
+    "issue_8153_opaque_mixed_axis_image_sampling": 2,
+    "issue_8153_print_glyph_geometry": 9,
+    "issue_8153_symbol_fallback": 2,
+    "issue_8160_hwp2022_paragraph_relations": 3,
+    "lib": 4032,
+    "native_fractional_glyph_origin": 7,
+    "render_p37_direct_pdf_export": 37,
+    "skia_host_surface": 13,
+    "skia_native_glyph_replay": 24,
+    "skia_region_plan": 10
+  },
+  "native_skia_total": 4225,
+  "contributor_gate": {
+    "runs": 8,
+    "passed": 8
+  },
+  "handbook_hwpx": {
+    "native_pages": 383,
+    "min": "99.97"
+  },
+  "selection_retention": {
+    "source_pr": 9424,
+    "browser": "Chrome/158.0.8127.88",
+    "wrapped_body_rows": 2,
+    "wrapped_cell_rows": 3,
+    "equation_and_next_character_widths_px": [
+      35.1,
+      9.2
+    ]
+  },
+  "approved_mac_font_alternatives": {
+    "conditions": 14,
+    "rows_with_equal_png": 1441,
+    "document_count": 8
+  }
+}

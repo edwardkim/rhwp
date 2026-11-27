@@ -6,6 +6,62 @@ use crate::renderer::hwpunit_to_px;
 use super::{CellUnit, LayoutEngine, ResolvedStyleSet};
 
 impl LayoutEngine {
+    /// 원본 저장 쪽을 여닫는 두 개 이상의 독립 본문 칸이 같은 끝 행을
+    /// 공유할 때, 마지막 줄 상자까지를 현재 조각의 물리 점유로 사용한다.
+    /// 뒤 줄간격은 다음 줄 원점의 전진이며 닫힌 상자의 하단이 아니다.
+    pub(crate) fn stored_text_block_closing_height(
+        &self,
+        table: &Table,
+        range: (usize, usize),
+        start_cut: &[usize],
+        end_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        let mut cells = Self::row_block_cells(table, range.0, range.1);
+        cells.sort_by_key(|cell| (cell.row, cell.col));
+        if cells.len() != start_cut.len() || cells.len() != end_cut.len() {
+            return None;
+        }
+        let mut active = 0;
+        let mut height_hu = 0;
+        for ((cell, &start), &end) in cells.iter().zip(start_cut).zip(end_cut) {
+            if start == end {
+                continue;
+            }
+            if usize::from(cell.row) + usize::from(cell.row_span) != range.1
+                || !self.stored_plain_text_cell_frame(table, cell)
+            {
+                return None;
+            }
+            let units = self.cell_units(cell, table, styles);
+            let padding = cell.effective_vertical_padding_hu(&table.padding);
+            if start == 0
+                || !units.get(start)?.page_frame_reset_before
+                || !units.get(end)?.page_frame_reset_before
+                || padding < 0
+            {
+                return None;
+            }
+            let mut bottom = 0;
+            for (index, unit) in units.get(start..end)?.iter().enumerate() {
+                let para = cell.paragraphs.get(unit.para_idx)?;
+                let line = para.line_segs.get(unit.vis_start)?;
+                if unit.reflowed_line_slot
+                    || unit.vis_end != unit.vis_start + 1
+                    || line.vertical_pos < bottom
+                    || (index == 0 && line.vertical_pos != 0)
+                {
+                    return None;
+                }
+                bottom = line.vertical_pos.checked_add(line.line_height)?;
+            }
+            let padded = bottom.checked_add(padding)?;
+            height_hu = height_hu.max(padded);
+            active += 1;
+        }
+        (active >= 2).then(|| hwpunit_to_px(height_hu, self.dpi))
+    }
+
     /// 완료한 병합 라벨의 전체 행합과 일반 칸의 첫 저장 조각은 별도 상자다.
     /// 미완료 칸의 실제 쪽 재시작과 더 작은 셀 선언이 함께 인증한 경우만
     /// 그 첫 물리 상자를 보존한다. 뒤 조각의 내용 컷이나 전체 행합을 차감하지 않는다.

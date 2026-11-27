@@ -1,0 +1,27 @@
+{
+  "source": "74f3fc1eca55612f8c3675ce0811bdde0dd32dbc",
+  "input_sha256": "945183c9102bb7c62c137779d0765c6ab4fa5f36453ba7990f1e91ca3b98401f",
+  "pdf_sha256": "59659c43d4951f54857a88c31ec52f2c729677fa4d0c74bd8737bead7fadeb1c",
+  "dpi": 96,
+  "renderer": "native-skia",
+  "pages": [
+    {
+      "page": 6,
+      "silhouette_raw_match_percent": 97.3179,
+      "pixel_match_percent": 91.71628,
+      "visual_accuracy_proxy_percent": 20.98568
+    },
+    {
+      "page": 7,
+      "silhouette_raw_match_percent": 98.86641,
+      "pixel_match_percent": 91.55004,
+      "visual_accuracy_proxy_percent": 22.28164
+    }
+  ],
+  "assets": {
+    "review_006.png": "1a6afac49db3c39c557619d2892e1185dfd3cb8b19134370b58f0c9ddc96b235",
+    "review_007.png": "edd85171bb4d21508acbedf1857c1c63746ee3d1d799c551e29b1f68d0075b62",
+    "overlay_006.png": "93057f5516e80f208808dcabdc7619623886dd02a9857b92ca3f02e08d54a8bd",
+    "overlay_007.png": "bb50efa773a9213030c908c9379667ab41c9ae70315587b73f529ac882f49fc9"
+  }
+}

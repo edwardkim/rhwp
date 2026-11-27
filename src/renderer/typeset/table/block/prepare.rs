@@ -106,6 +106,7 @@ impl TypesetEngine {
             mt,
             row_geometry_table,
             declared_table_height,
+            stored_completed_row_frames,
             ..
         } = entry;
         let row_count = mt.row_heights.len();
@@ -469,13 +470,18 @@ impl TypesetEngine {
             - st.current_footnote_height
             - st.current_zone_y_offset
             - st.current_bottom_fixed_exclusion;
-        let source_single_cell_row_frames = paragraphs_all.get(para_idx + 1).and_then(|next| {
-            layout_engine.native_single_cell_source_row_frames(para, next, table, styles)
+        let source_row_frames = stored_completed_row_frames.or_else(|| {
+            layout_engine.native_single_cell_source_row_frames(
+                para,
+                paragraphs_all.get(para_idx + 1)?,
+                table,
+                styles,
+            )
         });
-        let source_single_cell_first_frame_fits = st.col_count == 1
+        let source_row_first_frame_fits = st.col_count == 1
             && std::ptr::eq(table, row_geometry_table)
             && ft.table_footnotes.is_empty()
-            && source_single_cell_row_frames.is_some_and(|frame| {
+            && source_row_frames.as_ref().is_some_and(|frame| {
                 let base = st.vpos_page_base.unwrap_or(0);
                 frame.opening_anchor_hu >= base
                     && frame.opening_table_top_hu >= frame.opening_anchor_hu
@@ -497,12 +503,14 @@ impl TypesetEngine {
         .filter(|frame| {
             let positive_offset =
                 hwpunit_to_px((table.common.vertical_offset as i32).max(0), self.dpi);
+            let available = actual_first_boundary
+                - st.current_height
+                - ft.host_spacing.before
+                - positive_offset;
             st.current_height > 0.0
-                && st.current_height
-                    + ft.host_spacing.before
-                    + positive_offset
-                    + frame.opening_height
-                    <= actual_first_boundary + 0.5
+                && frame.opening_height <= available + 0.5
+                && (frame.deferred_picture_band_height.is_none()
+                    || frame.continuation_height > available)
                 && frame.continuation_height <= base_available
         });
 
@@ -1214,7 +1222,7 @@ impl TypesetEngine {
             // The same authenticated opening box that scan/paint consume fits
             // the real note boundary. An earlier safety-band probe must not
             // discard its page owner before that shared plan is consulted.
-            && !source_single_cell_first_frame_fits
+            && !source_row_first_frame_fits
             && (stored_page_top_tac_table
                 || (remaining_on_page_for_first_unit < split_unit_h && !st.current_items.is_empty()))
         {
@@ -1833,7 +1841,7 @@ impl TypesetEngine {
         // The authenticated cut and both boxes also own their original first
         // anchor. Reusing only the cut while keeping a drifted sequential
         // cursor places a correct fragment in the wrong part of the page.
-        let source_single_cell_first_placement = source_single_cell_row_frames.and_then(|frame| {
+        let source_row_first_placement = source_row_frames.as_ref().and_then(|frame| {
             if st.col_count != 1
                 || !std::ptr::eq(table, row_geometry_table)
                 || host_frame
@@ -1945,7 +1953,7 @@ impl TypesetEngine {
             computed_host_tail,
             first_anchor_offset_consumed,
             opening_rowspan_block_cuts_after_first_row,
-            host_placement: source_single_cell_first_placement.or(fragment_host_placement),
+            host_placement: source_row_first_placement.or(fragment_host_placement),
             host_frame,
             empty_opening_row_frame,
             row_count,
@@ -1962,7 +1970,7 @@ impl TypesetEngine {
             source_text_first_frame_height: source_text_frame_top
                 .filter(|_| st.profile.hwp5_stored_pagination_layout())
                 .map(|_| hwpunit_to_px(table.common.height as i32, self.dpi)),
-            source_single_cell_row_frames,
+            source_row_frames,
             rowspan_touched,
             cut_row_heights: cut_row_h,
             whole_row_fit_heights: whole_row_fit_h,
@@ -1993,7 +2001,7 @@ impl TypesetEngine {
                     || (st.profile.hwp5_stored_pagination_layout()
                         && source_text_frame_top.is_some())
                     || empty_opening_row_frame.is_some()
-                    || source_single_cell_first_placement.is_some()
+                    || source_row_first_placement.is_some()
                     // [#8105] 한/글 실측(사다리 D): 쪽 끝 경계는 이미 놓인 각주 영역의 위(구분선 위
                     // 여백 포함)다 — 보수 안전띠는 없다(1130000 50쪽 표 pi=532 행 0 이 각주 위까지
                     // 통째로 든다). 각주가 없는 쪽은 띠도 없어 그대로 두고, 표 자신의 각주는 따로
@@ -2024,7 +2032,7 @@ impl TypesetEngine {
             .flatten(),
             first_fragment_saved_offset: {
                 let column = st.inline_flow_column();
-                source_single_cell_first_placement
+                source_row_first_placement
                     .map(|placement| placement.anchor_y)
                     .or_else(|| {
                         source_text_frame_top

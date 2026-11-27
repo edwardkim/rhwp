@@ -131,9 +131,8 @@ impl<'a> CoanchoredTableQuery<'a> {
         )
     }
 
-    /// 이어받은 표를 닫고 다음 본문을 배치하기 전에 남은 원본 host 줄을 소비한다.
-    /// 뒤로 미룬 형제 표는 이 줄의 전진과 별개다. 원본 후속 줄이 같은 사다리를 닫아야 한다.
-    pub(super) fn stored_host_advance_after_split(
+    /// 글줄이 표들과 별개의 원본 전진량을 소유하는지는 다음 저장 줄로 확인한다.
+    pub(super) fn stored_host_line_advance(
         &self,
         next: &Paragraph,
         next_spacing_before: f64,

@@ -1,0 +1,12 @@
+case	input	original head cumulative	maintainer candidate
+#9398	Backspace 뒤 charOffset	1	2
+#9398	병합 실행 취소 뒤 문단	["","BOX"]	["B","OX"]
+#9398	다시 실행 뒤 charOffset	0	2
+#9398	다시 실행 뒤 K 입력	["KBOX"]	["BKOX"]
+#9398	HWP 저장·재열기	["KBOX"]	["BKOX"]
+#9398	HWPX 저장·재열기	["KBOX"]	["BKOX"]
+#9399	둘째 글상자 끝 오른쪽 5px 단일 클릭 후 묶음 선택 상태	true	false
+#9399	단일 클릭 직후 charOffset	4	5
+#9399	단일 클릭 직후 K 입력	["둘째 상자"]	["둘째 상자K"]
+#9399	같은 곳 두 번 클릭한 뒤 K 입력	["둘째 상자"]	["둘째 상자K"]
+대조	일반 문자 문단의 합치기 실행 취소	["B","OX"]	["B","OX"]

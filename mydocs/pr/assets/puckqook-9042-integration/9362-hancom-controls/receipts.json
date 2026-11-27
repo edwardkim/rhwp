@@ -1,0 +1,48 @@
+{
+  "resaved": {
+    "paragraph_spacing_percent": 160,
+    "stored_spacing_hwpunit": 388,
+    "following_line_origin_hwpunit": 2036,
+    "source": "tests/fixtures/coanchored_inline_tail/negative-spacing-hancom-resaved.hwp",
+    "source_sha256": "e82c4898875ef2d787c45cb820128300d52d488dc440e27dff95e93939259295",
+    "reference": "pdf/coanchored-inline-tail-negative-spacing/negative-spacing-hancom-resaved-2020.pdf",
+    "reference_sha256": "90ea8707f2595b6f5a2124f686f0ce88591a5b0c140146213ec9dc72d9d63003",
+    "resave_receipt": {
+      "job_id": "1d2d5d1e-cfb6-40ab-8f48-560c45c5a8b4",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9172",
+      "pdf_output_mode": ""
+    },
+    "print_receipt": {
+      "job_id": "66e2a4f3-00b8-47a4-8ddc-30bca208aba8",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9172",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+      "pdf_page_count": 2
+    }
+  },
+  "compact": {
+    "paragraph_spacing_percent": 90,
+    "stored_spacing_hwpunit": -64,
+    "following_line_origin_hwpunit": 1584,
+    "source": "tests/fixtures/coanchored_inline_tail/negative-spacing-90-percent-hancom-resaved.hwp",
+    "source_sha256": "09c540f3d5f7f5fff32e6195952a8a338da6aeda3b4b9f63bd306182a506a11b",
+    "reference": "pdf/coanchored-inline-tail-negative-spacing/negative-spacing-90-percent-hancom-resaved-2020.pdf",
+    "reference_sha256": "1e50f186b64ef36095547171bf2308f8720d9a957db242a3e936d588adb095c6",
+    "resave_receipt": {
+      "job_id": "9ef23b47-89f9-464d-8c65-e20a66f3ac23",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9172",
+      "pdf_output_mode": ""
+    },
+    "print_receipt": {
+      "job_id": "64d75cc2-9912-4270-a543-c0d69b6e0622",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9172",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+      "pdf_page_count": 2
+    }
+  }
+}

@@ -150,9 +150,26 @@ pub fn estimate_footnote_note_height(footnote: &Footnote, dpi: f64) -> f64 {
     }
 }
 
+/// 각주 구분선 띠의 상한(0.25mm).
+///
+/// [#8997] oracle10k 142 문서 2,921 쪽의 한컴 Print 벡터 좌표에서 첫 각주 줄 위끝 − 구분선
+/// 중심 − 「구분선 아래」 간격이 굵기 0.32·0.48·1.12·1.92·2.72px 모두 같은 0.95px 였다
+/// (rhwp 는 굵기 전체를 더했다). 쪽 아래에 붙는 구역의 위끝은 이 띠로 정해진다.
+/// 띠는 굵기(최소 0.5px)와 이 상한 중 작은 값이다 — 상한을 가는 선에도 그대로 쓰면
+/// 0.48px 이하 문서 7건에서 쪽이 늘었다(한컴 쪽수와 어긋남).
+pub(crate) const FOOTNOTE_SEPARATOR_BAND_MM: f64 = 0.25;
+
+pub(crate) fn footnote_separator_band_px(shape: &FootnoteShape, dpi: f64) -> f64 {
+    super::layout::border_width_to_px(shape.separator_line_width)
+        .max(0.5)
+        .min(FOOTNOTE_SEPARATOR_BAND_MM * dpi / 25.4)
+}
+
+/// 각주 구역에서 구분선이 차지하는 높이: 구분선 위 + 구분선 띠 + 구분선 아래 간격.
+/// 굵은 구분선의 굵기 전체는 이 높이에 들지 않는다([`FOOTNOTE_SEPARATOR_BAND_MM`]).
 pub fn footnote_separator_overhead_px(shape: &FootnoteShape, dpi: f64) -> f64 {
     super::hwpunit_to_px(shape.separator_above_margin_hu() as i32, dpi)
-        + super::layout::border_width_to_px(shape.separator_line_width).max(0.5)
+        + footnote_separator_band_px(shape, dpi)
         + super::hwpunit_to_px(shape.separator_below_margin_hu() as i32, dpi)
 }
 
@@ -1188,8 +1205,9 @@ pub struct OverlayRowFragment {
     pub opening_height: f64,
     pub remaining_height: f64,
     pub owns_stored_frame: bool,
+    pub fully_consumed: bool,
 }
-crate::storage::clone_fields!(OverlayRowFragment, {end_cut, opening_height, remaining_height, owns_stored_frame});
+crate::storage::clone_fields!(OverlayRowFragment, {end_cut, opening_height, remaining_height, owns_stored_frame, fully_consumed});
 
 /// [#4568] 쪽을 넘긴 overlay 표의 잔여 행 조각.
 #[derive(Debug, Clone)]
@@ -1351,6 +1369,8 @@ pub enum PageItem {
         /// 직전 조각에서 내용이 모두 소비된 시작 행의 남은 빈 물리 밴드 높이(px).
         /// `start_cut`은 해당 셀 내용을 숨기고 이 값은 테두리/셀 기하만 보존한다.
         start_row_height_override: Option<f64>,
+        /// 앞 조각이 예약한 자식 행의 미소비 물리 높이. 부모 행 컷과 독립적이다.
+        remaining_child_row: Option<Box<(usize, f64)>>,
         /// 앞 조각의 실제 병합 점유를 반영해 예약에서 확정한 행 높이.
         /// 비어 있으면 기존 측정 경로이며 paint는 확정값을 다시 분배하지 않는다.
         /// [#7531] 쪽을 넘어온 걸침 칸의 끝 행에서 앞 쪽 빈 띠만큼 덜 높이 `(행, px)`.
@@ -1427,6 +1447,7 @@ impl crate::storage::CloneWithStorage for PageItem {
                 row_cursor_is_nested,
                 end_row_height_override,
                 start_row_height_override,
+                remaining_child_row,
                 straddle_row_relief,
                 straddle_page_bands,
                 fragment_row_heights,
@@ -1451,6 +1472,7 @@ impl crate::storage::CloneWithStorage for PageItem {
                     start_row_height_override,
                     storage,
                 )?,
+                remaining_child_row: crate::storage::try_clone(remaining_child_row, storage)?,
                 straddle_row_relief: crate::storage::try_clone(straddle_row_relief, storage)?,
                 straddle_page_bands: crate::storage::try_clone(straddle_page_bands, storage)?,
                 fragment_row_heights: crate::storage::try_clone(fragment_row_heights, storage)?,
@@ -1698,6 +1720,7 @@ impl PageItem {
                 row_cursor_is_nested,
                 end_row_height_override,
                 start_row_height_override,
+                remaining_child_row,
                 straddle_row_relief,
                 straddle_page_bands,
                 fragment_row_heights,
@@ -1716,6 +1739,7 @@ impl PageItem {
                 row_cursor_is_nested: *row_cursor_is_nested,
                 end_row_height_override: *end_row_height_override,
                 start_row_height_override: *start_row_height_override,
+                remaining_child_row: remaining_child_row.clone(),
                 straddle_row_relief: straddle_row_relief.clone(),
                 straddle_page_bands: straddle_page_bands.clone(),
                 fragment_row_heights: fragment_row_heights.clone(),

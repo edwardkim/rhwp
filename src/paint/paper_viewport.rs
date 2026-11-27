@@ -7,7 +7,7 @@ use crate::paint::{
 };
 use crate::renderer::image_resolver::detect_image_mime_type;
 use crate::renderer::render_tree::{
-    BoundingBox, ImageNode, RectangleNode, RenderNode, RenderNodeType,
+    BoundingBox, ImageNode, NodeId, RectangleNode, RenderNode, RenderNodeType, TextRunNode,
 };
 use crate::renderer::{hwpunit_to_px, DEFAULT_DPI, HWPUNIT_PER_INCH};
 
@@ -32,6 +32,7 @@ pub(crate) struct PagePaintContext {
     image_column_origin: Option<(f64, f64)>,
     image_column_blocked: bool,
     table_fill_origin: super::table_fill_origin::TableFillOrigin,
+    implicit_footer_number: Option<(NodeId, f64)>,
 }
 
 impl PagePaintContext {
@@ -52,6 +53,7 @@ impl PagePaintContext {
             image_column_origin: None,
             image_column_blocked: false,
             table_fill_origin: Default::default(),
+            implicit_footer_number: None,
         }
     }
 
@@ -68,6 +70,41 @@ impl PagePaintContext {
 
     pub(crate) fn output_size(self) -> (f64, f64) {
         self.output_size
+    }
+
+    pub(super) fn with_implicit_footer_number(mut self, number: Option<(NodeId, f64)>) -> Self {
+        if self.print && self.print_paper.is_none() {
+            self.implicit_footer_number = number;
+        }
+        self
+    }
+
+    pub(super) fn place_implicit_footer_number(
+        self,
+        id: NodeId,
+        run: &mut TextRunNode,
+        mut bbox: BoundingBox,
+        dpi: f64,
+    ) -> BoundingBox {
+        let Some((_, bottom_margin)) = self.implicit_footer_number.filter(|(node, _)| *node == id)
+        else {
+            return bbox;
+        };
+        let Some((baseline, ink_size)) = super::implicit_page_number::project_footer_number(
+            self.logical_size.1,
+            self.output_size.1,
+            bottom_margin,
+            run.style.font_size,
+            dpi,
+        ) else {
+            return bbox;
+        };
+        // 기존 줄의 전진과 소유는 유지하고 원본 글꼴의 인쇄 잉크만 투영한다.
+        run.layout_positions = Some(run.replay_positions_for(run.display_or_text()).into_owned());
+        run.style.font_family = "Haansoft Batang".to_owned();
+        run.style.print_ink_font_size = Some(ink_size);
+        bbox.y = baseline - run.baseline;
+        bbox
     }
 
     /// 글줄 그림은 실제 소유 단의 원점과 상대 위치를 따로 장치 정수로 변환한다.
@@ -636,6 +673,32 @@ impl PagePaintContext {
         (width.is_finite() && width > 0.0).then_some(width)
     }
 
+    pub(super) fn alpha_device_frame(
+        self,
+        node: &RenderNode,
+        image: &ImageNode,
+    ) -> Option<(
+        BoundingBox,
+        crate::renderer::image_resolver::PrintAlphaDeviceGrid,
+    )> {
+        if !self.axis_aligned_graphics {
+            return None;
+        }
+        let context = self.with_hangul2024_print(true);
+        let paper = context.print_paper?;
+        let position = context.raster_image_frame(node, image);
+        let (sx, sy) = paper.device_units;
+        let size = |length| source_device_coordinate(length, 96.0 / 600.0).round();
+        let frame = BoundingBox::new(
+            position.x,
+            position.y,
+            size(node.bbox.width) * sx,
+            size(node.bbox.height) * sy,
+        );
+        let grid = crate::renderer::image_resolver::PrintAlphaDeviceGrid::new(frame, (sx, sy))?;
+        Some((frame, grid))
+    }
+
     /// 회전/affine 아래의 좌표는 최종 장치 좌표가 아니므로 이 계약을 적용하지 않는다.
     pub(crate) fn without_rectangle_mapping(mut self) -> Self {
         self.axis_aligned_graphics = false;
@@ -732,7 +795,13 @@ impl PagePaintContext {
 
     /// 독립 Print의 실선 그림 테두리는 채운 띠와 장치 한 픽셀의 외곽 pen을 갖는다.
     /// 원본 HU·논리 프레임은 유지하고 양쪽 backend가 소비할 인쇄 선폭만 만든다.
-    pub(crate) fn picture_border_pen(self, rect: &mut RectangleNode, pixel: Option<f64>) {
+    pub(crate) fn picture_border_pen(
+        self,
+        rect: &mut RectangleNode,
+        pixel: Option<f64>,
+        in_shape_group: bool,
+        device_alpha_bands: bool,
+    ) {
         let (Some(width_hu), Some(pixel)) = (
             rect.picture_border_width_hu,
             pixel.filter(|p| p.is_finite() && *p > 0.0),
@@ -749,15 +818,19 @@ impl PagePaintContext {
         {
             return;
         }
-        // 선언 폭 0은 화면용 0.1mm 기본값이 아니라 인쇄 장치의 cosmetic pen이다.
-        let declared = if width_hu == 0 {
-            0.0
+        if width_hu == 0 && device_alpha_bands {
+            // 59043 Print의 알파 장치 띠에는 한 픽셀의 채움 테두리가 붙는다.
+            rect.style.stroke_width = pixel;
         } else {
-            rect.style.stroke_width / pixel
-        };
-        let band = declared.round().max(1.0);
-        rect.print_picture_pen = Some([band * pixel, pixel]);
-        rect.style.stroke_width = (band + 1.0) * pixel;
+            // 편람 Print의 독립 불투명 그림은 한 픽셀의 채움과 외곽선을 함께 그린다.
+            let band = if width_hu == 0 && !in_shape_group {
+                1.0
+            } else {
+                (rect.style.stroke_width / pixel).round().max(1.0)
+            };
+            rect.print_picture_pen = Some([band * pixel, pixel]);
+            rect.style.stroke_width = (band + 1.0) * pixel;
+        }
         // 빈 명시적 반복 구간은 실선이다. 재생기는 확정한 장치 선폭을 그대로 소비한다.
         rect.style.stroke_dash = crate::renderer::StrokeDash::Explicit([0.0; 6]);
     }

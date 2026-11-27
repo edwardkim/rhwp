@@ -3579,8 +3579,11 @@ impl Renderer for WebCanvasRenderer {
                 (std::borrow::Cow::Borrowed(data), mime_type)
             };
 
+        // 브라우저는 JPEG EXIF 방향을 적용해 돌려 그린다. 한/글처럼 바이트 그대로 그리게 방향을 1로 둔다.
+        let upright = crate::renderer::image_resolver::upright_jpeg(&render_data);
+        let render_data = upright.as_deref().unwrap_or(&render_data);
         // Base64 인코딩 및 data URL 생성
-        let base64_data = base64::engine::general_purpose::STANDARD.encode(&*render_data);
+        let base64_data = base64::engine::general_purpose::STANDARD.encode(render_data);
         let data_url = format!("data:{};base64,{}", render_mime, base64_data);
 
         if let Ok(img) = HtmlImageElement::new() {
@@ -4618,7 +4621,7 @@ impl WebCanvasRenderer {
                 })
         };
         let original_size_hu = if is_wmf {
-            super::metafile_geometry::wmf_crop_reference(original_size_hu)
+            super::metafile_geometry::wmf_crop_reference(original_size_hu, Some(data), crop)
         } else {
             original_size_hu
         };

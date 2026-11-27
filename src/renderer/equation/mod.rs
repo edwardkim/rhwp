@@ -43,6 +43,7 @@ mod legacy_glyphs;
 pub(crate) mod legacy_hwpeq;
 mod logical_font_frame;
 pub mod parser;
+pub(crate) mod produced_frame;
 mod radical_line_frame;
 pub(crate) mod radical_outline;
 mod relation_outline;

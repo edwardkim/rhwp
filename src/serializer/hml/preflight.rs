@@ -16,8 +16,9 @@ use super::error::{HmlExportError, HmlSaveBlocker};
 pub(crate) fn validate_document(
     document: &Document,
     metadata: &HmlImportMetadata,
+    implicit_equations: bool,
 ) -> Result<(), HmlExportError> {
-    let blockers = collect_blockers(document, metadata);
+    let blockers = collect_with_equation_layout(document, metadata, implicit_equations);
     if blockers.is_empty() {
         Ok(())
     } else {
@@ -29,6 +30,16 @@ pub(crate) fn collect_blockers(
     document: &Document,
     metadata: &HmlImportMetadata,
 ) -> Vec<HmlSaveBlocker> {
+    let implicit_equations =
+        super::implicit_equations::implicit_equation_styles(document).is_some();
+    collect_with_equation_layout(document, metadata, implicit_equations)
+}
+
+fn collect_with_equation_layout(
+    document: &Document,
+    metadata: &HmlImportMetadata,
+    implicit_equations: bool,
+) -> Vec<HmlSaveBlocker> {
     let mut blockers = Vec::new();
     validate_metadata(document, metadata, &mut blockers);
     validate_resources(document, &mut blockers);
@@ -39,6 +50,7 @@ pub(crate) fn collect_blockers(
             validate_paragraph(
                 paragraph,
                 &format!("/HWPML/BODY/SECTION[{section_index}]/P[{paragraph_index}]"),
+                implicit_equations,
                 &mut blockers,
             );
         }
@@ -275,7 +287,12 @@ fn is_default_fill(fill: &Fill) -> bool {
         && fill.alpha == 0
 }
 
-fn validate_paragraph(paragraph: &Paragraph, path: &str, blockers: &mut Vec<HmlSaveBlocker>) {
+fn validate_paragraph(
+    paragraph: &Paragraph,
+    path: &str,
+    implicit_equations: bool,
+    blockers: &mut Vec<HmlSaveBlocker>,
+) {
     validate_xml_value(&paragraph.text, path, blockers);
     push_if(
         !paragraph_layout_is_reconstructable(paragraph),
@@ -307,9 +324,12 @@ fn validate_paragraph(paragraph: &Paragraph, path: &str, blockers: &mut Vec<HmlS
             Control::Table(table) => {
                 validate_table(table, &format!("{control_path}/TABLE"), blockers)
             }
-            Control::Equation(equation) => {
-                validate_equation(equation, &format!("{control_path}/EQUATION"), blockers)
-            }
+            Control::Equation(equation) => validate_equation(
+                equation,
+                &format!("{control_path}/EQUATION"),
+                implicit_equations,
+                blockers,
+            ),
             Control::Shape(shape) => match shape.as_ref() {
                 ShapeObject::Rectangle(rectangle) => {
                     validate_rectangle(rectangle, &format!("{control_path}/RECTANGLE"), blockers)
@@ -333,20 +353,29 @@ fn validate_paragraph(paragraph: &Paragraph, path: &str, blockers: &mut Vec<HmlS
 fn validate_equation(
     equation: &crate::model::control::Equation,
     path: &str,
+    implicit: bool,
     blockers: &mut Vec<HmlSaveBlocker>,
 ) {
     validate_xml_value(&equation.script, &format!("{path}/SCRIPT"), blockers);
     validate_xml_value(&equation.version_info, path, blockers);
     validate_xml_value(&equation.font_name, path, blockers);
 
-    let expected_size =
-        crate::renderer::equation::intrinsic_size_hwp(&equation.script, equation.font_size);
-    push_if(
-        (equation.common.width, equation.common.height) != expected_size,
-        path,
-        "equation intrinsic size does not match its script and BaseUnit",
-        blockers,
-    );
+    let represented = if implicit {
+        crate::parser::hml::implicit_equation_print::fallback_frame()
+    } else {
+        let expected_size =
+            crate::renderer::equation::intrinsic_size_hwp(&equation.script, equation.font_size);
+        push_if(
+            (equation.common.width, equation.common.height) != expected_size,
+            path,
+            "equation intrinsic size does not match its script and BaseUnit",
+            blockers,
+        );
+        CommonObjAttr {
+            treat_as_char: true,
+            ..Default::default()
+        }
+    };
     let mut common_without_packed_attr = equation.common.clone();
     common_without_packed_attr.attr = 0;
     validate_common(
@@ -361,14 +390,22 @@ fn validate_equation(
     let omitted = !matches!(common.attr, 0) && common.attr != packed_attr
         || common.vertical_offset != 0
         || common.horizontal_offset != 0
-        || !common.treat_as_char
-        || common.flow_with_text
+        || common.treat_as_char != represented.treat_as_char
+        || common.flow_with_text != represented.flow_with_text
         || common.allow_overlap
-        || common.vert_rel_to != Default::default()
+        || common.vert_rel_to != represented.vert_rel_to
         || common.vert_align != Default::default()
-        || common.horz_rel_to != Default::default()
+        || common.horz_rel_to != represented.horz_rel_to
         || common.horz_align != Default::default()
-        || common.text_wrap != Default::default();
+        || common.text_wrap != represented.text_wrap
+        || (implicit
+            && (common.affect_line_spacing
+                || common.locked
+                || common.drop_cap_style != Default::default()
+                || common.hwp5_header_ctrl_data.is_some()
+                || common.cell_frame_paint
+                || common.cell_border_paint.is_some()
+                || common.outside_cell_border_paint.is_some()));
     push_if(
         omitted,
         path,
@@ -506,7 +543,12 @@ fn validate_rectangle(rectangle: &RectangleShape, path: &str, blockers: &mut Vec
     if let Some(text_box) = &rectangle.drawing.text_box {
         validate_text_box(text_box, rectangle.common.width, path, blockers);
         for (index, paragraph) in text_box.paragraphs.iter().enumerate() {
-            validate_paragraph(paragraph, &format!("{path}/DRAWTEXT/P[{index}]"), blockers);
+            validate_paragraph(
+                paragraph,
+                &format!("{path}/DRAWTEXT/P[{index}]"),
+                false,
+                blockers,
+            );
         }
     }
 }
@@ -709,7 +751,7 @@ fn validate_cell(cell: &Cell, path: &str, blockers: &mut Vec<HmlSaveBlocker>) {
         blockers,
     );
     for (index, paragraph) in cell.paragraphs.iter().enumerate() {
-        validate_paragraph(paragraph, &format!("{path}/P[{index}]"), blockers);
+        validate_paragraph(paragraph, &format!("{path}/P[{index}]"), false, blockers);
     }
 }
 

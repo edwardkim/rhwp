@@ -17,6 +17,7 @@ mod heading;
 mod post_flow;
 mod stored_reset;
 mod tail;
+mod trailing_float_prefix;
 mod vpos;
 impl TypesetEngine {
     pub(in crate::renderer::typeset) fn run_section_with_storage<S: crate::storage::Storage>(
@@ -160,13 +161,30 @@ impl TypesetEngine {
         }
         let issue2424_loop_started = issue2424_ts_enabled.then(std::time::Instant::now);
 
+        let mut placed_through = None;
         for (para_idx, para) in paragraphs.iter().enumerate() {
+            if placed_through.is_some_and(|last| para_idx <= last) {
+                continue;
+            }
             // [Task #1753] 지연 이월 표 직전에 선행 채움(prefill)으로 이미 배치된 문단 스킵.
             if st.prefilled_paras.contains(&para_idx) {
                 continue;
             }
             st.apply_deferred_source_frame_body_page_with_storage(para_idx, storage)?;
             st.consume_pending_table_terminal_gap(para_idx, paragraphs, styles, self.dpi);
+            if let Some(last) = self.try_place_trailing_float_prefix(
+                &mut st,
+                paragraphs,
+                para_idx,
+                styles,
+                measured_tables,
+                force_break_before,
+                storage,
+            )? {
+                placed_through = Some(last);
+                variant_prev_para_idx = Some(last);
+                continue;
+            }
             // 후속 본문이 사이에 없는 새 표 문단은 이전 묶음의 일부가 아니다.
             // 이전 문단의 후행 표를 먼저 완료한다. 새 문단의 명시적 쪽/단 나눔과
             // 저장 vpos를 적용하기 전이어야 이전 표가 새 문단 뒤로 밀리지 않는다.
@@ -479,7 +497,25 @@ impl TypesetEngine {
         );
         st.finish_next_column_stored_frames_with_storage(storage)?;
         st.finish_deferred_column_shapes_with_storage(storage)?;
-        if st.has_column_content() {
+        // 글 앞/뒤 표는 본문 흐름을 밀지 않는다. 본문보다 긴 표나, 실제 앵커 아래
+        // 남은 공간에서 중첩 표 행이 잘린 경우에는 마지막 본문 뒤에도 그 행을 이어 그린다.
+        let base_available = st.base_available_height();
+        let needs_overlay_page = st.pending_overlay_continuations.iter().any(|cont| {
+            let control = paragraphs.get(cont.para_index)
+                .and_then(|host| host.controls.get(cont.control_index));
+            matches!(control, Some(crate::model::control::Control::Table(table))
+                if matches!(table.layout_page_break(), crate::model::table::TablePageBreak::RowBreak)
+                    && table.cells.iter().any(crate::renderer::float_placement::cell_contains_detached_paragraph_table))
+                || measured_tables.iter().any(|mt| {
+                    mt.para_index == cont.para_index
+                        && mt.control_index == cont.control_index
+                        && mt.total_height > base_available
+                })
+        });
+        if needs_overlay_page {
+            st.force_new_page_with_storage(storage)?;
+            st.flush_column_always_with_storage(storage)?;
+        } else if st.has_column_content() {
             st.flush_column_always_with_storage(storage)?;
         }
         // 마지막 본문 뒤의 저장 각주 suffix도 버리지 않는다. 실제 다음 쪽을

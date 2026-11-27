@@ -452,7 +452,10 @@ impl TypesetEngine {
             // (`cut_row_h`)로 자르되, #3820의 native HWP5 rewind 형상에서 온전한
             // 행을 남길지 판단할 때는 renderer가 paint할 footprint를 사용한다.
             let row_start_cut: &[usize] = if r == cursor_row { &start_cut } else { &[] };
-            let row_total = row_query.whole_row_height(row_start_cut, whole_row_fit_h);
+            let row_total = v
+                .deferred_opening_row_height
+                .filter(|_| r == cursor_row)
+                .unwrap_or_else(|| row_query.whole_row_height(row_start_cut, whole_row_fit_h));
             // 온전한 행 후보에는 rowspan 잔여 내용도 예약한다. 아래에서 실제
             // end_cut을 선택하면 row_cut_content_height로 분할 높이를 다시 측정하고,
             // 렌더러도 같은 end_cut을 받아 잔여 전체 높이 보정을 생략한다.
@@ -769,13 +772,28 @@ impl TypesetEngine {
             // Stored vpos-frame resets are source-owned physical fragment boundaries.
             // First take the ordinary budget cut, then extend only to the end of
             // the recorded source frame when that exact CellUnit boundary is known.
-            let (mut res, mut budget) = layout_engine.advance_row_cut_for_physical_band(
-                table,
-                r,
-                row_start_cut,
-                (avail_for_rows - consumed - cs_before + source_cell_rounding_slack).max(0.0),
-                styles,
-            );
+            let stored_nested_page_band = (!start_cut_is_block)
+                .then_some(v.reflow_blank_avail_for_rows)
+                .flatten()
+                .and_then(|limit| {
+                    layout_engine.advance_stored_nested_page_band(
+                        table,
+                        r,
+                        row_start_cut,
+                        (limit.min(avail_for_rows) - consumed - cs_before).max(0.0),
+                        v.remaining_child_row,
+                        styles,
+                    )
+                });
+            let (mut res, mut budget) = stored_nested_page_band.unwrap_or_else(|| {
+                layout_engine.advance_row_cut_for_physical_band(
+                    table,
+                    r,
+                    row_start_cut,
+                    (avail_for_rows - consumed - cs_before + source_cell_rounding_slack).max(0.0),
+                    styles,
+                )
+            });
             if std::env::var("RHWP_DIAG_SCAN").is_ok() {
                 eprintln!(
                     "DIAG_SCAN CUT_BASE r={} cursor={} avail={:.3} prior={:.3} cs={:.3} padding={:.3} content_budget={:.3} cut_budget={:.3} height={:.3} fully={} end_cut={:?}",

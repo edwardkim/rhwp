@@ -1,0 +1,208 @@
+{
+  "head": "930e6f77a5433d6b254969acda078cd73f8b5597",
+  "backend": "native",
+  "cases": {
+    "7784-76076-hwp": {
+      "input": "samples/76076_regulatory_analysis.hwp",
+      "input_sha256": "3308ba8505391bae2d0d62963e9399f4e48cdae574304cc0f89a311c6efbb6b5",
+      "pdf": "pdf/issue1891/76076-original-hwp-exact-2024-20261005.pdf",
+      "pdf_sha256": "515133a656a78a9e77db3429f324b0a1f84b658b7a07bc846aa360533cf74072",
+      "pages": 82,
+      "minimum": 98.91,
+      "tsv_sha256": "554c7d16163bb57b4a671b2bf89d9db23d8d028932eac84c71e5c0b865fe0c18",
+      "review_pngs": {
+        "33": {
+          "raw": "99.99",
+          "file": "review_033.png",
+          "sha256": "d7fb3a9a40345e59e8c84ce3dd88b4e84b370d1531fb459ca14515b8331431cb"
+        },
+        "34": {
+          "raw": "99.93",
+          "file": "review_034.png",
+          "sha256": "dd032c9fc0367bf86f7be40526584b0f0ff38b2274774af8164e1a8a7065f382"
+        },
+        "38": {
+          "raw": "100.00",
+          "file": "review_038.png",
+          "sha256": "ab4f30891c201c31ace9accfa73bf63a2a39fc94c423ee5dfe9f6eb0bdbbde92"
+        }
+      }
+    },
+    "7779-76076-hwpx": {
+      "input": "samples/issue1891/76076_regulatory_analysis.hwpx",
+      "input_sha256": "49bbcc491b75eb18fea7cd1453de8e261749e2ff9b20793b54aa202e015192d7",
+      "pdf": "pdf/issue1891/76076-exact-input-hwp2020-20261004.pdf",
+      "pdf_sha256": "9e0c6a21a509e2f89c21bf80bc22cf9e23150718f6468665ea749fbec4d819a7",
+      "pages": 82,
+      "minimum": 98.52,
+      "tsv_sha256": "be4e8b86c12955f2d6b65f4fd574c255de17de8d398cafefee540ef0f2b32fc9",
+      "review_pngs": {
+        "6": {
+          "raw": "99.98",
+          "file": "review_006.png",
+          "sha256": "8c25ab1f806c0e8c138cd230d8e50bedab5ee928c86e45b5240bca6f6b124c6e"
+        },
+        "7": {
+          "raw": "100.00",
+          "file": "review_007.png",
+          "sha256": "322071fc1e2c9628826dbe18c2d0ce3c874ea830bf5332eb484fa7bf31c1476d"
+        },
+        "33": {
+          "raw": "100.00",
+          "file": "review_033.png",
+          "sha256": "657d07290646c7b2c8f6c0342227d094c8f74e62473cc8d973a03573cd85f9d1"
+        }
+      }
+    },
+    "7777-37787": {
+      "input": "samples/issue5699/37787_regulatory_impact.hwp",
+      "input_sha256": "71496c7f481d8e7a4083fdeb9b5a1bc5dbb74f6253b8d65b448bbf12af8d7e55",
+      "pdf": "pdf/issue5699/37787_regulatory_impact-2020.pdf",
+      "pdf_sha256": "0b93d9088a24e19348f666aef4bae7920666d7632f69632470cc037e8b1dd934",
+      "pages": 49,
+      "minimum": 99.21,
+      "tsv_sha256": "66cf7ddc746b6dab6d407e2ad92b377a62c9bbda248a5073f7dac9f22443262f",
+      "review_pngs": {
+        "14": {
+          "raw": "100.00",
+          "file": "review_014.png",
+          "sha256": "03935b1bb6082b10dd4660a69dc32c6a0143112bc83600eea4990baa5703f724"
+        },
+        "27": {
+          "raw": "100.00",
+          "file": "review_027.png",
+          "sha256": "6d71442367eff5b3dab8215f8ba47c11ce43792ef50ab17d31204e66c57ceca6"
+        },
+        "28": {
+          "raw": "100.00",
+          "file": "review_028.png",
+          "sha256": "1e70d88401dfbfe52beba4f74b086b53cf15d5e81fb3efe2389db8a6e9203263"
+        }
+      }
+    },
+    "7778-2022-print": {
+      "input": "samples/issue1921/59043_regulatory_analysis.hwp",
+      "input_sha256": "da9f9c9862475d1710f6ecf93e3ce134726054fe0be0d9523b9d60d1a90c82ef",
+      "pdf": "pdf/issue1921/59043_regulatory_analysis-2022.pdf",
+      "pdf_sha256": "fade38ba20113ab52eaf42c55eec207943fe66e1b18efdeee06bfa65a1d64fa1",
+      "pages": 37,
+      "minimum": 98.48,
+      "tsv_sha256": "59b9ca1a3305a66245220589661deb9bc4328fe86b350f22b585a78c10f86239",
+      "review_pngs": {}
+    },
+    "7778-2024-print": {
+      "input": "samples/issue1921/59043_regulatory_analysis.hwp",
+      "input_sha256": "da9f9c9862475d1710f6ecf93e3ce134726054fe0be0d9523b9d60d1a90c82ef",
+      "pdf": "pdf/semanticist21-20261123/59043_regulatory_analysis-2024.pdf",
+      "pdf_sha256": "024df9a449dc84e9f07c719eb7ec95cd85cf7e945a1fbaabf77141ccf54402dc",
+      "pages": 37,
+      "minimum": 98.16,
+      "tsv_sha256": "5e646ac2b55891f6740076f58bed1d76a921f1a3191735998b2ff428d00ad549",
+      "review_pngs": {
+        "10": {
+          "raw": "99.85",
+          "file": "review_010.png",
+          "sha256": "fca38ef465d1625c15ec21678c66ef43b95f1eae88fa59488bcfa4e9ce91f288"
+        },
+        "36": {
+          "raw": "99.96",
+          "file": "review_036.png",
+          "sha256": "1e21cd3c9ab69c125c376bca8ceeae131f34363e232a362301cd503223d63c27"
+        },
+        "37": {
+          "raw": "99.96",
+          "file": "review_037.png",
+          "sha256": "f7f55cbbba647e2f1a9f2425c06baf8b03285d0d0700927f3632a246eec3c956"
+        }
+      }
+    },
+    "7786-ktx": {
+      "input": "mydocs/pr/assets/issue7445/ktx-toc27/KTX.hwp",
+      "input_sha256": "b6c1492152f53e8dd7d4bbbb4faca88866bb8458e9018c70c936cd469ea6fab3",
+      "pdf": "mydocs/pr/assets/issue7445/ktx-toc27/KTX-hwp-2020.pdf",
+      "pdf_sha256": "2b1c78d2a0b7c86b9c7071a491c7c70c3bb435bfef24441b2d929f1c7796f86a",
+      "pages": 27,
+      "minimum": 100.0,
+      "tsv_sha256": "b0269202f8c8228e230656affa6f90dc62f146927728168daf523ce4cbaf0577",
+      "review_pngs": {
+        "2": {
+          "raw": "100.00",
+          "file": "review_002.png",
+          "sha256": "88f56b76b51a43b2f2657a8e1d73249640d7b8edf6b3b4c0dc4cfb6791564734"
+        }
+      }
+    },
+    "7787-top": {
+      "input": "samples/stored-nested-content-flow/overlay-top.hwpx",
+      "input_sha256": "b2f8069202597e006e0cc2dacb17f89f9c95db6a718ac65669ef634bc002a5a4",
+      "pdf": "pdf/pr7200/pr7200-overlay-top-2020.pdf",
+      "pdf_sha256": "24e0f744bfc5049de512f0a36c60e142fd3bf95ec13183250b7c0902f749b7bf",
+      "pages": 1,
+      "minimum": 98.27,
+      "tsv_sha256": "cb13a0a74f0e149dc35c2f202b4eb735757596c664e2b0a73afff14cbd2f8ec3",
+      "review_pngs": {
+        "1": {
+          "raw": "98.27",
+          "file": "review_001.png",
+          "sha256": "caf68cbd46c04b1c9053025f685166fb27da6b085049c5195c0bd4a1463c5e0d"
+        }
+      }
+    },
+    "7787-center": {
+      "input": "samples/stored-nested-content-flow/overlay-center.hwpx",
+      "input_sha256": "82f47168e773ceb84809552703d6a72a8311173659374f54d214e500b962fe38",
+      "pdf": "pdf/pr7200/pr7200-overlay-center-2020.pdf",
+      "pdf_sha256": "80764f6e12b79358facbcc7390c619af13be6b7ad3412856f887a6284b84a830",
+      "pages": 1,
+      "minimum": 100.0,
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "review_pngs": {}
+    },
+    "7787-bottom": {
+      "input": "samples/stored-nested-content-flow/overlay-bottom.hwpx",
+      "input_sha256": "6f457a17897e2417674ed730daf36dd70dadf199a817337a471ffaccdfc1f2f6",
+      "pdf": "pdf/pr7200/pr7200-overlay-bottom-2020.pdf",
+      "pdf_sha256": "3126a88f633b3b0af4922cc3b906c6f17f7f06d1840b2ae5f4b414d474f1b28c",
+      "pages": 1,
+      "minimum": 100.0,
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "review_pngs": {}
+    },
+    "7785-hml": {
+      "input": "samples/hml/exambank_math_equations_min.hml",
+      "input_sha256": "b51be49cde780d39b92f42cfd1cbd58474900c46c12c4df971f79bd511c7045a",
+      "pdf": "samples/hml/exambank_math_equations_min-2024.pdf",
+      "pdf_sha256": "d5a494de0eb1eb7b14216fc7fb2197007ba7a30c61bf57f49d9b1bc101c13548",
+      "pages": 1,
+      "minimum": 100.0,
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "review_pngs": {
+        "1": {
+          "raw": "100.00",
+          "file": "review_001.png",
+          "sha256": "c53cd428e9e37065d62f958738ca056f168103ceb23df8528641ae6b51af9e13"
+        }
+      }
+    },
+    "7785-hwp": {
+      "input": "samples/hml/exambank_math_equations_min.hwp",
+      "input_sha256": "701fedf957227d2432f859a5e6c99c170208a21ed8137c4e4e7e5704eeffe87c",
+      "pdf": "pdf/issue7642-equation-print/hml-saved-hwp-exambank_math_equations_min-2020.pdf",
+      "pdf_sha256": "45dff67c088f95e95cfed72f7a1f84e75132c77d891f8eabac65618325b94f55",
+      "pages": 1,
+      "minimum": 100.0,
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "review_pngs": {}
+    },
+    "7785-hwpx": {
+      "input": "samples/hml/exambank_math_equations_min.hwpx",
+      "input_sha256": "39716b303c76ad81566217366b2aff44d614e148b3e7915f7b268b3a9cbac3d5",
+      "pdf": "pdf/issue7642-equation-print/hml-saved-hwpx-exambank_math_equations_min-2020.pdf",
+      "pdf_sha256": "e76083fe1f2c708fb361c0fb7f5e13d9d7090b7bf24e3664f388339f09f460c3",
+      "pages": 1,
+      "minimum": 100.0,
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "review_pngs": {}
+    }
+  }
+}

@@ -131,6 +131,26 @@ impl TypesetEngine {
         st: &mut TypesetState,
         mut input: BlockTableInput<'a>,
     ) -> Option<SplitTableEntry<'a>> {
+        // 앞 문단 표의 이어지는 조각 바로 뒤 문단 기준 표 host 는 문단 위 간격이 조각 띠와
+        // 겹친다. 배치(`HeightCursor::vpos_adjust`)와 같은 등식으로 문단 상단을 올린다.
+        if !st.profile.session_edited()
+            && matches!(st.current_items.last(), Some(PageItem::PartialTable {
+                para_index, is_continuation: true, ..
+            }) if input.para_idx.checked_sub(1) == Some(*para_index))
+        {
+            if let Some(lift) =
+                crate::renderer::float_placement::split_successor_float_host_origin_lift(
+                    input.para,
+                    st.current_height,
+                    input.fmt.spacing_before,
+                    self.dpi,
+                )
+            {
+                st.align_flow_to(st.current_height - lift);
+                input.para_start_height -= lift;
+                input.budget_para_start_height -= lift;
+            }
+        }
         // A saved opening fragment can establish its column frame through
         // the independently known body boundary. The object-only anchor,
         // saved object height and closing outside margin must close that
@@ -2803,8 +2823,33 @@ impl TypesetEngine {
             && total_footnote <= 0.0
             && st.current_height + (table_total - host_spacing_total).max(0.0)
                 > available + below_body_slack + 0.5;
-        let stored_cell_frames_require_split =
-            self.stored_cell_page_frames_require_split(table, styles);
+        let stored_completed_row_frames = (st.col_count == 1
+            && st.profile.hwp5_stored_pagination_layout()
+            && table.row_count == 1
+            && table
+                .cells
+                .iter()
+                .any(|cell| cell.height > table.common.height)
+            && ft.table_footnotes.is_empty())
+        .then(|| paragraphs_all.get(para_idx + 1))
+        .flatten()
+        .and_then(|next| {
+            let engine = crate::renderer::layout::LayoutEngine::new(self.dpi);
+            self.prime_section_cell_context(&engine);
+            engine.set_layout_profile(st.profile);
+            engine.set_render_normalization_overlay(std::sync::Arc::clone(
+                &self.render_normalization,
+            ));
+            engine.stored_completed_row_frames(
+                para,
+                next,
+                table,
+                styles,
+                st.layout.body_area.height,
+            )
+        });
+        let stored_cell_frames_require_split = stored_completed_row_frames.is_some()
+            || self.stored_cell_page_frames_require_split(table, styles);
         let legacy_whole_fits = !painted_rowbreak_exceeds_paper
             && !stored_cell_frames_require_split
             && (st.current_height + whole_fit_table_total <= available
@@ -3286,6 +3331,7 @@ impl TypesetEngine {
             mt,
             row_geometry_table,
             declared_table_height,
+            stored_completed_row_frames,
         })
     }
 }

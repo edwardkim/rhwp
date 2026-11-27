@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/mcp_hwp2024Convert_usage.md
-last_verified: 2026-11-24
+last_verified: 2026-11-25
 ---
 
 # HWP 2024 변환 MCP client 사용법
@@ -97,12 +97,51 @@ python3 tools/oracle_public/audit_print_pairs.py --repo-root . \
 
 실제 기록 형식은 [34쌍의 보존 영수증](../pr/assets/hyunmyungjanelee_20261112/mcp-print-reference/receipts.json)에서 확인할 수 있다.
 
+### 출력 모드와 글꼴 이름 문법 보정 확인
+
+`pdf_output_mode`는 실제로 실행한 출력 방법이다. `one_up`은 모아 찍기를 해제한 한 쪽씩
+인쇄를 뜻하며, 문서의 시각적 정확성을 보증하는 값은 아니다.
+
+| `pdf_output_mode` | 실행 경로 | `pdf_print_method` |
+| --- | --- | --- |
+| `hancom2020_pdf_driver_one_up` | 한컴 2020의 Hancom PDF 인쇄, 한 쪽씩 | `0` |
+| `hancom2024_pdf_driver_one_up` | 한컴 2024의 Hancom PDF 인쇄, 한 쪽씩 | `0` |
+| `hancom2020_pdf_save_as` | 인쇄 오류 후 같은 입력을 한컴 2020의 PDF로 저장하기로 다시 생성 | `null` |
+| `hancom2024_pdf_save_as` | 인쇄 오류 후 같은 입력을 한컴 2024의 PDF로 저장하기로 다시 생성 | `null` |
+
+일부 한컴 PDF에는 `/BaseFont /HCI Poppy`처럼 PDF 글꼴 이름 안의 공백이 이스케이프되지
+않은 문법 오류가 있다. MCP는 보정 가능한 경우 이를 `/BaseFont /HCI#20Poppy`로 고치고,
+파일 위치 정보를 갱신한 뒤 구조·전체 쪽 참조 검사를 다시 수행한다. 글꼴 프로그램이나 페이지
+내용 스트림을 바꾸지 않으며, 검사에 통과한 인쇄본은 `*_pdf_driver_one_up` 모드를 유지한다.
+이 경우에도 `comment`가 포함되므로 **설명 유무만으로 PDF 대체 저장 여부를 판단하지 않는다.**
+
+다음은 글꼴 이름 문법을 보정한 2024 인쇄본의 상태 응답에서 확인할 필드다.
+
+```json
+{
+  "status": "succeeded",
+  "result": {
+    "engine": "2024",
+    "hancom_version": "13.0.0.4225",
+    "pdf_page_count": 54,
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2024_pdf_driver_one_up",
+    "comment": "한컴 PDF 출력의 글꼴 이름 공백 문법 오류를 보정했습니다. PDF 구조 및 전체 쪽 검사를 통과했습니다."
+  }
+}
+```
+
+이 응답은 client `0.10.0`의 `status.result`, `download.server`에서 확인할 수 있다.
+기존 client archive와 아래 `npx` 명령을 그대로 사용한다. 원본·결과 SHA-256과 전체 쪽수,
+동일 job의 출력 모드·제품 빌드·설명 원문을 보존하고, 실제 출력은 별도로 판독한다.
+
 ### 인쇄 오류 시 PDF 대체 저장본 확인
 
-MCP는 PDF 인쇄 후 구조·참조 오류를 검사한다. 오류가 검출되면 같은 입력·같은 엔진에서
-한컴의 PDF로 저장하기로 한 번 다시 생성하고, 저장본의 구조와 쪽수를 검사한다.
-성공한 복구 결과에는 `comment`가 포함된다. client `0.10.0`의 `status`에서는 `result`,
-`download`에서는 `server` 아래에서 확인한다.
+MCP는 PDF 인쇄 후 구조·참조 오류를 검사한다. 위 글꼴 이름 문법 보정 후에도 검사를
+통과하지 못하거나 내용·이미지 참조 오류 등이 있으면 같은 입력·같은 엔진에서 한컴의
+PDF로 저장하기로 한 번 다시 생성하고, 저장본의 구조와 쪽수를 검사한다. 저장본도 검사에
+실패하거나 확인된 원래 쪽수보다 줄어들면 성공 결과로 반환하지 않는다.
+성공한 대체 저장 결과에는 `*_pdf_save_as` 모드와 `comment`가 포함된다.
 
 다음은 2024 복구 응답의 확인 필드 예시다. 2020 복구는 `engine: "2020"`과
 `pdf_output_mode: "hancom2020_pdf_save_as"`를 반환한다.

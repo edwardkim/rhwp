@@ -15,6 +15,25 @@ pub(in crate::renderer::typeset) struct OverlayContinuation {
     pub row_fragment: Option<OverlayRowFragment>,
 }
 
+fn row_contains_cell_overlay(table: &Table, row: usize) -> bool {
+    table.cells.iter().any(|cell| {
+        usize::from(cell.row) == row
+            && cell.row_span == 1
+            && crate::renderer::float_placement::cell_contains_detached_paragraph_table(cell)
+    })
+}
+
+fn overlay_opening_frame(table: &Table, available: f64, dpi: f64) -> f64 {
+    crate::renderer::float_placement::rowbreak_fragment_bounds(
+        table,
+        available - hwpunit_to_px(i32::from(table.outer_margin_top), dpi),
+        dpi,
+        false,
+        true,
+    )
+    .blank_bottom
+}
+
 #[allow(clippy::too_many_arguments)]
 pub(super) fn continuation(
     para: &Paragraph,
@@ -45,10 +64,21 @@ pub(super) fn continuation(
         // `cumulative_heights` 는 접두합(len = 행 수 + 1)이다 —
         // `cum[i]` 는 행 0..i 의 합이므로, 처음으로 room 을 넘는
         // 인덱스 i 는 "행 i-1 이 안 들어간다"는 뜻이다.
+        let opening_frame = matches!(
+            table.layout_page_break(),
+            crate::model::table::TablePageBreak::RowBreak
+        )
+        .then(|| overlay_opening_frame(table, room, dpi));
         let first_unfit = ft
             .cumulative_heights
             .iter()
-            .position(|cum| *cum > room)
+            .enumerate()
+            .position(|(end, &bottom)| {
+                bottom > room
+                    || (end > 0
+                        && opening_frame.is_some_and(|frame| bottom > frame)
+                        && row_contains_cell_overlay(table, end - 1))
+            })
             .map(|i| i.saturating_sub(1))
             .unwrap_or(ft.row_heights.len());
         if first_unfit > 0 && first_unfit < ft.row_heights.len() {

@@ -223,7 +223,7 @@ pub(crate) fn normalized_empty_control_frame(
     Some(frame)
 }
 
-fn clean_single_saved_line(para: &Paragraph) -> Option<&LineSeg> {
+pub(crate) fn clean_single_saved_line(para: &Paragraph) -> Option<&LineSeg> {
     let [line] = para.line_segs.as_slice() else {
         return None;
     };
@@ -245,21 +245,33 @@ fn clean_single_saved_line(para: &Paragraph) -> Option<&LineSeg> {
 
 /// 서로 다른 문단의 지역 원점을 한 셀의 누적 끝점으로 오인하지 않는다.
 /// 닫힌 저장 줄 사다리만 내용 하한의 근거로 사용한다.
-fn saved_single_line_ladder_end(paragraphs: &[Paragraph]) -> Option<i64> {
-    let mut end = None;
+fn saved_single_line_ladder_end(
+    paragraphs: &[Paragraph],
+    inline_tables_validated: bool,
+) -> Option<i64> {
+    let mut content_end = None;
+    let mut next_top = 0;
     for paragraph in paragraphs {
         let line = clean_single_saved_line(paragraph)?;
         let top = i64::from(line.vertical_pos);
-        if end.is_some_and(|previous| top < previous) {
+        if top < next_top {
             return None;
         }
-        end = Some(top + i64::from(line.line_height));
+        let bottom = top + i64::from(line.line_height);
+        content_end = Some(content_end.map_or(bottom, |end: i64| end.max(bottom)));
+        let min_spacing = match paragraph.controls.as_slice() {
+            [Control::Table(table)] if inline_tables_validated => {
+                -i32::from(table.outer_margin_bottom)
+            }
+            _ => 0,
+        };
+        next_top = bottom + i64::from(line.line_spacing.min(0).max(min_spacing));
     }
-    end
+    content_end
 }
 
 /// The host line owns the child's complete painted box, including outside margins.
-fn stored_inline_tail_table_fits_line(para: &Paragraph) -> bool {
+pub(crate) fn stored_inline_tail_table_fits_line(para: &Paragraph) -> bool {
     let [Control::Table(child)] = para.controls.as_slice() else {
         return false;
     };
@@ -297,7 +309,7 @@ fn stored_inline_tail_table_fits_line(para: &Paragraph) -> bool {
 
     let mut width = u64::from(child.cell_spacing as u16) * (child.cells.len() - 1) as u64;
     for (col, cell) in child.cells.iter().enumerate() {
-        let Some(content_end) = saved_single_line_ladder_end(&cell.paragraphs) else {
+        let Some(content_end) = saved_single_line_ladder_end(&cell.paragraphs, false) else {
             return false;
         };
         let padding = cell.effective_padding(&child.padding);
@@ -406,7 +418,7 @@ pub(crate) fn declared_tail_row_height(
             cell_has_inline_tail_table = true;
         }
         let content_hu = if cell_has_inline_tail_table {
-            saved_single_line_ladder_end(&cell.paragraphs)?
+            saved_single_line_ladder_end(&cell.paragraphs, true)?
         } else {
             cell.paragraphs
                 .iter()

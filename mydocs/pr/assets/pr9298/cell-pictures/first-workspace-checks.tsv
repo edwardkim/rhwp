@@ -1,0 +1,5 @@
+check	result	cargo_elapsed	log_sha256
+lint-native	pass	2m 03s	77916259a3c5c3ba5bea8eed615a2cf37e1a71bc4d863ed4cb5e304f9110586f
+lint-wasm	pass	1m 52s	261a4b3c1018d8c05c7dfe6103a6c5bfaefcf763e86d36b8780dde5ca4c31bda
+workspace-build	pass	2m 30s	7eff3e1a444bc9b7229e7b675219310e327f0ab5227e90f9e0643a3d65aa08c2
+workspace-lint	pass	3m 15s	fc769b17f5237d5aa72e357058b744cf08b63cdd4c68a9b81a2323485e530908

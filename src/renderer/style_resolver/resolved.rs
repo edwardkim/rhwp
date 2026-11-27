@@ -25,6 +25,8 @@ pub struct ResolvedCharStyle {
     pub font_families_hft_hangul: Vec<bool>,
     /// 대체 여부와 무관하게 보존하는 원본 프로그램 종류다.
     pub font_families_source_hft: Vec<bool>,
+    /// 원본 FACE_NAME이 각 언어에 선언한 HFT 대체 글꼴이다.
+    pub(crate) font_families_source_hft_substitute: Vec<bool>,
     /// 유형 미상과 구별한 원본 언어 슬롯의 명시적 TTF 선언이다.
     pub font_families_source_ttf: Vec<bool>,
     /// 실제 원본 주 이름으로 선택한 프로그램. 대체 후보의 신원과 구분한다.
@@ -153,6 +155,7 @@ impl Default for ResolvedCharStyle {
             font_families_glyph_fallback_advance_explicit: Vec::new(),
             font_families_hft_hangul: Vec::new(),
             font_families_source_hft: Vec::new(),
+            font_families_source_hft_substitute: Vec::new(),
             font_families_source_ttf: Vec::new(),
             font_families_primary_program: Vec::new(),
             font_families_verified_hft_bold_tracking: Vec::new(),
@@ -347,6 +350,23 @@ impl ResolvedCharStyle {
             .get(slot)
             .copied()
             .unwrap_or(false)
+    }
+
+    /// 실제 원본 TrueType의 합성 굵기 전진에 필요한 공급 후보.
+    pub(crate) fn requests_h2gtrm_bold_tracking(&self, lang: usize) -> bool {
+        self.bold
+            && self
+                .font_families_source_hft_substitute
+                .get(lang)
+                .copied()
+                .unwrap_or(false)
+            && matches!(
+                self.font_family_for_lang(lang)
+                    .split(',')
+                    .next()
+                    .map(str::trim),
+                Some("한양중고딕" | "HY중고딕" | "HYGothic" | "HYGothic-Medium")
+            )
     }
 
     /// [#7391] 이 언어 슬롯의 폭을 잴 때 쓸 face. 되돌릴 게 없으면 `None`.
@@ -589,6 +609,7 @@ pub struct ResolvedStyleSet {
     /// 문서의 호환 대상이 MS 워드인가(HWP5 `HWPTAG_COMPATIBLE_DOCUMENT` 값 2, HWPX
     /// `targetProgram="MS_WORD"`). 한/글 문서와 다른 흐름 규칙을 고른다.
     pub(crate) word_compat_target: bool,
+    pub(crate) word_spacing: super::word_compat::WordSpacing,
     /// 검증된 원본 프로그램의 줄 소유와 저장 fallback 재현 계약을 구분한다.
     /// 명시적 HWPX TTF의 동적 줄 정책도 전체 글리프·프레임 검증 뒤에만 소비한다.
     pub(crate) source_program_projection_slots:
@@ -653,6 +674,10 @@ pub struct ResolvedStyleSet {
     /// remains dormant until the composition-owner handoff qualifies.
     pub(crate) horizontal_shaping_context:
         Option<std::sync::Arc<crate::renderer::shaping_context::HorizontalShapingContext>>,
+    /// [#8582] 호환 대상이 MS 워드인 문서에서 글자 모양별·언어별 줄 높이 배율.
+    /// `word_compat_target` 이고 워드 줄 높이를 쓰는 문서(HWP5 는 레이아웃 호환 플래그)일 때만
+    /// 채운다. 한글 문서는 `None` 이며 줄 높이 계산이 바뀌지 않는다.
+    pub(crate) word_line_factors: Option<std::sync::Arc<Vec<[f64; 7]>>>,
 }
 
 impl ResolvedStyleSet {
@@ -797,12 +822,12 @@ impl Drop for SectionTabScope {
     }
 }
 
-crate::storage::clone_fields!(ResolvedCharStyle, {text_paint, font_family, font_families, font_families_metric_trusted, font_families_glyph_fallback_advance_explicit, font_families_hft_hangul, font_families_source_hft, font_families_source_ttf, font_families_primary_program, font_families_verified_hft_bold_tracking, font_families_hft_print_frame, font_families_print_text_device_frame, font_families_source_dc_frame, font_families_preserve_glyph_ink, font_families_natural_program_metrics, latin_decimal_halfwidth, font_families_hft_fullwidth_dot, ascii_punct_latin_slot, explicit_latin_slot, font_families_metric_face, font_families_original_glyph_metric_face, font_space_em, font_size, font_sizes, font_positions, bold, italic, text_color, underline, underline_color, strike_color, strikethrough, letter_spacing, letter_spacings, ratio, ratios, border_fill_id, outline_type, shadow_type, shadow_color, shadow_offset_x, shadow_offset_y, emboss, engrave, superscript, subscript, emphasis_dot, underline_shape, strike_shape, kerning, shade_color});
+crate::storage::clone_fields!(ResolvedCharStyle, {text_paint, font_family, font_families, font_families_metric_trusted, font_families_glyph_fallback_advance_explicit, font_families_hft_hangul, font_families_source_hft, font_families_source_hft_substitute, font_families_source_ttf, font_families_primary_program, font_families_verified_hft_bold_tracking, font_families_hft_print_frame, font_families_print_text_device_frame, font_families_source_dc_frame, font_families_preserve_glyph_ink, font_families_natural_program_metrics, latin_decimal_halfwidth, font_families_hft_fullwidth_dot, ascii_punct_latin_slot, explicit_latin_slot, font_families_metric_face, font_families_original_glyph_metric_face, font_space_em, font_size, font_sizes, font_positions, bold, italic, text_color, underline, underline_color, strike_color, strikethrough, letter_spacing, letter_spacings, ratio, ratios, border_fill_id, outline_type, shadow_type, shadow_color, shadow_offset_x, shadow_offset_y, emboss, engrave, superscript, subscript, emphasis_dot, underline_shape, strike_shape, kerning, shade_color});
 
 crate::storage::clone_fields!(ResolvedParaStyle, {alignment, vertical_alignment, line_spacing, line_spacing_type, margin_left, margin_right, indent, spacing_before, spacing_after, head_type, para_level, numbering_id, border_fill_id, border_spacing, border_connect, border_ignore_margin, default_tab_width, tab_stops, auto_tab_left, auto_tab_right, condense_min_space, english_break_unit, korean_break_unit, widow_orphan, keep_with_next, keep_lines, page_break_before, line_wrap_squeeze});
 
 crate::storage::clone_fields!(ResolvedBorderStyle, {borders, fill_color, pattern, gradient, image_fill, diagonal_attr, break_cell_separate_line, diagonal, center_line});
 
-crate::storage::clone_fields!(ResolvedStyleSet, {section_tab_width_bits, script_metrics, source_hwp3_native, legacy_body_symbols, word_compat_target, source_program_projection_slots, native_pua_fonts, display_only_otf_slots, inferred_ttf_requires_selection, unsubstituted_font_slots, char_overlap_size_bounds, source_char_shapes, resolved_dpi, isolated_jamo_font, page_number_char_style_id, page_number_font_is_hft, supplemental_metrics, style_char_shapes, char_styles, para_styles, border_styles, numberings, bullets, hwp3_variant, hft_ascii_halfwidth, kerning_measurement_context, horizontal_shaping_context});
+crate::storage::clone_fields!(ResolvedStyleSet, {section_tab_width_bits, script_metrics, source_hwp3_native, legacy_body_symbols, word_compat_target, word_spacing, source_program_projection_slots, native_pua_fonts, display_only_otf_slots, inferred_ttf_requires_selection, unsubstituted_font_slots, char_overlap_size_bounds, source_char_shapes, resolved_dpi, isolated_jamo_font, page_number_char_style_id, page_number_font_is_hft, supplemental_metrics, style_char_shapes, char_styles, para_styles, border_styles, numberings, bullets, hwp3_variant, hft_ascii_halfwidth, kerning_measurement_context, horizontal_shaping_context, word_line_factors});
 
 crate::storage::clone_fields!(ResolvedImageFill, {bin_data_id, fill_mode, brightness, contrast, effect});

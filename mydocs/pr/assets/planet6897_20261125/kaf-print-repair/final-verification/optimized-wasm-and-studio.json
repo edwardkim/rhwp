@@ -1,0 +1,225 @@
+{
+  "package_sha256": {
+    "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+    "rhwp_bg.wasm": "bb5fc6aac50386f7cdd62ba719a089fb9f8ac19a2e3fa0bf1546ac4f87c7e5dc"
+  },
+  "wasm_catalog_sha256": "2934df5fe81d0a90b505dc2e8cd15370d835eaa9b45ee60532d915be2a223854",
+  "wasm_captures": {
+    "kaf-table": {
+      "input_sha256": "b03eaad4854504f54eafe8a1aa10eafd56e9ad75db3e40ae2ed43a31dd666c0f",
+      "pages": 44
+    },
+    "kaf-appendix": {
+      "input_sha256": "f5f835cb60fdb1883f5857bcc0799c22dfe24e4c1b683dfc10e9382da30d77c2",
+      "pages": 54
+    }
+  },
+  "browser_version": "Chrome/158.0.8127.88",
+  "studio_loads": 24,
+  "studio_js_responses_by_status": {
+    "200": 1,
+    "304": 23
+  },
+  "studio_js_vite_transformed_sha256": [
+    "0cd309c3272f8bc209440dca4af0642ff95a52b76e28346273d52485230bac2c"
+  ],
+  "studio_initialized_wasm_sha256": "bb5fc6aac50386f7cdd62ba719a089fb9f8ac19a2e3fa0bf1546ac4f87c7e5dc",
+  "studio_canvas_surface": "software",
+  "canvaskit_replay_diagnostics": [
+    {
+      "backend": "canvaskit-compat",
+      "profile": "print",
+      "captureCount": 4,
+      "totalItems": 215,
+      "directItems": 212,
+      "directRequiredItems": 3,
+      "compatOverlayItems": 0,
+      "textFallbackItems": 0,
+      "unsupportedItems": 0,
+      "hiddenOverlayViolations": 3,
+      "hardGateViolationCount": 2,
+      "runtimeRenderErrors": 0,
+      "runtimeUnexpectedUnsupportedOps": 1,
+      "runtimeImageReplayFailures": 1,
+      "planStatusCounts": {
+        "direct": 212,
+        "directRequired": 3
+      },
+      "planReasonCounts": {
+        "directReplaySupported": 212,
+        "hiddenOverlayForbidden": 3
+      },
+      "planFeatureCounts": {
+        "cacheHint": 8,
+        "clip": 22,
+        "pageBackground": 4,
+        "rasterImage": 3,
+        "textRun": 169,
+        "vectorShape": 9
+      },
+      "expectedUnsupportedOpCounts": {},
+      "unexpectedUnsupportedOpCounts": {
+        "image:decodeFailed": 1
+      },
+      "imageFailureReasonCounts": {
+        "encodedImageRejected": 1
+      },
+      "imageFailureSourceCounts": {
+        "sourceKey": 1
+      }
+    },
+    {
+      "backend": "canvaskit-default",
+      "profile": "print",
+      "captureCount": 4,
+      "totalItems": 215,
+      "directItems": 212,
+      "directRequiredItems": 3,
+      "compatOverlayItems": 0,
+      "textFallbackItems": 0,
+      "unsupportedItems": 0,
+      "hiddenOverlayViolations": 3,
+      "hardGateViolationCount": 2,
+      "runtimeRenderErrors": 0,
+      "runtimeUnexpectedUnsupportedOps": 1,
+      "runtimeImageReplayFailures": 1,
+      "planStatusCounts": {
+        "direct": 212,
+        "directRequired": 3
+      },
+      "planReasonCounts": {
+        "directReplaySupported": 212,
+        "hiddenOverlayForbidden": 3
+      },
+      "planFeatureCounts": {
+        "cacheHint": 8,
+        "clip": 22,
+        "pageBackground": 4,
+        "rasterImage": 3,
+        "textRun": 169,
+        "vectorShape": 9
+      },
+      "expectedUnsupportedOpCounts": {},
+      "unexpectedUnsupportedOpCounts": {
+        "image:decodeFailed": 1
+      },
+      "imageFailureReasonCounts": {
+        "encodedImageRejected": 1
+      },
+      "imageFailureSourceCounts": {
+        "sourceKey": 1
+      }
+    },
+    {
+      "backend": "canvaskit-compat",
+      "profile": "screen",
+      "captureCount": 4,
+      "totalItems": 215,
+      "directItems": 212,
+      "directRequiredItems": 3,
+      "compatOverlayItems": 0,
+      "textFallbackItems": 0,
+      "unsupportedItems": 0,
+      "hiddenOverlayViolations": 3,
+      "hardGateViolationCount": 6,
+      "runtimeRenderErrors": 0,
+      "runtimeUnexpectedUnsupportedOps": 3,
+      "runtimeImageReplayFailures": 3,
+      "planStatusCounts": {
+        "direct": 212,
+        "directRequired": 3
+      },
+      "planReasonCounts": {
+        "directReplaySupported": 212,
+        "hiddenOverlayForbidden": 3
+      },
+      "planFeatureCounts": {
+        "cacheHint": 8,
+        "clip": 22,
+        "pageBackground": 4,
+        "rasterImage": 3,
+        "textRun": 169,
+        "vectorShape": 9
+      },
+      "expectedUnsupportedOpCounts": {},
+      "unexpectedUnsupportedOpCounts": {
+        "image:decodeFailed": 3
+      },
+      "imageFailureReasonCounts": {
+        "encodedImageRejected": 3
+      },
+      "imageFailureSourceCounts": {
+        "sourceKey": 3
+      }
+    },
+    {
+      "backend": "canvaskit-default",
+      "profile": "screen",
+      "captureCount": 4,
+      "totalItems": 215,
+      "directItems": 212,
+      "directRequiredItems": 3,
+      "compatOverlayItems": 0,
+      "textFallbackItems": 0,
+      "unsupportedItems": 0,
+      "hiddenOverlayViolations": 3,
+      "hardGateViolationCount": 6,
+      "runtimeRenderErrors": 0,
+      "runtimeUnexpectedUnsupportedOps": 3,
+      "runtimeImageReplayFailures": 3,
+      "planStatusCounts": {
+        "direct": 212,
+        "directRequired": 3
+      },
+      "planReasonCounts": {
+        "directReplaySupported": 212,
+        "hiddenOverlayForbidden": 3
+      },
+      "planFeatureCounts": {
+        "cacheHint": 8,
+        "clip": 22,
+        "pageBackground": 4,
+        "rasterImage": 3,
+        "textRun": 169,
+        "vectorShape": 9
+      },
+      "expectedUnsupportedOpCounts": {},
+      "unexpectedUnsupportedOpCounts": {
+        "image:decodeFailed": 3
+      },
+      "imageFailureReasonCounts": {
+        "encodedImageRejected": 3
+      },
+      "imageFailureSourceCounts": {
+        "sourceKey": 3
+      }
+    }
+  ],
+  "canvaskit_replay_matches_prior_verified_browser_run": true,
+  "print_images": {
+    "p024-canvas2d": {
+      "image": "mydocs/pr/assets/planet6897_20261125/kaf-print-repair/studio-print/p024-canvas2d.png",
+      "sha256": "0bb7dc2ce25a3721f7e0b718fecd3b332a1af072efe89b9550926d9b63be397d"
+    },
+    "p024-canvaskit-default": {
+      "image": "mydocs/pr/assets/planet6897_20261125/kaf-print-repair/studio-print/p024-canvaskit-default.png",
+      "sha256": "8666b5a46f4227dbd050538718670ce555a2119fda12c3a1bbc12700a6aad60e"
+    },
+    "p036-canvas2d": {
+      "image": "mydocs/pr/assets/planet6897_20261125/kaf-print-repair/studio-print/p036-canvas2d.png",
+      "sha256": "fa5568750cc1f4c70f0bcb110bd92b03af5cf75945072b1206048c3456d265c0"
+    },
+    "p036-canvaskit-default": {
+      "image": "mydocs/pr/assets/planet6897_20261125/kaf-print-repair/studio-print/p036-canvaskit-default.png",
+      "sha256": "b1c89553b9aa352657420745a6fc6720c270693c3ca5a73087094ad8ddfb1ee0"
+    },
+    "p038-canvas2d": {
+      "image": "mydocs/pr/assets/planet6897_20261125/kaf-print-repair/studio-print/p038-canvas2d.png",
+      "sha256": "4a77b92c0443ae86f201eae02cd2ed2be8840e808720443e2e557487a5c330e1"
+    },
+    "p038-canvaskit-default": {
+      "image": "mydocs/pr/assets/planet6897_20261125/kaf-print-repair/studio-print/p038-canvaskit-default.png",
+      "sha256": "fcae9824c5fdf42dc4eed27b5ff92d1dcf86355a3300003cffa720be810a791c"
+    }
+  }
+}

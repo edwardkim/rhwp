@@ -5,6 +5,7 @@ use crate::model::style::{
 use crate::parser::HmlImportMetadata;
 
 use super::error::{unsupported_ir, HmlExportError};
+use super::implicit_equations::ImplicitEquationStyles;
 use super::xml::XmlWriter;
 
 const LANGUAGE_NAMES: [&str; 7] = [
@@ -15,15 +16,16 @@ pub(crate) fn write_head(
     writer: &mut XmlWriter,
     document: &Document,
     metadata: &HmlImportMetadata,
+    implicit_equations: Option<&ImplicitEquationStyles>,
 ) -> Result<(), HmlExportError> {
     writer.open("HEAD", &[("SecCnt", document.sections.len().to_string())]);
     super::fragments::write_at_anchor(writer, metadata, "HEAD", 0);
     writer.open("MAPPINGTABLE", &[]);
     write_fonts(writer, document);
     write_border_fills(writer, document)?;
-    write_char_shapes(writer, document);
+    write_char_shapes(writer, document, implicit_equations);
     write_tab_defs(writer, document);
-    write_para_shapes(writer, document);
+    write_para_shapes(writer, document, implicit_equations);
     write_styles(writer, document);
     writer.close("MAPPINGTABLE");
     super::fragments::write_at_anchor(writer, metadata, "HEAD", 1);
@@ -108,7 +110,11 @@ fn write_border_line(
     Ok(())
 }
 
-fn write_char_shapes(writer: &mut XmlWriter, document: &Document) {
+fn write_char_shapes(
+    writer: &mut XmlWriter,
+    document: &Document,
+    implicit_equations: Option<&ImplicitEquationStyles>,
+) {
     writer.open(
         "CHARSHAPELIST",
         &[("Count", document.doc_info.char_shapes.len().to_string())],
@@ -124,10 +130,15 @@ fn write_char_shapes(writer: &mut XmlWriter, document: &Document) {
                 ("ShadeColor", shape.shade_color.to_string()),
             ],
         );
+        let implicit = implicit_equations.is_some_and(|styles| styles.char_shapes.contains(&id));
         write_language_array(writer, "FONTID", &shape.font_ids);
-        write_language_array(writer, "RATIO", &shape.ratios);
+        if !implicit {
+            write_language_array(writer, "RATIO", &shape.ratios);
+        }
         write_language_array(writer, "CHARSPACING", &shape.spacings);
-        write_language_array(writer, "RELSIZE", &shape.relative_sizes);
+        if !implicit {
+            write_language_array(writer, "RELSIZE", &shape.relative_sizes);
+        }
         write_language_array(writer, "CHAROFFSET", &shape.char_offsets);
         writer.close("CHARSHAPE");
     }
@@ -154,18 +165,23 @@ fn write_tab_defs(writer: &mut XmlWriter, document: &Document) {
     writer.close("TABDEFLIST");
 }
 
-fn write_para_shapes(writer: &mut XmlWriter, document: &Document) {
+fn write_para_shapes(
+    writer: &mut XmlWriter,
+    document: &Document,
+    implicit_equations: Option<&ImplicitEquationStyles>,
+) {
     writer.open(
         "PARASHAPELIST",
         &[("Count", document.doc_info.para_shapes.len().to_string())],
     );
     for (id, shape) in document.doc_info.para_shapes.iter().enumerate() {
-        write_para_shape(writer, id, shape);
+        let implicit = implicit_equations.is_some_and(|styles| styles.para_shapes.contains(&id));
+        write_para_shape(writer, id, shape, implicit);
     }
     writer.close("PARASHAPELIST");
 }
 
-fn write_para_shape(writer: &mut XmlWriter, id: usize, shape: &ParaShape) {
+fn write_para_shape(writer: &mut XmlWriter, id: usize, shape: &ParaShape, implicit: bool) {
     writer.open(
         "PARASHAPE",
         &[
@@ -175,21 +191,23 @@ fn write_para_shape(writer: &mut XmlWriter, id: usize, shape: &ParaShape) {
             ("Level", shape.para_level.to_string()),
         ],
     );
-    writer.empty(
-        "PARAMARGIN",
-        &[
-            ("Left", shape.margin_left.to_string()),
-            ("Right", shape.margin_right.to_string()),
-            ("Indent", shape.indent.to_string()),
-            ("Prev", shape.spacing_before.to_string()),
-            ("Next", shape.spacing_after.to_string()),
-            ("LineSpacing", shape.line_spacing.to_string()),
-            (
-                "LineSpacingType",
-                line_spacing_name(shape.line_spacing_type).into(),
-            ),
-        ],
-    );
+    if !implicit {
+        writer.empty(
+            "PARAMARGIN",
+            &[
+                ("Left", shape.margin_left.to_string()),
+                ("Right", shape.margin_right.to_string()),
+                ("Indent", shape.indent.to_string()),
+                ("Prev", shape.spacing_before.to_string()),
+                ("Next", shape.spacing_after.to_string()),
+                ("LineSpacing", shape.line_spacing.to_string()),
+                (
+                    "LineSpacingType",
+                    line_spacing_name(shape.line_spacing_type).into(),
+                ),
+            ],
+        );
+    }
     writer.empty(
         "PARABORDER",
         &[("BorderFill", shape.border_fill_id.to_string())],

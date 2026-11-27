@@ -128,6 +128,7 @@ struct PartialTableHostContext<'a> {
     end_row_owns_stored_frame: bool,
     /// 현재 호스트의 확정된 줄·표 계획에서 온 물리 조각 상자다.
     computed_fragment_frame: bool,
+    remaining_child_row: Option<(usize, f64)>,
 }
 
 /// 투명하고 비어 있는 1×1 감싸기 표 안의 내용 표를 반환한다.
@@ -1128,9 +1129,11 @@ impl LayoutEngine {
         align_saved_opening_frame: bool,
         end_row_owns_stored_frame: bool,
         computed_fragment_frame: bool,
+        remaining_child_row: Option<(usize, f64)>,
         external_frame: Option<super::table_layout::ReflowExternalCutFrame>,
         // 원본 쪽 재시작과 전달된 물리 높이를 함께 확인한 시작/끝 행.
         original_restart_alignment_rows: [Option<usize>; 2],
+        deferred_opening_picture_height: Option<f64>,
         // [#6976] 접기 대상 행(모델 행 인덱스)과 그 행이 남긴 여분의 최솟값 수집기.
         fold_last_row: Option<usize>,
         fold_slack: &mut f64,
@@ -1148,6 +1151,8 @@ impl LayoutEngine {
             }
             let cell_row = cell.row as usize;
             let cell_col = cell.col as usize;
+            let deferred_opening_picture_height =
+                deferred_opening_picture_height.filter(|_| cell_row == start_row);
             if cell_col >= col_count || cell_row >= row_count {
                 continue;
             }
@@ -1325,6 +1330,7 @@ impl LayoutEngine {
                         section_index: None,
                         para_index: None,
                         control_index: None,
+                        cell_context: None,
                     })
                 },
                 BoundingBox::new(cell_x, cell_y, cell_w, cell_h),
@@ -1952,6 +1958,9 @@ impl LayoutEngine {
             };
             let inner_height = (content_cell_h - pad_top - pad_bottom).max(0.0);
 
+            let continued_square_picture = cut_units.and_then(|(start, end)| {
+                self.stored_continued_square_picture_cut(cell, table, styles, start, end)
+            });
             let reflow_content_height = cut_units.and_then(|(start, end)| {
                 self.reflow_partial_cell_content_height(cell, table, start, end, styles)
             });
@@ -2038,11 +2047,26 @@ impl LayoutEngine {
                     && whole_cell_cut
                     && unstored_shape_paragraph(&cell.paragraphs[pi])
             };
+            // 칸보다 긴 글 앞/뒤 중첩 표의 이어지는 행 유닛을 가진 조각은 빈 호스트 줄이
+            // 없어도 그 문단을 소유해, 중첩 표를 그 행부터 이어 그린다.
+            let overlay_rows_continue = |pi: usize| {
+                let para = &cell.paragraphs[pi];
+                !para.controls.is_empty()
+                    && para.controls.iter().all(|control| {
+                        matches!(control, Control::Table(child)
+                            if self.nested_table_takes_no_flow(cell, pi, child))
+                    })
+                    && cut_units.is_some_and(|(su, eu)| {
+                        self.nested_row_range_from_cut_units(cell, table, styles, su, eu, pi)
+                            .is_some()
+                    })
+            };
             let owns_empty_paragraph = |pi: usize| {
                 empty_paragraphs[pi]
                     && (empty_owners.as_ref().is_none_or(|owners| owners[pi])
                         || control_owned_empty_paragraph(pi)
-                        || whole_cell_shape_paragraph(pi))
+                        || whole_cell_shape_paragraph(pi)
+                        || overlay_rows_continue(pi))
             };
             // 개체로 소유한 빈 문단의 정렬 높이는 빈 줄과 개체 띠 중 큰 쪽이다.
             // 개체는 문단 원점에 오프셋으로 놓이고 빈 줄과 같은 띠를 차지한다.
@@ -2226,7 +2250,9 @@ impl LayoutEngine {
                     .iter()
                     .any(|p| p.controls.iter().any(|c| matches!(c, Control::Table(_))));
                 if has_nested {
-                    let unit_content_h = self.cell_units_content_height(cell, table, styles);
+                    let unit_content_h = self
+                        .cell_units_content_height(cell, table, styles)
+                        .max(self.cell_overlay_table_reach(cell, table, styles));
                     let last_seg_end: i32 = cell
                         .paragraphs
                         .iter()
@@ -2995,19 +3021,70 @@ impl LayoutEngine {
                 ),
                 (None, None) => (0, cell.paragraphs.len()),
             };
+            // 종이 기준 개체는 뒤 문단이 다음 쪽으로 넘어가도 칸의 첫 조각 쪽에 속한다.
+            // 한컴 Print의 paper_square_split은 60번째 문단의 개체를 1쪽에 인쇄한다.
+            // 문단 컷을 순회하기 전에 배치해 첫 조각의 비가시 문단도 앵커를 보존한다.
+            let paper_owned_by_first_fragment = |common: &crate::model::shape::CommonObjAttr| {
+                cut_units.is_some()
+                    && crate::renderer::float_placement::cell_object_detached_from_cell_flow(common)
+                    && matches!(common.vert_rel_to, crate::model::shape::VertRelTo::Paper)
+            };
+            if cut_units.is_some_and(|(start, _)| start == 0) {
+                for (cp_idx, para) in cell.paragraphs.iter().enumerate() {
+                    for (ctrl_idx, control) in para.controls.iter().enumerate() {
+                        if let Control::Shape(shape) = control {
+                            if paper_owned_by_first_fragment(shape.common()) {
+                                let first_new_child = table_node.children.len();
+                                self.layout_cell_shape(
+                                    tree,
+                                    table_node,
+                                    shape,
+                                    &inner_area,
+                                    text_y_start,
+                                    Alignment::Left,
+                                    para.para_shape_id,
+                                    styles,
+                                    bin_data_content,
+                                    clamp_header_negative_para_offset,
+                                    Some((
+                                        section_index,
+                                        para_index,
+                                        control_index,
+                                        cell_idx,
+                                        cp_idx,
+                                        ctrl_idx,
+                                    )),
+                                );
+                                for child in &table_node.children[first_new_child..] {
+                                    tree.mark_cell_overlay_node(child.id, shape.common().text_wrap);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             let reflow_block_flow = self.reflow_block_cell_flow_in_cell(cell, table, styles);
             let carried_child_host = cut_units.and_then(|(start, end)| {
                 self.stored_carried_child_host(table, cell, start, end, styles)
             });
             for cp_idx in loop_start..loop_end_excl {
                 let para = &cell.paragraphs[cp_idx];
-                let no_overlap_square_stack =
+                let no_overlap_square_stack = if deferred_opening_picture_height.is_some() {
+                    crate::renderer::float_placement::cell_no_overlap_square_stack(
+                        &para.controls,
+                        self.dpi,
+                        true,
+                    )
+                } else {
                     crate::renderer::float_placement::cell_paragraph_no_overlap_square_stack(
                         &cell.paragraphs,
                         cp_idx,
                         self.dpi,
-                    );
+                    )
+                };
                 let mut no_overlap_placer =
+                    crate::renderer::float_placement::NoOverlapSquarePlacer::default();
+                let mut no_overlap_topbottom_placer =
                     crate::renderer::float_placement::NoOverlapSquarePlacer::default();
                 if empty_paragraphs[cp_idx] && !owns_empty_paragraph(cp_idx) {
                     continue;
@@ -3108,6 +3185,7 @@ impl LayoutEngine {
                     && !visible_non_inline_controls
                     && !uncut_control_only_nested_table
                     && !owns_empty_paragraph(cp_idx)
+                    && !overlay_rows_continue(cp_idx)
                 {
                     continue;
                 }
@@ -3137,10 +3215,18 @@ impl LayoutEngine {
 
                 let stored_host_flow =
                     self.stored_nested_host_physical_flow(cell, table, styles, cp_idx, cut_units);
+                let stored_before_visible_host = (start_line == 0
+                    && end_line == 1
+                    && composed.lines.len() == 1)
+                    .then(|| self.stored_nested_before_visible_host(table, cell, cp_idx, styles))
+                    .flatten();
                 let mut table_host_has_stored_origin = false;
                 let mut single_column_snap_spacing_before = false;
                 let mut stored_linear_spacing_before = None;
-                if stored_host_flow.is_some() {
+                if let Some(frame) = stored_before_visible_host {
+                    para_y -= frame.anchor_y;
+                    table_host_has_stored_origin = true;
+                } else if stored_host_flow.is_some() {
                     // 종료 줄의 저장 원점은 표의 시작점이 아니다. 앞 유닛에서
                     // 이어지는 현재 흐름 원점을 보존하고 같은 소유 구간을 소비한다.
                 } else if let Some(origin) = single_column_flow
@@ -3322,6 +3408,36 @@ impl LayoutEngine {
                         );
                     }
                 }
+                // [#9000] 쪽을 넘어 닫힌 빈 블록 표 host 뒤 문단은 이 조각이 연 저장 프레임의
+                // vpos 에 놓인다(조각 내용 위 = 프레임 원점). 행 컷 높이(`row_cut_height`)도
+                // 같은 당김을 뺀다.
+                if cp_idx > 0
+                    && start_line == 0
+                    && start_line < end_line
+                    && cut_units.is_some_and(|cut| {
+                        self.fragment_opens_split_block_host_frame(
+                            cell,
+                            table,
+                            styles,
+                            cut,
+                            cp_idx - 1,
+                        )
+                    })
+                {
+                    if let Some(line) = para.line_segs.first() {
+                        let spacing_before = styles
+                            .para_styles
+                            .get(para.para_shape_id as usize)
+                            .map_or(0.0, |style| style.spacing_before.max(0.0));
+                        para_y -= self.split_block_host_successor_pull(
+                            &cell.paragraphs[cp_idx - 1],
+                            para,
+                            styles,
+                            para_y + spacing_before,
+                            text_y_start + hwpunit_to_px(line.vertical_pos, self.dpi),
+                        );
+                    }
+                }
                 let para_y_before_compose = para_y;
                 let paragraph_picture_band =
                     crate::renderer::float_placement::paragraph_picture_band(para, self.dpi)
@@ -3450,16 +3566,29 @@ impl LayoutEngine {
                     );
                 }
                 let para_y_before_lines = para_y;
+                let projected_table_anchor = cut_units.and_then(|_| {
+                    self.host_lines_following_projected_nested_table(
+                        cell,
+                        table,
+                        styles,
+                        cp_idx,
+                        composed.lines.len(),
+                    )
+                });
+                let first_end_line =
+                    projected_table_anchor.map_or(end_line, |anchor| end_line.min(anchor));
                 // 표 컨트롤이 없는 문단: 텍스트 먼저, 컨트롤 나중 (기존 동작)
                 // 표 컨트롤이 있는 문단: 문단 앞 간격 적용 → 표 먼저 배치 → 텍스트(엔터 등) 나중
                 if let Some(advance) = stored_empty_line_advances[cp_idx] {
                     para_y += advance;
-                } else if !has_table_ctrl
-                    || composed
-                        .lines
-                        .iter()
-                        .any(|line| line.runs.iter().any(|run| !run.text.trim().is_empty()))
+                } else if (projected_table_anchor.is_none() || start_line < first_end_line)
+                    && (!has_table_ctrl
+                        || composed
+                            .lines
+                            .iter()
+                            .any(|line| line.runs.iter().any(|run| !run.text.trim().is_empty())))
                 {
+                    let end_line = first_end_line;
                     let is_last_para = cp_idx == last_rendered_para_idx;
                     let numbered_comp = if start_line == 0 {
                         self.apply_paragraph_numbering(
@@ -3619,6 +3748,7 @@ impl LayoutEngine {
                     // 추가 spacing 없이 para_y를 그대로 사용.
                 }
 
+                let mut stored_exclusion_successor = None;
                 // 이 문단의 컨트롤(이미지/도형/중첩테이블) 배치
                 // 제목행 반복 셀에서는 컨트롤을 건너뜀 (이미지/도형 중복 방지)
                 if !is_repeated_header_cell {
@@ -3803,19 +3933,27 @@ impl LayoutEngine {
                                         // 저장 글줄은 공백과 개체를 함께 소유한다.
                                         // 인라인 표와 같은 순서의 펜 위치를 사용하며, 앞 텍스트와
                                         // 분리해 그림만 독립적으로 가운데 정렬하지 않는다.
-                                        let stored_picture_left = self
-                                            .stored_inline_control_pen(
-                                                para,
-                                                &composed,
+                                        let stored_picture_left = tree
+                                            .take_cell_picture_left(
+                                                &cell_node,
+                                                section_index,
+                                                cp_idx,
                                                 ctrl_idx,
-                                                styles,
-                                                &inner_area,
                                             )
-                                            .map(|pen| {
-                                                pen + hwpunit_to_px(
-                                                    pic.common.margin.left as i32,
-                                                    self.dpi,
+                                            .or_else(|| {
+                                                self.stored_inline_control_pen(
+                                                    para,
+                                                    &composed,
+                                                    ctrl_idx,
+                                                    styles,
+                                                    &inner_area,
                                                 )
+                                                .map(|pen| {
+                                                    pen + hwpunit_to_px(
+                                                        pic.common.margin.left as i32,
+                                                        self.dpi,
+                                                    )
+                                                })
                                             });
                                         if all_runs_empty && para.line_segs.len() > 1 {
                                             let target_line =
@@ -4249,7 +4387,9 @@ impl LayoutEngine {
                                     // 그림 자체 pos vert_align 은 무시한다. compute_object_position
                                     // 은 그림 pos vert_align 을 따르므로 콘텐츠 box·그림 높이 기준
                                     // 셀 valign 위치를 강제한다.
-                                    let pic_y = if fragment_owned_square_flow {
+                                    let pic_y = if continued_square_picture == Some(cp_idx) {
+                                        cell_y + pad_top
+                                    } else if fragment_owned_square_flow {
                                         // 조각의 원점에도 측정이 사용한 양수 흐름 앞 공간을
                                         // 보존한다. 이전 쪽의 음수 offset만 공통 판정으로
                                         // 제거하며 원본의 양수 변위를 함께 버리지 않는다.
@@ -4444,7 +4584,19 @@ impl LayoutEngine {
                                     );
                                     let pic_x =
                                         pic_x + picture_box.map_or(0.0, |frame| frame.margin_left);
-                                    let pic_y = if deferred_band {
+                                    let pic_y = if deferred_opening_picture_height.is_some() {
+                                        let stacked_top = no_overlap_square_stack
+                                            .as_ref()
+                                            .and_then(|stack| {
+                                                stack.members.iter().zip(&stack.boxes).find_map(
+                                                    |(&member, &(_, _, top, _))| {
+                                                        (member == ctrl_idx).then_some(top)
+                                                    },
+                                                )
+                                            })
+                                            .unwrap_or(0.0);
+                                        cell_y + pad_top + stacked_top
+                                    } else if deferred_band {
                                         para_y_before_compose
                                             + hwpunit_to_px(
                                                 i32::from(pic.common.margin.top),
@@ -4501,14 +4653,26 @@ impl LayoutEngine {
                                     // 겹침 허용 안 함인 어울림 그림은 이 조각에 먼저 놓인 같은 문단
                                     // 그림과 겹치면 그 아래로 내린다. 이 경로는 문단 흐름으로 그림을
                                     // 이미 내려 놓기도 하므로 오프셋 이동량 대신 실제 자리로 판정한다.
-                                    let pic_y = no_overlap_placer.place(
-                                        no_overlap_square_stack.as_ref(),
-                                        ctrl_idx,
-                                        &pic.common,
-                                        pic_x,
-                                        pic_y,
-                                        self.dpi,
-                                    );
+                                    let pic_y = if deferred_opening_picture_height.is_some() {
+                                        pic_y
+                                    } else {
+                                        no_overlap_placer.place(
+                                            no_overlap_square_stack.as_ref(),
+                                            ctrl_idx,
+                                            &pic.common,
+                                            pic_x,
+                                            pic_y,
+                                            self.dpi,
+                                        )
+                                    };
+                                    let pic_y = no_overlap_topbottom_placer
+                                        .place_topbottom_picture(
+                                            &cell.paragraphs[cp_idx],
+                                            &pic.common,
+                                            pic_x,
+                                            pic_y,
+                                            self.dpi,
+                                        );
                                     let pic_area = LayoutRect {
                                         x: pic_x,
                                         y: pic_y,
@@ -4572,17 +4736,23 @@ impl LayoutEngine {
                                 has_preceding_text = true;
                             }
                             Control::Shape(shape) => {
+                                if paper_owned_by_first_fragment(shape.common()) {
+                                    continue;
+                                }
                                 // TextBox를 포함한 Shape는 한 control이 여러 physical
                                 // fragment에 걸쳐 내부 문단을 이어 그릴 수 있다. Picture의
                                 // entry-only owner 규칙을 Shape에 적용하면 뒤 fragment의
                                 // 잔여 TextBox가 통째로 사라진다(rowbreak p17).
+                                // 종이·쪽 기준 개체도 흐름을 전진시키지 않는 겹침 개체다.
                                 let owns_overlay_anchor = start_line == 0
                                     && end_line > start_line
-                                    && matches!(
+                                    && (matches!(
                                         shape.common().text_wrap,
                                         crate::model::shape::TextWrap::InFrontOfText
                                             | crate::model::shape::TextWrap::BehindText
-                                    );
+                                    ) || crate::renderer::float_placement::cell_object_detached_from_cell_flow(
+                                        shape.common(),
+                                    ));
                                 // 흐름을 전진시키지 않는 겹침 개체는 첫 원본 줄에 속한다.
                                 // 존재하지 않는 높이 예약에 속한 것으로 처리하지 않는다.
                                 if !shape.common().treat_as_char
@@ -4676,9 +4846,19 @@ impl LayoutEngine {
                                             shape_for_layout.common_mut().vertical_offset = 0;
                                         }
                                     }
+                                    // 종이·쪽 기준 개체는 칸 clip 밖 표 노드에 싣는다(온전한 칸과 같다).
+                                    let detached = crate::renderer::float_placement::cell_object_detached_from_cell_flow(
+                                        shape.common(),
+                                    );
+                                    let shape_parent = if detached {
+                                        &mut *table_node
+                                    } else {
+                                        &mut cell_node
+                                    };
+                                    let first_new_child = shape_parent.children.len();
                                     self.layout_cell_shape(
                                         tree,
-                                        &mut cell_node,
+                                        shape_parent,
                                         &shape_for_layout,
                                         &inner_area,
                                         shape_anchor_y,
@@ -4689,6 +4869,14 @@ impl LayoutEngine {
                                         clamp_header_negative_para_offset,
                                         table_cell_ctx,
                                     );
+                                    if detached {
+                                        for child in &shape_parent.children[first_new_child..] {
+                                            tree.mark_cell_overlay_node(
+                                                child.id,
+                                                shape.common().text_wrap,
+                                            );
+                                        }
+                                    }
                                     let is_top_and_bottom_shape = matches!(
                                         shape.common().text_wrap,
                                         crate::model::shape::TextWrap::TopAndBottom
@@ -4792,7 +4980,10 @@ impl LayoutEngine {
                             Control::Table(nested_table) => {
                                 // 현재 컷이 글줄에서 끝나면 자식 표는 다음 조각이 배치한다.
                                 // 셀 clip은 아직 선택되지 않은 자식의 쪽 소속을 정하지 않는다.
-                                if carried_child_host == Some(cp_idx) {
+                                if carried_child_host == Some(cp_idx)
+                                    || (projected_table_anchor.is_some()
+                                        && nested_cursor_split.is_none())
+                                {
                                     continue;
                                 }
                                 let frame_owner = composed
@@ -4872,6 +5063,11 @@ impl LayoutEngine {
                                             })
                                         })
                                         .flatten())
+                                        .or_else(|| {
+                                            stored_before_visible_host.map(|frame| {
+                                                frame.with_cell_host_line_origin(para_y_before_lines)
+                                            })
+                                        })
                                         .map(|frame| {
                                             frame.with_cell_column_anchor(
                                                 nested_table,
@@ -5124,8 +5320,8 @@ impl LayoutEngine {
                                             offset_within_start: split.offset_within_start,
                                             content_offset: split.content_offset,
                                             force_source_start_cut: split.force_source_start_cut,
-                                            replay_terminal_boundary_unit: split
-                                                .replay_terminal_boundary_unit,
+                                            preserve_source_cut_origin: split
+                                                .preserve_source_cut_origin,
                                             terminal: split.terminal,
                                             recursive_cut: split.recursive_cut.clone(),
                                         })
@@ -5138,8 +5334,8 @@ impl LayoutEngine {
                                             offset_within_start: split.offset_within_start,
                                             content_offset: split.content_offset,
                                             force_source_start_cut: split.force_source_start_cut,
-                                            replay_terminal_boundary_unit: split
-                                                .replay_terminal_boundary_unit,
+                                            preserve_source_cut_origin: split
+                                                .preserve_source_cut_origin,
                                             terminal: split.terminal,
                                             recursive_cut: split.recursive_cut.clone(),
                                         })
@@ -5170,6 +5366,16 @@ impl LayoutEngine {
                                                 vis_h += ncs;
                                             }
                                         }
+                                        // The row cut assigns the child rows. Their visible
+                                        // frame also reserves the child's outer margins inside
+                                        // the physical fragment of the parent cell.
+                                        if self.nested_table_takes_no_flow(cell, cp_idx, nested_table)
+                                            && crate::renderer::float_placement::nested_table_is_overlay(nested_table)
+                                        {
+                                            let margins = i32::from(nested_table.outer_margin_top)
+                                                + i32::from(nested_table.outer_margin_bottom);
+                                            vis_h = vis_h.min((available_h - hwpunit_to_px(margins, self.dpi)).max(0.0));
+                                        }
                                         Some(NestedTableSplit {
                                             start_row,
                                             end_row,
@@ -5177,7 +5383,7 @@ impl LayoutEngine {
                                             flow_height: vis_h,
                                             content_offset: 0.0,
                                             force_source_start_cut: false,
-                                            replay_terminal_boundary_unit: false,
+                                            preserve_source_cut_origin: false,
                                             // 행 컷은 자식의 마지막 행을 소유하면 종료다.
                                             // 부모 셀의 end_unit 센티널과 구분한다.
                                             terminal: end_row == nrow,
@@ -5474,6 +5680,21 @@ impl LayoutEngine {
                                                 )
                                             })
                                             .flatten();
+                                        let stored_page_band = (enclosing_cell_ctx.is_none()
+                                            && !is_block_split
+                                            && !start_cut_is_block)
+                                            .then(|| {
+                                                self.stored_nested_page_band_at_height(
+                                                    table,
+                                                    usize::from(cell.row),
+                                                    start_cut,
+                                                    end_cut,
+                                                    cell_h,
+                                                    remaining_child_row,
+                                                    styles,
+                                                )
+                                            })
+                                            .flatten();
                                         let rendered_bottom = self.layout_partial_table_resolved(
                                             tree,
                                             nested_parent,
@@ -5496,6 +5717,7 @@ impl LayoutEngine {
                                                     }),
                                                 end_row_owns_stored_frame: false,
                                                 computed_fragment_frame: false,
+                                                remaining_child_row: None,
                                                 // 같은 원본 프레임의 바깥여백은 부모 흐름에 예약했다.
                                                 // 실제 표 원점에서는 위 여백만 한 번 소비한다.
                                                 resolved_table_top: resolved_nested_table_top,
@@ -5519,8 +5741,10 @@ impl LayoutEngine {
                                             // 투영)이다. 투명 래퍼 벗기기는 별개 좌표계
                                             // 판정(#4326)이라 여기서는 항상 false.
                                             false,
-                                            source_frame_height
-                                                .filter(|_| !recursive_cut.end_cut.is_empty())
+                                            stored_page_band
+                                                .map(|band| band.last_row_height)
+                                                .or(source_frame_height
+                                                    .filter(|_| !recursive_cut.end_cut.is_empty()))
                                                 .or(joint_opening_height)
                                                 .or(plain_source_height)
                                                 .or_else(|| {
@@ -5528,8 +5752,16 @@ impl LayoutEngine {
                                                         .as_ref()
                                                         .map(|band| band.last_row_height)
                                                 }),
-                                            source_frame_height
-                                                .filter(|_| !recursive_cut.start_cut.is_empty()),
+                                            remaining_child_row
+                                                .filter(|(row, _)| {
+                                                    *row == recursive_cut.start_row
+                                                        && !recursive_cut.start_cut.is_empty()
+                                                        && !recursive_cut.start_cut_is_block
+                                                })
+                                                .map(|(_, height)| height)
+                                                .or(source_frame_height.filter(|_| {
+                                                    !recursive_cut.start_cut.is_empty()
+                                                })),
                                             &[],
                                             &[],
                                             para_margin_left,
@@ -5716,22 +5948,26 @@ impl LayoutEngine {
                                     // 컷 없는 저장 떠 있는 개체는 물리 본문과 여백을
                                     // 이미 확정했다. 배치가 반환한 전체 띠의 여백을
                                     // table_top에서 다시 더하지 않는다.
-                                    let flow_end = stored_float_frame
-                                        .filter(|_| {
-                                            split_info.as_ref().is_none_or(|split| {
-                                                split.start_row == 0
-                                                    && split.end_row
-                                                        == usize::from(nested_table.row_count)
-                                                    && split.offset_within_start == 0.0
-                                                    && split.content_offset == 0.0
-                                                    && split.recursive_cut.as_ref().is_none_or(
-                                                        |cut| {
-                                                            cut.start_cut.iter().all(|n| *n == 0)
-                                                                && cut.end_cut.is_empty()
-                                                        },
-                                                    )
-                                            })
-                                        })
+                                    let whole_stored_float_frame =
+                                        stored_float_frame.filter(|_| {
+                                            projected_table_anchor.is_none()
+                                                && split_info.as_ref().is_none_or(|split| {
+                                                    split.start_row == 0
+                                                        && split.end_row
+                                                            == usize::from(nested_table.row_count)
+                                                        && split.offset_within_start == 0.0
+                                                        && split.content_offset == 0.0
+                                                        && split.recursive_cut.as_ref().is_none_or(
+                                                            |cut| {
+                                                                cut.start_cut
+                                                                    .iter()
+                                                                    .all(|n| *n == 0)
+                                                                    && cut.end_cut.is_empty()
+                                                            },
+                                                        )
+                                                })
+                                        });
+                                    let flow_end = whole_stored_float_frame
                                         .map_or_else(|| {
                                             // 투영한 유닛의 흐름은 종료 호스트와 여백을 이미 소유한다.
                                             // 본체 높이만 받은 경로에서만 같은 원본 종료 슬롯을 더한다.
@@ -5767,6 +6003,13 @@ impl LayoutEngine {
                                             && matches!(nested_table.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
                                     });
                                     if let Some(frame) = exclusion_band {
+                                        // 다음 저장 줄이 표 바깥 상자 끝에서 시작하면 그 끝을
+                                        // 뒤 문단의 앞 간격 계산에도 전달한다.
+                                        if whole_stored_float_frame.is_some()
+                                            && frame.stored_successor_line_origin == Some(flow_end)
+                                        {
+                                            stored_exclusion_successor = Some(flow_end);
+                                        }
                                         // [#8686] 인증된 자리차지 표는 본문 흐름에서 빠진 배제 띠다.
                                         // 흐름은 호스트 문단의 글줄로만 전진하고, 이 조각이 그린
                                         // 표 끝까지를 띠로 남긴다.
@@ -5778,7 +6021,15 @@ impl LayoutEngine {
                                                 )
                                                 ..flow_end,
                                         );
-                                    } else {
+                                    } else if stored_before_visible_host.is_none()
+                                        && !self.nested_table_takes_no_flow(
+                                            cell,
+                                            cp_idx,
+                                            nested_table,
+                                        )
+                                    {
+                                        // 저장 호스트가 이미 예약한 표와 흐름 밖의 겹침 표는
+                                        // 후속 문단의 원점을 한 번 더 전진시키지 않는다.
                                         para_y = flow_end;
                                     }
                                     has_preceding_text = true;
@@ -5787,7 +6038,9 @@ impl LayoutEngine {
                             _ => {}
                         }
                     }
-                    if let Some(height) = self
+                    if let Some(height) = deferred_opening_picture_height {
+                        para_y = cell_y + pad_top + height;
+                    } else if let Some(height) = self
                         .stored_partitioned_picture_fragment_height(cell, table, styles, cut_units)
                     {
                         para_y = cell_y + pad_top + height;
@@ -5874,9 +6127,10 @@ impl LayoutEngine {
                     // [#6122] 폭 초과로 내린 개체는 composed 줄 높이에 없다 — 그 아래로
                     // 흐름을 밀지 않으면 다음 문단(캡션)이 그림 위에 겹쳐 그려진다.
                     if let Some(bottom) = wrapped_tac_flow_bottom {
-                        let stored_advance = (!self.profile.get().session_edited()
-                            && !self.render_normalization.borrow().cell_frame_reflowed(table, cell)
-                            && next_para_in_fragment)
+                        // The signed overlap between these two source lines is local
+                        // to the picture. A prior edit can move both to another page
+                        // without changing their relative advance.
+                        let stored_advance = next_para_in_fragment
                             .then(|| cell.paragraphs.get(cp_idx + 1).and_then(|next|
                                 crate::renderer::float_placement::stored_inline_picture_successor_advance(
                                     para, next, styles, self.dpi,
@@ -5889,6 +6143,32 @@ impl LayoutEngine {
                     }
                 }
 
+                if let Some(anchor) = projected_table_anchor {
+                    let first_after_table = start_line.max(anchor);
+                    if first_after_table < end_line {
+                        para_y = self.layout_composed_paragraph(
+                            tree,
+                            &mut cell_node,
+                            composed,
+                            styles,
+                            &inner_area,
+                            para_y,
+                            first_after_table,
+                            end_line,
+                            section_index,
+                            cp_idx,
+                            Some(cell_context.clone()),
+                            true,
+                            cp_idx == last_rendered_para_idx,
+                            0.0,
+                            None,
+                            Some(para),
+                            Some(bin_data_content),
+                            None,
+                        );
+                        has_preceding_text = true;
+                    }
+                }
                 let stored_empty_advance = (!self.profile.get().session_edited()
                     && !cell.dirty_flag
                     && !self
@@ -5972,6 +6252,8 @@ impl LayoutEngine {
                                 let absorbed_spacing = if wrap_successor.is_none()
                                     && host_owned_here
                                 {
+                                    let occupied_bottom = stored_exclusion_successor
+                                        .map_or(para_y, |end| para_y.max(end));
                                     self.absorbed_block_host_successor_y(
                                         para,
                                         &composed_store
@@ -5981,7 +6263,7 @@ impl LayoutEngine {
                                         cell.paragraphs.len(),
                                         styles,
                                         para_y_before_compose,
-                                        para_y,
+                                        occupied_bottom,
                                         next_para,
                                     )
                                     .map(|(y, spacing)| {
@@ -6322,6 +6604,7 @@ impl LayoutEngine {
         computed_fragment_frame: bool,
         end_row_height_override: Option<f64>,
         start_row_height_override: Option<f64>,
+        remaining_child_row: Option<(usize, f64)>,
         straddle_row_relief: &[(usize, f64)],
         straddle_page_bands: &[crate::renderer::pagination::StraddleCellCarry],
         host_margin_left: f64,
@@ -6401,6 +6684,7 @@ impl LayoutEngine {
                 predecessor_flow_bottom,
                 end_row_owns_stored_frame,
                 computed_fragment_frame,
+                remaining_child_row,
             },
             section_index,
             styles,
@@ -6480,6 +6764,7 @@ impl LayoutEngine {
             predecessor_flow_bottom,
             end_row_owns_stored_frame,
             computed_fragment_frame,
+            remaining_child_row,
         } = host;
         let _host_scope = self.reflow_block_host_scope(
             enclosing_cell_ctx.is_none(),
@@ -6778,21 +7063,16 @@ impl LayoutEngine {
         // 여는 규칙은 근거가 없어 최상위 조각으로 좁히고, 중첩 조각은 종전 좌표를 유지한다.
         let single_cell_page_fragment =
             self.single_cell_rowbreak_page_fragment(table) && enclosing_cell_ctx.is_none();
-        let empty_opening_continuation = enclosing_cell_ctx.is_none()
+        let empty_opening_continuation = (enclosing_cell_ctx.is_none()
             && is_continuation
             && start_row == 0
-            && start_cut.iter().copied().eq([0])
-            && paragraphs
-                .get(para_index + 1)
-                .and_then(|next| {
-                    self.saved_picture_row_empty_opening_frame(
-                        &paragraphs[para_index],
-                        next,
-                        table,
-                        styles,
-                    )
-                })
-                .is_some_and(|frame| start_row_height_override == Some(frame.continuation_height));
+            && start_cut.iter().copied().eq([0]))
+        .then(|| {
+            let next = paragraphs.get(para_index + 1)?;
+            self.saved_picture_row_empty_opening_frame(&paragraphs[para_index], next, table, styles)
+        })
+        .flatten()
+        .filter(|frame| start_row_height_override == Some(frame.continuation_height));
         let empty_opening_first_fragment = enclosing_cell_ctx.is_none()
             && !is_continuation
             && start_row == 0
@@ -6947,7 +7227,7 @@ impl LayoutEngine {
             || stored_body_frame_opens_outer_top
             || source_cut_reopens_outer_top
             || native_repeated_header_reopens_outer_top
-            || empty_opening_continuation
+            || empty_opening_continuation.is_some()
             || parallel_picture_opening_continuation
             || empty_opening_first_fragment)
             && stored_reset_paint_geometry.is_none()
@@ -7332,6 +7612,15 @@ impl LayoutEngine {
             }
         }
 
+        // 이월 그림 띠가 온전히 들어간 시작 행은 scan에서 수용한 높이를 쓴다.
+        // 일반 행의 최소 높이 재계산은 원래 문단의 오프셋을 다시 더할 수 있다.
+        if let Some(height) = empty_opening_continuation
+            .filter(|_| end_row > start_row + 1 || end_cut.is_empty())
+            .and_then(|frame| frame.deferred_continuation_height(start_row_height_override))
+        {
+            row_heights[start_row] = height;
+        }
+
         // [#3820 Stage 76] RowBreak 표의 rowspan-연속 밴드에서 실제 셀 내용은
         // 현재 쪽에 모두 들어가지만, 원본 선언 행 높이만 남은 공간보다 큰 경우가
         // 있다. 페이지네이터는 다음 조각을 다음 행부터 재개하고 이 조각의 마지막
@@ -7445,16 +7734,19 @@ impl LayoutEngine {
         // `valign` 을 조각 내용으로 적용한다 — 정본 10쪽 첫 줄은 상자 위에서 9.8px 아래다.
         // [#7063 레인②] 상자를 쪽이 정할 때 **내용이 쓸 높이**(예산이 자른 값)를 따로 든다.
         let mut budget_row_height_0: Option<f64> = None;
-        let source_single_cell_row_frames = paragraphs
+        let source_row_frames = paragraphs
             .get(para_index)
             .zip(paragraphs.get(para_index + 1))
             .and_then(|(host, next)| {
-                self.native_single_cell_source_row_frames(host, next, table, styles)
+                self.stored_completed_row_frames(host, next, table, styles, col_area.height)
+                    .or_else(|| {
+                        self.native_single_cell_source_row_frames(host, next, table, styles)
+                    })
             });
-        let source_single_cell_closing_frame = is_continuation
+        let source_row_closing_frame = is_continuation
             && end_cut.is_empty()
-            && source_single_cell_row_frames.is_some_and(|frame| {
-                start_cut == [frame.opening_end]
+            && source_row_frames.as_ref().is_some_and(|frame| {
+                start_cut == frame.opening_cut.as_slice()
                     && end_row_height_override == Some(frame.closing_height)
             });
         // 종료 원점으로 입증된 마지막 저장 행은 컷 이후 내용의 정렬 프레임이다.
@@ -7481,7 +7773,7 @@ impl LayoutEngine {
                     end_row_height_override.is_some_and(|limit| (limit - height).abs() < 0.01)
                 });
         let mut center_pinned_single_cell = stored_terminal_frame
-            || source_single_cell_closing_frame
+            || source_row_closing_frame
             || (single_cell_page_fragment
                 && row_count == 1
                 && is_continuation
@@ -7910,6 +8202,7 @@ impl LayoutEngine {
                     section_index: None,
                     para_index: None,
                     control_index: None,
+                    cell_context: None,
                 })
             },
             BoundingBox::new(table_x, table_y, table_width, partial_table_height),
@@ -7949,9 +8242,10 @@ impl LayoutEngine {
                     .map(|(_, opening, _)| *opening)
             })
             .or_else(|| {
-                source_single_cell_row_frames
+                source_row_frames
+                    .as_ref()
                     .filter(|frame| {
-                        end_cut == [frame.opening_end]
+                        end_cut == frame.opening_cut.as_slice()
                             && end_row_height_override == Some(frame.opening_height)
                     })
                     .map(|frame| frame.opening_height)
@@ -8256,8 +8550,10 @@ impl LayoutEngine {
             align_saved_opening_frame,
             end_row_owns_stored_frame,
             computed_fragment_frame,
+            remaining_child_row,
             external_frame,
             original_restart_alignment_rows,
+            empty_opening_continuation.and_then(|frame| frame.deferred_picture_band_height),
             fold_last_row,
             &mut fold_slack,
         );
@@ -8307,11 +8603,18 @@ impl LayoutEngine {
                         continue;
                     };
                     let end = ranges[pi2].1;
-                    if let Some(seg) = cell
-                        .paragraphs
-                        .get(pi2)
-                        .and_then(|p| p.line_segs.get(end.checked_sub(1).unwrap_or(0)))
+                    let paragraph = &cell.paragraphs[pi2];
+                    // 이어지는 빈 문단들을 가르는 컷은 마지막 빈 줄의 전진 거리까지
+                    // 소유한다. 글자가 없다는 이유로 그 줄의 간격을 두 번 접지 않는다.
+                    if paragraph.controls.is_empty()
+                        && paragraph.text.trim().is_empty()
+                        && cell.paragraphs.get(pi2 + 1).is_some_and(|next| {
+                            next.controls.is_empty() && next.text.trim().is_empty()
+                        })
                     {
+                        continue;
+                    }
+                    if let Some(seg) = paragraph.line_segs.get(end.saturating_sub(1)) {
                         trail = trail.max(hwpunit_to_px(seg.line_spacing.max(0), self.dpi));
                     }
                 }
@@ -8866,6 +9169,7 @@ impl LayoutEngine {
             }
         }
 
+        tree.order_cell_overlay_nodes(&mut table_node);
         col_node.children.push(table_node);
 
         // ── 캡션 렌더링 ──
@@ -9017,7 +9321,7 @@ impl LayoutEngine {
         // 후속 흐름을 이동하거나 PageItem 소유를 바꾸지 않는다. Stage 120은 그리는 프레임과 클립만 바꾼다.
         // 쪽 나누기는 원래 구성한 컷 높이를 소비했다.
         let caption_outer_bottom =
-            if empty_opening_continuation && end_row >= row_count && end_cut.is_empty() {
+            if empty_opening_continuation.is_some() && end_row >= row_count && end_cut.is_empty() {
                 hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
             } else if rowbreak_reopens_outer_top && end_row >= row_count && end_cut.is_empty() {
                 crate::renderer::float_placement::column_rowbreak_caption_outer_spacing_px(

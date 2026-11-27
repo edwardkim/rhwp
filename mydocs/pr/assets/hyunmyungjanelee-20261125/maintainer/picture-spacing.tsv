@@ -1,0 +1,21 @@
+PR	case	source	page	first_x_px	first_y_px	second_x_px	second_y_px	horizontal_overlap_px	vertical_gap_px
+9384	side-by-side	Hancom Print	1	172.39	807.92	225.64	887.83	53.41	0.0
+9384	side-by-side	candidate native	1	172.4	808.7	225.7	888.7	53.4	0.0
+9384	side-by-side	final native	1	172.4	808.7	225.7	888.7	53.4	0.0
+9384	side-by-side	final wasm	1	172.4	808.7	225.7	888.7	53.4	0.0
+9384	photo-center-overlap	Hancom Print	1	172.39	807.92	225.64	887.83	53.41	0.0
+9384	photo-center-overlap	candidate native	1	172.4	848.7	225.7	848.7	53.4	-80.0
+9384	photo-center-overlap	final native	1	172.4	808.7	225.7	888.7	53.4	0.0
+9384	photo-center-overlap	final wasm	1	172.4	808.7	225.7	888.7	53.4	0.0
+9384	photo-right-overlap	Hancom Print	1	172.39	807.92	225.64	887.83	53.41	0.0
+9384	photo-right-overlap	candidate native	1	172.4	848.7	225.7	848.7	53.4	-80.0
+9384	photo-right-overlap	final native	1	172.4	808.7	225.7	888.7	53.4	0.0
+9384	photo-right-overlap	final wasm	1	172.4	808.7	225.7	888.7	53.4	0.0
+9384	photo-right-overlap-neg	Hancom Print	1	172.39	807.92	378.04	807.92	-98.99	-79.91
+9384	photo-right-overlap-neg	candidate native	1	172.4	808.7	378.2	808.7	-99.1	-80.0
+9384	photo-right-overlap-neg	final native	1	172.4	808.7	378.2	808.7	-99.1	-80.0
+9384	photo-right-overlap-neg	final wasm	1	172.4	808.7	378.2	808.7	-99.1	-80.0
+9384	photo-left-touch	Hancom Print	1	172.39	807.92	278.89	807.92	0.16	-79.91
+9384	photo-left-touch	candidate native	1	172.4	808.7	279.0	808.7	0.1	-80.0
+9384	photo-left-touch	final native	1	172.4	808.7	279.0	808.7	0.1	-80.0
+9384	photo-left-touch	final wasm	1	172.4	808.7	279.0	808.7	0.1	-80.0

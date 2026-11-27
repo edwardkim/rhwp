@@ -89,13 +89,13 @@ impl TypesetEngine {
         // The original content cut and the two boxes are one accepted result.
         // A blank band is reserved here, before emit and paint, and never
         // consumed as an extra content unit on the following page.
-        if let Some(frames) = input.prepared.source_single_cell_row_frames.filter(|_| {
+        if let Some(frames) = input.prepared.source_row_frames.as_ref().filter(|_| {
             input.prepared.table_footnotes.is_empty()
                 && std::ptr::eq(table, row_geometry_table)
                 && cursor_row == 0
         }) {
             let opening = !is_continuation && start_cut.is_empty();
-            let closing = is_continuation && start_cut.as_slice() == [frames.opening_end];
+            let closing = is_continuation && start_cut.as_slice() == frames.opening_cut.as_slice();
             let height = if opening {
                 frames.opening_height
             } else {
@@ -112,7 +112,7 @@ impl TypesetEngine {
                     end_row: 1,
                     split_block_start: None,
                     split_end_cut: if opening {
-                        vec![frames.opening_end]
+                        frames.opening_cut.clone()
                     } else {
                         Vec::new()
                     },
@@ -285,6 +285,17 @@ impl TypesetEngine {
             source_first_fragment_row_end,
             start_cut_is_block: input.start.start_cut_is_block,
             start_row_height_override,
+            remaining_child_row: input.start.remaining_child_row,
+            deferred_opening_row_height: input
+                .prepared
+                .empty_opening_row_frame
+                .filter(|_| {
+                    is_continuation
+                        && cursor_row == 0
+                        && !input.start.start_cut_is_block
+                        && start_cut.as_slice() == [0]
+                })
+                .and_then(|frame| frame.deferred_continuation_height(start_row_height_override)),
             source_terminal_suffix_start: input.prepared.source_terminal_suffix_start,
             opening_block_cuts_after_first_row: input
                 .prepared
@@ -877,35 +888,46 @@ impl TypesetEngine {
                 let carried = (row == cursor_row && !input.start.start_cut_is_block)
                     .then_some(start_row_height_override)
                     .flatten();
-                layout_engine.stored_ordinary_row_end_frame(
-                    row_geometry_table,
-                    row,
-                    (row_start, &split_end_cut),
-                    available,
-                    carried,
-                    styles,
-                )
-                .or_else(|| {
-                    // 빈 앵커가 자기 줄만 저장한 원본 격자의 끝 행은 이 쪽의
-                    // 물리 공간과 남은 글줄을 각각 가진다. 다음 글줄의 소유는
-                    // 선택한 내용 컷을 그대로 이어받는다.
-                    if is_continuation
-                        || cursor_row != 0
-                        || row + 1 != row_count
-                        || !start_cut.is_empty()
-                    {
-                        return None;
-                    }
-                    let declared = crate::renderer::float_placement::native_repeat_grid_terminal_row_height_hu(
-                        st.profile.hwp5_stored_pagination_layout() && !st.profile.session_edited(),
-                        input.source.paragraph,
+                layout_engine
+                    .stored_ordinary_row_end_frame(
                         row_geometry_table,
-                        input.source.paragraphs_all.get(para_idx + 1),
-                    )?;
-                    (available > selected
-                        && available < crate::renderer::hwpunit_to_px(declared, self.dpi))
-                    .then_some(available)
-                })
+                        row,
+                        (row_start, &split_end_cut),
+                        available,
+                        carried,
+                        styles,
+                    )
+                    .or_else(|| {
+                        layout_engine.stored_nested_frame_row_end(
+                            row_geometry_table,
+                            row,
+                            (row_start, &split_end_cut),
+                            available,
+                            carried,
+                            styles,
+                        )
+                    })
+                    .or_else(|| {
+                        // 빈 앵커가 자기 줄만 저장한 원본 격자의 끝 행은 이 쪽의
+                        // 물리 공간과 남은 글줄을 각각 가진다. 다음 글줄의 소유는
+                        // 선택한 내용 컷을 그대로 이어받는다.
+                        if is_continuation
+                            || cursor_row != 0
+                            || row + 1 != row_count
+                            || !start_cut.is_empty()
+                        {
+                            return None;
+                        }
+                        let declared = crate::renderer::float_placement::native_repeat_grid_terminal_row_height_hu(
+                            st.profile.hwp5_stored_pagination_layout() && !st.profile.session_edited(),
+                            input.source.paragraph,
+                            row_geometry_table,
+                            input.source.paragraphs_all.get(para_idx + 1),
+                        )?;
+                        (available > selected
+                            && available < crate::renderer::hwpunit_to_px(declared, self.dpi))
+                        .then_some(available)
+                    })
             }) {
                 if inline_frame.is_some() {
                     source_frame_band += height - selected;

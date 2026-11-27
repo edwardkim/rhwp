@@ -1,0 +1,228 @@
+{
+  "base": "fb98e8bff300ffe6aeb15119ee9ed280871e8abd",
+  "source": "049fd5ed2fa1b9647c5c44aaa1bf73ded7d0cf54",
+  "native_binary_sha256": "36f2cff6ab0d910ac7d041fc9d2063ead9a9aa1ba5b660d78819716552c570ff",
+  "prior_source": "53b15ed46fe2711c1823a891f9aea1cd17c4047b",
+  "native_skia_kaf_tests": {
+    "pass": 4,
+    "fail": 0
+  },
+  "same_reference_and_environment": true,
+  "scoring": "Visual Sweep, 96 DPI, 2px raw silhouette",
+  "capture_identity": {
+    "kaf-appendix": {
+      "rhwp_png": {
+        "count_before": 54,
+        "count_after": 54,
+        "changed": [
+          "rhwp_031.png",
+          "rhwp_036.png"
+        ]
+      },
+      "pdf_png": {
+        "count_before": 54,
+        "count_after": 54,
+        "changed": []
+      },
+      "tree": {
+        "count_before": 54,
+        "count_after": 54,
+        "changed": [
+          "render_tree_031.json",
+          "render_tree_036.json"
+        ]
+      }
+    },
+    "kaf-table": {
+      "rhwp_png": {
+        "count_before": 44,
+        "count_after": 44,
+        "changed": [
+          "rhwp_031.png"
+        ]
+      },
+      "pdf_png": {
+        "count_before": 44,
+        "count_after": 44,
+        "changed": []
+      },
+      "tree": {
+        "count_before": 44,
+        "count_after": 44,
+        "changed": [
+          "render_tree_031.json"
+        ]
+      }
+    },
+    "allowance": {
+      "rhwp_png": {
+        "count_before": 1,
+        "count_after": 1,
+        "changed": []
+      },
+      "pdf_png": {
+        "count_before": 1,
+        "count_after": 1,
+        "changed": []
+      },
+      "tree": {
+        "count_before": 1,
+        "count_after": 1,
+        "changed": []
+      }
+    },
+    "food": {
+      "rhwp_png": {
+        "count_before": 141,
+        "count_after": 141,
+        "changed": []
+      },
+      "pdf_png": {
+        "count_before": 141,
+        "count_after": 141,
+        "changed": []
+      },
+      "tree": {
+        "count_before": 141,
+        "count_after": 141,
+        "changed": []
+      }
+    }
+  },
+  "per_document": {
+    "kaf-appendix": {
+      "current_pages": 54,
+      "prior_pages": 54,
+      "representative": {
+        "36": [
+          "91.58",
+          "95.13"
+        ],
+        "38": [
+          "97.86",
+          "97.86"
+        ],
+        "39": [
+          "100.00",
+          "100.00"
+        ],
+        "40": [
+          "100.00",
+          "100.00"
+        ],
+        "42": [
+          "100.00",
+          "100.00"
+        ],
+        "52": [
+          "100.00",
+          "100.00"
+        ]
+      },
+      "count_below_98": 8,
+      "minimum": 92.68,
+      "higher": [
+        31,
+        36
+      ],
+      "lower": []
+    },
+    "kaf-table": {
+      "current_pages": 44,
+      "prior_pages": 44,
+      "representative": {
+        "33": [
+          "100.00",
+          "100.00"
+        ],
+        "34": [
+          "99.97",
+          "99.97"
+        ],
+        "37": [
+          "99.97",
+          "99.97"
+        ],
+        "42": [
+          "99.99",
+          "99.99"
+        ],
+        "43": [
+          "100.00",
+          "100.00"
+        ]
+      },
+      "count_below_98": 6,
+      "minimum": 92.68,
+      "higher": [
+        31
+      ],
+      "lower": []
+    },
+    "allowance": {
+      "current_pages": 1,
+      "prior_pages": 1,
+      "representative": {
+        "1": [
+          "100.00",
+          "100.00"
+        ]
+      },
+      "count_below_98": 0,
+      "minimum": 100.0,
+      "higher": [],
+      "lower": []
+    },
+    "food": {
+      "current_pages": 141,
+      "prior_pages": 141,
+      "representative": {
+        "89": [
+          "100.00",
+          "100.00"
+        ],
+        "90": [
+          "100.00",
+          "100.00"
+        ],
+        "91": [
+          "100.00",
+          "100.00"
+        ],
+        "92": [
+          "99.86",
+          "99.86"
+        ],
+        "93": [
+          "100.00",
+          "100.00"
+        ]
+      },
+      "count_below_98": 0,
+      "minimum": 98.25,
+      "higher": [],
+      "lower": []
+    }
+  },
+  "observations": {
+    "kaf_common_p31": {
+      "changed_node": "표 칸의 인라인 그림",
+      "x_at_96dpi_before_after": [
+        253.1,
+        265.1
+      ],
+      "y_at_96dpi_before_after": [
+        529.2,
+        529.2
+      ]
+    },
+    "appendix_p36": {
+      "frame_height_96dpi_before_after": [
+        104.73,
+        116.64
+      ],
+      "last_line_fully_visible": true,
+      "residual": "such와 and의 줄 소속 차이"
+    }
+  }
+}

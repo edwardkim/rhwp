@@ -487,6 +487,9 @@ impl DrawingObjAttr {
 /// 글상자 (그리기 개체 내 텍스트)
 #[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct TextBox {
+    /// 열기 시 글꼴 줄 높이를 복원한 경우에만 원본 글줄로 렌더링 높이를 계산한다.
+    #[serde(skip)]
+    pub font_line_heights_refreshed: bool,
     /// Text-only local HWPUNIT clipping; paragraphs remain editable and untrimmed.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub paint_clip: Option<Vec<super::text_clip::TextClipPath>>,

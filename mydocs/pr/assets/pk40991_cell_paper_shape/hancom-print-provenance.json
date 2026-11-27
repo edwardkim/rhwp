@@ -1,0 +1,54 @@
+[
+ {
+  "input": "samples/pk40991_cell_paper_shape/paper_square.hwpx",
+  "input_sha256": "bb26acda215afaea3353f7e4b30e330857fba68d976818f06188d9e35ebeaf3b",
+  "pdf": "pdf/paper_square-2020.pdf",
+  "pdf_sha256": "de62a88d1dbe3ffece67de40df987637f3754819950834d3fcd0ae5aebb0daef",
+  "product": "Hancom Office 2020 (Windows desktop)",
+  "printer": "Hancom PDF",
+  "creator": "Hwp 2020 0.0.0.0",
+  "producer": "Hancom PDF 1.3.0.550",
+  "pages": "1",
+  "method": "Print via maintainer hwp-convert service",
+  "printed_at": ""
+ },
+ {
+  "input": "samples/pk40991_cell_paper_shape/paper_front.hwpx",
+  "input_sha256": "3d335ab4ff7d1acef8735074170335dbdf701d79621c205fc6cfde9660961412",
+  "pdf": "pdf/paper_front-2020.pdf",
+  "pdf_sha256": "dd0e168ac2cc146d00771c75f0d3b730b14deb57b2fbad11d13d7f67e9e631e1",
+  "product": "Hancom Office 2020 (Windows desktop)",
+  "printer": "Hancom PDF",
+  "creator": "Hwp 2020 0.0.0.0",
+  "producer": "Hancom PDF 1.3.0.550",
+  "pages": "1",
+  "method": "Print via maintainer hwp-convert service",
+  "printed_at": "2026-11-19"
+ },
+ {
+  "input": "samples/pk40991_cell_paper_shape/paper_square_nested.hwpx",
+  "input_sha256": "9b2f5f2a878cc4ba491dc8687075fd948701c662a6d96030d8f105da3064fbaf",
+  "pdf": "pdf/paper_square_nested-2020.pdf",
+  "pdf_sha256": "3fef4b4f87433ba6743ae3e4a1a8a243af48f41006a4439d445fc4a7ffc85d0b",
+  "product": "Hancom Office 2020 (Windows desktop)",
+  "printer": "Hancom PDF",
+  "creator": "Hwp 2020 0.0.0.0",
+  "producer": "Hancom PDF 1.3.0.550",
+  "pages": "1",
+  "method": "Print via maintainer hwp-convert service",
+  "printed_at": "2026-11-19"
+ },
+ {
+  "input": "samples/pk40991_cell_paper_shape/paper_square_split.hwpx",
+  "input_sha256": "bad59008efcbc94659612d2426dfdac42c93cc64b49acfddf08ddf62aebc7dbc",
+  "pdf": "pdf/paper_square_split-2020.pdf",
+  "pdf_sha256": "2c7cdd941dffa46a8ed2ca90a7e553e8aae67cd7e5712c604bf95d8784b6e310",
+  "product": "Hancom Office 2020 (Windows desktop)",
+  "printer": "Hancom PDF",
+  "creator": "Hwp 2020 11.0.0.9136",
+  "producer": "Hancom PDF 1.3.0.550",
+  "pages": "2",
+  "method": "Print via maintainer hwp-convert service",
+  "printed_at": "2026-11-23"
+ }
+]

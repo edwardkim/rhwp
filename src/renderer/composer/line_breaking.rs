@@ -262,6 +262,11 @@ fn break_before_text_token(
         return false;
     }
     let previous = text_chars[start_idx - 1];
+    // 독립 한컴 Print는 같은 폭의 연속 하이픈을 번호 뒤에도 채운다.
+    // 이미 분리된 두 하이픈 토큰 사이에 후보를 두어 앞 공백까지 되감지 않는다.
+    if previous == '-' && text_chars[start_idx] == '-' {
+        return true;
+    }
     // UAX #14의 CB(OBJECT REPLACEMENT CHARACTER, LB20)는 개체 앞의
     // 줄바꿈 기회를 갖는다. 이 경계를 빠뜨리면 넓은 인라인 표 앞의
     // 이모지·라틴 글자까지 이전 공백으로 되감겨 빈 줄이 하나 더 생긴다.
@@ -440,6 +445,23 @@ impl SpaceMetric {
                 if let Some(em) = kopub_space_advance_em(style) {
                     style.font_space_em = Some(em);
                 }
+            }
+            Self::Word { latin, reduced } => {
+                let program_space = || {
+                    crate::renderer::style_resolver::declared_space_advance_em(
+                        &style.font_family,
+                        style.bold,
+                        style.italic,
+                    )
+                };
+                let em = style
+                    .font_space_em
+                    .or_else(|| latin.then(program_space).flatten())
+                    .or(style.layout_half_space_em)
+                    .unwrap_or(0.5);
+                // 같은 원문의 한컴 2020·2024 Print에서 네 글꼴의 반각과
+                // 글꼴 hmtx 전진을 대조하면 2024 조정은 양쪽 모두 원래 폭의 70%다.
+                style.font_space_em = Some(if reduced { em * 0.7 } else { em });
             }
         }
     }
@@ -3483,6 +3505,204 @@ fn explicit_zero_size_paragraph(para: &Paragraph, styles: &ResolvedStyleSet) -> 
         })
 }
 
+/// [#8582] 호환 대상이 MS 워드인 문서에서 범위 안 글자의 한 줄 높이(px) 최대.
+///
+/// 글자마다 `글자 크기 × 자기 언어 슬롯 글꼴의 한 줄 높이 배율` 을 잰다. 고정 줄 간격은
+/// 고정값이 피치이므로 대상이 아니다. 워드 줄 높이를 쓰지 않는 문서(`word_line_factors`
+/// 없음)는 `None` 이다.
+fn word_compat_glyph_height(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    line_spacing_type: LineSpacingType,
+    range: std::ops::Range<usize>,
+) -> Option<f64> {
+    let factors = styles.word_line_factors.as_deref()?;
+    if matches!(line_spacing_type, LineSpacingType::Fixed) {
+        return None;
+    }
+    let mut largest = 0.0f64;
+    for (index, ch) in para
+        .text
+        .chars()
+        .enumerate()
+        .skip(range.start)
+        .take(range.end.saturating_sub(range.start))
+    {
+        if ch == '\u{FFFC}' || ch.is_control() && ch != '\t' {
+            continue;
+        }
+        let utf16_pos = para
+            .char_offsets
+            .get(index)
+            .copied()
+            .unwrap_or(index as u32);
+        let style_id = find_active_char_shape(&para.char_shapes, utf16_pos);
+        // 빈칸은 영문 슬롯 글꼴로 잰다(한글 사이 빈칸도 같다).
+        let lang = if ch == ' ' {
+            1
+        } else {
+            crate::renderer::style_resolver::detect_lang_category(ch)
+        };
+        largest = largest.max(word_compat_scaled(styles, factors, style_id, lang));
+    }
+    Some(largest)
+}
+
+fn word_compat_scaled(
+    styles: &ResolvedStyleSet,
+    factors: &[[f64; 7]],
+    style_id: u32,
+    lang: usize,
+) -> f64 {
+    let size = styles
+        .char_styles
+        .get(style_id as usize)
+        .map_or(0.0, |style| style.font_size);
+    let factor = factors
+        .get(style_id as usize)
+        .map_or(1.0, |slots| slots[lang.min(6)]);
+    size * factor
+}
+
+/// [#8582] 워드 호환 문서의 문단 끝 표지 한 줄 높이(px): 끝 글자 모양의 영문 슬롯 글꼴로 잰다.
+fn word_compat_mark_size(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    line_spacing_type: LineSpacingType,
+) -> Option<f64> {
+    let factors = styles.word_line_factors.as_deref()?;
+    if matches!(line_spacing_type, LineSpacingType::Fixed) {
+        return None;
+    }
+    let end_pos = para.char_count.checked_sub(1)?;
+    Some(word_compat_scaled(
+        styles,
+        factors,
+        find_active_char_shape(&para.char_shapes, end_pos),
+        1,
+    ))
+}
+
+/// [#8582] 워드 호환 문서에서 저장 줄 없는 빈 문단의 한 줄 높이(px).
+/// 빈 문단은 끝 표지(영문 슬롯 글꼴)로 잰다. 한글 문서·고정 줄 간격은 `None` 이다.
+pub(crate) fn word_compat_empty_paragraph_font_size(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    line_spacing_type: LineSpacingType,
+) -> Option<f64> {
+    word_compat_mark_size(para, styles, line_spacing_type)
+}
+
+/// [#8582] 호환 대상이 MS 워드인 문서의 한 줄 높이(px). 줄 높이 글자 크기 자리에 쓴다.
+///
+/// 범위 안 글자의 최대이고, 문단 끝 표지를 포함하면 표지도 넣는다.
+pub(crate) fn word_compat_line_font_size(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    line_spacing_type: LineSpacingType,
+    range: std::ops::Range<usize>,
+    include_paragraph_end: bool,
+) -> Option<f64> {
+    let glyph = word_compat_glyph_height(para, styles, line_spacing_type, range)?;
+    let mark = include_paragraph_end
+        .then(|| word_compat_mark_size(para, styles, line_spacing_type))
+        .flatten()
+        .unwrap_or(0.0);
+    Some(glyph.max(mark))
+}
+
+/// [#8582] 워드 호환 문서의 문단 마지막 줄 보정량(px, 줄 상자 아래에 더한다).
+///
+/// 문단 끝 표지(영문 슬롯 글꼴)의 한 줄 높이가 그 줄 글자들보다 크면 줄 피치는
+/// `줄 간격(표지 한 줄) + 줄 글자의 아래쪽(한 줄 높이의 1/4)` 이다(데스크톱 한컴 인쇄:
+/// 함초롬바탕 한글 + 맑은 고딕 표지 11pt 2371 HU = 1902 + 465). 표지 글꼴이 줄 글자에도
+/// 쓰이거나 표지가 더 작으면 0 이다. 빈 문단도 0 이다.
+fn word_compat_last_line_extra_px(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    line_spacing_type: LineSpacingType,
+    range: std::ops::Range<usize>,
+) -> f64 {
+    let Some(glyph) = word_compat_glyph_height(para, styles, line_spacing_type, range) else {
+        return 0.0;
+    };
+    let mark = word_compat_mark_size(para, styles, line_spacing_type).unwrap_or(0.0);
+    if glyph > 0.0 && mark > glyph + 1e-6 {
+        glyph * 0.25
+    } else {
+        0.0
+    }
+}
+
+/// [#8582] 워드 호환 문서의 줄 상자를 한컴 워드 호환 규칙으로 고친다(HU).
+///
+/// 기준선은 한 줄 높이의 3/4 이고 줄 간격은 줄 상자에 담는다. 고정 줄 간격은 고정값이 줄
+/// 높이(간격 0)이고 기준선은 그
+/// 4/5 다(데스크톱 한컴 인쇄: 함초롬바탕 10pt 첫 줄 기준선 1270 HU, 고정 1800 HU 기준선
+/// 1440 HU). 한글 문서는 바꾸지 않는다.
+pub(crate) fn word_compat_reframe(
+    styles: &ResolvedStyleSet,
+    line_spacing_type: LineSpacingType,
+    line_spacing_value: f64,
+    dpi: f64,
+    line_height: i32,
+    text_height: i32,
+    line_spacing: i32,
+) -> Option<WordCompatFrame> {
+    styles.word_line_factors.as_ref()?;
+    if matches!(line_spacing_type, LineSpacingType::Fixed) {
+        let fixed = round_px_to_hwpunit(line_spacing_value, dpi);
+        return (fixed > 0).then(|| WordCompatFrame {
+            line_height: fixed,
+            text_height: fixed,
+            baseline_distance: (fixed as f64 * 0.8).round() as i32,
+            line_spacing: 0,
+        });
+    }
+    // 줄 간격은 줄 상자에 담는다(워드는 배수 줄 간격을 줄 높이로 본다). 칸 높이처럼 마지막 줄
+    // 뒤 간격을 빼는 소비자도 이 간격을 칸 안에 둔다(데스크톱 한컴: 160% 칸 문단의 칸 높이).
+    // 글자 높이도 같은 상자로 둔다. 그리기가 저장 글자 높이를 줄 높이로 되돌리지 않게 한다.
+    Some(WordCompatFrame {
+        line_height: line_height + line_spacing,
+        text_height: line_height + line_spacing,
+        baseline_distance: (text_height as f64 * 0.75).round() as i32,
+        line_spacing: 0,
+    })
+}
+
+/// [#8582] 워드 호환 문서에서 글자처럼 취급한 개체가 높이를 정한 줄.
+///
+/// 개체 아래끝이 기준선이고, 그 아래에 문단 끝 표지의 아래쪽(한 줄 높이의 1/4)이 붙는다
+/// (데스크톱 한컴 인쇄: 함초롬바탕 11pt 문단의 글자처럼 취급한 표 아래 465 HU). 고정 줄
+/// 간격과 한글 문서는 바꾸지 않는다.
+fn word_compat_object_row(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    line_spacing_type: LineSpacingType,
+    dpi: f64,
+    seg: &mut LineSeg,
+    object_height: i32,
+) {
+    if seg.line_height != object_height || object_height <= 0 {
+        return;
+    }
+    let Some(mark) = word_compat_mark_size(para, styles, line_spacing_type) else {
+        return;
+    };
+    // 개체 줄은 줄 높이가 개체 상자이고 그 뒤 간격이 줄 아래 몫이다(한/글 문서의 개체 줄과
+    // 같은 짜임). 아래쪽을 간격에 둬야 개체 높이로 흐름을 세는 소비자도 같은 값을 쓴다.
+    seg.baseline_distance = object_height;
+    seg.line_spacing = round_px_to_hwpunit(mark * 0.25, dpi);
+}
+
+/// [#8582] [`word_compat_reframe`] 의 결과.
+pub(crate) struct WordCompatFrame {
+    pub(crate) line_height: i32,
+    pub(crate) text_height: i32,
+    pub(crate) baseline_distance: i32,
+    pub(crate) line_spacing: i32,
+}
+
 /// 표시되지 않는 문단 끝 문자도 마지막 줄의 글자모양 높이를 소유한다.
 /// 문자 수는 확장 제어를 포함한 원본 UTF-16 축이므로 표시 문자열 길이로 대신하지 않는다.
 pub(crate) fn paragraph_end_font_size_px(para: &Paragraph, styles: &ResolvedStyleSet) -> f64 {
@@ -4380,6 +4600,26 @@ fn line_start_utf16_offset(
         .fold(end, u32::min)
 }
 
+/// 저장된 줄이 없는 문서를 다른 형식에 전달할 때 실제 조판 줄의 UTF-16 시작을 사용한다.
+pub(crate) fn composed_line_text_starts(
+    para: &Paragraph,
+    char_starts: impl Iterator<Item = usize>,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Vec<u32> {
+    let controls = flow_inline_controls_with_tac_tables(para, styles, dpi);
+    char_starts
+        .enumerate()
+        .map(|(index, char_start)| {
+            if index == 0 {
+                0
+            } else {
+                line_start_utf16_offset(para, char_start, &controls)
+            }
+        })
+        .collect()
+}
+
 /// `baseline_distance` from a row's height — the one expression, so the frame
 /// and the edit path cannot publish different baselines for the same paragraph.
 ///
@@ -4551,7 +4791,7 @@ pub(crate) fn frame_metrics_for_line(
 /// 발행하면 편집한 문단의 들여쓰기·내어쓰기가 그려지지 않는다.
 ///
 /// 기준은 문단 모양의 `indent` 다. 렌더러가 비트를 보고 얹는 값이 이것이므로, 조판용
-/// 지역 `indent_px` 를 넘겨받지 않는다. 한글 기록(`stored`, 조판 전 저장 줄)이 이 규칙과
+/// 지역 `indent_px` 를 넘겨받지 않는다. 유효한 한글 기록(`stored`)이 이 규칙과
 /// 다르면 기록을 따른다.
 /// - 들여쓰기가 있는데 저장 줄의 비트가 모두 꺼져 있으면, 한글이 이 문단에 들여쓰기를
 ///   적용하지 않은 것이다(#6190 표본). 새 줄도 끈다. 내어쓰기는 둘째 줄이 있어야 이
@@ -4608,23 +4848,30 @@ fn reflow_indentation_pattern(
     line_width_hwp: i32,
 ) -> (bool, bool) {
     let indent = para_style.map_or(0.0, |style| style.indent);
-    let indented = |line: &LineSeg| line.tag & LineSeg::TAG_INDENTATION != 0;
-    let hancom_record = !stored.is_empty()
-        && stored
-            .iter()
-            .all(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0);
-    if hancom_record
-        && (indent > 0.0 || (indent < 0.0 && stored.len() > 1))
-        && !stored.iter().any(indented)
-    {
+    if stored_rows_suppress_indentation(stored, indent) {
         (false, false)
     } else if indent == 0.0 && para_style.is_some_and(|style| style.head_type != HeadType::None) {
-        (false, hancom_record && stored.iter().skip(1).any(indented))
+        let hancom_record = stored
+            .iter()
+            .all(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0);
+        let continuation_indented = stored
+            .iter()
+            .skip(1)
+            .any(|line| line.tag & LineSeg::TAG_INDENTATION != 0);
+        (false, hancom_record && continuation_indented)
     } else if !indent_leaves_line_room_hwp(to_hwp(indent), line_width_hwp) {
         (false, false)
     } else {
         (indent > 0.0, indent < 0.0)
     }
+}
+
+fn stored_rows_suppress_indentation(stored: &[LineSeg], indent: f64) -> bool {
+    !stored.is_empty()
+        && (indent > 0.0 || (indent < 0.0 && stored.len() > 1))
+        && stored.iter().all(|line| {
+            line.tag & (LineSeg::TAG_IMPLEMENTATION_PROPERTY | LineSeg::TAG_INDENTATION) == 0
+        })
 }
 
 /// [#7490] 문단 모양이 바뀌어 들여쓰기가 달라졌으면 저장 줄의 bit 20 을 새 들여쓰기로
@@ -5080,11 +5327,15 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
     let zero_size_paragraph = explicit_zero_size_paragraph(para, styles);
     let header_footer_anchors = header_footer_anchor_font_sizes(para, styles, storage)?;
     let fallback_font_size = if para.text.is_empty() {
-        para.char_shapes
+        let size = para
+            .char_shapes
             .first()
             .and_then(|char_shape| styles.char_styles.get(char_shape.char_shape_id as usize))
             .map(|style| style.font_size)
-            .unwrap_or(12.0)
+            .unwrap_or(12.0);
+        // [#8582] 워드 호환 문서의 빈 문단은 끝 표지(영문 슬롯 글꼴)의 배율로 잰다.
+        word_compat_line_font_size(para, styles, line_spacing_type, 0..0, true)
+            .map_or(size, |scaled| size.max(scaled))
     } else if zero_size_paragraph {
         0.0
     } else {
@@ -5194,6 +5445,7 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
 
                 let mut segments = storage.vec(intervals.len())?;
                 // 번호·글머리표도 첫 물리 줄의 글자다. 뒤 줄에는 참여하지 않는다.
+                let mut word_row_range: Option<std::ops::Range<usize>> = None;
                 let mut maximum_font_size = if start_char == 0 && frame.row_count() == first_row {
                     marker_font_size
                 } else {
@@ -5329,8 +5581,21 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
                         filled
                     };
                     let line = &filled.line;
+                    word_row_range = Some(match word_row_range.take() {
+                        Some(range) => range.start.min(line.start_idx)..range.end.max(line.end_idx),
+                        None => line.start_idx..line.end_idx,
+                    });
                     if !zero_size_paragraph {
                         maximum_font_size = maximum_font_size.max(line.max_font_size);
+                        if let Some(size) = word_compat_line_font_size(
+                            para,
+                            styles,
+                            line_spacing_type,
+                            line.start_idx..line.end_idx,
+                            false,
+                        ) {
+                            maximum_font_size = maximum_font_size.max(size);
+                        }
                     }
                     maximum_font_size = maximum_font_size.max(floating_anchor_font_size_px(
                         &header_footer_anchors,
@@ -5399,6 +5664,11 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
                 if cursor.finished {
                     maximum_font_size =
                         maximum_font_size.max(paragraph_end_font_size_px(para, styles));
+                    if let Some(size) =
+                        word_compat_line_font_size(para, styles, line_spacing_type, 0..0, true)
+                    {
+                        maximum_font_size = maximum_font_size.max(size);
+                    }
                 }
                 let mut metrics = frame_metrics_for_line(
                     maximum_font_size,
@@ -5407,6 +5677,21 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
                     line_spacing_value,
                     dpi,
                 );
+                // [#8582] 워드 호환 문서의 줄 상자(기준선·고정 줄 간격). 개체 높이 반영 전이다.
+                if let Some(frame) = word_compat_reframe(
+                    styles,
+                    line_spacing_type,
+                    line_spacing_value,
+                    dpi,
+                    metrics.line_height,
+                    metrics.text_height,
+                    metrics.line_spacing,
+                ) {
+                    metrics.line_height = frame.line_height;
+                    metrics.text_height = frame.text_height;
+                    metrics.baseline_distance = frame.baseline_distance;
+                    metrics.line_spacing = frame.line_spacing;
+                }
                 if let Some(height) = inline_spacing_height {
                     // Match scalar reflow: only participating objects enlarge
                     // the line-spacing basis, alongside this row's text strut.
@@ -5424,6 +5709,19 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
                         if let Some(baseline_distance_hwp) = baseline_distance_hwp {
                             metrics.baseline_distance = baseline_distance_hwp;
                         }
+                    }
+                }
+                // [#8582] 워드 호환 문서의 문단 마지막 줄 보정은 줄 상자 아래에 더한다.
+                if cursor.finished {
+                    let extra = word_compat_last_line_extra_px(
+                        para,
+                        styles,
+                        line_spacing_type,
+                        word_row_range.clone().unwrap_or(0..0),
+                    );
+                    if extra > 0.0 {
+                        metrics.line_height += round_px_to_hwpunit(extra, dpi);
+                        metrics.text_height = metrics.line_height;
                     }
                 }
                 if metrics.line_height != candidate_height {
@@ -5843,35 +6141,8 @@ pub(crate) fn resolve_stored_line_segs_in_frame_with_storage<S: crate::storage::
                 report_stored_row_key_mismatch_with_storage(para, frame, styles, dpi, storage)?;
             }
 
-            let mut reflow_input = storage.clone_paragraph(para)?;
-            // A rejected row cannot remain the provenance template for fresh rows:
-            // placement/empty flags describe the stored physical rows, not this
-            // frame's newly carved projection.
-            // 같은 목록 상자의 마지막 자동 줄이라는 증거는 행 플래그와 별개다.
-            // 캐시를 지우기 전에 폭 판정에 필요한 이 사실만 보존해, 탐색과
-            // 실제 발행이 같은 글줄 경계를 사용하도록 한다.
-            let purpose = if !frame.models_exclusions()
-                && saved_marker_tail_owns_terminal_ink(
-                    para,
-                    &ParagraphBox::content(frame.horizontal.clone()),
-                    styles,
-                ) {
-                FramePurpose::StoredMarkerTailReflow
-            } else {
-                FramePurpose::Body
-            };
-            reflow_input.line_segs.clear();
-            try_layout_paragraph_in_frame_impl(
-                &reflow_input,
-                frame,
-                styles,
-                dpi,
-                true,
-                FrameStart::Scalar(0),
-                purpose,
-                storage,
-            )?
-            .map(|_| StoredRowResolution::Reflowed)
+            try_fill_frame_after_discarding_stored_rows(para, frame, styles, dpi, storage)?
+                .map(|_| StoredRowResolution::Reflowed)
         })
     })();
     if resolved.is_err() {
@@ -5880,6 +6151,39 @@ pub(crate) fn resolve_stored_line_segs_in_frame_with_storage<S: crate::storage::
         }
     }
     resolved
+}
+
+fn try_fill_frame_after_discarding_stored_rows<S: Storage>(
+    para: &Paragraph,
+    frame: &mut LayoutFrame,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    storage: &S,
+) -> Result<Option<Vec<LineSeg>>, S::Error> {
+    // 확정된 목록 상자의 마지막 자동 줄이라는 증거만 폭 판정에 전달한다.
+    // 나머지 플래그는 거절한 저장 줄의 기록이므로 새 줄의 기하에 쓰지 않는다.
+    let purpose = if !frame.models_exclusions()
+        && saved_marker_tail_owns_terminal_ink(
+            para,
+            &ParagraphBox::content(frame.horizontal.clone()),
+            styles,
+        ) {
+        FramePurpose::StoredMarkerTailReflow
+    } else {
+        FramePurpose::Body
+    };
+    let mut input = storage.clone_paragraph(para)?;
+    input.line_segs.clear();
+    try_layout_paragraph_in_frame_impl(
+        &input,
+        frame,
+        styles,
+        dpi,
+        true,
+        FrameStart::Scalar(0),
+        purpose,
+        storage,
+    )
 }
 
 /// [#6175] 저장 행의 결손 폭이 어울림 개체의 흐름 폭과 같다고 볼 허용 오차(HWPUNIT).
@@ -6585,6 +6889,30 @@ fn try_reflow_line_segs_impl<S: Storage>(
         let text_height_hwp = line_height_hwp;
         let baseline_distance_hwp = baseline_distance_hwp(line_height_hwp);
         let line_spacing_hwp = compute_line_spacing_hwp(ls_type, ls_value, line_height_hwp, dpi);
+        // [#8582] 워드 호환 문서의 줄 상자(기준선·고정 줄 간격).
+        let (line_height_hwp, text_height_hwp, baseline_distance_hwp, line_spacing_hwp) =
+            match word_compat_reframe(
+                styles,
+                ls_type,
+                ls_value,
+                dpi,
+                line_height_hwp,
+                text_height_hwp,
+                line_spacing_hwp,
+            ) {
+                Some(frame) => (
+                    frame.line_height,
+                    frame.text_height,
+                    frame.baseline_distance,
+                    frame.line_spacing,
+                ),
+                None => (
+                    line_height_hwp,
+                    text_height_hwp,
+                    baseline_distance_hwp,
+                    line_spacing_hwp,
+                ),
+            };
         // [Task #1811] 원본 linesegarray 부재(orig=None) 시 합성 seg 에 구현속성
         // 태그를 부여 — vpos 보정 등에서 실제 저장 증거와 구분한다 (컨버터의
         // 합성 lineseg flags=0x8000_0000 관례와 정합).
@@ -6718,6 +7046,7 @@ fn try_reflow_line_segs_impl<S: Storage>(
                     };
                 }
                 apply_inline_control_line_height(&mut seg, height_hwp);
+                word_compat_object_row(para, styles, ls_type, dpi, &mut seg, height_hwp);
                 storage.push(&mut new_line_segs, seg)?;
             }
 
@@ -6748,6 +7077,9 @@ fn try_reflow_line_segs_impl<S: Storage>(
             // 빈 문단도 활성 글자 모양의 크기로 줄을 만든다. 앞 문단 LINE_SEG의
             // 치수를 복사하면 TAC 그림 높이까지 상속되므로 vpos 원점만 보존한다.
             let font_size = paragraph_font_size_px(para, styles).unwrap_or(12.0);
+            // [#8582] 워드 호환 문서의 빈 문단은 끝 표지(영문 슬롯 글꼴)의 배율로 잰다.
+            let font_size = word_compat_line_font_size(para, styles, ls_type, 0..0, true)
+                .map_or(font_size, |scaled| font_size.max(scaled));
             let mut seg = make_line_seg(0, font_size);
             if let Some(template) = orig.as_ref() {
                 seg.vertical_pos = template.vertical_pos;
@@ -6763,6 +7095,7 @@ fn try_reflow_line_segs_impl<S: Storage>(
             }
             if let Some(height_hwp) = inline_control_line_height_hwp(para) {
                 apply_inline_control_line_height(&mut seg, height_hwp);
+                word_compat_object_row(para, styles, ls_type, dpi, &mut seg, height_hwp);
             }
             // 덧말만 든 문단도 글자 있는 줄처럼 덧말 높이·기준선·간격을 쓴다(한컴 12.30 저장 줄).
             if let Some((height_hwp, baseline)) =
@@ -6798,16 +7131,46 @@ fn try_reflow_line_segs_impl<S: Storage>(
         // `0..seg_width_hwp`(문단 기준, 미스냅)라 열 기준 렌더 프레임과 어긋났다.
         let mut frame =
             paragraph_box.frame(orig.as_ref().map(|line| line.vertical_pos).unwrap_or(0));
-        if let Some(projected) = try_layout_paragraph_in_frame_impl(
-            para,
-            &mut frame,
-            styles,
-            dpi,
-            true,
-            FrameStart::Scalar(0),
-            FramePurpose::Body,
-            storage,
-        )? {
+        // [#7407] 읽기 경로가 #7416의 과소충전으로 거절하는 저장 줄은 내어쓰기
+        // 비트도 재사용할 수 없다. 같은 프레임에 현재 문단 모양으로 새 줄을 낸다.
+        let discard_stored_rows = if stored_rows_suppress_indentation(
+            &para.line_segs,
+            para_style.map_or(0.0, |style| style.indent),
+        ) && !para.stored_text_partition_is_dirty()
+            && !stored_rows_require_external_geometry(para, &frame, &[], false)
+        {
+            let composed = super::try_compose_paragraph_scoped(
+                para,
+                styles.supplemental_metrics.is_some(),
+                Some(styles),
+                storage,
+            )?;
+            composed.lines.len() == para.line_segs.len()
+                && super::stored_rows_underfill_inside_token_with_storage(
+                    &composed,
+                    para,
+                    paragraph_box.width_px(dpi),
+                    styles,
+                    storage,
+                )?
+        } else {
+            false
+        };
+        let projected = if discard_stored_rows {
+            try_fill_frame_after_discarding_stored_rows(para, &mut frame, styles, dpi, storage)?
+        } else {
+            try_layout_paragraph_in_frame_impl(
+                para,
+                &mut frame,
+                styles,
+                dpi,
+                true,
+                FrameStart::Scalar(0),
+                FramePurpose::Body,
+                storage,
+            )?
+        };
+        if let Some(projected) = projected {
             para.replace_line_segs_with_space_metrics(
                 projected,
                 frame.try_project_space_metrics_since(0, storage)?,
@@ -7110,7 +7473,24 @@ fn try_reflow_line_segs_impl<S: Storage>(
         } else {
             fs
         };
+        // [#8582] 워드 호환 문서는 글꼴별 배율로 잰 글자 크기를 줄 높이에 쓴다.
+        let fs = word_compat_line_font_size(
+            para,
+            styles,
+            ls_type,
+            lb.start_idx..lb.end_idx,
+            line_idx + 1 == line_breaks.len(),
+        )
+        .map_or(fs, |scaled| fs.max(scaled));
         let mut text_seg = make_line_seg(utf16_start, fs);
+        if line_idx + 1 == line_breaks.len() {
+            let extra =
+                word_compat_last_line_extra_px(para, styles, ls_type, lb.start_idx..lb.end_idx);
+            if extra > 0.0 {
+                text_seg.line_height += round_px_to_hwpunit(extra, dpi);
+                text_seg.text_height = text_seg.line_height;
+            }
+        }
         // A control assigned its own row after this text prefix owns that
         // row's height only. A terminal anchor can also equal text_len; the
         // general last-line ownership rule must not reserve it in both rows.
@@ -7187,10 +7567,10 @@ fn try_reflow_line_segs_impl<S: Storage>(
 
     if new_line_segs.is_empty() {
         storage.reserve(&mut new_line_segs, 1)?;
-        new_line_segs.push(make_line_seg(
-            0,
-            paragraph_font_size_px(para, styles).unwrap_or(12.0),
-        ));
+        let font_size = paragraph_font_size_px(para, styles).unwrap_or(12.0);
+        let font_size = word_compat_line_font_size(para, styles, ls_type, 0..0, true)
+            .map_or(font_size, |scaled| font_size.max(scaled));
+        new_line_segs.push(make_line_seg(0, font_size));
     }
 
     if forced_inline_line.is_none() && inline_controls.is_empty() {

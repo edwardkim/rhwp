@@ -1,0 +1,205 @@
+{
+  "dpi": 96,
+  "compatibility": "2022",
+  "candidate_source_head": "049fd5ed2fa1b9647c5c44aaa1bf73ded7d0cf54",
+  "metric": "silhouette_raw_match_percent",
+  "rasterizer": "pdfium_smooth_rgb_exact_dpi_v2",
+  "comparisons": {
+    "9386": {
+      "case": "kaf-table",
+      "source_head": "f3edd5acaea4b48446451ab6843a6e9ef946853f",
+      "pdf_sha256": "71c1a67fa80ed3535f3a807acb1d4b26f3e37c7275f61559a8ebbd36641ba0aa",
+      "input_sha256": "b03eaad4854504f54eafe8a1aa10eafd56e9ad75db3e40ae2ed43a31dd666c0f",
+      "hancom_version": "11.0.0.9172",
+      "job_id": "10e19b34-db61-48b3-90a8-1db299c73532",
+      "backends": {
+        "native": {
+          "pages": 44,
+          "min": "95.73",
+          "original_min": "94.33",
+          "below_98": {
+            "24": "97.05",
+            "31": "95.73"
+          },
+          "lower_pages": [],
+          "higher_pages": [
+            31
+          ],
+          "same_displayed_pages": 43,
+          "tsv_sha256": {
+            "original": "9f7b9dc0a33175bfd6c066b9fa0e4a0a5b53a7780989b12c63e396100056152c",
+            "candidate": "98282b7b852c6dbba801d7abca027decc926d116a30750284f83cf98003aa99b"
+          },
+          "focus": {
+            "24": {
+              "original": "97.05",
+              "candidate": "97.05"
+            },
+            "31": {
+              "original": "94.33",
+              "candidate": "95.73"
+            },
+            "35": {
+              "original": "99.09",
+              "candidate": "99.09"
+            },
+            "36": {
+              "original": "98.15",
+              "candidate": "98.15"
+            }
+          },
+          "tsv": {
+            "original": "mydocs/pr/assets/planet6897_20261125/mcp-print-comparison/kaf-table/native/original.tsv",
+            "candidate": "mydocs/pr/assets/planet6897_20261125/mcp-print-comparison/kaf-table/native/candidate.tsv"
+          }
+        },
+        "wasm": {
+          "pages": 44,
+          "min": "95.75",
+          "original_min": "94.35",
+          "below_98": {
+            "24": "97.10",
+            "31": "95.75"
+          },
+          "lower_pages": [],
+          "higher_pages": [
+            31
+          ],
+          "same_displayed_pages": 43,
+          "tsv_sha256": {
+            "original": "120878a0bafe53d146eaedb35c5ef3eeec041dc939c5df1d238aaf84c58503c5",
+            "candidate": "d99dcc6d6ee0c11f644dc22d1ff64609aa730fcfc07b6ac024bce972f9b44230"
+          },
+          "focus": {
+            "24": {
+              "original": "97.10",
+              "candidate": "97.10"
+            },
+            "31": {
+              "original": "94.35",
+              "candidate": "95.75"
+            },
+            "35": {
+              "original": "99.10",
+              "candidate": "99.10"
+            },
+            "36": {
+              "original": "98.08",
+              "candidate": "98.08"
+            }
+          },
+          "tsv": {
+            "original": "mydocs/pr/assets/planet6897_20261125/mcp-print-comparison/kaf-table/wasm/original.tsv",
+            "candidate": "mydocs/pr/assets/planet6897_20261125/mcp-print-comparison/kaf-table/wasm/candidate.tsv"
+          }
+        }
+      },
+      "pdf": "pdf/issue9000/mcp-11.0.0.9172/kaf_table_section-2020.pdf"
+    },
+    "9400": {
+      "case": "kaf-appendix",
+      "source_head": "d53cf0751b816f2f1a6fc4d55e7aab0eb5faf253",
+      "pdf_sha256": "eb36dfb00712626b4aa6abb006ffd81e8aa3fd7932d3e04c6ffa691b337b5bf1",
+      "input_sha256": "f5f835cb60fdb1883f5857bcc0799c22dfe24e4c1b683dfc10e9382da30d77c2",
+      "hancom_version": "11.0.0.9172",
+      "job_id": "9a8239f3-ea09-46f3-81c5-43b649a29795",
+      "backends": {
+        "native": {
+          "pages": 54,
+          "min": "94.65",
+          "original_min": "90.77",
+          "below_98": {
+            "24": "97.05",
+            "31": "95.73",
+            "36": "94.65",
+            "38": "96.01"
+          },
+          "lower_pages": [],
+          "higher_pages": [
+            31,
+            36
+          ],
+          "same_displayed_pages": 52,
+          "tsv_sha256": {
+            "original": "6096655fb2e94a9a33661d4b10a6df27d452215b77d9dfb3aba272cc9241ba47",
+            "candidate": "e3371064628294cd420355d5130b7ad38642d4842a19dfa910ef157a9cf21340"
+          },
+          "focus": {
+            "24": {
+              "original": "97.05",
+              "candidate": "97.05"
+            },
+            "31": {
+              "original": "94.33",
+              "candidate": "95.73"
+            },
+            "36": {
+              "original": "90.77",
+              "candidate": "94.65"
+            },
+            "38": {
+              "original": "96.01",
+              "candidate": "96.01"
+            },
+            "39": {
+              "original": "99.99",
+              "candidate": "99.99"
+            }
+          },
+          "tsv": {
+            "original": "mydocs/pr/assets/planet6897_20261125/mcp-print-comparison/kaf-appendix/native/original.tsv",
+            "candidate": "mydocs/pr/assets/planet6897_20261125/mcp-print-comparison/kaf-appendix/native/candidate.tsv"
+          }
+        },
+        "wasm": {
+          "pages": 54,
+          "min": "94.39",
+          "original_min": "90.54",
+          "below_98": {
+            "24": "97.10",
+            "31": "95.75",
+            "36": "94.39",
+            "38": "96.01"
+          },
+          "lower_pages": [],
+          "higher_pages": [
+            31,
+            36
+          ],
+          "same_displayed_pages": 52,
+          "tsv_sha256": {
+            "original": "02b6252232e74471f0f8004b413622e1633e951e565aae422e4055478ba027eb",
+            "candidate": "b10f0b24e72362220e0933650ca13cb73014d3276dc6d2de1a7c8eff6b849bf2"
+          },
+          "focus": {
+            "24": {
+              "original": "97.10",
+              "candidate": "97.10"
+            },
+            "31": {
+              "original": "94.35",
+              "candidate": "95.75"
+            },
+            "36": {
+              "original": "90.54",
+              "candidate": "94.39"
+            },
+            "38": {
+              "original": "96.01",
+              "candidate": "96.01"
+            },
+            "39": {
+              "original": "99.97",
+              "candidate": "99.97"
+            }
+          },
+          "tsv": {
+            "original": "mydocs/pr/assets/planet6897_20261125/mcp-print-comparison/kaf-appendix/wasm/original.tsv",
+            "candidate": "mydocs/pr/assets/planet6897_20261125/mcp-print-comparison/kaf-appendix/wasm/candidate.tsv"
+          }
+        }
+      },
+      "pdf": "pdf/issue9379/mcp-11.0.0.9172/kaf_appendix-2020.pdf"
+    }
+  }
+}

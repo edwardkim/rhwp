@@ -540,6 +540,22 @@ impl TypesetState {
         Ok(())
     }
 
+    /// 전폭으로 돌아온 빈 줄은 fit에서 쓴 높이·간격을 지키고, 예전 어울림 차선을 해제한다.
+    pub(in crate::renderer::typeset) fn record_square_blank_body_row<S: crate::storage::Storage>(
+        &mut self,
+        index: usize,
+        composed: &crate::renderer::composer::ComposedParagraph,
+        body_box: std::ops::Range<i32>,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        let mut body_row = crate::storage::try_clone(composed, storage)?;
+        body_row.lines[0].column_start = body_box.start;
+        body_row.lines[0].segment_width = body_box.end - body_box.start;
+        storage.insert_map(&mut self.data.computed_paragraphs, index, body_row)?;
+        self.data.current_column_wrap_anchors.remove(&index);
+        Ok(())
+    }
+
     pub(in crate::renderer::typeset) fn discard_pending_paragraph_origins(&mut self) {
         self.data.pending_paragraph_origins.clear();
     }

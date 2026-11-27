@@ -191,6 +191,10 @@ fn empty_paragraph_fallback_line_metrics(
     let ls_type = para_style
         .map(|s| s.line_spacing_type)
         .unwrap_or(crate::model::style::LineSpacingType::Percent);
+    // [#8582] 워드 호환 문서의 빈 문단은 끝 표지(영문 슬롯 글꼴)의 배율로 잰 크기다.
+    let font_size =
+        crate::renderer::composer::word_compat_empty_paragraph_font_size(para, styles, ls_type)
+            .map_or(font_size, |scaled| font_size.max(scaled));
     Some(crate::renderer::corrected_line_metrics(
         0.0, 0.0, font_size, ls_type, ls_val,
     ))
@@ -5289,7 +5293,11 @@ impl TypesetEngine {
             && !no_lineseg_host_flows_below
             && fmt.square_host_plan.is_none()
         {
-            total_lines
+            // 오프셋이 있는 표 앞의 글줄만 방출한다. 재조판한 인라인 표는
+            // 소유 줄에서 시작한다. 글자 없는 개체 문단의 앞줄은 개체 배치가 소비한다.
+            tac_table_line_idx
+                .filter(|_| crate::renderer::para_has_no_stored_line_segs(para))
+                .unwrap_or(total_lines)
         } else if table.common.treat_as_char
             && total_lines > 1
             && (has_owned_tac_prefix
@@ -5348,6 +5356,20 @@ impl TypesetEngine {
             0.0
         };
 
+        // [#8474·#9419] 단 맨 위 host 의 저장 첫 줄이 증언하는 쪽 위 간격(px).
+        // 단 원점 앵커와 host 간격 가산이 같은 값을 소비한다.
+        let stored_column_top_spacing =
+            if st.current_items.is_empty() && para_start_height < 1.0 && pre_height <= 0.5 {
+                crate::renderer::stored_line_ladder::stored_column_top_spacing(
+                    para,
+                    fmt.spacing_before,
+                    (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
+                        && !st.profile.session_edited(),
+                    self.dpi,
+                )
+            } else {
+                0.0
+            };
         // 표 배치
         // [#2243] 표가 컬럼 첫 항목이면 vpos 앵커 확립 — 표 경로는
         // vpos_snap_current_height 를 거치지 않아 page_base 가 미확립으로 남고,
@@ -5367,8 +5389,14 @@ impl TypesetEngine {
                         + table.outer_margin_top as i64
                         + table.outer_margin_bottom as i64;
                 if stored && covers {
+                    // [#9419] 저장 첫 줄이 쪽 위 간격을 증언하면(한/글 저장 사다리) 그 vpos 는
+                    // 위 간격 아래의 줄 윗변이다. 단 원점(위 간격 앞의 흐름)은 그만큼 위다.
+                    // 위 간격이 없는 생성기 사다리는 증언 값이 0 이라 종전과 같다.
                     st.record_vpos_column_anchor(st.current_height);
-                    st.record_vpos_page_origin(Some(s0.vertical_pos));
+                    st.record_vpos_page_origin(Some(
+                        s0.vertical_pos
+                            - crate::renderer::px_to_hwpunit(stored_column_top_spacing, self.dpi),
+                    ));
                     st.record_vpos_lazy_origin(None);
                     st.record_vpos_origin_provenance(true);
                     st.record_vpos_ladder_validity(false);
@@ -5902,7 +5930,15 @@ impl TypesetEngine {
             // [#2279 sec0] host 문단에 표 줄 외 추가 줄박스(트레일러 빈 줄)가
             // 이미 있으면 그 줄의 fmt 가 spacing 을 계상하므로 제외(36392557
             // sec0 표지: 표 892.5 + 트레일러 25.6 = 918.1 로 한글 1쪽).
-            Some(fmt.spacing_before + fmt.spacing_after)
+            // [#9419] sb+sa 가산은 간격이 빠진 생성기 사다리를 한/글처럼 다시 세우는
+            // 규칙이다. 단 맨 위 저장 첫 줄이 위 간격을 증언하면 사다리가 이미 한/글의
+            // 것이므로 표 줄 앞에는 그 위 간격만 둔다. 뒤 간격(줄간격+sa)은 아래
+            // 끝 복원(`total_height - height_for_fit`)이 한 번 소유한다.
+            Some(if stored_column_top_spacing > 0.0 {
+                stored_column_top_spacing
+            } else {
+                fmt.spacing_before + fmt.spacing_after
+            })
         } else {
             None
         } {
@@ -8282,7 +8318,7 @@ mod tests {
             empty_opening_row_frame: None,
             source_text_first_frame_height: None,
             source_terminal_suffix_start: None,
-            source_single_cell_row_frames: None,
+            source_row_frames: None,
             relocated_picture_caption_rows: None,
             relocated_picture_successor: None,
             host_frame: (0, 0, 0.0_f64.to_bits()),
@@ -8510,6 +8546,7 @@ mod tests {
                 end_row_height_override: None,
                 start_row_height_override: None,
                 straddle_row_relief: Vec::new(),
+                remaining_child_row: None,
                 straddle_page_bands: Vec::new(),
                 fragment_row_heights: None,
                 fragment_block_frames: Vec::new(),
@@ -8529,6 +8566,7 @@ mod tests {
                 end_row_height_override: None,
                 start_row_height_override: None,
                 straddle_row_relief: Vec::new(),
+                remaining_child_row: None,
                 straddle_page_bands: Vec::new(),
                 fragment_row_heights: None,
                 fragment_block_frames: Vec::new(),

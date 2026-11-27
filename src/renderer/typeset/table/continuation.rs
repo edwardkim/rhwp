@@ -22,6 +22,7 @@ pub(in crate::renderer::typeset) struct TableContinuationCursor {
     /// 않을 수 있고, 빈 꼬리 조각은 내용을 전부 소비한 뒤에도 공간을 남긴다.
     /// 내용 소유는 `start_cut`, 행 상자의 점유는 이 값으로 각각 보존한다.
     pub(in crate::renderer::typeset) start_row_height_override: Option<f64>,
+    pub(in crate::renderer::typeset) remaining_child_row: Option<(usize, f64)>,
     pub(in crate::renderer::typeset) is_continuation: bool,
     pub(in crate::renderer::typeset) fragments_emitted: usize,
     /// fragment queue에서 이미 page에 등록한 표 각주 수.
@@ -201,8 +202,8 @@ pub(in crate::renderer::typeset) struct BlockTableContinuationPreparedState {
     /// Paint와 공유하는 저장 첫 조각 원점(단 위쪽 기준).
     pub(in crate::renderer::typeset) first_fragment_saved_offset: Option<f64>,
     pub(in crate::renderer::typeset) source_text_first_frame_height: Option<f64>,
-    pub(in crate::renderer::typeset) source_single_cell_row_frames:
-        Option<crate::renderer::float_placement::StoredSingleCellRowFrames>,
+    pub(in crate::renderer::typeset) source_row_frames:
+        Option<crate::renderer::float_placement::StoredRowFrames>,
     /// Both stored fragment heights independently prove this whole-row boundary.
     pub(in crate::renderer::typeset) source_cellbreak_row_end: Option<usize>,
     /// [#7095] 표 host 다음 문단 첫 줄의 저장 vpos(HU)와 그 문단의 문단 위 간격(px).

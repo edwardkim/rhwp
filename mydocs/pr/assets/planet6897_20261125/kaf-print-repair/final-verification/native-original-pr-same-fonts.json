@@ -1,0 +1,43 @@
+{
+  "source_pr": 9400,
+  "original_pr_head": "d53cf0751b816f2f1a6fc4d55e7aab0eb5faf253",
+  "candidate": "2a90ab16d6fe3c3f22f2edabc993ba872c984d41",
+  "input": {
+    "path": "samples/issue9379/kaf_appendix.hwp",
+    "sha256": "f5f835cb60fdb1883f5857bcc0799c22dfe24e4c1b683dfc10e9382da30d77c2"
+  },
+  "reference_pdf": {
+    "path": "pdf/issue9379/mcp-11.0.0.9172/kaf_appendix-2020.pdf",
+    "sha256": "eb36dfb00712626b4aa6abb006ffd81e8aa3fd7932d3e04c6ffa691b337b5bf1"
+  },
+  "original_binary_sha256": "fda5ae8567df73ff35ea87c16f83f2485def3a4398adf8db173410e283b8f3dc",
+  "candidate_binary_sha256": "785fb53155f7c501a3b745b79797e33695f0f69c3febccefd87234493a5a6d22",
+  "font_program_count": 1106,
+  "ordered_font_shas_sha256": "c368139684f0d2ceb5f26bb23a7828eb53d9f0ae009a9bf4adccf8e7acc50205",
+  "pages": 54,
+  "original_minimum": "90.77",
+  "candidate_minimum": "95.73",
+  "increased": {
+    "24": [
+      "97.05",
+      "100.00"
+    ],
+    "31": [
+      "94.33",
+      "95.73"
+    ],
+    "36": [
+      "90.77",
+      "100.00"
+    ],
+    "38": [
+      "96.01",
+      "100.00"
+    ],
+    "39": [
+      "99.99",
+      "100.00"
+    ]
+  },
+  "decreased": {}
+}

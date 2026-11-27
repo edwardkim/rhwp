@@ -71,9 +71,9 @@ function makeHost() {
     // throw 한다 — 지금은 호출부 try/catch 와 Proxy 의 호출-전 기록 덕에 이 테스트가
     // 우연히 통과하지만, 스텁이 실계약과 어긋난 채 남으면 다음 사람이 잘못된 계약을
     // 믿게 된다. 실제 반환 모양으로 맞춘다.
-    mergeParagraphInCellByPath: () => '{"ok":true}',
+    mergeParagraphInCellByPath: () => '{"ok":true,"charOffset":7}',
     splitParagraphInCellByPath: () => '{"ok":true}',
-    mergeParagraphInCell: () => '{"ok":true}',
+    mergeParagraphInCell: () => '{"ok":true,"charOffset":7}',
     splitParagraphInCell: () => '{"ok":true}',
   };
   const wasm = new Proxy(base, {

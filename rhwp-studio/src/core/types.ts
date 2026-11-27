@@ -407,6 +407,12 @@ export interface ParaProperties {
   marginLeft?: number;       // px (96dpi, zoom=1 기준, ResolvedParaStyle)
   marginRight?: number;      // px (96dpi, zoom=1 기준, ResolvedParaStyle)
   indent?: number;           // px (96dpi, zoom=1 기준, ResolvedParaStyle)
+  marginLeftRaw?: number;    // 단위 비트를 포함한 문서 저장값
+  marginRightRaw?: number;
+  indentRaw?: number;
+  marginLeftPx?: number;     // CHAR를 바탕글 크기로 해석한 실제 표시 길이
+  marginRightPx?: number;
+  indentPx?: number;
   spacingBefore?: number;    // px (96dpi, zoom=1 기준)
   spacingAfter?: number;     // px (96dpi, zoom=1 기준)
   spacingBeforePx?: number;  // Resolved layout distance, including CHAR units

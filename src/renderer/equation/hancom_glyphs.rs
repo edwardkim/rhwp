@@ -112,6 +112,9 @@ fn glyph(ch: char, role: Role) -> Option<(char, u16)> {
             }
         }
         Role::BigOperator if ch == '∑' => (0xe067, 739),
+        // 한글 2022 4645 Print의 큰 곱은 이 PUA를 본문의 1.8배로 그린다. 두 수식 face의
+        // hmtx는 768/1024이고 세로 범위는 합 U+E067과 같은 2..702다.
+        Role::BigOperator if ch == '∏' => (0xe068, 768),
         // 독립 정상 저장본의 SMALLPROD는 두 수식 face의 Unicode U+220F다.
         // 큰 연산자용 PUA와 구분하며 본문 크기의 한 em 전진을 소비한다.
         Role::SmallOperator if ch == '∏' => (0x220f, 1024),
@@ -189,6 +192,21 @@ pub(crate) fn semantic_fallback_glyph(family: &str, encoded: char) -> Option<(ch
     (if hancom_eqn { &maps.1 } else { &maps.0 })
         .get(&encoded)
         .copied()
+}
+
+/// 원본 수식 face 큰 연산자 PUA의 전진(px). 본문의 1.8배를 논리 크기(2px 짝수 격자)로
+/// 맞춘 뒤 hmtx 전진을 반올림한다. 한글 2020 HancomEQN `{sum}` 32개 크기 실측과 모두 같고,
+/// 곱(10pt HYhwpEQ 18px)도 재조판본 폭과 같다.
+pub(super) fn big_operator_advance(ch: char, fs: f64, dpi: f64) -> Option<f64> {
+    let (_, advance) = glyph(ch, Role::BigOperator)?;
+    let logical_size = (fs * 1.8 * 48.0 / dpi).round().max(1.0) * 2.0;
+    Some((logical_size * f64::from(advance) / 1024.0).round() * dpi / 96.0)
+}
+
+/// 원본 수식 face의 논리 글자 크기(2px 짝수 격자)에서 1em 전진.
+/// SmallOperator·∴∵가 쓰는 격자와 같다. 출력 DPI와 무관한 물리 폭을 낸다.
+pub(super) fn logical_em_advance(fs: f64, dpi: f64) -> f64 {
+    (fs * 48.0 / dpi).round().max(1.0) * 2.0 * dpi / 96.0
 }
 
 pub(super) fn measure(

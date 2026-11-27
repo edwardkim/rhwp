@@ -1,0 +1,26 @@
+{
+  "base": {
+    "native": {
+      "source_commit": "0fbee2c04ecee63cf526a9a7e61b38b32608bc3c",
+      "artifact_sha256": "840c62480d86453d8a94b90c80ec4e50c65a654e1132a2f8159db7b1182dbeda",
+      "build_log_sha256": "ef05a65656795a7d3f8897e1f7204055468285fd155005451b4f487678e8509c"
+    },
+    "wasm": {
+      "source_commit": "0fbee2c04ecee63cf526a9a7e61b38b32608bc3c",
+      "artifact_sha256": "6312d48d29024eb2561fc074355c9d79a2bad5e4a67be07c92a885a4e31d8a88",
+      "build_log_sha256": "74d1f7419c4401ea9e1905aa17a0b44d2e8d172a7c50ed68546ee5bb2448462b"
+    }
+  },
+  "candidate": {
+    "native": {
+      "source_commit": "13f283cfbf90846642fd4be8e05e65dff4124a11",
+      "artifact_sha256": "7330987e5bc0abe41e9c8ac598d6d8bb45a2cba2973f05d23f4a12c48554ac34",
+      "build_log_sha256": "df60c2bbd7063849189646edb18136a7aa730fb794e6363fb99787a40c76ee3f"
+    },
+    "wasm": {
+      "source_commit": "13f283cfbf90846642fd4be8e05e65dff4124a11",
+      "artifact_sha256": "c7dc35aba80c0159112856a5167250fe2e5be5ed2b067c6201f399d1c91fd0e2",
+      "build_log_sha256": "21f797019da4bd0116667797da87488d555991890086f99bf924d3a591d28a52"
+    }
+  }
+}

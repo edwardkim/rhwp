@@ -5,6 +5,72 @@ use crate::model::table::{Cell, Table};
 use crate::renderer::hwpunit_to_px;
 
 impl LayoutEngine {
+    /// A complete leading cell keeps the physical row offset already used by
+    /// the opening block cut for its same-column successor.
+    pub(super) fn stored_opening_block_row_minimum(
+        &self,
+        table: &Table,
+        block: (usize, usize),
+        row: usize,
+        start: &[usize],
+        end: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        if row != block.0 || row + 1 >= block.1 || !start.is_empty() || end.is_empty() {
+            return None;
+        }
+        let mut cells = Self::row_block_cells(table, block.0, block.1);
+        cells.sort_by_key(|cell| (cell.row, cell.col));
+        if end.len() != cells.len() {
+            return None;
+        }
+        let mut owners = cells
+            .iter()
+            .zip(end)
+            .filter(|(cell, _)| usize::from(cell.row) == row && cell.row_span == 1);
+        let (cell, &cut) = owners.next()?;
+        if owners.next().is_some()
+            || cell.height > i32::MAX as u32
+            || !self.stored_plain_text_cell_frame(table, cell)
+            || !crate::renderer::cell_vpos_ladder_is_intact(&cell.paragraphs)
+        {
+            return None;
+        }
+        let units = self.cell_units(cell, table, styles);
+        if cut == 0 || cut != units.len() {
+            return None;
+        }
+        let padding_only = |peer: &Cell| {
+            let padding = peer.effective_padding(&table.padding);
+            i64::from(peer.height) == i64::from(padding.top) + i64::from(padding.bottom)
+        };
+        let closes_into_successor = cells.iter().zip(end).any(|(peer, &selected)| {
+            usize::from(peer.row) == row + 1
+                && peer.row_span == 1
+                && peer.col == cell.col
+                && peer.col_span == cell.col_span
+                && peer.width == cell.width
+                && selected > 0
+                && padding_only(peer)
+                && self.stored_plain_text_cell_frame(table, peer)
+        });
+        let shares_spanning_flow = cells.iter().zip(end).any(|(peer, &selected)| {
+            usize::from(peer.row) == row
+                && peer.row_span > 1
+                && selected > 0
+                && padding_only(peer)
+                && self.stored_plain_text_cell_frame(table, peer)
+                && selected < self.cell_units(peer, table, styles).len()
+        });
+        if !closes_into_successor || !shares_spanning_flow {
+            return None;
+        }
+        let height = hwpunit_to_px(cell.height as i32, self.dpi);
+        let (_, _, top, bottom) = self.resolve_cell_padding(cell, table);
+        let content = self.cell_cut_visible_height(cell, table, styles, 0, cut);
+        (height > content + top + bottom).then_some(height)
+    }
+
     /// 이어받은 병합 블록에서도 완전한 일반 칸의 선언 공간은 따로 남는다.
     /// 같은 원본 행 사슬이 병합 상자를 닫고 이번 컷이 일반 칸 전체를 소유할 때만 인증한다.
     pub(in crate::renderer::layout) fn stored_complete_block_row_minimum(

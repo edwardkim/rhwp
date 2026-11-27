@@ -1,0 +1,102 @@
+{
+  "native/photo": {
+    "pages": 1,
+    "below": [],
+    "minimum": "99.98",
+    "changed": [],
+    "lower": [],
+    "photo_page": "99.98"
+  },
+  "native/padded": {
+    "pages": 1,
+    "below": [],
+    "minimum": "99.98",
+    "changed": [],
+    "lower": [],
+    "photo_page": "99.98"
+  },
+  "native/source-2024": {
+    "pages": 37,
+    "below": [
+      12,
+      14,
+      15,
+      16,
+      20,
+      25,
+      28,
+      37
+    ],
+    "minimum": "38.23",
+    "changed": [],
+    "lower": [],
+    "photo_page": "92.92"
+  },
+  "native/source-2022": {
+    "pages": 37,
+    "below": [
+      12,
+      14,
+      15,
+      16,
+      20,
+      25,
+      28,
+      37
+    ],
+    "minimum": "38.23",
+    "changed": [],
+    "lower": [],
+    "photo_page": "94.32"
+  },
+  "wasm/photo": {
+    "pages": 1,
+    "below": [],
+    "minimum": "99.98",
+    "changed": [],
+    "lower": [],
+    "photo_page": "99.98"
+  },
+  "wasm/padded": {
+    "pages": 1,
+    "below": [],
+    "minimum": "99.98",
+    "changed": [],
+    "lower": [],
+    "photo_page": "99.98"
+  },
+  "wasm/source-2024": {
+    "pages": 37,
+    "below": [
+      12,
+      14,
+      15,
+      16,
+      20,
+      25,
+      28,
+      37
+    ],
+    "minimum": "38.20",
+    "changed": [],
+    "lower": [],
+    "photo_page": "92.94"
+  },
+  "wasm/source-2022": {
+    "pages": 37,
+    "below": [
+      12,
+      14,
+      15,
+      16,
+      20,
+      25,
+      28,
+      37
+    ],
+    "minimum": "37.56",
+    "changed": [],
+    "lower": [],
+    "photo_page": "94.34"
+  }
+}

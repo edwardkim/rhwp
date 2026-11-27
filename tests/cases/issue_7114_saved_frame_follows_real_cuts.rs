@@ -1,3 +1,11 @@
+//! 검증 유형: 관계형 및 고정형. 쪽별 내용 관계와 독립 한컴 Print의 115쪽을 검사한다.
+//! 주석 갱신: 2026-11-22 04:14 KST. 직전 파일 변경: 2026-10-04 19:03:36 KST, 731de9e1b4bb946d76f35108ed7e186ebe4ebecb.
+//! 2026-11-22 Native Skia 및 fresh WASM Canvas 96 DPI, 색상 경계 보정 전 2px 실루엣.
+//! 120자 HWP: 103쪽 Native 99.90% / WASM 99.92%, 104쪽 99.86% / 100.00%.
+//! 120자 HWPX: 103쪽 Native 99.85% / WASM 99.92%, 104쪽 99.86% / 100.00%.
+//! 두 원본 모두 총 115쪽. 각각의 전쪽 최저는 Native 98.46%, WASM 99.31%.
+//! 독립 PDF: `pdf/issue7114-nested-save-120/`. 전쪽 TSV·직접 판독 이미지: `mydocs/pr/assets/issue_7114/`.
+//!
 //! [#7114] 거대 표 셀을 편집해 저장한 뒤 다시 열어도 조판이 같다.
 //!
 //! # 무엇이 깨져 있었나
@@ -41,12 +49,12 @@
 //! 용량 컷을 쓰게 두는 것이 편집 직후 배치와 같다. `a_cut_inside_a_nested_table_...` 가
 //! 그 계약을 고정한다.
 //!
-//! # 미검증으로 남기는 범위
+//! # 중첩 표 호스트 편집의 독립 기준
 //!
-//! 중첩 표를 품은 **host 문단 자체를 편집**하면(`cellParagraph=2276`에 120자) 재열기가
-//! 편집 직후와 2쪽 다르다. 조각 102의 컷이 다른 중첩 표 안(유닛 3933)에 떨어져 쓰지 못하는데,
-//! 그 자리는 원래 저장 rewind 가 만들던 경계이기도 해서 지우면 읽는 쪽이 23유닛 더 채운다.
-//! 중첩 표 **자신의** 사다리에 경계를 적는 것이 답이며 이 변경의 범위가 아니다.
+//! 한컴 2024 Print는 102쪽에 74자, 103쪽의 8행 표 뒤에 46자를 배치한다.
+//! 14행 표의 터보 과급기 행은 103쪽 끝에서 시작하며 같은 행이 104쪽 첫머리로 이어진다.
+//! 104·105쪽의 그림과 105쪽 후속 제목을 함께 확인했다. 저장은 실제 자식 칸이
+//! 여는 새 저장 줄을 쓰고, 자식 컷이 부모 줄을 대신 열지 않는 계약도 유지한다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -197,5 +205,157 @@ fn shorter_edit_and_untouched_save_keep_their_layout() {
             None,
             "{insert_len}자에서 재열기 쪽 구성이 달라졌다 — 되쓰기가 과적용됐다."
         );
+    }
+}
+
+/// The exported child-cell cut belongs to the selected child line. Saving
+/// before the first paint and after a paint must produce the same round trip.
+#[test]
+fn edited_nested_host_keeps_its_child_cut_and_following_content() {
+    type Export = fn(&DocumentCore) -> Result<Vec<u8>, rhwp::error::HwpError>;
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    for (ext, export) in [
+        ("hwp", DocumentCore::export_hwp_with_adapter as Export),
+        ("hwpx", DocumentCore::export_hwpx_native as Export),
+    ] {
+        let fixture = root.join(format!(
+            "samples/issue1949_giant_cell_nested_tables_perf.{ext}"
+        ));
+        let input = std::fs::read(fixture).expect("재현물 읽기");
+        let mut cold_save = None;
+        for warm in [false, true] {
+            let mut live = DocumentCore::from_bytes(&input).expect("원본 열기");
+            live.insert_text_in_cell_native(0, 0, 2, 2, 2276, 0, &"1".repeat(120))
+                .expect("중첩 표 호스트 편집");
+            if warm {
+                live.get_page_text_layout_native(0).expect("표지 배치");
+            }
+            let saved = export(&live).expect("첫 저장");
+            if let Some(cold) = &cold_save {
+                assert_eq!(cold, &saved, "{ext} 저장 결과가 앞선 화면 배치에 의존한다");
+            } else {
+                cold_save = Some(saved.clone());
+            }
+            let reopened = DocumentCore::from_bytes(&saved).expect("첫 재열기");
+            let resaved = export(&reopened).expect("재저장");
+            let repeated = DocumentCore::from_bytes(&resaved).expect("두 번째 재열기");
+
+            let live_words = page_words(&live);
+            for (stage, document) in [
+                ("편집", &live),
+                ("재열기", &reopened),
+                ("재저장", &repeated),
+            ] {
+                let label = format!("{ext} {stage}");
+                assert_eq!(document.page_count(), 115, "{label}");
+                assert_eq!(
+                    first_difference(&live_words, &page_words(document)),
+                    None,
+                    "{label}"
+                );
+                assert_child_cut_ownership(document, &label);
+            }
+        }
+    }
+}
+
+fn assert_child_cut_ownership(document: &DocumentCore, label: &str) {
+    use serde_json::Value;
+
+    let text = |page: u32| -> Value {
+        serde_json::from_str(&document.get_page_text_layout_native(page - 1).unwrap()).unwrap()
+    };
+    let figures = |page: u32| -> Value {
+        serde_json::from_str(&document.get_page_control_layout_native(page - 1).unwrap()).unwrap()
+    };
+    let runs = |page: &Value| page["runs"].as_array().unwrap().clone();
+    let controls = |page: &Value| page["controls"].as_array().unwrap().clone();
+    let digit_run = |run: &Value| {
+        run["cellParaIdx"] == 2276
+            && run["text"]
+                .as_str()
+                .is_some_and(|text| !text.is_empty() && text.bytes().all(|byte| byte == b'1'))
+    };
+
+    let first = runs(&text(102));
+    let second = runs(&text(103));
+    let opening = runs(&text(104));
+    let following = runs(&text(105));
+    let collect_digits = |runs: &[Value]| {
+        runs.iter()
+            .filter(|run| digit_run(run))
+            .map(|run| run["text"].as_str().unwrap().len())
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(collect_digits(&first), [74], "{label} 102쪽 삽입 문자");
+    assert_eq!(collect_digits(&second), [46], "{label} 103쪽 삽입 문자");
+    assert!(
+        collect_digits(&opening).is_empty(),
+        "{label} 104쪽 삽입 문자 중복"
+    );
+
+    let controls_103 = controls(&figures(103));
+    let owner = controls_103
+        .iter()
+        .find(|item| item["type"] == "table" && item["paraIdx"] == 2276)
+        .expect("삽입 글줄 앞의 8행 표");
+    let coordinate = |item: &Value, key: &str| item[key].as_f64().unwrap();
+    let bottom = |item: &Value| coordinate(item, "y") + coordinate(item, "h");
+    let suffix = second.iter().find(|run| digit_run(run)).unwrap();
+    assert!(
+        bottom(owner) <= coordinate(suffix, "y"),
+        "{label} 표와 뒤 글줄 겹침"
+    );
+
+    let exact_text = |run: &Value, expected: &str| {
+        run["text"]
+            .as_str()
+            .is_some_and(|text| text.trim() == expected)
+    };
+    let head = "터보 과급기";
+    let tail = "(Turbosuper-chargers)";
+    assert_eq!(
+        second.iter().filter(|run| exact_text(run, head)).count(),
+        1,
+        "{label}"
+    );
+    assert!(!second.iter().any(|run| exact_text(run, tail)), "{label}");
+    assert_eq!(
+        opening.iter().filter(|run| exact_text(run, tail)).count(),
+        1,
+        "{label}"
+    );
+    assert!(!opening.iter().any(|run| exact_text(run, head)), "{label}");
+
+    for (page, paragraph) in [(104, 2286), (105, 2290)] {
+        let controls = controls(&figures(page));
+        let pictures = controls
+            .iter()
+            .filter(|item| item["type"] == "image")
+            .collect::<Vec<_>>();
+        assert_eq!(pictures.len(), 1, "{label} {page}쪽 그림 수");
+        let picture = pictures[0];
+        assert_eq!(
+            picture["cellParaIdx"], paragraph,
+            "{label} {page}쪽 그림 소속"
+        );
+        let parent = controls
+            .iter()
+            .find(|item| item["type"] == "table" && item["paraIdx"] == 0)
+            .expect("그림이 속한 바깥 표");
+        assert!(
+            bottom(picture) <= bottom(parent),
+            "{label} {page}쪽 그림 clip"
+        );
+        if page == 105 {
+            let heading = following
+                .iter()
+                .find(|run| exact_text(run, "11.2.9"))
+                .unwrap();
+            assert!(
+                bottom(picture) <= coordinate(heading, "y"),
+                "{label} 후속 제목 겹침"
+            );
+        }
     }
 }

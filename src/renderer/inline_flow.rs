@@ -859,6 +859,17 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
             }
         }
     }
+    let paragraph_end_trailing = alignment::paragraph_end_aligned_trailing_spaces(
+        &row,
+        &chars,
+        style.alignment,
+        |char_style| {
+            styles
+                .char_styles
+                .get(char_style as usize)
+                .is_some_and(|cs| cs.underline != crate::model::style::UnderlineType::None)
+        },
+    );
     let Some(()) = finish_row_with_storage(
         &mut result,
         &mut row,
@@ -866,7 +877,11 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
         &exclusions,
         style,
         frame.dpi,
-        RowEnding::ParagraphEnd(&chars),
+        RowEnding::ParagraphEnd {
+            chars: &chars,
+            trailing_spaces: paragraph_end_trailing,
+            mark_font_size: super::unstored_control_paragraph_end_font_size(para, styles),
+        },
         float_tail_hung_from,
         storage,
     )?
@@ -932,6 +947,14 @@ fn finish_row_with_storage<S: crate::storage::Storage>(
             .map(|item| item.width)
             .sum::<f64>();
     }
+    // 문단 끝 줄은 호출자가 정한 말미 공백만 정렬 폭에서 뺀다. 상자의 전진량은
+    // 그대로 두어 글자 원점·커서 위치는 바뀌지 않는다.
+    row_metrics.width -= row
+        .iter()
+        .rev()
+        .take(ending.paragraph_end_trimmed_boxes())
+        .map(|item| item.width)
+        .sum::<f64>();
     let row_horizontal = paragraph_row_horizontal(horizontal, style, plan.boxes.is_empty());
     let Some((mut x, y, carved, available_width)) = row_geometry_with_storage(
         row_metrics,
@@ -970,11 +993,20 @@ fn finish_row_with_storage<S: crate::storage::Storage>(
         .then_some(item.height)
     };
     let hung_from = hung_from.unwrap_or(row.len()).min(row.len());
+    // 저장 줄 없는 개체 전용 문단의 마지막 표 줄은 문단 나눔 표시가
+    // 뒤 간격의 글자 크기를 정한다. 표 자체의 높이와 기준선은 그대로 쓴다.
+    let spacing_fallback = match ending {
+        RowEnding::ParagraphEnd {
+            mark_font_size: Some(size),
+            ..
+        } if has_table && size > 0.0 => size,
+        _ => plan.fallback_font_size,
+    };
     let row_font_size = row[..hung_from]
         .iter()
         .filter_map(spacing_font)
         .reduce(f64::max)
-        .unwrap_or(plan.fallback_font_size);
+        .unwrap_or(spacing_fallback);
     let row_font_size = row[hung_from..]
         .iter()
         .filter_map(spacing_font)

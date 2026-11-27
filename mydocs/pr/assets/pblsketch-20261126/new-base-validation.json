@@ -1,0 +1,111 @@
+{
+  "devel": "e46501863d71706304aafdc3d3f6ca35c0b2b1f1",
+  "approved_head": "98a060eb9d6e17f76b91b02869ebf312b7bd73e0",
+  "merge_tree": "ec464f73f291875a1ee6327303a01dc7c2ffb105",
+  "wasm_sha256": {
+    "devel": "417cb4ba40efd8520891cade4aae660124e982e874e342c1f99b23de2ca5884f",
+    "merged": "7e62d0cf635897c3cfd2f173b0be57ee4b67fdf33b302efbb80d7f2a7123d195"
+  },
+  "native_tests": {
+    "devel": {
+      "issue_7114_saved_frame_follows_real_cuts": 6,
+      "issue_8735_split_successor_table_origin": 4,
+      "issue_9396_last_line_anchor_picture_band": 2,
+      "issue_8482_page_starts_on_odd": 2,
+      "issue_9419_hwpx_page_top_tac_table_keeps_spacing_before": 1
+    },
+    "merged": {
+      "issue_7114_saved_frame_follows_real_cuts": 6,
+      "issue_8735_split_successor_table_origin": 4,
+      "issue_9396_last_line_anchor_picture_band": 2,
+      "issue_8482_page_starts_on_odd": 2,
+      "issue_9419_hwpx_page_top_tac_table_keeps_spacing_before": 1,
+      "issue_9398_text_box_path_paragraph_split": 5,
+      "issue_9399_text_box_click_nearest_line": 3
+    }
+  },
+  "upstream_print_pages_per_backend": 210,
+  "own_source_print_pairs": 8,
+  "nested_120_roundtrip": {
+    "nested.hwp": [
+      {
+        "count": 115,
+        "digits": [
+          [
+            74
+          ],
+          [
+            46
+          ],
+          []
+        ]
+      },
+      {
+        "count": 115,
+        "digits": [
+          [
+            74
+          ],
+          [
+            46
+          ],
+          []
+        ]
+      },
+      {
+        "count": 115,
+        "digits": [
+          [
+            74
+          ],
+          [
+            46
+          ],
+          []
+        ]
+      }
+    ],
+    "nested.hwpx": [
+      {
+        "count": 115,
+        "digits": [
+          [
+            74
+          ],
+          [
+            46
+          ],
+          []
+        ]
+      },
+      {
+        "count": 115,
+        "digits": [
+          [
+            74
+          ],
+          [
+            46
+          ],
+          []
+        ]
+      },
+      {
+        "count": 115,
+        "digits": [
+          [
+            74
+          ],
+          [
+            46
+          ],
+          []
+        ]
+      }
+    ]
+  },
+  "browser_editing_validation": [
+    "WASM final 11 pointer locations, 16 multi-format locations, 32 save/reopen comparisons passed",
+    "Studio final 8 real keyboard and pointer paths passed, both file formats verified"
+  ]
+}

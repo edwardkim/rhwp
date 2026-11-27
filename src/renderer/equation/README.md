@@ -19,6 +19,7 @@
 | `svg_render.rs` | `LayoutBox` → SVG 조각 |
 | `canvas_render.rs` | WASM Canvas 경로 |
 | `mod.rs` | `intrinsic_size_hwp`, 한글 대체 `flow_metrics_hwp`와 공통 글꼴 정책 |
+| `produced_frame.rs` | 삽입·속성 편집이 저장할 폭·높이·기준선. 원본 face 조판의 루트 프레임 |
 
 ## 디스패치 순서
 
