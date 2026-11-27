@@ -11,6 +11,7 @@
                     <KeyboardAccelerator Key="O" Modifiers="Control" />
                 </Button.KeyboardAccelerators>
             </Button>
+            <Button x:Name="SaveCopyButton" Content="새 파일에 저장" Click="OnSaveCopyClicked" IsEnabled="False" />
             <Button x:Name="CloseButton" Content="문서 닫기" Click="OnCloseClicked" IsEnabled="False" />
             <Button x:Name="PreviousButton" Content="이전 쪽" Click="OnPreviousClicked" IsEnabled="False" />
             <Button x:Name="NextButton" Content="다음 쪽" Click="OnNextClicked" IsEnabled="False" />

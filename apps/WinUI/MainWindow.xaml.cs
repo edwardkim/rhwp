@@ -71,8 +71,13 @@ public sealed partial class MainWindow : Window
 
     internal async Task OpenFileAsync(string path)
     {
-        if (!closing && await ConfirmDiscardAsync())
-            await ChangeDocumentAsync(token => worker.OpenAsync(path, token, discardChanges: true),
+        if (closing)
+            return;
+
+        UnsavedDecision decision = await ResolveUnsavedChangesAsync();
+        if (decision != UnsavedDecision.Cancel)
+            await ChangeDocumentAsync(
+                token => worker.OpenAsync(path, token, discardChanges: decision == UnsavedDecision.Discard),
                 Path.GetFileName(path), resetZoom: true);
     }
 
@@ -116,14 +121,18 @@ public sealed partial class MainWindow : Window
 
     private async void OnCloseClicked(object sender, RoutedEventArgs args)
     {
-        if (!closing && await ConfirmDiscardAsync())
+        if (closing)
+            return;
+
+        UnsavedDecision decision = await ResolveUnsavedChangesAsync();
+        if (decision == UnsavedDecision.Cancel)
+            return;
+
+        await ChangeDocumentAsync(async token =>
         {
-            await ChangeDocumentAsync(async token =>
-            {
-                await worker.CloseDocumentAsync(token, discardChanges: true);
-                return null;
-            }, null, resetZoom: true);
-        }
+            await worker.CloseDocumentAsync(token, discardChanges: decision == UnsavedDecision.Discard);
+            return null;
+        }, null, resetZoom: true);
     }
 
     private async void OnPreviousClicked(object sender, RoutedEventArgs args)
@@ -354,6 +363,7 @@ public sealed partial class MainWindow : Window
     {
         bool available = !closing && !editorBusy && !picking;
         OpenButton.IsEnabled = available;
+        SaveCopyButton.IsEnabled = available && (page is not null || editorInfo is not null);
         CloseButton.IsEnabled = available && (fileName is not null || documentRequest is not null);
         PreviousButton.IsEnabled = available && page is { Page: > 0 };
         NextButton.IsEnabled = available && page is PageInfo current && current.Page + 1 < current.PageCount;
@@ -366,7 +376,7 @@ public sealed partial class MainWindow : Window
     private async void OnClosing(AppWindow sender, AppWindowClosingEventArgs args)
     {
         args.Cancel = true;
-        if (closing || !await ConfirmDiscardAsync())
+        if (closing || await ResolveUnsavedChangesAsync() == UnsavedDecision.Cancel)
             return;
 
         closing = true;

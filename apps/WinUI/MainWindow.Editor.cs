@@ -115,6 +115,16 @@ public sealed partial class MainWindow
         renderTimer.Stop();
         PageImage.Source = null;
         page = null;
+        if (editorInfo is NativeDocumentInfo prior)
+        {
+            editorInfo = prior with
+            {
+                Revision = edit.Target.Revision,
+                IsDirty = prior.IsDirty || edit.Outcome.DocumentChanged,
+            };
+            UpdateTitle();
+        }
+
         CancellationToken token = CancellationToken.None;
         NativeDocumentInfo info = await worker.GetDocumentInfoAsync(edit.Target, token);
         editorInfo = info;
@@ -133,40 +143,6 @@ public sealed partial class MainWindow
         page = updated;
         SetPageSize(updated);
         QueueRender();
-    }
-
-    private async Task<bool> ConfirmDiscardAsync()
-    {
-        if (editorBusy)
-            return false;
-        if (editorInfo?.IsDirty != true)
-            return true;
-
-        editorBusy = true;
-        RefreshButtons();
-        try
-        {
-            var dialog = new ContentDialog
-            {
-                XamlRoot = Root.XamlRoot,
-                Title = "변경 사항을 폐기할까요?",
-                Content = "현재 문서에 저장하지 않은 변경 사항이 있습니다.",
-                PrimaryButtonText = "폐기",
-                CloseButtonText = "취소",
-                DefaultButton = ContentDialogButton.Close,
-            };
-            return await dialog.ShowAsync() == ContentDialogResult.Primary;
-        }
-        catch (Exception error)
-        {
-            StatusText.Text = "변경 사항을 확인할 수 없습니다. " + error.Message;
-            return false;
-        }
-        finally
-        {
-            editorBusy = false;
-            RefreshButtons();
-        }
     }
 
     private void UpdateTitle()

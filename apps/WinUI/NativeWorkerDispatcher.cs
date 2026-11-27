@@ -232,11 +232,7 @@ internal sealed partial class NativeWorkerDispatcher
                 throw new InvalidDataException("픽셀 버퍼 크기가 올바르지 않습니다.");
             }
 
-            byte[] bytes = new byte[length];
-            using var copied = ReadSuccess(RhwpNative.SessionBufferCopy(buffer, bytes));
-            if (copied.RootElement.GetProperty("byteLength").GetInt32() != length)
-                throw new InvalidDataException("픽셀 버퍼가 잘렸습니다.");
-
+            byte[] bytes = CopyExactBuffer(buffer, length);
             return new PageFrame(pixelWidth, pixelHeight, originX, originY, viewport.DeviceScale,
                 ToBgra(bytes, pixelWidth, pixelHeight, stride));
         }
@@ -344,6 +340,16 @@ internal sealed partial class NativeWorkerDispatcher
         }
 
         using var released = Send(new { op = "workerRelease", worker });
+    }
+
+    private static byte[] CopyExactBuffer(ulong buffer, int length)
+    {
+        byte[] bytes = new byte[length];
+        using var copied = ReadSuccess(RhwpNative.SessionBufferCopy(buffer, bytes));
+        if (copied.RootElement.GetProperty("byteLength").GetInt32() != length)
+            throw new InvalidDataException("네이티브 버퍼가 잘렸습니다.");
+
+        return bytes;
     }
 
     private static void ReleaseBuffer(ulong buffer)
