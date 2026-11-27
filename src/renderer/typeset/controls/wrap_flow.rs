@@ -64,7 +64,17 @@ pub(in crate::renderer::typeset) fn place(
                 && crate::renderer::float_placement::stored_empty_line_has_closed_source_box(
                     paragraphs, para_idx,
                 );
-            if anchor_is_picture || st.following_wrap_is_derived() || stored_empty_body_flow {
+            // 확정한 Square host 계획은 host 글줄만 전진시킨다. 같은 띠의 뒤 문단은
+            // 이미 예약한 표 높이에 포함되지 않았으므로 일반 fit에서 자기 줄을 소비한다.
+            let square_host_text_flow = st
+                .inline_flow_plans
+                .get(&band.anchor_para)
+                .is_some_and(|plan| plan.square_host_control.is_some());
+            if anchor_is_picture
+                || st.following_wrap_is_derived()
+                || stored_empty_body_flow
+                || square_host_text_flow
+            {
                 let anchor = wrap_match::picture_anchor(band);
                 st.register_following_wrap_anchor(para_idx, anchor);
             } else {
@@ -169,6 +179,34 @@ pub(in crate::renderer::typeset) fn place(
         }
     }
     false
+}
+
+/// 재조판한 어울림 표 뒤에서 빈 줄이 실제 배제 하단을 지났으면 문단 전폭으로 복귀한다.
+pub(in crate::renderer::typeset) fn empty_body_row_after_square<'a>(
+    st: &TypesetState,
+    para_idx: usize,
+    para: &Paragraph,
+    composed: Option<&'a ComposedParagraph>,
+    styles: &ResolvedStyleSet,
+    spacing_before: f64,
+) -> Option<(&'a ComposedParagraph, std::ops::Range<i32>)> {
+    if !para.text.is_empty() || !para.controls.is_empty() || para.line_segs.len() != 1 {
+        return None;
+    }
+    let anchor = st.current_column_wrap_anchors.get(&para_idx)?;
+    let host = st.inline_flow_plans.get(&anchor.anchor_para_index)?;
+    let occupied_bottom = host.square_host_placement?.occupied_bottom;
+    let composed = composed.filter(|rows| rows.lines.len() == 1)?;
+    if st.current_height + spacing_before < occupied_bottom {
+        return None;
+    }
+    let style = styles.para_styles.get(para.para_shape_id as usize);
+    let frame = crate::renderer::composer::ParagraphBox::body_for_style(
+        st.inline_flow_column().width,
+        style,
+        st.layout.dpi,
+    );
+    Some((composed, frame.effective()))
 }
 
 /// 합성 줄만 가진(저장 줄이 없는) 개체 없는 본문 문단인가.
