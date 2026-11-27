@@ -122,12 +122,16 @@ fn slot(
     // 일반 한글 뒤 구두점의 기존 프로그램 계약과 HWP3 cmap 공급 규칙은 유지한다.
     let hanja_latin_punctuation =
         !styles.source_hwp3_native && inherited == 2 && ch.is_ascii_punctuation();
-    // 한글 HFT가 다른 자리에 선언한 영문 전용 HFT의 확인된 구두점을
-    // 상속하지 않는다. 원본 폭 근거가 없는 글자와 실제 TTF 치환은 기존 경로를 탄다.
+    // HWP3는 글꼴 유형 표기가 없는 원본도 사용한다. 독립 2020 Print는
+    // 같은 영문 원본의 구두점 폭을 쓰며, 확인한 글리프만 해당 슬롯에 둔다.
+    let uses_hft_source = |slot| {
+        style.source_hft_for_lang(slot)
+            || (styles.source_hwp3_native && !style.source_ttf_for_lang(slot))
+    };
     let measured_latin_punctuation = inherited == 0
         && ch.is_ascii_punctuation()
-        && style.source_hft_for_lang(0)
-        && style.source_hft_for_lang(1)
+        && uses_hft_source(0)
+        && uses_hft_source(1)
         && style.original_glyph_metric_face_for_lang(1).is_some_and(|face| {
             use crate::renderer::font_metrics_data::{
                 declared_original_glyph_advance_em, find_metric,

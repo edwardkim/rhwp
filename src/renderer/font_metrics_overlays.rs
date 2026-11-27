@@ -258,7 +258,7 @@ pub(crate) fn has_declared_original_glyph_metrics(face: &str) -> bool {
     has_original_glyph_metrics(face)
         || matches!(
             face,
-            "한양신명조" | "한양중고딕" | "고딕" | "명조" | "산세리프"
+            "한양신명조" | "한양중고딕" | "고딕" | "명조" | "산세리프" | "필기"
         )
 }
 
@@ -268,6 +268,16 @@ pub(crate) fn declared_original_glyph_advance_em(
     italic: bool,
     character: char,
 ) -> Option<f64> {
+    // SO-SUEOP HWP3 원본의 독립 한컴 2020 Print 27쪽 T13과 필기 HFT의
+    // 원본 계열 프로그램에서 확인한 구두점 폭이다. /Widths와 CharProc d1은
+    // 모두 500/1000em이며 확인한 정체의 이 글리프에만 적용한다.
+    if face == "필기"
+        && !bold
+        && !italic
+        && matches!(character, ',' | '.' | '(' | ')' | '‘' | '’')
+    {
+        return Some(0.5);
+    }
     // 독립 화학 원본 92쪽의 한양신명조 HFT U+257A는 Type3 T11의
     // /Widths=1000, FontMatrix=.001, CharProc d1=1000이다. 표시 프로그램의
     // cmap 결측을 반각 추정으로 재면 fallback 잉크도 절반 폭에 맞춰 눌린다.
