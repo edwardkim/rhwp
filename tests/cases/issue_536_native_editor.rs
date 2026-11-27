@@ -233,10 +233,9 @@ fn issue_536_native_editor_keeps_body_commands_and_protected_cells_read_only() {
     ] {
         assert!(matches!(result, Err(NativeHostError::Unsupported(_))));
     }
-    assert!(matches!(
-        editor.copy_selection(0),
-        Err(NativeHostError::Unsupported(_))
-    ));
+    let copied = editor.copy_selection(0).unwrap();
+    assert_eq!(copied.plain_text, "😀");
+    assert_eq!(copied.html, None);
     assert!(matches!(
         editor.ime_context(0),
         Err(NativeHostError::Unsupported(_))
