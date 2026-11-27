@@ -1,0 +1,5 @@
+backend	page	source_pr_9477	devel	candidate
+native	1	98.47	50.28	100.00
+native	2	97.65	99.96	99.96
+wasm	1	98.59	50.34	100.00
+wasm	2	98.20	99.97	99.97
