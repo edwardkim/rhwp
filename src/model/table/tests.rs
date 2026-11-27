@@ -1395,12 +1395,10 @@ fn insert_row_inherits_shape_when_column_has_only_merged_cells() {
     let mut table = col_merged_table(2);
     table.insert_row(1, false).unwrap();
 
-    let new_cells: Vec<&Cell> = table
-        .cells
-        .iter()
-        .filter(|c| c.row == 1 && c.col_span == 1)
-        .collect();
-    assert_eq!(new_cells.len(), 2, "새 행에 셀 2개");
+    // 기준 행이 2칸을 합친 셀이면 새 행도 한컴처럼 2칸짜리 셀 하나다.
+    let new_cells: Vec<&Cell> = table.cells.iter().filter(|c| c.row == 1).collect();
+    assert_eq!(new_cells.len(), 1, "새 행에 합친 셀 1개");
+    assert_eq!((new_cells[0].col_span, new_cells[0].width), (2, 7200));
     for cell in new_cells {
         assert_inherited(cell, "insert_row");
     }
