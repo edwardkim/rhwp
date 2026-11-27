@@ -432,12 +432,12 @@ test('글자 모양은 find 가 곧 범위라, 여러 곳이면 더 긴 글이 �
     '바꾸기는 긴 글로 골라도 replace 가 그만큼 쓰므로 기존 안내 유지');
 });
 
-test('문단 모양 상세: 대화상자와 같은 단위(여백·들여쓰기 pt×200, 문단 간격 pt×100, 내어쓰기는 음수)', () => {
+test('문단 여백·들여쓰기·간격은 대화상자와 같은 절대 단위를 쓴다', () => {
   const d = fakeDoc();
   prepareWrite(d.host, call('format_paragraph', {
-    find: '과업기간', leftMargin: 10, rightMargin: 5, firstLineIndent: -12, spaceBefore: 6, spaceAfter: 3.5,
+    find: '과업기간', leftMargin: 10, rightMargin: 1.005, firstLineIndent: -1.015, spaceBefore: 6, spaceAfter: 3.5,
   })).apply();
-  assert.deepEqual(d.calls, ['para 1 {"marginLeft":2000,"marginRight":1000,"indent":-2400,"spacingBefore":1200,"spacingAfter":700}']);
+  assert.deepEqual(d.calls, ['para 1 {"marginLeft":2000,"marginRight":202,"indent":-204,"spacingBefore":1200,"spacingAfter":700}']);
 });
 
 test('모두 바꾸기: 제안 때 셈한 개수가 그대로일 때만 한 번에 바꾼다', () => {

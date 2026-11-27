@@ -59,6 +59,16 @@ test('▽는 문단 들여쓰기만 커밋한다 — marginLeft 를 같이 쓰�
   assert.equal(commit.props.marginRight, undefined);
 });
 
+test('200% 눈금자의 35px 드롭은 절대 1313 HWPUNIT이며 왼쪽 경계에서는 0이다', () => {
+  const c = ctx({ zoom: 2, paraMarginLeftPx: 20 });
+  const origin = c.refLeft + c.paraMarginLeftPx * c.zoom;
+  for (const [distance, expectedRaw] of [[-35, 0], [34.9999999, 2624], [35, 2626], [35.0000001, 2626]]) {
+    assert.deepEqual(horizontalPinCommit('paraIndent', origin + distance, c), {
+      kind: 'paraProps', props: { indent: expectedRaw },
+    });
+  }
+});
+
 test('그리는 식과 되돌리는 식이 왕복한다 (좌/우 쪽 여백, zoom 무관)', () => {
   for (const zoom of [1, 0.8694289241382309, 1.5]) {
     for (const marginPx of [0, 68, 127.4]) {
