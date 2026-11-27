@@ -14,13 +14,16 @@ def accepted_hashes(required, pairs):
 
 
 def supply_hashes(manifest, required, document=None):
+    excluded = set(manifest.get("excluded_sha256", []))
+    if required in excluded:
+        return []
     pairs = manifest.get("accepted_sha256_pairs", {})
     groups = manifest["font_sets"].values()
     if document is not None:
         pairs = {**pairs, **document.get("accepted_sha256_pairs", {})}
         groups = (manifest["font_sets"][backend["font_set"]] for backend in document["backends"].values())
 
-    allowed = accepted_hashes(required, pairs)
+    allowed = [digest for digest in accepted_hashes(required, pairs) if digest not in excluded]
     if document is None and len(allowed) > 1:
         return allowed
     if any(entry["sha256"] in allowed for group in groups for entry in group["files"]):
@@ -59,6 +62,8 @@ def main():
     except OSError as error:
         parser.exit(1, f"{error}\n")
     actual = checksum.hexdigest()
+    if actual in manifest.get("excluded_sha256", []):
+        parser.exit(1, f"정본 보호 공급에서 제외한 SHA-256: {args.file}: {actual}\n")
     if actual not in allowed:
         parser.exit(1, f"{args.file}: {actual}\n허용 SHA-256: {', '.join(allowed)}\n")
     print(actual)

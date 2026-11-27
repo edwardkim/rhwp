@@ -12,7 +12,7 @@
 
 - [final.tsv](final.tsv): 입력·기준 PDF·backend·페이지별 공식 두 자리 raw 보호값.
 - [manifest.json](manifest.json): 입력/PDF SHA-256·크기·측정 조건·전쪽 수·출처 commit/TSV/열/해시와 중복 제거 내역.
-- TSV SHA-256: `3c727506bc3a94f60d4c5dfefaaec3f512f49c0e193d17f0c1846c300a3f9f45`.
+- TSV SHA-256: `8141acb297ce2f39148f9014e463986431d266120629e8f368665e5917138f9d`.
 - 입력 23개, Native/fresh WASM 각 23개 데이터셋·2,023쪽, 총 46개 데이터셋·4,046행.
 - 최초 통합 당시 수용 자료 56개 데이터셋 중 중복 20개를 정리했다. 이전 자료보다 공식 표시값이 낮아진 페이지는 0쪽이다.
 
@@ -29,9 +29,9 @@ HWP와 HWPX는 같은 제목이어도 별도 입력이다. 아래 최저값은 �
 | [2025 행정업무운영 편람(최종).hwpx](<../../../../samples/2025 행정업무운영 편람(최종).hwpx>) | 383 | 99.97% | 99.96% |
 | [issue2007_nested_cell_pagination_42065.hwp](<../../../../samples/basic/issue2007_nested_cell_pagination_42065.hwp>) | 17 | 99.64% | 100.00% |
 | [hwp3-sample10.hwp](<../../../../samples/hwp3-sample10.hwp>) | 763 | 99.56% | 99.57% |
-| [hwp3-sample16-hwp5-2022.hwp](<../../../../samples/hwp3-sample16-hwp5-2022.hwp>) | 64 | 99.44% | 100.00% |
-| [hwp3-sample16-hwp5-2024.hwp](<../../../../samples/hwp3-sample16-hwp5-2024.hwp>) | 64 | 99.43% | 100.00% |
-| [hwp3-sample16-hwp5.hwpx](<../../../../samples/hwp3-sample16-hwp5.hwpx>) | 64 | 99.43% | 100.00% |
+| [hwp3-sample16-hwp5-2022.hwp](<../../../../samples/hwp3-sample16-hwp5-2022.hwp>) | 64 | 99.44% | 99.97% |
+| [hwp3-sample16-hwp5-2024.hwp](<../../../../samples/hwp3-sample16-hwp5-2024.hwp>) | 64 | 99.43% | 99.97% |
+| [hwp3-sample16-hwp5.hwpx](<../../../../samples/hwp3-sample16-hwp5.hwpx>) | 64 | 99.43% | 99.97% |
 | [20099369_yeongwol_forms.hwp](<../../../../samples/issue5699/20099369_yeongwol_forms.hwp>) | 4 | 99.98% | 99.95% |
 | [pic-crop-01.hwp](<../../../../samples/pic-crop-01.hwp>) | 1 | 100.00% | 100.00% |
 | [exam-social-insert-delete.hwp](<../../../../samples/pr8040/exam-social-insert-delete.hwp>) | 4 | 99.77% | 99.99% |
@@ -225,7 +225,3 @@ PNG 해시가 모두 일치했다.
 ## 2026-11-27 교차 OS 보호값
 
 macOS, Windows, Linux 대표 환경에서 같은 입력과 독립 한컴 Print PDF의 Native 및 fresh WASM 전체 페이지를 비교했다. 각 환경의 4,046행을 합쳐 12,138개 실측을 확인했다. 사용자 승인에 따라 기존 하한보다 낮게 측정된 193행에 세 환경의 두 자리 실측 최저값을 적용했다. 96 DPI와 2px raw 측정 조건을 유지했다. 편람 HWP·HWPX의 WASM에는 함초롬바탕 TTF 두 파일을 같은 해시로 추가 공급했다. [페이지별 실측](updates/cross-os-20261127/page-floors.tsv) · [실행 조건과 소스 신원](updates/cross-os-20261127/conditions.json)
-
-## 2026-11-27 sample16 6쪽 수식 하한 복원
-
-`RHWPLegacyEquation-Original.otf`를 sample16 세 형식의 Native·WASM 공급에 추가했다. 기준 PDF 6쪽의 구형 Type 3 수식 글리프 13종과 윤곽 및 전진폭이 일치하는 파일이다. macOS에서 세 형식 384행을 다시 측정해 하락과 누락이 없었고, 6쪽 여섯 행은 모두 100.00%였다. 이 여섯 행의 하한을 100.00%로 복원했다. [전쪽 실측](updates/sample16-legacy-equation-20261127/page-floors.tsv) · [공급 및 실행 조건](updates/sample16-legacy-equation-20261127/conditions.json) · [갱신 영수증](updates/sample16-legacy-equation-20261127/update.json)

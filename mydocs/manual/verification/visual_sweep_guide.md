@@ -421,15 +421,15 @@ Native와 fresh WASM 시각 검증에서는 **TTF → TTC → OTF → 대체 글
 
 ### 정본 보호 문서의 글꼴 공급 재현
 
-정본 보호 전쪽을 비교하는 collaborator·maintainer는 Linux·Windows·macOS 모두
+정본 보호 전쪽을 비교하는 collaborator·maintainer는 실행 환경에 관계없이
 [공식 글꼴 공급 자료](../../verification/protected-font-supply/README.md)를 따른다.
 문서 key와 backend로 `manifest.json`의 조건을 선택해 공급 방식과 환경 JSON을 적용한다.
 파일명·프로그램 SHA·face와 실제 선택 기록을 대조한다. 일반 기여자에게 비공개 글꼴 확보를 요구하지 않는다.
 
-Native·fresh WASM 모두 실제 경로의 파일명이 `_MAC.otf`로 끝나는 글꼴을 공급 및 선택에서
-제외한다. 대소문자를 구분하지 않으며, 파일명을 바꾸거나 링크를 만들어 사용할 수 없다.
-보호 글꼴의 허용 조건을 변경할 때는 macOS·Windows·Linux에서 각각 모든 등록 문서를 두
-backend로 출력하고, 실제 선택과 페이지별 보호 하한을 확인한 뒤 PR을 제출한다.
+Native·fresh WASM 모두 매니페스트의 `excluded_filename_suffixes`와 `excluded_sha256`를 공급 전에
+검사하고, 실제 선택 기록도 대조한다. `RHWPLegacyEquation-Original.otf`와 `HYHWPEQ.TTF` 1.10은
+파일명 변경이나 링크를 거친 경우에도 SHA-256으로 제외한다.
+검증 환경과 추가 실행 범위는 [정본 보호 TSV의 공식 표시값 보존](visual_verification_governance.md#정본-보호-tsv의-공식-표시값-보존)을 따른다.
 
 manifest 최상위의 `accepted_sha256_pairs`는 공통 허용 쌍이고, 문서 항목의 같은 필드는 해당 문서에만 적용한다.
 문서별 허용 쌍은 `scripts/check_protected_font.py --document <문서 key>`로 확인한다.
