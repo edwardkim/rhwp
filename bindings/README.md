@@ -161,6 +161,24 @@ HWPX는 기존 serializer의 source settings.xml 또는 기본값 정책을 유�
 실제 경로를 확인한다. caretPreservedFromSource는 원본 settings.xml 바이트가 있을 때만 true이며,
 그 안의 CaretPosition 존재나 현재 focus 저장까지 증명하지 않는다. 저장 확인은 편집 history를 지우지 않으며 undo 후에는 revision 기준 dirty다.
 
+## Native worker 텍스트 검색
+
+`workerTextSearch`가 활성화된 worker는
+`searchText{target,request:{query,caseSensitive,maxMatches,range?}}`를 지원한다.
+검색어는 1~256 UTF-8 바이트이며 결과 수는 1~128개다. `range`는 접근성 조회와 같은
+`{section,startParagraph,endParagraph}` 형식이며 끝 문단은 범위에 포함되지 않는다.
+
+응답은 조회한 `target`과 `result.matches[]`의 `selection`, `editable`을 반환한다.
+본문과 표 셀의 문자 범위를 문서 순서대로 돌려주며, 문자 오프셋은 Unicode scalar 기준이다.
+보호된 셀은 선택할 수 있고 `editable: false`로 표시된다. 출력·순회·텍스트 한도에 도달하면
+`truncated`가 설정된다. 검색 범위 일부에 선택으로 표현할 수 없는 개체가 있으면
+`omittedContent`로 알려준다. 검색은 문서 버전이나 라이브 선택을 바꾸지 않는다.
+
+찾은 범위로 이동할 때는 `setSelection`을 사용한다. 이 범위만 바꿀 때는 같은 `target`과
+`selection`으로 `replaceRange{target,selection,text}`를 보낸다. 편집 세션에서 한 번의
+편집으로 기록되며 실행 취소는 치환 전 라이브 선택을 복원한다. 이전 revision이나 종료되지
+않은 입력기 조합 상태에서 요청하면 오류가 반환된다.
+
 ## Reference host (P57)
 
 [Python reference host](Native/examples/README.md)는 표준 라이브러리만으로

@@ -26,6 +26,7 @@ pub mod region_cache;
 pub mod render_snapshot;
 pub mod runtime;
 pub mod save;
+pub mod search;
 pub mod view;
 
 use std::marker::PhantomData;
