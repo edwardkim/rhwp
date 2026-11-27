@@ -5293,10 +5293,10 @@ fn normalize_hwp3_note_line_vpos(paragraph: &mut crate::model::paragraph::Paragr
 ///
 /// 대상을 양쪽에서 잠근다 — 문서가 장식을 켰고(`suffix`), 첫 글자가 **자동 번호의
 /// 8유닛 자리표시자**이며(`char_offsets` 가 `0, 8` 로 시작), 그 다음 글자가 바로 그
-/// 장식 문자일 때만 한 글자를 뗀다. 범위 정보를 가진 문단(구역 태그·필드·제목 표시·
-/// 형광펜)은 건드리지 않는다 — 이 문단들에는 해당 채널이 없고, 있으면 오프셋을 함께
-/// 옮겨야 해서 이 수정의 범위가 아니다.
-fn strip_hwp3_note_number_suffix_literal(
+/// 장식 문자일 때만 한 글자를 떼고 자동 번호에 장식을 설정한다.
+/// 리터럴이 없는 문단에서는 자동 번호에 장식만 설정한다. 범위 정보를 가진
+/// 문단(구역 태그·필드·제목 표시·형광펜)의 리터럴은 오프셋과 함께 보존한다.
+fn normalize_hwp3_note_number_suffix(
     paragraphs: &mut [crate::model::paragraph::Paragraph],
     suffix: char,
 ) {
@@ -5308,18 +5308,13 @@ fn strip_hwp3_note_number_suffix_literal(
     let Some(para) = paragraphs.first_mut() else {
         return;
     };
-    if !matches!(
-        para.controls.first(),
-        Some(Control::AutoNumber(an))
-            if matches!(an.number_type, AutoNumberType::Footnote | AutoNumberType::Endnote)
-    ) {
+    let Some(Control::AutoNumber(marker)) = para.controls.first_mut() else {
         return;
-    }
-    if !para.range_tags.is_empty()
-        || !para.field_ranges.is_empty()
-        || !para.title_marks.is_empty()
-        || !para.markpen_marks.is_empty()
-    {
+    };
+    if !matches!(
+        marker.number_type,
+        AutoNumberType::Footnote | AutoNumberType::Endnote
+    ) {
         return;
     }
     // 자리표시자는 글자 하나지만 저장본에서 확장 컨트롤 8 코드유닛을 차지한다(#3504).
@@ -5332,6 +5327,14 @@ fn strip_hwp3_note_number_suffix_literal(
         return;
     }
     if chars.next() != Some(suffix) {
+        marker.suffix_char = suffix;
+        return;
+    }
+    if !para.range_tags.is_empty()
+        || !para.field_ranges.is_empty()
+        || !para.title_marks.is_empty()
+        || !para.markpen_marks.is_empty()
+    {
         return;
     }
 
@@ -5350,6 +5353,8 @@ fn strip_hwp3_note_number_suffix_literal(
         *offset = offset.saturating_sub(removed_units);
     }
     para.char_count = para.char_count.saturating_sub(removed_units);
+    // 자동 번호가 문서 옵션의 장식을 한 번 그리도록 리터럴을 옮긴다.
+    marker.suffix_char = suffix;
     for shape in &mut para.char_shapes {
         if shape.start_pos > removed_at {
             shape.start_pos = shape.start_pos.saturating_sub(removed_units);
@@ -5375,10 +5380,7 @@ fn fixup_hwp3_notes_in_controls(
                 state.footnote_number = state.footnote_number.saturating_add(1);
                 footnote.after_decoration_letter = ')' as u16;
                 footnote.number_shape = 0;
-                strip_hwp3_note_number_suffix_literal(
-                    &mut footnote.paragraphs,
-                    state.number_suffix,
-                );
+                normalize_hwp3_note_number_suffix(&mut footnote.paragraphs, state.number_suffix);
                 fixup_hwp3_notes_in_paragraphs(&mut footnote.paragraphs, state);
             }
             Control::Endnote(endnote) => {
@@ -5387,7 +5389,7 @@ fn fixup_hwp3_notes_in_controls(
                 state.endnote_number = state.endnote_number.saturating_add(1);
                 endnote.after_decoration_letter = ')' as u16;
                 endnote.number_shape = 0;
-                strip_hwp3_note_number_suffix_literal(&mut endnote.paragraphs, state.number_suffix);
+                normalize_hwp3_note_number_suffix(&mut endnote.paragraphs, state.number_suffix);
                 for paragraph in &mut endnote.paragraphs {
                     normalize_hwp3_note_line_vpos(paragraph);
                 }
