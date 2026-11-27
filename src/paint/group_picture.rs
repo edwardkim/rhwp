@@ -71,7 +71,13 @@ pub(super) fn project(
             }
             let width_points = full.width * 72.0 / dpi;
             let height_points = full.height * 72.0 / dpi;
-            print_device_image_payload(&original, width_points, (width_points, height_points), true)
+            print_device_image_payload(
+                &original,
+                width_points,
+                (width_points, height_points),
+                true,
+                None,
+            )
         })?;
     Some((full, original, payload))
 }

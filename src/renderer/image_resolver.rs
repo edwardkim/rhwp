@@ -209,11 +209,13 @@ enum Conversion {
         height: u32,
         quality: u8,
     },
-    Hancom2024ResampledBitmapWindow {
+    PrintResampledBitmapWindow {
         bounds: [u32; 4],
         width: u32,
         height: u32,
         quality: u8,
+        print_2024: bool,
+        rgb555: bool,
     },
     PrintOriginalRgbJpeg {
         quality: u8,
