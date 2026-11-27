@@ -2270,6 +2270,9 @@ fn parse_hwp3_object_dispatch(
             0,
             use_decrypted_layout_contract,
         )?;
+        if is_endnote {
+            paragraph::normalize_saved_endnote_marker_size(nested_paragraphs, doc_char_shapes);
+        }
     } else if ch == 29 {
         // 상호 참조
         if header_val1 < 1000000 {

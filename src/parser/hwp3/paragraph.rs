@@ -48,6 +48,52 @@ pub(super) fn host_font_height_in_range(
         .unwrap_or(fallback)
 }
 
+/// 저장된 첫 줄에서 미주 번호 슬롯만 본문보다 큰 옛 글자모양을 가진다.
+/// 한컴 출력은 번호 장식의 서식을 유지하면서 첫 줄의 본문 크기로 함께 그린다.
+pub(super) fn normalize_saved_endnote_marker_size(
+    paragraphs: &mut [crate::model::paragraph::Paragraph],
+    char_shapes: &mut Vec<crate::model::style::CharShape>,
+) {
+    use crate::model::control::{AutoNumberType, Control};
+
+    let Some(para) = paragraphs.first_mut() else {
+        return;
+    };
+    let Some(line) = para.line_segs.first() else {
+        return;
+    };
+    let [marker, body, ..] = para.char_shapes.as_mut_slice() else {
+        return;
+    };
+    if !matches!(
+        para.controls.first(),
+        Some(Control::AutoNumber(number)) if number.number_type == AutoNumberType::Endnote
+    ) || !para.char_offsets.starts_with(&[0, 8])
+        || !para
+            .hwp3_saved_space_corrections
+            .first()
+            .is_some_and(|&(start, _)| start == 0)
+        || marker.start_pos != 0
+        || body.start_pos != 8
+    {
+        return;
+    }
+    let Some(marker_shape) = char_shapes.get(marker.char_shape_id as usize) else {
+        return;
+    };
+    let Some(body_shape) = char_shapes.get(body.char_shape_id as usize) else {
+        return;
+    };
+    if line.line_height > 0
+        && line.line_height == body_shape.base_size
+        && marker_shape.base_size > body_shape.base_size
+    {
+        let mut effective_marker = marker_shape.clone();
+        effective_marker.base_size = body_shape.base_size;
+        marker.char_shape_id = u32::from(super::intern_char_shape(char_shapes, effective_marker));
+    }
+}
+
 /// HWP3는 줄별 들여쓰기 비트 없이 문단의 부호 있는 들여쓰기만 저장한다.
 /// 공통 IR의 저장 줄 소비자가 비트 부재를 '적용 금지'로 읽지 않도록 정규화한다.
 pub(super) fn apply_line_indentation(lines: &mut [crate::model::paragraph::LineSeg], indent: i32) {
