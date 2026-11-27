@@ -107,6 +107,9 @@ impl<'a> Scan<'a, '_> {
     }
     fn common(&self, c: &CommonObjAttr, raw: &[u8]) -> Result<(), Error> {
         self.raw_empty(&c.raw_extra, "common tail")?;
+        self.common_raw(raw)
+    }
+    fn common_raw(&self, raw: &[u8]) -> Result<(), Error> {
         let valid = match raw.len() {
             0 | 36 | 40 => true,
             // Legacy writer omits optional prevent_page_break and writes an
@@ -204,7 +207,17 @@ impl<'a> Scan<'a, '_> {
         self.keep(SourceNode::Control(c));
         match c {
             Control::Table(t) => {
-                self.common(&t.common, &t.raw_ctrl_data)?;
+                let raw = &t.raw_ctrl_data;
+                // HWP table headers can end in a zero word after an empty
+                // description (#9225). Keep both bytes for HWP serialization.
+                if matches!(raw.get(40..), Some([0, 0, 0, 0]))
+                    && t.common.description.is_empty()
+                    && t.common.raw_extra == [0, 0]
+                {
+                    self.common_raw(&raw[..42])?;
+                } else {
+                    self.common(&t.common, raw)?;
+                }
                 self.raw_empty(&t.raw_table_record_extra, "table record tail")?;
                 for (i, cell) in t.cells.iter().enumerate() {
                     self.at(Step::Cell(i), |s| {
