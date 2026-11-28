@@ -311,6 +311,7 @@ public sealed partial class MainWindow : Window
         ExportPdfButton.IsEnabled = pdfCancellation is CancellationTokenSource export
             ? !export.IsCancellationRequested
             : available && page is not null && pdfLimits is not null;
+        RefreshPrintAction(available);
         CloseButton.IsEnabled = available && fileName is not null;
         PreviousPageMenuItem.IsEnabled = available && page is { Page: > 0 };
         NextPageMenuItem.IsEnabled = available && page is PageInfo current && current.Page + 1 < current.PageCount;
