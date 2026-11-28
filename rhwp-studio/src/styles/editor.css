@@ -9,7 +9,8 @@
      래칫으로 작동해 창을 넓혔다 줄이면 트랙이 줄지 않는다(#1191). 최소를 0으로
      고정해 창 축소 시에도 트랙이 정상 축소되어 가운데 정렬이 유지된다. */
   /* 셋째 열은 오른쪽 패널(#side-panel-host) 자리다. 패널이 숨으면 auto 열은 0 이 된다. */
-  grid-template-columns: 20px minmax(0, 1fr) auto;
+  grid-template-columns: 20px minmax(0, 1fr) auto auto;
+  position: relative;
   grid-template-rows: 20px minmax(0, 1fr);
   flex: 1;
   overflow: hidden;
@@ -170,4 +171,51 @@
   color: var(--ui-text);
   cursor: pointer;
   pointer-events: auto;
+}
+
+.memo-margin {
+  grid-column: 4;
+  grid-row: 1 / -1;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: clamp(116px, 24vw, 250px);
+  border-left: 1px solid var(--ui-border);
+  background: var(--ui-bg-light);
+  color: var(--ui-text);
+}
+.memo-margin[hidden] { display: none; }
+.memo-margin h2 { margin: 0; padding: 8px; font-size: 13px; }
+.memo-margin-cards { position: relative; overflow: auto; }
+.memo-margin-cards p { margin: 8px; color: var(--ui-text-muted); }
+.memo-margin-cards button {
+  position: absolute;
+  inset-inline: 2px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  height: 72px;
+  padding: 7px;
+  text-align: start;
+  background: var(--ui-note-bg);
+  color: var(--ui-text);
+  border: 1px solid var(--ui-note-border);
+  border-radius: 5px;
+  overflow: hidden;
+  cursor: pointer;
+}
+.memo-margin-cards strong { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.memo-margin-cards span { overflow-wrap: anywhere; white-space: pre-wrap; }
+.memo-margin-guides {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+}
+.memo-margin-guides polyline {
+  fill: none;
+  stroke: var(--ui-link);
+  stroke-opacity: .55;
+  stroke-dasharray: 4 3;
 }
