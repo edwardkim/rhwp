@@ -7,7 +7,13 @@
 //! (끼어든 빈 쪽, 별도 결함)이라 원본 대신 발췌본을 쓴다.
 //! 기준: `pdf/issue9479/cell_tac_negative_line_spacing-2020.pdf` — 한/글 2020(11.0.0.9172) Hancom PDF Print, 3쪽.
 //!
-//! 측정 결과는 PR 본문과 `mydocs/pr/assets/issue_9479/` 의 Native·fresh WASM 전쪽 TSV 에 있다.
+//! 측정: 2026-11-28, `scripts/visual_sweep.py --silhouette-only` 의 silhouette_raw_match_percent, 96 DPI,
+//! compat 2022, 3쪽 = 한/글 3쪽. head a6618a0fbc, base ca96e9f342.
+//! - Native: 1쪽 99.02, 2쪽 99.82, 3쪽 100.00 (전쪽 최저 99.02). base 77.86 / 85.85 / 100.00.
+//! - fresh WASM: 1쪽 96.13, 2쪽 99.79, 3쪽 100.00 (전쪽 최저 96.13). base 74.75 / 86.07 / 100.00.
+//!   WASM 1쪽의 Native 대비 차이는 이 기기에 없는 한양신명조·한양중고딕 글자의 대체 글꼴 모양뿐이다
+//!   (줄·표 위치는 Native 와 같은 행, 확대 판독).
+//! - 정식 증거: `mydocs/pr/assets/issue_9479/{native,wasm,base-native,base-wasm}/`.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
@@ -63,7 +69,9 @@ fn line_top(node: &RenderNode, needle: &str) -> Option<f64> {
         collect_text(node, &mut text);
         return text.contains(needle).then_some(node.bbox.y);
     }
-    node.children.iter().find_map(|child| line_top(child, needle))
+    node.children
+        .iter()
+        .find_map(|child| line_top(child, needle))
 }
 
 fn page_line_top(core: &mut DocumentCore, page: u32, needle: &str) -> f64 {
@@ -129,7 +137,10 @@ fn zero_advance_overlap_spacer_keeps_its_spacing_before() {
     let previous_end = i64::from(previous_last.vertical_pos)
         + i64::from(previous_last.line_height)
         + i64::from(previous_last.line_spacing);
-    assert!(first_vpos(spacer) > previous_end, "앞 간격이 저장 사다리에 있다");
+    assert!(
+        first_vpos(spacer) > previous_end,
+        "앞 간격이 저장 사다리에 있다"
+    );
     let vpos_19 = first_vpos(cell_para(&core, 19));
     assert_eq!(first_vpos(spacer), vpos_19);
     let expected = px(vpos_19 - i64::from(previous_last.vertical_pos));
