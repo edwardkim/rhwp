@@ -141,6 +141,8 @@ public sealed partial class MainWindow
             if (edit.Outcome.DocumentChanged)
             {
                 await RefreshEditedPageAsync(current, edit);
+                if (directEditing)
+                    await UpdateDirectGeometryAsync(followCaret: false);
                 SearchStatus.Text = "바꿨습니다. 다음 항목을 찾으려면 다시 검색하세요.";
             }
             else
