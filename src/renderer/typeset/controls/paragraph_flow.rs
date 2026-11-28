@@ -405,9 +405,9 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
             engine.dpi,
         );
     let controls::order::ControlPlacementOrder {
-        ctrl_order,
+        mut ctrl_order,
         first_placed_table,
-        last_placed_table,
+        mut last_placed_table,
     } = controls::order::for_paragraph_with_storage(
         para,
         &fmt,
@@ -424,7 +424,11 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
     // 텍스트를 한 번 발행하도록 문단 단위로 추적한다.
     let mut decoration_host_text_pending = false;
     let mut flow_table_owns_host_text = false;
-    for (order_pos, ctrl_idx) in ctrl_order.iter().copied().enumerate() {
+    let mut next_control = 0;
+    while next_control < ctrl_order.len() {
+        let order_pos = next_control;
+        let ctrl_idx = ctrl_order[order_pos];
+        next_control += 1;
         let ctrl = &para.controls[ctrl_idx];
         match ctrl {
             Control::Table(table) => {
@@ -519,30 +523,38 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
                 } else {
                     para_start_height
                 };
-                let break_after_current_table = controls::flow_table::place(
+                let flow_input = controls::flow_table::FlowTableInput {
+                    para_idx,
+                    ctrl_idx,
+                    para,
+                    table,
+                    fmt: &fmt,
+                    measured_tables,
+                    styles,
+                    composed,
+                    next_para,
+                    tac_count,
+                    first_placed_table,
+                    last_placed_table,
+                    para_start_height: table_para_start_height,
+                    paragraphs_all,
+                    composed_all,
+                    ctrl_order: &ctrl_order,
+                    order_pos,
+                };
+                if let Some(sibling) = controls::flow_table::fitting_sibling_after_overflow(
                     engine,
                     st,
-                    controls::flow_table::FlowTableInput {
-                        para_idx,
-                        ctrl_idx,
-                        para,
-                        table,
-                        fmt: &fmt,
-                        measured_tables,
-                        styles,
-                        composed,
-                        next_para,
-                        tac_count,
-                        first_placed_table,
-                        last_placed_table,
-                        para_start_height: table_para_start_height,
-                        paragraphs_all,
-                        composed_all,
-                        ctrl_order: &ctrl_order,
-                        order_pos,
-                    },
-                    &mut para_float_lanes,
-                );
+                    &flow_input,
+                    &para_float_lanes,
+                ) {
+                    ctrl_order[order_pos..=sibling].rotate_right(1);
+                    last_placed_table = ctrl_order.last().copied();
+                    next_control = order_pos;
+                    continue;
+                }
+                let break_after_current_table =
+                    controls::flow_table::place(engine, st, flow_input, &mut para_float_lanes);
                 if !table.common.treat_as_char
                     && st.flow_table_page_count() == page_count_before
                     && st.current_height > flow_before_table

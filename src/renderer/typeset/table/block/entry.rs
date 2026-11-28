@@ -1075,7 +1075,17 @@ impl TypesetEngine {
         let saved_host_line_after_stack_fits = saved_stack_fits_host_origin
             && has_preceding_coanchored_float
             && table_total <= available
-            && !page_has_table_continuation;
+            && !page_has_table_continuation
+            // 한 형제라도 현재 줄 프로그램으로 선언 칸을 넘으면, 넘치는
+            // 표를 통째 수용할 때 이 스택의 옛 줄을 근거로 쓸 수 없다.
+            && (st.current_height + table_total <= available
+                || !table.common.flow_with_text
+                || table.common.allow_overlap
+                || !para.controls.iter().any(|control| {
+                    matches!(control, Control::Table(sibling)
+                        if is_para_topbottom_float(&sibling.common)
+                            && crate::renderer::float_placement::table_cell_lines_exceed_frame(sibling))
+                }));
         if std::env::var("RHWP_DIAG_2813").is_ok() {
             eprintln!(
                 "DIAG_2813 pi={} ci={} float={} vis_text={} segs={} real_segs={} bounds={:?} cur_h={:.1} avail={:.1} verdict={}",
@@ -1098,6 +1108,26 @@ impl TypesetEngine {
         // 이월이 실제 발생한 경우에만 placement 기준을 fresh page-local current_height 로
         // 재설정한다. #1860 의 budget_para_start_height 는 별도 예산 계약이므로 불변이다.
         let mut placement_para_start_height = para_start_height;
+        // 앞 단에서 자리 잡은 뒤 형제는 이미 자기 상자를 소유한다. 이 표가
+        // 다음 단을 처음 열면, 표 본체와 수용용 여백이 거기 들어가는지 본다.
+        // 그 뒤의 흐름 간격까지 수용 높이로 치면 닫히는 마지막 행도 잘린다.
+        let follows_placed_sibling = !para_has_visible_text(para)
+            && ft.table_footnotes.is_empty()
+            && table.common.flow_with_text
+            && !table.common.allow_overlap
+            && st.current_items.iter().any(|item| {
+                matches!(item, PageItem::Table { para_index, control_index }
+                    if *para_index == para_idx && *control_index > ctrl_idx
+                        && matches!(&para.controls[*control_index], Control::Table(sibling)
+                            if is_para_topbottom_float(&sibling.common)))
+            })
+            && crate::renderer::float_placement::table_cell_lines_exceed_frame(table);
+        let fit_slack = if follows_placed_sibling {
+            crate::renderer::float_placement::FLOAT_FRAME_FIT_TOLERANCE_PX
+        } else {
+            0.0
+        };
+        let mut opens_own_column = false;
         if is_para_topbottom_float(&table.common)
             && matches!(
                 table.layout_page_break(),
@@ -1106,7 +1136,7 @@ impl TypesetEngine {
             && has_preceding_coanchored_float
             && !st.current_items.is_empty()
             && st.current_height + table_total > available
-            && table_total <= available
+            && table_total <= available + fit_slack
             && !saved_host_line_after_stack_fits
         {
             // [#3674 진단] 통짜 이월 분기 발동 기록 — 동작 불변.
@@ -1126,8 +1156,37 @@ impl TypesetEngine {
                     para_idx, st.section_index, st.current_height
                 );
             }
+            // 떨어져 나간 개체가 새 단을 채워 앵커 줄까지 들어가지 않으면
+            // 줄은 이미 놓인 형제들과 같은 단에서 한 번만 소비한다.
+            if follows_placed_sibling
+                && is_last_placed
+                && fmt.line_count() == 1
+                && !st.pre_emitted_host_paras.contains(&para_idx)
+                && !st.current_items.iter().any(|item| {
+                    matches!(item, PageItem::FullParagraph { para_index }
+                        | PageItem::PartialParagraph { para_index, .. } if *para_index == para_idx)
+                })
+            {
+                let (line_content, line_advance) = fmt.host_text_bounds(para, 0..1, self.dpi);
+                if table_total + line_content > available + fit_slack
+                    && st.current_height + line_content <= available
+                {
+                    st.record_host_text_fragment(para_idx, 0..1, para, fmt, self.dpi);
+                    st.append_item(PageItem::PartialParagraph {
+                        para_index: para_idx,
+                        start_line: 0,
+                        end_line: 1,
+                    });
+                    st.advance_flow_by(line_advance);
+                    st.mark_pre_emitted_host(para_idx);
+                    if st.defer_host_line_item_para == Some(para_idx) {
+                        st.finish_deferred_host_line();
+                    }
+                }
+            }
             st.advance_column_or_new_page();
             placement_para_start_height = st.current_height;
+            opens_own_column = follows_placed_sibling && st.current_items.is_empty();
         }
 
         let stored_first_frame = (st.profile.hwp5_stored_pagination_layout()
@@ -3062,6 +3121,9 @@ impl TypesetEngine {
                     && complete_caption_fits
                     && resolved_host_placement.map_or(legacy_whole_fits, |p| {
                         p.occupied_bottom <= whole_frame_budget
+                            || (opens_own_column
+                                && p.table_top + ft.effective_height + ft.host_spacing.after_for_fit
+                                    <= whole_frame_budget + fit_slack)
                     // None split 개체의 본체는 종이 안에 들어가면 body 아래 여백을
                     // 사용할 수 있다. 뒤 바깥 여백은 후속 흐름에 예약하지만 본체를
                     // 다음 쪽으로 밀 이유가 아니다(독립 Print의 작은 용지 대조).

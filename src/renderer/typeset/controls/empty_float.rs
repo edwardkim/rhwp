@@ -643,7 +643,7 @@ pub(super) fn prepare(
         }
     });
 
-    if lane_bottom > available + 0.5 {
+    if lane_bottom > available + crate::renderer::float_placement::FLOAT_FRAME_FIT_TOLERANCE_PX {
         return None;
     }
 
