@@ -9,7 +9,7 @@ public sealed partial class MainWindow
         if (page is not null)
             return;
 
-        await ChangeDocumentAsync(
+        bool opened = await ChangeDocumentAsync(
             async token => await worker.NewAsync(token),
             UntitledDocumentName,
             resetZoom: true,
@@ -18,5 +18,16 @@ public sealed partial class MainWindow
                 AdoptSaveLocation(result, null);
                 return Task.CompletedTask;
             });
+        if (!opened || page is not PageInfo current)
+            return;
+
+        await EnqueueDirectEdit(async () =>
+        {
+            var caret = new TextPosition(0, 0, 0, []);
+            editorInfo = await worker.BeginEditAsync(current.Target, new TextSelection(caret, caret),
+                CancellationToken.None);
+            directEditing = true;
+            await UpdateDirectGeometryAsync(followCaret: false, focus: true);
+        });
     }
 }
