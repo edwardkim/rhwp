@@ -35,3 +35,22 @@
 [한컴 Print 원본과 인쇄 확인 기록](../../../../pdf/issues7813_8100/README.md)을 사용한다.
 #7813 HWP와 #7830은 같은 원본에서 만든 기존 한컴 Office 2024 PDF를 사용한다.
 #7955는 입력 SHA가 일치하는 [한컴 Office 2020 Print PDF](../../../../pdf/issue7642-failed-regression-print/housing-lease-standard-form-hwp-print-2020.pdf)를 사용한다.
+
+## 리베이스로 반영한 #9495의 Native 재검증
+
+`upstream/devel`의 #9495 병합 커밋은 `274ae9d4c83154e06da049c90eed6904a8b2ec89`다.
+서식 커밋 `592e625dda`의 Native 실행 파일 SHA-256
+`98d952901d7bfa8eda0f3ec35165684e42d29e2c2a12302cc8aa494e027f43e4`로 원본 3개의
+전 9쪽을 다시 출력했다. Print 프로필, 96dpi에서 모두 raw 100.00%였으며 전쪽 TSV의 바이트가
+#9495에 포함된 결과와 일치했다.
+
+| 연구노트 입력 | 쪽수 | 일치한 Native TSV |
+| --- | ---: | --- |
+| 원본 | 2 | [labnote-001](../issue_7065/native/labnote-001.tsv) |
+| 복사본 1 | 3 | [labnote-001-cp-01](../issue_7065/native/labnote-001-cp-01.tsv) |
+| 복사본 2 | 4 | [labnote-001-cp-02](../issue_7065/native/labnote-001-cp-02.tsv) |
+
+최소 글꼴 환경에서 기존 #3587 검사 3건과 함께 원본의 본문 문단 12, 표 1, 셀 5에
+Enter를 7·9·11·15회 넣는 경계를 점검했다. 각 편집 직후와 HWP·HWPX 저장 후 재열기에서
+모두 4쪽, 표 겹침 0건, 추가한 수만큼 셀 문단이 늘었다. Enter 7회에서는 제목 2쪽,
+본문 3쪽, 서명 4쪽 소속도 유지됐다. 편집·저장·재열기 대조 12개 상태를 확인했다.
