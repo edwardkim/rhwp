@@ -113,9 +113,12 @@ public sealed partial class MainWindow : Window
             return;
 
         args.Handled = true;
+        args.AcceptedOperation = DataPackageOperation.Copy;
         var deferral = args.GetDeferral();
         string? documentPath = null;
         string? picturePath = null;
+        PageInfo? picturePage = null;
+        Point pictureLocation = default;
         Point dropPoint = args.GetPosition(PageCanvas);
         DocumentTarget? displayedDocument = page?.Target;
         try
@@ -125,12 +128,21 @@ public sealed partial class MainWindow : Window
             documentPath = FileActivation.FirstDocumentPath(paths);
             if (documentPath is null && pictureLimits is { InputBytes: > 0 })
                 picturePath = FileActivation.FirstPicturePath(paths);
-            if (documentPath is null && picturePath is null && !closing)
-                StatusText.Text = pictureLimits is { InputBytes: > 0 }
-                    ? "HWP, HWPX, PNG 또는 JPEG 파일을 놓으세요." : "HWP 또는 HWPX 파일을 놓으세요.";
+            if (picturePath is not null && displayedDocument is { } target && page?.Target == target &&
+                AcceptPageInput(dropPoint, out PageInfo dropPage, out pictureLocation))
+                picturePage = dropPage;
+            if (documentPath is null && picturePage is null)
+            {
+                args.AcceptedOperation = DataPackageOperation.None;
+                if (!closing)
+                    StatusText.Text = picturePath is not null ? "본문의 텍스트 위치에 그림을 놓으세요." :
+                        pictureLimits is { InputBytes: > 0 } ? "HWP, HWPX, PNG 또는 JPEG 파일을 놓으세요." :
+                        "HWP 또는 HWPX 파일을 놓으세요.";
+            }
         }
         catch (Exception error)
         {
+            args.AcceptedOperation = DataPackageOperation.None;
             if (!closing)
                 StatusText.Text = "놓은 파일을 읽을 수 없습니다. " + error.Message;
         }
@@ -141,13 +153,8 @@ public sealed partial class MainWindow : Window
 
         if (documentPath is not null)
             await OpenFileAsync(documentPath);
-        else if (picturePath is not null && displayedDocument is { } target && page?.Target == target && !closing)
-        {
-            if (AcceptPageInput(dropPoint, out PageInfo dropPage, out Point location))
-                await QueuePictureInsertionAsync(picturePath, dropPage, dropLocation: location);
-            else
-                StatusText.Text = "본문의 텍스트 위치에 그림을 놓으세요.";
-        }
+        else if (picturePath is not null && picturePage is not null && !closing)
+            await QueuePictureInsertionAsync(picturePath, picturePage, dropLocation: pictureLocation);
     }
 
     private async void OnCloseClicked(object sender, RoutedEventArgs args)
