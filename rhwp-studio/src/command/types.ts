@@ -109,6 +109,7 @@ export type CommandResult =
 export interface CommandServices {
   eventBus: EventBus;
   wasm: WasmBridge;
+  desktopFiles?: import('@/desktop/desktop-host').DesktopFileCommands;
   /** 저장되지 않은 문서 변경 상태 */
   documentState: DocumentDirtyState;
   /** 현재 에디터 상태 스냅샷 */

@@ -5,6 +5,7 @@ import { hyperlinkTarget, applyHyperlinkFormat } from '@/core/hyperlink';
 import type { HyperlinkInfo, HyperlinkTarget } from '@/core/hyperlink';
 import type { DocumentPosition } from '@/core/types';
 import { showToast } from '@/ui/toast';
+import { openDesktopWebLink } from '@/desktop/desktop-host';
 
 type LinkHit = { target: HyperlinkTarget; link: HyperlinkInfo; position: DocumentPosition };
 
@@ -85,6 +86,7 @@ export function followHyperlinkClick(self: any, e: MouseEvent): void {
       web: uri => {
         const url = new URL(uri);
         if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) return false;
+        if (openDesktopWebLink(window, url.href)) return true;
         const opened = window.open('about:blank', '_blank');
         if (!opened) { showToast({ message: '팝업이 차단되었습니다. 이 사이트의 팝업을 허용해 주세요.' }); return false; }
         opened.opener = null; opened.location.replace(url.href); return true;
