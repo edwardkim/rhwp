@@ -1,11 +1,10 @@
+using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Foundation;
-using Windows.Graphics.Imaging;
-using Windows.Security.Cryptography;
 
 namespace Rhwp.WinUI;
 
@@ -198,14 +197,11 @@ public sealed partial class MainWindow
                     !IsFrameUseful(measured, placement, viewport, deviceScale))
                     continue;
 
-                var pixels = CryptographicBuffer.CreateFromByteArray(frame.Bgra);
-                using var bitmap = SoftwareBitmap.CreateCopyFromBuffer(pixels, BitmapPixelFormat.Bgra8,
-                    frame.PixelWidth, frame.PixelHeight, BitmapAlphaMode.Premultiplied);
-                var source = new SoftwareBitmapSource();
-                await source.SetBitmapAsync(bitmap);
-                if (!OwnsRender(current, layout, placementVersion, renderZoom, deviceScale, request) ||
-                    !IsFrameUseful(measured, placement, viewport, deviceScale))
-                    continue;
+                // Fill the new bitmap before replacing the currently visible image.
+                var source = new WriteableBitmap(frame.PixelWidth, frame.PixelHeight);
+                using (Stream pixels = source.PixelBuffer.AsStream())
+                    pixels.Write(frame.Bgra, 0, frame.Bgra.Length);
+                source.Invalidate();
 
                 surface.Commit(measured, viewport, renderZoom, deviceScale, frame, source);
                 ArrangePage(surface, placement);
@@ -330,7 +326,7 @@ public sealed partial class MainWindow
     {
         surface.Layer.Width = placement.Width * zoom;
         surface.Layer.Height = placement.Height * zoom;
-        ((RectangleGeometry)surface.Layer.Clip).Rect = new Rect(0, 0, surface.Layer.Width, surface.Layer.Height);
+        ((RectangleGeometry)surface.Layer.Clip!).Rect = new Rect(0, 0, surface.Layer.Width, surface.Layer.Height);
         Canvas.SetLeft(surface.Layer, placement.Left * zoom);
         Canvas.SetTop(surface.Layer, placement.Top * zoom);
         if (surface.RenderedBounds is { } bounds)
