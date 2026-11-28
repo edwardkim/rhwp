@@ -21,7 +21,9 @@ public sealed partial class MainWindow
         formattingCapabilityChecked = true;
         try
         {
-            basicFormattingAvailable = await worker.SupportsBasicTextFormattingAsync(CancellationToken.None);
+            NativeFormattingCapabilities capabilities = await worker.GetFormattingCapabilitiesAsync(CancellationToken.None);
+            basicFormattingAvailable = capabilities.Edit;
+            formattingInspectionAvailable = capabilities.Inspect;
             if (!closing)
             {
                 FormattingToolbar.Visibility = basicFormattingAvailable ? Visibility.Visible : Visibility.Collapsed;
@@ -46,22 +48,36 @@ public sealed partial class MainWindow
             DocumentActionsAvailable;
         bool canFormatText = canAlign && selection!.Anchor.ScalarOffset != selection.Focus.ScalarOffset;
         ApplyBoldButton.IsEnabled = canFormatText;
-        FormattingFontSize.IsEnabled = canFormatText;
+        FormattingFontSize.IsEnabled = canAlign;
+        FormattingFontSize.IsReadOnly = !canFormatText;
         ApplyFontSizeButton.IsEnabled = canFormatText && TryReadFontSize(out _);
         AlignLeftButton.IsEnabled = canAlign;
         AlignCenterButton.IsEnabled = canAlign;
         AlignRightButton.IsEnabled = canAlign;
         AlignJustifyButton.IsEnabled = canAlign;
         MoreAlignmentButton.IsEnabled = canAlign;
+        RefreshSelectionFormatting(canAlign ? page : null, canAlign ? selection : null);
     }
 
     private async void OnApplyBoldClicked(SplitButton sender, SplitButtonClickEventArgs args) =>
         await QueueFormattingAsync(requireSelectedText: true,
-            target => worker.FormatCharactersAsync(target, bold: true, fontSize: null, CancellationToken.None));
+            async (current, selection) =>
+            {
+                NativeSelectionFormatting? formatting = await worker.GetSelectionFormattingAsync(current.Target,
+                    current.FontGeneration, selection, CancellationToken.None);
+                bool bold = formatting?.Bold is not { Kind: "uniform", Value: true };
+                return await worker.FormatCharactersAsync(current.Target, bold, fontSize: null, CancellationToken.None);
+            });
+
+    private async void OnSetBoldClicked(object sender, RoutedEventArgs args) =>
+        await ChangeBoldAsync(true);
 
     private async void OnRemoveBoldClicked(object sender, RoutedEventArgs args) =>
+        await ChangeBoldAsync(false);
+
+    private async Task ChangeBoldAsync(bool bold) =>
         await QueueFormattingAsync(requireSelectedText: true,
-            target => worker.FormatCharactersAsync(target, bold: false, fontSize: null, CancellationToken.None));
+            (current, _) => worker.FormatCharactersAsync(current.Target, bold, fontSize: null, CancellationToken.None));
 
     private void OnFormattingSizeTextChanged(object sender, TextChangedEventArgs args) =>
         RefreshFormattingActions();
@@ -83,7 +99,7 @@ public sealed partial class MainWindow
         if (TryReadFontSize(out int size))
         {
             await QueueFormattingAsync(requireSelectedText: true,
-                target => worker.FormatCharactersAsync(target, bold: null, fontSize: size, CancellationToken.None));
+                (current, _) => worker.FormatCharactersAsync(current.Target, bold: null, fontSize: size, CancellationToken.None));
         }
     }
 
@@ -108,11 +124,11 @@ public sealed partial class MainWindow
             Enum.TryParse(value, out NativeParagraphAlignment alignment))
         {
             await QueueFormattingAsync(requireSelectedText: false,
-                target => worker.SetParagraphAlignmentAsync(target, alignment, CancellationToken.None));
+                (current, _) => worker.SetParagraphAlignmentAsync(current.Target, alignment, CancellationToken.None));
         }
     }
 
-    private async Task QueueFormattingAsync(bool requireSelectedText, Func<DocumentTarget, Task<EditResult>> execute)
+    private async Task QueueFormattingAsync(bool requireSelectedText, Func<PageInfo, TextSelection, Task<EditResult>> execute)
     {
         if (!DocumentActionsAvailable ||
             !TryGetFormattingSelection(requireSelectedText, out PageInfo? initialPage, out TextSelection? requested))
@@ -126,7 +142,7 @@ public sealed partial class MainWindow
                 !SamePosition(requested.Focus, current.Focus))
                 return;
 
-            EditResult edit = await execute(currentPage.Target);
+            EditResult edit = await execute(currentPage, current);
             if (edit.Outcome.DocumentChanged)
             {
                 await RefreshEditedPageAsync(currentPage, edit);

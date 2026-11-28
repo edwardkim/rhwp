@@ -13,7 +13,9 @@
                 <Setter Property="Width" Value="32" />
                 <Setter Property="Height" Value="32" />
                 <Setter Property="Padding" Value="0" />
+                <Setter Property="BorderThickness" Value="1" />
             </Style>
+            <SolidColorBrush x:Key="ActiveFormattingBrush" Color="{ThemeResource SystemAccentColor}" />
         </Grid.Resources>
 
         <Border Grid.Row="2" Grid.RowSpan="2" IsHitTestVisible="False"
@@ -153,13 +155,15 @@
                     <Border Margin="4,3" Padding="2" CornerRadius="6" VerticalAlignment="Center"
                             Background="{ThemeResource ControlFillColorSecondaryBrush}">
                         <StackPanel Orientation="Horizontal" Spacing="2">
-                            <SplitButton x:Name="ApplyBoldButton" IsEnabled="False" BorderThickness="0"
-                                         Background="Transparent" ToolTipService.ToolTip="굵게 적용"
-                                         AutomationProperties.Name="굵게 적용"
+                            <SplitButton x:Name="ApplyBoldButton" IsEnabled="False" BorderThickness="1"
+                                         Background="Transparent" BorderBrush="Transparent" ToolTipService.ToolTip="굵게 전환"
+                                         AutomationProperties.Name="굵게 전환"
                                          AutomationProperties.AutomationId="ApplyBold" Click="OnApplyBoldClicked">
                                 <SymbolIcon Symbol="Bold" />
                                 <SplitButton.Flyout>
                                     <MenuFlyout>
+                                        <MenuFlyoutItem Text="굵게 적용" Click="OnSetBoldClicked"
+                                                        AutomationProperties.AutomationId="SetBold" />
                                         <MenuFlyoutItem Text="굵게 해제" Click="OnRemoveBoldClicked"
                                                         AutomationProperties.AutomationId="RemoveBold" />
                                     </MenuFlyout>
