@@ -1,0 +1,382 @@
+<Window
+    x:Class="Rhwp.WinUI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Rhwp.WinUI"
+    Title="RHWP">
+    <Grid x:Name="Root" RowDefinitions="Auto,Auto,*,Auto" Loaded="OnLoaded" Unloaded="OnUnloaded"
+          Background="Transparent"
+          AllowDrop="True" DragOver="OnFilesDragOver" Drop="OnFilesDropped">
+
+        <Grid.Resources>
+            <Style x:Key="ToolbarIconButtonStyle" TargetType="Button" BasedOn="{StaticResource SubtleButtonStyle}">
+                <Setter Property="Width" Value="32" />
+                <Setter Property="Height" Value="32" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="BorderThickness" Value="1" />
+            </Style>
+            <SolidColorBrush x:Key="ActiveFormattingBrush" Color="{ThemeResource SystemAccentColor}" />
+        </Grid.Resources>
+
+        <Border Grid.Row="2" Grid.RowSpan="2" IsHitTestVisible="False"
+                Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                AutomationProperties.AccessibilityView="Raw" />
+        <Border x:Name="HeaderFallback" Grid.RowSpan="2" IsHitTestVisible="False"
+                Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                AutomationProperties.AccessibilityView="Raw" />
+
+        <TitleBar x:Name="EditorTitleBar" Background="Transparent" Visibility="Collapsed"
+                  AutomationProperties.AutomationId="EditorTitleBar">
+            <TitleBar.Resources>
+                <HorizontalAlignment x:Key="TitleBarContentHorizontalAlignment">Left</HorizontalAlignment>
+            </TitleBar.Resources>
+        </TitleBar>
+
+        <Border x:Name="MenuBarFallback" Background="Transparent"
+                BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
+            <MenuBar x:Name="DocumentMenuBar" Margin="8,0" TitleBar.IsDragRegion="False"
+                     AutomationProperties.Name="주 메뉴">
+                <MenuBarItem Title="파일" AccessKey="F" AutomationProperties.AutomationId="FileMenu">
+                    <MenuFlyoutItem Text="새 문서" Icon="Add" Click="OnNewDocumentClicked"
+                                    AutomationProperties.AutomationId="NewDocumentMenu"
+                                    KeyboardAcceleratorTextOverride="Ctrl+N"
+                                    IsEnabled="{x:Bind NewButton.IsEnabled, Mode=OneWay}" />
+                    <MenuFlyoutItem Text="열기" Icon="OpenFile" Click="OnOpenClicked"
+                                    IsEnabled="{x:Bind OpenButton.IsEnabled, Mode=OneWay}"
+                                    KeyboardAcceleratorTextOverride="Ctrl+O" />
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutItem Text="저장" Icon="Save" Click="OnSaveClicked"
+                                    IsEnabled="{x:Bind SaveButton.IsEnabled, Mode=OneWay}"
+                                    KeyboardAcceleratorTextOverride="Ctrl+S" />
+                    <MenuFlyoutItem Text="다른 이름으로 저장" Icon="Copy" Click="OnSaveCopyClicked"
+                                    IsEnabled="{x:Bind SaveCopyButton.IsEnabled, Mode=OneWay}"
+                                    KeyboardAcceleratorTextOverride="Ctrl+Shift+S" />
+                    <MenuFlyoutItem Text="{x:Bind ExportPdfButton.Label, Mode=OneWay}" Icon="View"
+                                    IsEnabled="{x:Bind ExportPdfButton.IsEnabled, Mode=OneWay}"
+                                    Click="OnExportPdfClicked" />
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutItem Text="문서 닫기" Icon="Cancel" Click="OnCloseClicked"
+                                    IsEnabled="{x:Bind CloseButton.IsEnabled, Mode=OneWay}" />
+                </MenuBarItem>
+                <MenuBarItem Title="편집" AccessKey="E" AutomationProperties.AutomationId="EditMenu">
+                    <MenuFlyoutItem Text="실행 취소" Icon="Undo" Click="OnUndoClicked"
+                                    IsEnabled="{x:Bind UndoButton.IsEnabled, Mode=OneWay}"
+                                    KeyboardAcceleratorTextOverride="Ctrl+Z" />
+                    <MenuFlyoutItem Text="다시 실행" Icon="Redo" Click="OnRedoClicked"
+                                    IsEnabled="{x:Bind RedoButton.IsEnabled, Mode=OneWay}"
+                                    KeyboardAcceleratorTextOverride="Ctrl+Shift+Z" />
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutItem x:Name="CutMenuItem" Text="잘라내기" Click="OnCutClicked"
+                                    KeyboardAcceleratorTextOverride="Ctrl+X" IsEnabled="False" />
+                    <MenuFlyoutItem x:Name="CopyMenuItem" Text="복사" Click="OnCopyClicked"
+                                    KeyboardAcceleratorTextOverride="Ctrl+C" IsEnabled="False" />
+                    <MenuFlyoutItem x:Name="PasteMenuItem" Text="붙여넣기" Click="OnPasteClicked"
+                                    KeyboardAcceleratorTextOverride="Ctrl+V" IsEnabled="False" />
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutItem Text="찾기" Icon="Find" Click="OnFindClicked"
+                                    IsEnabled="{x:Bind CloseButton.IsEnabled, Mode=OneWay}"
+                                    AutomationProperties.AutomationId="FindInDocument">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="F" Modifiers="Control" />
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem Text="바꾸기" Click="OnFindReplaceClicked"
+                                    IsEnabled="{x:Bind CloseButton.IsEnabled, Mode=OneWay}"
+                                    AutomationProperties.AutomationId="ReplaceInDocument">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="H" Modifiers="Control" />
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                </MenuBarItem>
+                <MenuBarItem Title="보기" AccessKey="V" AutomationProperties.AutomationId="ViewMenu">
+                    <MenuFlyoutItem x:Name="PreviousPageMenuItem" Text="이전 쪽" Icon="Back"
+                                    Click="OnPreviousClicked" IsEnabled="False" />
+                    <MenuFlyoutItem x:Name="NextPageMenuItem" Text="다음 쪽" Icon="Forward"
+                                    Click="OnNextClicked" IsEnabled="False" />
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutItem Text="확대" Icon="ZoomIn" Click="OnZoomInClicked"
+                                    IsEnabled="{x:Bind ZoomInButton.IsEnabled, Mode=OneWay}" />
+                    <MenuFlyoutItem Text="축소" Icon="ZoomOut" Click="OnZoomOutClicked"
+                                    IsEnabled="{x:Bind ZoomOutButton.IsEnabled, Mode=OneWay}" />
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutItem x:Name="FitWidthMenuItem" Text="너비 맞춤" Click="OnFitWidthClicked"
+                                    IsEnabled="False" AutomationProperties.AutomationId="FitPageWidth" />
+                    <MenuFlyoutItem x:Name="FitPageMenuItem" Text="쪽 맞춤" Click="OnFitPageClicked"
+                                    IsEnabled="False" AutomationProperties.AutomationId="FitWholePage" />
+                    <MenuFlyoutItem x:Name="ActualSizeMenuItem" Text="100%" Click="OnActualSizeClicked"
+                                    IsEnabled="False" AutomationProperties.AutomationId="Zoom100Percent" />
+                </MenuBarItem>
+            </MenuBar>
+        </Border>
+
+        <Border Grid.Row="1" Margin="12,2,12,8" Padding="4,0,0,0" CornerRadius="8"
+                Background="{ThemeResource LayerFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+            <CommandBar Background="Transparent" HorizontalAlignment="Left" DefaultLabelPosition="Collapsed"
+                        ClosedDisplayMode="Compact" IsDynamicOverflowEnabled="True"
+                        AutomationProperties.Name="문서 도구 모음"
+                        AutomationProperties.AutomationId="DocumentCommands">
+                <CommandBar.Resources>
+                    <Style TargetType="AppBarButton" BasedOn="{StaticResource DefaultAppBarButtonStyle}">
+                        <Setter Property="Width" Value="40" />
+                    </Style>
+                </CommandBar.Resources>
+                <AppBarButton x:Name="NewButton" Label="새 문서" Icon="Add" Click="OnNewDocumentClicked"
+                              IsEnabled="False" AutomationProperties.AutomationId="NewDocument">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="N" Modifiers="Control" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton x:Name="OpenButton" Label="열기" Icon="OpenFile" Click="OnOpenClicked"
+                              AutomationProperties.AutomationId="OpenDocument">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="O" Modifiers="Control" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton x:Name="SaveButton" Label="저장" Icon="Save" Click="OnSaveClicked" IsEnabled="False"
+                              AutomationProperties.AutomationId="SaveDocument">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="S" Modifiers="Control" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarSeparator DynamicOverflowOrder="3" />
+                <AppBarButton x:Name="UndoButton" Label="실행 취소" Icon="Undo" DynamicOverflowOrder="3"
+                              Click="OnUndoClicked" IsEnabled="False">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="Z" Modifiers="Control" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton x:Name="RedoButton" Label="다시 실행" Icon="Redo" DynamicOverflowOrder="3"
+                              Click="OnRedoClicked" IsEnabled="False">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="Z" Modifiers="Control,Shift" />
+                        <KeyboardAccelerator Key="Y" Modifiers="Control" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarSeparator DynamicOverflowOrder="1" />
+                <AppBarButton Label="잘라내기" Icon="Cut" Click="OnCutClicked" DynamicOverflowOrder="1"
+                              IsEnabled="{x:Bind CutMenuItem.IsEnabled, Mode=OneWay}" />
+                <AppBarButton Label="복사" Icon="Copy" Click="OnCopyClicked" DynamicOverflowOrder="1"
+                              IsEnabled="{x:Bind CopyMenuItem.IsEnabled, Mode=OneWay}" />
+                <AppBarButton Label="붙여넣기" Icon="Paste" Click="OnPasteClicked" DynamicOverflowOrder="1"
+                              IsEnabled="{x:Bind PasteMenuItem.IsEnabled, Mode=OneWay}" />
+                <AppBarElementContainer x:Name="FormattingToolbar" Visibility="Collapsed"
+                                        Loaded="OnFormattingToolbarLoaded" DynamicOverflowOrder="4"
+                                        AutomationProperties.Name="글자와 문단 서식"
+                                        AutomationProperties.AutomationId="FormattingToolbar">
+                    <Border Margin="4,3" Padding="2" CornerRadius="6" VerticalAlignment="Center"
+                            Background="{ThemeResource ControlFillColorSecondaryBrush}">
+                        <StackPanel Orientation="Horizontal" Spacing="2">
+                            <SplitButton x:Name="ApplyBoldButton" IsEnabled="False" BorderThickness="1"
+                                         Background="Transparent" BorderBrush="Transparent" ToolTipService.ToolTip="굵게 전환"
+                                         AutomationProperties.Name="굵게 전환"
+                                         AutomationProperties.AutomationId="ApplyBold" Click="OnApplyBoldClicked">
+                                <SymbolIcon Symbol="Bold" />
+                                <SplitButton.Flyout>
+                                    <MenuFlyout>
+                                        <MenuFlyoutItem Text="굵게 적용" Click="OnSetBoldClicked"
+                                                        AutomationProperties.AutomationId="SetBold" />
+                                        <MenuFlyoutItem Text="굵게 해제" Click="OnRemoveBoldClicked"
+                                                        AutomationProperties.AutomationId="RemoveBold" />
+                                    </MenuFlyout>
+                                </SplitButton.Flyout>
+                            </SplitButton>
+                            <TextBox x:Name="FormattingFontSize" Width="62" Height="34" MinWidth="0" MaxLength="7"
+                                     VerticalAlignment="Center"
+                                     PlaceholderText="pt" InputScope="Number" IsEnabled="False"
+                                     KeyDown="OnFormattingSizeKeyDown" TextChanged="OnFormattingSizeTextChanged"
+                                     AutomationProperties.Name="글자 크기(포인트)"
+                                     AutomationProperties.AutomationId="FormattingFontSize" />
+                            <Button x:Name="ApplyFontSizeButton" Style="{StaticResource ToolbarIconButtonStyle}"
+                                    Click="OnApplyFontSizeClicked" IsEnabled="False"
+                                    ToolTipService.ToolTip="글자 크기 적용 (Enter)"
+                                    AutomationProperties.Name="글자 크기 적용" AutomationProperties.AutomationId="ApplyFontSize">
+                                <SymbolIcon Symbol="Accept" />
+                            </Button>
+                            <Rectangle Width="1" Height="18" Margin="3,0" IsHitTestVisible="False"
+                                       Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                            <Button x:Name="AlignLeftButton" Style="{StaticResource ToolbarIconButtonStyle}"
+                                    Tag="Left" Click="OnAlignmentClicked" IsEnabled="False"
+                                    ToolTipService.ToolTip="왼쪽 정렬" AutomationProperties.Name="왼쪽 정렬"
+                                    AutomationProperties.AutomationId="AlignLeft">
+                                <SymbolIcon Symbol="AlignLeft" />
+                            </Button>
+                            <Button x:Name="AlignCenterButton" Style="{StaticResource ToolbarIconButtonStyle}"
+                                    Tag="Center" Click="OnAlignmentClicked" IsEnabled="False"
+                                    ToolTipService.ToolTip="가운데 정렬" AutomationProperties.Name="가운데 정렬"
+                                    AutomationProperties.AutomationId="AlignCenter">
+                                <SymbolIcon Symbol="AlignCenter" />
+                            </Button>
+                            <Button x:Name="AlignRightButton" Style="{StaticResource ToolbarIconButtonStyle}"
+                                    Tag="Right" Click="OnAlignmentClicked" IsEnabled="False"
+                                    ToolTipService.ToolTip="오른쪽 정렬" AutomationProperties.Name="오른쪽 정렬"
+                                    AutomationProperties.AutomationId="AlignRight">
+                                <SymbolIcon Symbol="AlignRight" />
+                            </Button>
+                            <Button x:Name="AlignJustifyButton" Style="{StaticResource ToolbarIconButtonStyle}"
+                                    Tag="Justify" Click="OnAlignmentClicked" IsEnabled="False"
+                                    ToolTipService.ToolTip="양쪽 정렬" AutomationProperties.Name="양쪽 정렬"
+                                    AutomationProperties.AutomationId="AlignJustify">
+                                <PathIcon Data="M 0,0 H 16 V 1.5 H 0 Z M 0,4 H 16 V 5.5 H 0 Z M 0,8 H 16 V 9.5 H 0 Z M 0,12 H 16 V 13.5 H 0 Z" />
+                            </Button>
+                            <Button x:Name="MoreAlignmentButton" Style="{StaticResource ToolbarIconButtonStyle}"
+                                    IsEnabled="False" ToolTipService.ToolTip="정렬 더 보기"
+                                    AutomationProperties.Name="정렬 더 보기" AutomationProperties.AutomationId="MoreAlignment">
+                                <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE70D;" FontSize="12" />
+                                <Button.Flyout>
+                                    <MenuFlyout>
+                                        <MenuFlyoutItem Text="배분 정렬" Tag="Distribute" Click="OnAlignmentClicked"
+                                                        AutomationProperties.AutomationId="AlignDistribute" />
+                                        <MenuFlyoutItem Text="나눔 정렬" Tag="Split" Click="OnAlignmentClicked"
+                                                        AutomationProperties.AutomationId="AlignSplit" />
+                                    </MenuFlyout>
+                                </Button.Flyout>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                </AppBarElementContainer>
+                <AppBarButton Label="찾기" Icon="Find" Click="OnFindClicked" DynamicOverflowOrder="2"
+                              AutomationProperties.AutomationId="FindToolbar"
+                              IsEnabled="{x:Bind CloseButton.IsEnabled, Mode=OneWay}" />
+                <CommandBar.SecondaryCommands>
+                    <AppBarButton x:Name="SaveCopyButton" Label="다른 이름으로 저장" Icon="Copy"
+                                  Click="OnSaveCopyClicked" IsEnabled="False">
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="S" Modifiers="Control,Shift" />
+                        </AppBarButton.KeyboardAccelerators>
+                    </AppBarButton>
+                    <AppBarButton x:Name="ExportPdfButton" Label="현재 쪽 PDF 미리보기" Icon="View"
+                                  Click="OnExportPdfClicked" IsEnabled="False" />
+                    <AppBarSeparator />
+                    <AppBarButton x:Name="CloseButton" Label="문서 닫기" Icon="Cancel"
+                                  Click="OnCloseClicked" IsEnabled="False" />
+                </CommandBar.SecondaryCommands>
+            </CommandBar>
+        </Border>
+
+        <Grid Grid.Row="2" RowDefinitions="Auto,*" Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}">
+            <Border x:Name="SearchPanel" Visibility="Collapsed" Padding="16,8"
+                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,0,0,1"
+                    KeyDown="OnSearchKeyDown" AutomationProperties.AutomationId="SearchPanel">
+                <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="6" MaxWidth="680" HorizontalAlignment="Left">
+                    <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
+                        <TextBox x:Name="SearchQuery" MinWidth="160" MaxLength="256" PlaceholderText="찾을 내용"
+                                 TextChanged="OnSearchQueryChanged"
+                                 TextCompositionStarted="OnSearchCompositionStarted"
+                                 TextCompositionEnded="OnSearchCompositionEnded"
+                                 AutomationProperties.Name="찾을 내용" AutomationProperties.AutomationId="SearchQuery" />
+                        <Button x:Name="PreviousMatchButton" Grid.Column="1" Click="OnPreviousMatchClicked"
+                                AutomationProperties.Name="이전 찾기" AutomationProperties.AutomationId="PreviousMatch"
+                                ToolTipService.ToolTip="이전 찾기">
+                            <FontIcon Glyph="&#xE70E;" />
+                        </Button>
+                        <Button x:Name="NextMatchButton" Grid.Column="2" Click="OnNextMatchClicked"
+                                AutomationProperties.Name="다음 찾기" AutomationProperties.AutomationId="NextMatch"
+                                ToolTipService.ToolTip="다음 찾기">
+                            <FontIcon Glyph="&#xE70D;" />
+                        </Button>
+                        <Button x:Name="CloseSearchButton" Grid.Column="3" Click="OnCloseSearchClicked"
+                                AutomationProperties.Name="검색 닫기" AutomationProperties.AutomationId="CloseSearch"
+                                ToolTipService.ToolTip="검색 닫기 (Esc)">
+                            <SymbolIcon Symbol="Cancel" />
+                        </Button>
+                    </Grid>
+                    <Grid x:Name="ReplaceRow" Grid.Row="1" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8"
+                          Visibility="Collapsed">
+                        <TextBox x:Name="ReplacementText" PlaceholderText="바꿀 내용"
+                                 TextCompositionStarted="OnSearchCompositionStarted"
+                                 TextCompositionEnded="OnSearchCompositionEnded"
+                                 AutomationProperties.Name="바꿀 내용" AutomationProperties.AutomationId="ReplacementText" />
+                        <Button x:Name="ReplaceMatchButton" Grid.Column="1" Content="현재 항목 바꾸기"
+                                Click="OnReplaceMatchClicked" AutomationProperties.AutomationId="ReplaceMatch" />
+                        <Button x:Name="ReplaceAllButton" Grid.Column="2" Content="모두 바꾸기"
+                                Click="OnReplaceAllClicked" IsEnabled="False" Visibility="Collapsed"
+                                AutomationProperties.AutomationId="ReplaceAll" />
+                    </Grid>
+                    <Grid Grid.Row="2" ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                        <CheckBox x:Name="SearchCaseSensitive" Content="대/소문자 구분" Click="OnSearchCaseChanged" />
+                        <TextBlock x:Name="SearchStatus" Grid.Column="1" VerticalAlignment="Center" TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="SearchStatus"
+                                   AutomationProperties.LiveSetting="Polite" />
+                    </Grid>
+                </Grid>
+            </Border>
+            <ScrollViewer x:Name="PageScroll" Grid.Row="1" Margin="16,12,16,0"
+                          HorizontalContentAlignment="Center" VerticalContentAlignment="Top"
+                          HorizontalScrollBarVisibility="Auto" HorizontalScrollMode="Enabled"
+                          VerticalScrollBarVisibility="Auto" VerticalScrollMode="Enabled"
+                          SizeChanged="OnViewportSizeChanged" ViewChanged="OnViewChanged"
+                          AutomationProperties.AutomationId="DocumentViewport">
+                <local:DocumentCanvas x:Name="PageCanvas" HorizontalAlignment="Center" VerticalAlignment="Top"
+                                      Width="0" Height="0" IsTabStop="True" KeyDown="OnPageEditKeyDown"
+                                      Background="Transparent" Tapped="OnPageTapped"
+                                      PointerPressed="OnPagePointerPressed" PointerMoved="OnPagePointerMoved"
+                                      PointerReleased="OnPagePointerReleased" PointerCaptureLost="OnPagePointerCaptureLost"
+                                      AutomationProperties.AutomationId="DocumentCanvas">
+                    <Canvas x:Name="PageLayers" IsHitTestVisible="False"
+                            AutomationProperties.AccessibilityView="Raw">
+                        <Canvas.Resources>
+                            <SolidColorBrush x:Key="PagePaperBrush" Color="White" />
+                        </Canvas.Resources>
+                    </Canvas>
+                    <Canvas x:Name="SearchHighlightCanvas" IsHitTestVisible="False"
+                            AutomationProperties.AccessibilityView="Raw">
+                        <Canvas.Resources>
+                            <SolidColorBrush x:Key="SearchHighlightBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+                        </Canvas.Resources>
+                    </Canvas>
+                    <Canvas x:Name="DirectEditOverlay" IsHitTestVisible="False"
+                            AutomationProperties.AccessibilityView="Raw">
+                        <Canvas.Resources>
+                            <SolidColorBrush x:Key="DirectCaretBrush"
+                                             Color="{ThemeResource SystemColorWindowTextColor}" />
+                            <SolidColorBrush x:Key="DirectSelectionBrush"
+                                             Color="{ThemeResource SystemColorHighlightColor}" />
+                        </Canvas.Resources>
+                    </Canvas>
+                    <TextBox x:Name="DirectInput" Visibility="Collapsed" Opacity="0" Width="28"
+                             MinWidth="0" MinHeight="0" Padding="0" BorderThickness="0"
+                             IsHitTestVisible="False" AcceptsReturn="False" IsSpellCheckEnabled="False"
+                             TextChanging="OnDirectTextChanging" PreviewKeyDown="OnDirectPreviewKeyDown"
+                             TextCompositionStarted="OnDirectCompositionStarted"
+                             TextCompositionChanged="OnDirectCompositionChanged"
+                             TextCompositionEnded="OnDirectCompositionEnded"
+                             AutomationProperties.Name="문서 직접 입력"
+                             AutomationProperties.AutomationId="DirectEditorInput" />
+                </local:DocumentCanvas>
+            </ScrollViewer>
+        </Grid>
+
+        <Border Grid.Row="3" Padding="16,0,12,0" MinHeight="36"
+                Background="{ThemeResource LayerFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
+                <TextBlock x:Name="StatusText" FontSize="12" TextTrimming="CharacterEllipsis"
+                           VerticalAlignment="Center" AutomationProperties.LiveSetting="Polite"
+                           AutomationProperties.AutomationId="DocumentStatus"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           Text="HWP 또는 HWPX 파일을 여세요." />
+                <TextBlock x:Name="PagePositionText" Grid.Column="1" FontSize="12" VerticalAlignment="Center"
+                           AutomationProperties.AutomationId="PagePosition"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4"
+                            AutomationProperties.Name="화면 배율">
+                    <Button x:Name="ZoomOutButton" Style="{StaticResource ToolbarIconButtonStyle}"
+                            IsEnabled="False" Click="OnZoomOutClicked"
+                            ToolTipService.ToolTip="축소" AutomationProperties.Name="축소">
+                        <SymbolIcon Symbol="ZoomOut" />
+                    </Button>
+                    <TextBlock x:Name="ZoomValueText" FontSize="12" VerticalAlignment="Center"
+                               TextAlignment="Center" MinWidth="36" AutomationProperties.AutomationId="ZoomValue"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <Button x:Name="ZoomInButton" Style="{StaticResource ToolbarIconButtonStyle}"
+                            IsEnabled="False" Click="OnZoomInClicked"
+                            ToolTipService.ToolTip="확대" AutomationProperties.Name="확대">
+                        <SymbolIcon Symbol="ZoomIn" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
