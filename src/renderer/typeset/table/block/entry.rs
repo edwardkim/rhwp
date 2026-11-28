@@ -1128,6 +1128,7 @@ impl TypesetEngine {
             0.0
         };
         let mut opens_own_column = false;
+        let mut restarts_after_grown_sibling = false;
         if is_para_topbottom_float(&table.common)
             && matches!(
                 table.layout_page_break(),
@@ -1184,6 +1185,18 @@ impl TypesetEngine {
                     }
                 }
             }
+            // 이미 앞 단에 놓인 커진 형제는 그곳의 앵커를 소비했다.
+            // 옮겨진 개체만으로 새 단을 열 때 이전 앵커와의 거리를 다시 더하지 않는다.
+            restarts_after_grown_sibling = !para_has_visible_text(para)
+                && table.common.flow_with_text
+                && !table.common.allow_overlap
+                && st.current_items.iter().any(|item| {
+                    matches!(item, PageItem::Table { para_index, control_index }
+                        if *para_index == para_idx
+                            && matches!(&para.controls[*control_index], Control::Table(sibling)
+                                if is_para_topbottom_float(&sibling.common)
+                                    && crate::renderer::float_placement::table_cell_lines_exceed_frame(sibling)))
+                });
             st.advance_column_or_new_page();
             placement_para_start_height = st.current_height;
             opens_own_column = follows_placed_sibling && st.current_items.is_empty();
@@ -2752,11 +2765,15 @@ impl TypesetEngine {
                     .min_by_key(|((_, control), _)| *control)
                     .map_or(st.current_height, |(_, placement)| placement.anchor_y)
             };
-            let natural_top = host_origin
-                + hwpunit_to_px(
+            let vertical_offset = if restarts_after_grown_sibling && st.current_items.is_empty() {
+                0.0
+            } else {
+                hwpunit_to_px(
                     signed_hwpunit(table.common.vertical_offset).max(0),
                     self.dpi,
-                );
+                )
+            };
+            let natural_top = host_origin + vertical_offset;
             crate::renderer::float_placement::ParagraphFloatPlacement::from_empty_sibling_box(
                 para,
                 table,
