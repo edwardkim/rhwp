@@ -296,6 +296,29 @@ impl NativeEditor {
     ) -> Result<NativeEditOutcome, NativeHostError> {
         self.check_edit_ready(expected_revision)?;
         Self::check_editable_text_span(&self.session.core, &self.selection)?;
+        self.commit_edit_transaction(edit)
+    }
+
+    /// Transact over independently validated ranges while retaining the live
+    /// selection as the undo origin. Explicit replacements check each edited leaf.
+    pub(super) fn edit_explicit_ranges_transaction(
+        &mut self,
+        expected_revision: u64,
+        edit: impl FnOnce(&mut DocumentCore) -> Result<NativeTextSelection, NativeHostError>,
+    ) -> Result<NativeEditOutcome, NativeHostError> {
+        self.check_edit_ready(expected_revision)?;
+        let event_count = self.session.core.event_log.len();
+        let result = self.commit_edit_transaction(edit);
+        if result.is_err() {
+            self.session.core.event_log.truncate(event_count);
+        }
+        result
+    }
+
+    fn commit_edit_transaction(
+        &mut self,
+        edit: impl FnOnce(&mut DocumentCore) -> Result<NativeTextSelection, NativeHostError>,
+    ) -> Result<NativeEditOutcome, NativeHostError> {
         self.check_mutation_capacity()?;
         self.check_snapshot_slots(2)?;
         let selection_before = self.selection.clone();
@@ -553,7 +576,7 @@ impl NativeEditor {
             })
     }
 
-    fn validate_text(text: &str) -> Result<(), NativeHostError> {
+    pub(super) fn validate_text(text: &str) -> Result<(), NativeHostError> {
         if text.chars().any(char::is_control) {
             return Err(NativeHostError::Unsupported(
                 "text input does not insert control characters, tabs or paragraphs".into(),
@@ -662,7 +685,7 @@ impl NativeEditor {
         Ok(())
     }
 
-    fn replacement_end(
+    pub(super) fn replacement_end(
         selection: &NativeTextSelection,
         text: &str,
     ) -> Result<NativeTextSelection, NativeHostError> {
@@ -823,5 +846,62 @@ impl NativeEditor {
             history_changed,
             composition_id: self.composition_id(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn explicit_range_failure_rolls_back_earlier_text_and_events() {
+        let head = NativeTextPosition {
+            section: 0,
+            paragraph: 0,
+            scalar_offset: 0,
+            cell_path: Vec::new(),
+        };
+        let mut editor = NativeEditor::new(
+            NativeDocumentSession::new_blank().unwrap(),
+            NativeTextSelection {
+                anchor: head.clone(),
+                focus: head.clone(),
+            },
+        )
+        .unwrap();
+        let seeded = editor.replace_selection(0, "가나").unwrap();
+        let event_count = editor.session.core.event_log.len();
+        let span = NativeTextSelection {
+            anchor: head.clone(),
+            focus: NativeTextPosition {
+                scalar_offset: 1,
+                ..head.clone()
+            },
+        };
+        let invalid = NativeTextPosition {
+            paragraph: u32::MAX,
+            ..head
+        };
+
+        let result = editor.edit_explicit_ranges_transaction(seeded.revision, |core| {
+            NativeEditor::apply_replacement(core, &span, "한")?;
+            assert!(core.event_log.len() > event_count);
+            assert_eq!(
+                core.native_text_paragraph(&span.anchor).unwrap().text,
+                "한나"
+            );
+            Ok(NativeTextSelection {
+                anchor: invalid.clone(),
+                focus: invalid,
+            })
+        });
+        assert!(result.is_err());
+        assert_eq!(editor.session.revision(), seeded.revision);
+        assert_eq!(editor.selection(), &seeded.selection);
+        assert_eq!(editor.session.core.event_log.len(), event_count);
+        assert_eq!(editor.selected_text(&span), "가");
+        assert!(editor.can_undo() && !editor.can_redo());
+        editor.undo(seeded.revision).unwrap();
+        assert!(!editor.can_undo());
     }
 }
