@@ -7,6 +7,14 @@
     <Grid x:Name="Root" RowDefinitions="Auto,Auto,*,Auto" Loaded="OnLoaded" Unloaded="OnUnloaded"
           Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
           AllowDrop="True" DragOver="OnFilesDragOver" Drop="OnFilesDropped">
+        <!-- Windows supplies the theme fallback when transparency is unavailable. -->
+        <SystemBackdropElement Grid.RowSpan="2" IsHitTestVisible="False"
+                               AutomationProperties.AccessibilityView="Raw">
+            <SystemBackdropElement.SystemBackdrop>
+                <DesktopAcrylicBackdrop />
+            </SystemBackdropElement.SystemBackdrop>
+        </SystemBackdropElement>
+
         <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
             <MenuBar Margin="8,0" AutomationProperties.Name="주 메뉴">
