@@ -34,6 +34,9 @@ public sealed partial class MainWindow
                 FormattingFontButton.Visibility = appearanceFormattingAvailable && systemFontChooserAvailable
                     ? Visibility.Visible : Visibility.Collapsed;
                 FormattingTextColorButton.Visibility = appearanceFormattingAvailable ? Visibility.Visible : Visibility.Collapsed;
+                ParagraphStyleButton.Visibility = basicFormattingAvailable && capabilities.ParagraphStyles
+                    ? Visibility.Visible : Visibility.Collapsed;
+                FormattingMenu.Visibility = ParagraphStyleButton.Visibility;
                 RefreshFormattingActions();
             }
         }
@@ -54,6 +57,7 @@ public sealed partial class MainWindow
         bool canAlign = TryGetFormattingSelection(requireSelectedText: false, out _, out TextSelection? selection) &&
             DocumentActionsAvailable;
         bool canFormatText = canAlign && selection!.Anchor.ScalarOffset != selection.Focus.ScalarOffset;
+        ParagraphStyleButton.IsEnabled = canAlign && selection!.Focus.CellPath.Length <= 1;
         FormattingFontButton.IsEnabled = canFormatText;
         FormattingTextColorButton.IsEnabled = canFormatText;
         ApplyBoldButton.IsEnabled = canFormatText;

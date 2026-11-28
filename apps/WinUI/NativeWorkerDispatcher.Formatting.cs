@@ -12,11 +12,19 @@ internal enum NativeParagraphAlignment
     Split,
 }
 
-internal sealed record NativeFormattingCapabilities(bool Edit, bool Inspect, bool FontAndColor, bool SystemFonts);
+internal sealed record NativeFormattingCapabilities(bool Edit, bool Inspect, bool FontAndColor, bool SystemFonts,
+    bool ParagraphStyles);
 internal sealed record NativeFormattingValue<T>(string Kind, T Value);
 internal sealed record NativeSelectionFormatting(NativeFormattingValue<bool> Bold,
     NativeFormattingValue<int> FontSize, string Alignment,
     NativeFormattingValue<string?>[]? FontNames, NativeFormattingValue<string?>? TextColor);
+
+internal sealed record NativeParagraphStyle(byte Id, string Name)
+{
+    public string DisplayName => string.IsNullOrWhiteSpace(Name) ? $"스타일 {Id}" : Name;
+}
+
+internal sealed record NativeParagraphStyleCatalog(byte? CurrentStyleId, NativeParagraphStyle[] Styles);
 
 internal sealed partial class NativeWorkerDispatcher
 {
@@ -37,7 +45,8 @@ internal sealed partial class NativeWorkerDispatcher
         formattingCapabilities = new(HasCapability(report.RootElement, "basicTextFormatting"),
             HasCapability(report.RootElement, "selectionFormatting"),
             HasCapability(report.RootElement, "characterFontColorFormatting"),
-            HasCapability(report.RootElement, "systemFontFamilies"));
+            HasCapability(report.RootElement, "systemFontFamilies"),
+            HasCapability(report.RootElement, "paragraphStyles"));
         return formattingCapabilities;
     }
 
@@ -90,6 +99,22 @@ internal sealed partial class NativeWorkerDispatcher
         ApplyFormattingCommand(expected,
             new { command = "setParagraphAlignment", alignment = alignment.ToString().ToLowerInvariant() },
             cancellation);
+
+    public Task<NativeParagraphStyleCatalog> GetParagraphStylesAsync(DocumentTarget expected, TextSelection selection,
+        CancellationToken cancellation) => Dispatch(token =>
+    {
+        JsonElement reply = Submit(EnsureWorker(), new { op = "paragraphStyles", target = expected, selection }, token);
+        if (reply.GetProperty("kind").GetString() != "paragraphStyles" ||
+            Read<DocumentTarget>(reply.GetProperty("target")) != expected ||
+            !JsonElement.DeepEquals(reply.GetProperty("selection"), JsonSerializer.SerializeToElement(selection, WireJson)))
+            throw new InvalidDataException("Native 문단 양식의 문서 위치가 일치하지 않습니다.");
+
+        return Read<NativeParagraphStyleCatalog>(reply);
+    }, cancellation);
+
+    public Task<EditResult> ApplyParagraphStyleAsync(DocumentTarget expected, byte styleId,
+        CancellationToken cancellation) =>
+        ApplyFormattingCommand(expected, new { command = "applyParagraphStyle", styleId }, cancellation);
 
     private Task<EditResult> ApplyFormattingCommand(DocumentTarget expected, object command,
         CancellationToken cancellation) =>
