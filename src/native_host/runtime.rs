@@ -36,6 +36,7 @@ use super::render_snapshot::{NativeRenderSnapshot, NativeRenderSnapshotLimits};
 use super::save::NativeSaveCaretPolicy;
 use super::save::{NativeSaveFormat, NativeSaveStatus, NativeSaveToken, PreparedSave};
 use super::search::{NativeReplaceAllResult, NativeSearchRequest, NativeSearchResult};
+use super::table_object::NativeTableObject;
 use super::NativePageSize;
 use super::{
     NativeDocumentSession, NativeFrame, NativeHostError, MAX_DOCUMENT_BYTES, MAX_FRAME_PIXELS,
@@ -162,6 +163,11 @@ pub enum NativeRuntimeCommand {
         target: NativeRuntimeTarget,
         font_generation: u64,
         selection: NativeTextSelection,
+    },
+    TableObject {
+        target: NativeRuntimeTarget,
+        position: NativeTextPosition,
+        page: u32,
     },
     ImeContext {
         target: NativeRuntimeTarget,
@@ -401,7 +407,7 @@ impl NativeRuntimeCommand {
             Self::ReplaceRange {
                 selection, text, ..
             } => selection_bytes(selection).and_then(|bytes| bytes.checked_add(text.capacity())),
-            Self::CaretRect { position, .. } => position
+            Self::CaretRect { position, .. } | Self::TableObject { position, .. } => position
                 .cell_path
                 .capacity()
                 .checked_mul(std::mem::size_of::<
@@ -563,6 +569,12 @@ pub enum NativeRuntimeOutput {
         selection: NativeTextSelection,
         formatting: NativeSelectionFormatting,
     },
+    TableObject {
+        target: NativeRuntimeTarget,
+        font_generation: u64,
+        page: u32,
+        table: NativeTableObject,
+    },
     ImeContext(NativeImeContext),
     ImeEditContext(Box<NativeImeEditContext>),
     Clipboard {
@@ -642,6 +654,7 @@ impl fmt::Debug for NativeRuntimeOutput {
             Self::Info(_) => "Info",
             Self::CommandExecuted(_) => "CommandExecuted",
             Self::SelectionFormatting { .. } => "SelectionFormatting",
+            Self::TableObject { .. } => "TableObject",
             Self::ImeContext(_) => "ImeContext",
             Self::ImeEditContext(_) => "ImeEditContext",
             Self::Clipboard { .. } => "Clipboard",

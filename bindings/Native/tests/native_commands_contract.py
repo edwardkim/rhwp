@@ -2,8 +2,11 @@
 """Exercise command and IME-context transport against the actual native worker."""
 
 import argparse
+from io import BytesIO
 from pathlib import Path
 import sys
+from xml.dom import minidom
+from zipfile import ZipFile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "examples"))
 from native_worker import NativeWorker
@@ -294,6 +297,192 @@ def table_creation(library):
             worker.host.call("close", handle)
 
 
+def table_object_properties(library):
+    def call(worker, **command):
+        reply = worker.wait(worker.submit(command))
+        assert reply["ok"], reply
+        return reply
+
+    def document_target(info):
+        return {key: info[key] for key in ("documentId", "revision")}
+
+    def locate_table(worker, target):
+        snapshot = call(worker, op="accessibility", target=target, request={})["snapshot"]
+        point, = [node["start"] for node in snapshot["nodes"] if node["text"] == "표😀"]
+        return point
+
+    def update_hwpx(data, edit):
+        output = BytesIO()
+        with ZipFile(BytesIO(data)) as source, ZipFile(output, "w") as document:
+            for entry in source.infolist():
+                contents = source.read(entry)
+                if entry.filename == "Contents/section0.xml":
+                    root = minidom.parseString(contents)
+                    edit(root)
+                    contents = root.toxml(encoding="UTF-8")
+                document.writestr(entry, contents)
+        return output.getvalue()
+
+    with NativeWorker(library) as worker:
+        assert worker.host.call("capabilities")["tableObjectProperties"]
+        target = document_target(call(worker, op="new", replace=None)["info"])
+        body = {"section": 0, "paragraph": 0, "scalarOffset": 0, "cellPath": []}
+        call(worker, op="beginEdit", target=target, selection={"anchor": body, "focus": body})
+        created = call(worker, op="executeCommand", target=target, command={
+            "command": "createTable", "rows": 2, "columns": 3,
+        })["outcome"]
+        target["revision"] = created["revision"]
+        position = created["selection"]["focus"]
+        typed = call(worker, op="replace", target=target, text="표😀")["outcome"]
+        target["revision"] = typed["revision"]
+        page = call(worker, op="caretRect", target=target, position=position)["caret"]["page"]
+
+        def table():
+            reply = call(worker, op="tableObject", target=target, position=position, page=page)
+            assert reply["kind"] == "tableObject" and reply["target"] == target and reply["page"] == page
+            return reply["table"]
+
+        baseline = table()
+        address = baseline["address"]
+        assert address == {"section": position["section"], "paragraph": position["paragraph"],
+                           "control": position["cellPath"][0]["control"]}
+        assert baseline["editable"] and baseline["canResize"]
+        assert (baseline["rowCount"], baseline["columnCount"]) == (2, 3)
+        assert baseline["bounds"]["width"] > 0 and baseline["bounds"]["height"] > 0
+        properties = baseline["properties"]
+
+        def apply(command, **payload):
+            outcome = call(worker, op="executeCommand", target=target,
+                           command={"command": command, "table": address, **payload})["outcome"]
+            target["revision"] = outcome["revision"]
+            assert outcome["selection"] == typed["selection"], outcome
+            return outcome
+
+        unchanged = apply("setTableObjectProperties", properties={"paddingTop": properties["paddingTop"]})
+        assert not unchanged["documentChanged"]
+        changed_properties = {"outerLeft": 500, "paddingTop": 250, "cellSpacing": 100,
+                              "repeatHeader": True, "pageBreak": 2}
+        initial_revision = target["revision"]
+        outcome = apply("setTableObjectProperties", properties=changed_properties)
+        assert outcome["documentChanged"] and outcome["historyChanged"]
+        assert target["revision"] == initial_revision + 1
+        before_resize = {**properties, **changed_properties}
+        assert table()["properties"] == before_resize
+        width, height = properties["tableWidth"] - 5000, properties["tableHeight"] + 3500
+        outcome = apply("resizeTableObject", width=width, height=height)
+        assert outcome["documentChanged"] and target["revision"] == initial_revision + 2
+        expected = {**before_resize, "tableWidth": width, "tableHeight": height}
+        resized = table()
+        assert resized["properties"] == expected, resized
+        assert resized["bounds"]["width"] < baseline["bounds"]["width"], resized
+        assert resized["bounds"]["height"] > baseline["bounds"]["height"], resized
+        assert call(worker, op="imeContext", target=target)["context"]["text"] == "표😀"
+
+        for command in (
+            {"command": "resizeTableObject", "table": address, "width": 1},
+            {"command": "setTableObjectProperties", "table": address, "properties": {"pageBreak": 3}},
+            {"command": "setTableObjectProperties", "table": {**address, "control": address["control"] + 1},
+             "properties": {"outerLeft": 0}},
+        ):
+            result = worker.wait(worker.submit({"op": "executeCommand", "target": target, "command": command}))
+            assert not result["ok"] and result["code"] == "invalidArgument", result
+            assert table()["properties"] == expected
+            assert call(worker, op="info")["info"]["revision"] == target["revision"]
+
+        target["revision"] = call(worker, op="undo", target=target)["outcome"]["revision"]
+        assert table()["properties"] == before_resize
+        target["revision"] = call(worker, op="undo", target=target)["outcome"]["revision"]
+        assert table()["properties"] == properties
+        for _ in range(2):
+            target["revision"] = call(worker, op="redo", target=target)["outcome"]["revision"]
+        assert table()["properties"] == expected
+
+        for file_format in ("hwp", "hwpx"):
+            saved = call(worker, op="prepareSave", target=target, format=file_format)
+            assert saved["report"]["count"] == 0, saved
+            data = worker.copy_buffer(saved)
+            call(worker, op="cancelSave", documentId=target["documentId"], token=saved["token"])
+            with NativeWorker(library) as verifier:
+                opened = verifier.wait(verifier.open_bytes(data))
+                assert opened["ok"], opened
+                reopened = document_target(opened["info"])
+                point = locate_table(verifier, reopened)
+                assert call(verifier, op="tableObject", target=reopened, position=point,
+                            page=page)["table"]["properties"] == expected
+                handle = verifier.host.open_bytes(data)
+                try:
+                    direct = verifier.host.request(handle, op="tableObject", expectedRevision=0,
+                                                   position=point, page=page)
+                    assert direct["table"]["properties"] == expected, direct
+                finally:
+                    verifier.host.call("close", handle)
+
+        with NativeWorker(library) as verifier:
+            protected_data = update_hwpx(
+                data, lambda root: root.getElementsByTagName("hp:tc")[1].setAttribute("protect", "1"))
+            opened = verifier.wait(verifier.open_bytes(protected_data))
+            assert opened["ok"], opened
+            reopened = document_target(opened["info"])
+            point = locate_table(verifier, reopened)
+            protected = call(verifier, op="tableObject", target=reopened, position=point, page=page)["table"]
+            assert not protected["editable"] and not protected["canResize"], protected
+            call(verifier, op="beginEdit", target=reopened, selection={"anchor": point, "focus": point})
+            for command in ({"command": "resizeTableObject", "width": width + 100},
+                            {"command": "setTableObjectProperties", "properties": {"outerLeft": 0}}):
+                result = verifier.wait(verifier.submit({
+                    "op": "executeCommand", "target": reopened,
+                    "command": {"table": protected["address"], **command},
+                }))
+                assert not result["ok"] and result["code"] == "unsupported", result
+            assert call(verifier, op="info")["info"]["revision"] == reopened["revision"]
+
+        def small_column(root):
+            table_element = root.getElementsByTagName("hp:tbl")[0]
+            table_element.getElementsByTagName("hp:sz")[0].setAttribute("width", "20200")
+            for cell in table_element.getElementsByTagName("hp:tc"):
+                column = cell.getElementsByTagName("hp:cellAddr")[0].getAttribute("colAddr")
+                cell.getElementsByTagName("hp:cellSz")[0].setAttribute("width", "200" if column == "0" else "10000")
+
+        with NativeWorker(library) as verifier:
+            opened = verifier.wait(verifier.open_bytes(update_hwpx(data, small_column)))
+            assert opened["ok"], opened
+            reopened = document_target(opened["info"])
+            point = locate_table(verifier, reopened)
+            call(verifier, op="beginEdit", target=reopened, selection={"anchor": point, "focus": point})
+            small = call(verifier, op="tableObject", target=reopened, position=point, page=page)["table"]
+            assert small["canResize"] and small["properties"]["tableWidth"] == 20200, small
+            changed = call(verifier, op="executeCommand", target=reopened, command={
+                "command": "resizeTableObject", "table": small["address"], "width": 20100,
+            })["outcome"]
+            reopened["revision"] = changed["revision"]
+            resized_small = call(verifier, op="tableObject", target=reopened, position=point, page=page)["table"]
+            assert resized_small["properties"]["tableWidth"] == 20100
+
+        def one_row(root):
+            table_element = root.getElementsByTagName("hp:tbl")[0]
+            table_element.setAttribute("rowCnt", "1")
+            table_element.getElementsByTagName("hp:sz")[0].setAttribute("height", "5000")
+            table_element.removeChild(table_element.getElementsByTagName("hp:tr")[1])
+            for size in table_element.getElementsByTagName("hp:cellSz"):
+                size.setAttribute("height", "2000")
+
+        with NativeWorker(library) as verifier:
+            opened = verifier.wait(verifier.open_bytes(update_hwpx(data, one_row)))
+            assert opened["ok"], opened
+            reopened = document_target(opened["info"])
+            point = locate_table(verifier, reopened)
+            call(verifier, op="beginEdit", target=reopened, selection={"anchor": point, "focus": point})
+            single = call(verifier, op="tableObject", target=reopened, position=point, page=page)["table"]
+            assert single["canResize"] and single["properties"]["tableHeight"] == 5000, single
+            changed = call(verifier, op="executeCommand", target=reopened, command={
+                "command": "resizeTableObject", "table": single["address"], "height": 2000,
+            })["outcome"]
+            reopened["revision"] = changed["revision"]
+            resized_single = call(verifier, op="tableObject", target=reopened, position=point, page=page)["table"]
+            assert resized_single["properties"]["tableHeight"] == 2000
+    print("PASS: whole-table bounds, protected properties, resize, undo/redo and HWP/HWPX reopen")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--library", required=True)
@@ -302,3 +491,4 @@ if __name__ == "__main__":
     selection_formatting(library)
     table_navigation(library)
     table_creation(library)
+    table_object_properties(library)

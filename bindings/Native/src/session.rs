@@ -199,6 +199,11 @@ enum Request {
         font_generation: u64,
         selection: NativeTextSelection,
     },
+    TableObject {
+        expected_revision: u64,
+        position: NativeTextPosition,
+        page: u32,
+    },
     ReplaceAllMatches {
         expected_revision: u64,
         request: NativeSearchRequest,
@@ -616,6 +621,15 @@ fn worker_output(host: &mut Host, worker: u64, output: NativeRuntimeOutput) -> V
                 json!({"ok":true,"kind":"selectionFormatting","target":target,
                     "fontGeneration":font_generation,"selection":selection,"formatting":formatting})
             }
+            NativeRuntimeOutput::TableObject {
+                target,
+                font_generation,
+                page,
+                table,
+            } => {
+                json!({"ok":true,"kind":"tableObject","target":target,
+                    "fontGeneration":font_generation,"page":page,"table":table})
+            }
             NativeRuntimeOutput::ImeContext(context) => {
                 json!({"ok":true,"kind":"imeContext","context":context})
             }
@@ -852,6 +866,7 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
         "tableCellParagraphCommands":true,
         "tableCellNavigation":true,
         "tableCellTextNavigation":true,
+        "tableObjectProperties":true,
         "basicTextFormatting":true,
         "selectionFormatting":true,
         "createTable":true,
@@ -952,6 +967,11 @@ pub unsafe extern "C" fn rhwp_session_request(
                     let formatting=record.editor_mut()?.selection_formatting(expected_revision,font_generation,&selection)?;
                     Ok(json!({"ok":true,"kind":"selectionFormatting","revision":expected_revision,
                         "fontGeneration":font_generation,"selection":selection,"formatting":formatting}))
+                },
+                Request::TableObject {expected_revision, position, page}=>{
+                    let table=session.table_object(expected_revision,&position,page)?;
+                    Ok(json!({"ok":true,"kind":"tableObject","revision":expected_revision,
+                        "fontGeneration":session.font_generation(),"page":page,"table":table}))
                 },
                 Request::ReplaceAllMatches {expected_revision, request, text}=>{
                     let result=record.editor_mut()?.replace_all_matches(expected_revision,&request,&text)?;

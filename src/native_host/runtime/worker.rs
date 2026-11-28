@@ -165,6 +165,21 @@ fn execute(
                 formatting,
             })
         }
+        C::TableObject {
+            target,
+            position,
+            page,
+        } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            let session = doc.session();
+            Ok(O::TableObject {
+                target,
+                font_generation: session.font_generation(),
+                page,
+                table: session.table_object(target.revision, &position, page)?,
+            })
+        }
         C::ImeContext { target } => {
             let doc = document(owner)?;
             doc.check(target)?;
