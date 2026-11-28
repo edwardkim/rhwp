@@ -1,0 +1,201 @@
+/* The native shell owns the title bar. Studio retains its menu, toolboxes and workspace. */
+:root[data-rhwp-appearance="fluent"] {
+  --font-family-ui: 'Segoe UI Variable', 'Segoe UI', 'Malgun Gothic', system-ui, sans-serif;
+  --ui-bg: #f3f3f3;
+  --ui-bg-light: #f3f3f3;
+  --ui-surface: #ffffff;
+  --ui-surface-raised: #fafafa;
+  --ui-surface-muted: #ededed;
+  --ui-border: #dedede;
+  --ui-border-light: #e3e3e3;
+  --ui-border-subtle: #e9e9e9;
+  --ui-border-strong: #c7c7c7;
+  --ui-text: #1a1a1a;
+  --ui-text-secondary: #424242;
+  --ui-text-muted: #5c5c5c;
+  --ui-text-hint: #6a6a6a;
+  --ui-text-disabled: #737373;
+  --ui-text-placeholder: #666666;
+  --ui-hover: #ebebeb;
+  --ui-hover-strong: #e5e5e5;
+  --ui-active: #dedede;
+  --ui-selected: #e5f0fa;
+  --ui-menu-open: #e5f0fa;
+  --ui-menu-open-border: #d0e4f5;
+  --rhwp-menu-open-text: #004578;
+  --ui-toolbar-bg-start: #f9f9f9;
+  --ui-toolbar-bg-end: #f9f9f9;
+  --ui-accent-bg: #e5f0fa;
+  --ui-accent-bg-light: #f1f7fc;
+  --ui-link: #005fb8;
+  --focus-ring: #005fb8;
+  --accent-primary: #005fb8;
+  --accent-strong: #004578;
+  --accent-light: #1476cb;
+  --accent-hover: #a7cdea;
+  --accent-subtle: #567b9c;
+  --doc-workspace: #eaeaea;
+  --ruler-bg: #e5e5e5;
+  --ruler-body: #fafafa;
+  --ruler-marker: #005fb8;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --shadow-dropdown: 0 6px 18px rgb(0 0 0 / 16%);
+  --shadow-dialog: 0 14px 40px rgb(0 0 0 / 20%);
+}
+
+:root[data-rhwp-appearance="fluent"][data-theme-effective='dark'] {
+  --ui-bg: #202020;
+  --ui-bg-light: #202020;
+  --ui-surface: #282828;
+  --ui-surface-raised: #292929;
+  --ui-surface-muted: #1b1b1b;
+  --ui-border: #3b3b3b;
+  --ui-border-light: #414141;
+  --ui-border-subtle: #353535;
+  --ui-border-strong: #626262;
+  --ui-text: #f5f5f5;
+  --ui-text-secondary: #d5d5d5;
+  --ui-text-muted: #b4b4b4;
+  --ui-text-hint: #a8a8a8;
+  --ui-text-disabled: #929292;
+  --ui-text-placeholder: #b4b4b4;
+  --ui-hover: #353535;
+  --ui-hover-strong: #414141;
+  --ui-active: #454545;
+  --ui-selected: #304957;
+  --ui-menu-open: #304957;
+  --ui-menu-open-border: #486475;
+  --rhwp-menu-open-text: #d5efff;
+  --ui-toolbar-bg-start: #252525;
+  --ui-toolbar-bg-end: #252525;
+  --ui-accent-bg: #304957;
+  --ui-accent-bg-light: #283138;
+  --ui-link: #8acbff;
+  --focus-ring: #8acbff;
+  --accent-primary: #60cdff;
+  --accent-strong: #a7e4ff;
+  --accent-light: #8acbff;
+  --accent-hover: #526e7b;
+  --accent-subtle: #7bacbf;
+  --doc-workspace: #171717;
+  --ruler-bg: #272727;
+  --ruler-body: #303030;
+  --ruler-marker: #60cdff;
+  --shadow-dropdown: 0 8px 22px rgb(0 0 0 / 42%);
+  --shadow-dialog: 0 16px 42px rgb(0 0 0 / 48%);
+}
+
+[data-rhwp-appearance="fluent"] #menu-bar {
+  height: 34px;
+  gap: 2px;
+  border-color: var(--ui-border-subtle);
+}
+
+[data-rhwp-appearance="fluent"] .menu-title {
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+}
+
+[data-rhwp-appearance="fluent"] .menu-title:hover {
+  border-color: transparent;
+  background: var(--ui-hover);
+  color: var(--ui-text);
+}
+
+[data-rhwp-appearance="fluent"] .menu-item.open > .menu-title {
+  color: var(--rhwp-menu-open-text);
+}
+
+[data-rhwp-appearance="fluent"] .menu-dropdown {
+  padding: 4px;
+  border-radius: var(--radius-md);
+}
+
+[data-rhwp-appearance="fluent"] .md-item {
+  border-radius: var(--radius-sm);
+  min-height: 28px;
+}
+
+[data-rhwp-appearance="fluent"] #icon-toolbar,
+[data-rhwp-appearance="fluent"] #style-bar {
+  border-color: var(--ui-border-subtle);
+}
+
+[data-rhwp-appearance="fluent"] #style-bar {
+  background: var(--ui-toolbar-bg-end);
+}
+
+[data-rhwp-appearance="fluent"] #status-bar {
+  height: 26px;
+  font-family: var(--font-family-ui);
+  border-color: var(--ui-border);
+}
+
+[data-rhwp-appearance="fluent"] :is(button, a, input, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
+[data-rhwp-desktop-busy],
+[data-rhwp-desktop-busy] * {
+  cursor: wait !important;
+}
+
+:root[data-rhwp-appearance="fluent"][data-rhwp-desktop-theme='highContrast'] {
+  --ui-bg: Canvas;
+  --ui-bg-light: Canvas;
+  --ui-surface: Canvas;
+  --ui-surface-raised: Canvas;
+  --ui-surface-muted: Canvas;
+  --ui-border: CanvasText;
+  --ui-border-light: CanvasText;
+  --ui-border-subtle: CanvasText;
+  --ui-border-strong: CanvasText;
+  --ui-text: CanvasText;
+  --ui-text-secondary: CanvasText;
+  --ui-text-muted: CanvasText;
+  --ui-text-hint: CanvasText;
+  --ui-text-disabled: GrayText;
+  --ui-text-placeholder: GrayText;
+  --ui-text-on-accent: HighlightText;
+  --ui-hover: Canvas;
+  --ui-hover-strong: Canvas;
+  --ui-active: Highlight;
+  --ui-selected: Highlight;
+  --ui-menu-open: Highlight;
+  --ui-menu-open-border: Highlight;
+  --rhwp-menu-open-text: HighlightText;
+  --ui-toolbar-bg-start: Canvas;
+  --ui-toolbar-bg-end: Canvas;
+  --ui-accent-bg: Highlight;
+  --ui-accent-bg-light: Canvas;
+  --ui-link: LinkText;
+  --focus-ring: Highlight;
+  --accent-primary: LinkText;
+  --accent-strong: HighlightText;
+  --accent-hover: Highlight;
+  --doc-workspace: Canvas;
+  --ruler-bg: Canvas;
+  --ruler-body: Canvas;
+  --ruler-tick: CanvasText;
+  --ruler-text: CanvasText;
+  --ruler-marker: Highlight;
+  --shadow-dropdown: none;
+  --shadow-dialog: none;
+}
+
+[data-rhwp-appearance="fluent"][data-rhwp-desktop-theme='highContrast'] .menu-title:hover {
+  border-color: Highlight;
+}
+
+[data-rhwp-appearance="fluent"][data-rhwp-desktop-theme='highContrast'] :is(.menu-title, .md-item):focus-visible {
+  outline-color: Highlight;
+}
+
+@media (max-width: 480px) {
+  [data-rhwp-appearance="fluent"] .menu-title {
+    padding-inline: 7px;
+  }
+}

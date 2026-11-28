@@ -1,0 +1,20 @@
+<Window
+    x:Class="Rhwp.WinUI.StudioWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="RHWP">
+    <Grid x:Name="StudioRoot" RowDefinitions="Auto,*" Loaded="OnStudioLoaded"
+          ActualThemeChanged="OnStudioThemeChanged"
+          Background="{ThemeResource SolidBackgroundFillColorBaseBrush}">
+        <InfoBar x:Name="StudioStatus" Severity="Error" IsOpen="False"
+                 AutomationProperties.AutomationId="StudioStatus" />
+        <WebView2 x:Name="StudioView" Grid.Row="1"
+                  AutomationProperties.Name="RHWP 문서 편집기"
+                  AutomationProperties.AutomationId="StudioView" />
+        <StackPanel x:Name="StudioLoading" Grid.Row="1" Spacing="12" IsHitTestVisible="False"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+            <ProgressRing x:Name="StudioProgress" IsActive="True" Width="32" Height="32" />
+            <TextBlock Text="편집기 여는 중…" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+        </StackPanel>
+    </Grid>
+</Window>

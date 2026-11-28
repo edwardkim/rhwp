@@ -12,6 +12,8 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <RhwpStudioDist Condition="'$(RhwpStudioDist)' == ''">$(MSBuildThisFileDirectory)../../rhwp-studio/dist-desktop</RhwpStudioDist>
+    <RhwpStudioDistPath>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(RhwpStudioDist)'))</RhwpStudioDistPath>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.7.0" />
@@ -22,4 +24,18 @@
     <Content Include="$(RhwpNativeDll)" Link="rhwp_native_ffi.dll"
              CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
+  <ItemGroup Condition="Exists('$(RhwpStudioDistPath)/studio/index.html')">
+    <Content Include="$(RhwpStudioDistPath)/**/*"
+             Link="Studio/%(RecursiveDir)%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"
+             ExcludeFromSingleFile="true" />
+  </ItemGroup>
+  <Target Name="RequireRhwpStudioForPublish" BeforeTargets="ComputeFilesToPublish">
+    <Error Condition="!Exists('$(RhwpStudioDistPath)/bundle.json') Or !Exists('$(RhwpStudioDistPath)/studio/index.html')"
+           Text="Build the offline Studio bundle first. See apps/WinUI/README.md or pass -p:RhwpStudioDist=&lt;bundle directory&gt;." />
+  </Target>
+  <Target Name="RequireRhwpStudioForBuild" BeforeTargets="PrepareForBuild"
+          Condition="'$(RequireRhwpStudio)' == 'true'">
+    <CallTarget Targets="RequireRhwpStudioForPublish" />
+  </Target>
 </Project>

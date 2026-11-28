@@ -14,6 +14,7 @@
     <Compile Include="../WinUI/NativeWorkerDispatcher.Pdf.cs" Link="NativeWorkerDispatcher.Pdf.cs" />
     <Compile Include="../WinUI/LivePdfContract.cs" Link="LivePdfContract.cs" />
     <Compile Include="../WinUI/DocumentFileStore.cs" Link="DocumentFileStore.cs" />
+    <Compile Include="../WinUI/StudioFileStorage.cs" Link="StudioFileStorage.cs" />
     <Compile Include="../WinUI/DocumentAutomationSnapshot.cs" Link="DocumentAutomationSnapshot.cs" />
     <Compile Include="../WinUI/DocumentSaveCopy.cs" Link="DocumentSaveCopy.cs" />
     <Compile Include="../WinUI/PageEditText.cs" Link="PageEditText.cs" />

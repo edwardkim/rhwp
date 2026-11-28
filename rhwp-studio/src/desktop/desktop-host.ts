@@ -15,6 +15,7 @@ export interface DesktopFileCommands {
 
 export interface DesktopTransport {
   version: number;
+  appearance?: 'fluent';
   postMessage(message: object): void;
   subscribe(listener: (message: unknown) => void): () => void;
 }

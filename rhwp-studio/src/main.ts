@@ -127,12 +127,15 @@ import { initI18n, t } from '@/i18n/index.ts';
 import { SidePanelController, createDomSidePanelView } from '@/view/side-panel-host';
 import { navigateToSearchHit } from '@/ui/find-dialog';
 import { DesktopHost, getDesktopTransport, isDesktopFormat, type DesktopState } from '@/desktop/desktop-host';
+import '@/desktop/fluent.css';
 
 // 언어팩 초기화 — 정적 마크업의 라벨을 결정된 로케일로 갱신한다. 카탈로그에 없는 키는
 // 원문(ko)으로 물러나므로 번역이 없는 상태에서도 화면은 도입 전과 같다.
 initI18n();
 
 const desktopTransport = getDesktopTransport(window);
+if (desktopTransport) document.documentElement.dataset.rhwpDesktop = '';
+if (desktopTransport?.appearance) document.documentElement.dataset.rhwpAppearance = desktopTransport.appearance;
 
 const wasm = new WasmBridge();
 installDocumentTitle(wasm);
@@ -2389,9 +2392,11 @@ if (desktopTransport) {
       };
       window.addEventListener('keydown', blockShortcuts, true);
       document.body.inert = true;
+      document.documentElement.dataset.rhwpDesktopBusy = '';
       return () => {
         window.removeEventListener('keydown', blockShortcuts, true);
         document.body.inert = wasInert;
+        delete document.documentElement.dataset.rhwpDesktopBusy;
         if (focus instanceof HTMLElement && focus.isConnected) focus.focus({ preventScroll: true });
       };
     },

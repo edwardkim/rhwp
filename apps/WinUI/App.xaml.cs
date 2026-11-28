@@ -7,7 +7,7 @@ namespace Rhwp.WinUI;
 
 public partial class App : Application
 {
-    private MainWindow? window;
+    private StudioWindow? window;
 
     public App()
     {
@@ -16,14 +16,14 @@ public partial class App : Application
 
     protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
-        MainWindow current = window ??= new MainWindow();
+        StudioWindow current = window ??= new StudioWindow();
         current.Activate();
 
         var activation = AppInstance.GetCurrent().GetActivatedEventArgs();
         string? path = activation?.Data is IFileActivatedEventArgs files
-            ? FileActivation.FirstDocumentPath(files.Files.OfType<StorageFile>().Select(file => file.Path))
-            : FileActivation.FirstDocumentPath(Environment.GetCommandLineArgs().Skip(1));
+            ? StudioWindow.FindStartupDocument(files.Files.OfType<StorageFile>().Select(file => file.Path))
+            : StudioWindow.FindStartupDocument(Environment.GetCommandLineArgs().Skip(1));
         if (path is not null)
-            await current.OpenFileAsync(path);
+            await current.OpenStartupDocumentAsync(path);
     }
 }

@@ -2,7 +2,6 @@ using System.Text.Json;
 
 namespace Rhwp.WinUI;
 
-internal enum DocumentFormat { Hwp, Hwpx }
 internal sealed record SaveLoss(string Code, string Subject, string Path, string Reason, uint? ResourceId);
 internal sealed record SaveLossReport(uint SchemaVersion, string OutputFormat, int Count, SaveLoss[] Losses);
 internal sealed record PreparedDocumentSave(DocumentTarget Target, ulong Token, byte[] Bytes, SaveLossReport Report);
