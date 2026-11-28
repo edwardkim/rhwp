@@ -109,6 +109,11 @@
                         ClosedDisplayMode="Compact" IsDynamicOverflowEnabled="True"
                         AutomationProperties.Name="문서 도구 모음"
                         AutomationProperties.AutomationId="DocumentCommands">
+                <CommandBar.Resources>
+                    <Style TargetType="AppBarButton" BasedOn="{StaticResource DefaultAppBarButtonStyle}">
+                        <Setter Property="Width" Value="40" />
+                    </Style>
+                </CommandBar.Resources>
                 <AppBarButton x:Name="NewButton" Label="새 문서" Icon="Add" Click="OnNewDocumentClicked"
                               IsEnabled="False" AutomationProperties.AutomationId="NewDocument">
                     <AppBarButton.KeyboardAccelerators>
@@ -169,7 +174,8 @@
                                     </MenuFlyout>
                                 </SplitButton.Flyout>
                             </SplitButton>
-                            <TextBox x:Name="FormattingFontSize" Width="62" MinWidth="0" MaxLength="7"
+                            <TextBox x:Name="FormattingFontSize" Width="62" Height="34" MinWidth="0" MaxLength="7"
+                                     VerticalAlignment="Center"
                                      PlaceholderText="pt" InputScope="Number" IsEnabled="False"
                                      KeyDown="OnFormattingSizeKeyDown" TextChanged="OnFormattingSizeTextChanged"
                                      AutomationProperties.Name="글자 크기(포인트)"
