@@ -112,6 +112,12 @@ public sealed partial class MainWindow
             ShowCharacterDecoration(ApplyUnderlineButton, value?.Underline, "밑줄");
             ShowCharacterDecoration(ApplyStrikethroughButton, value?.Strikethrough, "취소선");
         }
+        if (highlightFormattingAvailable)
+        {
+            string? shade = value?.ShadeColor is { Kind: "uniform", Value: string color } ? color : null;
+            SetFormattingIndicator(FormattingHighlightButton, shade is not null,
+                value?.ShadeColor?.Kind == "mixed" ? "형광펜 색이 혼합되어 있음" : shade ?? "");
+        }
 
         bool mixedSize = value?.FontSize.Kind == "mixed";
         string placeholder = mixedSize ? "혼합" : "pt";

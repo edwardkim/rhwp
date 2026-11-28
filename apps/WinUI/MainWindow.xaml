@@ -274,6 +274,12 @@
                                     AutomationProperties.AutomationId="FormattingTextColor">
                                 <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE8D3;" FontSize="16" />
                             </Button>
+                            <Button x:Name="FormattingHighlightButton" Style="{StaticResource ToolbarIconButtonStyle}"
+                                    Click="OnFormattingHighlightClicked" Visibility="Collapsed" IsEnabled="False"
+                                    ToolTipService.ToolTip="형광펜" AutomationProperties.Name="형광펜"
+                                    AutomationProperties.AutomationId="FormattingHighlight">
+                                <PathIcon Data="M 1,16 H 8 V 14 H 1 Z M 2,13 L 3,10 L 6,7 L 10,11 L 7,14 H 2 Z M 7,6 L 12,1 L 16,5 L 11,10 Z" />
+                            </Button>
                             <Rectangle Width="1" Height="18" Margin="3,0" VerticalAlignment="Center" IsHitTestVisible="False"
                                        Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
                             <Button x:Name="AlignLeftButton" Style="{StaticResource ToolbarIconButtonStyle}"

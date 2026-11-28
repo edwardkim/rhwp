@@ -15,6 +15,7 @@ public sealed partial class MainWindow
     private bool appearanceFormattingAvailable;
     private bool systemFontChooserAvailable;
     private bool decorationFormattingAvailable;
+    private bool highlightFormattingAvailable;
 
     private async void OnFormattingToolbarLoaded(object sender, RoutedEventArgs args)
     {
@@ -30,6 +31,7 @@ public sealed partial class MainWindow
             appearanceFormattingAvailable = capabilities.FontAndColor;
             systemFontChooserAvailable = capabilities.SystemFonts;
             decorationFormattingAvailable = formattingInspectionAvailable && capabilities.Decorations;
+            highlightFormattingAvailable = formattingInspectionAvailable && capabilities.Highlight;
             if (!closing)
             {
                 FormattingToolbar.Visibility = basicFormattingAvailable ? Visibility.Visible : Visibility.Collapsed;
@@ -40,6 +42,7 @@ public sealed partial class MainWindow
                 ApplyItalicButton.Visibility = decorations;
                 ApplyUnderlineButton.Visibility = decorations;
                 ApplyStrikethroughButton.Visibility = decorations;
+                FormattingHighlightButton.Visibility = highlightFormattingAvailable ? Visibility.Visible : Visibility.Collapsed;
                 RefreshFormattingActions();
             }
         }
@@ -62,6 +65,7 @@ public sealed partial class MainWindow
         bool canFormatText = canAlign && selection!.Anchor.ScalarOffset != selection.Focus.ScalarOffset;
         FormattingFontButton.IsEnabled = canFormatText;
         FormattingTextColorButton.IsEnabled = canFormatText;
+        FormattingHighlightButton.IsEnabled = canFormatText && highlightFormattingAvailable;
         ApplyBoldButton.IsEnabled = canFormatText;
         ApplyItalicButton.IsEnabled = canFormatText && decorationFormattingAvailable;
         ApplyUnderlineButton.IsEnabled = canFormatText && decorationFormattingAvailable;
