@@ -1457,6 +1457,32 @@ impl TypesetEngine {
                         || closed_carried_row
                         || stored_terminal_blank.is_some(),
                 });
+                // 스캔이 마지막 내용 줄을 모두 수용해도 앞 조각과 이번 조각을
+                // 뺀 물리 행 높이가 반복 머리행과 함께 다음 쪽을 소유할 수 있다.
+                let repeated_header_tail = (is_continuation
+                    && cursor_row + 1 == end_row
+                    && !start_cut.is_empty()
+                    && !start_cut_is_block
+                    && table_footnotes.is_empty()
+                    && !layout_engine.row_cut_units_exhausted(table, cursor_row, start_cut, styles))
+                    .then(|| {
+                        let accepted = continuation.accepted_row_boxes.get(cursor_row)?.as_ref()?;
+                        let height = self.stored_repeated_header_terminal_tail(
+                            st, input, cursor_row, *accepted, header_overhead,
+                        )?;
+                        let cut = layout_engine.advance_row_cut(
+                            table, cursor_row, start_cut, f64::INFINITY, styles,
+                        );
+                        cut.fully_consumed.then_some((height, cut.end_cut))
+                    })
+                    .flatten();
+                if let Some((height, cut)) = repeated_header_tail {
+                    commit_fragment(st, partial_height, false, None);
+                    st.advance_column_or_new_page();
+                    continuation.advance(end_row, None, cut, true);
+                    continuation.start_row_height_override = Some(height);
+                    return TableContinuationIteration::Emitted;
+                }
                 // 마지막 조각: spacing_after만 포함 (페이지 분할기 engine.rs:1051과 동일)
                 // 호스트 줄 전진과 양의 오프셋은 원래 앵커 조각의 계약이며,
                 // 이어받기 끝에서 다시 더하면 다음 본문을 이중으로 민다(#2439).
@@ -2130,8 +2156,7 @@ impl TypesetEngine {
         );
         let source_terminal_header_tail = (is_continuation
             && end_row == row_count
-            && terminal_cut_consumed
-            && split_block_start.is_none())
+            && complete_physical_end_cut)
             .then(|| {
                 let row = end_row.checked_sub(1)?;
                 let accepted = continuation.accepted_row_boxes.get(row)?.as_ref()?;
@@ -2529,6 +2554,25 @@ impl TypesetEngine {
             })
             .or(complete_block_next_height)
             .or(source_terminal_header_tail)
+            .or_else(|| {
+                let row = end_row.checked_sub(1)?;
+                if !is_continuation
+                    || split_end_limit <= 0.0
+                    || split_block_start.is_some()
+                    || !table_footnotes.is_empty()
+                    || !layout_engine.row_cut_ends_at_original_plain_text_reset(
+                        table, row, if row == cursor_row { start_cut } else { &[] },
+                        &next_cut, styles,
+                    )
+                    || !layout_engine.row_cut_remaining_is_single_stored_frame(
+                        table, row, &next_cut, None, styles,
+                    )
+                {
+                    return None;
+                }
+                let (_, accepted) = continuation.pending_row_box.filter(|(owner, _)| *owner == row)?;
+                self.stored_repeated_header_closing_row(st, input, row, accepted, header_overhead)
+            })
             .or(source_span_row_frame.map(|(_, _, remaining)| remaining))
             .or(source_first_frame_remaining)
             .or_else(|| {

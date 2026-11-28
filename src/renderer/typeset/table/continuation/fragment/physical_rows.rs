@@ -114,25 +114,12 @@ impl TypesetEngine {
         })
     }
 
-    /// 남은 빈 행 상자와 반복 머리행이 다음 저장 문단의 원점을 닫을 때,
-    /// 내용이 소진된 행도 다음 조각에서 그 물리 공간을 소유한다.
-    pub(super) fn stored_repeated_header_terminal_tail(
+    fn stored_header_ordinary_row_height_hu(
         &self,
-        st: &TypesetState,
-        input: FragmentInput<'_>,
+        table: &crate::model::table::Table,
         row: usize,
-        accepted: f64,
-        header: f64,
-    ) -> Option<f64> {
-        let source = input.source;
-        let table = source.row_geometry_table;
-        if st.col_count != 1
-            || header <= 0.0
-            || !self.stored_header_physical_rows(st, source)
-            || self.render_normalization.row_frame_reflowed(table, row)
-            || table.caption.is_some()
-            || !std::ptr::eq(table, source.table)
-        {
+    ) -> Option<i32> {
+        if self.render_normalization.row_frame_reflowed(table, row) {
             return None;
         }
         let cells = table.cells.iter().filter(|cell| {
@@ -156,6 +143,26 @@ impl TypesetEngine {
         {
             return None;
         }
+        Some(height as i32)
+    }
+
+    fn stored_header_successor_frame_hu(
+        &self,
+        st: &TypesetState,
+        input: FragmentInput<'_>,
+        header: f64,
+    ) -> Option<(i32, i32)> {
+        let source = input.source;
+        let table = source.row_geometry_table;
+        if st.col_count != 1
+            || header <= 0.0
+            || !self.stored_header_physical_rows(st, source)
+            || table.caption.is_some()
+            || table.cell_spacing != 0
+            || !std::ptr::eq(table, source.table)
+        {
+            return None;
+        }
         let (_, successor) = st.table_flow_successor(source.para_index, source.paragraphs_all)?;
         let line = successor.line_segs.first()?;
         if successor.stored_text_partition_is_dirty()
@@ -165,17 +172,62 @@ impl TypesetEngine {
         {
             return None;
         }
-        let remainder = hwpunit_to_px(height as i32, self.dpi) - accepted;
-        let outer = hwpunit_to_px(
-            i32::from(table.outer_margin_top) + i32::from(table.outer_margin_bottom),
-            self.dpi,
-        );
-        let next_origin = hwpunit_to_px(line.vertical_pos, self.dpi);
-        let occupied = header + remainder + outer;
-        (remainder > 0.0
-            && occupied <= st.layout.body_area.height
-            && (next_origin - occupied).abs() <= hwpunit_to_px(2, self.dpi))
-            .then_some(remainder)
+        let margins = i32::from(table.outer_margin_top) + i32::from(table.outer_margin_bottom);
+        let frame_overhead = crate::renderer::px_to_hwpunit(header, self.dpi)
+            .checked_add(margins)?;
+        let body = crate::renderer::px_to_hwpunit(st.layout.body_area.height, self.dpi);
+        (line.vertical_pos > frame_overhead && line.vertical_pos <= body)
+            .then_some((line.vertical_pos - frame_overhead, body - frame_overhead))
+    }
+
+    /// 남은 빈 행 상자와 반복 머리행이 다음 저장 문단의 원점을 닫을 때,
+    /// 내용이 소진된 행도 다음 조각에서 그 물리 공간을 소유한다.
+    pub(super) fn stored_repeated_header_terminal_tail(
+        &self,
+        st: &TypesetState,
+        input: FragmentInput<'_>,
+        row: usize,
+        accepted: f64,
+        header: f64,
+    ) -> Option<f64> {
+        let (closing, _) = self.stored_header_successor_frame_hu(st, input, header)?;
+        let declared = self.stored_header_ordinary_row_height_hu(input.source.table, row)?;
+        let remaining = declared - crate::renderer::px_to_hwpunit(accepted, self.dpi);
+        (remaining > 0 && (i64::from(remaining) - i64::from(closing)).abs() <= 2)
+            .then_some(hwpunit_to_px(remaining, self.dpi))
+    }
+
+    /// 두 행이 저장 쪽 경계와 마지막 문단의 원점까지 서로 맞물릴 때,
+    /// 앞 행 간격을 접지 않고 선언 높이의 남은 분량을 다음 조각으로 넘긴다.
+    pub(super) fn stored_repeated_header_closing_row(
+        &self,
+        st: &TypesetState,
+        input: FragmentInput<'_>,
+        row: usize,
+        accepted: f64,
+        header: f64,
+    ) -> Option<f64> {
+        let table = input.source.table;
+        let last = usize::from(table.row_count).checked_sub(1)?;
+        if row + 1 < last || table.leading_header_rows().contains(&row) {
+            return None;
+        }
+        let (final_box, capacity) = self.stored_header_successor_frame_hu(st, input, header)?;
+        let declared = self.stored_header_ordinary_row_height_hu(table, row)?;
+        let remaining = declared - crate::renderer::px_to_hwpunit(accepted, self.dpi);
+        let closing = if row == last {
+            final_box
+        } else {
+            let last_declared = self.stored_header_ordinary_row_height_hu(table, last)?;
+            let first_box = last_declared - final_box;
+            if first_box <= 0 || first_box >= capacity {
+                return None;
+            }
+            capacity - first_box
+        };
+        // 각 조각 하단의 저장 눈금 차이는 앞뒤 경계를 합쳐 확인한다.
+        (closing > 0 && (i64::from(remaining) - i64::from(closing)).abs() <= 4)
+            .then_some(hwpunit_to_px(closing, self.dpi))
     }
 
     /// 쪽 끝 내용 컷에 걸리는 병합 칸의 최소 높이 중 현재 조각이 소유하는 잔여다.
