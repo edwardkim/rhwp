@@ -148,6 +148,23 @@ fn execute(
                 .execute_command(target.revision, command)
                 .map(O::CommandExecuted)
         }
+        C::SelectionFormatting {
+            target,
+            font_generation,
+            selection,
+        } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            let formatting =
+                doc.editor()?
+                    .selection_formatting(target.revision, font_generation, &selection)?;
+            Ok(O::SelectionFormatting {
+                target,
+                font_generation,
+                selection,
+                formatting,
+            })
+        }
         C::ImeContext { target } => {
             let doc = document(owner)?;
             doc.check(target)?;

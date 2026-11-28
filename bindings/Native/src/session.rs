@@ -188,6 +188,11 @@ enum Request {
         command: rhwp_core::native_host::commands::NativeEditCommand,
         expected_revision: u64,
     },
+    SelectionFormatting {
+        expected_revision: u64,
+        font_generation: u64,
+        selection: NativeTextSelection,
+    },
     ImeContext {
         expected_revision: u64,
     },
@@ -589,6 +594,15 @@ fn worker_output(host: &mut Host, worker: u64, output: NativeRuntimeOutput) -> V
             NativeRuntimeOutput::CommandExecuted(result) => {
                 json!({"ok":true,"kind":"command","outcome":result.outcome,"preferredX":result.preferred_x})
             }
+            NativeRuntimeOutput::SelectionFormatting {
+                target,
+                font_generation,
+                selection,
+                formatting,
+            } => {
+                json!({"ok":true,"kind":"selectionFormatting","target":target,
+                    "fontGeneration":font_generation,"selection":selection,"formatting":formatting})
+            }
             NativeRuntimeOutput::ImeContext(context) => {
                 json!({"ok":true,"kind":"imeContext","context":context})
             }
@@ -821,7 +835,9 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
             json!({"ok":true,"abiVersion":1,"nativeSkia":cfg!(feature="native-skia"),
         "tableCellParagraphCommands":true,
         "tableCellNavigation":true,
+        "tableCellTextNavigation":true,
         "basicTextFormatting":true,
+        "selectionFormatting":true,
         "renderTiledRegion":cfg!(feature="native-skia"),"rasterCacheControls":cfg!(feature="native-skia"),
         "cooperativeTiledCancellation":cfg!(feature="native-skia"),"presentation":crate::presentation::capabilities(),"gpuGl":crate::gpu_gl::capabilities(),
         "recoveryOpen":true,
@@ -829,6 +845,7 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
         "atomicImeEdits":true,
         "workerTextSearch":true,
         "accessibilityCellLayout":true,
+        "accessibilityPageSnapshots":true,
         "worker":true,"maxWorkers":4,"hostRequests":true,"viewState":true,"accessibilitySnapshots":true,"threadAffine":true,"maxSessions":MAX_SESSIONS,"maxDocumentBytes":MAX_DOCUMENT_BYTES,
         "maxRequestBytes":MAX_REQUEST_BYTES,"maxBufferBytes":MAX_BUFFER_BYTES,
         "livePdfExport":cfg!(feature="native-skia"),
@@ -909,6 +926,11 @@ pub unsafe extern "C" fn rhwp_session_request(
                     Ok(json!({"ok":true,"snapshot":session.accessibility_snapshot(&request, selection)?}))
                 }
                 Request::ExecuteCommand {command,expected_revision}=>{let result=record.editor_mut()?.execute_command(expected_revision,command)?;Ok(json!({"ok":true,"outcome":result.outcome,"preferredX":result.preferred_x}))},
+                Request::SelectionFormatting {expected_revision, font_generation, selection}=>{
+                    let formatting=record.editor_mut()?.selection_formatting(expected_revision,font_generation,&selection)?;
+                    Ok(json!({"ok":true,"kind":"selectionFormatting","revision":expected_revision,
+                        "fontGeneration":font_generation,"selection":selection,"formatting":formatting}))
+                },
                 Request::ImeContext {expected_revision}=>Ok(json!({"ok":true,"context":record.editor_mut()?.ime_context(expected_revision)?})),
                 Request::ImeEditContext {expected_revision}=>Ok(json!({"ok":true,"context":record.editor_mut()?.ime_edit_context(expected_revision)?})),
                 Request::ApplyImeEdit {expected_revision, expected, edit}=>Ok(edit_result(record.editor_mut()?.apply_ime_edit(expected_revision,&expected,edit)?)),
