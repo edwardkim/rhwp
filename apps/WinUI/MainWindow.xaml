@@ -107,6 +107,12 @@
                         </MenuFlyoutItem.KeyboardAccelerators>
                     </MenuFlyoutItem>
                 </MenuBarItem>
+                <MenuBarItem x:Name="FormattingMenu" Title="서식" Visibility="Collapsed"
+                             AutomationProperties.AutomationId="FormattingMenu">
+                    <MenuFlyoutItem Text="문단 양식…" Click="OnParagraphStyleClicked"
+                                    IsEnabled="{x:Bind ParagraphStyleButton.IsEnabled, Mode=OneWay}"
+                                    AutomationProperties.AutomationId="ParagraphStyleMenuItem" />
+                </MenuBarItem>
                 <MenuBarItem x:Name="InsertMenu" Title="삽입" AccessKey="I" Visibility="Collapsed"
                              AutomationProperties.AutomationId="InsertMenu">
                     <MenuFlyoutItem x:Name="InsertTableMenuItem" Text="표 삽입…" Click="OnInsertTableClicked"
@@ -258,6 +264,10 @@
                             </Button>
                             <Rectangle Width="1" Height="18" Margin="3,0" VerticalAlignment="Center" IsHitTestVisible="False"
                                        Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                            <Button x:Name="ParagraphStyleButton" Height="32" Padding="8,0" MinHeight="0"
+                                    VerticalAlignment="Center" Click="OnParagraphStyleClicked"
+                                    Content="문단 양식" Visibility="Collapsed" IsEnabled="False"
+                                    AutomationProperties.AutomationId="ParagraphStyleButton" />
                             <Button x:Name="AlignLeftButton" Style="{StaticResource ToolbarIconButtonStyle}"
                                     Tag="Left" Click="OnAlignmentClicked" IsEnabled="False"
                                     ToolTipService.ToolTip="왼쪽 정렬" AutomationProperties.Name="왼쪽 정렬"
