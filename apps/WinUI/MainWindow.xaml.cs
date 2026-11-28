@@ -18,7 +18,6 @@ public sealed partial class MainWindow : Window
     private const double MinZoom = 0.5;
     private const double MaxZoom = 4;
     private readonly NativeWorkerDispatcher worker = new();
-    private readonly SemaphoreSlim documentActions = new(1);
     private readonly DispatcherQueueTimer renderTimer;
     private CancellationTokenSource? documentRequest;
     private CancellationTokenSource? renderRequest;
@@ -29,6 +28,7 @@ public sealed partial class MainWindow : Window
     private double zoom = 1;
     private bool picking;
     private bool closing;
+    private bool DocumentActionsAvailable => !closing && !editorBusy && !picking && documentRequest is null && !InlineEditing;
 
     public MainWindow()
     {
@@ -42,7 +42,7 @@ public sealed partial class MainWindow : Window
 
     private async void OnOpenClicked(object sender, RoutedEventArgs args)
     {
-        if (picking || closing || editorBusy || InlineEditing)
+        if (!DocumentActionsAvailable)
             return;
 
         picking = true;
@@ -71,7 +71,7 @@ public sealed partial class MainWindow : Window
 
     internal async Task OpenFileAsync(string path)
     {
-        if (closing)
+        if (!DocumentActionsAvailable)
             return;
 
         UnsavedDecision decision = await ResolveUnsavedChangesAsync();
@@ -83,7 +83,7 @@ public sealed partial class MainWindow : Window
 
     private void OnFilesDragOver(object sender, DragEventArgs args)
     {
-        if (!closing && !editorBusy && !InlineEditing && args.DataView.Contains(StandardDataFormats.StorageItems))
+        if (DocumentActionsAvailable && args.DataView.Contains(StandardDataFormats.StorageItems))
         {
             args.AcceptedOperation = DataPackageOperation.Copy;
             args.Handled = true;
@@ -92,7 +92,7 @@ public sealed partial class MainWindow : Window
 
     private async void OnFilesDropped(object sender, DragEventArgs args)
     {
-        if (closing || editorBusy || InlineEditing || !args.DataView.Contains(StandardDataFormats.StorageItems))
+        if (!DocumentActionsAvailable || !args.DataView.Contains(StandardDataFormats.StorageItems))
             return;
 
         args.Handled = true;
@@ -121,7 +121,7 @@ public sealed partial class MainWindow : Window
 
     private async void OnCloseClicked(object sender, RoutedEventArgs args)
     {
-        if (closing)
+        if (!DocumentActionsAvailable)
             return;
 
         UnsavedDecision decision = await ResolveUnsavedChangesAsync();
@@ -137,13 +137,13 @@ public sealed partial class MainWindow : Window
 
     private async void OnPreviousClicked(object sender, RoutedEventArgs args)
     {
-        if (page is { Page: > 0 } current && !closing && !editorBusy && !InlineEditing)
+        if (page is { Page: > 0 } current && DocumentActionsAvailable)
             await GoToPageAsync(current, current.Page - 1);
     }
 
     private async void OnNextClicked(object sender, RoutedEventArgs args)
     {
-        if (page is PageInfo current && current.Page + 1 < current.PageCount && !closing && !editorBusy && !InlineEditing)
+        if (page is PageInfo current && current.Page + 1 < current.PageCount && DocumentActionsAvailable)
             await GoToPageAsync(current, current.Page + 1);
     }
 
@@ -153,11 +153,15 @@ public sealed partial class MainWindow : Window
     private async Task ChangeDocumentAsync(Func<CancellationToken, Task<PageInfo?>> action,
         string? name, bool resetZoom)
     {
+        // Keep an accepted document action in flight until its UI and worker
+        // state have both settled. Later open or drop gestures can then retry.
+        if (!DocumentActionsAvailable)
+            return;
+
         var priorPage = page;
         var priorFile = fileName;
         double priorZoom = zoom;
         documentError = null;
-        documentRequest?.Cancel();
         using var request = new CancellationTokenSource();
         documentRequest = request;
         ClearPage();
@@ -169,31 +173,21 @@ public sealed partial class MainWindow : Window
         RefreshButtons();
         try
         {
-            // Retain only the newest waiting file action. The native owner
-            // drains any older action already accepted by the worker.
-            await documentActions.WaitAsync(request.Token);
-            try
+            PageInfo? result = await action(request.Token);
+            if (closing || request.IsCancellationRequested)
+                return;
+            if (resetZoom)
+                editorInfo = null;
+            UpdateTitle();
+            page = result;
+            if (result is null)
+                StatusText.Text = IdleStatus;
+            else
             {
-                PageInfo? result = await action(request.Token);
-                if (closing || request.IsCancellationRequested)
-                    return;
-                if (resetZoom)
-                    editorInfo = null;
-                UpdateTitle();
-                page = result;
-                if (result is null)
-                    StatusText.Text = IdleStatus;
-                else
-                {
-                    SetPageSize(result);
-                    PageScroll.ChangeView(0, 0, null, true);
-                    StatusText.Text = "쪽 표시 중…";
-                    QueueRender();
-                }
-            }
-            finally
-            {
-                documentActions.Release();
+                SetPageSize(result);
+                PageScroll.ChangeView(0, 0, null, true);
+                StatusText.Text = "쪽 표시 중…";
+                QueueRender();
             }
         }
         catch (OperationCanceledException) when (closing || request.IsCancellationRequested)
@@ -211,10 +205,11 @@ public sealed partial class MainWindow : Window
         }
         finally
         {
-            if (!closing && ReferenceEquals(documentRequest, request))
+            if (ReferenceEquals(documentRequest, request))
             {
                 documentRequest = null;
-                RefreshButtons();
+                if (!closing)
+                    RefreshButtons();
             }
         }
     }
@@ -365,14 +360,14 @@ public sealed partial class MainWindow : Window
 
     private void RefreshButtons()
     {
-        bool available = !closing && !editorBusy && !picking && !InlineEditing;
+        bool available = DocumentActionsAvailable;
         OpenButton.IsEnabled = available;
         SaveCopyButton.IsEnabled = available && (page is not null || editorInfo is not null);
         ExportPdfButton.Content = pdfCancellation is null ? "현재 쪽 PDF 미리보기" : "PDF 작업 취소";
         ExportPdfButton.IsEnabled = pdfCancellation is CancellationTokenSource export
             ? !export.IsCancellationRequested
             : available && page is not null && pdfLimits is not null;
-        CloseButton.IsEnabled = available && (fileName is not null || documentRequest is not null);
+        CloseButton.IsEnabled = available && fileName is not null;
         PreviousButton.IsEnabled = available && page is { Page: > 0 };
         NextButton.IsEnabled = available && page is PageInfo current && current.Page + 1 < current.PageCount;
         ZoomOutButton.IsEnabled = available && page is not null && zoom > MinZoom;
