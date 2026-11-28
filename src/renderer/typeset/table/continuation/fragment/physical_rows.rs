@@ -230,6 +230,54 @@ impl TypesetEngine {
             .then_some(hwpunit_to_px(closing, self.dpi))
     }
 
+    /// 독립된 첫 상자를 닫은 마지막 행은 같은 행의 선언 높이까지 차지한다.
+    /// 뒤 저장 줄이 새 쪽을 열고 선언 잔여 뒤에는 그 줄이 들어가지 않아야 한다.
+    pub(super) fn stored_repeated_header_first_frame_remainder(
+        &self,
+        st: &TypesetState,
+        input: FragmentInput<'_>,
+        row: usize,
+        accepted: f64,
+    ) -> Option<f64> {
+        let source = input.source;
+        let table = source.table;
+        if st.col_count != 1
+            || row + 1 != usize::from(table.row_count)
+            || !std::ptr::eq(table, source.row_geometry_table)
+            || table.cell_spacing != 0
+            || table.caption.is_some()
+            || !self.stored_header_physical_rows(st, source)
+        {
+            return None;
+        }
+        let (_, successor) = st.table_flow_successor(source.para_index, source.paragraphs_all)?;
+        let line = successor.line_segs.first()?;
+        if successor.stored_text_partition_is_dirty()
+            || successor.cell_format_vpos_dirty
+            || crate::renderer::typeset::is_synthetic_line_seg(line)
+            || line.vertical_pos != 0
+            || line.line_height <= 0
+        {
+            return None;
+        }
+        let header: f64 = table
+            .leading_header_rows()
+            .iter()
+            .map(|&row| source.measured_table.row_heights[row])
+            .sum();
+        let declared = self.stored_header_ordinary_row_height_hu(table, row)?;
+        let remainder = hwpunit_to_px(declared, self.dpi) - accepted;
+        let outer = hwpunit_to_px(
+            i32::from(table.outer_margin_top) + i32::from(table.outer_margin_bottom),
+            self.dpi,
+        );
+        let occupied = remainder + header + outer;
+        (remainder > 0.0
+            && occupied <= st.layout.body_area.height
+            && occupied + hwpunit_to_px(line.line_height, self.dpi) > st.layout.body_area.height)
+            .then_some(remainder)
+    }
+
     /// 쪽 끝 내용 컷에 걸리는 병합 칸의 최소 높이 중 현재 조각이 소유하는 잔여다.
     /// 앞서 수용한 물리 행 상자와 현재 조각을 차감한다. 후속 행으로 이어지는 칸은
     /// 같은 행의 남은 내용과 뒤 행의 높이도 예약한다.

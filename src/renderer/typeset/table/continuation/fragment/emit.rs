@@ -2574,6 +2574,23 @@ impl TypesetEngine {
                 self.stored_repeated_header_closing_row(st, input, row, accepted, header_overhead)
             })
             .or(source_span_row_frame.map(|(_, _, remaining)| remaining))
+            .or_else(|| {
+                let row = end_row.checked_sub(1)?;
+                if !source_object_opening_frame
+                    || split_block_start.is_some()
+                    || !table_footnotes.is_empty()
+                    || !layout_engine.row_cut_ends_at_original_plain_text_reset(
+                        table, row, &[], &next_cut, styles,
+                    )
+                    || !layout_engine.row_cut_remaining_is_single_stored_frame(
+                        table, row, &next_cut, None, styles,
+                    )
+                {
+                    return None;
+                }
+                let accepted = end_row_height_override?;
+                self.stored_repeated_header_first_frame_remainder(st, input, row, accepted)
+            })
             .or(source_first_frame_remaining)
             .or_else(|| {
                 layout_engine.stored_inline_picture_closing_row_height(
