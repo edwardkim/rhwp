@@ -87,6 +87,23 @@ internal static class DirectEditSmoke
             Assert(up.PreferredX is double && up.Edit.Outcome.Selection.Focus.Paragraph == 0,
                 "vertical movement returns a preferred column and updated position");
 
+            if (await worker.SupportsBasicTextFormattingAsync(Token))
+            {
+                var first = new TextPosition(0, 0, 0, []);
+                EditResult formatSelection = await worker.SetSelectionAsync(up.Edit.Target,
+                    new(first, first with { ScalarOffset = 1 }), Token);
+                EditResult bold = await worker.FormatCharactersAsync(formatSelection.Target, true, null, Token);
+                EditResult size = await worker.FormatCharactersAsync(bold.Target, null, 1800, Token);
+                EditResult align = await worker.SetParagraphAlignmentAsync(size.Target, NativeParagraphAlignment.Right,
+                    Token);
+                Assert(bold.Target.Revision > formatSelection.Target.Revision &&
+                    size.Target.Revision > bold.Target.Revision && align.Target.Revision > size.Target.Revision &&
+                    align.Outcome.Selection.Anchor.ScalarOffset == 0 && align.Outcome.Selection.Focus.ScalarOffset == 1,
+                    "consecutive formatting commands accept and adopt each revision without losing the selection");
+                await PersistAsync(worker, align.Target, savedFile);
+                Console.WriteLine("Formatting: bold, size and alignment advance revisions, retain selection and save.");
+            }
+
             Console.WriteLine("Direct edit: revision-safe movement and geometry, Hangul preview/cancel/commit, undo and committed saves.");
         }
         finally
@@ -100,7 +117,7 @@ internal static class DirectEditSmoke
     {
         PreparedDocumentSave prepared = await worker.PrepareSaveAsync(target, DocumentFormat.Hwpx, Token);
         await File.WriteAllBytesAsync(destination, prepared.Bytes, Token);
-        Assert(!(await worker.AcknowledgeSaveAsync(prepared)).Dirty, "initial save is clean");
+        Assert(!(await worker.AcknowledgeSaveAsync(prepared)).Dirty, "acknowledged save is clean");
     }
 
     private static async Task Reject(Task operation, string message)
