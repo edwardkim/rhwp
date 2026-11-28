@@ -4,6 +4,7 @@ use crate::model::table::{Cell, Table};
 use crate::renderer::hwpunit_to_px;
 
 use super::{CellUnit, LayoutEngine, ResolvedStyleSet};
+use crate::model::{control::Control, paragraph::LineSeg};
 
 impl LayoutEngine {
     /// 원본 문단 안의 저장 재시작은 선언 높이가 있는 중첩 행도 분할한다.
@@ -87,6 +88,7 @@ impl LayoutEngine {
         units: &[CellUnit],
         start: usize,
         end: usize,
+        styles: &ResolvedStyleSet,
     ) -> Option<f64> {
         if table.row_count != 1
             || table.col_count != 1
@@ -101,6 +103,14 @@ impl LayoutEngine {
             |unit: &CellUnit| self.stored_in_paragraph_unit_is_original_restart(table, cell, unit);
         let starts_at_restart = is_restart(first);
         let ends_at_restart = units.get(end).is_some_and(is_restart);
+        if (start == 0 || starts_at_restart) && !rest.iter().any(|unit| unit.page_frame_reset_before)
+        {
+            if let Some(height) =
+                self.stored_nested_host_restart_content_height(cell, units, start, end, styles)
+            {
+                return Some(height);
+            }
+        }
         if (!starts_at_restart && !ends_at_restart)
             || (start != 0 && !starts_at_restart)
             || (end != units.len() && !ends_at_restart)
@@ -127,6 +137,63 @@ impl LayoutEngine {
             ink_end = line.vertical_pos.checked_add(line.line_height)?;
         }
         Some(hwpunit_to_px(ink_end, self.dpi))
+    }
+
+    /// 자식 표가 같은 문단의 원본 새 쪽 줄을 소유하면 앞쪽은 제목 줄 상자에서 닫힌다.
+    /// 제목 앞 빈 문단까지 같은 축의 저장 줄로 이어져야 그 끝을 예약과 정렬에 사용한다.
+    fn stored_nested_host_restart_content_height(
+        &self,
+        cell: &Cell,
+        units: &[CellUnit],
+        start: usize,
+        end: usize,
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        let profile = self.profile.get();
+        if cell.dirty_flag
+            || profile.session_edited()
+            || !(profile.hwpx_stored_layout() || profile.hwp5_stored_pagination_layout())
+        {
+            return None;
+        }
+        let first = units.get(start)?;
+        let title = units.get(end.checked_sub(1)?)?;
+        let child = units.get(end)?;
+        let host = cell.paragraphs.get(title.para_idx)?;
+        let [Control::Table(_)] = host.controls.as_slice() else {
+            return None;
+        };
+        if !child.page_frame_reset_before
+            || !child.stored_frame_break_before
+            || title.para_idx != child.para_idx
+            || title.vis_end != child.vis_start
+            || first.reflowed_line_slot
+            || title.reflowed_line_slot
+            || child.reflowed_line_slot
+            || crate::renderer::composer::control_slot_line_index(host, 0) != Some(child.vis_start)
+        {
+            return None;
+        }
+        crate::renderer::float_placement::stored_empty_successor_geometry(
+            &cell.paragraphs,
+            title.para_idx.checked_sub(1)?,
+            styles,
+            self.dpi,
+        )?;
+        let opening = cell.paragraphs.get(first.para_idx)?.line_segs.get(first.vis_start)?;
+        let closing = host.line_segs.get(title.vis_end.checked_sub(1)?)?;
+        let restart = host.line_segs.get(child.vis_start)?;
+        if opening.vertical_pos != 0
+            || restart.vertical_pos != 0
+            || closing.vertical_pos <= 0
+            || closing.line_height <= 0
+            || [opening, closing, restart]
+                .iter()
+                .any(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+        {
+            return None;
+        }
+        Some(hwpunit_to_px(closing.vertical_pos.checked_add(closing.line_height)?, self.dpi))
     }
 
     /// Normalize the original opening box into the ordinary source row. This

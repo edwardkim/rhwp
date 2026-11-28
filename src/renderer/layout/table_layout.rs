@@ -17669,6 +17669,8 @@ impl LayoutEngine {
                                     let slot = i64::from(seg.line_height)
                                         + i64::from(seg.line_spacing.max(0));
                                     (forward - slot).abs() <= 2
+                                        || (!next_para.text.trim().is_empty()
+                                            && stored_empty_successor_advance.is_some())
                                 }
                             })
                         }

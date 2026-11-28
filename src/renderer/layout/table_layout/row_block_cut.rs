@@ -105,7 +105,7 @@ impl<'a> CellCutFrame<'a> {
             return Some(height);
         }
         if let Some(height) = self.engine.stored_single_cell_restart_content_height(
-            self.table, self.cell, self.units, self.start, end,
+            self.table, self.cell, self.units, self.start, end, self.styles,
         ) {
             return Some(height);
         }

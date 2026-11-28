@@ -52,14 +52,6 @@ pub(crate) fn stored_empty_successor_geometry(
     {
         return None;
     }
-    if !next.controls.is_empty()
-        && !matches!(next.controls.as_slice(), [Control::Table(t)]
-        if !t.common.treat_as_char && t.common.vert_rel_to == VertRelTo::Para
-            && t.common.vert_align == VertAlign::Top && t.common.vertical_offset == 0
-            && next.text.trim().is_empty())
-    {
-        return None;
-    }
     let delta = next_line.vertical_pos.checked_sub(line.vertical_pos)?;
     if delta < 0 {
         return None;
@@ -99,6 +91,37 @@ pub(crate) fn stored_empty_successor_geometry(
         .para_styles
         .get(next.para_shape_id as usize)?
         .spacing_before;
+    let after = styles
+        .para_styles
+        .get(current.para_shape_id as usize)
+        .map_or(0.0, |style| style.spacing_after);
+    let plain_advance = line
+        .line_height
+        .checked_add(line.line_spacing)
+        .and_then(|height| height.checked_add(crate::renderer::px_to_hwpunit(after + before, dpi)));
+    let text_precedes_table = matches!(next.controls.as_slice(), [Control::Table(_)])
+        && next.line_segs.get(1).is_some_and(|second| {
+            let end = next.line_seg_text_start_of(second.text_start);
+            next.text
+                .chars()
+                .zip(&next.char_offsets)
+                .any(|(ch, &offset)| {
+                    offset < end && !ch.is_whitespace() && !ch.is_control() && ch != '\u{FFFC}'
+                })
+        })
+        && crate::renderer::composer::control_slot_line_index(next, 0)
+            .is_some_and(|owner| owner > 0);
+    // 뒤 문단의 첫 줄이 실제 본문이고 중첩 표가 후속 줄에 있을 때도,
+    // 빈 줄과 문단 간격이 저장 원점을 정확히 닫으면 일반 줄 전진이다.
+    if !next.controls.is_empty()
+        && !(text_precedes_table && plain_advance == Some(delta))
+        && !matches!(next.controls.as_slice(), [Control::Table(t)]
+        if !t.common.treat_as_char && t.common.vert_rel_to == VertRelTo::Para
+            && t.common.vert_align == VertAlign::Top && t.common.vertical_offset == 0
+            && next.text.trim().is_empty())
+    {
+        return None;
+    }
     // 다음 문단이 빈 자리차지 표 호스트이고 저장 호스트 줄이 이 줄 끝 + 표 바깥
     // 상자에 정확히 놓였으면, 그 띠는 호스트 표가 소유한다. 빈 줄이 띠까지 전진하면
     // 호스트 표의 행 유닛과 이중으로 계상된다(docs#715 9쪽 조직도: 377px + 353px).
@@ -116,16 +139,8 @@ pub(crate) fn stored_empty_successor_geometry(
             .get(current.para_shape_id as usize)
             .map_or(0.0, |style| style.spacing_before),
     );
-    let after = styles
-        .para_styles
-        .get(current.para_shape_id as usize)
-        .map_or(0.0, |style| style.spacing_after);
     // 원본 전진이 실제 한 글줄과 명시적인 간격으로 설명될 때만
     // 뒤 간격을 분리한다. 동시 원점·별도 예약 띠를 잉크 높이로 추정하지 않는다.
-    let plain_advance = line
-        .line_height
-        .checked_add(line.line_spacing)
-        .and_then(|height| height.checked_add(crate::renderer::px_to_hwpunit(after + before, dpi)));
     let trailing = if plain_advance == Some(delta) {
         (hwpunit_to_px(line.line_spacing, dpi) + after).max(0.0)
     } else {
