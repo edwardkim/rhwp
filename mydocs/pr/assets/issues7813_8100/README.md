@@ -28,3 +28,10 @@
 2026-11-28 KST에 이번 분기의 변경 소스 14개에 Rust 서식을 적용했다.
 `cargo fmt --all -- --check`를 통과했다. 위 단계의 측정은 각각 기록한 후보에
 해당하며, 새 검증은 서식 커밋에서 빌드한 Native와 fresh WASM으로 실행한다.
+
+## 전쪽 검증의 한컴 Print 기준
+
+#7813 HWPX, #7821, #7822, #7834, #7922는 현재 검증 입력에서 발행한
+[한컴 Print 원본과 인쇄 확인 기록](../../../../pdf/issues7813_8100/README.md)을 사용한다.
+#7813 HWP와 #7830은 같은 원본에서 만든 기존 한컴 Office 2024 PDF를 사용한다.
+#7955는 입력 SHA가 일치하는 [한컴 Office 2020 Print PDF](../../../../pdf/issue7642-failed-regression-print/housing-lease-standard-form-hwp-print-2020.pdf)를 사용한다.
