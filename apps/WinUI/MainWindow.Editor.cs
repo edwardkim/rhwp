@@ -63,12 +63,12 @@ public sealed partial class MainWindow
             if (await dialog.ShowAsync() != ContentDialogResult.Primary)
                 return;
 
-            ImeReplacement? replacement = PageEditText.Difference(context.Context.Text, text.Text);
-            if (replacement is null)
+            IReadOnlyList<ImeReplacement> replacements = PageEditText.Differences(context.Context.Text, text.Text);
+            if (replacements.Count == 0)
                 return;
 
             var selected = PageEditText.Selection(text.Text, text.SelectionStart, text.SelectionLength);
-            EditResult edited = await worker.CommitImeAsync(current.Target, context, replacement, selected, token);
+            EditResult edited = await worker.CommitParagraphAsync(current.Target, context, replacements, selected, token);
             await RefreshEditedPageAsync(current, edited);
         });
     }

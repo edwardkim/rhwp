@@ -97,6 +97,12 @@ internal static class EditorSmoke
             new ImeReplacement(new(2, 2), " 이름"), "append");
         Assert(PageEditText.Difference("문단 이름", "문단") ==
             new ImeReplacement(new(2, 5), ""), "delete");
+        Assert(PageEditText.Differences("abcdefghijklmno", "XbcdefghijklmnY").SequenceEqual(
+            [new ImeReplacement(new(0, 1), "X"), new ImeReplacement(new(14, 15), "Y")]),
+            "separate edits retain the untouched formatted span");
+        Assert(PageEditText.Differences("가😀나😁다", "한😀나😁마").SequenceEqual(
+            [new ImeReplacement(new(0, 1), "한"), new ImeReplacement(new(6, 7), "마")]),
+            "unchanged supplementary characters retain their UTF-16 range");
         Assert(PageEditText.Selection("가😀나", 2, 0) is null &&
             PageEditText.Selection("가😀나", 1, 2) == new Utf16Selection(1, 3),
             "TextBox selection must remain on UTF-16 boundaries");
