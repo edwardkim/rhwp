@@ -173,7 +173,7 @@ def native_replace_all_contract(library):
         try:
             worker.host.request(handle, op="beginEdit", expectedRevision=0,
                                 selection={"anchor": start, "focus": start})
-            seed = worker.host.request(handle, op="replace", expectedRevision=0, text="İ İ")["outcome"]
+            seed = worker.host.request(handle, op="replaceSelection", expectedRevision=0, text="İ İ")["outcome"]
             direct = worker.host.request(handle, op="replaceAllMatches",
                                          expectedRevision=seed["revision"],
                                          request=command["request"], text=command["text"])
