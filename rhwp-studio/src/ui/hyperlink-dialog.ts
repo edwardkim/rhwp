@@ -1,5 +1,6 @@
 import { webHyperlinkUrl } from '@/core/hyperlink';
 import { ModalDialog } from './dialog';
+import { openDesktopWebLink } from '@/desktop/desktop-host';
 import './hyperlink-dialog.css';
 
 import { t } from '../i18n/index.ts';
@@ -85,10 +86,12 @@ export class HyperlinkDialog extends ModalDialog {
       try {
         const url = webHyperlinkUrl(this.uriInput.value);
         if (!url) throw new Error('http:// 또는 https://로 시작하는 웹 주소를 입력해 주세요.');
-        const opened = window.open('about:blank', '_blank');
-        if (!opened) throw new Error('팝업이 차단되었습니다. 이 사이트의 팝업을 허용해 주세요.');
-        opened.opener = null;
-        opened.location.replace(url);
+        if (!openDesktopWebLink(window, url)) {
+          const opened = window.open('about:blank', '_blank');
+          if (!opened) throw new Error('팝업이 차단되었습니다. 이 사이트의 팝업을 허용해 주세요.');
+          opened.opener = null;
+          opened.location.replace(url);
+        }
         this.error.textContent = '';
       } catch (error) {
         this.error.textContent = error instanceof Error ? error.message : String(error);
