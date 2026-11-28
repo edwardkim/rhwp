@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.Storage.Pickers;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation;
 using Windows.Storage;
 
 namespace Rhwp.WinUI;
@@ -113,13 +114,20 @@ public sealed partial class MainWindow : Window
 
         args.Handled = true;
         var deferral = args.GetDeferral();
-        string? path = null;
+        string? documentPath = null;
+        string? picturePath = null;
+        Point dropPoint = args.GetPosition(PageCanvas);
+        DocumentTarget? displayedDocument = page?.Target;
         try
         {
             var files = await args.DataView.GetStorageItemsAsync();
-            path = FileActivation.FirstDocumentPath(files.OfType<StorageFile>().Select(file => file.Path));
-            if (path is null && !closing)
-                StatusText.Text = "HWP 또는 HWPX 파일을 놓으세요.";
+            string[] paths = files.OfType<StorageFile>().Select(file => file.Path).ToArray();
+            documentPath = FileActivation.FirstDocumentPath(paths);
+            if (documentPath is null && pictureLimits is { InputBytes: > 0 })
+                picturePath = FileActivation.FirstPicturePath(paths);
+            if (documentPath is null && picturePath is null && !closing)
+                StatusText.Text = pictureLimits is { InputBytes: > 0 }
+                    ? "HWP, HWPX, PNG 또는 JPEG 파일을 놓으세요." : "HWP 또는 HWPX 파일을 놓으세요.";
         }
         catch (Exception error)
         {
@@ -131,8 +139,15 @@ public sealed partial class MainWindow : Window
             deferral.Complete();
         }
 
-        if (path is not null)
-            await OpenFileAsync(path);
+        if (documentPath is not null)
+            await OpenFileAsync(documentPath);
+        else if (picturePath is not null && displayedDocument is { } target && page?.Target == target && !closing)
+        {
+            if (AcceptPageInput(dropPoint, out PageInfo dropPage, out Point location))
+                await QueuePictureInsertionAsync(picturePath, dropPage, dropLocation: location);
+            else
+                StatusText.Text = "본문의 텍스트 위치에 그림을 놓으세요.";
+        }
     }
 
     private async void OnCloseClicked(object sender, RoutedEventArgs args)

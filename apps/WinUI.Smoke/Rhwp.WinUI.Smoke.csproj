@@ -21,6 +21,7 @@
     <Compile Include="../WinUI/NativeWorkerDispatcher.Table.cs" Link="NativeWorkerDispatcher.Table.cs" />
     <Compile Include="../WinUI/NativeWorkerDispatcher.Equation.cs" Link="NativeWorkerDispatcher.Equation.cs" />
     <Compile Include="../WinUI/NativeWorkerDispatcher.Shape.cs" Link="NativeWorkerDispatcher.Shape.cs" />
+    <Compile Include="../WinUI/NativeWorkerDispatcher.Picture.cs" Link="NativeWorkerDispatcher.Picture.cs" />
     <Compile Include="../WinUI/NativeWorkerDispatcher.TableObject.cs" Link="NativeWorkerDispatcher.TableObject.cs" />
     <Compile Include="../WinUI/LivePdfContract.cs" Link="LivePdfContract.cs" />
     <Compile Include="../WinUI/DocumentFileStore.cs" Link="DocumentFileStore.cs" />

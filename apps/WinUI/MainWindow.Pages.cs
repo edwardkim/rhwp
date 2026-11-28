@@ -24,6 +24,7 @@ public sealed partial class MainWindow
         continuousPages = null;
         firstPaintDocument = null;
         pendingPriorityRenderPage = null;
+        ClearPictureObjectSelection();
         pageSurfaces.Clear();
         PageLayers.Children.Clear();
         PageCanvas.Width = 0;
@@ -52,6 +53,7 @@ public sealed partial class MainWindow
         UpdateAutomationDocument(current);
         DrawSearchHighlight(current);
         DrawDirectGeometry();
+        DrawPictureObjectSelection();
         DrawTableObjectSelection();
     }
 

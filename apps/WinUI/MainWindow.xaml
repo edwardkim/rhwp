@@ -127,6 +127,8 @@
                                     Visibility="Collapsed" IsEnabled="False" AutomationProperties.AutomationId="InsertEquation" />
                     <MenuFlyoutItem x:Name="InsertShapeMenuItem" Text="도형 삽입…" Click="OnInsertShapeClicked"
                                     Visibility="Collapsed" IsEnabled="False" AutomationProperties.AutomationId="InsertShape" />
+                    <MenuFlyoutItem x:Name="InsertPictureMenuItem" Text="그림 삽입…" Click="OnInsertPictureClicked"
+                                    Visibility="Collapsed" IsEnabled="False" AutomationProperties.AutomationId="InsertPicture" />
                 </MenuBarItem>
                 <MenuBarItem x:Name="PageMenu" Title="쪽" Visibility="Collapsed"
                              AutomationProperties.AutomationId="PageMenu">
@@ -447,6 +449,8 @@
                         </Canvas.Resources>
                     </Canvas>
                     <Canvas x:Name="TableObjectOverlay" IsHitTestVisible="False"
+                            AutomationProperties.AccessibilityView="Raw" />
+                    <Canvas x:Name="PictureObjectOverlay" IsHitTestVisible="False"
                             AutomationProperties.AccessibilityView="Raw" />
                     <TextBox x:Name="DirectInput" Visibility="Collapsed" Opacity="0" Width="28"
                              MinWidth="0" MinHeight="0" Padding="0" BorderThickness="0"

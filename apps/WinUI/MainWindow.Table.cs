@@ -18,7 +18,8 @@ public sealed partial class MainWindow
 
         try
         {
-            (tableLimits, equationLimits, shapeLimits) = await worker.GetInsertLimitsAsync(CancellationToken.None);
+            (tableLimits, equationLimits, shapeLimits, pictureLimits) =
+                await worker.GetInsertLimitsAsync(CancellationToken.None);
             if (!closing)
                 RefreshInsertActions();
         }
@@ -30,18 +31,22 @@ public sealed partial class MainWindow
 
     private void RefreshInsertActions()
     {
-        if (directQueueRunning || InsertShapeMenuItem is null)
+        if (directQueueRunning || InsertPictureMenuItem is null)
             return;
 
         bool canInsert = DocumentActionsAvailable && TryGetBodyInsertionCaret(out _, out _);
-        InsertMenu.Visibility = tableLimits is not null || equationLimits is not null || shapeLimits is not null
+        bool hasPictureInsertion = pictureLimits is { InputBytes: > 0 };
+        InsertMenu.Visibility = tableLimits is not null || equationLimits is not null || shapeLimits is not null ||
+            hasPictureInsertion
             ? Visibility.Visible : Visibility.Collapsed;
         InsertTableMenuItem.Visibility = tableLimits is not null ? Visibility.Visible : Visibility.Collapsed;
         InsertEquationMenuItem.Visibility = equationLimits is not null ? Visibility.Visible : Visibility.Collapsed;
         InsertShapeMenuItem.Visibility = shapeLimits is not null ? Visibility.Visible : Visibility.Collapsed;
+        InsertPictureMenuItem.Visibility = hasPictureInsertion ? Visibility.Visible : Visibility.Collapsed;
         InsertTableMenuItem.IsEnabled = canInsert && tableLimits is not null;
         InsertEquationMenuItem.IsEnabled = canInsert && equationLimits is not null;
         InsertShapeMenuItem.IsEnabled = canInsert && shapeLimits is not null;
+        InsertPictureMenuItem.IsEnabled = canInsert && hasPictureInsertion;
     }
 
     private bool TryGetBodyInsertionCaret([NotNullWhen(true)] out PageInfo? current, [NotNullWhen(true)] out TextPosition? caret)

@@ -11,13 +11,14 @@ internal sealed record NativeTableLimits(int Rows, int Columns, int Cells)
 
 internal sealed partial class NativeWorkerDispatcher
 {
-    public Task<(NativeTableLimits? Table, NativeEquationLimits? Equation, NativeShapeLimits? Shape)> GetInsertLimitsAsync(
-        CancellationToken cancellation) =>
+    public Task<(NativeTableLimits? Table, NativeEquationLimits? Equation, NativeShapeLimits? Shape,
+        NativePictureLimits? Picture)> GetInsertLimitsAsync(CancellationToken cancellation) =>
         Dispatch(_ =>
         {
             using var report = ReadSuccess(RhwpNative.SessionCapabilities());
             var capabilities = report.RootElement;
-            return (ReadTableLimits(capabilities), ReadEquationLimits(capabilities), ReadShapeLimits(capabilities));
+            return (ReadTableLimits(capabilities), ReadEquationLimits(capabilities), ReadShapeLimits(capabilities),
+                ReadPictureLimits(capabilities));
         }, cancellation);
 
     private static NativeTableLimits? ReadTableLimits(JsonElement capabilities)

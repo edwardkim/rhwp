@@ -47,6 +47,7 @@ public sealed partial class MainWindow
             return;
 
         ClearTableObjectSelection();
+        ClearPictureObjectSelection();
         if (!AcceptPageInput(point.Position, out PageInfo current, out Point location))
         {
             lastTextClick = null;
@@ -115,13 +116,14 @@ public sealed partial class MainWindow
             return;
         }
 
-        bool exitTable = args.Key == VirtualKey.Escape && selectedTable is not null;
-        if ((!exitTable && (args.Key != VirtualKey.F2 || KeyDown(VirtualKey.Control))) ||
+        bool exitObject = args.Key == VirtualKey.Escape && (selectedTable is not null || selectedPicture is not null);
+        if ((!exitObject && (args.Key != VirtualKey.F2 || KeyDown(VirtualKey.Control))) ||
             !DocumentActionsAvailable || page is not PageInfo current)
             return;
 
         args.Handled = true;
         ClearTableObjectSelection();
+        ClearPictureObjectSelection();
         EnqueueDirectEdit(async () =>
         {
             if (editorInfo is { Editing: true, Selection: not null } info && info.Target == current.Target)
@@ -206,7 +208,11 @@ public sealed partial class MainWindow
 
         TextHit? hit = await worker.HitTestAsync(current, location.X, location.Y, token);
         if (hit?.Caret is not PageCaret caret || caret.Page != current.Page)
+        {
+            if (!extend && await FindPictureContextAsync(current, location) is { } picture)
+                SelectPictureObject(picture);
             return false;
+        }
 
         if (!extend)
             dragAnchor = hit.Position;
@@ -249,6 +255,7 @@ public sealed partial class MainWindow
         if (!extend && !platformComposing)
         {
             ClearTableObjectSelection();
+            ClearPictureObjectSelection();
             EmptyInputControl();
         }
         preferredX = null;

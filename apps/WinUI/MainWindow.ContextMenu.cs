@@ -19,8 +19,15 @@ public sealed partial class MainWindow
         args.Handled = true;
         bool textContext = false;
         TableContext? tableContext = null;
+        PictureContext? pictureContext = null;
         await EnqueueDirectEdit(async () =>
         {
+            pictureContext = await FindPictureContextAsync(current, location);
+            if (pictureContext is { } hitPicture)
+            {
+                SelectPictureObject(hitPicture);
+                return;
+            }
             tableContext = await FindTableContextAsync(current, location);
             if (tableContext is not null && IsSelectedTable(tableContext))
                 return;
@@ -53,6 +60,13 @@ public sealed partial class MainWindow
                     async (_, _) => await ShowTableObjectDialogAsync(table, resize: true), true));
             menu.Items.Add(ContextAction("표 속성…", "ContextTableObjectProperties",
                 async (_, _) => await ShowTableObjectDialogAsync(table, resize: false), true));
+            menu.Items.Add(new MenuFlyoutSeparator());
+        }
+
+        if (pictureContext is { } picture && IsCurrentPicture(picture))
+        {
+            menu.Items.Add(ContextAction("그림 속성…", "ContextPictureProperties",
+                async (_, _) => await ShowPicturePropertiesAsync(picture), true));
             menu.Items.Add(new MenuFlyoutSeparator());
         }
 

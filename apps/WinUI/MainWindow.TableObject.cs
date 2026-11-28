@@ -78,6 +78,7 @@ public sealed partial class MainWindow
         if (!IsCurrentTablePage(context.Page))
             return;
         DismissDirectEditor();
+        ClearPictureObjectSelection();
         selectedTable = new SelectedTable(context);
         DrawTableObjectSelection();
         StatusText.Text = TableSelectionStatus(context.Table);
