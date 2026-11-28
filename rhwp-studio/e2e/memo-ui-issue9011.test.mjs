@@ -315,6 +315,79 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
   assert.deepEqual(await saveBytes(), beforePreview, '보기 상태는 저장 내용에 기록되지 않는다');
   assert.equal(await dirty(page), false);
 
+  const family = () => page.evaluate(() => window.__wasm.getMemos().map(memo => ({
+    id: memo.id, parentId: memo.parentId, text: memo.text, author: memo.author,
+  })));
+  const parentText = '둘째 셀 선택 메모';
+  const parent = (await family()).find(memo => memo.text === parentText);
+  await open(page);
+  await selectMemo(page, parent.id);
+  await page.click('.memo-add-reply');
+  await fill(page, '작성 중인 댓글');
+  await page.click('.memo-cancel-reply');
+  assert.equal((await family()).length, 3);
+  assert.equal(await dirty(page), false);
+  assert.equal(await page.$eval('#memo-text', el => el.value), parentText);
+  await page.click('.memo-add-reply');
+  await page.type('#memo-author', '검토자');
+  await fill(page, '첫 댓글');
+  await page.click('[data-memo-dialog] .dialog-btn-primary');
+  const reply = (await family()).find(memo => memo.parentId === parent.id);
+  assert.ok(reply);
+  assert.equal(reply.author, '검토자');
+  const replyLabel = await page.$eval('[data-memo-dialog] select', el => el.selectedOptions[0].textContent);
+  assert.ok(replyLabel.includes(parentText));
+  assert.equal(await page.$eval('.memo-add-reply', el => el.disabled), true);
+  await fill(page, '수정한 댓글');
+  await page.click('[data-memo-dialog] .dialog-btn-primary');
+  assert.equal((await family()).find(memo => memo.id === reply.id).text, '수정한 댓글');
+  await deleteMemo(page);
+  assert.equal((await family()).find(memo => memo.id === reply.id), undefined);
+  await close(page);
+  await page.evaluate(() => window.__inputHandler.performUndo());
+  assert.equal((await family()).find(memo => memo.id === reply.id).text, '수정한 댓글');
+  await page.evaluate(() => window.__inputHandler.performRedo());
+  assert.equal((await family()).length, 3);
+  await page.evaluate(() => window.__inputHandler.performUndo());
+  await open(page);
+  await selectMemo(page, parent.id);
+  await page.click('.memo-add-reply');
+  await fill(page, '둘째 댓글');
+  await page.click('[data-memo-dialog] .dialog-btn-primary');
+  await close(page);
+  const relationships = async () => {
+    const memos = await family();
+    return memos.filter(memo => memo.parentId !== null)
+      .map(memo => [memo.text, memos.find(parent => parent.id === memo.parentId)?.text])
+      .sort();
+  };
+  const expectedFamily = [['둘째 댓글', parentText], ['수정한 댓글', parentText]];
+  for (const format of ['hwp', 'hwpx']) {
+    await saveAndReopen(page, format, 'reply');
+    assert.deepEqual(await relationships(), expectedFamily, format + ' 부모 관계와 댓글 내용');
+  }
+
+  const beforeDeleting = await family();
+  const reopenedParent = beforeDeleting.find(memo => memo.text === parentText);
+  await open(page);
+  await selectMemo(page, reopenedParent.id);
+  await deleteMemo(page);
+  const confirmation = '.modal-overlay:last-child .dialog-wrap';
+  await page.waitForFunction(selector => document.querySelector(selector)?.textContent.includes('댓글 2개'), {}, confirmation);
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => document.querySelectorAll('.modal-overlay').length === 1);
+  assert.deepEqual(await family(), beforeDeleting);
+  assert.equal(await dirty(page), false);
+  await deleteMemo(page);
+  await page.click(confirmation + ' .dialog-btn-primary');
+  await page.waitForFunction(() => window.__wasm.getMemos().length === 2);
+  await close(page);
+  await page.evaluate(() => window.__inputHandler.performUndo());
+  assert.deepEqual(await family(), beforeDeleting);
+  await page.evaluate(() => window.__inputHandler.performRedo());
+  assert.deepEqual(await relationships(), []);
+  console.log('  댓글 추가·수정·삭제, 부모 확인·취소, undo/redo와 HWP/HWPX 부모 관계 보존');
+
   await createNewDocument(page);
   const pageMemoOffset = await page.evaluate(async () => {
     const text = '긴 문단의 메모 대상 문자열입니다. '.repeat(160);

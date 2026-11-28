@@ -75,7 +75,7 @@ export const MUTATING_METHODS: readonly string[] = [
   'applyCharFormatInHeaderFooter', 'applyParaFormatInHf', 'insertFieldInHf', 'applyHfTemplate',
   // 필드/양식/찾아바꾸기/책갈피
   'insertHyperlink', 'updateHyperlink', 'replaceHyperlinkText', 'removeHyperlink',
-  'insertMemo', 'updateMemo', 'removeMemo',
+  'insertMemo', 'insertMemoReply', 'updateMemo', 'removeMemo',
   'setFieldValue', 'setFieldValueByName', 'removeFieldAt', 'insertClickHereField',
   'updateClickHereProps', 'setFormValue', 'setFormValueInCell', 'applyFormActionUpdates',
   'replaceText', 'replaceOne', 'replaceAll',
