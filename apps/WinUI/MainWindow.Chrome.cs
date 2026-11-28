@@ -1,4 +1,5 @@
 using Microsoft.UI;
+using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -13,7 +14,7 @@ public sealed partial class MainWindow
         if (DesktopAcrylicController.IsSupported())
         {
             // The opaque editor background covers the window backdrop below the header.
-            SystemBackdrop = new DesktopAcrylicBackdrop();
+            SystemBackdrop = new HeaderAcrylicBackdrop();
             HeaderFallback.Visibility = Visibility.Collapsed;
         }
 
@@ -30,5 +31,26 @@ public sealed partial class MainWindow
         AppWindowTitleBar caption = AppWindow.TitleBar;
         caption.ButtonBackgroundColor = Colors.Transparent;
         caption.ButtonInactiveBackgroundColor = Colors.Transparent;
+    }
+
+    private sealed class HeaderAcrylicBackdrop : SystemBackdrop
+    {
+        private DesktopAcrylicController? controller;
+
+        protected override void OnTargetConnected(ICompositionSupportsSystemBackdrop target, XamlRoot root)
+        {
+            base.OnTargetConnected(target, root);
+            controller = new DesktopAcrylicController { Kind = DesktopAcrylicKind.Thin };
+            controller.SetSystemBackdropConfiguration(GetDefaultSystemBackdropConfiguration(target, root));
+            controller.AddSystemBackdropTarget(target);
+        }
+
+        protected override void OnTargetDisconnected(ICompositionSupportsSystemBackdrop target)
+        {
+            base.OnTargetDisconnected(target);
+            controller?.RemoveSystemBackdropTarget(target);
+            controller?.Dispose();
+            controller = null;
+        }
     }
 }
