@@ -10,11 +10,16 @@ use std::ops::Range;
 use serde::{Deserialize, Serialize};
 use unicode_segmentation::UnicodeSegmentation;
 
+use crate::document_core::helpers::{color_ref_to_css, css_color_to_bgr};
 use crate::document_core::native_interaction::{
     legacy_cell_path, NativeCellPathEntry, NativeTextPosition, NativeTextSelection,
     NativeVerticalDirection,
 };
-use crate::model::{paragraph::Paragraph, style::Alignment};
+use crate::model::{
+    color::opaque_rgb,
+    paragraph::Paragraph,
+    style::{Alignment, CharShape},
+};
 
 use super::editor::{NativeEditOutcome, NativeEditor};
 use super::NativeHostError;
@@ -90,12 +95,16 @@ impl<T: PartialEq> NativeFormattingValue<T> {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NativeSelectionFormatting {
     pub bold: NativeFormattingValue<bool>,
     /// HWPUNIT (100 units per point), matching formatCharacters.
     pub font_size: NativeFormattingValue<i32>,
+    /// Names of the seven HWP language slots, in document order.
+    pub font_names: [NativeFormattingValue<Option<String>>; 7],
+    /// An explicit RGB color as #RRGGBB. None is an automatic color.
+    pub text_color: NativeFormattingValue<Option<String>>,
     /// Always uniform because the selection belongs to one editable paragraph.
     pub alignment: NativeParagraphAlignment,
 }
@@ -156,6 +165,8 @@ pub enum NativeEditCommand {
     FormatCharacters {
         bold: Option<bool>,
         font_size: Option<i32>,
+        font_name: Option<String>,
+        text_color: Option<String>,
     },
     /// Align the paragraph that owns the selection. A collapsed caret is valid.
     SetParagraphAlignment {
@@ -248,8 +259,13 @@ impl NativeEditor {
                     self.join_previous_cell_paragraph(expected_revision)?
                 }
             }
-            NativeEditCommand::FormatCharacters { bold, font_size } => {
-                self.format_characters(expected_revision, bold, font_size)?
+            NativeEditCommand::FormatCharacters {
+                bold,
+                font_size,
+                font_name,
+                text_color,
+            } => {
+                self.format_characters(expected_revision, bold, font_size, font_name, text_color)?
             }
             NativeEditCommand::SetParagraphAlignment { alignment } => {
                 self.set_paragraph_alignment(expected_revision, alignment)?
@@ -386,6 +402,13 @@ impl NativeEditor {
                 NativeHostError::InvalidArgument("unknown character shape in selection".into())
             })
         };
+        let font_name = |shape: &CharShape, language: usize| {
+            doc_info
+                .font_faces
+                .get(language)
+                .and_then(|fonts| fonts.get(shape.font_ids[language] as usize))
+                .map(|font| font.name.as_str())
+        };
         let mut ids = ids.into_iter();
         let first = ids.next().ok_or_else(|| {
             NativeHostError::InvalidArgument("invalid character format range".into())
@@ -393,10 +416,18 @@ impl NativeEditor {
         let first = shape_for(first)?;
         let mut bold = NativeFormattingValue::Uniform(first.bold);
         let mut font_size = NativeFormattingValue::Uniform(first.base_size);
+        let mut font_names = std::array::from_fn(|language| {
+            NativeFormattingValue::Uniform(font_name(first, language))
+        });
+        let mut text_color = NativeFormattingValue::Uniform(opaque_rgb(first.text_color));
         for id in ids {
             let shape = shape_for(id)?;
             bold.include(shape.bold);
             font_size.include(shape.base_size);
+            for (language, name) in font_names.iter_mut().enumerate() {
+                name.include(font_name(shape, language));
+            }
+            text_color.include(opaque_rgb(shape.text_color));
         }
         let alignment = doc_info
             .para_shapes
@@ -409,6 +440,18 @@ impl NativeEditor {
         Ok(NativeSelectionFormatting {
             bold,
             font_size,
+            font_names: font_names.map(|name| match name {
+                NativeFormattingValue::Uniform(name) => {
+                    NativeFormattingValue::Uniform(name.map(str::to_owned))
+                }
+                NativeFormattingValue::Mixed => NativeFormattingValue::Mixed,
+            }),
+            text_color: match text_color {
+                NativeFormattingValue::Uniform(color) => {
+                    NativeFormattingValue::Uniform(color.map(color_ref_to_css))
+                }
+                NativeFormattingValue::Mixed => NativeFormattingValue::Mixed,
+            },
             alignment,
         })
     }
@@ -418,10 +461,12 @@ impl NativeEditor {
         revision: u64,
         bold: Option<bool>,
         font_size: Option<i32>,
+        font_name: Option<String>,
+        text_color: Option<String>,
     ) -> Result<NativeEditOutcome, NativeHostError> {
-        if bold.is_none() && font_size.is_none() {
+        if bold.is_none() && font_size.is_none() && font_name.is_none() && text_color.is_none() {
             return Err(NativeHostError::InvalidArgument(
-                "formatCharacters requires bold or fontSize".into(),
+                "formatCharacters requires bold, fontSize, fontName or textColor".into(),
             ));
         }
         // The model stores its base size as HWPUNIT, with 100 units per point
@@ -431,6 +476,31 @@ impl NativeEditor {
                 "fontSize must be within 1..=409600 HWPUNIT".into(),
             ));
         }
+        let font_name = font_name.as_deref();
+        if font_name.is_some_and(|name| {
+            name.trim().is_empty()
+                || name.trim().chars().count() > 64
+                || name.chars().any(char::is_control)
+        }) {
+            return Err(NativeHostError::InvalidArgument(
+                "fontName must contain 1 to 64 non-control characters".into(),
+            ));
+        }
+        let font_name = font_name.map(str::trim);
+        let requested_family = font_name.map(str::to_lowercase);
+        let color = text_color
+            .as_deref()
+            .map(|value| {
+                if value.bytes().skip(1).all(|byte| byte.is_ascii_hexdigit()) {
+                    if let Some(color) = css_color_to_bgr(value) {
+                        return Ok(color);
+                    }
+                }
+                Err(NativeHostError::InvalidArgument(
+                    "textColor must be #RRGGBB".into(),
+                ))
+            })
+            .transpose()?;
         let paragraph = self.formatting_paragraph()?;
         let (start, end) = Self::ordered(self.selection());
         let range = start.scalar_offset as usize..end.scalar_offset as usize;
@@ -439,7 +509,7 @@ impl NativeEditor {
                 "formatCharacters requires a nonempty text selection".into(),
             ));
         }
-        let shapes = &self.session().document().document().doc_info.char_shapes;
+        let doc_info = &self.session().document().document().doc_info;
         let ids = paragraph.char_shape_ids_in_range(range.start, range.end);
         if ids.is_empty() {
             return Err(NativeHostError::InvalidArgument(
@@ -448,16 +518,28 @@ impl NativeEditor {
         }
         let mut changes_style = false;
         for id in ids {
-            let shape = shapes.get(id as usize).ok_or_else(|| {
+            let shape = doc_info.char_shapes.get(id as usize).ok_or_else(|| {
                 NativeHostError::InvalidArgument("unknown character shape in selection".into())
             })?;
             changes_style |= bold.is_some_and(|bold| shape.bold != bold)
-                || font_size.is_some_and(|size| shape.base_size != size);
+                || font_size.is_some_and(|size| shape.base_size != size)
+                || color.is_some_and(|color| shape.text_color != color)
+                || requested_family.as_deref().is_some_and(|requested| {
+                    (0..7).any(|language| {
+                        doc_info
+                            .font_faces
+                            .get(language)
+                            .and_then(|fonts| fonts.get(shape.font_ids[language] as usize))
+                            .is_none_or(|font| font.name.to_lowercase() != requested)
+                    })
+                });
         }
         if !changes_style {
             return Ok(self.outcome(false, false));
         }
-        let properties = serde_json::json!({"bold": bold, "fontSize": font_size});
+        let properties = serde_json::json!({
+            "bold": bold, "fontSize": font_size, "fontName": font_name, "textColor": text_color,
+        });
         self.apply_format(revision, Some(range), &properties.to_string())
     }
 

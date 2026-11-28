@@ -163,6 +163,9 @@ pub enum NativeRuntimeCommand {
         font_generation: u64,
         selection: NativeTextSelection,
     },
+    SystemFontFamilies {
+        target: NativeRuntimeTarget,
+    },
     ImeContext {
         target: NativeRuntimeTarget,
     },
@@ -563,6 +566,10 @@ pub enum NativeRuntimeOutput {
         selection: NativeTextSelection,
         formatting: NativeSelectionFormatting,
     },
+    SystemFontFamilies {
+        target: NativeRuntimeTarget,
+        families: Vec<String>,
+    },
     ImeContext(NativeImeContext),
     ImeEditContext(Box<NativeImeEditContext>),
     Clipboard {
@@ -642,6 +649,7 @@ impl fmt::Debug for NativeRuntimeOutput {
             Self::Info(_) => "Info",
             Self::CommandExecuted(_) => "CommandExecuted",
             Self::SelectionFormatting { .. } => "SelectionFormatting",
+            Self::SystemFontFamilies { .. } => "SystemFontFamilies",
             Self::ImeContext(_) => "ImeContext",
             Self::ImeEditContext(_) => "ImeEditContext",
             Self::Clipboard { .. } => "Clipboard",

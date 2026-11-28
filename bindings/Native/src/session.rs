@@ -199,6 +199,9 @@ enum Request {
         font_generation: u64,
         selection: NativeTextSelection,
     },
+    SystemFontFamilies {
+        expected_revision: u64,
+    },
     ReplaceAllMatches {
         expected_revision: u64,
         request: NativeSearchRequest,
@@ -616,6 +619,9 @@ fn worker_output(host: &mut Host, worker: u64, output: NativeRuntimeOutput) -> V
                 json!({"ok":true,"kind":"selectionFormatting","target":target,
                     "fontGeneration":font_generation,"selection":selection,"formatting":formatting})
             }
+            NativeRuntimeOutput::SystemFontFamilies { target, families } => {
+                json!({"ok":true,"kind":"systemFontFamilies","target":target,"families":families})
+            }
             NativeRuntimeOutput::ImeContext(context) => {
                 json!({"ok":true,"kind":"imeContext","context":context})
             }
@@ -847,8 +853,7 @@ fn frame_result(
 #[no_mangle]
 pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
     response(|| {
-        Ok(
-            json!({"ok":true,"abiVersion":1,"nativeSkia":cfg!(feature="native-skia"),
+        let mut capabilities = json!({"ok":true,"abiVersion":1,"nativeSkia":cfg!(feature="native-skia"),
         "tableCellParagraphCommands":true,
         "tableCellNavigation":true,
         "tableCellTextNavigation":true,
@@ -873,8 +878,10 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
         "livePdfExport":cfg!(feature="native-skia"),
         "maxLivePdfPages":rhwp_core::native_host::runtime::MAX_LIVE_PDF_PAGES,
         "maxLivePdfBytes":rhwp_core::native_host::runtime::MAX_LIVE_PDF_BYTES,
-        "pixelFormat":"rgba8Premultiplied","colorSpace":"srgb"}),
-        )
+        "pixelFormat":"rgba8Premultiplied","colorSpace":"srgb"});
+        capabilities["characterFontColorFormatting"] = true.into();
+        capabilities["systemFontFamilies"] = cfg!(feature = "native-skia").into();
+        Ok(capabilities)
     })
 }
 
@@ -952,6 +959,11 @@ pub unsafe extern "C" fn rhwp_session_request(
                     let formatting=record.editor_mut()?.selection_formatting(expected_revision,font_generation,&selection)?;
                     Ok(json!({"ok":true,"kind":"selectionFormatting","revision":expected_revision,
                         "fontGeneration":font_generation,"selection":selection,"formatting":formatting}))
+                },
+                Request::SystemFontFamilies { expected_revision } => {
+                    let families = session.system_font_families(expected_revision)?;
+                    Ok(json!({"ok":true,"kind":"systemFontFamilies","revision":expected_revision,
+                        "families":families}))
                 },
                 Request::ReplaceAllMatches {expected_revision, request, text}=>{
                     let result=record.editor_mut()?.replace_all_matches(expected_revision,&request,&text)?;
