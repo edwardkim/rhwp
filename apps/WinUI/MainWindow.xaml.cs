@@ -207,10 +207,11 @@ public sealed partial class MainWindow : Window
                 StatusText.Text = IdleStatus;
             else
             {
+                firstPaintDocument = result.Target.DocumentId;
                 SetPageSize(result);
                 PageScroll.ChangeView(0, 0, null, true);
                 StatusText.Text = RenderingStatus;
-                QueueRender();
+                QueueRender(priorityPage: result.Page);
             }
             return true;
         }

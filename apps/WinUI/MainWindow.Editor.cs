@@ -86,7 +86,7 @@ public sealed partial class MainWindow
         }, index, token);
         page = updated;
         SetPageSize(updated);
-        QueueRender(editedPage: editedPage ?? updated.Page);
+        QueueRender(priorityPage: editedPage ?? updated.Page);
     }
 
     private void ScheduleCommittedRecovery()

@@ -15,13 +15,15 @@ public sealed partial class MainWindow
     private const int PagesPerRender = 4;
     private ContinuousPageLayout? continuousPages;
     private readonly Dictionary<uint, PageSurface> pageSurfaces = [];
-    private uint? pendingEditRenderPage;
-    private bool editRenderPosted;
+    private ulong? firstPaintDocument;
+    private uint? pendingPriorityRenderPage;
+    private bool priorityRenderPosted;
 
     private void ResetContinuousPages()
     {
         continuousPages = null;
-        pendingEditRenderPage = null;
+        firstPaintDocument = null;
+        pendingPriorityRenderPage = null;
         pageSurfaces.Clear();
         PageLayers.Children.Clear();
         PageCanvas.Width = 0;
@@ -127,14 +129,14 @@ public sealed partial class MainWindow
         RefreshButtons();
     }
 
-    private void QueueRender(uint? editedPage = null)
+    private void QueueRender(uint? priorityPage = null)
     {
         if (closing || page is not { } current || continuousPages?.Matches(current) != true)
             return;
 
         viewVersion++;
-        if (editedPage is uint index)
-            pendingEditRenderPage = index;
+        if (priorityPage is uint index)
+            pendingPriorityRenderPage = index;
         ScheduleRender();
     }
 
@@ -143,19 +145,19 @@ public sealed partial class MainWindow
         if (closing || renderRequest is not null || page is not { } current || continuousPages?.Matches(current) != true)
             return;
 
-        if (pendingEditRenderPage is not null)
+        if (pendingPriorityRenderPage is not null || firstPaintDocument == current.Target.DocumentId)
         {
             renderTimer.Stop();
-            if (!editRenderPosted)
+            if (!priorityRenderPosted)
             {
-                editRenderPosted = DispatcherQueue.TryEnqueue(async () =>
+                priorityRenderPosted = DispatcherQueue.TryEnqueue(async () =>
                 {
-                    editRenderPosted = false;
-                    if (pendingEditRenderPage is not null)
+                    priorityRenderPosted = false;
+                    if (pendingPriorityRenderPage is not null || firstPaintDocument is not null)
                         await RenderPagesAsync();
                 });
             }
-            if (editRenderPosted)
+            if (priorityRenderPosted)
                 return;
         }
 
@@ -172,8 +174,9 @@ public sealed partial class MainWindow
             PageScroll.ViewportHeight <= 0 || PageScroll.ViewportWidth <= 0 || PageScroll.ZoomFactor != 1)
             return;
 
-        uint? editedPage = pendingEditRenderPage;
-        pendingEditRenderPage = null;
+        bool firstPaint = firstPaintDocument == current.Target.DocumentId;
+        uint? priorityPage = pendingPriorityRenderPage ?? (firstPaint ? current.Page : null);
+        pendingPriorityRenderPage = null;
         ulong version = viewVersion;
         ulong placementVersion = layout.PlacementVersion;
         double renderZoom = zoom;
@@ -186,9 +189,9 @@ public sealed partial class MainWindow
             var wanted = VisiblePages(layout).ToArray();
             TrimPageSurfaces(wanted);
             PagePlacement[] batch = wanted;
-            if (editedPage is uint preferred && wanted.Length > 1)
+            if (priorityPage is uint preferred && wanted.Length > 1)
             {
-                // Draw the edited sheet before measuring or drawing neighboring sheets.
+                // Draw the first visible or just-edited sheet before measuring the neighboring sheets.
                 batch = [wanted.FirstOrDefault(placement => placement.Index == preferred &&
                     GetPageViewport(layout.Describe(current, placement), placement, deviceScale, 0) is not null,
                     wanted[0])];
@@ -216,7 +219,7 @@ public sealed partial class MainWindow
             if (ApplyPageMeasurements(layout, measuredPages))
             {
                 hasMore = true;
-                if (editedPage is null || !layout.TryGet(batch[0].Index, out PagePlacement updated))
+                if (priorityPage is null || !layout.TryGet(batch[0].Index, out PagePlacement updated))
                     return;
                 placementVersion = layout.PlacementVersion;
                 batch = [updated];
@@ -227,12 +230,15 @@ public sealed partial class MainWindow
             {
                 if (!OwnsRender(current, layout, placementVersion, renderZoom, deviceScale, request))
                     return;
-                if (layout.Measured(current, placement.Index) is not PageInfo measured ||
-                    GetPageViewport(measured, placement, deviceScale, PageOverscan) is not { } viewport)
+                if (layout.Measured(current, placement.Index) is not PageInfo measured)
                     continue;
 
+                PageViewport? visible = GetPageViewport(measured, placement, deviceScale, 0);
+                if (((firstPaint ? visible : null) ??
+                    GetPageViewport(measured, placement, deviceScale, PageOverscan)) is not { } viewport)
+                    continue;
+                PageViewport needed = visible ?? viewport;
                 PageSurface surface = GetPageSurface(placement);
-                PageViewport needed = GetPageViewport(measured, placement, deviceScale, 0) ?? viewport;
                 if (surface.Covers(measured, needed, viewport, zoom, deviceScale))
                     continue;
                 if (rendering++ == PagesPerRender)
@@ -256,6 +262,7 @@ public sealed partial class MainWindow
 
                 surface.Commit(measured, viewport, renderZoom, deviceScale, frame, source);
                 ArrangePage(surface, placement);
+                CompleteFirstPaint(current.Target.DocumentId);
                 if (pdfCancellation is null && StatusText.Text == RenderingStatus)
                     StatusText.Text = documentError ?? string.Empty;
             }
@@ -266,7 +273,10 @@ public sealed partial class MainWindow
         catch (Exception error)
         {
             if (!closing && !request.IsCancellationRequested)
+            {
                 StatusText.Text = "쪽을 표시할 수 없습니다. " + error.Message;
+                CompleteFirstPaint(current.Target.DocumentId);
+            }
         }
         finally
         {
@@ -274,6 +284,15 @@ public sealed partial class MainWindow
             if (hasMore || version != viewVersion)
                 ScheduleRender();
         }
+    }
+
+    private void CompleteFirstPaint(ulong documentId)
+    {
+        if (firstPaintDocument != documentId || page is not { } active || active.Target.DocumentId != documentId)
+            return;
+
+        firstPaintDocument = null;
+        UpdateAutomationDocument(active);
     }
 
     private bool ApplyPageMeasurements(ContinuousPageLayout layout, IEnumerable<PageInfo> measuredPages)

@@ -13,6 +13,9 @@ public sealed partial class MainWindow
         if (current is not null)
             continuousPages?.TryGet(current.Page, out placement);
         PageCanvas.UpdateAutomationViewport(PageScroll, zoom, placement.Left * zoom, placement.Top * zoom);
+        if (current is not null && firstPaintDocument == current.Target.DocumentId)
+            return;
+
         (DocumentTarget Target, ulong FontGeneration, uint Page)? identity = current is null
             ? null : (current.Target, current.FontGeneration, current.Page);
         if (identity == automationDocument)
