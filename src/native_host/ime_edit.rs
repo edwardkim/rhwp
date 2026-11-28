@@ -85,6 +85,13 @@ pub enum NativeImeEdit {
         selection: Option<NativeImeUtf16Selection>,
         preedit: Option<NativeImePreedit>,
     },
+    /// Commit separated replacements from one original context as one undo
+    /// entry, keeping the content and character styles between those ranges.
+    /// This command requires a context without an active native composition.
+    CommitBatch {
+        replacements: Vec<NativeImeReplacement>,
+        selection: Option<NativeImeUtf16Selection>,
+    },
 }
 
 struct Replacement {
@@ -126,7 +133,7 @@ impl NativeEditor {
                 .as_deref()
                 .unwrap_or(&composition.original_text);
             check_text_bound(text)?;
-            let start = Self::ordered(&composition.replacement_range).0;
+            let start = composition.replacement_range.ordered().0;
             if !same_text_address(start, &context.position) {
                 return Err(invalid("composition is outside the IME paragraph"));
             }
@@ -186,7 +193,85 @@ impl NativeEditor {
                 selection,
                 preedit,
             } => self.commit_ime_edit(expected, replacement, selection, preedit),
+            NativeImeEdit::CommitBatch {
+                replacements,
+                selection,
+            } => self.commit_ime_batch(expected, &replacements, selection),
         }
+    }
+
+    fn commit_ime_batch(
+        &mut self,
+        expected: &NativeImeEditContext,
+        replacements: &[NativeImeReplacement],
+        selection: Option<NativeImeUtf16Selection>,
+    ) -> Result<NativeEditOutcome, NativeHostError> {
+        if self.composition.is_some() {
+            return Err(invalid("a batch requires an inactive IME composition"));
+        }
+        if replacements.len() > MAX_IME_EDIT_SCALARS {
+            return Err(limit("IME batch exceeds the replacement count limit"));
+        }
+
+        let original = &expected.context.text;
+        let characters: Vec<_> = original.chars().collect();
+        let mut result = String::with_capacity(original.len());
+        let mut planned = Vec::with_capacity(replacements.len());
+        let mut last_end = 0;
+        let mut inserted_bytes = 0;
+        let mut inserted_scalars = 0;
+        let mut result_scalars = 0;
+        let mut default_caret = expected.context.cursor_scalar as usize;
+        for (index, replacement) in replacements.iter().enumerate() {
+            let range = scalar_range(original, replacement.range)?;
+            if index != 0 && range.start <= last_end {
+                return Err(invalid(
+                    "IME batch replacements must be ordered and separated",
+                ));
+            }
+            check_input(&replacement.text, None)?;
+            let replacement_scalars = replacement.text.chars().count();
+            inserted_bytes += replacement.text.len();
+            inserted_scalars += replacement_scalars;
+            if inserted_bytes > MAX_IME_EDIT_BYTES || inserted_scalars > MAX_IME_EDIT_SCALARS {
+                return Err(limit("IME batch exceeds the combined input limit"));
+            }
+
+            result.extend(&characters[last_end..range.start]);
+            result.push_str(&replacement.text);
+            result_scalars += range.start - last_end + replacement_scalars;
+            last_end = range.end;
+            if characters[range.clone()]
+                .iter()
+                .copied()
+                .ne(replacement.text.chars())
+            {
+                planned.push((
+                    NativeTextSelection {
+                        anchor: native_position(expected, range.start)?,
+                        focus: native_position(expected, range.end)?,
+                    },
+                    replacement.text.as_str(),
+                ));
+                default_caret = result_scalars;
+            }
+        }
+        result.extend(&characters[last_end..]);
+        let selection = plan_selection(expected, &result, selection, default_caret)?;
+        self.check_next_ime_window(expected, &result, &selection, None)?;
+        if planned.is_empty() {
+            self.selection = selection;
+            return Ok(self.outcome(false, false));
+        }
+
+        self.edit_transaction(expected.revision, |core| {
+            // Each range refers to the original context. Apply from right to
+            // left so earlier scalar offsets remain valid.
+            for (range, text) in planned.into_iter().rev() {
+                Self::apply_replacement(core, &range, text)?;
+            }
+            Ok(selection)
+        })
     }
 
     fn continue_ime_edit(

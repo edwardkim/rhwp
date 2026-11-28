@@ -2,7 +2,7 @@
 //!
 //! Left/right are logical text order, not visual bidi navigation. Home/End mean
 //! paragraph boundaries; Up/Down consume the existing core visual-line query.
-//! SelectAll selects the current body section, never cells or other sections.
+//! SelectAll selects the current body section or the current cell paragraph.
 //! Hosts must commit/cancel composition before issuing these commands.
 
 use std::ops::Range;
@@ -11,7 +11,8 @@ use serde::{Deserialize, Serialize};
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::document_core::native_interaction::{
-    legacy_cell_path, NativeTextPosition, NativeTextSelection, NativeVerticalDirection,
+    legacy_cell_path, same_container, NativeCellPathEntry, NativeTextPosition, NativeTextSelection,
+    NativeVerticalDirection,
 };
 use crate::model::{paragraph::Paragraph, style::Alignment};
 
@@ -22,6 +23,10 @@ use super::NativeHostError;
 mod cell_paragraph_commands;
 #[path = "table_navigation.rs"]
 mod table_navigation;
+
+pub const MAX_CREATE_TABLE_ROWS: u16 = 256;
+pub const MAX_CREATE_TABLE_COLUMNS: u16 = 256;
+pub const MAX_CREATE_TABLE_CELLS: u32 = 4_096;
 
 /// Tab moves to the next editable cell, Shift+Tab to the previous cell.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -54,6 +59,45 @@ impl From<NativeParagraphAlignment> for Alignment {
             NativeParagraphAlignment::Split => Self::Split,
         }
     }
+}
+
+impl From<Alignment> for NativeParagraphAlignment {
+    fn from(alignment: Alignment) -> Self {
+        match alignment {
+            Alignment::Justify => Self::Justify,
+            Alignment::Left => Self::Left,
+            Alignment::Right => Self::Right,
+            Alignment::Center => Self::Center,
+            Alignment::Distribute => Self::Distribute,
+            Alignment::Split => Self::Split,
+        }
+    }
+}
+
+/// A property can be uniform even when the selected text uses several shapes.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(tag = "kind", content = "value", rename_all = "camelCase")]
+pub enum NativeFormattingValue<T> {
+    Uniform(T),
+    Mixed,
+}
+
+impl<T: PartialEq> NativeFormattingValue<T> {
+    fn include(&mut self, value: T) {
+        if matches!(self, Self::Uniform(current) if *current != value) {
+            *self = Self::Mixed;
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NativeSelectionFormatting {
+    pub bold: NativeFormattingValue<bool>,
+    /// HWPUNIT (100 units per point), matching formatCharacters.
+    pub font_size: NativeFormattingValue<i32>,
+    /// Always uniform because the selection belongs to one editable paragraph.
+    pub alignment: NativeParagraphAlignment,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -95,7 +139,7 @@ pub enum NativeEditCommand {
         direction: NativeTableCellDirection,
     },
     /// Delete the scalar selection, or one complete grapheme at a caret.
-    /// At the paragraph start, join with the preceding body paragraph.
+    /// At the paragraph start, join with the preceding plain paragraph.
     DeleteBackward {},
     /// Delete the scalar selection, or one complete grapheme at a caret.
     /// At the paragraph end, join with the following body paragraph.
@@ -117,6 +161,11 @@ pub enum NativeEditCommand {
     SetParagraphAlignment {
         alignment: NativeParagraphAlignment,
     },
+    /// Create a default table at a collapsed, editable body caret.
+    CreateTable {
+        rows: u16,
+        columns: u16,
+    },
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -135,16 +184,6 @@ impl NativeEditor {
         command: NativeEditCommand,
     ) -> Result<NativeCommandOutcome, NativeHostError> {
         self.check_edit_ready(expected_revision)?;
-        if !matches!(
-            &command,
-            NativeEditCommand::SplitParagraph {}
-                | NativeEditCommand::JoinPreviousParagraph {}
-                | NativeEditCommand::FormatCharacters { .. }
-                | NativeEditCommand::SetParagraphAlignment { .. }
-                | NativeEditCommand::NavigateTableCell { .. }
-        ) {
-            self.require_body_selection("keyboard commands")?;
-        }
         let mut preferred_x = None;
         let outcome = match command {
             NativeEditCommand::MoveLeft { extend_selection } => {
@@ -162,7 +201,7 @@ impl NativeEditor {
             }
             NativeEditCommand::End { extend_selection } => {
                 let mut target = self.selection().focus.clone();
-                target.scalar_offset = scalar_len(self.command_text(&target))?;
+                target.scalar_offset = scalar_len(self.command_text(&target)?)?;
                 self.move_focus(expected_revision, target, extend_selection)?
             }
             NativeEditCommand::MoveUp {
@@ -215,26 +254,10 @@ impl NativeEditor {
             NativeEditCommand::SetParagraphAlignment { alignment } => {
                 self.set_paragraph_alignment(expected_revision, alignment)?
             }
-            NativeEditCommand::SelectAll {} => {
-                let mut start = self.selection().focus.clone();
-                start.paragraph = 0;
-                start.scalar_offset = 0;
-                let paragraphs = &self.session().document().document().sections
-                    [start.section as usize]
-                    .paragraphs;
-                let mut end = start.clone();
-                end.paragraph = u32::try_from(paragraphs.len() - 1).map_err(|_| {
-                    NativeHostError::LimitExceeded("paragraph address range exhausted".into())
-                })?;
-                end.scalar_offset = scalar_len(&paragraphs[end.paragraph as usize].text)?;
-                self.set_selection(
-                    expected_revision,
-                    NativeTextSelection {
-                        anchor: start,
-                        focus: end,
-                    },
-                )?
+            NativeEditCommand::CreateTable { rows, columns } => {
+                self.create_table(expected_revision, rows, columns)?
             }
+            NativeEditCommand::SelectAll {} => self.select_all(expected_revision)?,
         };
         Ok(NativeCommandOutcome {
             outcome,
@@ -242,9 +265,74 @@ impl NativeEditor {
         })
     }
 
+    fn create_table(
+        &mut self,
+        revision: u64,
+        rows: u16,
+        columns: u16,
+    ) -> Result<NativeEditOutcome, NativeHostError> {
+        self.require_body_selection("createTable")?;
+        let selection = self.selection();
+        if selection.anchor != selection.focus {
+            return Err(NativeHostError::InvalidArgument(
+                "createTable requires a collapsed body caret".into(),
+            ));
+        }
+        if !(1..=MAX_CREATE_TABLE_ROWS).contains(&rows)
+            || !(1..=MAX_CREATE_TABLE_COLUMNS).contains(&columns)
+        {
+            return Err(NativeHostError::InvalidArgument(format!(
+                "createTable requires 1..={MAX_CREATE_TABLE_ROWS} rows and 1..={MAX_CREATE_TABLE_COLUMNS} columns"
+            )));
+        }
+        if u32::from(rows) * u32::from(columns) > MAX_CREATE_TABLE_CELLS {
+            return Err(NativeHostError::LimitExceeded(format!(
+                "createTable supports at most {MAX_CREATE_TABLE_CELLS} cells"
+            )));
+        }
+
+        Self::check_editable_text_span(self.session().document(), selection)?;
+        let caret = selection.focus.clone();
+        self.edit_explicit_ranges_transaction(revision, |core| {
+            #[derive(Deserialize)]
+            #[serde(rename_all = "camelCase")]
+            struct TableLocation {
+                para_idx: u32,
+                control_idx: u32,
+            }
+
+            // With semantic controls excluded, the scalar caret is also the
+            // logical caret used by the existing table constructor.
+            let created = core.create_table_native(
+                caret.section as usize,
+                caret.paragraph as usize,
+                caret.scalar_offset as usize,
+                rows,
+                columns,
+            )?;
+            let location: TableLocation = serde_json::from_str(&created).map_err(|error| {
+                crate::HwpError::RenderError(format!("invalid table creation location: {error}"))
+            })?;
+            let first_cell = NativeTextPosition {
+                section: caret.section,
+                paragraph: location.para_idx,
+                scalar_offset: 0,
+                cell_path: vec![NativeCellPathEntry {
+                    control: location.control_idx,
+                    cell: 0,
+                    paragraph: 0,
+                }],
+            };
+            Ok(NativeTextSelection {
+                anchor: first_cell.clone(),
+                focus: first_cell,
+            })
+        })
+    }
+
     fn formatting_paragraph(&self) -> Result<&Paragraph, NativeHostError> {
         let selection = self.selection();
-        if selection.anchor.paragraph != selection.focus.paragraph {
+        if selection.anchor.leaf_paragraph() != selection.focus.leaf_paragraph() {
             return Err(NativeHostError::Unsupported(
                 "formatting requires a selection within one paragraph".into(),
             ));
@@ -252,6 +340,77 @@ impl NativeEditor {
         let core = self.session().document();
         Self::check_editable_text_span(core, selection)?;
         Ok(core.native_text_paragraph(&selection.focus)?)
+    }
+
+    /// Read the current editable leaf without changing selection or history.
+    pub fn selection_formatting(
+        &self,
+        revision: u64,
+        font_generation: u64,
+        selection: &NativeTextSelection,
+    ) -> Result<NativeSelectionFormatting, NativeHostError> {
+        self.check_edit_ready(revision)?;
+        if font_generation != self.session().font_generation() {
+            return Err(NativeHostError::InvalidArgument(
+                "stale font generation".into(),
+            ));
+        }
+        if selection != self.selection() {
+            return Err(NativeHostError::InvalidArgument("stale selection".into()));
+        }
+
+        let paragraph = self.formatting_paragraph()?;
+        let doc_info = &self.session().document().document().doc_info;
+        let (from, to) = selection.ordered();
+        let start = from.scalar_offset as usize;
+        let end = to.scalar_offset as usize;
+        if end > paragraph.char_offsets.len() {
+            return Err(NativeHostError::InvalidArgument(
+                "invalid character format range".into(),
+            ));
+        }
+
+        // At a caret use the shape at the insertion offset, including the
+        // paragraph-end shape. Otherwise read only actual selected text runs.
+        let ids = if start == end {
+            vec![paragraph.char_shape_id_at(start).unwrap_or(0)]
+        } else {
+            paragraph
+                .char_shape_runs(start, end)
+                .into_iter()
+                .map(|run| run.char_shape_id)
+                .collect()
+        };
+        let shape_for = |id: u32| {
+            doc_info.char_shapes.get(id as usize).ok_or_else(|| {
+                NativeHostError::InvalidArgument("unknown character shape in selection".into())
+            })
+        };
+        let mut ids = ids.into_iter();
+        let first = ids.next().ok_or_else(|| {
+            NativeHostError::InvalidArgument("invalid character format range".into())
+        })?;
+        let first = shape_for(first)?;
+        let mut bold = NativeFormattingValue::Uniform(first.bold);
+        let mut font_size = NativeFormattingValue::Uniform(first.base_size);
+        for id in ids {
+            let shape = shape_for(id)?;
+            bold.include(shape.bold);
+            font_size.include(shape.base_size);
+        }
+        let alignment = doc_info
+            .para_shapes
+            .get(paragraph.para_shape_id as usize)
+            .ok_or_else(|| {
+                NativeHostError::InvalidArgument("unknown paragraph shape in selection".into())
+            })?
+            .alignment
+            .into();
+        Ok(NativeSelectionFormatting {
+            bold,
+            font_size,
+            alignment,
+        })
     }
 
     fn format_characters(
@@ -273,7 +432,7 @@ impl NativeEditor {
             ));
         }
         let paragraph = self.formatting_paragraph()?;
-        let (start, end) = Self::ordered(self.selection());
+        let (start, end) = self.selection().ordered();
         let range = start.scalar_offset as usize..end.scalar_offset as usize;
         if range.is_empty() {
             return Err(NativeHostError::InvalidArgument(
@@ -369,13 +528,41 @@ impl NativeEditor {
         } else {
             focus.clone()
         };
+        if extend && !anchor.cell_path.is_empty() && !same_container(&anchor, &focus) {
+            return self.set_selection(revision, self.selection().clone());
+        }
         self.set_selection(revision, NativeTextSelection { anchor, focus })
     }
 
-    fn command_text(&self, position: &NativeTextPosition) -> &str {
-        &self.session().document().document().sections[position.section as usize].paragraphs
-            [position.paragraph as usize]
-            .text
+    fn command_text(&self, position: &NativeTextPosition) -> Result<&str, NativeHostError> {
+        Ok(&self
+            .session()
+            .document()
+            .native_text_paragraph(position)?
+            .text)
+    }
+
+    fn select_all(&mut self, revision: u64) -> Result<NativeEditOutcome, NativeHostError> {
+        let mut start = self.selection().focus.clone();
+        let mut end = start.clone();
+        start.scalar_offset = 0;
+        if start.cell_path.is_empty() {
+            start.paragraph = 0;
+            let paragraphs =
+                &self.session().document().document().sections[start.section as usize].paragraphs;
+            end.paragraph = u32::try_from(paragraphs.len() - 1).map_err(|_| {
+                NativeHostError::LimitExceeded("paragraph address range exhausted".into())
+            })?;
+            end.scalar_offset = 0;
+        }
+        end.scalar_offset = scalar_len(self.command_text(&end)?)?;
+        self.set_selection(
+            revision,
+            NativeTextSelection {
+                anchor: start,
+                focus: end,
+            },
+        )
     }
 
     fn horizontal_target(
@@ -383,26 +570,30 @@ impl NativeEditor {
         backward: bool,
         extend: bool,
     ) -> Result<NativeTextPosition, NativeHostError> {
-        let (start, end) = Self::ordered(self.selection());
+        let (start, end) = self.selection().ordered();
         if !extend && start != end {
             return Ok(if backward { start } else { end }.clone());
         }
         let mut target = self.selection().focus.clone();
-        let text = self.command_text(&target);
+        let text = self.command_text(&target)?;
         let length = scalar_len(text)?;
+        let paragraph = target.leaf_paragraph();
         if backward && target.scalar_offset == 0 {
-            if target.paragraph > 0 {
-                target.paragraph -= 1;
-                target.scalar_offset = scalar_len(self.command_text(&target))?;
+            if paragraph > 0 {
+                target.set_leaf_paragraph(paragraph - 1);
+                target.scalar_offset = scalar_len(self.command_text(&target)?)?;
             }
         } else if !backward && target.scalar_offset == length {
-            let count = self.session().document().document().sections[target.section as usize]
-                .paragraphs
+            let count = self
+                .session()
+                .document()
+                .native_text_container(&target)?
                 .len();
-            if (target.paragraph as usize) + 1 < count {
-                target.paragraph = target.paragraph.checked_add(1).ok_or_else(|| {
+            if (paragraph as usize) + 1 < count {
+                let next = paragraph.checked_add(1).ok_or_else(|| {
                     NativeHostError::LimitExceeded("paragraph address range exhausted".into())
                 })?;
+                target.set_leaf_paragraph(next);
                 target.scalar_offset = 0;
             }
         } else {
@@ -421,16 +612,20 @@ impl NativeEditor {
             return self.replace_selection(revision, "");
         }
         let focus = self.selection().focus.clone();
-        let text = self.command_text(&focus);
+        let text = self.command_text(&focus)?;
         let length = scalar_len(text)?;
         if backward && focus.scalar_offset == 0 {
-            return self.join_at(revision, focus.paragraph);
+            return if focus.cell_path.is_empty() {
+                self.join_at(revision, focus.paragraph)
+            } else {
+                self.join_previous_cell_paragraph(revision)
+            };
         }
         if !backward && focus.scalar_offset == length {
             let count = self.session().document().document().sections[focus.section as usize]
                 .paragraphs
                 .len();
-            if (focus.paragraph as usize) + 1 == count {
+            if !focus.cell_path.is_empty() || (focus.paragraph as usize) + 1 == count {
                 return self.set_selection(revision, self.selection().clone());
             }
             let next = focus.paragraph.checked_add(1).ok_or_else(|| {
@@ -453,7 +648,7 @@ impl NativeEditor {
         if !selection.focus.cell_path.is_empty() {
             return self.split_cell_selection(revision, selection);
         }
-        let (start, end) = Self::ordered(&selection);
+        let (start, end) = selection.ordered();
         let mut after = start.clone();
         after.paragraph = after.paragraph.checked_add(1).ok_or_else(|| {
             NativeHostError::LimitExceeded("paragraph address range exhausted".into())
@@ -489,7 +684,7 @@ impl NativeEditor {
         next.scalar_offset = 0;
         let mut previous = next.clone();
         previous.paragraph -= 1;
-        previous.scalar_offset = scalar_len(self.command_text(&previous))?;
+        previous.scalar_offset = scalar_len(self.command_text(&previous)?)?;
         let span = NativeTextSelection {
             anchor: previous.clone(),
             focus: next.clone(),
@@ -567,16 +762,21 @@ impl NativeEditor {
             .take(end - start)
             .collect();
         let anchor = &selection.anchor;
-        let anchor_scalar = (anchor.paragraph == focus.paragraph
+        let anchor_scalar = (anchor.leaf_paragraph() == focus.leaf_paragraph()
             && (anchor.scalar_offset as usize) >= start
             && (anchor.scalar_offset as usize) <= end)
             .then(|| anchor.scalar_offset - start as u32);
-        let (from, to) = Self::ordered(selection);
+        let (from, to) = selection.ordered();
+        let paragraphs = core.native_text_container(from)?;
+        let first = from.leaf_paragraph() as usize;
+        let last = to.leaf_paragraph() as usize;
         let mut selected = String::new();
         let mut count = 0usize;
         let mut truncated = false;
-        'paragraphs: for index in from.paragraph..=to.paragraph {
-            if index > from.paragraph {
+        'paragraphs: for (index, paragraph) in
+            paragraphs.iter().enumerate().take(last + 1).skip(first)
+        {
+            if index > first {
                 if count == NATIVE_IME_CONTEXT_SCALARS {
                     truncated = true;
                     break;
@@ -584,24 +784,17 @@ impl NativeEditor {
                 selected.push('\n');
                 count += 1;
             }
-            // A validated cell selection stays in the single resolved leaf. Only
-            // body selections can span other paragraphs in the same section.
-            let text = if index == focus.paragraph {
-                &paragraph.text
-            } else {
-                &core.document().sections[from.section as usize].paragraphs[index as usize].text
-            };
-            let left = if index == from.paragraph {
+            let left = if index == first {
                 from.scalar_offset as usize
             } else {
                 0
             };
-            let right = if index == to.paragraph {
-                to.scalar_offset as usize
+            let count_in_paragraph = if index == last {
+                to.scalar_offset as usize - left
             } else {
-                text.chars().count()
+                usize::MAX
             };
-            for ch in text.chars().skip(left).take(right - left) {
+            for ch in paragraph.text.chars().skip(left).take(count_in_paragraph) {
                 if count == NATIVE_IME_CONTEXT_SCALARS {
                     truncated = true;
                     break 'paragraphs;

@@ -6,6 +6,7 @@ from contextlib import ExitStack
 from pathlib import Path
 import sys
 import threading
+import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "examples"))
 from native_host import NativeCallError
@@ -482,6 +483,37 @@ def buffer_quota_contract(library):
         raise AssertionError("closed worker handle remained registered after release")
 
 
+def wait_with_worker_poll(worker, request_id):
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline:
+        result = worker.host.host_request(op="workerPoll", worker=worker.worker,
+                                          waitMs=10)["completion"]
+        if result is not None:
+            assert result["requestId"] == request_id, result
+            return result
+    raise TimeoutError("workerPoll wait did not return the accepted request")
+
+
+def worker_wait_contract(library):
+    with NativeWorker(library, {"maxOutstanding": 1}) as worker:
+        assert worker.host.call("capabilities").get("workerWait") is True
+        assert worker.poll() is None
+        assert worker.host.host_request(op="workerPoll", worker=worker.worker,
+                                        waitMs=0)["completion"] is None
+        started = time.monotonic()
+        assert worker.host.host_request(op="workerPoll", worker=worker.worker,
+                                        waitMs=5_000)["completion"] is None
+        assert time.monotonic() - started < 2, "an oversized idle wait was not capped"
+
+        request = worker.submit({"op": "new", "replace": None})
+        opened = wait_with_worker_poll(worker, request)
+        assert opened["ok"] and opened["info"]["pageCount"] > 0, opened
+        request = worker.submit({"op": "info"})
+        status = wait_with_worker_poll(worker, request)
+        assert status["ok"] and status["info"] == opened["info"], status
+        assert worker.poll() is None
+
+
 def tiled_cancellation_contract(library):
     with NativeWorker(library, {"maxOutstanding": 1}) as worker:
         info = accepted(worker, {"op": "new", "replace": None})["info"]
@@ -492,7 +524,7 @@ def tiled_cancellation_contract(library):
         request = worker.submit(command)
         outcome = worker.cancel(request)
         assert outcome in ("cancelled", "tooLate"), outcome
-        completion = worker.wait(request)
+        completion = wait_with_worker_poll(worker, request)
         assert completion["ok"], completion
         if outcome == "cancelled":
             assert completion["kind"] == "cancelled" and "buffer" not in completion, completion
@@ -603,12 +635,13 @@ def run(library):
         viewer.wait_closed()
     buffer_quota_contract(library)
     viewport_budget_contract(library)
+    worker_wait_contract(library)
     tiled_cancellation_contract(library)
     cell_edit_contract(library)
     cell_ime_contract(library)
     nested_cell_contract(library)
     print('{"ok":true,"contract":"native-worker","queueCredit":true,"saveRevision":true,'
-          '"threadOwnership":true,"saveBufferQuotaCleanup":true,"cellEdit":true,"cellIme":true,"nestedCell":true}')
+          '"threadOwnership":true,"workerWait":true,"saveBufferQuotaCleanup":true,"cellEdit":true,"cellIme":true,"nestedCell":true}')
 
 
 if __name__ == "__main__":

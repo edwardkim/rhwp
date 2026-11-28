@@ -12,7 +12,12 @@ impl NativeEditor {
         revision: u64,
         selection: NativeTextSelection,
     ) -> Result<NativeEditOutcome, NativeHostError> {
-        let (start, end) = Self::ordered(&selection);
+        let (start, end) = selection.ordered();
+        if start.leaf_paragraph() != end.leaf_paragraph() {
+            return Err(NativeHostError::Unsupported(
+                "splitting a cell paragraph requires a selection within that paragraph".into(),
+            ));
+        }
         check_structural_cell_paragraph(self.session().document(), start)?;
         let path = legacy_cell_path(&start.cell_path);
         let mut after = start.clone();
