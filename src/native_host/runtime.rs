@@ -26,13 +26,15 @@ use serde::{Deserialize, Serialize};
 
 use super::accessibility::{NativeAccessibilityRequest, NativeAccessibilitySnapshot};
 use super::clipboard::{NativeClipboardPayload, MAX_CLIPBOARD_BYTES};
-use super::commands::{NativeCommandOutcome, NativeEditCommand, NativeImeContext};
-use super::editor::ime_edit::{NativeImeEdit, NativeImeEditContext};
+use super::commands::{
+    NativeCommandOutcome, NativeEditCommand, NativeImeContext, NativeSelectionFormatting,
+};
+use super::editor::ime_edit::{NativeImeEdit, NativeImeEditContext, NativeImeReplacement};
 use super::editor::{NativeEditOutcome, NativeEditor};
 use super::render_snapshot::{NativeRenderSnapshot, NativeRenderSnapshotLimits};
 use super::save::NativeSaveCaretPolicy;
 use super::save::{NativeSaveFormat, NativeSaveStatus, NativeSaveToken, PreparedSave};
-use super::search::{NativeSearchRequest, NativeSearchResult};
+use super::search::{NativeReplaceAllResult, NativeSearchRequest, NativeSearchResult};
 use super::NativePageSize;
 use super::{
     NativeDocumentSession, NativeFrame, NativeHostError, MAX_DOCUMENT_BYTES, MAX_FRAME_PIXELS,
@@ -155,6 +157,11 @@ pub enum NativeRuntimeCommand {
         target: NativeRuntimeTarget,
         command: NativeEditCommand,
     },
+    SelectionFormatting {
+        target: NativeRuntimeTarget,
+        font_generation: u64,
+        selection: NativeTextSelection,
+    },
     ImeContext {
         target: NativeRuntimeTarget,
     },
@@ -190,6 +197,11 @@ pub enum NativeRuntimeCommand {
     SearchText {
         target: NativeRuntimeTarget,
         request: NativeSearchRequest,
+    },
+    ReplaceAllMatches {
+        target: NativeRuntimeTarget,
+        request: NativeSearchRequest,
+        text: String,
     },
     /// Export only owned immutable inputs. The worker clamps the input ceiling
     /// to its byte quota and charges the actual estimate before completion.
@@ -382,9 +394,9 @@ impl NativeRuntimeCommand {
             | Self::PasteText { text, .. } => Some(text.capacity()),
             Self::PasteHtml { html, .. } => Some(html.capacity()),
             Self::CopySelection { .. } | Self::CutSelection { .. } => Some(MAX_CLIPBOARD_BYTES),
-            Self::BeginEdit { selection, .. } | Self::SetSelection { selection, .. } => {
-                selection_bytes(selection)
-            }
+            Self::BeginEdit { selection, .. }
+            | Self::SetSelection { selection, .. }
+            | Self::SelectionFormatting { selection, .. } => selection_bytes(selection),
             Self::ReplaceRange {
                 selection, text, ..
             } => selection_bytes(selection).and_then(|bytes| bytes.checked_add(text.capacity())),
@@ -413,6 +425,14 @@ impl NativeRuntimeCommand {
                             .as_ref()
                             .map_or(0, |preview| preview.replacement.text.capacity()),
                     ),
+                    NativeImeEdit::CommitBatch { replacements, .. } => replacements
+                        .capacity()
+                        .checked_mul(std::mem::size_of::<NativeImeReplacement>())
+                        .and_then(|bytes| {
+                            replacements.iter().try_fold(bytes, |total, replacement| {
+                                total.checked_add(replacement.text.capacity())
+                            })
+                        }),
                 };
                 expected
                     .context
@@ -437,6 +457,14 @@ impl NativeRuntimeCommand {
                     .validate()
                     .map_err(|_| NativeRuntimeError::InvalidArgument)?;
                 request.reservation_bytes()
+            }
+            Self::ReplaceAllMatches { request, text, .. } => {
+                request
+                    .validate()
+                    .map_err(|_| NativeRuntimeError::InvalidArgument)?;
+                request
+                    .reservation_bytes()
+                    .and_then(|bytes| bytes.checked_add(text.capacity()))
             }
             _ => Some(0),
         };
@@ -528,6 +556,12 @@ impl NativeRuntimePreparedSave {
 pub enum NativeRuntimeOutput {
     Info(NativeRuntimeInfo),
     CommandExecuted(NativeCommandOutcome),
+    SelectionFormatting {
+        target: NativeRuntimeTarget,
+        font_generation: u64,
+        selection: NativeTextSelection,
+        formatting: NativeSelectionFormatting,
+    },
     ImeContext(NativeImeContext),
     ImeEditContext(Box<NativeImeEditContext>),
     Clipboard {
@@ -541,6 +575,10 @@ pub enum NativeRuntimeOutput {
     SearchText {
         target: NativeRuntimeTarget,
         result: NativeSearchResult,
+    },
+    ReplaceAllMatches {
+        target: NativeRuntimeTarget,
+        result: NativeReplaceAllResult,
     },
     RenderSnapshot {
         document_id: NativeRequestId,
@@ -602,11 +640,13 @@ impl fmt::Debug for NativeRuntimeOutput {
         f.write_str(match self {
             Self::Info(_) => "Info",
             Self::CommandExecuted(_) => "CommandExecuted",
+            Self::SelectionFormatting { .. } => "SelectionFormatting",
             Self::ImeContext(_) => "ImeContext",
             Self::ImeEditContext(_) => "ImeEditContext",
             Self::Clipboard { .. } => "Clipboard",
             Self::Accessibility { .. } => "Accessibility",
             Self::SearchText { .. } => "SearchText",
+            Self::ReplaceAllMatches { .. } => "ReplaceAllMatches",
             Self::RenderSnapshot { .. } => "RenderSnapshot",
             Self::DocumentClosed => "DocumentClosed",
             Self::RasterCacheLimit { .. } => "RasterCacheLimit",
