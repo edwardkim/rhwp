@@ -230,11 +230,13 @@ def character_font_color_formatting(library):
         target["revision"] = cell_text["revision"]
         cell_selection = {"anchor": cell_start, "focus": cell_text["selection"]["focus"]}
         accepted(op="setSelection", target=target, selection=cell_selection)
-        cell_edit = apply(fontName=family, textColor=color)
+        cell_family = "RHWP 표 글꼴"
+        cell_color = "#34904d"
+        cell_edit = apply(fontName=cell_family, textColor=cell_color)
         assert cell_edit["ok"] and cell_edit["outcome"]["historyChanged"], cell_edit
         cell_formatting = formatting(cell_selection)
-        assert cell_formatting["fontNames"] == expected_fonts, cell_formatting
-        assert cell_formatting["textColor"] == uniform(color), cell_formatting
+        assert cell_formatting["fontNames"] == [uniform(cell_family)] * 7, cell_formatting
+        assert cell_formatting["textColor"] == uniform(cell_color), cell_formatting
 
 
 def run(library):
