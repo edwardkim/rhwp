@@ -106,6 +106,12 @@ public sealed partial class MainWindow
         bool bold = value?.Bold is { Kind: "uniform", Value: true };
         string boldStatus = value?.Bold.Kind == "mixed" ? "굵기가 혼합되어 있음" : bold ? "굵게 적용됨" : "";
         SetFormattingIndicator(ApplyBoldButton, bold, boldStatus);
+        if (decorationFormattingAvailable)
+        {
+            ShowCharacterDecoration(ApplyItalicButton, value?.Italic, "기울임꼴");
+            ShowCharacterDecoration(ApplyUnderlineButton, value?.Underline, "밑줄");
+            ShowCharacterDecoration(ApplyStrikethroughButton, value?.Strikethrough, "취소선");
+        }
 
         bool mixedSize = value?.FontSize.Kind == "mixed";
         string placeholder = mixedSize ? "혼합" : "pt";
@@ -131,6 +137,13 @@ public sealed partial class MainWindow
 
     private void ShowAlignment(Control control, bool active) =>
         SetFormattingIndicator(control, active, active ? "현재 문단의 정렬" : "");
+
+    private void ShowCharacterDecoration(Control control, NativeFormattingValue<bool>? value, string label)
+    {
+        bool active = value is { Kind: "uniform", Value: true };
+        string status = value?.Kind == "mixed" ? $"{label}이 혼합되어 있음" : active ? $"{label} 적용됨" : "";
+        SetFormattingIndicator(control, active, status);
+    }
 
     private void SetFormattingIndicator(Control control, bool active, string status)
     {

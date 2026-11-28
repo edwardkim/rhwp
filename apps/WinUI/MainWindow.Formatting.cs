@@ -14,6 +14,7 @@ public sealed partial class MainWindow
     private bool basicFormattingAvailable;
     private bool appearanceFormattingAvailable;
     private bool systemFontChooserAvailable;
+    private bool decorationFormattingAvailable;
 
     private async void OnFormattingToolbarLoaded(object sender, RoutedEventArgs args)
     {
@@ -28,12 +29,17 @@ public sealed partial class MainWindow
             formattingInspectionAvailable = capabilities.Inspect;
             appearanceFormattingAvailable = capabilities.FontAndColor;
             systemFontChooserAvailable = capabilities.SystemFonts;
+            decorationFormattingAvailable = formattingInspectionAvailable && capabilities.Decorations;
             if (!closing)
             {
                 FormattingToolbar.Visibility = basicFormattingAvailable ? Visibility.Visible : Visibility.Collapsed;
                 FormattingFontButton.Visibility = appearanceFormattingAvailable && systemFontChooserAvailable
                     ? Visibility.Visible : Visibility.Collapsed;
                 FormattingTextColorButton.Visibility = appearanceFormattingAvailable ? Visibility.Visible : Visibility.Collapsed;
+                Visibility decorations = decorationFormattingAvailable ? Visibility.Visible : Visibility.Collapsed;
+                ApplyItalicButton.Visibility = decorations;
+                ApplyUnderlineButton.Visibility = decorations;
+                ApplyStrikethroughButton.Visibility = decorations;
                 RefreshFormattingActions();
             }
         }
@@ -57,6 +63,9 @@ public sealed partial class MainWindow
         FormattingFontButton.IsEnabled = canFormatText;
         FormattingTextColorButton.IsEnabled = canFormatText;
         ApplyBoldButton.IsEnabled = canFormatText;
+        ApplyItalicButton.IsEnabled = canFormatText && decorationFormattingAvailable;
+        ApplyUnderlineButton.IsEnabled = canFormatText && decorationFormattingAvailable;
+        ApplyStrikethroughButton.IsEnabled = canFormatText && decorationFormattingAvailable;
         FormattingFontSize.IsEnabled = canAlign;
         FormattingFontSize.IsReadOnly = !canFormatText;
         ApplyFontSizeButton.IsEnabled = canFormatText && TryReadFontSize(out _);
@@ -72,13 +81,52 @@ public sealed partial class MainWindow
 
     private async void OnBoldAcceleratorInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
     {
-        if (!ApplyBoldButton.IsEnabled || !DocumentActionsAvailable || dragPointer is not null)
-            return;
-        if (FocusManager.GetFocusedElement(Root.XamlRoot) is TextBox focused && focused != DirectInput)
+        if (!CanInvokeFormattingAccelerator(ApplyBoldButton))
             return;
         args.Handled = true;
         await ToggleBoldAsync();
     }
+
+    private bool CanInvokeFormattingAccelerator(Control button) =>
+        button.IsEnabled && DocumentActionsAvailable && dragPointer is null &&
+        (FocusManager.GetFocusedElement(Root.XamlRoot) is not TextBox focused || focused == DirectInput);
+
+    private async void OnCharacterDecorationAcceleratorInvoked(KeyboardAccelerator sender,
+        KeyboardAcceleratorInvokedEventArgs args)
+    {
+        var (button, decoration) = sender.Key == VirtualKey.I
+            ? (ApplyItalicButton, NativeCharacterDecoration.Italic)
+            : (ApplyUnderlineButton, NativeCharacterDecoration.Underline);
+        if (!CanInvokeFormattingAccelerator(button))
+            return;
+
+        args.Handled = true;
+        await ToggleCharacterDecorationAsync(decoration);
+    }
+
+    private async void OnCharacterDecorationClicked(object sender, RoutedEventArgs args)
+    {
+        if (sender is FrameworkElement { Tag: string value } &&
+            Enum.TryParse(value, out NativeCharacterDecoration decoration))
+            await ToggleCharacterDecorationAsync(decoration);
+    }
+
+    private Task ToggleCharacterDecorationAsync(NativeCharacterDecoration decoration) =>
+        QueueFormattingAsync(requireSelectedText: true, async (current, selection) =>
+        {
+            NativeSelectionFormatting formatting = await worker.GetSelectionFormattingAsync(current.Target,
+                current.FontGeneration, selection, CancellationToken.None) ??
+                throw new InvalidOperationException("선택한 글자의 서식을 읽을 수 없습니다.");
+            NativeFormattingValue<bool>? value = decoration switch
+            {
+                NativeCharacterDecoration.Italic => formatting.Italic,
+                NativeCharacterDecoration.Underline => formatting.Underline,
+                NativeCharacterDecoration.Strikethrough => formatting.Strikethrough,
+                _ => throw new ArgumentOutOfRangeException(nameof(decoration)),
+            };
+            bool enabled = value is not { Kind: "uniform", Value: true };
+            return await worker.FormatCharacterDecorationAsync(current.Target, decoration, enabled, CancellationToken.None);
+        });
 
     private Task ToggleBoldAsync() => QueueFormattingAsync(requireSelectedText: true,
             async (current, selection) =>

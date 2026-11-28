@@ -12,11 +12,20 @@ internal enum NativeParagraphAlignment
     Split,
 }
 
-internal sealed record NativeFormattingCapabilities(bool Edit, bool Inspect, bool FontAndColor, bool SystemFonts);
+internal enum NativeCharacterDecoration
+{
+    Italic,
+    Underline,
+    Strikethrough,
+}
+
+internal sealed record NativeFormattingCapabilities(bool Edit, bool Inspect, bool FontAndColor, bool SystemFonts,
+    bool Decorations);
 internal sealed record NativeFormattingValue<T>(string Kind, T Value);
 internal sealed record NativeSelectionFormatting(NativeFormattingValue<bool> Bold,
     NativeFormattingValue<int> FontSize, string Alignment,
-    NativeFormattingValue<string?>[]? FontNames, NativeFormattingValue<string?>? TextColor);
+    NativeFormattingValue<string?>[]? FontNames, NativeFormattingValue<string?>? TextColor,
+    NativeFormattingValue<bool>? Italic, NativeFormattingValue<bool>? Underline, NativeFormattingValue<bool>? Strikethrough);
 
 internal sealed partial class NativeWorkerDispatcher
 {
@@ -37,7 +46,8 @@ internal sealed partial class NativeWorkerDispatcher
         formattingCapabilities = new(HasCapability(report.RootElement, "basicTextFormatting"),
             HasCapability(report.RootElement, "selectionFormatting"),
             HasCapability(report.RootElement, "characterFontColorFormatting"),
-            HasCapability(report.RootElement, "systemFontFamilies"));
+            HasCapability(report.RootElement, "systemFontFamilies"),
+            HasCapability(report.RootElement, "characterDecorationFormatting"));
         return formattingCapabilities;
     }
 
@@ -45,7 +55,8 @@ internal sealed partial class NativeWorkerDispatcher
         TextSelection selection, CancellationToken cancellation) =>
         Dispatch<NativeSelectionFormatting?>(token =>
         {
-            if (!ReadFormattingCapabilities().Inspect)
+            NativeFormattingCapabilities capabilities = ReadFormattingCapabilities();
+            if (!capabilities.Inspect)
                 return null;
 
             JsonElement reply = Submit(EnsureWorker(),
@@ -59,6 +70,9 @@ internal sealed partial class NativeWorkerDispatcher
             NativeSelectionFormatting formatting = Read<NativeSelectionFormatting>(reply.GetProperty("formatting"));
             if (formatting.Bold is not { Kind: "uniform" or "mixed" } ||
                 formatting.FontSize is not ({ Kind: "uniform", Value: > 0 } or { Kind: "mixed" }) ||
+                (capabilities.Decorations && (formatting.Italic is not { Kind: "uniform" or "mixed" } ||
+                    formatting.Underline is not { Kind: "uniform" or "mixed" } ||
+                    formatting.Strikethrough is not { Kind: "uniform" or "mixed" })) ||
                 !Enum.TryParse(formatting.Alignment, ignoreCase: true, out NativeParagraphAlignment alignment) ||
                 !Enum.IsDefined(alignment))
                 throw new InvalidDataException("Native 서식 조회 결과가 올바르지 않습니다.");
@@ -73,6 +87,16 @@ internal sealed partial class NativeWorkerDispatcher
     public Task<EditResult> FormatCharacterAppearanceAsync(DocumentTarget expected, string? fontName, string? textColor,
         CancellationToken cancellation) =>
         ApplyFormattingCommand(expected, new { command = "formatCharacters", fontName, textColor }, cancellation);
+
+    public Task<EditResult> FormatCharacterDecorationAsync(DocumentTarget expected, NativeCharacterDecoration decoration,
+        bool enabled, CancellationToken cancellation) =>
+        ApplyFormattingCommand(expected, new
+        {
+            command = "formatCharacters",
+            italic = decoration == NativeCharacterDecoration.Italic ? enabled : (bool?)null,
+            underline = decoration == NativeCharacterDecoration.Underline ? enabled : (bool?)null,
+            strikethrough = decoration == NativeCharacterDecoration.Strikethrough ? enabled : (bool?)null,
+        }, cancellation);
 
     public Task<string[]> GetSystemFontFamiliesAsync(DocumentTarget expected, CancellationToken cancellation) =>
         Dispatch(token =>
