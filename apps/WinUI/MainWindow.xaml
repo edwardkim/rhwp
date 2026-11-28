@@ -1,0 +1,38 @@
+<Window
+    x:Class="Rhwp.WinUI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="RHWP">
+    <Grid x:Name="Root" RowDefinitions="Auto,Auto,*" Loaded="OnLoaded" Unloaded="OnUnloaded"
+          AllowDrop="True" DragOver="OnFilesDragOver" Drop="OnFilesDropped">
+        <StackPanel Orientation="Horizontal" Padding="16,10" Spacing="8">
+            <Button x:Name="OpenButton" Content="파일 열기" Click="OnOpenClicked">
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="O" Modifiers="Control" />
+                </Button.KeyboardAccelerators>
+            </Button>
+            <Button x:Name="SaveCopyButton" Content="새 파일에 저장" Click="OnSaveCopyClicked" IsEnabled="False" />
+            <Button x:Name="ExportPdfButton" Content="현재 쪽 PDF 미리보기" Click="OnExportPdfClicked" IsEnabled="False" />
+            <Button x:Name="CloseButton" Content="문서 닫기" Click="OnCloseClicked" IsEnabled="False" />
+            <Button x:Name="PreviousButton" Content="이전 쪽" Click="OnPreviousClicked" IsEnabled="False" />
+            <Button x:Name="NextButton" Content="다음 쪽" Click="OnNextClicked" IsEnabled="False" />
+            <Button x:Name="ZoomOutButton" Content="축소" Click="OnZoomOutClicked" IsEnabled="False" />
+            <Button x:Name="ZoomInButton" Content="확대" Click="OnZoomInClicked" IsEnabled="False" />
+            <Button x:Name="UndoButton" Content="실행 취소" Click="OnUndoClicked" IsEnabled="False" />
+            <Button x:Name="RedoButton" Content="다시 실행" Click="OnRedoClicked" IsEnabled="False" />
+        </StackPanel>
+        <TextBlock x:Name="StatusText" Grid.Row="1" Margin="16,0,16,10"
+                   TextTrimming="CharacterEllipsis" AutomationProperties.LiveSetting="Polite"
+                   Text="HWP 또는 HWPX 파일을 여세요." />
+        <ScrollViewer x:Name="PageScroll" Grid.Row="2" HorizontalScrollBarVisibility="Auto"
+                      HorizontalScrollMode="Enabled" VerticalScrollBarVisibility="Auto"
+                      SizeChanged="OnViewportSizeChanged" ViewChanged="OnViewChanged"
+                      Background="{ThemeResource LayerFillColorDefaultBrush}">
+            <Canvas x:Name="PageCanvas" HorizontalAlignment="Left" VerticalAlignment="Top"
+                                  Width="0" Height="0" IsTabStop="True" KeyDown="OnPageEditKeyDown">
+                <Image x:Name="PageImage" Stretch="Fill" Tapped="OnPageTapped"
+                       AutomationProperties.Name="문서 쪽" />
+            </Canvas>
+        </ScrollViewer>
+    </Grid>
+</Window>
