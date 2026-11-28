@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Rhwp.WinUI"
     Title="RHWP">
-    <Grid x:Name="Root" RowDefinitions="Auto,Auto,*,Auto" Loaded="OnLoaded" Unloaded="OnUnloaded"
+    <Grid x:Name="Root" RowDefinitions="Auto,Auto,Auto,*,Auto" Loaded="OnLoaded" Unloaded="OnUnloaded"
           Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
           AllowDrop="True" DragOver="OnFilesDragOver" Drop="OnFilesDropped">
         <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
@@ -131,7 +131,61 @@
             </CommandBar>
         </Border>
 
-        <Grid Grid.Row="2" RowDefinitions="Auto,*" Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}">
+        <Border Grid.Row="2" x:Name="FormattingToolbar" Padding="12,4,12,6"
+                Visibility="Collapsed" Loaded="OnFormattingToolbarLoaded"
+                AutomationProperties.Name="서식 도구 모음"
+                AutomationProperties.AutomationId="FormattingToolbar"
+                Background="{ThemeResource LayerFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" HorizontalScrollMode="Enabled"
+                          VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <SplitButton x:Name="ApplyBoldButton" Content="굵게" IsEnabled="False"
+                                 Click="OnApplyBoldClicked" ToolTipService.ToolTip="굵게 적용"
+                                 AutomationProperties.Name="굵게 적용"
+                                 AutomationProperties.AutomationId="ApplyBold">
+                        <SplitButton.Flyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Text="굵게 해제" Click="OnRemoveBoldClicked"
+                                                AutomationProperties.AutomationId="RemoveBold" />
+                            </MenuFlyout>
+                        </SplitButton.Flyout>
+                    </SplitButton>
+                    <TextBox x:Name="FormattingFontSize" MinWidth="100" MaxLength="7"
+                             PlaceholderText="글자 크기 (pt)" IsEnabled="False" InputScope="Number"
+                             KeyDown="OnFormattingSizeKeyDown" TextChanged="OnFormattingSizeTextChanged"
+                             AutomationProperties.Name="적용할 글자 크기(포인트)"
+                             AutomationProperties.AutomationId="FormattingFontSize" />
+                    <Button x:Name="ApplyFontSizeButton" Content="크기 적용" Click="OnApplyFontSizeClicked"
+                            IsEnabled="False" AutomationProperties.AutomationId="ApplyFontSize" />
+                    <Button x:Name="AlignLeftButton" Content="왼쪽" Tag="Left" Click="OnAlignmentClicked"
+                            IsEnabled="False" AutomationProperties.Name="왼쪽 정렬"
+                            AutomationProperties.AutomationId="AlignLeft" />
+                    <Button x:Name="AlignCenterButton" Content="가운데" Tag="Center" Click="OnAlignmentClicked"
+                            IsEnabled="False" AutomationProperties.Name="가운데 정렬"
+                            AutomationProperties.AutomationId="AlignCenter" />
+                    <Button x:Name="AlignRightButton" Content="오른쪽" Tag="Right" Click="OnAlignmentClicked"
+                            IsEnabled="False" AutomationProperties.Name="오른쪽 정렬"
+                            AutomationProperties.AutomationId="AlignRight" />
+                    <Button x:Name="AlignJustifyButton" Content="양쪽" Tag="Justify" Click="OnAlignmentClicked"
+                            IsEnabled="False" AutomationProperties.Name="양쪽 정렬"
+                            AutomationProperties.AutomationId="AlignJustify" />
+                    <DropDownButton x:Name="MoreAlignmentButton" Content="정렬 더 보기" IsEnabled="False"
+                                    AutomationProperties.AutomationId="MoreAlignment">
+                        <DropDownButton.Flyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Text="배분 정렬" Tag="Distribute" Click="OnAlignmentClicked"
+                                                AutomationProperties.AutomationId="AlignDistribute" />
+                                <MenuFlyoutItem Text="나눔 정렬" Tag="Split" Click="OnAlignmentClicked"
+                                                AutomationProperties.AutomationId="AlignSplit" />
+                            </MenuFlyout>
+                        </DropDownButton.Flyout>
+                    </DropDownButton>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <Grid Grid.Row="3" RowDefinitions="Auto,*" Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}">
             <Border x:Name="SearchPanel" Visibility="Collapsed" Padding="16,8"
                     Background="{ThemeResource LayerFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,0,0,1"
@@ -220,7 +274,7 @@
             </ScrollViewer>
         </Grid>
 
-        <Border Grid.Row="3" Padding="16,6" MinHeight="32"
+        <Border Grid.Row="4" Padding="16,6" MinHeight="32"
                 Background="{ThemeResource LayerFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
             <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
