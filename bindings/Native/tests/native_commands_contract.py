@@ -12,6 +12,92 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "examples"))
 from native_worker import NativeWorker
 
 
+def select_text_unit(unit, position):
+    return {"command": "selectTextUnit", "unit": unit, "position": position}
+
+
+def text_unit_selection(library):
+    point = {"section": 0, "paragraph": 0, "scalarOffset": 0, "cellPath": []}
+    caret = {"anchor": point, "focus": point}
+    text = "한글,  Cafe\u0301!  👩\u200d💻 끝."
+    with NativeWorker(library) as worker:
+        def send(**command):
+            return worker.wait(worker.submit(command))
+
+        def accepted(**command):
+            result = send(**command)
+            assert result["ok"], result
+            return result
+
+        def select(unit, offset, start, end, expected):
+            before = accepted(op="info")["info"]
+            command = select_text_unit(unit, {**point, "scalarOffset": offset})
+            selected = accepted(op="executeCommand", target=target, command=command)
+            selection = {"anchor": {**point, "scalarOffset": start},
+                         "focus": {**point, "scalarOffset": end}}
+            assert selected["kind"] == "command" and selected["preferredX"] is None, selected
+            assert selected["outcome"] == {
+                "revision": target["revision"], "selection": selection, "documentChanged": False,
+                "historyChanged": False, "compositionId": None,
+            }, selected
+            assert accepted(op="imeContext", target=target)["context"]["selectedText"] == expected
+            assert accepted(op="info")["info"] == {**before, "selection": selection}
+
+        assert worker.host.call("capabilities")["textUnitSelection"] is True
+        info = accepted(op="new", replace=None)["info"]
+        target = {key: info[key] for key in ("documentId", "revision")}
+        word = select_text_unit("word", point)
+        assert send(op="executeCommand", target=target, command=word)["code"] == "unsupported"
+        accepted(op="beginEdit", target=target, selection=caret)
+        select("sentence", 0, 0, 0, "")
+        for inserted in (text, "X"):
+            target["revision"] = accepted(op="replace", target=target, text=inserted)["outcome"]["revision"]
+        target["revision"] = accepted(op="undo", target=target)["outcome"]["revision"]
+        info = accepted(op="info")["info"]
+        assert info["canUndo"] and info["canRedo"] and info["isDirty"], info
+        for unit, offset, start, end, selected in (
+            ("word", 1, 0, 2, "한글"),
+            ("word", 2, 2, 3, ","),
+            ("word", 3, 2, 3, ","),
+            ("word", 4, 4, 4, ""),
+            ("word", 9, 5, 10, "Cafe\u0301"),
+            ("word", 14, 13, 16, "👩\u200d💻"),
+            ("word", 19, 18, 19, "."),
+            ("sentence", 12, 0, 11, "한글,  Cafe\u0301!"),
+            ("sentence", 13, 13, 19, "👩\u200d💻 끝."),
+            ("sentence", 19, 13, 19, "👩\u200d💻 끝."),
+        ):
+            select(unit, offset, start, end, selected)
+
+        stale = {**target, "revision": target["revision"] - 1}
+        assert send(op="executeCommand", target=stale, command=word)["code"] == "staleRevision"
+        before = accepted(op="info")["info"]
+        invalid = select_text_unit("word", {**point, "scalarOffset": len(text) + 1})
+        assert send(op="executeCommand", target=target, command=invalid)["code"] == "invalidArgument"
+        assert accepted(op="info")["info"] == before
+        composition = accepted(op="beginComposition", target=target)["outcome"]["compositionId"]
+        before = accepted(op="info")["info"]
+        assert send(op="executeCommand", target=target, command=word)["code"] == "invalidArgument"
+        assert accepted(op="info")["info"] == before
+        accepted(op="cancelComposition", target=target, compositionId=composition)
+
+        handle = worker.host.open_bytes()
+        try:
+            revision = worker.host.request(handle, op="info")["revision"]
+            worker.host.request(handle, op="beginEdit", expectedRevision=revision, selection=caret)
+            edited = worker.host.request(handle, op="replaceSelection", expectedRevision=revision, text=text)
+            revision = edited["outcome"]["revision"]
+            selected = worker.host.request(handle, op="executeCommand", expectedRevision=revision,
+                                           command=select_text_unit("sentence", point))
+            assert selected["preferredX"] is None
+            assert selected["outcome"]["revision"] == revision
+            assert selected["outcome"]["selection"] == {
+                "anchor": point, "focus": {**point, "scalarOffset": 11},
+            }, selected
+        finally:
+            worker.host.call("close", handle)
+
+
 def selection_formatting(library):
     def uniform(value):
         return {"kind": "uniform", "value": value}
@@ -455,6 +541,13 @@ def table_navigation(library):
                                                  "selection": label}))
         assert formatting["ok"] and formatting["selection"] == label, formatting
         assert formatting["formatting"]["fontSize"]["kind"] == "uniform", formatting
+        for unit in ("word", "sentence"):
+            selected = worker.wait(worker.submit({
+                "op": "executeCommand", "target": target, "command": select_text_unit(unit, point(4, 2)),
+            }))
+            assert selected["ok"] and selected["outcome"]["selection"] == {
+                "anchor": point(4), "focus": point(4, 4),
+            }, selected
 
 
 def table_creation(library):
@@ -512,6 +605,11 @@ def table_creation(library):
         assert first["paragraph"] == 0 and first["cellPath"][0]["control"] > 0, first
         caret = accepted(op="caretRect", target=target, position=first)["caret"]
         assert caret["height"] > 0 and caret["cellBounds"] is not None, caret
+        caption = {**first, "cellPath": [{**first["cellPath"][0], "cell": 65534}]}
+        before = accepted(op="info")["info"]
+        rejected = send(op="executeCommand", target=target, command=select_text_unit("word", caption))
+        assert not rejected["ok"] and rejected["code"] == "unsupported", rejected
+        assert accepted(op="info")["info"] == before
         rejected = create(1, 1)
         assert not rejected["ok"] and rejected["code"] == "unsupported", rejected
         undone = accepted(op="undo", target=target)["outcome"]
@@ -557,6 +655,17 @@ def table_creation(library):
             revision = direct["outcome"]["revision"]
             caret = worker.host.request(handle, op="caret", position=first)["caret"]
             assert caret["height"] > 0 and caret["cellBounds"] is not None, caret
+            edited = worker.host.request(handle, op="replaceSelection", expectedRevision=revision,
+                                         text="셀 내용! Next.")
+            revision = edited["outcome"]["revision"]
+            selected = worker.host.request(handle, op="executeCommand", expectedRevision=revision,
+                                           command=select_text_unit("sentence", first))["outcome"]
+            assert selected["selection"] == {
+                "anchor": first, "focus": {**first, "scalarOffset": 5},
+            }, selected
+            assert selected["revision"] == revision and not selected["historyChanged"], selected
+            removed = worker.host.request(handle, op="undo", expectedRevision=revision)["outcome"]
+            revision = removed["revision"]
             direct_undo = worker.host.request(handle, op="undo", expectedRevision=revision)["outcome"]
             assert direct_undo["selection"] == collapsed(body), direct_undo
             assert not worker.host.request(handle, op="info")["canUndo"]
@@ -755,6 +864,7 @@ if __name__ == "__main__":
     parser.add_argument("--library", required=True)
     library = parser.parse_args().library
     run(library)
+    text_unit_selection(library)
     selection_formatting(library)
     character_font_color_formatting(library)
     table_navigation(library)

@@ -48,6 +48,14 @@ pub enum NativeTableCellDirection {
     Previous,
 }
 
+/// Unicode text unit selected within one Native text paragraph.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum NativeTextUnit {
+    Word,
+    Sentence,
+}
+
 /// Paragraph alignment on the Native command wire.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -173,6 +181,11 @@ pub enum NativeEditCommand {
     /// delete a noncollapsed selection.
     JoinPreviousParagraph {},
     SelectAll {},
+    /// Select a word or sentence in the paragraph at the supplied position.
+    SelectTextUnit {
+        unit: NativeTextUnit,
+        position: NativeTextPosition,
+    },
     /// Change at least one character property within a nonempty selection in one
     /// plain paragraph. Font size is in HWPUNIT (100 units per point).
     FormatCharacters {
@@ -315,6 +328,9 @@ impl NativeEditor {
                 height,
             } => self.resize_table_object(expected_revision, table, width, height)?,
             NativeEditCommand::SelectAll {} => self.select_all(expected_revision)?,
+            NativeEditCommand::SelectTextUnit { unit, position } => {
+                self.select_text_unit(expected_revision, unit, position)?
+            }
         };
         Ok(NativeCommandOutcome {
             outcome,
@@ -688,6 +704,43 @@ impl NativeEditor {
         )
     }
 
+    fn select_text_unit(
+        &mut self,
+        revision: u64,
+        unit: NativeTextUnit,
+        position: NativeTextPosition,
+    ) -> Result<NativeEditOutcome, NativeHostError> {
+        let text = self.command_text(&position)?;
+        scalar_len(text)?;
+        let offset = position.scalar_offset;
+        let (start, segment) = match unit {
+            NativeTextUnit::Word => text_segment_at(text.split_word_bounds(), offset),
+            NativeTextUnit::Sentence => text_segment_at(text.split_sentence_bounds(), offset),
+        };
+        let mut clusters = segment.grapheme_indices(true);
+        let is_content = |&(_, cluster): &(usize, &str)| !cluster.chars().all(char::is_whitespace);
+        let (from, to) = if let Some((first, cluster)) = clusters.find(is_content) {
+            let end = clusters
+                .rfind(is_content)
+                .map_or(first + cluster.len(), |(last, cluster)| {
+                    last + cluster.len()
+                });
+            let from = start + segment[..first].chars().count() as u32;
+            (from, from + segment[first..end].chars().count() as u32)
+        } else {
+            (offset, offset)
+        };
+        let anchor = NativeTextPosition {
+            scalar_offset: from,
+            ..position.clone()
+        };
+        let focus = NativeTextPosition {
+            scalar_offset: to,
+            ..position
+        };
+        self.set_selection(revision, NativeTextSelection { anchor, focus })
+    }
+
     fn horizontal_target(
         &self,
         backward: bool,
@@ -922,6 +975,29 @@ fn scalar_len(text: &str) -> Result<u32, NativeHostError> {
     u32::try_from(text.chars().count()).map_err(|_| {
         NativeHostError::LimitExceeded("paragraph exceeds the scalar address range".into())
     })
+}
+
+/// Find the segment at a validated scalar offset. At the leading edge of
+/// whitespace, keep the preceding segment so the trailing caret on a visible
+/// glyph can still select it. At paragraph end, use the last segment.
+fn text_segment_at<'a>(segments: impl Iterator<Item = &'a str>, offset: u32) -> (u32, &'a str) {
+    let mut start = 0;
+    let mut previous = (0, "");
+    for segment in segments {
+        let end = start + segment.chars().count() as u32;
+        if offset < end {
+            if offset == start
+                && segment.chars().all(char::is_whitespace)
+                && !previous.1.chars().all(char::is_whitespace)
+            {
+                return previous;
+            }
+            return (start, segment);
+        }
+        previous = (start, segment);
+        start = end;
+    }
+    previous
 }
 
 /// Called only after scalar_len proved that the paragraph fits the public range.
