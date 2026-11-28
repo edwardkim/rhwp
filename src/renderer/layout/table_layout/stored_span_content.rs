@@ -419,13 +419,27 @@ impl LayoutEngine {
     }
 
     fn stored_cell_content_frame(&self, table: &Table, cell: &Cell, inline_objects: bool) -> bool {
-        let profile = self.profile.get();
-        (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
-            && !profile.session_edited()
+        !self.profile.get().session_edited()
             && !self
                 .render_normalization
                 .borrow()
                 .cell_frame_reflowed(table, cell)
+            && self.unchanged_cell_content_frame(table, cell, inline_objects)
+    }
+
+    /// 세션의 다른 칸이 편집됐어도 이 칸의 저장 줄은 개별적으로 확인할 수 있다.
+    pub(super) fn unchanged_cell_content_frame(
+        &self,
+        table: &Table,
+        cell: &Cell,
+        inline_objects: bool,
+    ) -> bool {
+        let profile = self.profile.get();
+        (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+            && !self
+                .render_normalization
+                .borrow()
+                .cell_text_partition_reflowed(table, cell)
             && !table.common.treat_as_char
             && table.layout_page_break() == TablePageBreak::RowBreak
             && !cell.dirty_flag

@@ -103,6 +103,34 @@ impl LayoutEngine {
         row: usize,
         styles: &ResolvedStyleSet,
     ) -> Option<f64> {
+        self.empty_row_frame_height(table, row, styles, |cell| {
+            self.stored_plain_text_cell_frame(table, cell)
+        })
+    }
+
+    /// 편집 중에도 이 행의 칸과 줄이 각각 유효하면 현재 행의 최소 점유를 계산한다.
+    pub(crate) fn unchanged_empty_row_frame_height(
+        &self,
+        table: &Table,
+        row: usize,
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        self.empty_row_frame_height(table, row, styles, |cell| {
+            self.unchanged_cell_content_frame(table, cell, false)
+                && cell
+                    .paragraphs
+                    .iter()
+                    .all(crate::renderer::cell_paragraph_has_only_text_metadata)
+        })
+    }
+
+    fn empty_row_frame_height(
+        &self,
+        table: &Table,
+        row: usize,
+        styles: &ResolvedStyleSet,
+        valid_cell_frame: impl Fn(&Cell) -> bool,
+    ) -> Option<f64> {
         let owners = self.indexed_row_cut_cell_order(table, row);
         if owners.is_empty() {
             return None;
@@ -113,7 +141,7 @@ impl LayoutEngine {
             if cell.row_span != 1
                 || cell.text_direction != 0
                 || cell.height > i32::MAX as u32
-                || !self.stored_plain_text_cell_frame(table, cell)
+                || !valid_cell_frame(cell)
             {
                 return None;
             }

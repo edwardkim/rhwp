@@ -589,7 +589,7 @@ impl TypesetEngine {
                 && rest > 0.0
                 && rest < row_total
                 && layout_engine
-                    .stored_empty_row_frame_height(table, r, styles)
+                    .unchanged_empty_row_frame_height(table, r, styles)
                     .is_some_and(|height| height <= rest)
             {
                 consumed += cs_before + rest;
