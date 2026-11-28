@@ -4401,7 +4401,20 @@ impl TypesetEngine {
             .take(ctrl_idx)
             .filter(|c| matches!(c, Control::Table(t) if self.is_effective_tac_table(para, t, fmt)))
             .count();
-        let tac_seg_idx = if tac_count > 1 {
+        // 번호 줄이 표들 앞에 점유한 공간은 따로 소비한다. 저장 높이
+        // 배열은 개체의 문서 순서로 배정해 첫 표에 뒤 표의 높이를 주지 않는다.
+        let numbered_stack = (tac_count > 1 && tac_count >= fmt.line_heights.len())
+            .then(|| {
+                let (first, _) = para.controls.iter().enumerate().find(|(_, control)| {
+                    matches!(control, Control::Table(t) if self.is_effective_tac_table(para, t, fmt))
+                })?;
+                stored_marker_prefix_advance(para, first, true, self.dpi)
+                    .filter(|prefix| prefix.numbering_line)
+            })
+            .flatten();
+        let tac_seg_idx = if numbered_stack.is_some() {
+            prior_tac
+        } else if tac_count > 1 {
             // [#2322] 텍스트-host 다중 TAC: 선행 텍스트 줄 수만큼 lineseg 매핑을
             // 오프셋한다. 종전 count 기반 매핑은 제목 줄이 있는 문단에서 표1을
             // 텍스트 줄(예: 16px)에 매핑해 851px 표가 16px 로 계상됐다 (20862337
@@ -4475,14 +4488,16 @@ impl TypesetEngine {
         if intra_para_reset && !st.current_items.is_empty() {
             st.advance_column_or_new_page();
         }
-        // [#9016] 글자 없는 문단의 제목 차례 표시는 CTRL_HEADER 없이 개체보다 앞 슬롯을
-        // 차지하고 자기 저장 줄을 쌓는다(1730000-202000011 pi=168: ts 0 titM 줄 th 2000,
-        // ts 8 표 줄 vpos +2000). 이 문단의 첫 배치 표가 그 뒤 줄을 소유하면 표 원점과
-        // 적합 판정이 그 줄 원점에서 시작하도록 앞 줄의 저장 전진을 먼저 쌓는다.
-        if is_first_placed && !st.pre_emitted_host_paras.contains(&para_idx) {
-            if let Some(prefix) = title_mark_prefix_advance(para, ctrl_idx, self.dpi) {
-                st.advance_flow_by(prefix);
-            }
+        // 비가시 제어가 소유한 저장 줄의 전진을 첫 표의 적합 판정과 배치에 함께 반영한다.
+        let marker_prefix = (is_first_placed && !st.pre_emitted_host_paras.contains(&para_idx))
+            .then(|| numbered_stack.or_else(|| {
+                stored_marker_prefix_advance(
+                    para, ctrl_idx, tac_count >= fmt.line_heights.len(), self.dpi,
+                )
+            }))
+            .flatten();
+        if let Some(prefix) = marker_prefix {
+            st.advance_flow_by(prefix.advance);
         }
         // 다중 TAC 표: LINE_SEG 기반 개별 높이 계산
         let table_height = if tac_count > 1 {
@@ -4748,7 +4763,7 @@ impl TypesetEngine {
             hwpunit_to_px(frame.object_advance_hu, self.dpi)
         });
         // 앞선 TAC 소유 줄은 이미 각자의 표 경로에서 소비됐다.
-        let before_text: f64 = if owned_row.is_some() {
+        let before_text: f64 = if owned_row.is_some() || numbered_stack.is_some() {
             0.0
         } else {
             (0..tac_table_line_idx.unwrap_or(0))
@@ -5007,7 +5022,7 @@ impl TypesetEngine {
             st.record_inline_placement((para_idx, ctrl_idx), placement);
             st.invalidate_vpos_after_clearance(placement.clearance);
         }
-        if let Some(row) = owned_row.filter(|_| side_wrap_placement.is_none()) {
+        if let Some(row) = owned_row.as_ref().filter(|_| side_wrap_placement.is_none()) {
             // 가로 펜과 점유 높이의 일치는 세로 원점의 증거가 아니다.
             // 원본 줄과 현재 단의 축이 실제 펜까지 일치할 때만 세로 끝을 발행한다.
             let stored_vertical_pen =
@@ -5042,7 +5057,11 @@ impl TypesetEngine {
                         })?;
                         ((top - st.current_height).abs() <= self.dpi / 7200.0).then_some(top)
                     });
-            let owns_vertical_frame = st.profile.session_edited() || stored_vertical_pen.is_some();
+            // 번호 제어 줄은 배치할 글리프가 없어 별도 PageItem을 만들지 않는다.
+            // 이 줄의 전진을 소비한 첫 표의 pen과 끝을 함께 넘겨 paint가 단 위로 되돌리지 않게 한다.
+            let owns_vertical_frame = st.profile.session_edited()
+                || stored_vertical_pen.is_some()
+                || marker_prefix.is_some_and(|prefix| prefix.numbering_line);
             st.record_inline_placement(
                 (para_idx, ctrl_idx),
                 super::float_placement::InlineBoxPlacement {
@@ -5052,6 +5071,25 @@ impl TypesetEngine {
                     clearance: 0.0,
                     advance_end: owns_vertical_frame.then_some(st.current_height + table_height),
                     stored_horizontal_pen: Some(row.horizontal_pen),
+                    stored_column_frame: None,
+                },
+            );
+        }
+        if side_wrap_placement.is_none()
+            && owned_row.is_none()
+            && marker_prefix.is_some_and(|prefix| prefix.numbering_line)
+        {
+            // 첫 표의 가로 pen을 저장 줄이 소유하지 않아도, 번호 줄 뒤의
+            // 세로 pen과 점유 끝은 같은 배치 결과를 소비한다.
+            st.record_inline_placement(
+                (para_idx, ctrl_idx),
+                super::float_placement::InlineBoxPlacement {
+                    x: 0.0,
+                    y: st.current_height,
+                    clearance: 0.0,
+                    resolved_x: false,
+                    advance_end: Some(st.current_height + table_height),
+                    stored_horizontal_pen: None,
                     stored_column_frame: None,
                 },
             );
@@ -9877,21 +9915,76 @@ mod tests {
     }
 }
 
-/// [#9016] 글자 없는 문단에서 제목 차례 표시 줄이 표 소유 줄 앞에 저장돼 있으면 그 저장 전진(px).
-///
-/// 제목 차례 표시는 CTRL_HEADER 없이 8유닛 슬롯을 차지하는 인라인 제어라 `controls[]` 에 없고,
-/// 한/글은 그 슬롯을 자기 줄(글자 높이 줄)로 쌓는다. 소유 줄까지의 저장 vpos 가 되감김 없이
-/// 증가할 때만 같은 조각의 앞 줄로 본다. 재조판·편집된 줄은 저장 원점을 근거로 쓰지 않는다.
-fn title_mark_prefix_advance(para: &Paragraph, ctrl_idx: usize, dpi: f64) -> Option<f64> {
+#[derive(Clone, Copy)]
+struct StoredMarkerPrefix {
+    advance: f64,
+    numbering_line: bool,
+}
+
+/// 글자가 없는 문단에서 제어가 차지한 표 앞 저장 줄의 전진(px).
+/// 제목 차례 표시(#9016)와 쪽 번호 제어(#7864)의 줄은 글리프 없이도 공간을 차지한다.
+fn stored_marker_prefix_advance(
+    para: &Paragraph,
+    ctrl_idx: usize,
+    all_measured_rows_assigned_to_tables: bool,
+    dpi: f64,
+) -> Option<StoredMarkerPrefix> {
     if !para.text.is_empty()
-        || !para.title_marks.iter().any(|mark| mark.char_idx == 0)
         || para.stored_text_partition_is_dirty()
         || para.cell_format_vpos_dirty
     {
         return None;
     }
-    let owner = crate::renderer::composer::control_slot_line_index(para, ctrl_idx)
-        .filter(|&line| line > 0)?;
+    let title_mark_prefix = para.title_marks.iter().any(|mark| mark.char_idx == 0);
+    let number_markers = || {
+        para.controls[..ctrl_idx].iter().enumerate().filter_map(|(index, control)| {
+            matches!(
+                control,
+                Control::PageNumberPos(_)
+                    | Control::NewNumber(crate::model::control::NewNumber {
+                        number_type: crate::model::control::AutoNumberType::Page,
+                        ..
+                    })
+            )
+            .then_some(index)
+        })
+    };
+    let numbered_empty_host = all_measured_rows_assigned_to_tables
+        && number_markers().next().is_some();
+    if !title_mark_prefix && !numbered_empty_host {
+        return None;
+    }
+    let normalized_owner = |index| crate::renderer::composer::control_slot_line_index(para, index);
+    // HWPX 원본 줄 시작이 이미 구역·단 정의 슬롯을 포함한 경우가 있다.
+    // 완전한 제어 스트림에서는 원본 줄 시작과 번호·표 슬롯도 직접 대조한다.
+    let raw_position = |index: usize| {
+        u32::try_from(index)
+            .ok()?
+            .checked_mul(crate::model::control::CTRL_CHAR_CODE_UNITS)
+    };
+    let raw_owner = |index| {
+        let position = raw_position(index)?;
+        para.line_segs
+            .iter()
+            .rposition(|line| line.text_start <= position)
+    };
+    let numbered_owner = |owner_for: &dyn Fn(usize) -> Option<usize>| {
+        let owner = owner_for(ctrl_idx)?;
+        number_markers()
+            .any(|index| owner_for(index).is_some_and(|line| line < owner))
+            .then_some(owner)
+    };
+    let owner = if title_mark_prefix {
+        normalized_owner(ctrl_idx).filter(|&line| line > 0)?
+    } else {
+        numbered_owner(&normalized_owner).or_else(|| {
+            (para.hwpx_axis_shift > 0
+                && para.char_offsets.is_empty()
+                && raw_position(para.controls.len())?.checked_add(1) == Some(para.char_count))
+                .then(|| numbered_owner(&raw_owner))
+                .flatten()
+        })?
+    };
     let rows = para.line_segs.get(..=owner)?;
     if rows.iter().any(|seg| {
         is_synthetic_line_seg(seg)
@@ -9902,8 +9995,23 @@ fn title_mark_prefix_advance(para: &Paragraph, ctrl_idx: usize, dpi: f64) -> Opt
     {
         return None;
     }
-    Some(hwpunit_to_px(
-        rows[owner].vertical_pos - rows[0].vertical_pos,
-        dpi,
-    ))
+    // 여러 TAC 표가 한 저장 줄에 몰리면 기존 높이 분배가 모든 줄을 표에
+    // 배정한다. 그 경우 번호 제어의 독립 줄을 앞서 소비한다.
+    if !title_mark_prefix
+        && !rows.windows(2).all(|pair| {
+            let before = &pair[0];
+            before.text_height > 0
+                && before.line_height == before.text_height
+                && i64::from(before.vertical_pos)
+                    + i64::from(before.text_height)
+                    + i64::from(before.line_spacing)
+                    == i64::from(pair[1].vertical_pos)
+        })
+    {
+        return None;
+    }
+    Some(StoredMarkerPrefix {
+        advance: hwpunit_to_px(rows[owner].vertical_pos - rows[0].vertical_pos, dpi),
+        numbering_line: !title_mark_prefix,
+    })
 }
