@@ -286,6 +286,14 @@ vertical 입력에 전달하고 다른 명령 뒤에는 초기화한다.
 해당 셀에서 조건을 만족하는 첫 문단의 시작에 커서를 둔다.
 표 경계에서는 현재 선택을 반환한다. 이동 결과는 기존 문서 revision과 함께 반환한다.
 
+`textUnitSelection`을 지원하면 `{command:"selectTextUnit",unit:"word",position:TextPosition}`으로
+본문 또는 표 셀의 한 문단 안에서 단어를 선택할 수 있다. 중첩 표는 위치가 가리키는 가장 안쪽
+문단을 사용한다. `unit:"sentence"`는 문장 부호를 포함하고 양끝 공백을 제외한 문장을 선택한다.
+단어 선택은 유니코드 경계에 따라 문장 부호와 기호도 각각의 단위로 선택한다. 공백 시작점은
+바로 앞 단위를 선택하고 공백 내부에서는 캐럿을 유지한다. 문단 끝은 마지막 단위에 속한다.
+문장 사이의 공백은 바로 앞 문장에 속한다. 결과는 앞에서 뒤로 향하는 선택이며 문서 revision,
+저장 상태, 실행 취소와 다시 실행 기록을 그대로 유지한다.
+
 `imeContext`는 조합 중에도 읽을 수 있는 최대4096 scalar 주변 문맥과 scalar cursor/anchor,
 선택 텍스트 및 truncation 정보를 반환한다. worker는 target, 동기 세션은 expectedRevision을
 받는다. OS API가 UTF-16을 쓰면 adapter에서 변환하고 surrogate 중간으로 커서를 만들지 않는다.
