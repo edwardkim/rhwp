@@ -1,5 +1,5 @@
 {
-  "code_head": "48ce72ba80f6ca43a2914ec60093348b064df4d2",
+  "code_head": "be48607ad9444d8232df4f699c73832d9a34885d",
   "cases": {
     "chinese-newsletter": {
       "native": {
@@ -534,7 +534,7 @@
       }
     }
   },
-  "base": "3a6b7d2b318287361f443b0814702783eb973533",
+  "base": "ea9f0bb7a044a9cdb537d3c3a13502bece2d0e2c",
   "inputs": {
     "chinese-newsletter": {
       "issue": 7789,
