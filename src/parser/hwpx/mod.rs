@@ -1052,11 +1052,19 @@ pub(super) fn parse_hwpx_for_open(
         Some(password) => crypto::decrypt_hwpx_package(data, password)?,
         None => None,
     };
-    parse_hwpx_package(
+    let mut document = parse_hwpx_package(
         decrypted.as_deref().unwrap_or(data),
         None,
         recover_legacy_alpha,
-    )
+    )?;
+    // 암호를 풀어 연 패키지는 원본이 암호 문서다. HWP5 의 FileHeader 암호 플래그와 같은 뜻으로
+    // `header.encrypted` 를 세운다(문서 정보·info·explain·explore 가 읽는다). 저장은 이 값으로
+    // 암호를 걸지 않는다 — HWP 저장은 비밀번호를 받을 때만 걸고 그 밖에는 플래그를 지우며,
+    // HWPX 저장은 이 값을 읽지 않는다.
+    if decrypted.is_some() {
+        document.header.encrypted = true;
+    }
+    Ok(document)
 }
 
 fn resolve_embedded_font_references(

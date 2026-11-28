@@ -170,7 +170,9 @@ fn actual_odf_hwpx_fixture_requires_the_password_and_matches_plain_counterpart()
     let plain = parse_document(&fixture_bytes(PLAIN_FIXTURE))
         .expect("같은 문서의 평문 HWPX fixture를 열어야 함");
     assert_eq!(decrypted.header.version.major, 5);
-    assert!(!decrypted.header.encrypted);
+    // 암호를 풀어 연 문서는 원본이 암호 문서다 — HWP3·HWP5 암호 fixture 와 같은 계약(#9563).
+    // 종전 기대값(false)은 #3516 에서 들어왔으나 근거가 남아 있지 않다.
+    assert!(decrypted.header.encrypted);
     assert_eq!(
         document_shape(&decrypted),
         (1, 365, vec![85078, 93678, 738])
