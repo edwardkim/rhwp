@@ -146,15 +146,15 @@
                         <KeyboardAccelerator Key="Y" Modifiers="Control" />
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
-                <AppBarSeparator DynamicOverflowOrder="1" />
-                <AppBarButton Label="잘라내기" Icon="Cut" Click="OnCutClicked" DynamicOverflowOrder="1"
+                <AppBarSeparator DynamicOverflowOrder="2" />
+                <AppBarButton Label="잘라내기" Icon="Cut" Click="OnCutClicked" DynamicOverflowOrder="2"
                               IsEnabled="{x:Bind CutMenuItem.IsEnabled, Mode=OneWay}" />
-                <AppBarButton Label="복사" Icon="Copy" Click="OnCopyClicked" DynamicOverflowOrder="1"
+                <AppBarButton Label="복사" Icon="Copy" Click="OnCopyClicked" DynamicOverflowOrder="2"
                               IsEnabled="{x:Bind CopyMenuItem.IsEnabled, Mode=OneWay}" />
-                <AppBarButton Label="붙여넣기" Icon="Paste" Click="OnPasteClicked" DynamicOverflowOrder="1"
+                <AppBarButton Label="붙여넣기" Icon="Paste" Click="OnPasteClicked" DynamicOverflowOrder="2"
                               IsEnabled="{x:Bind PasteMenuItem.IsEnabled, Mode=OneWay}" />
                 <AppBarElementContainer x:Name="FormattingToolbar" Visibility="Collapsed"
-                                        Loaded="OnFormattingToolbarLoaded" DynamicOverflowOrder="4"
+                                        Loaded="OnFormattingToolbarLoaded" DynamicOverflowOrder="1"
                                         AutomationProperties.Name="글자와 문단 서식"
                                         AutomationProperties.AutomationId="FormattingToolbar">
                     <Border Margin="4,3" Padding="2" CornerRadius="6" VerticalAlignment="Center"
@@ -228,7 +228,7 @@
                         </StackPanel>
                     </Border>
                 </AppBarElementContainer>
-                <AppBarButton Label="찾기" Icon="Find" Click="OnFindClicked" DynamicOverflowOrder="2"
+                <AppBarButton Label="찾기" Icon="Find" Click="OnFindClicked" DynamicOverflowOrder="4"
                               AutomationProperties.AutomationId="FindToolbar"
                               IsEnabled="{x:Bind CloseButton.IsEnabled, Mode=OneWay}" />
                 <CommandBar.SecondaryCommands>
