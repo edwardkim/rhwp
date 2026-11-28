@@ -118,6 +118,13 @@ internal sealed class ContinuousPageLayout
             y >= placement.Top && y < placement.Bottom;
     }
 
+    public PagePlacement NearestPage(double y)
+    {
+        PagePlacement above = AtOffset(y);
+        return y >= above.Bottom && TryGet(above.Index + 1, out PagePlacement below) &&
+            below.Top - y <= y - above.Bottom ? below : above;
+    }
+
     public IEnumerable<PagePlacement> Intersecting(double top, double bottom)
     {
         for (uint index = AtOffset(top).Index; index < placements.Length; index++)

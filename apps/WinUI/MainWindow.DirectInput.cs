@@ -52,7 +52,8 @@ public sealed partial class MainWindow
     private void OnPagePointerMoved(object sender, PointerRoutedEventArgs args)
     {
         if (dragPointer != args.Pointer.PointerId ||
-            !AcceptPageInput(args.GetCurrentPoint(PageCanvas).Position, out PageInfo current, out Point location))
+            !AcceptPageInput(args.GetCurrentPoint(PageCanvas).Position, out PageInfo current, out Point location,
+                extend: true))
             return;
 
         args.Handled = true;
@@ -65,7 +66,8 @@ public sealed partial class MainWindow
             return;
 
         args.Handled = true;
-        if (AcceptPageInput(args.GetCurrentPoint(PageCanvas).Position, out PageInfo current, out Point location))
+        if (AcceptPageInput(args.GetCurrentPoint(PageCanvas).Position, out PageInfo current, out Point location,
+            extend: true))
             QueuePointerSelection(current, location, extend: true, final: true);
         dragPointer = null;
         PageCanvas.ReleasePointerCapture(args.Pointer);
@@ -112,18 +114,29 @@ public sealed partial class MainWindow
         });
     }
 
-    private bool AcceptPageInput(Point point, out PageInfo current, out Point location)
+    private bool AcceptPageInput(Point point, out PageInfo current, out Point location, bool extend = false)
     {
         current = null!;
         location = default;
-        if (page is not PageInfo active || HasActiveComposition || !CanQueueDirectEdit ||
-            continuousPages is not { } layout ||
-            !layout.TryHit(point.X / zoom, point.Y / zoom, out PagePlacement placement) ||
-            layout.Measured(active, placement.Index) is not { } measured)
+        if (page is not { PageCount: > 0 } active || HasActiveComposition || !CanQueueDirectEdit ||
+            continuousPages is not { } layout || !layout.Matches(active))
             return false;
 
-        current = measured;
-        location = new Point(point.X / zoom - placement.Left, point.Y / zoom - placement.Top);
+        double x = point.X / zoom;
+        double y = point.Y / zoom;
+        if (!layout.TryHit(x, y, out PagePlacement placement))
+        {
+            if (!extend)
+                return false;
+            placement = layout.NearestPage(y);
+        }
+
+        PageInfo? measured = layout.Measured(active, placement.Index);
+        if (measured is null && !extend)
+            return false;
+
+        current = measured ?? layout.Describe(active, placement);
+        location = new Point(x - placement.Left, y - placement.Top);
         return true;
     }
 
@@ -148,8 +161,16 @@ public sealed partial class MainWindow
         CancellationToken token = CancellationToken.None;
         PageInfo current = layout.Measured(activePage, placement.Index) ??
             await worker.GetPageAsync(activePage, placement.Index, token);
-        if (location.X >= current.Width || location.Y >= current.Height)
+        if (extend)
+        {
+            // A captured drag can pass through the canvas margin or between sheets.
+            location = new Point(Math.Clamp(location.X, 0, Math.Max(0, current.Width - 1)),
+                Math.Clamp(location.Y, 0, Math.Max(0, current.Height - 1)));
+        }
+        else if (location.X >= current.Width || location.Y >= current.Height)
+        {
             return;
+        }
 
         TextHit? hit = await worker.HitTestAsync(current, location.X, location.Y, token);
         if (hit?.Caret is not PageCaret caret || caret.Page != current.Page)
