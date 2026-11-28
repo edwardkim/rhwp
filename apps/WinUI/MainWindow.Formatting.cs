@@ -37,7 +37,9 @@ public sealed partial class MainWindow
     private void RefreshFormattingActions()
     {
         // XAML can raise text notifications while InitializeComponent builds the row.
-        if (ApplyFontSizeButton is null)
+        // A queued cursor move or edit can briefly leave the page and selection
+        // on different revisions. Keep the last settled appearance until it completes.
+        if (ApplyFontSizeButton is null || directQueueRunning)
             return;
 
         bool canAlign = TryGetFormattingSelection(requireSelectedText: false, out _, out TextSelection? selection) &&

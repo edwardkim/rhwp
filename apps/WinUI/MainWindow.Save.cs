@@ -185,7 +185,7 @@ public sealed partial class MainWindow
                 Title = "변경 사항을 저장할까요?",
                 Content = "현재 문서에 저장하지 않은 변경 사항이 있습니다.",
                 PrimaryButtonText = "저장",
-                SecondaryButtonText = "폐기",
+                SecondaryButtonText = "저장 안함",
                 CloseButtonText = "취소",
                 DefaultButton = ContentDialogButton.Close,
             };
