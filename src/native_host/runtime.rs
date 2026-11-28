@@ -390,6 +390,10 @@ impl NativeRuntimeCommand {
                 .capacity()
                 .checked_add(password.as_ref().map_or(0, Vec::capacity)),
             Self::OpenRecovery { bytes, .. } => Some(bytes.capacity()),
+            Self::ExecuteCommand {
+                command: NativeEditCommand::InsertEquation { script, .. },
+                ..
+            } => Some(script.capacity()),
             Self::Replace { text, .. }
             | Self::UpdateComposition { text, .. }
             | Self::PasteText { text, .. } => Some(text.capacity()),
