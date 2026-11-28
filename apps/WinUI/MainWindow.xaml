@@ -74,14 +74,14 @@
                                     KeyboardAcceleratorTextOverride="Ctrl+V" IsEnabled="False" />
                     <MenuFlyoutSeparator />
                     <MenuFlyoutItem Text="찾기" Icon="Find" Click="OnFindClicked"
-                                    IsEnabled="{x:Bind CloseButton.IsEnabled, Mode=OneWay}"
+                                    IsEnabled="{x:Bind FindToolbarButton.IsEnabled, Mode=OneWay}"
                                     AutomationProperties.AutomationId="FindInDocument">
                         <MenuFlyoutItem.KeyboardAccelerators>
                             <KeyboardAccelerator Key="F" Modifiers="Control" />
                         </MenuFlyoutItem.KeyboardAccelerators>
                     </MenuFlyoutItem>
                     <MenuFlyoutItem Text="바꾸기" Click="OnFindReplaceClicked"
-                                    IsEnabled="{x:Bind CloseButton.IsEnabled, Mode=OneWay}"
+                                    IsEnabled="{x:Bind FindToolbarButton.IsEnabled, Mode=OneWay}"
                                     AutomationProperties.AutomationId="ReplaceInDocument">
                         <MenuFlyoutItem.KeyboardAccelerators>
                             <KeyboardAccelerator Key="H" Modifiers="Control" />
@@ -240,9 +240,8 @@
                         </StackPanel>
                     </Border>
                 </AppBarElementContainer>
-                <AppBarButton Label="찾기" Icon="Find" Click="OnFindClicked" DynamicOverflowOrder="4"
-                              AutomationProperties.AutomationId="FindToolbar"
-                              IsEnabled="{x:Bind CloseButton.IsEnabled, Mode=OneWay}" />
+                <AppBarButton x:Name="FindToolbarButton" Label="찾기" Icon="Find" Click="OnFindClicked"
+                              DynamicOverflowOrder="4" AutomationProperties.AutomationId="FindToolbar" IsEnabled="False" />
                 <CommandBar.SecondaryCommands>
                     <AppBarButton x:Name="SaveCopyButton" Label="다른 이름으로 저장" Icon="Copy"
                                   Click="OnSaveCopyClicked" IsEnabled="False">

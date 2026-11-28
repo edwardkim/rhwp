@@ -309,6 +309,7 @@ public sealed partial class MainWindow
             SearchPanel.Visibility = Visibility.Collapsed;
 
         bool enabled = available && page is not null;
+        FindToolbarButton.IsEnabled = enabled;
         SearchQuery.IsReadOnly = !enabled;
         ReplacementText.IsReadOnly = !enabled;
         SearchCaseSensitive.IsEnabled = enabled;
