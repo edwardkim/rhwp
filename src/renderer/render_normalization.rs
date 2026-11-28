@@ -118,6 +118,7 @@ impl RenderNormalizationOverlay {
         match Self::from_document_reusing_with_storage(
             document,
             previous,
+            std::iter::empty(),
             &crate::storage::Unbounded,
         ) {
             Ok(value) => value,
@@ -125,15 +126,22 @@ impl RenderNormalizationOverlay {
         }
     }
 
-    pub(crate) fn from_document_reusing_with_storage<S: crate::storage::Storage>(
-        document: &Document,
+    pub(crate) fn from_document_reusing_with_storage<'a, S: crate::storage::Storage>(
+        document: &'a Document,
         previous: &Self,
+        rendered_sections: impl Iterator<Item = &'a [crate::model::paragraph::Paragraph]>,
         storage: &S,
     ) -> Result<Self, S::Error> {
         Ok({
             let mut overlay = Self {
+                // 정규화가 복제한 표도 실제 컷에서 자신의 원본 프레임을 조회한다.
+                // 원본 주소의 증명을 복사하지 않고 실제 조판에 들어가는 표를 같은 규칙으로 확인한다.
                 stored_nested_text_frames_by_pointer:
-                    stored_nested_text_frames::collect_with_storage(document, storage)?,
+                    stored_nested_text_frames::collect_with_storage(
+                        document,
+                        rendered_sections,
+                        storage,
+                    )?,
                 ..Self::default()
             };
             let hwp5_stored_pagination_layout =

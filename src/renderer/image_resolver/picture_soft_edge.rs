@@ -149,7 +149,7 @@ pub(crate) fn prepare_picture_soft_edge(
     })
 }
 
-fn sample_window(
+pub(super) fn sample_window(
     source: &image::RgbaImage,
     crop: (f64, f64, f64, f64),
     width: u32,

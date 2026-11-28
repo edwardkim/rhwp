@@ -453,6 +453,22 @@ fn normalize_flow_with_storage<S: crate::storage::Storage>(
                 } else {
                     ParagraphBox::content_for_style(width, style, dpi)
                 };
+                if body_page.is_some()
+                    && crate::storage::optional(
+                        crate::renderer::composer::hidden_field_guide_fits_one_row(
+                            &paragraph, &box_, styles, dpi, storage,
+                        ),
+                        failure,
+                    )?
+                {
+                    let old_advance = frame_advance(&paragraph.line_segs)?;
+                    paragraph.line_segs.truncate(1);
+                    paragraph.source_line_seg_vertical_pos = None;
+                    shift = shift.checked_add(
+                        frame_advance(&paragraph.line_segs)?.checked_sub(old_advance)?,
+                    )?;
+                    changed = true;
+                }
                 // 현재 측정으로 더 적은 줄에 들어간다는 사실만으로 정상 저장 줄을
                 // 무효화하지 않는다. 원문 문자에 없는 목록 마커는 문서 순서에서
                 // 해소한 실제 기하를 갱신해야 하며, 같은 결과가 채움·높이에 참여한다.

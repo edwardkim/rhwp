@@ -162,6 +162,8 @@ struct FragmentBudget {
     first_fragment_shortfall: f64,
     /// 원본 물리 프레임이 반복해서 닫히는 하단. 종료 인증·예약·방출이 함께 쓴다.
     source_frame_bottom: Option<f64>,
+    /// 현재 이어받기의 실제 하단을 닫는 원본 상자를 수용했다.
+    accepted_continuation_frame: bool,
     fragment_placement: Option<crate::renderer::float_placement::ParagraphFloatPlacement>,
     scan_row_count: usize,
     saved_first_fragment_source_frame: Option<(f64, f64)>,

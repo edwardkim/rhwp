@@ -271,7 +271,9 @@ pub(crate) fn verified_missing_glyph_supplier(
         // gulim.TTC의 DotumChe cmap에는 U+2024가 없다(SHA ed750275…776c).
         // 근린생활시설 표의 독립 Print는 HBATANG의 0.173em 글리프로 출력하며,
         // HBATANG.TTF의 hmtx 178/1024도 같은 자연 전진을 확인한다.
-        ("DotumChe", 1024, false, false, '\u{2024}') => Some("Haansoft Batang"),
+        // AIFT의 독립 한컴 Print 22쪽도 돋움체에 없는 U+22C5를 한컴바탕
+        // glyph 6으로 출력한다. Print hmtx와 HBATANG.TTF 모두 1024/1024em이다.
+        ("DotumChe", 1024, false, false, '\u{2024}' | '\u{22C5}') => Some("Haansoft Batang"),
         // 같은 gulim.TTC의 GulimChe도 이 글리프가 없다. 위임전결규정의
         // 독립2020 Print44·86쪽은 HBATANG178/1024em과 같은 윤곽으로 공급한다.
         // 폭 표에 없는 문자를 고정폭1em으로 추정하지 않는다. 다른 기호는 유지한다.

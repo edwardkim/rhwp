@@ -37,7 +37,7 @@ use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::{CaptionDirection, CommonObjAttr, HorzRelTo};
-use crate::model::style::{Alignment, BorderLine};
+use crate::model::style::{Alignment, BorderLine, BorderLineType};
 use crate::model::table::{Cell, Table};
 use crate::renderer::float_placement::native_multirow_internal_reset_rowbreak_anchor_advance_hu;
 
@@ -6614,6 +6614,7 @@ impl LayoutEngine {
         clamp_header_negative_para_offset: bool,
         probe: Option<&PartialTableCellProbe>,
         resolved_table_top: Option<f64>,
+        resolved_table_left: Option<f64>,
         predecessor_flow_bottom: Option<f64>,
     ) -> f64 {
         let para = match paragraphs.get(para_index) {
@@ -6680,7 +6681,7 @@ impl LayoutEngine {
                 pre_emitted_host_content_height,
                 host_line_spacing,
                 resolved_table_top,
-                resolved_table_left: None,
+                resolved_table_left,
                 predecessor_flow_bottom,
                 end_row_owns_stored_frame,
                 computed_fragment_frame,
@@ -8211,9 +8212,12 @@ impl LayoutEngine {
         Self::publish_table_paint_layer(table, &mut table_node);
 
         // ── 5-1. 표 배경 렌더링 (표 > 배경 > 색 > 면색) ──
-        if parent_owned && table.border_fill_id > 0 {
-            let tbl_idx = (table.border_fill_id as usize).saturating_sub(1);
-            if let Some(tbl_bs) = styles.border_styles.get(tbl_idx) {
+        let table_border_style = table
+            .border_fill_id
+            .checked_sub(1)
+            .and_then(|id| styles.border_styles.get(usize::from(id)));
+        if parent_owned {
+            if let Some(tbl_bs) = table_border_style {
                 self.render_cell_background(
                     tree,
                     &mut table_node,
@@ -8725,10 +8729,14 @@ impl LayoutEngine {
                 fragment_zones
             };
 
-            // 어울림 표가 행 안에서 다음 쪽으로 이어지면 새 물리 조각의 맨 위는
-            // 원본 셀의 윗변이 아니다. 반복 제목행이 없는 경우 그 컷 경계에
-            // 수집된 가로선을 그리지 않는다. 2020 PDF의 #6756·#6549는 열린
-            // 윗변을, 자리차지 #5885는 닫힌 윗변을 각각 보여 준다.
+            // 별도 분할선이 꺼진 원본 표 프레임은 수집한 셀·구역 괘선을 쓴다.
+            // 같은 표라도 열린 셀 변은 그대로 비고, 닫힌 변만 컷에서 이어진다.
+            // 별도 분할선이 지정된 경우에는 아래에서 NONE을 포함해 덮어쓴다.
+            let [keep_source_top, keep_source_bottom] = table_border_style
+                .filter(|style| !style.break_cell_separate_line)
+                .map_or([false; 2], |style| {
+                    [2, 3].map(|side| style.borders[side].line_type != BorderLineType::None)
+                });
             if is_continuation
                 && !start_cut.is_empty()
                 && header_rows.is_empty()
@@ -8737,7 +8745,7 @@ impl LayoutEngine {
                     crate::model::shape::TextWrap::Square
                 )
             {
-                if let Some(first_edge) = h_edges.first_mut() {
+                if let Some(first_edge) = h_edges.first_mut().filter(|_| !keep_source_top) {
                     // 부모의 내용 컷이 자식의 온전한 행 경계를 선택한 경우에는
                     // 새 물리 프레임의 윗변을 보존한다. 측정이 만든 같은
                     // CellUnit/자식 컷으로 글줄 안의 컷과 구분한다.
@@ -8779,10 +8787,10 @@ impl LayoutEngine {
                 }
             }
 
-            // Square 흐름의 내부 컷은 쪽 조각을 소유하며 셀 하단 테두리는 소유하지 않는다.
-            // 다음 조각이 원래의 닫는 경계를 유지한다.
+            // 원본 하단 프레임이 없는 Square 내부 컷은 완결한 자식 행의 변만 보존한다.
             if !is_last_part
                 && !end_cut.is_empty()
+                && !keep_source_bottom
                 && table.layout_page_break() == crate::model::table::TablePageBreak::RowBreak
                 && table.common.text_wrap == crate::model::shape::TextWrap::Square
             {

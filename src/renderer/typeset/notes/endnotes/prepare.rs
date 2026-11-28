@@ -13,6 +13,51 @@ use crate::renderer::typeset::{
     TypesetState, ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX,
 };
 
+/// A hidden separator uses the completed body's last line box. Confirm the
+/// trailing paragraph margin against the advance actually booked for that box.
+fn closed_body_before_hidden_separator(
+    st: &TypesetState,
+    paragraphs: &[Paragraph],
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<(f64, f64)> {
+    let PageItem::FullParagraph { para_index } = st.current_items.last()? else {
+        return None;
+    };
+    let para = paragraphs.get(*para_index)?;
+    if para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+        || para.line_segs.is_empty()
+        || para
+            .line_segs
+            .iter()
+            .any(crate::renderer::typeset::is_synthetic_line_seg)
+        || !para
+            .controls
+            .iter()
+            .all(crate::renderer::control_is_body_flow_neutral_marker)
+    {
+        return None;
+    }
+    let style = styles.para_styles.get(para.para_shape_id as usize)?;
+    let after = style.spacing_after;
+    if !after.is_finite()
+        || after <= 0.0
+        || crate::renderer::paragraph_outline_reserves_line_spacing(style.border_fill_id, styles)
+    {
+        return None;
+    }
+    let bounds = st
+        .paragraph_fragment_content_bottoms
+        .get(&(*para_index, para.line_segs.len()))?;
+    let epsilon = dpi / 7200.0;
+    let tail = bounds.flow_end - bounds.content_bottom - after;
+    let trailing = bounds.last_line_spacing.unwrap_or(0.0);
+    ((bounds.flow_end - st.current_height).abs() <= epsilon
+        && (tail.abs() <= epsilon || (tail - trailing).abs() <= epsilon))
+        .then_some((bounds.content_bottom, after))
+}
+
 impl TypesetEngine {
     /// [#2026 추출] 미주-당 프리앰블 — 구분자 방출, 미주-간 간격/되감기 플래그 산출,
     /// `EndnoteEmitVars` 생산. 원본 무변경 이동 (current_… 선언만 캐리 리셋 대입으로 전환).
@@ -62,6 +107,17 @@ impl TypesetEngine {
                 // 새 쪽 첫 미주는 본문과 나눌 경계가 없다. 같은 쪽 본문 뒤에만
                 // 구분선과 위/아래 여백을 예약한다. 높이가 0이어도 선은 표시한다.
                 if !st.current_items.is_empty() {
+                    let mut flow_origin = separator_origin;
+                    if flow_origin.is_none() && !profile.visible_separator {
+                        if let Some((body_bottom, consumed_margin)) =
+                            closed_body_before_hidden_separator(st, paragraphs, styles, self.dpi)
+                        {
+                            // The margin separates two body paragraphs. The note geometry
+                            // starts at the accepted last-line edge and owns its own margins.
+                            st.reclaim_flow_by(consumed_margin);
+                            flow_origin = Some(body_bottom);
+                        }
+                    }
                     if sep_height == 0.0 {
                         let trailing =
                             crate::renderer::note_separator::completed_body_tail_spacing_hu(
@@ -76,7 +132,7 @@ impl TypesetEngine {
                             prev_en_content_bottom_vpos.map(|v| v.saturating_sub(trailing));
                     }
                     st.append_item(PageItem::EndnoteSeparator {
-                        flow_origin: separator_origin,
+                        flow_origin,
                         separator_length: shape.separator_length,
                         margin_above: shape.separator_above_margin_hu(),
                         margin_below: endnote_separator_below_margin(shape),

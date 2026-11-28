@@ -1,5 +1,6 @@
 /node_modules
 dist/
+/dist-desktop/
 *.local
 
 # 측정용 샘플 심볼릭 링크 (e2e 로컬 실행 시 추가, 환경별 setup)

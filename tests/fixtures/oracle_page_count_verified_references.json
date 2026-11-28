@@ -3,6 +3,25 @@
   "purpose": "이미 독립 검증한 과거 경로의 원본/PDF를 바이트 신원으로 고정한다. 일반 canonical 형식·엔진 선택 규칙은 유지한다.",
   "references": [
     {
+      "sample": "mydocs/pr/assets/issue7445/aift74/aift.hwp",
+      "source_sha256": "a3e94e613a7d3dad0ee11e2df8f9572a5b7c2d704602960c2075b5fd22df995c",
+      "pdf": "mydocs/pr/assets/issue7445/aift74/aift-hwp-2020.pdf",
+      "pdf_sha256": "481b46b3b0aa9c87ca3b0af979aba1e6b366efe2592268e1978370d6968f33e9",
+      "pages": 74,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issue7445/aift74/README.md",
+      "logical_page_comparison": {
+        "native": {
+          "tsv": "mydocs/pr/assets/issues7789_7812/aift/native/silhouette.tsv",
+          "sha256": "b5f2ff0a5865b8076e32982a29d61c4a8b681fe1d3547a2479b1a740f1bb32c3"
+        },
+        "wasm": {
+          "tsv": "mydocs/pr/assets/issues7789_7812/aift/wasm/silhouette.tsv",
+          "sha256": "c7822a63c292424bab1ae491f44a21262e7d72eee3a82d3b6513364f004052e8"
+        }
+      }
+    },
+    {
       "sample": "samples/hwpspec.hwp",
       "source_sha256": "64df877f3c4accda0111ecf39d837da889741bb821b220cf61b6c126dc88364d",
       "pdf": "pdf/issue7772/hwpspec-hancom-one-up-2024.pdf",

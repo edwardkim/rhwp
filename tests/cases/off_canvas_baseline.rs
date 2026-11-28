@@ -98,9 +98,6 @@ const DEDICATED_SLOW_FIXTURES: &[&str] = &["issue2063_huge_cellbreak_table.hwp"]
 /// #7445의 README에 연결한 입력별 증적에서 실패와 시각 근거를 확인한다.
 /// 원문은 samples에 남기고 다른 원장과 정상 검사는 유지한다.
 const DEFERRED_OFF_CANVAS_FIXTURES: &[&str] = &[
-    // 사용자 요청: 아래 세 HWPX의 조판 보정은 다른 브랜치에서 진행한다.
-    "table_giant_cell_overfill.hwpx",
-    "issue5792/2700727_animal_facility_standards.hwpx",
     // #7445: CGMP 48쪽은 다른 작업이 보정한다. 사용자 요청으로 이 입력의 회귀를 제거한다.
     "issue6035/cgmp_evaluation_table.hwpx",
 ];
