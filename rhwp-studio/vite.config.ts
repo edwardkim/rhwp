@@ -25,14 +25,16 @@ const withHwpctrl = process.env.RHWP_WITHOUT_HWPCTRL !== '1';
  * AI 청크와 제공자 SDK 가 산출물에 남지 않는다.
  */
 const withAi = process.env.RHWP_WITHOUT_AI !== '1';
+const desktopPublicDir = process.env.RHWP_DESKTOP_PUBLIC_DIR;
 
 export default defineConfig({
+  publicDir: desktopPublicDir,
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
     // 셀프 호스팅 빌드에서 외부(CDN) 웹폰트 로드를 빌드 시점에 끈다.
     // 확장 storage 설정(disableExternalWebFonts)이 있으면 그 값이 우선한다.
     __RHWP_DISABLE_EXTERNAL_WEBFONTS__: JSON.stringify(
-      process.env.RHWP_DISABLE_EXTERNAL_WEBFONTS === '1',
+      desktopPublicDir !== undefined || process.env.RHWP_DISABLE_EXTERNAL_WEBFONTS === '1',
     ),
     __RHWP_HWPCTRL__: JSON.stringify(withHwpctrl),
     __RHWP_AI__: JSON.stringify(withAi),
@@ -146,7 +148,7 @@ export default defineConfig({
         });
       },
     },
-    VitePWA({
+    desktopPublicDir ? null : VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'icons/*.png'],
       manifest: {
