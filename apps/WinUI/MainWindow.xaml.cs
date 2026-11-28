@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -28,6 +29,7 @@ public sealed partial class MainWindow : Window
     private double zoom = 1;
     private bool picking;
     private bool closing;
+    private WindowsFileDrop? shellFileDrop;
     private bool DocumentActionsAvailable => !closing && !editorBusy && !directQueueRunning && !picking &&
         documentRequest is null && !HasActiveComposition;
 
@@ -117,30 +119,16 @@ public sealed partial class MainWindow : Window
         args.Handled = true;
         args.AcceptedOperation = DataPackageOperation.Copy;
         var deferral = args.GetDeferral();
-        string? documentPath = null;
-        string? picturePath = null;
-        PageInfo? picturePage = null;
-        Point pictureLocation = default;
+        FileDropAction? action = null;
         Point dropPoint = args.GetPosition(PageCanvas);
         DocumentTarget? displayedDocument = page?.Target;
         try
         {
             var files = await args.DataView.GetStorageItemsAsync();
             string[] paths = files.OfType<StorageFile>().Select(file => file.Path).ToArray();
-            documentPath = FileActivation.FirstDocumentPath(paths);
-            if (documentPath is null && pictureLimits is { InputBytes: > 0 })
-                picturePath = FileActivation.FirstPicturePath(paths);
-            if (picturePath is not null && displayedDocument is { } target && page?.Target == target &&
-                AcceptPageInput(dropPoint, out PageInfo dropPage, out pictureLocation))
-                picturePage = dropPage;
-            if (documentPath is null && picturePage is null)
-            {
+            action = PrepareFileDrop(paths, dropPoint, displayedDocument);
+            if (action is null)
                 args.AcceptedOperation = DataPackageOperation.None;
-                if (!closing)
-                    StatusText.Text = picturePath is not null ? "본문의 텍스트 위치에 그림을 놓으세요." :
-                        pictureLimits is { InputBytes: > 0 } ? "HWP, HWPX, PNG 또는 JPEG 파일을 놓으세요." :
-                        "HWP 또는 HWPX 파일을 놓으세요.";
-            }
         }
         catch (Exception error)
         {
@@ -153,10 +141,51 @@ public sealed partial class MainWindow : Window
             deferral.Complete();
         }
 
-        if (documentPath is not null)
-            await OpenFileAsync(documentPath);
-        else if (picturePath is not null && picturePage is not null && !closing)
-            await QueuePictureInsertionAsync(picturePath, picturePage, dropLocation: pictureLocation);
+        if (action is not null)
+            await UseFileDropAsync(action);
+    }
+
+    private sealed record FileDropAction(string Path, PageInfo? PicturePage, Point PicturePosition);
+
+    private FileDropAction? PrepareFileDrop(IReadOnlyList<string> paths, Point? dropPoint, DocumentTarget? displayed)
+    {
+        if (!DocumentActionsAvailable)
+            return null;
+        if (FileActivation.FirstDocumentPath(paths) is { } document)
+            return new FileDropAction(document, null, default);
+
+        bool pictureEnabled = pictureLimits is { InputBytes: > 0 };
+        string? picture = pictureEnabled ? FileActivation.FirstPicturePath(paths) : null;
+        if (picture is not null && dropPoint is Point point && displayed is { } target && page?.Target == target &&
+            AcceptPageInput(point, out PageInfo sheet, out Point location))
+            return new FileDropAction(picture, sheet, location);
+
+        StatusText.Text = picture is not null ? "본문의 텍스트 위치에 그림을 놓으세요." : pictureEnabled
+            ? "HWP, HWPX, PNG 또는 JPEG 파일을 놓으세요." : "HWP 또는 HWPX 파일을 놓으세요.";
+        return null;
+    }
+
+    private Task UseFileDropAsync(FileDropAction action) => action.PicturePage is { } sheet
+        ? QueuePictureInsertionAsync(action.Path, sheet, dropLocation: action.PicturePosition)
+        : OpenFileAsync(action.Path);
+
+    private void OnShellFileDrop(IReadOnlyList<string> paths, Point? clientPoint)
+    {
+        if (!DocumentActionsAvailable || Root.XamlRoot is not { } root)
+            return;
+
+        Point? point = null;
+        if (clientPoint is Point client)
+        {
+            double scale = root.RasterizationScale;
+            point = Root.TransformToVisual(PageCanvas).TransformPoint(new Point(client.X / scale, client.Y / scale));
+        }
+        DocumentTarget? displayed = page?.Target;
+        DispatcherQueue.TryEnqueue(async () =>
+        {
+            if (PrepareFileDrop(paths, point, displayed) is { } action)
+                await UseFileDropAsync(action);
+        });
     }
 
     private async void OnCloseClicked(object sender, RoutedEventArgs args)
@@ -304,6 +333,14 @@ public sealed partial class MainWindow : Window
 
     private void OnLoaded(object sender, RoutedEventArgs args)
     {
+        try
+        {
+            shellFileDrop ??= new WindowsFileDrop(Win32Interop.GetWindowFromWindowId(AppWindow.Id), OnShellFileDrop);
+        }
+        catch (Exception error)
+        {
+            Debug.WriteLine(error);
+        }
         if (Root.XamlRoot is XamlRoot root)
             root.Changed += OnXamlRootChanged;
         _ = LoadTitleBarLogoAsync();
@@ -316,6 +353,8 @@ public sealed partial class MainWindow : Window
 
     private void OnUnloaded(object sender, RoutedEventArgs args)
     {
+        shellFileDrop?.Dispose();
+        shellFileDrop = null;
         if (Root.XamlRoot is XamlRoot root)
             root.Changed -= OnXamlRootChanged;
     }
