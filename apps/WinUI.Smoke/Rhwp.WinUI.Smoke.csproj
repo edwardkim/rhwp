@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../WinUI/NativeWorkerDispatcher.cs" Link="NativeWorkerDispatcher.cs" />
+    <Compile Include="../WinUI/NativeWorkerDispatcher.Accessibility.cs" Link="NativeWorkerDispatcher.Accessibility.cs" />
+    <Compile Include="../WinUI/NativeWorkerDispatcher.Editor.cs" Link="NativeWorkerDispatcher.Editor.cs" />
+    <Compile Include="../WinUI/NativeWorkerDispatcher.DirectEdit.cs" Link="NativeWorkerDispatcher.DirectEdit.cs" />
+    <Compile Include="../WinUI/NativeWorkerDispatcher.Clipboard.cs" Link="NativeWorkerDispatcher.Clipboard.cs" />
+    <Compile Include="../WinUI/NativeWorkerDispatcher.Formatting.cs" Link="NativeWorkerDispatcher.Formatting.cs" />
+    <Compile Include="../WinUI/NativeWorkerDispatcher.Search.cs" Link="NativeWorkerDispatcher.Search.cs" />
+    <Compile Include="../WinUI/NativeWorkerDispatcher.Save.cs" Link="NativeWorkerDispatcher.Save.cs" />
+    <Compile Include="../WinUI/NativeWorkerDispatcher.Recovery.cs" Link="NativeWorkerDispatcher.Recovery.cs" />
+    <Compile Include="../WinUI/NativeWorkerDispatcher.Pdf.cs" Link="NativeWorkerDispatcher.Pdf.cs" />
+    <Compile Include="../WinUI/LivePdfContract.cs" Link="LivePdfContract.cs" />
+    <Compile Include="../WinUI/DocumentFileStore.cs" Link="DocumentFileStore.cs" />
+    <Compile Include="../WinUI/DocumentRecoveryStore.cs" Link="DocumentRecoveryStore.cs" />
+    <Compile Include="../WinUI/DocumentAutomationSnapshot.cs" Link="DocumentAutomationSnapshot.cs" />
+    <Compile Include="../WinUI/DocumentSaveCopy.cs" Link="DocumentSaveCopy.cs" />
+    <Compile Include="../WinUI/PageEditText.cs" Link="PageEditText.cs" />
+    <Compile Include="../WinUI/InlineEditorPlacement.cs" Link="InlineEditorPlacement.cs" />
+    <Compile Include="../WinUI/PageViewport.cs" Link="PageViewport.cs" />
+    <Compile Include="../../bindings/csharp/RhwpNative.cs" Link="RhwpNative.cs" />
+  </ItemGroup>
+</Project>

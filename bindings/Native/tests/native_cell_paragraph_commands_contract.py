@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Exercise nested cell paragraph split, join and undo on the actual C ABI."""
+"""Exercise nested cell movement, deletion and paragraph commands on the C ABI."""
 
 import argparse
 from pathlib import Path
@@ -100,7 +100,35 @@ def run(library):
         joined = accepted("executeCommand", command={"command": "joinPreviousParagraph"})["outcome"]
         assert joined["selection"] == caret(0, 1) and joined["revision"] == revision + 1, joined
         assert accepted("imeContext")["context"]["text"] == "가다"
-        assert worker.host.call("capabilities")["tableCellParagraphCommands"]
+        capabilities = worker.host.call("capabilities")
+        assert capabilities["tableCellParagraphCommands"] and capabilities["tableCellTextNavigation"]
+
+        def command(name, **options):
+            return accepted("executeCommand", command={"command": name, **options})
+
+        accepted("replace", text="👩‍💻")
+        revision = target["revision"]
+        assert command("moveLeft")["outcome"]["selection"] == caret(0, 1)
+        expected_emoji = {"anchor": point(0, 1), "focus": point(0, 4)}
+        assert command("moveRight", extendSelection=True)["outcome"]["selection"] == expected_emoji
+        assert accepted("imeContext")["context"]["selectedText"] == "👩‍💻"
+        assert target["revision"] == revision
+
+        removed = command("deleteForward")["outcome"]
+        assert removed["selection"] == caret(0, 1) and removed["revision"] == revision + 1, removed
+        assert accepted("imeContext")["context"]["text"] == "가다"
+        assert accepted("undo")["outcome"]["selection"] == expected_emoji
+        assert accepted("imeContext")["context"]["text"] == "가👩‍💻다"
+
+        assert command("end")["outcome"]["selection"] == caret(0, 5)
+        assert not command("deleteForward")["outcome"]["documentChanged"]
+        assert command("home")["outcome"]["selection"] == caret(0)
+        assert command("selectAll")["outcome"]["selection"] == {
+            "anchor": point(0), "focus": point(0, 5),
+        }
+        vertical = command("moveDown", extendSelection=True, preferredX=None)
+        assert vertical["outcome"]["selection"]["focus"]["cellPath"] == point(0)["cellPath"]
+        assert vertical["preferredX"] >= 0 and not vertical["outcome"]["documentChanged"]
 
 
 if __name__ == "__main__":
