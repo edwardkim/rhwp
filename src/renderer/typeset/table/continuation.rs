@@ -140,6 +140,8 @@ impl TableContinuationCursor {
 
 /// [#2424] continuation loop 진입 전에 한번 계산하는 owned 준비 상태.
 pub(in crate::renderer::typeset) struct BlockTableContinuationPreparedState {
+    /// 앞 단에 수용한 형제를 뒤에 남기고 이 표의 첫 조각을 따로 연다.
+    pub(in crate::renderer::typeset) follows_placed_sibling: bool,
     /// 첫 조각 전에 소비하지 않은 현재 줄 범위는 마지막 조각이 소유한다.
     pub(in crate::renderer::typeset) computed_host_tail:
         Option<crate::renderer::typeset::paragraph::metrics::FormattedHostTail>,

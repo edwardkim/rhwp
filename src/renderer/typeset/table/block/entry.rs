@@ -1127,7 +1127,6 @@ impl TypesetEngine {
         } else {
             0.0
         };
-        let mut opens_own_column = false;
         let mut restarts_after_grown_sibling = false;
         if is_para_topbottom_float(&table.common)
             && matches!(
@@ -1199,7 +1198,6 @@ impl TypesetEngine {
                 });
             st.advance_column_or_new_page();
             placement_para_start_height = st.current_height;
-            opens_own_column = follows_placed_sibling && st.current_items.is_empty();
         }
 
         let stored_first_frame = (st.profile.hwp5_stored_pagination_layout()
@@ -2011,7 +2009,7 @@ impl TypesetEngine {
             st.align_flow_to(source_top);
             placement_para_start_height = source_top;
         }
-        if host_line_trails_float_stack {
+        if host_line_trails_float_stack && !st.pre_emitted_host_paras.contains(&para_idx) {
             // [#2813] 앵커 줄 아이템을 float 스택 뒤로 이연(한글 문서순) —
             // 스택 첫 표 배치 전에 걸려야 렌더 순서가 표→줄로 나온다.
             st.defer_host_line(Some(para_idx));
@@ -3138,9 +3136,6 @@ impl TypesetEngine {
                     && complete_caption_fits
                     && resolved_host_placement.map_or(legacy_whole_fits, |p| {
                         p.occupied_bottom <= whole_frame_budget
-                            || (opens_own_column
-                                && p.table_top + ft.effective_height + ft.host_spacing.after_for_fit
-                                    <= whole_frame_budget + fit_slack)
                     // None split 개체의 본체는 종이 안에 들어가면 body 아래 여백을
                     // 사용할 수 있다. 뒤 바깥 여백은 후속 흐름에 예약하지만 본체를
                     // 다음 쪽으로 밀 이유가 아니다(독립 Print의 작은 용지 대조).
@@ -3389,6 +3384,7 @@ impl TypesetEngine {
         }
 
         Some(SplitTableEntry {
+            follows_placed_sibling,
             computed_host_tail,
             total_footnote,
             next_starts_new_page,
