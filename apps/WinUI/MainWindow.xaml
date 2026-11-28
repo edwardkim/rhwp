@@ -113,6 +113,8 @@
                                     Visibility="Collapsed" IsEnabled="False" AutomationProperties.AutomationId="InsertTable" />
                     <MenuFlyoutItem x:Name="InsertEquationMenuItem" Text="수식 삽입…" Click="OnInsertEquationClicked"
                                     Visibility="Collapsed" IsEnabled="False" AutomationProperties.AutomationId="InsertEquation" />
+                    <MenuFlyoutItem x:Name="InsertShapeMenuItem" Text="도형 삽입…" Click="OnInsertShapeClicked"
+                                    Visibility="Collapsed" IsEnabled="False" AutomationProperties.AutomationId="InsertShape" />
                 </MenuBarItem>
                 <MenuBarItem x:Name="PageMenu" Title="쪽" Visibility="Collapsed"
                              AutomationProperties.AutomationId="PageMenu">
