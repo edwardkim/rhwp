@@ -18,6 +18,8 @@ internal enum NativeEditKey
     SelectAll,
 }
 
+internal enum NativeTextUnit { Word, Sentence }
+
 internal sealed record NativeCommandResult(EditResult Edit, double? PreferredX);
 internal sealed record SelectionRectangle([property: JsonRequired] uint Page, CaretBounds Bounds);
 
@@ -25,6 +27,23 @@ internal sealed partial class NativeWorkerDispatcher
 {
     private bool? cellTextNavigation;
     private bool? cellParagraphSelection;
+    private bool? textUnitSelection;
+
+    public Task<EditResult?> SelectTextUnitAsync(DocumentTarget expected, NativeTextUnit unit, TextPosition position,
+        CancellationToken cancellation) => Dispatch<EditResult?>(token =>
+        {
+            if (textUnitSelection is null)
+            {
+                using JsonDocument capabilities = ReadSuccess(RhwpNative.SessionCapabilities());
+                textUnitSelection = HasCapability(capabilities.RootElement, "textUnitSelection");
+            }
+            if (textUnitSelection != true)
+                return null;
+
+            string name = unit == NativeTextUnit.Word ? "word" : "sentence";
+            JsonElement reply = SubmitEditCommand(expected, new { command = "selectTextUnit", unit = name, position }, token);
+            return AdoptEditOutcome(expected, reply);
+        }, cancellation);
 
     public Task<bool> SupportsCellTextNavigationAsync(CancellationToken cancellation) => Dispatch(_ =>
     {

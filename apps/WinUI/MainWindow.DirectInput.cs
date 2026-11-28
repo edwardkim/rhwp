@@ -30,6 +30,7 @@ public sealed partial class MainWindow
     private long previewVersion;
     private uint? dragPointer;
     private TextPosition? dragAnchor;
+    private TextSelection? dragTextUnit;
     private long pointerGesture;
     private long dragVersion;
     private double? preferredX;
@@ -39,22 +40,28 @@ public sealed partial class MainWindow
 
     private void OnPagePointerPressed(object sender, PointerRoutedEventArgs args)
     {
-        if (args.Pointer.PointerDeviceType != PointerDeviceType.Mouse ||
-            !args.GetCurrentPoint(PageCanvas).Properties.IsLeftButtonPressed)
+        if (args.Pointer.PointerDeviceType != PointerDeviceType.Mouse)
+            return;
+        PointerPoint point = args.GetCurrentPoint(PageCanvas);
+        if (!point.Properties.IsLeftButtonPressed)
             return;
 
         ClearTableObjectSelection();
-        if (!AcceptPageInput(args.GetCurrentPoint(PageCanvas).Position, out PageInfo current, out Point location))
+        if (!AcceptPageInput(point.Position, out PageInfo current, out Point location))
+        {
+            lastTextClick = null;
             return;
+        }
 
         args.Handled = true;
+        NativeTextUnit? unit = BeginTextClick(current, args.GetCurrentPoint(Root).Position, point.Timestamp);
         dragPointer = PageCanvas.CapturePointer(args.Pointer) ? args.Pointer.PointerId : null;
-        QueuePointerSelection(current, location, extend: false);
+        QueuePointerSelection(current, location, extend: false, unit: unit);
     }
 
     private void OnPagePointerMoved(object sender, PointerRoutedEventArgs args)
     {
-        if (dragPointer != args.Pointer.PointerId ||
+        if (dragPointer != args.Pointer.PointerId || !ContinueTextDrag(args.GetCurrentPoint(Root).Position) ||
             !AcceptPageInput(args.GetCurrentPoint(PageCanvas).Position, out PageInfo current, out Point location,
                 extend: true))
             return;
@@ -69,11 +76,13 @@ public sealed partial class MainWindow
             return;
 
         args.Handled = true;
-        if (AcceptPageInput(args.GetCurrentPoint(PageCanvas).Position, out PageInfo current, out Point location,
-            extend: true))
+        if (ContinueTextDrag(args.GetCurrentPoint(Root).Position) &&
+            AcceptPageInput(args.GetCurrentPoint(PageCanvas).Position, out PageInfo current, out Point location,
+                extend: true))
             QueuePointerSelection(current, location, extend: true, final: true);
         dragPointer = null;
         PageCanvas.ReleasePointerCapture(args.Pointer);
+        RefreshFormattingActions();
     }
 
     private void OnPagePointerCaptureLost(object sender, PointerRoutedEventArgs args)
@@ -81,6 +90,7 @@ public sealed partial class MainWindow
         if (dragPointer == args.Pointer.PointerId)
         {
             dragPointer = null;
+            lastTextClick = null;
             RefreshFormattingActions();
         }
     }
@@ -92,6 +102,7 @@ public sealed partial class MainWindow
             return;
 
         args.Handled = true;
+        lastTextClick = null;
         QueuePointerSelection(current, location, extend: false);
     }
 
@@ -156,20 +167,25 @@ public sealed partial class MainWindow
         return true;
     }
 
-    private void QueuePointerSelection(PageInfo current, Point location, bool extend, bool final = false)
+    private void QueuePointerSelection(PageInfo current, Point location, bool extend, bool final = false,
+        NativeTextUnit? unit = null)
     {
         long gesture = extend ? pointerGesture : ++pointerGesture;
         long version = ++dragVersion;
         EnqueueDirectEdit(() =>
             !extend || final || (gesture == pointerGesture && version == dragVersion)
-                ? MovePointerSelectionAsync(current, location, extend)
+                ? MovePointerSelectionAsync(current, location, extend, unit)
                 : Task.CompletedTask);
     }
 
-    private async Task<bool> MovePointerSelectionAsync(PageInfo original, Point location, bool extend)
+    private async Task<bool> MovePointerSelectionAsync(PageInfo original, Point location, bool extend,
+        NativeTextUnit? unit = null)
     {
         if (!extend)
+        {
             dragAnchor = null;
+            dragTextUnit = null;
+        }
         if (page is not PageInfo activePage || activePage.Target.DocumentId != original.Target.DocumentId ||
             continuousPages is not { } layout || !layout.TryGet(original.Page, out PagePlacement placement))
             return false;
@@ -202,6 +218,13 @@ public sealed partial class MainWindow
             return false;
 
         var selection = new TextSelection(anchor, hit.Position);
+        if (extend && dragTextUnit is { } selectedUnit)
+        {
+            selection = CompareInTextContainer(hit.Position, selectedUnit.Anchor) < 0
+                ? new TextSelection(selectedUnit.Focus, hit.Position)
+                : CompareInTextContainer(hit.Position, selectedUnit.Focus) > 0 ?
+                    new TextSelection(selectedUnit.Anchor, hit.Position) : selectedUnit;
+        }
         if (editorInfo is { Editing: true } active && active.Target == current.Target)
         {
             if (active.Selection is not { } old ||
@@ -214,6 +237,13 @@ public sealed partial class MainWindow
         else
         {
             editorInfo = await worker.BeginEditAsync(current.Target, selection, token);
+        }
+
+        if (!extend && unit is { } textUnit &&
+            await worker.SelectTextUnitAsync(current.Target, textUnit, hit.Position, token) is { } selected)
+        {
+            dragTextUnit = selected.Outcome.Selection;
+            editorInfo = editorInfo! with { Selection = selected.Outcome.Selection };
         }
 
         if (!extend && !platformComposing)
@@ -757,6 +787,8 @@ public sealed partial class MainWindow
         compositionInputPrefix = "";
         dragPointer = null;
         dragAnchor = null;
+        dragTextUnit = null;
+        lastTextClick = null;
         pointerGesture++;
         preferredX = null;
         previewVersion++;

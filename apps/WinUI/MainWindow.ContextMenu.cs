@@ -11,6 +11,7 @@ public sealed partial class MainWindow
 {
     private async void OnPageRightTapped(object sender, RightTappedRoutedEventArgs args)
     {
+        lastTextClick = null;
         Point position = args.GetPosition(PageCanvas);
         if (dragPointer is not null || !AcceptPageInput(position, out PageInfo current, out Point location))
             return;
