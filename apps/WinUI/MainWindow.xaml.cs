@@ -77,7 +77,7 @@ public sealed partial class MainWindow : Window
         UnsavedDecision decision = await ResolveUnsavedChangesAsync();
         if (decision != UnsavedDecision.Cancel)
             await ChangeDocumentAsync(
-                token => worker.OpenAsync(path, token, discardChanges: decision == UnsavedDecision.Discard),
+                async token => await worker.OpenAsync(path, token, discardChanges: decision == UnsavedDecision.Discard),
                 Path.GetFileName(path), resetZoom: true);
     }
 
@@ -148,7 +148,7 @@ public sealed partial class MainWindow : Window
     }
 
     private Task GoToPageAsync(PageInfo current, uint index) =>
-        ChangeDocumentAsync(token => worker.GetPageAsync(current, index, token), fileName, resetZoom: false);
+        ChangeDocumentAsync(async token => await worker.GetPageAsync(current, index, token), fileName, resetZoom: false);
 
     private async Task ChangeDocumentAsync(Func<CancellationToken, Task<PageInfo?>> action,
         string? name, bool resetZoom)
@@ -292,7 +292,7 @@ public sealed partial class MainWindow : Window
 
     private void OnXamlRootChanged(XamlRoot sender, XamlRootChangedEventArgs args) => QueueRender();
     private void OnViewportSizeChanged(object sender, SizeChangedEventArgs args) => QueueRender();
-    private void OnViewChanged(object sender, ScrollViewerViewChangedEventArgs args) => QueueRender();
+    private void OnViewChanged(object? sender, ScrollViewerViewChangedEventArgs args) => QueueRender();
 
     private void QueueRender()
     {
