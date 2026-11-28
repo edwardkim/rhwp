@@ -25,3 +25,10 @@ venv/bin/python scripts/visual_sweep_contributor.py --rhwp-bin <고정 Native> -
 23개 문서 전 2,023쪽이 쪽별 정본 표시값을 충족했다. 전쪽 최저는 98.86%였다.
 103개 출력 기록에서 전체 쪽의 확보, 글꼴 공급 순서와 제외 목록을 확인했다.
 [전쪽 정본·후보 비교표](all-native-pages.tsv) · [입력과 실행물 검증 자료](all-native-manifest.json)
+
+## 정본 보호 fresh WASM 전수 결과
+
+Chrome에서 동일한 23개 문서 전 2,023쪽이 쪽별 정본 표시값을 충족했다. 전쪽 최저는 98.86%였다.
+63개 출력 기록에서 전체 쪽의 확보, 글꼴 공급 순서와 제외 목록을 확인했다.
+두 경로의 전 4,046쪽에서 기준 미달은 0쪽이었다.
+[전쪽 정본·후보 비교표](all-wasm-pages.tsv) · [입력과 실행물 검증 자료](all-wasm-manifest.json)
