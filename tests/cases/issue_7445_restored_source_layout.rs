@@ -1,5 +1,5 @@
 //! 관계형·고정형: 한컴 Print의 전체 쪽수와 원본에서 복원한 줄·표·그림 소유, 순서, 포함, 점유를 검사한다.
-//! 주석 갱신: 2026-11-28T19:58:50+09:00.
+//! 주석 갱신: 2026-11-28T20:05:25+09:00.
 //! 2026-11-28 한컴 Print 대조(96dpi, PDFium, 2px raw). 아래 수치는 Native / fresh WASM 순이다.
 //! #7821 1쪽 99.97% / 99.97%, 2쪽 100.00% / 100.00%, 3쪽 98.16% / 98.12%. 전 3쪽 최저 98.16% / 98.12%.
 //! 근거: mydocs/pr/assets/issues7813_8100/native/7821.tsv 및 wasm/7821.tsv.
@@ -13,6 +13,8 @@
 //! 근거: mydocs/pr/assets/issues7813_8100/native/7864.tsv 및 wasm/7864.tsv.
 //! #7955 1쪽 99.87% / 99.85%. 전 3쪽 최저 99.87% / 99.85%.
 //! 근거: mydocs/pr/assets/issues7813_8100/native/7955.tsv 및 wasm/7955.tsv.
+//! #8100 91·92쪽 Native·fresh WASM 각 100.00%. 전 121쪽 최저 99.89% / 98.41%.
+//! 근거: mydocs/pr/assets/issues7813_8100/{native,wasm}/8100-counter-22081993.tsv.
 //!
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -264,4 +266,31 @@ fn paragraph_anchored_decoration_tables_keep_the_hosts_left_margin() {
             "문단 여백과 표 오프셋이 물리 원점에 한 번씩 들어가야 한다: {para_index}"
         );
     }
+}
+
+#[test]
+fn repeated_header_last_row_preserves_its_declared_remaining_box() {
+    let core = open("mydocs/pr/assets/issue7445/deferred-20261020/counter-22081993/22081993_[별표 1] 사무분장표(제77조제1항¸ 제79조¸ 제82조 관련)(전남광주통합특별시교육청 행정기구 설치 조례 시행규칙).hwp");
+    assert_eq!(core.page_count(), 121);
+    let Control::Table(source) = &core.document().sections[0].paragraphs[234].controls[0] else {
+        panic!("머리행을 반복하는 두 번째 표");
+    };
+    let cell = source
+        .cells
+        .iter()
+        .find(|cell| cell.row == 1 && cell.col == 1)
+        .unwrap();
+    let first = core.build_page_render_tree(90).unwrap();
+    let second = core.build_page_render_tree(91).unwrap();
+    let previous_table_tail = top_table(&first.root, 233, 0);
+    let current_opening = top_table(&first.root, 234, 0);
+    let current_closing = top_table(&second.root, 234, 0);
+    assert!(previous_table_tail.bbox.y + previous_table_tail.bbox.height <= current_opening.bbox.y);
+    let opening = owned_cell(current_opening, 1, 1);
+    let closing = owned_cell(current_closing, 1, 1);
+    let height = opening.bbox.height + closing.bbox.height;
+    assert!(
+        (height - f64::from(cell.height) / 75.0).abs() < 0.1,
+        "다른 쪽에서 그린 두 상자가 마지막 원본 행의 선언 높이를 함께 차지한다: {height}"
+    );
 }
