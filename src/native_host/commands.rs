@@ -18,7 +18,7 @@ use crate::document_core::native_interaction::{
 use crate::model::{
     color::opaque_rgb,
     paragraph::Paragraph,
-    style::{Alignment, CharShape},
+    style::{Alignment, CharShape, CharShapeMods, UnderlineType},
 };
 
 use super::editor::{NativeEditOutcome, NativeEditor};
@@ -114,6 +114,9 @@ impl<T: PartialEq> NativeFormattingValue<T> {
 #[serde(rename_all = "camelCase")]
 pub struct NativeSelectionFormatting {
     pub bold: NativeFormattingValue<bool>,
+    pub italic: NativeFormattingValue<bool>,
+    pub underline: NativeFormattingValue<bool>,
+    pub strikethrough: NativeFormattingValue<bool>,
     /// HWPUNIT (100 units per point), matching formatCharacters.
     pub font_size: NativeFormattingValue<i32>,
     /// Names of the seven HWP language slots, in document order.
@@ -122,6 +125,18 @@ pub struct NativeSelectionFormatting {
     pub text_color: NativeFormattingValue<Option<String>>,
     /// Always uniform because the selection belongs to one editable paragraph.
     pub alignment: NativeParagraphAlignment,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct NativeCharacterFormatting {
+    pub bold: Option<bool>,
+    pub italic: Option<bool>,
+    pub underline: Option<bool>,
+    pub strikethrough: Option<bool>,
+    pub font_size: Option<i32>,
+    pub font_name: Option<String>,
+    pub text_color: Option<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -188,12 +203,7 @@ pub enum NativeEditCommand {
     },
     /// Change at least one character property within a nonempty selection in one
     /// plain paragraph. Font size is in HWPUNIT (100 units per point).
-    FormatCharacters {
-        bold: Option<bool>,
-        font_size: Option<i32>,
-        font_name: Option<String>,
-        text_color: Option<String>,
-    },
+    FormatCharacters(NativeCharacterFormatting),
     /// Align the paragraph that owns the selection. A collapsed caret is valid.
     SetParagraphAlignment {
         alignment: NativeParagraphAlignment,
@@ -302,13 +312,8 @@ impl NativeEditor {
                     self.join_previous_cell_paragraph(expected_revision)?
                 }
             }
-            NativeEditCommand::FormatCharacters {
-                bold,
-                font_size,
-                font_name,
-                text_color,
-            } => {
-                self.format_characters(expected_revision, bold, font_size, font_name, text_color)?
+            NativeEditCommand::FormatCharacters(formatting) => {
+                self.format_characters(expected_revision, formatting)?
             }
             NativeEditCommand::SetParagraphAlignment { alignment } => {
                 self.set_paragraph_alignment(expected_revision, alignment)?
@@ -472,6 +477,10 @@ impl NativeEditor {
         })?;
         let first = shape_for(first)?;
         let mut bold = NativeFormattingValue::Uniform(first.bold);
+        let mut italic = NativeFormattingValue::Uniform(first.italic);
+        let mut underline =
+            NativeFormattingValue::Uniform(first.underline_type != UnderlineType::None);
+        let mut strikethrough = NativeFormattingValue::Uniform(first.strikethrough);
         let mut font_size = NativeFormattingValue::Uniform(first.base_size);
         let mut font_names = std::array::from_fn(|language| {
             NativeFormattingValue::Uniform(font_name(first, language))
@@ -480,6 +489,9 @@ impl NativeEditor {
         for id in ids {
             let shape = shape_for(id)?;
             bold.include(shape.bold);
+            italic.include(shape.italic);
+            underline.include(shape.underline_type != UnderlineType::None);
+            strikethrough.include(shape.strikethrough);
             font_size.include(shape.base_size);
             for (language, name) in font_names.iter_mut().enumerate() {
                 name.include(font_name(shape, language));
@@ -496,6 +508,9 @@ impl NativeEditor {
             .into();
         Ok(NativeSelectionFormatting {
             bold,
+            italic,
+            underline,
+            strikethrough,
             font_size,
             font_names: font_names.map(|name| match name {
                 NativeFormattingValue::Uniform(name) => {
@@ -516,36 +531,40 @@ impl NativeEditor {
     fn format_characters(
         &mut self,
         revision: u64,
-        bold: Option<bool>,
-        font_size: Option<i32>,
-        font_name: Option<String>,
-        text_color: Option<String>,
+        mut formatting: NativeCharacterFormatting,
     ) -> Result<NativeEditOutcome, NativeHostError> {
-        if bold.is_none() && font_size.is_none() && font_name.is_none() && text_color.is_none() {
+        if formatting == NativeCharacterFormatting::default() {
             return Err(NativeHostError::InvalidArgument(
-                "formatCharacters requires bold, fontSize, fontName or textColor".into(),
+                "formatCharacters requires at least one character property".into(),
             ));
         }
         // The model stores its base size as HWPUNIT, with 100 units per point
         // and an upper bound of 4096 points.
-        if font_size.is_some_and(|size| !(1..=409_600).contains(&size)) {
+        if formatting
+            .font_size
+            .is_some_and(|size| !(1..=409_600).contains(&size))
+        {
             return Err(NativeHostError::InvalidArgument(
                 "fontSize must be within 1..=409600 HWPUNIT".into(),
             ));
         }
-        let font_name = font_name.as_deref();
-        if font_name.is_some_and(|name| {
-            name.trim().is_empty()
-                || name.trim().chars().count() > 64
+        if let Some(name) = &mut formatting.font_name {
+            let trimmed = name.trim();
+            if trimmed.is_empty()
+                || trimmed.chars().count() > 64
                 || name.chars().any(char::is_control)
-        }) {
-            return Err(NativeHostError::InvalidArgument(
-                "fontName must contain 1 to 64 non-control characters".into(),
-            ));
+            {
+                return Err(NativeHostError::InvalidArgument(
+                    "fontName must contain 1 to 64 non-control characters".into(),
+                ));
+            }
+            if trimmed.len() != name.len() {
+                *name = trimmed.to_owned();
+            }
         }
-        let font_name = font_name.map(str::trim);
-        let requested_family = font_name.map(str::to_lowercase);
-        let color = text_color
+        let requested_family = formatting.font_name.as_deref().map(str::to_lowercase);
+        let text_color = formatting
+            .text_color
             .as_deref()
             .map(|value| {
                 if value.bytes().skip(1).all(|byte| byte.is_ascii_hexdigit()) {
@@ -558,6 +577,15 @@ impl NativeEditor {
                 ))
             })
             .transpose()?;
+        let mods = CharShapeMods {
+            bold: formatting.bold,
+            italic: formatting.italic,
+            underline: formatting.underline,
+            strikethrough: formatting.strikethrough,
+            base_size: formatting.font_size,
+            text_color,
+            ..Default::default()
+        };
         let paragraph = self.formatting_paragraph()?;
         let (start, end) = self.selection().ordered();
         let range = start.scalar_offset as usize..end.scalar_offset as usize;
@@ -578,9 +606,7 @@ impl NativeEditor {
             let shape = doc_info.char_shapes.get(id as usize).ok_or_else(|| {
                 NativeHostError::InvalidArgument("unknown character shape in selection".into())
             })?;
-            changes_style |= bold.is_some_and(|bold| shape.bold != bold)
-                || font_size.is_some_and(|size| shape.base_size != size)
-                || color.is_some_and(|color| shape.text_color != color)
+            changes_style |= mods.apply_to(shape) != *shape
                 || requested_family.as_deref().is_some_and(|requested| {
                     (0..7).any(|language| {
                         doc_info
@@ -594,10 +620,10 @@ impl NativeEditor {
         if !changes_style {
             return Ok(self.outcome(false, false));
         }
-        let properties = serde_json::json!({
-            "bold": bold, "fontSize": font_size, "fontName": font_name, "textColor": text_color,
-        });
-        self.apply_format(revision, Some(range), &properties.to_string())
+        let properties = serde_json::to_string(&formatting).map_err(|error| {
+            NativeHostError::InvalidArgument(format!("invalid character formatting: {error}"))
+        })?;
+        self.apply_format(revision, Some(range), &properties)
     }
 
     fn set_paragraph_alignment(

@@ -910,6 +910,7 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
         capabilities["minEquationFontSize"] = MIN_EQUATION_FONT_SIZE.into();
         capabilities["maxEquationFontSize"] = MAX_EQUATION_FONT_SIZE.into();
         capabilities["characterFontColorFormatting"] = true.into();
+        capabilities["characterDecorationFormatting"] = true.into();
         capabilities["systemFontFamilies"] = cfg!(feature = "native-skia").into();
         capabilities["textUnitSelection"] = true.into();
         Ok(capabilities)

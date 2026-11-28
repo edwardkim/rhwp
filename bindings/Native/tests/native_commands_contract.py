@@ -129,7 +129,8 @@ def selection_formatting(library):
         assert empty["selection"] == caret, empty
         assert empty["formatting"]["bold"]["kind"] == "uniform", empty
         assert empty["formatting"]["fontSize"]["kind"] == "uniform", empty
-        unchanged = {name: empty["formatting"][name] for name in ("fontNames", "textColor")}
+        unchanged = {name: empty["formatting"][name]
+                     for name in ("fontNames", "textColor", "italic", "underline", "strikethrough")}
         assert accepted(op="info")["info"] == before
         composing = accepted(op="beginComposition", target=target)["outcome"]
         assert send(**query)["code"] == "invalidArgument"
@@ -323,6 +324,86 @@ def character_font_color_formatting(library):
         cell_formatting = formatting(cell_selection)
         assert cell_formatting["fontNames"] == [uniform(cell_family)] * 7, cell_formatting
         assert cell_formatting["textColor"] == uniform(cell_color), cell_formatting
+        decorated_cell = apply(italic=True, underline=True, strikethrough=True)
+        assert decorated_cell["ok"] and decorated_cell["outcome"]["historyChanged"], decorated_cell
+        assert formatting(cell_selection) == {**cell_formatting, "italic": uniform(True),
+                                              "underline": uniform(True), "strikethrough": uniform(True)}
+
+
+def character_decoration_formatting(library):
+    decorations = ("italic", "underline", "strikethrough")
+
+    def uniform(value):
+        return {"kind": "uniform", "value": value}
+
+    def point(offset):
+        return {"section": 0, "paragraph": 0, "scalarOffset": offset, "cellPath": []}
+
+    head, middle, end = point(0), point(2), point(3)
+    caret = {"anchor": head, "focus": head}
+    prefix = {"anchor": middle, "focus": head}
+    whole = {"anchor": end, "focus": head}
+
+    with NativeWorker(library) as worker:
+        def send(**command):
+            return worker.wait(worker.submit(command))
+
+        def accepted(**command):
+            result = send(**command)
+            assert result["ok"], result
+            return result
+
+        assert worker.host.call("capabilities")["characterDecorationFormatting"]
+        info = accepted(op="new", replace=None)["info"]
+        target = {key: info[key] for key in ("documentId", "revision")}
+        accepted(op="beginEdit", target=target, selection=caret)
+        target["revision"] = accepted(op="replace", target=target, text="한😀a")["outcome"]["revision"]
+
+        def formatting(selection):
+            accepted(op="setSelection", target=target, selection=selection)
+            return accepted(op="selectionFormatting", target=target, selection=selection,
+                            fontGeneration=info["fontGeneration"])["formatting"]
+
+        def apply(**properties):
+            result = accepted(op="executeCommand", target=target,
+                              command={"command": "formatCharacters", **properties})["outcome"]
+            target["revision"] = result["revision"]
+            return result
+
+        before = formatting(prefix)
+        assert all(before[name] == uniform(False) for name in decorations), before
+        enabled = dict.fromkeys(decorations, True)
+        applied = apply(**enabled)
+        assert applied["documentChanged"] and applied["historyChanged"] and applied["selection"] == prefix, applied
+        after = {**before, **dict.fromkeys(decorations, uniform(True))}
+        assert formatting(prefix) == after
+        no_op = apply(**enabled)
+        assert not no_op["documentChanged"] and not no_op["historyChanged"], no_op
+        assert no_op["revision"] == applied["revision"], no_op
+        assert formatting(whole) == {**before, **dict.fromkeys(decorations, {"kind": "mixed"})}
+
+        target["revision"] = accepted(op="undo", target=target)["outcome"]["revision"]
+        assert formatting(prefix) == before
+        target["revision"] = accepted(op="redo", target=target)["outcome"]["revision"]
+        assert formatting(prefix) == after
+
+        for save_format in ("hwp", "hwpx"):
+            prepared = accepted(op="prepareSave", target=target, format=save_format)
+            saved = worker.host.copy_buffer(prepared)
+            accepted(op="cancelSave", documentId=target["documentId"], token=prepared["token"])
+            handle = worker.host.open_bytes(saved)
+            try:
+                session = worker.host.request(handle, op="info")
+                worker.host.request(handle, op="beginEdit", expectedRevision=session["revision"], selection=prefix)
+                direct = worker.host.request(handle, op="selectionFormatting", expectedRevision=session["revision"],
+                                             fontGeneration=session["fontGeneration"], selection=prefix)["formatting"]
+                assert all(direct[name] == uniform(True) for name in decorations), direct
+            finally:
+                worker.host.call("close", handle)
+
+        removed = apply(underline=False)
+        assert removed["documentChanged"], removed
+        assert formatting(prefix) == {**after, "underline": uniform(False)}
 
 
 def page_setup(library):
@@ -867,6 +948,7 @@ if __name__ == "__main__":
     text_unit_selection(library)
     selection_formatting(library)
     character_font_color_formatting(library)
+    character_decoration_formatting(library)
     table_navigation(library)
     table_creation(library)
     page_setup(library)

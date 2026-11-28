@@ -304,8 +304,10 @@ vertical 입력에 전달하고 다른 명령 뒤에는 초기화한다.
 
 호스트 기능 목록의 `basicTextFormatting`으로 지원을 확인할 수 있다.
 `executeCommand`에서 `{command:"formatCharacters",bold:true,fontSize:1500}`은 선택한 글자의 서식을
-바꾼다. `bold`와 `fontSize`는 각각 생략할 수 있으며 하나 이상 필요하다. 크기는
-HWPUNIT 단위(1pt = 100 HWPUNIT, 범위 1–409600)다.
+바꾼다. 변경할 속성을 하나 이상 지정한다. 크기는 HWPUNIT 단위(1pt = 100 HWPUNIT, 범위
+1–409600)다. `characterDecorationFormatting` 기능이 있으면 불리언 속성 `italic`, `underline`,
+`strikethrough`도 지정할 수 있다. `selectionFormatting`은 각 속성이 선택 범위에서 동일하면
+`{kind:"uniform",value:...}`, 서로 다르면 `{kind:"mixed"}`를 반환한다.
 `{command:"setParagraphAlignment",alignment:"right"}`는 선택 또는 캐럿이 있는 문단을 정렬한다.
 정렬값은 `justify`, `left`, `right`, `center`, `distribute`, `split`이다.
 
