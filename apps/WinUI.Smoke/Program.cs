@@ -1,6 +1,18 @@
 using System.Security.Cryptography;
 using Rhwp.WinUI;
 
+if (args is ["--local-agent-contract-only"])
+{
+    await LocalAgentSmoke.RunAsync();
+    return;
+}
+
+if (args is ["--local-agent-stub", .. var stubArguments])
+{
+    await LocalAgentSmoke.RunStubAsync(stubArguments);
+    return;
+}
+
 if (args is ["--pdf-contract-only"])
 {
     await LivePdfSmoke.RunAsync(expectExport: false);
@@ -129,6 +141,7 @@ await DirectEditSmoke.RunAsync();
 await SearchSmoke.RunAsync(args[1]);
 await SaveCopySmoke.RunAsync(args[1]);
 await RecoverySmoke.RunAsync();
+await LocalAgentSmoke.RunAsync();
 if (testLivePdf)
     await LivePdfSmoke.RunAsync(expectExport: true, multipageDocument: args[0]);
 

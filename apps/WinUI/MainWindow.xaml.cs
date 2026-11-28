@@ -323,6 +323,7 @@ public sealed partial class MainWindow : Window
         ZoomValueText.Text = page is null ? "" : $"{(int)Math.Round(zoom * 100)}%";
         RefreshSearchActions();
         RefreshClipboardActions(available);
+        RefreshLocalAgentActions(available);
         RefreshFormattingActions();
         RefreshInsertActions();
         RefreshPageSetupAction();
@@ -333,6 +334,11 @@ public sealed partial class MainWindow : Window
         args.Cancel = true;
         if (closing || picking || documentRequest is not null)
             return;
+        if (localAgentDialog is { } agentDialog)
+        {
+            agentDialog.Hide();
+            return;
+        }
 
         UnsavedDecision decision = await ResolveUnsavedChangesAsync();
         if (decision == UnsavedDecision.Cancel)
