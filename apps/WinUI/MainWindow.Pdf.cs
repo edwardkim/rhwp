@@ -1,10 +1,12 @@
 using System.Diagnostics;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Windows.Storage.Pickers;
 using Windows.Data.Pdf;
+using Windows.Graphics.Imaging;
 using Windows.Security.Cryptography;
 using Windows.Storage.Streams;
 
@@ -56,20 +58,23 @@ public sealed partial class MainWindow
             StatusText.Text = "PDF 미리보기를 만드는 중…";
             byte[] pdf = await worker.ExportPagePdfAsync(current, limits.MaxOutputBytes, token);
             ReadOnlyMemory<byte> prepared = pdf;
-            BitmapImage image = await RenderPdfPreviewAsync(CryptographicBuffer.CreateFromByteArray(pdf), token);
+            ImageSource image = await RenderPdfPreviewAsync(CryptographicBuffer.CreateFromByteArray(pdf), token);
             token.ThrowIfCancellationRequested();
             if (page != current)
                 throw new InvalidOperationException("미리 볼 문서 또는 쪽이 바뀌었습니다.");
 
+            var previewImage = new Image { Source = image, MaxWidth = 480, MaxHeight = 520, Stretch = Stretch.Uniform };
+            AutomationProperties.SetAutomationId(previewImage, "CurrentPagePdfImage");
             var preview = new ContentDialog
             {
                 XamlRoot = Root.XamlRoot,
                 Title = $"{current.Page + 1}쪽 PDF 미리보기",
-                Content = new Image { Source = image, MaxWidth = 480, MaxHeight = 520, Stretch = Stretch.Uniform },
+                Content = previewImage,
                 PrimaryButtonText = "새 PDF 저장",
                 CloseButtonText = "닫기",
                 DefaultButton = ContentDialogButton.Close,
             };
+            AutomationProperties.SetAutomationId(preview, "CurrentPagePdfPreview");
             if (await preview.ShowAsync() != ContentDialogResult.Primary)
             {
                 StatusText.Text = "PDF 미리보기를 닫았습니다.";
@@ -124,7 +129,7 @@ public sealed partial class MainWindow
         }
     }
 
-    private static async Task<BitmapImage> RenderPdfPreviewAsync(IBuffer bytes, CancellationToken token)
+    private static async Task<ImageSource> RenderPdfPreviewAsync(IBuffer bytes, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
         using var input = new InMemoryRandomAccessStream();
@@ -157,13 +162,16 @@ public sealed partial class MainWindow
             throw new InvalidDataException("PDF 미리보기 이미지 크기가 허용 범위를 벗어났습니다.");
 
         raster.Seek(0);
-        var image = new BitmapImage();
-        await image.SetSourceAsync(raster);
+        BitmapDecoder decoder = await BitmapDecoder.CreateAsync(raster);
         token.ThrowIfCancellationRequested();
-        if (image.PixelWidth <= 0 || image.PixelHeight <= 0 ||
-            image.PixelWidth > MaxPdfPreviewPixels || image.PixelHeight > MaxPdfPreviewPixels)
+        if (decoder.PixelWidth is 0 or > MaxPdfPreviewPixels || decoder.PixelHeight is 0 or > MaxPdfPreviewPixels)
             throw new InvalidDataException("PDF 미리보기의 픽셀 크기가 올바르지 않습니다.");
 
+        using SoftwareBitmap pixels = await decoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8,
+            BitmapAlphaMode.Premultiplied);
+        token.ThrowIfCancellationRequested();
+        var image = new SoftwareBitmapSource();
+        await image.SetBitmapAsync(pixels);
         return image;
     }
 }
