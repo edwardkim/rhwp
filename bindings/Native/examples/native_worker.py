@@ -50,6 +50,12 @@ class NativeWorker:
         return self.host.host_request(op="workerPoll", worker=self.worker)["completion"]
 
     def poll(self):
+        """Return an available completion without waiting.
+
+        With the workerWait capability, a native client may pass waitMs to
+        workerPoll on the owning background thread. The ABI caps the wait at
+        10 ms. GUI event loops should leave waitMs unset.
+        """
         self._check_open()
         return self._deferred.popleft() if self._deferred else self._poll_native()
 
