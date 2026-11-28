@@ -212,7 +212,8 @@ impl TypesetEngine {
         let first = scan.split_block_start?;
         let (_, end, _) = input.source.measured_table.row_block_for(first);
         let occupied = scan.split_block_physical_height?;
-        if scan.end_row != end || occupied <= 0.0 || scan.end_row_height_override.is_some() {
+        let stop = scan.end_row;
+        if stop <= first || stop > end || occupied <= 0.0 || scan.end_row_height_override.is_some() {
             return None;
         }
         let layout = &input.prepared.layout_engine;
@@ -249,6 +250,19 @@ impl TypesetEngine {
             },
             styles,
         );
+        if stop < end
+            && layout.row_block_cut_row_content_height(
+                table,
+                first,
+                end,
+                stop - 1,
+                if input.start.cursor_row == first { &input.start.start_cut } else { &[] },
+                &scan.split_end_cut,
+                styles,
+            ) <= 0.0
+        {
+            return None;
+        }
         let before = scan.consumed - occupied;
         let room = budget
             .reflow_blank_avail_for_rows
@@ -266,14 +280,15 @@ impl TypesetEngine {
             .max(occupied);
         let mut rows = input.source.measured_table.row_heights.clone();
         let mut rest = height;
-        for (row, &source) in (first..end).zip(&current) {
+        // 이번 컷의 가시 행에만 수용한 높이를 넣는다. 나머지 원본 행은
+        // 장부에 남아 다음 컷의 잔여를 계산할 때 차감되지 않는다.
+        for (row, &source) in (first..stop).zip(&current) {
             let accepted = rest.min(source).max(0.0);
             rows[row] = accepted;
             rest -= accepted;
         }
-        // 내용이 원본 최소보다 커지면 마지막 행이 그 증가분을 소유한다.
         if rest > 0.0 {
-            rows[end - 1] += rest;
+            rows[stop - 1] += rest;
         }
         frame.accepted += height;
         if std::env::var_os("RHWP_TABLE_DRIFT").is_some() {

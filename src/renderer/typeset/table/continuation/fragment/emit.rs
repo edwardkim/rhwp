@@ -1636,6 +1636,32 @@ impl TypesetEngine {
             });
         }
 
+        // 일반 셀의 원본 재시작이 닫는 쪽에는 빈 병합 칸과 별도의 행 상자가 있다.
+        // 실제 수용한 컷을 마지막 괘선까지 확장하고 다음 조각에 선언 잔고를 넘긴다.
+        let source_span_row_frame = (split_block_start.is_none() && split_end_limit > 0.0)
+            .then(|| {
+                let (row, accepted) = accepted_partial_row_box?;
+                if row + 1 != end_row || row == cursor_row && !start_cut.is_empty() {
+                    return None;
+                }
+                let declared = layout_engine.stored_span_free_restart_row_height(
+                    row_geometry_table, row, &split_end_cut, straddle_page_bands, styles,
+                )?;
+                let frame = budget.reflow_blank_avail_for_rows?;
+                let extra = (frame + header_overhead - partial_height).max(0.0);
+                let height = end_row_height_override.unwrap_or(accepted) + extra;
+                let content = layout_engine.row_cut_content_height(
+                    row_geometry_table, row, &split_end_cut, &[], styles,
+                );
+                (height > 0.0 && height < declared)
+                    .then_some((height, extra, (declared - height).max(content)))
+            })
+            .flatten();
+        if let Some((height, extra, _)) = source_span_row_frame {
+            end_row_height_override = Some(height);
+            partial_height += extra;
+        }
+
         // 같은 저장 컷으로 이미 첫 물리 프레임을 닫았으면 그 뒤의 본문 여유는
         // 이 표 조각의 빈 띠가 아니다. 일반 쪽 하단 예산으로 다시 확장하면
         // 스캔이 확정한 끝 행과 이어받기 원장에 그 여유가 중복 가산된다.
@@ -2464,6 +2490,7 @@ impl TypesetEngine {
             })
             .or(complete_block_next_height)
             .or(source_terminal_header_tail)
+            .or(source_span_row_frame.map(|(_, _, remaining)| remaining))
             .or(source_first_frame_remaining)
             .or_else(|| {
                 layout_engine.stored_inline_picture_closing_row_height(

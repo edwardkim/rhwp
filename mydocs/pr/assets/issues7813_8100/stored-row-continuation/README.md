@@ -30,3 +30,22 @@
 진단 측정은 2026-11-28 KST에 이전 기준 `ca96e9f342`, 독립 한컴 Print PDF,
 96dpi, 색상 경계 보정 전 2px 실루엣으로 했다. 이 기록의 진단 수치는 리베이스 전
 일부 코드에 대한 결과다. 새 코드의 전쪽 Native·fresh WASM과 보호 문서 검증을 이어간다.
+
+### #7834 일반 행의 쪽 경계 재측정
+
+앞 조각에서 받아들인 행까지만 물리 높이 장부에 반영한다. 빈 병합 칸에 걸친 일반 행은
+원본 글줄의 0 원점 재시작을 확인하고 현재 쪽이 닫는 행 높이와 다음 쪽에 넘길 선언
+잔여를 같은 컷에 기록한다. 배치는 기록된 행 높이를 사용한다. 4쪽 괘선은 334.6px에서
+324.4px로 옮겨졌고 한컴 Print는 325.4px이다. 6·8쪽의 해당 괘선은 각각 294.7px,
+301.6px이며 기준은 294.4px, 301.27px이다.
+
+2026-11-28 18:05 KST에 `274ae9d4c8` 기준 후보를 한컴 2020 Print에 대조했다.
+96dpi, 색상 경계 보정 전 2px 기준으로 [전쪽 Native TSV](7834-native.tsv)의 최저는
+4쪽 99.30%다. 6·8쪽은 각각 100.00%다.
+
+- 원본 `samples/issue6854/22037757-chuncheon-personnel-rule-annex13.hwpx`
+  SHA-256 `1d2ae7a559189f73d41f380da59b03aba41102511a69fbf67514141362cb962f`
+- 기준 `pdf/22037757-chuncheon-personnel-rule-annex13-2020.pdf`
+  SHA-256 `2df4d48c365dbae60ab88b32969720e7d83a211084620d97f93f2606dd90498e`
+- 실행 `scripts/visual_sweep.py --silhouette-only --dpi 96 --rhwp-bin <고정 Native 실행 파일>`
+  실행 파일 SHA-256 `a77090d699fbdbb0678bd2107522a2b64d2495353fdef7e92dc3308e56722d4e`
