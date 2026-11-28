@@ -23,6 +23,7 @@ pub(crate) mod gpu_tiles;
 #[cfg(feature = "native-skia")]
 mod live_pdf;
 pub mod page_setup;
+pub mod paragraph_style;
 pub mod presentation;
 #[cfg(feature = "native-skia")]
 pub mod region_cache;

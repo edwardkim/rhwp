@@ -313,6 +313,13 @@ HWPUNIT 단위(1pt = 100 HWPUNIT, 범위 1–409600)다.
 선택이 필요하다. 보호된 셀과 편집할 수 없는 컨트롤이 있는 문단은 거부한다. 변경 시 선택을
 유지하면서 revision과 undo를 한 번 갱신하며, 현재 서식과 같은 값은 history를 유지한다.
 
+`paragraphStyles` 기능은 현재 편집 선택에 적용할 수 있는 문단 스타일을 조회하고 적용한다.
+worker 조회는 `target`, 동기 세션 조회는 `expectedRevision`을 받으며 둘 다 현재 `selection`이 필요하다.
+응답은 `currentStyleId`와 `styles: [{id, name}]`를 반환한다. `currentStyleId`는 현재 스타일을
+목록에서 찾을 수 없으면 null이다. `{command:"applyParagraphStyle",styleId:1}`은 본문 또는
+최상위 표 셀의 단일 문단에 스타일을 적용한다. 직접 지정한 글자 및 문단 모양과 선택은 유지하며,
+변경은 한 번의 undo로 되돌릴 수 있다. 현재 스타일을 다시 적용해도 revision은 바뀌지 않는다.
+
 ### Native clipboard (P61)
 
 동기 session의 `copySelection`/`cutSelection`/`pasteText`/`pasteHtml`은 `expectedRevision`을 필수로 받습니다. worker에서는 같은 이름에 `target`을 전달합니다. 복사/잘라내기 응답의 `payload`는 `{plainText, html}`이며 `outcome`은 복사 시 null, 잘라내기 시 편집 결과입니다. 붙여넣기는 기존 편집 결과를 반환합니다. OS clipboard 소유권은 host가 관리합니다.

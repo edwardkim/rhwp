@@ -201,6 +201,10 @@ enum Request {
         font_generation: u64,
         selection: NativeTextSelection,
     },
+    ParagraphStyles {
+        expected_revision: u64,
+        selection: NativeTextSelection,
+    },
     PageSetup {
         expected_revision: u64,
         page: Option<u32>,
@@ -631,6 +635,14 @@ fn worker_output(host: &mut Host, worker: u64, output: NativeRuntimeOutput) -> V
                 json!({"ok":true,"kind":"selectionFormatting","target":target,
                     "fontGeneration":font_generation,"selection":selection,"formatting":formatting})
             }
+            NativeRuntimeOutput::ParagraphStyles {
+                target,
+                selection,
+                paragraph_styles,
+            } => {
+                json!({"ok":true,"kind":"paragraphStyles","target":target,"selection":selection,
+                    "currentStyleId":paragraph_styles.current_style_id,"styles":paragraph_styles.styles})
+            }
             NativeRuntimeOutput::PageSetup { target, page_setup } => {
                 json!({"ok":true,"kind":"pageSetup","target":target,"pageSetup":page_setup})
             }
@@ -916,6 +928,7 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
         capabilities["insertShape"] = true.into();
         capabilities["minShapeSize"] = MIN_SHAPE_SIZE.into();
         capabilities["maxShapeSize"] = MAX_SHAPE_SIZE.into();
+        capabilities["paragraphStyles"] = true.into();
         Ok(capabilities)
     })
 }
@@ -994,6 +1007,11 @@ pub unsafe extern "C" fn rhwp_session_request(
                     let formatting=record.editor_mut()?.selection_formatting(expected_revision,font_generation,&selection)?;
                     Ok(json!({"ok":true,"kind":"selectionFormatting","revision":expected_revision,
                         "fontGeneration":font_generation,"selection":selection,"formatting":formatting}))
+                },
+                Request::ParagraphStyles { expected_revision, selection } => {
+                    let styles = record.editor_mut()?.paragraph_styles(expected_revision, &selection)?;
+                    Ok(json!({"ok":true,"kind":"paragraphStyles","revision":expected_revision,
+                        "selection":selection,"currentStyleId":styles.current_style_id,"styles":styles.styles}))
                 },
                 Request::PageSetup { expected_revision, page, section } => {
                     let page_setup = session.page_setup(expected_revision, page, section)?;
