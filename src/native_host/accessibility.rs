@@ -1,16 +1,20 @@
 //! Bounded semantic input for a native accessibility bridge, not OS registration
-//! or evidence of screen-reader support. Text follows structural IR order, not
-//! inferred visual reading order. Keys are session-local revision + address;
+//! or evidence of screen-reader support. Document snapshots follow structural
+//! IR order. Page snapshots follow the laid-out order of addressable paragraphs.
+//! Keys are session-local revision + address;
 //! they deliberately make no cross-revision identity promise.
+
+use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
 use super::{NativeDocumentSession, NativeHostError};
 use crate::document_core::native_interaction::{
-    NativeCaretRect, NativeCellPathEntry, NativeInteractionError, NativeSelectionRect,
-    NativeTextPosition, NativeTextSelection, NATIVE_CELL_PATH_MAX_DEPTH,
+    NativeCaretRect, NativeCellPathEntry, NativeInteractionBounds, NativeInteractionError,
+    NativeSelectionRect, NativeTextPosition, NativeTextSelection, NATIVE_CELL_PATH_MAX_DEPTH,
 };
 use crate::model::{control::Control, paragraph::Paragraph};
+use crate::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType, TextRunNode};
 
 pub const MAX_ACCESSIBILITY_NODES: usize = 1_000;
 pub const MAX_ACCESSIBILITY_TEXT_BYTES: usize = 1024 * 1024;
@@ -25,7 +29,6 @@ pub const MAX_ACCESSIBILITY_SELECTION_SCALARS: u32 = 4096;
 pub const MAX_ACCESSIBILITY_SELECTION_PARAGRAPHS: u32 = 64;
 
 /// Half-open top-level body paragraph range, including its table-cell subtrees.
-/// A page filter is intentionally absent: paragraphs can span multiple pages.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct NativeAccessibilityRange {
@@ -38,6 +41,9 @@ pub struct NativeAccessibilityRange {
 #[serde(rename_all = "camelCase", deny_unknown_fields, default)]
 pub struct NativeAccessibilityRequest {
     pub range: Option<NativeAccessibilityRange>,
+    /// A zero-based laid-out page, mutually exclusive with a structural range.
+    /// A paragraph can occur on multiple pages with separate local bounds.
+    pub page: Option<u32>,
     /// False performs no caret/selection geometry queries.
     pub geometry: bool,
     /// Include structural grid coordinates for paragraphs inside table cells.
@@ -54,6 +60,7 @@ impl Default for NativeAccessibilityRequest {
     fn default() -> Self {
         Self {
             range: None,
+            page: None,
             geometry: false,
             include_cell_layout: false,
             max_nodes: MAX_ACCESSIBILITY_NODES,
@@ -131,6 +138,9 @@ pub struct NativeAccessibilityNode {
     pub text: String,
     pub text_complete: bool,
     pub geometry: Option<NativeAccessibilityNodeGeometry>,
+    /// Laid-out text fragments on the requested page, in page-local units.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub page_bounds: Vec<NativeInteractionBounds>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub cell_layout: Option<NativeAccessibilityCellLayout>,
 }
@@ -151,6 +161,8 @@ pub struct NativeAccessibilitySnapshot {
     /// Always bodyAndTableCellText; this does not claim complete document semantics.
     pub scope: &'static str,
     pub range: Option<NativeAccessibilityRange>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub page: Option<u32>,
     pub nodes: Vec<NativeAccessibilityNode>,
     pub selection: Option<NativeTextSelection>,
     pub selection_geometry: Option<NativeAccessibilitySelectionGeometry>,
@@ -173,6 +185,9 @@ impl NativeDocumentSession {
         selection: Option<&NativeTextSelection>,
     ) -> Result<NativeAccessibilitySnapshot, NativeHostError> {
         validate_request(request)?;
+        if let Some(page) = request.page {
+            self.check_page(page)?;
+        }
         let document = self.document().document();
         if let Some(range) = request.range {
             let section = document
@@ -204,6 +219,7 @@ impl NativeDocumentSession {
                 font_generation: self.font_generation(),
                 scope: "bodyAndTableCellText",
                 range: request.range,
+                page: request.page,
                 nodes: Vec::new(),
                 selection: selection.cloned(),
                 selection_geometry: None,
@@ -220,6 +236,10 @@ impl NativeDocumentSession {
             if let Some(selection) = selection {
                 walk.snapshot.selection_geometry = Some(walk.selection_geometry(selection)?);
             }
+        }
+        if let Some(page) = request.page {
+            walk.page(page)?;
+            return Ok(walk.snapshot);
         }
         let sections = request.range.map_or(0..document.sections.len(), |range| {
             range.section as usize..range.section as usize + 1
@@ -293,19 +313,17 @@ impl SnapshotWalk<'_> {
         true
     }
 
-    fn paragraph(
+    fn emit_paragraph(
         &mut self,
         paragraph: &Paragraph,
-        start: NativeTextPosition,
+        start: &NativeTextPosition,
         cell_layout: Option<NativeAccessibilityCellLayout>,
-    ) -> Result<(), NativeHostError> {
-        if !self.charge() {
-            return Ok(());
-        }
+        page_bounds: Vec<NativeInteractionBounds>,
+    ) {
         if self.snapshot.nodes.len() == self.request.max_nodes {
             self.note(NativeAccessibilityLimitation::NodeLimit);
             self.stopped = true;
-            return Ok(());
+            return;
         }
         let mut byte_end = paragraph.text.len().min(self.remaining_text);
         while !paragraph.text.is_char_boundary(byte_end) {
@@ -319,14 +337,14 @@ impl SnapshotWalk<'_> {
         let geometry = self
             .request
             .geometry
-            .then(|| self.node_geometry(paragraph, &start, &end));
+            .then(|| self.node_geometry(paragraph, start, &end));
         let role = if start.cell_path.is_empty() {
             NativeAccessibilityRole::BodyParagraph
         } else {
             NativeAccessibilityRole::TableCellParagraph
         };
         self.snapshot.nodes.push(NativeAccessibilityNode {
-            key: node_key(self.session.revision(), &start),
+            key: node_key(self.session.revision(), start),
             role,
             start: start.clone(),
             end,
@@ -334,12 +352,24 @@ impl SnapshotWalk<'_> {
             text_complete,
             geometry,
             cell_layout,
+            page_bounds,
         });
         if !text_complete {
             self.note(NativeAccessibilityLimitation::TextLimit);
             self.stopped = true;
+        }
+    }
+
+    fn paragraph(
+        &mut self,
+        paragraph: &Paragraph,
+        start: NativeTextPosition,
+        cell_layout: Option<NativeAccessibilityCellLayout>,
+    ) -> Result<(), NativeHostError> {
+        if !self.charge() {
             return Ok(());
         }
+        self.emit_paragraph(paragraph, &start, cell_layout, Vec::new());
         for (control_index, control) in paragraph.controls.iter().enumerate() {
             if !self.charge() {
                 break;
@@ -394,6 +424,38 @@ impl SnapshotWalk<'_> {
                 Control::SectionDef(_) | Control::ColumnDef(_) => {}
                 _ => self.note(NativeAccessibilityLimitation::OtherControlSemantics),
             }
+        }
+        Ok(())
+    }
+
+    fn page(&mut self, page: u32) -> Result<(), NativeHostError> {
+        let session = self.session;
+        let mut collector = PageParagraphs::default();
+        session.document().with_page_tree_cached(page, |tree| {
+            collector.walk(&tree.root, tree.root.bbox);
+            Ok(())
+        })?;
+        for item in collector.items {
+            if self.stopped {
+                break;
+            }
+            if item.position.cell_path.len() > self.request.max_depth {
+                self.note(NativeAccessibilityLimitation::DepthLimit);
+                continue;
+            }
+            let Ok((paragraph, layout)) = resolve_paragraph_and_layout(session, &item.position)
+            else {
+                self.note(NativeAccessibilityLimitation::OtherControlSemantics);
+                continue;
+            };
+            let layout = layout.filter(|_| self.request.include_cell_layout);
+            self.emit_paragraph(paragraph, &item.position, layout, item.bounds);
+        }
+        for limitation in collector.omitted {
+            self.note(limitation);
+        }
+        if collector.limited {
+            self.note(NativeAccessibilityLimitation::TraversalLimit);
         }
         Ok(())
     }
@@ -529,7 +591,144 @@ impl SnapshotWalk<'_> {
     }
 }
 
+#[derive(Default)]
+struct PageParagraphs {
+    items: Vec<PageParagraph>,
+    index_by_address: HashMap<String, usize>,
+    omitted: Vec<NativeAccessibilityLimitation>,
+    limited: bool,
+}
+
+struct PageParagraph {
+    position: NativeTextPosition,
+    bounds: Vec<NativeInteractionBounds>,
+}
+
+impl PageParagraphs {
+    fn walk(&mut self, root: &RenderNode, page_bounds: BoundingBox) {
+        // A stack of child iterators keeps auxiliary memory tied to tree depth.
+        let mut pending = vec![(std::slice::from_ref(root).iter(), page_bounds)];
+        let mut visited = 0;
+        while let Some((nodes, clip)) = pending.last_mut() {
+            let Some(node) = nodes.next() else {
+                pending.pop();
+                continue;
+            };
+            let parent_clip = *clip;
+            self.visit(node, parent_clip, &mut pending, &mut visited);
+            if self.limited {
+                return;
+            }
+        }
+    }
+
+    fn visit<'a>(
+        &mut self,
+        node: &'a RenderNode,
+        clip: BoundingBox,
+        descendants: &mut Vec<(std::slice::Iter<'a, RenderNode>, BoundingBox)>,
+        visited: &mut usize,
+    ) {
+        use NativeAccessibilityLimitation as Limit;
+        use RenderNodeType as Node;
+        if *visited == MAX_ACCESSIBILITY_WORK_ITEMS {
+            self.limited = true;
+            return;
+        }
+        *visited += 1;
+        if !node.visible || node.editor_only {
+            return;
+        }
+        let clip = match &node.node_type {
+            Node::Header | Node::Footer => return self.omit(Limit::HeadersFooters),
+            Node::MasterPage => return self.omit(Limit::MasterPages),
+            Node::FootnoteArea => return self.omit(Limit::Notes),
+            Node::TextBox => return self.omit(Limit::ShapesAndTextBoxes),
+            Node::Body {
+                clip_rect: Some(body),
+            } => clip_box(clip, *body),
+            Node::TableCell(cell) if cell.clip => clip_box(clip, node.bbox),
+            Node::TextRun(run) => {
+                if let (Some(position), Some(bounds)) =
+                    (page_text_position(run), clip_box(node.bbox, clip))
+                {
+                    let key = node_key(0, &position);
+                    let index = *self.index_by_address.entry(key).or_insert_with(|| {
+                        self.items.push(PageParagraph {
+                            position,
+                            bounds: Vec::new(),
+                        });
+                        self.items.len() - 1
+                    });
+                    self.items[index].bounds.push(NativeInteractionBounds {
+                        x: bounds.x,
+                        y: bounds.y,
+                        width: bounds.width,
+                        height: bounds.height,
+                    });
+                }
+                Some(clip)
+            }
+            _ => Some(clip),
+        };
+        if let Some(clip) = clip {
+            if !node.children.is_empty() {
+                descendants.push((node.children.iter(), clip));
+            }
+        }
+    }
+
+    fn omit(&mut self, limitation: NativeAccessibilityLimitation) {
+        if !self.omitted.contains(&limitation) {
+            self.omitted.push(limitation);
+        }
+    }
+}
+
+fn page_text_position(run: &TextRunNode) -> Option<NativeTextPosition> {
+    let section = u32::try_from(run.section_index?).ok()?;
+    let (paragraph, cell_path) = if let Some(cell) = &run.cell_context {
+        if cell.in_textbox || cell.path.is_empty() || cell.path.len() > MAX_ACCESSIBILITY_DEPTH {
+            return None;
+        }
+        let path = cell
+            .path
+            .iter()
+            .map(|entry| {
+                Some(NativeCellPathEntry {
+                    control: u32::try_from(entry.control_index).ok()?,
+                    cell: u32::try_from(entry.cell_index).ok()?,
+                    paragraph: u32::try_from(entry.cell_para_index).ok()?,
+                })
+            })
+            .collect::<Option<Vec<_>>>()?;
+        (u32::try_from(cell.parent_para_index).ok()?, path)
+    } else {
+        (u32::try_from(run.para_index?).ok()?, Vec::new())
+    };
+    Some(NativeTextPosition {
+        section,
+        paragraph,
+        scalar_offset: 0,
+        cell_path,
+    })
+}
+
+fn clip_box(bounds: BoundingBox, clip: BoundingBox) -> Option<BoundingBox> {
+    let left = bounds.x.max(clip.x);
+    let top = bounds.y.max(clip.y);
+    let right = (bounds.x + bounds.width).min(clip.x + clip.width);
+    let bottom = (bounds.y + bounds.height).min(clip.y + clip.height);
+    ([left, top, right, bottom].into_iter().all(f64::is_finite) && right > left && bottom > top)
+        .then(|| BoundingBox::new(left, top, right - left, bottom - top))
+}
+
 fn validate_request(request: &NativeAccessibilityRequest) -> Result<(), NativeHostError> {
+    if request.range.is_some() && request.page.is_some() {
+        return Err(invalid(
+            "accessibility range and page are mutually exclusive",
+        ));
+    }
     if request.max_nodes == 0
         || request.max_nodes > MAX_ACCESSIBILITY_NODES
         || request.max_text_bytes == 0
@@ -550,6 +749,13 @@ fn resolve_paragraph<'a>(
     session: &'a NativeDocumentSession,
     position: &NativeTextPosition,
 ) -> Result<&'a Paragraph, NativeHostError> {
+    Ok(resolve_paragraph_and_layout(session, position)?.0)
+}
+
+fn resolve_paragraph_and_layout<'a>(
+    session: &'a NativeDocumentSession,
+    position: &NativeTextPosition,
+) -> Result<(&'a Paragraph, Option<NativeAccessibilityCellLayout>), NativeHostError> {
     if position.cell_path.len() > MAX_ACCESSIBILITY_DEPTH {
         return Err(invalid("selection cell path exceeds depth limit"));
     }
@@ -560,17 +766,29 @@ fn resolve_paragraph<'a>(
         .get(position.section as usize)
         .and_then(|section| section.paragraphs.get(position.paragraph as usize))
         .ok_or_else(|| invalid("selection address is outside the document"))?;
+    let mut layout = None;
     for entry in &position.cell_path {
         let Some(Control::Table(table)) = paragraph.controls.get(entry.control as usize) else {
             return Err(invalid("selection path must address table cells"));
         };
-        paragraph = table
+        let cell = table
             .cells
             .get(entry.cell as usize)
-            .and_then(|cell| cell.paragraphs.get(entry.paragraph as usize))
             .ok_or_else(|| invalid("selection cell address is outside the document"))?;
+        paragraph = cell
+            .paragraphs
+            .get(entry.paragraph as usize)
+            .ok_or_else(|| invalid("selection cell address is outside the document"))?;
+        layout = Some(NativeAccessibilityCellLayout {
+            row: cell.row,
+            column: cell.col,
+            row_span: cell.row_span,
+            column_span: cell.col_span,
+            row_count: table.row_count,
+            column_count: table.col_count,
+        });
     }
-    Ok(paragraph)
+    Ok((paragraph, layout))
 }
 
 fn node_key(revision: u64, position: &NativeTextPosition) -> String {

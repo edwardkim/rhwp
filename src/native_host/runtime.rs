@@ -27,7 +27,7 @@ use serde::{Deserialize, Serialize};
 use super::accessibility::{NativeAccessibilityRequest, NativeAccessibilitySnapshot};
 use super::clipboard::{NativeClipboardPayload, MAX_CLIPBOARD_BYTES};
 use super::commands::{NativeCommandOutcome, NativeEditCommand, NativeImeContext};
-use super::editor::ime_edit::{NativeImeEdit, NativeImeEditContext};
+use super::editor::ime_edit::{NativeImeEdit, NativeImeEditContext, NativeImeReplacement};
 use super::editor::{NativeEditOutcome, NativeEditor};
 use super::render_snapshot::{NativeRenderSnapshot, NativeRenderSnapshotLimits};
 use super::save::NativeSaveCaretPolicy;
@@ -413,6 +413,14 @@ impl NativeRuntimeCommand {
                             .as_ref()
                             .map_or(0, |preview| preview.replacement.text.capacity()),
                     ),
+                    NativeImeEdit::CommitBatch { replacements, .. } => replacements
+                        .capacity()
+                        .checked_mul(std::mem::size_of::<NativeImeReplacement>())
+                        .and_then(|bytes| {
+                            replacements.iter().try_fold(bytes, |total, replacement| {
+                                total.checked_add(replacement.text.capacity())
+                            })
+                        }),
                 };
                 expected
                     .context
