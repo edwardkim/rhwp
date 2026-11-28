@@ -35,6 +35,7 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        searchUiReady = true;
         renderTimer = DispatcherQueue.CreateTimer();
         renderTimer.Interval = TimeSpan.FromMilliseconds(32);
         renderTimer.IsRepeating = false;

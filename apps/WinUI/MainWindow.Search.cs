@@ -12,7 +12,8 @@ public sealed partial class MainWindow
     private DocumentSearchResult? searchResults;
     private int searchIndex;
     private bool searchComposing;
-    private (PageInfo Page, SearchRectangle[] Rectangles)? searchHighlight;
+    private bool searchUiReady;
+    private (DocumentTarget Target, ulong FontGeneration, SearchRectangle[] Rectangles)? searchHighlight;
 
     private void OnFindClicked(object sender, RoutedEventArgs args) => ShowSearchPanel(replace: false);
     private void OnFindReplaceClicked(object sender, RoutedEventArgs args) => ShowSearchPanel(replace: true);
@@ -51,6 +52,9 @@ public sealed partial class MainWindow
 
     private void SearchCriteriaChanged()
     {
+        if (!searchUiReady)
+            return;
+
         InvalidateSearchResults();
         RefreshSearchActions();
     }
@@ -186,6 +190,9 @@ public sealed partial class MainWindow
         SearchMatch match = results.Matches[searchIndex];
         SearchRectangle[] rectangles = await worker.GetSearchRectanglesAsync(current, results, searchIndex,
             CancellationToken.None);
+        if (!ReferenceEquals(searchResults, results))
+            return;
+
         SearchRectangle? first = rectangles.OrderBy(rectangle => rectangle.Page)
             .ThenBy(rectangle => rectangle.Bounds.Y).ThenBy(rectangle => rectangle.Bounds.X).FirstOrDefault();
         SearchStatus.Text = $"{searchIndex + 1} / {results.Matches.Length}"
@@ -198,12 +205,15 @@ public sealed partial class MainWindow
         if (current.Page != first.Page)
         {
             current = await worker.GetPageAsync(current, first.Page, CancellationToken.None);
+            if (!ReferenceEquals(searchResults, results))
+                return;
+
             ClearPage();
             page = current;
             SetPageSize(current);
         }
 
-        searchHighlight = (current, rectangles);
+        searchHighlight = (current.Target, current.FontGeneration, rectangles);
         DrawSearchHighlight(current);
         PageScroll.UpdateLayout();
         PageScroll.ChangeView(Math.Max(0, first.Bounds.X * zoom - 16),
@@ -225,6 +235,9 @@ public sealed partial class MainWindow
 
     private void RefreshSearchActions()
     {
+        if (!searchUiReady)
+            return;
+
         bool available = DocumentActionsAvailable;
         if ((page is not null && searchResults is { } results && page.Target != results.Target) ||
             (page is null && available))
@@ -245,10 +258,12 @@ public sealed partial class MainWindow
 
     private void DrawSearchHighlight(PageInfo? current)
     {
+        if (!searchUiReady)
+            return;
+
         SearchHighlightCanvas.Children.Clear();
         if (current is null || searchHighlight is not { } highlight ||
-            highlight.Page.Target != current.Target || highlight.Page.FontGeneration != current.FontGeneration ||
-            highlight.Page.Page != current.Page)
+            highlight.Target != current.Target || highlight.FontGeneration != current.FontGeneration)
             return;
 
         var brush = (Brush)SearchHighlightCanvas.Resources["SearchHighlightBrush"];
