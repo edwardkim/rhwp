@@ -1432,10 +1432,30 @@ impl TypesetEngine {
             let anchor =
                 hwpunit_to_px(line.vertical_pos - st.vpos_page_base.unwrap_or(0), self.dpi);
             let frame = hwpunit_to_px(table.common.height as i32, self.dpi);
-            if frame <= 0.0
-                || (anchor - st.current_height).abs() > 0.5
-                || anchor + frame > table_available + 0.5
-            {
+            // 같은 호스트의 뒤 인라인 표가 위·아래 여백까지 이 저장 줄을
+            // 차지하면 그 줄의 vpos는 부동 표 첫 조각의 원점이 아니다.
+            let following_inline_owns_line = st.profile.hwp5_stored_pagination_layout()
+                && fragment_placement.is_some()
+                && para.controls[input.source.control_index + 1..]
+                    .iter()
+                    .enumerate()
+                    .any(|(offset, control)| {
+                        matches!(control, crate::model::control::Control::Table(inline)
+                            if inline.common.treat_as_char
+                                && crate::renderer::composer::stored_owned_tac_line(
+                                    para, input.source.control_index + 1 + offset,
+                                )
+                                .is_some_and(|(_, owner)| std::ptr::eq(owner, line)))
+                    });
+            let actual_top = if following_inline_owns_line {
+                fragment_placement?.table_top
+            } else {
+                if (anchor - st.current_height).abs() > 0.5 {
+                    return None;
+                }
+                anchor
+            };
+            if frame <= 0.0 || actual_top + frame > table_available + 0.5 {
                 return None;
             }
             let mut bottom = 0.0;

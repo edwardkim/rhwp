@@ -14,6 +14,7 @@ use crate::renderer::{height_measurer::MeasuredTable, hwpunit_to_px, pagination:
 pub(in crate::renderer::typeset) struct TacFitPage<'a> {
     pub profile: LayoutCompatibilityProfile,
     pub current_height: f64,
+    pub base_column_height: f64,
     pub vpos_page_base: Option<i32>,
     pub current_items: &'a [PageItem],
 }
@@ -27,7 +28,8 @@ pub(in crate::renderer::typeset) struct TacFitPlan {
 }
 
 /// 가용 높이(진단 포함)는 원래 저장 경계/최종 fit 위치에서만 조회한다.
-pub(super) fn prepare(
+#[allow(clippy::too_many_arguments)]
+pub(super) fn prepare<S: crate::storage::Storage>(
     para_idx: usize,
     para: &Paragraph,
     fmt: &FormattedParagraph,
@@ -35,7 +37,8 @@ pub(super) fn prepare(
     page: TacFitPage<'_>,
     available_height: impl Fn() -> f64,
     flow: TacFlowQuery<'_>,
-) -> TacFitPlan {
+    storage: &S,
+) -> Result<TacFitPlan, S::Error> {
     let dpi = flow.dpi();
     // TAC 표 카운트 및 플러시 판단
     let tac_count = para
@@ -230,11 +233,28 @@ pub(super) fn prepare(
         && has_tac
         && tac_count <= 1
         && !saved_single_tac_bottom_fits
-        && !prefix_fits_separately;
-    TacFitPlan {
+        && !prefix_fits_separately
+        // 앞서 배치되는 분할 표는 현재 단의 잔여 공간을 먼저 사용한다.
+        // 뒤 TAC의 높이로 host 전체를 이월하면 첫 조각의 쪽 소유를 잃는다.
+        && !super::order::for_paragraph_with_storage(
+            para,
+            fmt,
+            flow,
+            page.base_column_height,
+            false,
+            storage,
+        )?
+            .first_placed_table
+            .is_some_and(|index| {
+                matches!(&para.controls[index], Control::Table(table)
+                    if super::super::is_para_topbottom_float(&table.common)
+                        && table.common.flow_with_text
+                        && table.layout_page_break() == crate::model::table::TablePageBreak::RowBreak)
+            });
+    Ok(TacFitPlan {
         tac_count,
         has_tac,
         measured_tac_floor,
         advance_before_place,
-    }
+    })
 }

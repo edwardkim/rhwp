@@ -891,6 +891,7 @@ impl TypesetState {
         TacFitPage {
             profile: self.data.profile,
             current_height: self.data.current_height,
+            base_column_height: self.base_available_height(),
             vpos_page_base: self.data.vpos_page_base,
             current_items: &self.data.current_items,
         }

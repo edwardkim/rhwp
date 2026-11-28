@@ -242,7 +242,8 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
         &fmt,
         measured_tables,
         engine.tac_flow_query(),
-    );
+        storage,
+    )?;
 
     st.ensure_page_with_storage(storage)?;
     // 저장 줄 없는 글앞/글뒤 표 host(서식 머리의 제목과 작은 표)는 자기 줄과 거기 앵커된
