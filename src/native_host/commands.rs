@@ -19,6 +19,7 @@ use crate::model::{
     color::opaque_rgb,
     paragraph::Paragraph,
     style::{Alignment, CharShape, CharShapeMods, UnderlineType},
+    ColorRef,
 };
 
 use super::editor::{NativeEditOutcome, NativeEditor};
@@ -39,6 +40,11 @@ pub const MAX_EQUATION_SCRIPT_BYTES: usize = 4_096;
 pub const MIN_EQUATION_FONT_SIZE: u32 = 200;
 pub const MAX_EQUATION_FONT_SIZE: u32 = 40_000;
 const DEFAULT_EQUATION_FONT_SIZE: u32 = 1_000;
+const CLEAR_HIGHLIGHT_COLOR: ColorRef = 0x00FF_FFFF;
+
+fn highlight_color(color: ColorRef) -> Option<ColorRef> {
+    opaque_rgb(color).filter(|&rgb| rgb != CLEAR_HIGHLIGHT_COLOR)
+}
 
 /// Tab moves to the next editable cell, Shift+Tab to the previous cell.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -123,6 +129,8 @@ pub struct NativeSelectionFormatting {
     pub font_names: [NativeFormattingValue<Option<String>>; 7],
     /// An explicit RGB color as #RRGGBB. None is an automatic color.
     pub text_color: NativeFormattingValue<Option<String>>,
+    /// The Studio highlight (character shade) color. White clears the shade.
+    pub shade_color: NativeFormattingValue<Option<String>>,
     /// Always uniform because the selection belongs to one editable paragraph.
     pub alignment: NativeParagraphAlignment,
 }
@@ -137,6 +145,7 @@ pub struct NativeCharacterFormatting {
     pub font_size: Option<i32>,
     pub font_name: Option<String>,
     pub text_color: Option<String>,
+    pub shade_color: Option<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -486,6 +495,7 @@ impl NativeEditor {
             NativeFormattingValue::Uniform(font_name(first, language))
         });
         let mut text_color = NativeFormattingValue::Uniform(opaque_rgb(first.text_color));
+        let mut shade_color = NativeFormattingValue::Uniform(highlight_color(first.shade_color));
         for id in ids {
             let shape = shape_for(id)?;
             bold.include(shape.bold);
@@ -497,6 +507,7 @@ impl NativeEditor {
                 name.include(font_name(shape, language));
             }
             text_color.include(opaque_rgb(shape.text_color));
+            shade_color.include(highlight_color(shape.shade_color));
         }
         let alignment = doc_info
             .para_shapes
@@ -519,6 +530,12 @@ impl NativeEditor {
                 NativeFormattingValue::Mixed => NativeFormattingValue::Mixed,
             }),
             text_color: match text_color {
+                NativeFormattingValue::Uniform(color) => {
+                    NativeFormattingValue::Uniform(color.map(color_ref_to_css))
+                }
+                NativeFormattingValue::Mixed => NativeFormattingValue::Mixed,
+            },
+            shade_color: match shade_color {
                 NativeFormattingValue::Uniform(color) => {
                     NativeFormattingValue::Uniform(color.map(color_ref_to_css))
                 }
@@ -563,20 +580,22 @@ impl NativeEditor {
             }
         }
         let requested_family = formatting.font_name.as_deref().map(str::to_lowercase);
-        let text_color = formatting
-            .text_color
-            .as_deref()
-            .map(|value| {
-                if value.bytes().skip(1).all(|byte| byte.is_ascii_hexdigit()) {
-                    if let Some(color) = css_color_to_bgr(value) {
-                        return Ok(color);
+        let parse_color = |value: Option<&str>, property| {
+            value
+                .map(|value| {
+                    if value.bytes().skip(1).all(|byte| byte.is_ascii_hexdigit()) {
+                        if let Some(color) = css_color_to_bgr(value) {
+                            return Ok(color);
+                        }
                     }
-                }
-                Err(NativeHostError::InvalidArgument(
-                    "textColor must be #RRGGBB".into(),
-                ))
-            })
-            .transpose()?;
+                    Err(NativeHostError::InvalidArgument(format!(
+                        "{property} must be #RRGGBB"
+                    )))
+                })
+                .transpose()
+        };
+        let text_color = parse_color(formatting.text_color.as_deref(), "textColor")?;
+        let shade_color = parse_color(formatting.shade_color.as_deref(), "shadeColor")?;
         let mods = CharShapeMods {
             bold: formatting.bold,
             italic: formatting.italic,
@@ -607,6 +626,9 @@ impl NativeEditor {
                 NativeHostError::InvalidArgument("unknown character shape in selection".into())
             })?;
             changes_style |= mods.apply_to(shape) != *shape
+                || shade_color.is_some_and(|color| {
+                    highlight_color(shape.shade_color) != highlight_color(color)
+                })
                 || requested_family.as_deref().is_some_and(|requested| {
                     (0..7).any(|language| {
                         doc_info

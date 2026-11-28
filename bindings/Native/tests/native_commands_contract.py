@@ -130,7 +130,7 @@ def selection_formatting(library):
         assert empty["formatting"]["bold"]["kind"] == "uniform", empty
         assert empty["formatting"]["fontSize"]["kind"] == "uniform", empty
         unchanged = {name: empty["formatting"][name]
-                     for name in ("fontNames", "textColor", "italic", "underline", "strikethrough")}
+                     for name in ("fontNames", "textColor", "italic", "underline", "strikethrough", "shadeColor")}
         assert accepted(op="info")["info"] == before
         composing = accepted(op="beginComposition", target=target)["outcome"]
         assert send(**query)["code"] == "invalidArgument"
@@ -332,6 +332,7 @@ def character_font_color_formatting(library):
 
 def character_decoration_formatting(library):
     decorations = ("italic", "underline", "strikethrough")
+    shade = "#fecb00"
 
     def uniform(value):
         return {"kind": "uniform", "value": value}
@@ -354,6 +355,7 @@ def character_decoration_formatting(library):
             return result
 
         assert worker.host.call("capabilities")["characterDecorationFormatting"]
+        assert worker.host.call("capabilities")["characterHighlightFormatting"]
         info = accepted(op="new", replace=None)["info"]
         target = {key: info[key] for key in ("documentId", "revision")}
         accepted(op="beginEdit", target=target, selection=caret)
@@ -372,15 +374,17 @@ def character_decoration_formatting(library):
 
         before = formatting(prefix)
         assert all(before[name] == uniform(False) for name in decorations), before
+        assert before["shadeColor"] == uniform(None), before
+        assert not apply(shadeColor="#FFFFFF")["historyChanged"]
         enabled = dict.fromkeys(decorations, True)
-        applied = apply(**enabled)
+        applied = apply(**enabled, shadeColor=shade.upper())
         assert applied["documentChanged"] and applied["historyChanged"] and applied["selection"] == prefix, applied
-        after = {**before, **dict.fromkeys(decorations, uniform(True))}
+        after = {**before, **dict.fromkeys(decorations, uniform(True)), "shadeColor": uniform(shade)}
         assert formatting(prefix) == after
-        no_op = apply(**enabled)
+        no_op = apply(**enabled, shadeColor=shade)
         assert not no_op["documentChanged"] and not no_op["historyChanged"], no_op
         assert no_op["revision"] == applied["revision"], no_op
-        assert formatting(whole) == {**before, **dict.fromkeys(decorations, {"kind": "mixed"})}
+        assert formatting(whole) == {**before, **dict.fromkeys((*decorations, "shadeColor"), {"kind": "mixed"})}
 
         target["revision"] = accepted(op="undo", target=target)["outcome"]["revision"]
         assert formatting(prefix) == before
@@ -398,12 +402,16 @@ def character_decoration_formatting(library):
                 direct = worker.host.request(handle, op="selectionFormatting", expectedRevision=session["revision"],
                                              fontGeneration=session["fontGeneration"], selection=prefix)["formatting"]
                 assert all(direct[name] == uniform(True) for name in decorations), direct
+                assert direct["shadeColor"] == uniform(shade), direct
             finally:
                 worker.host.call("close", handle)
 
         removed = apply(underline=False)
         assert removed["documentChanged"], removed
         assert formatting(prefix) == {**after, "underline": uniform(False)}
+        assert apply(shadeColor="#FFFFFF")["documentChanged"]
+        assert formatting(prefix)["shadeColor"] == uniform(None)
+        assert not apply(shadeColor="#FFFFFF")["historyChanged"]
 
 
 def page_setup(library):

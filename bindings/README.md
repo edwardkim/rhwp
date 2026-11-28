@@ -308,6 +308,8 @@ vertical 입력에 전달하고 다른 명령 뒤에는 초기화한다.
 1–409600)다. `characterDecorationFormatting` 기능이 있으면 불리언 속성 `italic`, `underline`,
 `strikethrough`도 지정할 수 있다. `selectionFormatting`은 각 속성이 선택 범위에서 동일하면
 `{kind:"uniform",value:...}`, 서로 다르면 `{kind:"mixed"}`를 반환한다.
+`characterHighlightFormatting` 기능은 형광펜의 `shadeColor`를 `#RRGGBB` 값으로 적용한다.
+`#FFFFFF`로 지울 수 있으며, 해당 범위의 형광펜이 비어 있으면 조회값은 null이다.
 `{command:"setParagraphAlignment",alignment:"right"}`는 선택 또는 캐럿이 있는 문단을 정렬한다.
 정렬값은 `justify`, `left`, `right`, `center`, `distribute`, `split`이다.
 
