@@ -2115,7 +2115,7 @@ pub(in crate::renderer) fn cell_unit_row_is_atomic_here(
 }
 
 /// RowBreak 표 셀 안에 저장된 vpos reset이 있는지 판별한다.
-fn rowbreak_table_has_internal_saved_vpos_reset(table: &crate::model::table::Table) -> bool {
+pub(in crate::renderer) fn rowbreak_table_has_internal_saved_vpos_reset(table: &crate::model::table::Table) -> bool {
     // [#7639] 행마다 전체 셀을 다시 거르지 않고 셀을 한 번만 훑는다(행×셀 → 셀).
     let row_count = table.row_count as usize;
     table
@@ -4717,40 +4717,55 @@ impl TypesetEngine {
         let style = styles.para_styles.get(para.para_shape_id as usize);
         let left = style.map_or(0.0, |s| s.margin_left);
         let right = style.map_or(0.0, |s| s.margin_right);
-        let owned_row = (tac_count > 1
-            && st.profile.hwp5_stored_pagination_layout()
+        let numbered_row = (numbered_stack.is_some()
+            && tac_count == para.line_segs.len()
             && !st.profile.session_edited()
             && !self.render_normalization.table_text_reflowed(table)
             && ft.table_footnotes.is_empty())
         .then(|| {
-            controls::stored_tac::owned_row::prepare(
-                para,
-                table,
-                ctrl_idx,
-                composed,
-                ft.effective_height,
-                styles,
-                self.dpi,
+            controls::stored_tac::owned_row::prepare_numbered_stack_row(
+                para, table, prior_tac, ft.effective_height, styles, self.dpi,
             )
         })
-        .flatten()
-        .or_else(|| {
-            ((st.profile.session_edited() || table.caption.is_some())
-                && ft.table_footnotes.is_empty())
-            .then(|| {
-                controls::stored_tac::owned_row::prepare_occupied(
-                    para,
-                    table,
-                    ctrl_idx,
-                    composed,
-                    &fmt.line_heights,
-                    ft.effective_height,
-                    styles,
-                    self.dpi,
-                )
+        .flatten();
+        let owns_numbered_row = numbered_row.is_some();
+        let owned_row = numbered_row
+            .or_else(|| {
+                (tac_count > 1
+                    && st.profile.hwp5_stored_pagination_layout()
+                    && !st.profile.session_edited()
+                    && !self.render_normalization.table_text_reflowed(table)
+                    && ft.table_footnotes.is_empty())
+                .then(|| {
+                    controls::stored_tac::owned_row::prepare(
+                        para,
+                        table,
+                        ctrl_idx,
+                        composed,
+                        ft.effective_height,
+                        styles,
+                        self.dpi,
+                    )
+                })
+                .flatten()
             })
-            .flatten()
-        });
+            .or_else(|| {
+                ((st.profile.session_edited() || table.caption.is_some())
+                    && ft.table_footnotes.is_empty())
+                .then(|| {
+                    controls::stored_tac::owned_row::prepare_occupied(
+                        para,
+                        table,
+                        ctrl_idx,
+                        composed,
+                        &fmt.line_heights,
+                        ft.effective_height,
+                        styles,
+                        self.dpi,
+                    )
+                })
+                .flatten()
+            });
         let stored_host_frame = (st.profile.hwp5_stored_pagination_layout()
             && !st.profile.session_edited()
             && !self.render_normalization.table_text_reflowed(table)
@@ -5061,6 +5076,7 @@ impl TypesetEngine {
             // 이 줄의 전진을 소비한 첫 표의 pen과 끝을 함께 넘겨 paint가 단 위로 되돌리지 않게 한다.
             let owns_vertical_frame = st.profile.session_edited()
                 || stored_vertical_pen.is_some()
+                || owns_numbered_row
                 || marker_prefix.is_some_and(|prefix| prefix.numbering_line);
             st.record_inline_placement(
                 (para_idx, ctrl_idx),

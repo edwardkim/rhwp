@@ -685,13 +685,32 @@ fn stored_successor_restarts_owned_tac_frame(
     next.line_segs.first().is_some_and(|first| {
         first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
             && first.line_height > 0
-            // 원점에서 시작하는 새 저장 축만 이 경계의 독립 근거다.
-            // 양수 vpos의 단순 되감김은 앞 줄 간격의 소유를 증명하지 않는다.
-            && first.vertical_pos == 0
+            && (first.vertical_pos == 0
+                || stored_successor_tac_line_follows_split_float(next, seg, first))
     }) && para.controls.iter().enumerate().any(|(index, _)| {
         stored_owned_tac_line(para, index)
             .is_some_and(|(_, owner)| std::ptr::eq(owner, seg))
     })
+}
+
+/// 다음 문단의 첫 저장 줄은 앞 부동 표의 여러 조각을 지난 뒤의 인라인 표가 소유할 수 있다.
+fn stored_successor_tac_line_follows_split_float(
+    next: &Paragraph,
+    previous: &LineSeg,
+    line: &LineSeg,
+) -> bool {
+    let [Control::Table(float), Control::Table(_)] = next.controls.as_slice() else {
+        return false;
+    };
+    line.vertical_pos > 0
+        && line.vertical_pos < previous.vertical_pos
+        && crate::renderer::float_placement::is_para_topbottom_float(&float.common)
+        && float.common.flow_with_text
+        && float.caption.is_none()
+        && float.layout_page_break() == crate::model::table::TablePageBreak::RowBreak
+        && crate::renderer::typeset::rowbreak_table_has_internal_saved_vpos_reset(float)
+        && stored_owned_tac_line(next, 1)
+            .is_some_and(|(_, owner)| std::ptr::eq(owner, line))
 }
 
 #[allow(clippy::too_many_arguments)]

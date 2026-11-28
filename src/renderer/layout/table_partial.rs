@@ -1790,7 +1790,13 @@ impl LayoutEngine {
                     .filter(|&height| height + pad_top + pad_bottom <= cell_h)
                 })
                 .flatten();
-            let frame_owns_alignment = !descendant_owns_closing_band
+            let stored_nested_block_frame = cut_units.and_then(|(start, end)| {
+                let units = self.cell_units(cell, table, styles);
+                self.stored_nested_block_cut_frame(cell, table, styles, &units, start, end)
+                    .filter(|&(_, height)| height + pad_top + pad_bottom <= cell_h)
+            });
+            let frame_owns_alignment = stored_nested_block_frame.is_some()
+                || !descendant_owns_closing_band
                 && (ordinary_source_frame_owns_alignment
                     || stored_before_nested_block_height.is_some()
                     || stored_mixed_opening_frame.is_some()
@@ -2352,7 +2358,7 @@ impl LayoutEngine {
             });
             let cell_content_cut_by_slice = has_multicol_nested
                 && self.cell_units_content_height(cell, table, styles) > inner_height + 0.5;
-            let effective_align = if descendant_owns_closing_band {
+            let effective_align = if descendant_owns_closing_band && stored_nested_block_frame.is_none() {
                 VerticalAlign::Top
             } else if stored_picture_cut_frame.is_some() {
                 // 수용한 물리 띠 안에서 이번 컷의 그림과 소유 줄만 정렬한다.
@@ -5099,7 +5105,12 @@ impl LayoutEngine {
                                             nested_table, para_y_before_lines, nested_h, self.dpi,
                                         ))
                                         .flatten();
-                                    let nested_origin = if let Some(owner) = frame_owner {
+                                    let nested_origin = if stored_nested_block_frame
+                                        .is_some_and(|(host, _)| host == cp_idx)
+                                    {
+                                        // 현재 행 조각이 자식 원점과 종료 줄을 함께 소유한다.
+                                        NestedTableOrigin::Table(text_y_start)
+                                    } else if let Some(owner) = frame_owner {
                                         let base = para
                                             .line_segs
                                             .get(start_line)

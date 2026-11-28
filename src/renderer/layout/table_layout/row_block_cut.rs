@@ -109,6 +109,11 @@ impl<'a> CellCutFrame<'a> {
         ) {
             return Some(height);
         }
+        if let Some((_, height)) = self.engine.stored_nested_block_cut_frame(
+            self.cell, self.table, self.styles, self.units, self.start, end,
+        ) {
+            return Some(height);
+        }
         let frame = self.source_page_frame?;
         let last = self.units.get(end.checked_sub(1)?)?;
         if end <= self.start
