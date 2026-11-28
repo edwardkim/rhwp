@@ -28,6 +28,15 @@ pub(super) fn lower(
     if path.fill_color.is_none() && path.stroke_color.is_none() {
         return Ok(None);
     }
+    // ISO 32000-1 §8.5.3.2: an open subpath containing only a move paints nothing.
+    // Keep explicit segments and closes, which may paint a zero-length round cap.
+    if path
+        .operations
+        .iter()
+        .all(|op| matches!(op, PathOperation::MoveTo(x, y) if x.is_finite() && y.is_finite()))
+    {
+        return Ok(None);
+    }
     if let [PathOperation::Rectangle(x, y, w, h)] = path.operations.as_slice() {
         let frame = Rect::new(x.min(x + w), y.min(y + h), w.abs(), h.abs());
         if path.stroke_color.is_none()

@@ -135,3 +135,44 @@ fn imported_by_cli() -> rhwp::DocumentCore {
 fn cli_close_stroke_preserves_the_separate_source_strokes() {
     check_product(&imported_by_cli());
 }
+
+#[test]
+fn open_move_only_strokes_do_not_change_page_paint_or_stop_import() {
+    use rhwp::DocumentCore;
+
+    // #9506: the independently rendered PDFs match page for page. Only the
+    // operators ending two segment-free open subpaths inside a Form differ.
+    let source = include_bytes!("../../pdf/issue9506/open-move-stroke.pdf");
+    let control = include_bytes!("../../pdf/issue9506/open-move-control.pdf");
+    let source = DocumentCore::from_pdf_bytes(source, &Default::default()).unwrap();
+    let control = DocumentCore::from_pdf_bytes(control, &Default::default()).unwrap();
+    let compare = |source: &DocumentCore, control: &DocumentCore| {
+        assert_eq!(source.page_count(), 2);
+        assert_eq!(control.page_count(), 2);
+        for page in 0..2 {
+            let actual = source.render_page_svg_native(page).unwrap();
+            let expected = control.render_page_svg_native(page).unwrap();
+            assert!(
+                actual == expected,
+                "page {} changed after adding open move-only strokes",
+                page + 1
+            );
+        }
+    };
+    compare(&source, &control);
+    for (actual, expected) in [
+        (
+            source.export_hwp_native().unwrap(),
+            control.export_hwp_native().unwrap(),
+        ),
+        (
+            source.export_hwpx_native().unwrap(),
+            control.export_hwpx_native().unwrap(),
+        ),
+    ] {
+        compare(
+            &DocumentCore::from_bytes(&actual).unwrap(),
+            &DocumentCore::from_bytes(&expected).unwrap(),
+        );
+    }
+}
