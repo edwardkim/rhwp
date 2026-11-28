@@ -4340,6 +4340,23 @@ pub(crate) fn stored_rowbreak_closing_frame_height(
         .then(|| remaining as f64 * dpi / 7200.0)
 }
 
+/// host 문단의 글이 모두 자리차지 표 위에서 끝나는가. 글이 없거나, 저장 줄이 하나이고
+/// 그 줄 상자(`lh + ls`)가 문단 기준 세로 오프셋 안에서 닫히면 다음 문단은 표 바로 뒤에
+/// 온다 — 표 뒤로 이어지는 host 글줄이 후속 원점에 섞이지 않는다.
+/// [#9479] 50627 「□ 자격요건 …」 host: 줄 1600+960 ≤ 오프셋 3115.
+pub(crate) fn host_text_precedes_table(host: &Paragraph, table: &Table) -> bool {
+    if host.text.trim().is_empty() {
+        return true;
+    }
+    let [line] = host.line_segs.as_slice() else {
+        return false;
+    };
+    table.common.vert_rel_to == VertRelTo::Para
+        && line.line_height > 0
+        && i64::from(line.line_height) + i64::from(line.line_spacing.max(0))
+            <= i64::from(signed_hwpunit(table.common.vertical_offset))
+}
+
 /// 원본 쪽 프레임에서 재개한 단일 셀 뒤 빈 문단의 저장 원점이다.
 /// 셀 선언 높이에는 여러 앞 조각이 들어갈 수 있으므로 첫 상자 하나만
 /// 빼서 마지막 상자를 추측하지 않는다. 호출자가 실제 재개 컷의 출처를
@@ -4370,7 +4387,7 @@ pub(crate) fn stored_single_cell_closing_frame_bottom(
         || table.common.height == 0
         || table.common.height >= cell.height
         || cell.height > i32::MAX as u32
-        || !host.text.is_empty()
+        || !host_text_precedes_table(host, table)
         || !matches!(host.controls.as_slice(), [Control::Table(_)])
         || !successor.text.is_empty()
         || !successor.controls.is_empty()
@@ -4397,13 +4414,28 @@ pub(crate) fn stored_single_cell_closing_frame_bottom(
             // 잉크 끝과 독립 두 프레임의 빈 종료 띠는 서로 다른 소유다.
             // 실제 한 번의 저장 재시작과 셀 총높이/후속 원점 종료식을 함께 인증한다.
             stored_two_frame_successor_origin_hu(table, successor)?;
-            stored_single_cell_closing_frame_height(host, successor, table, dpi)
+            closing_frame_height_after_host_text(host, successor, table, dpi)
         })
 }
 
 /// 독립 두 프레임 종료식으로 입증된 종료 조각 본체 높이.
 /// 바깥 여백은 기존 예약·배치 경로에서 별도로 소유한다.
 pub(crate) fn stored_single_cell_closing_frame_height(
+    host: &Paragraph,
+    successor: &Paragraph,
+    table: &Table,
+    dpi: f64,
+) -> Option<f64> {
+    if !host.text.trim().is_empty() {
+        return None;
+    }
+    closing_frame_height_after_host_text(host, successor, table, dpi)
+}
+
+/// 꼬리 조각 예약(`stored_single_cell_closing_frame_bottom`)만 쓰는 종료식이다. host 글이
+/// 모두 표 위에서 끝나면(`host_text_precedes_table`) 후속 원점은 표 바로 뒤라 같은 등식이
+/// 성립한다. 첫 조각·여는 프레임 판정은 종전대로 빈 host 만 본다.
+fn closing_frame_height_after_host_text(
     host: &Paragraph,
     successor: &Paragraph,
     table: &Table,
@@ -4427,7 +4459,7 @@ pub(crate) fn stored_single_cell_closing_frame_height(
         || table.common.height == 0
         || table.common.height >= cell.height
         || cell.height > i32::MAX as u32
-        || !host.text.trim().is_empty()
+        || !host_text_precedes_table(host, table)
         || !matches!(host.controls.as_slice(), [Control::Table(_)])
         || !successor.text.trim().is_empty()
         || !successor.controls.is_empty()
