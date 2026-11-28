@@ -171,7 +171,12 @@ public sealed partial class MainWindow
         await SettleDirectInputAsync();
         if (!DocumentActionsAvailable)
             return UnsavedDecision.Cancel;
-        if (editorInfo?.IsDirty != true)
+
+        bool dirty = editorInfo?.IsDirty == true;
+        TextPosition? caret = editorInfo?.Selection?.Focus;
+        PageInfo? blankCandidate = saveLocation is null && page is { PageCount: 1 } current &&
+            (caret is null or { Section: 0, Paragraph: 0, ScalarOffset: 0, CellPath.Length: 0 }) ? current : null;
+        if (!dirty && blankCandidate is null)
             return UnsavedDecision.Proceed;
 
         ContentDialogResult result;
@@ -179,6 +184,12 @@ public sealed partial class MainWindow
         RefreshButtons();
         try
         {
+            if (blankCandidate is not null &&
+                await worker.IsBlankNewDocumentAsync(blankCandidate.Target, CancellationToken.None))
+                return UnsavedDecision.Discard;
+            if (!dirty)
+                return UnsavedDecision.Proceed;
+
             var dialog = new ContentDialog
             {
                 XamlRoot = Root.XamlRoot,

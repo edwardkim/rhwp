@@ -35,6 +35,43 @@ internal sealed record DocumentSaveStatus(ulong Revision, ulong? SavedRevision, 
 
 internal sealed partial class NativeWorkerDispatcher
 {
+    private (DocumentTarget Target, byte[]? Bytes)? newDocumentBaseline;
+
+    public Task<bool> IsBlankNewDocumentAsync(DocumentTarget expected, CancellationToken cancellation) =>
+        Dispatch(token =>
+        {
+            if (target != expected || newDocumentBaseline is not { } baseline ||
+                baseline.Target.DocumentId != expected.DocumentId)
+                return false;
+
+            if (baseline.Target == expected)
+                return true;
+
+            return baseline.Bytes is { } original && TryReadLosslessHwpx(expected, token) is { } current &&
+                original.AsSpan().SequenceEqual(current);
+        }, cancellation);
+
+    private byte[]? TryReadLosslessHwpx(DocumentTarget expected, CancellationToken cancellation)
+    {
+        try
+        {
+            PreparedDocumentSave prepared = PrepareSave(expected, DocumentFormat.Hwpx, cancellation);
+            try
+            {
+                return prepared.Report.Count == 0 ? prepared.Bytes : null;
+            }
+            finally
+            {
+                CompleteSave(EnsureWorker(), "cancelSave", expected.DocumentId, prepared.Token);
+            }
+        }
+        catch (Exception error)
+        {
+            System.Diagnostics.Debug.WriteLine(error);
+            return null;
+        }
+    }
+
     public Task<PreparedDocumentSave> PrepareSaveAsync(DocumentTarget expected, DocumentFormat format,
         CancellationToken cancellation) =>
         // The operation must see its own accepted result to clean up a token

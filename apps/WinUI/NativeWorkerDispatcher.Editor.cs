@@ -60,7 +60,9 @@ internal sealed partial class NativeWorkerDispatcher
         {
             CheckDirty(discardChanges);
             ulong handle = EnsureWorker();
-            return InitialPage(handle, Submit(handle, new { op = "new", replace = target }, token), token);
+            PageInfo firstPage = InitialPage(handle, Submit(handle, new { op = "new", replace = target }, token), token);
+            newDocumentBaseline = (firstPage.Target, TryReadLosslessHwpx(firstPage.Target, token));
+            return firstPage;
         }, cancellation);
 
     public Task<TextHit?> HitTestAsync(PageInfo page, double x, double y, CancellationToken cancellation) =>
