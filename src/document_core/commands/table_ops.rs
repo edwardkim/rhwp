@@ -10,6 +10,7 @@ use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
 use crate::model::path::{path_from_flat, PathSegment};
 use crate::model::shape::common_obj_offsets;
+use crate::model::table::MIN_RESIZED_CELL_SIZE;
 
 /// [#6388] 표 CTRL_HEADER raw 캐시의 한 필드를 제자리에 덧쓴다 — **raw 를 늘리지 않는다.**
 ///
@@ -2473,8 +2474,6 @@ impl DocumentCore {
         updates: &[CellResizeUpdate],
         drawn_rows: &[u32],
     ) -> (Vec<(usize, usize)>, bool) {
-        const MIN_CELL_SIZE: u32 = 200; // 최소 셀 크기 (HWPUNIT)
-
         let original_width = table.common.width;
         let original_height = table.common.height;
         let height_surplus = if updates.iter().any(|u| u.height_delta != 0) {
@@ -2491,14 +2490,16 @@ impl DocumentCore {
             };
             if update.width_delta != 0 {
                 let old_width = cell.width;
-                cell.width =
-                    (cell.width as i32 + update.width_delta).max(MIN_CELL_SIZE as i32) as u32;
-                applied_width_delta += i64::from(cell.width) - i64::from(old_width);
+                cell.width = (cell.width as i32 + update.width_delta)
+                    .max(MIN_RESIZED_CELL_SIZE as i32) as u32;
+                let delta = i64::from(cell.width) - i64::from(old_width);
+                cell.shift_text_area_width(delta);
+                applied_width_delta += delta;
             }
             if update.height_delta != 0 {
                 let old_height = cell.height;
-                cell.height =
-                    (cell.height as i32 + update.height_delta).max(MIN_CELL_SIZE as i32) as u32;
+                cell.height = (cell.height as i32 + update.height_delta)
+                    .max(MIN_RESIZED_CELL_SIZE as i32) as u32;
                 applied_height_delta += i64::from(cell.height) - i64::from(old_height);
             }
         }
@@ -2679,6 +2680,17 @@ impl DocumentCore {
         control_idx: usize,
         json: &str,
     ) -> Result<String, HwpError> {
+        self.resize_top_level_table_cells(section_idx, parent_para_idx, control_idx, json, None)
+    }
+
+    pub(crate) fn resize_top_level_table_cells(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        json: &str,
+        unchanged_single_row_height: Option<u32>,
+    ) -> Result<String, HwpError> {
         let (updates, force_local_resize) = Self::parse_cell_resize_updates(json)?;
 
         if updates.is_empty() {
@@ -2695,9 +2707,16 @@ impl DocumentCore {
             Vec::new()
         };
         let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
-        let (reflow_cells, inline_height_changed) =
-            Self::apply_cell_resize_updates(table, &updates, &drawn_rows);
-        if inline_height_changed {
+        let prior_height = table.common.height;
+        let (reflow_cells, _) = Self::apply_cell_resize_updates(table, &updates, &drawn_rows);
+        if let Some(height) = unchanged_single_row_height {
+            // A fixed single row can already have the requested height while
+            // the declared table extent still carries an older, taller size.
+            debug_assert_eq!(table.row_count, 1);
+            debug_assert!(updates.iter().all(|update| update.height_delta == 0));
+            table.sync_ctrl_height(height);
+        }
+        if table.common.treat_as_char && prior_height != table.common.height {
             self.invalidate_resized_table_host(section_idx, parent_para_idx, &[])?;
         }
 
@@ -3632,43 +3651,61 @@ impl DocumentCore {
         control_idx: usize,
         page_idx: usize,
     ) -> Result<Option<String>, HwpError> {
-        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+        Ok(self
+            .find_top_level_table_bounds(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                page_idx as u32,
+            )?
+            .map(|bounds| {
+                format!(
+                    "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"width\":{:.1},\"height\":{:.1}}}",
+                    page_idx, bounds.x, bounds.y, bounds.width, bounds.height
+                )
+            }))
+    }
+
+    pub(crate) fn find_top_level_table_bounds(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        page: u32,
+    ) -> Result<Option<crate::renderer::render_tree::BoundingBox>, HwpError> {
+        use crate::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
 
         fn find_table_bbox(
             node: &RenderNode,
             sec: usize,
             ppi: usize,
             ci: usize,
-            page_idx: usize,
-        ) -> Option<String> {
+        ) -> Option<BoundingBox> {
+            if node.node_type.is_page_area() {
+                return None;
+            }
             if let RenderNodeType::Table(ref tn) = node.node_type {
                 if tn.section_index == Some(sec)
                     && tn.para_index == Some(ppi)
                     && tn.control_index == Some(ci)
+                    && tn.cell_context.is_none()
                 {
-                    return Some(format!(
-                        "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"width\":{:.1},\"height\":{:.1}}}",
-                        page_idx,
-                        node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height
-                    ));
+                    return Some(node.bbox);
                 }
             }
-            for child in &node.children {
-                if let Some(result) = find_table_bbox(child, sec, ppi, ci, page_idx) {
-                    return Some(result);
-                }
-            }
-            None
+            node.children
+                .iter()
+                .find_map(|child| find_table_bbox(child, sec, ppi, ci))
         }
 
-        let tree = self.build_page_tree_cached(page_idx as u32)?;
-        Ok(find_table_bbox(
-            &tree.root,
-            section_idx,
-            parent_para_idx,
-            control_idx,
-            page_idx,
-        ))
+        self.with_page_tree_cached(page, |tree| {
+            Ok(find_table_bbox(
+                &tree.root,
+                section_idx,
+                parent_para_idx,
+                control_idx,
+            ))
+        })
     }
 
     /// 표 전체의 첫 번째 fragment 바운딩박스를 반환한다 (네이티브).
@@ -4032,7 +4069,7 @@ impl DocumentCore {
     ///
     /// 걸음은 **283 HWPUNIT** 으로 개체 크기 조절과 같다(개체 이동의 56 과 다르다).
     ///
-    /// **`raw_list_extra` 를 함께 고쳐야 한다.** 그 앞머리 u16 이 셀 폭 그 자체인데
+    /// **`raw_list_extra` 를 함께 고쳐야 한다.** 그 앞머리 u32 가 텍스트 영역 폭인데
     /// (7384 → `[216,28]`) LIST_HEADER 뒤의 보존 바이트라 `cell.width` 만 고치면 저장에서
     /// 묻힌다. `attr`·`raw_rendering`·배치 비트에 이은 네 번째 같은 덫이다. 세로 조절에서는
     /// 안 건드린다 — 폭 필드이기 때문이다(실측: 높이가 바뀌어도 0건).

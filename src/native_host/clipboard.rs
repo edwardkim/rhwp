@@ -2,7 +2,8 @@
 //!
 //! HTML uses the core's existing formatting importer/exporter, not a browser or
 //! a general HTML sanitizer. Objects/tables and scalar/logical inline affinity
-//! are outside this surface. Cells support plain text within one paragraph.
+//! are outside this surface. Cells support plain text copy and cut across
+//! paragraphs, and paste accepts a single line.
 //! Empty body HTML and empty text preserve selection/history.
 
 use std::borrow::Cow;
@@ -62,7 +63,7 @@ impl NativeEditor {
         }
         let plain_text = self.selected_text(selection);
         check_text_controls(&plain_text)?;
-        let (start, end) = Self::ordered(selection);
+        let (start, end) = selection.ordered();
         let html = if cell || empty_fragment {
             None
         } else {
@@ -126,7 +127,7 @@ impl NativeEditor {
                 "clipboard paragraph limit exceeded".into(),
             ));
         }
-        let (start, end) = Self::ordered(&selection);
+        let (start, end) = selection.ordered();
         // The comparison allocates selected text only after its byte bound is
         // known; replacing a larger selection with a small payload is allowed.
         if clipboard_selection_size(self.session().document(), &selection)
@@ -188,7 +189,7 @@ impl NativeEditor {
         if html.trim().is_empty() {
             return self.set_selection(expected_revision, selection);
         }
-        let (start, end) = Self::ordered(&selection);
+        let (start, end) = selection.ordered();
         check_imported_paragraphs(self.session().document(), start, end)?;
         let mut empty_html = false;
         let result = self.edit_transaction(expected_revision, |core| {
@@ -411,46 +412,38 @@ fn clipboard_selection_size(
     core: &DocumentCore,
     selection: &NativeTextSelection,
 ) -> Result<(usize, bool), NativeHostError> {
-    let (start, end) = NativeEditor::ordered(selection);
-    if !start.cell_path.is_empty() {
-        // Reading a protected cell is allowed. Cut and paste check permissions
-        // through the editor's existing mutation path before changing the cell.
-        let paragraph = core.native_text_paragraph(start)?;
-        if !paragraph.controls.is_empty() {
-            return Err(NativeHostError::Unsupported(
-                "clipboard cell text cannot include semantic controls".into(),
-            ));
-        }
-        let bytes = clipboard_fragment_size(
-            &paragraph.text,
-            start.scalar_offset as usize,
-            (end.scalar_offset - start.scalar_offset) as usize,
-            MAX_CLIPBOARD_BYTES,
-        )?;
-        return Ok((bytes, false));
-    }
-    let paragraphs = &core.document().sections[start.section as usize].paragraphs;
-    let mut bytes = (end.paragraph - start.paragraph) as usize;
+    let (start, end) = selection.ordered();
+    let cell = !start.cell_path.is_empty();
+    let paragraphs = core.native_text_container(start)?;
+    let first = start.leaf_paragraph() as usize;
+    let last = end.leaf_paragraph() as usize;
+    let mut bytes = last - first;
     let mut empty_fragment = false;
     if bytes >= MAX_CLIPBOARD_PARAGRAPHS {
         return Err(NativeHostError::LimitExceeded(
             "clipboard paragraph limit exceeded".into(),
         ));
     }
-    for index in start.paragraph..=end.paragraph {
-        let text = &paragraphs[index as usize].text;
-        let from = if index == start.paragraph {
+    for (index, paragraph) in paragraphs.iter().enumerate().take(last + 1).skip(first) {
+        // Protected cells can still be copied. Deletion checks protection for
+        // both the selected cell and each of its ancestors.
+        if cell && !paragraph.controls.is_empty() {
+            return Err(NativeHostError::Unsupported(
+                "clipboard cell text cannot include semantic controls".into(),
+            ));
+        }
+        let from = if index == first {
             start.scalar_offset as usize
         } else {
             0
         };
-        let count = if index == end.paragraph {
+        let count = if index == last {
             (end.scalar_offset as usize) - from
         } else {
             usize::MAX
         };
         let fragment_bytes =
-            clipboard_fragment_size(text, from, count, MAX_CLIPBOARD_BYTES - bytes)?;
+            clipboard_fragment_size(&paragraph.text, from, count, MAX_CLIPBOARD_BYTES - bytes)?;
         bytes += fragment_bytes;
         empty_fragment |= fragment_bytes == 0;
     }

@@ -31,6 +31,7 @@ pub const CELL_FLAG_HAS_MARGIN: u16 = 0x0001;
 pub const CELL_FLAG_PROTECT: u16 = 0x0002;
 pub const CELL_FLAG_HEADER: u16 = 0x0004;
 pub const CELL_FLAG_EDITABLE_IN_FORM: u16 = 0x0008;
+pub(crate) const MIN_RESIZED_CELL_SIZE: HwpUnit = 200;
 
 #[cfg(test)]
 std::thread_local! {
@@ -453,13 +454,20 @@ impl Cell {
     /// LIST_HEADER 속성 상위 절반의 비트를 세우거나 지운다.
     ///
     /// **이 필드는 이름과 달리 폭이 아니다** — LIST_HEADER 속성 u32 의 상위 16비트다(계획서
-    /// §4.21). 진짜 텍스트 영역 폭은 `raw_list_extra` 앞머리 u16 에 있다.
+    /// §4.21). 진짜 텍스트 영역 폭은 `raw_list_extra` 앞머리 u32 에 있다.
     /// LIST_HEADER offset 34 의 **텍스트 영역 폭**을 델타만큼 옮긴다(라운드트립 보존 바이트).
     ///
     /// 이 값은 대개 셀 폭과 같지만 표본 전수에서 **414셀은 폭+30**이었다(안 여백 따위). 그래서
     /// 리사이즈 때 `cell.width` 를 절대값으로 덮으면 그 오프셋을 지운다 — 한글은 이 필드를
     /// **폭과 같은 델타**로 옮기므로(실측: 7384→7667 일 때 216,28→243,29 = +283) 증분한다.
     pub fn shift_text_area_width(&mut self, delta: i64) {
+        if let Some(bytes) = self.raw_list_extra.get_mut(..4) {
+            let current = i64::from(u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]));
+            let next = u32::try_from(current.saturating_add(delta).max(0)).unwrap_or(u32::MAX);
+            bytes.copy_from_slice(&next.to_le_bytes());
+            return;
+        }
+        // Preserve the earlier low-word update for a truncated source extension.
         if self.raw_list_extra.len() < 2 {
             return;
         }
