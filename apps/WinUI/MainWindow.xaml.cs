@@ -33,6 +33,7 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        InitializeAppIcon();
         InitializeWindowChrome();
         searchUiReady = true;
         renderTimer = DispatcherQueue.CreateTimer();
