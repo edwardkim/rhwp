@@ -187,6 +187,113 @@ def table_navigation(library):
         assert formatting["formatting"]["fontSize"]["kind"] == "uniform", formatting
 
 
+def table_creation(library):
+    body = {"section": 0, "paragraph": 0, "scalarOffset": 0, "cellPath": []}
+
+    def collapsed(point):
+        return {"anchor": point, "focus": point}
+
+    def check_first_cell(outcome, revision):
+        assert outcome["documentChanged"] and outcome["historyChanged"], outcome
+        assert outcome["revision"] == revision + 1, outcome
+        selection = outcome["selection"]
+        cell = selection["focus"]
+        assert selection == collapsed(cell), selection
+        assert cell["section"] == 0 and cell["scalarOffset"] == 0, cell
+        assert len(cell["cellPath"]) == 1, cell
+        assert cell["cellPath"][0]["cell"] == cell["cellPath"][0]["paragraph"] == 0, cell
+        return cell
+
+    with NativeWorker(library) as worker:
+        def send(**command):
+            return worker.wait(worker.submit(command))
+
+        def accepted(**command):
+            result = send(**command)
+            assert result["ok"], result
+            return result
+
+        def create(rows, columns):
+            return send(op="executeCommand", target=target,
+                        command={"command": "createTable", "rows": rows, "columns": columns})
+
+        caps = worker.host.call("capabilities")
+        assert caps["createTable"] is True, caps
+        assert (caps["maxCreateTableRows"], caps["maxCreateTableColumns"],
+                caps["maxCreateTableCells"]) == (256, 256, 4096), caps
+        info = accepted(op="new", replace=None)["info"]
+        target = {"documentId": info["documentId"], "revision": info["revision"]}
+        accepted(op="beginEdit", target=target, selection=collapsed(body))
+        before = accepted(op="info")["info"]
+        for rows, columns, code in ((0, 2, "invalidArgument"),
+                                    (2, 257, "invalidArgument"),
+                                    (256, 256, "limitExceeded")):
+            rejected = create(rows, columns)
+            assert not rejected["ok"] and rejected["code"] == code, rejected
+        assert accepted(op="info")["info"] == before
+
+        created = create(2, 3)
+        assert created["ok"] and created["kind"] == "command", created
+        assert created["preferredX"] is None, created
+        outcome = created["outcome"]
+        first = check_first_cell(outcome, target["revision"])
+        target["revision"] = outcome["revision"]
+        # A new document's first paragraph also owns its existing section controls.
+        assert first["paragraph"] == 0 and first["cellPath"][0]["control"] > 0, first
+        caret = accepted(op="caretRect", target=target, position=first)["caret"]
+        assert caret["height"] > 0 and caret["cellBounds"] is not None, caret
+        rejected = create(1, 1)
+        assert not rejected["ok"] and rejected["code"] == "unsupported", rejected
+        undone = accepted(op="undo", target=target)["outcome"]
+        target["revision"] = undone["revision"]
+        assert undone["selection"] == collapsed(body), undone
+        assert not accepted(op="info")["info"]["canUndo"]
+        assert accepted(op="imeContext", target=target)["context"]["text"] == ""
+
+        text = "왼😀오른"
+        typed = accepted(op="replace", target=target, text=text)["outcome"]
+        target["revision"] = typed["revision"]
+        middle = {**body, "scalarOffset": 2}
+        range_selection = {"anchor": body, "focus": middle}
+        accepted(op="setSelection", target=target, selection=range_selection)
+        rejected = create(2, 2)
+        assert not rejected["ok"] and rejected["code"] == "invalidArgument", rejected
+        assert accepted(op="info")["info"]["revision"] == target["revision"]
+        accepted(op="setSelection", target=target, selection=collapsed(middle))
+
+        split = create(2, 2)
+        assert split["ok"], split
+        outcome = split["outcome"]
+        first = check_first_cell(outcome, target["revision"])
+        target["revision"] = outcome["revision"]
+        assert first["paragraph"] == body["paragraph"] + 1, first
+        right = {**body, "paragraph": first["paragraph"] + 2}
+        for point, expected in ((body, "왼😀"), (right, "오른")):
+            accepted(op="setSelection", target=target, selection=collapsed(point))
+            assert accepted(op="imeContext", target=target)["context"]["text"] == expected
+        undone = accepted(op="undo", target=target)["outcome"]
+        target["revision"] = undone["revision"]
+        assert undone["selection"] == collapsed(middle), undone
+        assert accepted(op="imeContext", target=target)["context"]["text"] == text
+
+        handle = worker.host.open_bytes()
+        try:
+            revision = worker.host.request(handle, op="info")["revision"]
+            worker.host.request(handle, op="beginEdit", expectedRevision=revision,
+                                selection=collapsed(body))
+            direct = worker.host.request(handle, op="executeCommand", expectedRevision=revision,
+                                         command={"command": "createTable", "rows": 1, "columns": 1})
+            first = check_first_cell(direct["outcome"], revision)
+            revision = direct["outcome"]["revision"]
+            caret = worker.host.request(handle, op="caret", position=first)["caret"]
+            assert caret["height"] > 0 and caret["cellBounds"] is not None, caret
+            direct_undo = worker.host.request(handle, op="undo", expectedRevision=revision)["outcome"]
+            assert direct_undo["selection"] == collapsed(body), direct_undo
+            assert not worker.host.request(handle, op="info")["canUndo"]
+        finally:
+            worker.host.call("close", handle)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--library", required=True)
@@ -194,3 +301,4 @@ if __name__ == "__main__":
     run(library)
     selection_formatting(library)
     table_navigation(library)
+    table_creation(library)

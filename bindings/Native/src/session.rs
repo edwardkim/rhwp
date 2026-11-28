@@ -11,6 +11,9 @@ use rhwp_core::document_core::native_interaction::{
     NativeTextPosition, NativeTextSelection, NativeVerticalDirection,
 };
 use rhwp_core::native_host::accessibility::NativeAccessibilityRequest;
+use rhwp_core::native_host::commands::{
+    MAX_CREATE_TABLE_CELLS, MAX_CREATE_TABLE_COLUMNS, MAX_CREATE_TABLE_ROWS,
+};
 use rhwp_core::native_host::editor::ime_edit::{NativeImeEdit, NativeImeEditContext};
 use rhwp_core::native_host::editor::{NativeCompositionFocusLoss, NativeEditOutcome, NativeEditor};
 use rhwp_core::native_host::presentation::{NativePresentationId, NativePresentationStamp};
@@ -851,6 +854,10 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
         "tableCellTextNavigation":true,
         "basicTextFormatting":true,
         "selectionFormatting":true,
+        "createTable":true,
+        "maxCreateTableRows":MAX_CREATE_TABLE_ROWS,
+        "maxCreateTableColumns":MAX_CREATE_TABLE_COLUMNS,
+        "maxCreateTableCells":MAX_CREATE_TABLE_CELLS,
         "renderTiledRegion":cfg!(feature="native-skia"),"rasterCacheControls":cfg!(feature="native-skia"),
         "cooperativeTiledCancellation":cfg!(feature="native-skia"),"presentation":crate::presentation::capabilities(),"gpuGl":crate::gpu_gl::capabilities(),
         "recoveryOpen":true,

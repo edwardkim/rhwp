@@ -11,7 +11,8 @@ use serde::{Deserialize, Serialize};
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::document_core::native_interaction::{
-    legacy_cell_path, NativeTextPosition, NativeTextSelection, NativeVerticalDirection,
+    legacy_cell_path, NativeCellPathEntry, NativeTextPosition, NativeTextSelection,
+    NativeVerticalDirection,
 };
 use crate::model::{paragraph::Paragraph, style::Alignment};
 
@@ -22,6 +23,10 @@ use super::NativeHostError;
 mod cell_paragraph_commands;
 #[path = "table_navigation.rs"]
 mod table_navigation;
+
+pub const MAX_CREATE_TABLE_ROWS: u16 = 256;
+pub const MAX_CREATE_TABLE_COLUMNS: u16 = 256;
+pub const MAX_CREATE_TABLE_CELLS: u32 = 4_096;
 
 /// Tab moves to the next editable cell, Shift+Tab to the previous cell.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -156,6 +161,11 @@ pub enum NativeEditCommand {
     SetParagraphAlignment {
         alignment: NativeParagraphAlignment,
     },
+    /// Create a default table at a collapsed, editable body caret.
+    CreateTable {
+        rows: u16,
+        columns: u16,
+    },
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -244,11 +254,79 @@ impl NativeEditor {
             NativeEditCommand::SetParagraphAlignment { alignment } => {
                 self.set_paragraph_alignment(expected_revision, alignment)?
             }
+            NativeEditCommand::CreateTable { rows, columns } => {
+                self.create_table(expected_revision, rows, columns)?
+            }
             NativeEditCommand::SelectAll {} => self.select_all(expected_revision)?,
         };
         Ok(NativeCommandOutcome {
             outcome,
             preferred_x,
+        })
+    }
+
+    fn create_table(
+        &mut self,
+        revision: u64,
+        rows: u16,
+        columns: u16,
+    ) -> Result<NativeEditOutcome, NativeHostError> {
+        self.require_body_selection("createTable")?;
+        let selection = self.selection();
+        if selection.anchor != selection.focus {
+            return Err(NativeHostError::InvalidArgument(
+                "createTable requires a collapsed body caret".into(),
+            ));
+        }
+        if !(1..=MAX_CREATE_TABLE_ROWS).contains(&rows)
+            || !(1..=MAX_CREATE_TABLE_COLUMNS).contains(&columns)
+        {
+            return Err(NativeHostError::InvalidArgument(format!(
+                "createTable requires 1..={MAX_CREATE_TABLE_ROWS} rows and 1..={MAX_CREATE_TABLE_COLUMNS} columns"
+            )));
+        }
+        if u32::from(rows) * u32::from(columns) > MAX_CREATE_TABLE_CELLS {
+            return Err(NativeHostError::LimitExceeded(format!(
+                "createTable supports at most {MAX_CREATE_TABLE_CELLS} cells"
+            )));
+        }
+
+        Self::check_editable_text_span(self.session().document(), selection)?;
+        let caret = selection.focus.clone();
+        self.edit_explicit_ranges_transaction(revision, |core| {
+            #[derive(Deserialize)]
+            #[serde(rename_all = "camelCase")]
+            struct TableLocation {
+                para_idx: u32,
+                control_idx: u32,
+            }
+
+            // With semantic controls excluded, the scalar caret is also the
+            // logical caret used by the existing table constructor.
+            let created = core.create_table_native(
+                caret.section as usize,
+                caret.paragraph as usize,
+                caret.scalar_offset as usize,
+                rows,
+                columns,
+            )?;
+            let location: TableLocation = serde_json::from_str(&created).map_err(|error| {
+                crate::HwpError::RenderError(format!("invalid table creation location: {error}"))
+            })?;
+            let first_cell = NativeTextPosition {
+                section: caret.section,
+                paragraph: location.para_idx,
+                scalar_offset: 0,
+                cell_path: vec![NativeCellPathEntry {
+                    control: location.control_idx,
+                    cell: 0,
+                    paragraph: 0,
+                }],
+            };
+            Ok(NativeTextSelection {
+                anchor: first_cell.clone(),
+                focus: first_cell,
+            })
         })
     }
 
