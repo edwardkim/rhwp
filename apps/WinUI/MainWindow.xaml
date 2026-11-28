@@ -5,19 +5,26 @@
     xmlns:local="using:Rhwp.WinUI"
     Title="RHWP">
     <Grid x:Name="Root" RowDefinitions="Auto,Auto,Auto,*,Auto" Loaded="OnLoaded" Unloaded="OnUnloaded"
-          Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+          Background="Transparent"
           AllowDrop="True" DragOver="OnFilesDragOver" Drop="OnFilesDropped">
-        <!-- Windows supplies the theme fallback when transparency is unavailable. -->
-        <SystemBackdropElement Grid.RowSpan="2" IsHitTestVisible="False"
-                               AutomationProperties.AccessibilityView="Raw">
-            <SystemBackdropElement.SystemBackdrop>
-                <DesktopAcrylicBackdrop />
-            </SystemBackdropElement.SystemBackdrop>
-        </SystemBackdropElement>
+        <Border Grid.Row="2" Grid.RowSpan="3" IsHitTestVisible="False"
+                Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                AutomationProperties.AccessibilityView="Raw" />
+        <Border x:Name="HeaderFallback" Grid.RowSpan="2" IsHitTestVisible="False"
+                Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                AutomationProperties.AccessibilityView="Raw" />
 
-        <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
+        <TitleBar x:Name="EditorTitleBar" Background="Transparent" Visibility="Collapsed"
+                  AutomationProperties.AutomationId="EditorTitleBar">
+            <TitleBar.Resources>
+                <HorizontalAlignment x:Key="TitleBarContentHorizontalAlignment">Left</HorizontalAlignment>
+            </TitleBar.Resources>
+        </TitleBar>
+
+        <Border x:Name="MenuBarFallback" Background="Transparent"
                 BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
-            <MenuBar Margin="8,0" AutomationProperties.Name="주 메뉴">
+            <MenuBar x:Name="DocumentMenuBar" Margin="8,0" TitleBar.IsDragRegion="False"
+                     AutomationProperties.Name="주 메뉴">
                 <MenuBarItem Title="파일" AccessKey="F" AutomationProperties.AutomationId="FileMenu">
                     <MenuFlyoutItem Text="열기" Icon="OpenFile" Click="OnOpenClicked"
                                     IsEnabled="{x:Bind OpenButton.IsEnabled, Mode=OneWay}"
@@ -80,7 +87,7 @@
             </MenuBar>
         </Border>
 
-        <Border Grid.Row="1" Padding="8,4" Background="{ThemeResource LayerFillColorDefaultBrush}"
+        <Border Grid.Row="1" Padding="8,4" Background="Transparent"
                 BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
             <CommandBar Background="Transparent" HorizontalAlignment="Left"
                         DefaultLabelPosition="Right" IsDynamicOverflowEnabled="True"

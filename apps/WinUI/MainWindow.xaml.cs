@@ -36,6 +36,7 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        InitializeWindowChrome();
         searchUiReady = true;
         renderTimer = DispatcherQueue.CreateTimer();
         renderTimer.Interval = TimeSpan.FromMilliseconds(32);
