@@ -120,6 +120,7 @@ catch (OperationCanceledException)
 
 await EditorSmoke.RunAsync(args[1]);
 await SaveCopySmoke.RunAsync(args[1]);
+await RecoverySmoke.RunAsync();
 if (testLivePdf)
     await LivePdfSmoke.RunAsync(expectExport: true, multipageDocument: args[0]);
 

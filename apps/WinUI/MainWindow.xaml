@@ -12,7 +12,12 @@
                     <KeyboardAccelerator Key="O" Modifiers="Control" />
                 </Button.KeyboardAccelerators>
             </Button>
-            <Button x:Name="SaveCopyButton" Content="새 파일에 저장" Click="OnSaveCopyClicked" IsEnabled="False" />
+            <Button x:Name="SaveButton" Content="저장" Click="OnSaveClicked" IsEnabled="False">
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="S" Modifiers="Control" />
+                </Button.KeyboardAccelerators>
+            </Button>
+            <Button x:Name="SaveCopyButton" Content="다른 이름으로 저장" Click="OnSaveCopyClicked" IsEnabled="False" />
             <Button x:Name="ExportPdfButton" Content="현재 쪽 PDF 미리보기" Click="OnExportPdfClicked" IsEnabled="False" />
             <Button x:Name="CloseButton" Content="문서 닫기" Click="OnCloseClicked" IsEnabled="False" />
             <Button x:Name="PreviousButton" Content="이전 쪽" Click="OnPreviousClicked" IsEnabled="False" />

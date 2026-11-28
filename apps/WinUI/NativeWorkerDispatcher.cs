@@ -28,6 +28,10 @@ internal sealed partial class NativeWorkerDispatcher
     }
 
     public Task<PageInfo> OpenAsync(string path, CancellationToken cancellation, bool discardChanges = false) =>
+        Dispatch(token => OpenFile(path, discardChanges, token).Page, cancellation);
+
+    public Task<OpenedDocument> OpenWithLocationAsync(string path, CancellationToken cancellation,
+        bool discardChanges = false) =>
         Dispatch(token => OpenFile(path, discardChanges, token), cancellation);
 
     public Task<PageInfo> GetPageAsync(PageInfo info, uint page, CancellationToken cancellation) =>
@@ -138,16 +142,18 @@ internal sealed partial class NativeWorkerDispatcher
         return created.RootElement.GetProperty("worker").GetUInt64();
     }
 
-    private PageInfo OpenFile(string path, bool discardChanges, CancellationToken cancellation)
+    private OpenedDocument OpenFile(string path, bool discardChanges, CancellationToken cancellation)
     {
         CheckDirty(discardChanges);
         ulong handle = EnsureWorker();
-        byte[] contents = ReadFile(path);
+        string fullPath = Path.GetFullPath(path);
+        byte[] contents = ReadFile(fullPath);
+        DocumentFileLocation location = DocumentFileLocation.FromOpenedBytes(fullPath, contents);
         CheckClosing();
         cancellation.ThrowIfCancellationRequested();
         using var submitted = Send(new { op = "workerOpen", worker = handle, replace = target }, contents);
         JsonElement opened = Poll(handle, submitted.RootElement.GetProperty("requestId").GetUInt64(), cancellation);
-        return InitialPage(handle, GetCompleted(opened), cancellation);
+        return new OpenedDocument(InitialPage(handle, GetCompleted(opened), cancellation), location);
     }
 
     private PageInfo InitialPage(ulong handle, JsonElement reply, CancellationToken cancellation)

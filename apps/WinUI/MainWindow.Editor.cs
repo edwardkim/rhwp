@@ -286,7 +286,7 @@ public sealed partial class MainWindow
 
     private async Task RunEditorActionAsync(Func<Task> action)
     {
-        if (closing || editorBusy || picking)
+        if (closing || editorBusy || picking || documentRequest is not null)
             return;
 
         editorBusy = true;
@@ -330,6 +330,7 @@ public sealed partial class MainWindow
         editorInfo = info;
         documentError = null;
         UpdateTitle();
+        await CheckpointRecoveryAsync(info);
         if (info.PageCount == 0)
             return;
 

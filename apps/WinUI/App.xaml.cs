@@ -18,6 +18,9 @@ public partial class App : Application
     {
         MainWindow current = window ??= new MainWindow();
         current.Activate();
+        await current.WaitForWindowLoadedAsync();
+        if (await current.RestoreRecoveryAtStartupAsync())
+            return;
 
         var activation = AppInstance.GetCurrent().GetActivatedEventArgs();
         string? path = activation?.Data is IFileActivatedEventArgs files

@@ -81,14 +81,16 @@ internal static class SaveCopySmoke
                     "published bytes match verified fingerprint");
                 await RejectAcknowledgement(worker, prepared, "save token");
                 await CheckReopenedAsync(copy, selection, body, token);
+                await CheckOriginalSaveAsync(copy, format, selection, body, token);
             }
+            await CheckDisplacedBackupAsync(directory.FullName, token);
 
             PreparedDocumentSave obsolete = await worker.PrepareSaveAsync(edit.Target, DocumentFormat.Hwpx, token);
             PageInfo latest = await worker.OpenAsync(replacement, token);
             await RejectAcknowledgement(worker, obsolete, "stale or foreign document ID");
             Assert(!(await worker.GetDocumentInfoAsync(latest.Target, token)).IsDirty,
                 "old acknowledgement cannot change replacement state");
-            Console.WriteLine("Save copies: verified HWP/HWPX publication and reopen; conflict/cancel/old token rejected.");
+            Console.WriteLine("Saved and reopened HWP/HWPX copies and originals. External conflicts retained edited and on-disk bytes.");
         }
         finally
         {
@@ -98,9 +100,84 @@ internal static class SaveCopySmoke
     }
 
     private static Task<PublishedDocumentCopy?> Publish(NativeWorkerDispatcher worker,
-        PreparedDocumentSave prepared, string path, CancellationToken token) =>
+        PreparedDocumentSave prepared, string path, CancellationToken token, DocumentFileFingerprint? expected = null) =>
         DocumentSaveCopy.PublishAsync(worker, prepared, path,
-            _ => throw new InvalidOperationException("Unexpected content loss on blank-document edit."), token);
+            _ => throw new InvalidOperationException("Unexpected content loss on blank-document edit."),
+            token, expected);
+
+    private static async Task CheckOriginalSaveAsync(string path, DocumentFormat format, TextSelection selection,
+        string previousText, CancellationToken token)
+    {
+        var editor = new NativeWorkerDispatcher();
+        try
+        {
+            byte[] original = await File.ReadAllBytesAsync(path, token);
+            OpenedDocument opened = await editor.OpenWithLocationAsync(path, token);
+            Assert(opened.Location.Path == Path.GetFullPath(path) && opened.Location.Format == format &&
+                opened.Location.Fingerprint == DocumentFileFingerprint.FromBytes(original),
+                "tracked open fingerprints the bytes handed to Native");
+            NativeDocumentInfo editing = await editor.BeginEditAsync(opened.Page.Target, selection, token);
+            EditResult change = await editor.ReplaceAsync(editing.Target, "바뀐 ", token);
+
+            byte[] foreign = original.ToArray();
+            foreign[^1] ^= 1;
+            await File.WriteAllBytesAsync(path, foreign, token);
+            PreparedDocumentSave conflicting = await editor.PrepareSaveAsync(change.Target, format, token);
+            try
+            {
+                await Publish(editor, conflicting, path, token, opened.Location.Fingerprint);
+                throw new InvalidOperationException("Expected external same-size modification conflict.");
+            }
+            catch (DocumentFileConflictException)
+            {
+                Assert((await File.ReadAllBytesAsync(path, token)).SequenceEqual(foreign),
+                    "stale fingerprint does not overwrite external bytes");
+            }
+            await RejectAcknowledgement(editor, conflicting, "save token");
+            Assert((await editor.GetDocumentInfoAsync(change.Target, token)).IsDirty,
+                "external modification keeps the live document dirty");
+
+            await File.WriteAllBytesAsync(path, original, token);
+            PreparedDocumentSave prepared = await editor.PrepareSaveAsync(change.Target, format, token);
+            PublishedDocumentCopy saved = await Publish(editor, prepared, path, token, opened.Location.Fingerprint)
+                ?? throw new InvalidOperationException("Expected a verified replacement.");
+            Assert(!saved.Status.Dirty && saved.Status.SavedRevision == change.Target.Revision,
+                "a successful replacement acknowledges the saved revision");
+            Assert(await DocumentFileStore.ReadFingerprintAsync(path, token) == saved.File.Fingerprint,
+                "replacement records the new fingerprint for the next save");
+            await CheckReopenedAsync(path, selection, "바뀐 " + previousText, token);
+        }
+        finally
+        {
+            await editor.CloseAsync();
+        }
+    }
+
+    private static async Task CheckDisplacedBackupAsync(string directory, CancellationToken token)
+    {
+        // Reproduce the state immediately after a replace displaced a different
+        // file from the one verified just before the Windows path operation.
+        string path = Path.Combine(directory, "교체 검사.hwpx");
+        string backup = Path.Combine(directory, ".교체 직전.bak");
+        byte[] saved = [4, 5, 6];
+        byte[] foreign = [4, 5, 7];
+        await File.WriteAllBytesAsync(path, saved, token);
+        await File.WriteAllBytesAsync(backup, foreign, token);
+        try
+        {
+            await DocumentFileStore.VerifyPublicationAsync(path, DocumentFileFingerprint.FromBytes(saved),
+                backup, DocumentFileFingerprint.FromBytes([4, 5, 8]));
+            throw new InvalidOperationException("Expected displaced-backup conflict.");
+        }
+        catch (DocumentFilePublicationException error) when (error.PublicationReturnedSuccess &&
+            error.PossibleBackupPath == backup && error.InnerException is DocumentFileConflictException)
+        {
+            Assert((await File.ReadAllBytesAsync(path, token)).SequenceEqual(saved),
+                "saved bytes survive a displaced-backup conflict");
+            Assert((await File.ReadAllBytesAsync(backup, token)).SequenceEqual(foreign),
+                "late external bytes are retained in the displaced backup");
+        }
+    }
 
     private static async Task CheckReopenedAsync(string path, TextSelection selection, string expected,
         CancellationToken token)

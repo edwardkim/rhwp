@@ -6,7 +6,7 @@ internal static class DocumentSaveCopy
 {
     public static async Task<PublishedDocumentCopy?> PublishAsync(NativeWorkerDispatcher worker,
         PreparedDocumentSave prepared, string destination, Func<SaveLossReport, Task<bool>> approveLoss,
-        CancellationToken cancellation)
+        CancellationToken cancellation, DocumentFileFingerprint? expectedDestination = null)
     {
         bool acknowledged = false;
         Exception? error = null;
@@ -17,7 +17,7 @@ internal static class DocumentSaveCopy
                 return null;
 
             DocumentFileReceipt receipt = await DocumentFileStore.PublishAsync(destination, prepared.Bytes,
-                expectedDestination: null, cancellationToken: cancellation);
+                expectedDestination, cancellation);
             DocumentSaveStatus status;
             try
             {

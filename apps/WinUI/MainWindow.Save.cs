@@ -8,66 +8,99 @@ public sealed partial class MainWindow
 {
     private enum UnsavedDecision { Proceed, Discard, Cancel }
 
-    private async void OnSaveCopyClicked(object sender, RoutedEventArgs args) => await SaveCopyAsync();
+    private (ulong DocumentId, DocumentFileLocation Location)? saveLocation;
+    private DocumentTarget? SaveTarget => page?.Target ?? editorInfo?.Target;
 
-    private async Task<bool> SaveCopyAsync()
+    private void AdoptSaveLocation(PageInfo? activePage, DocumentFileLocation? location)
     {
-        DocumentTarget? target = page?.Target ?? editorInfo?.Target;
-        if (target is null || editorBusy || closing || picking || InlineEditing)
+        saveLocation = activePage is not null && location is not null
+            ? (activePage.Target.DocumentId, location)
+            : null;
+    }
+
+    private async void OnSaveClicked(object sender, RoutedEventArgs args) => await SaveDocumentAsync(saveAs: false);
+    private async void OnSaveCopyClicked(object sender, RoutedEventArgs args) => await SaveDocumentAsync(saveAs: true);
+
+    private async Task<bool> SaveDocumentAsync(bool saveAs)
+    {
+        if (!DocumentActionsAvailable || SaveTarget is not DocumentTarget target)
             return false;
+
+        DocumentFileLocation? current = saveLocation is { } session && session.DocumentId == target.DocumentId
+            ? session.Location
+            : null;
+        bool replaceOriginal = !saveAs && current?.Format is not null;
+        if (replaceOriginal && editorInfo?.IsDirty != true)
+            return true;
 
         editorBusy = true;
         RefreshButtons();
         try
         {
-            var picker = new FileSavePicker(AppWindow.Id)
-            {
-                SuggestedFileName = Path.GetFileNameWithoutExtension(fileName) + " - 사본",
-                DefaultFileExtension = ".hwpx",
-                ShowOverwritePrompt = false,
-            };
-            picker.FileTypeChoices.Add("한글 문서 (HWPX)", new List<string> { ".hwpx" });
-            picker.FileTypeChoices.Add("한글 문서 (HWP)", new List<string> { ".hwp" });
-            var destination = await picker.PickSaveFileAsync();
-            if (destination is null)
+            string? path = replaceOriginal ? current!.Path : await PickSavePathAsync(current?.Format);
+            if (path is null)
                 return false;
-            if (File.Exists(destination.Path))
-            {
-                StatusText.Text = "다른 파일 이름을 선택하세요. 이 저장은 새 파일을 만듭니다.";
-                return false;
-            }
-
-            DocumentFormat format = Path.GetExtension(destination.Path).ToLowerInvariant() switch
-            {
-                ".hwp" => DocumentFormat.Hwp,
-                ".hwpx" => DocumentFormat.Hwpx,
-                _ => throw new IOException("파일 이름에 .hwp 또는 .hwpx 확장자를 지정하세요."),
-            };
+            DocumentFormat format = (replaceOriginal ? current!.Format : DocumentFileLocation.FormatForPath(path))
+                ?? throw new IOException("파일 이름에 .hwp 또는 .hwpx 확장자를 지정하세요.");
             StatusText.Text = "저장 중…";
             PreparedDocumentSave prepared = await worker.PrepareSaveAsync(target, format, CancellationToken.None);
             PublishedDocumentCopy? saved = await DocumentSaveCopy.PublishAsync(worker, prepared,
-                destination.Path, ApproveSaveLossAsync, CancellationToken.None);
+                path, replaceOriginal ? _ => Task.FromResult(false) : ApproveSaveLossAsync,
+                CancellationToken.None, replaceOriginal ? current!.Fingerprint : null);
             if (saved is null)
             {
-                StatusText.Text = "저장을 취소했습니다.";
+                documentError = replaceOriginal
+                    ? "이 형식에서 일부 내용을 보존할 수 없습니다. 다른 이름으로 저장하세요."
+                    : null;
+                StatusText.Text = documentError ?? "저장을 취소했습니다.";
                 return false;
             }
 
+            // Both the file and the native save checkpoint have committed.
+            // A later recovery-cleanup error must not change the saved state.
+            saveLocation = (target.DocumentId, new DocumentFileLocation(saved.File.Path, saved.File.Fingerprint, format));
             fileName = Path.GetFileName(saved.File.Path);
-            editorInfo = await worker.GetDocumentInfoAsync(target, CancellationToken.None);
+            if (editorInfo is { } previous && previous.DocumentId == target.DocumentId)
+            {
+                editorInfo = previous with { Revision = saved.Status.Revision, IsDirty = saved.Status.Dirty };
+            }
             documentError = null;
             UpdateTitle();
             StatusText.Text = "저장했습니다. " + fileName;
+            if (!saved.Status.Dirty)
+            {
+                try
+                {
+                    await ClearRecoveryAsync();
+                }
+                catch (Exception error)
+                {
+                    documentError = "저장했지만 복구 파일을 정리하지 못했습니다. " + error.Message;
+                    StatusText.Text = documentError;
+                }
+            }
             return !saved.Status.Dirty;
         }
         catch (DocumentFileConflictException)
         {
-            StatusText.Text = "선택한 경로에 파일이 있습니다. 새 이름으로 저장하세요.";
+            documentError = replaceOriginal
+                ? "저장할 파일이 외부에서 변경되었거나 이동되었습니다. 다른 이름으로 저장하세요."
+                : "선택한 경로에 파일이 있습니다. 다른 이름으로 저장하세요.";
+            StatusText.Text = documentError;
+            return false;
+        }
+        catch (DocumentFilePublicationException error)
+        {
+            documentError = error.PossibleBackupPath is { } backup && File.Exists(backup)
+                ? "저장을 확인할 수 없습니다. 교체 직전 파일의 백업을 보존했습니다. " + backup
+                : "저장을 확인할 수 없습니다. 편집 내용을 다른 이름으로 저장하세요. " + error.Message;
+            StatusText.Text = documentError;
             return false;
         }
         catch (Exception error)
         {
-            StatusText.Text = "저장할 수 없습니다. " + error.Message;
+            documentError = "저장할 수 없습니다. " + error.Message;
+            StatusText.Text = documentError;
             return false;
         }
         finally
@@ -75,6 +108,33 @@ public sealed partial class MainWindow
             editorBusy = false;
             RefreshButtons();
         }
+    }
+
+    private async Task<string?> PickSavePathAsync(DocumentFormat? currentFormat)
+    {
+        var picker = new FileSavePicker(AppWindow.Id)
+        {
+            SuggestedFileName = fileName is null
+                ? "새 문서"
+                : Path.GetFileNameWithoutExtension(fileName) + " - 사본",
+            DefaultFileExtension = currentFormat == DocumentFormat.Hwp ? ".hwp" : ".hwpx",
+            ShowOverwritePrompt = false,
+        };
+        if (currentFormat == DocumentFormat.Hwp)
+        {
+            picker.FileTypeChoices.Add("한글 문서 (HWP)", new List<string> { ".hwp" });
+            picker.FileTypeChoices.Add("한글 문서 (HWPX)", new List<string> { ".hwpx" });
+        }
+        else
+        {
+            picker.FileTypeChoices.Add("한글 문서 (HWPX)", new List<string> { ".hwpx" });
+            picker.FileTypeChoices.Add("한글 문서 (HWP)", new List<string> { ".hwp" });
+        }
+
+        string? path = (await picker.PickSaveFileAsync())?.Path;
+        if (path is not null && File.Exists(path))
+            throw new DocumentFileConflictException(path);
+        return path;
     }
 
     private async Task<bool> ApproveSaveLossAsync(SaveLossReport report)
@@ -112,7 +172,7 @@ public sealed partial class MainWindow
             StatusText.Text = "현재 문단을 적용하거나 취소하세요.";
             return UnsavedDecision.Cancel;
         }
-        if (editorBusy)
+        if (!DocumentActionsAvailable)
             return UnsavedDecision.Cancel;
         if (editorInfo?.IsDirty != true)
             return UnsavedDecision.Proceed;
@@ -127,7 +187,7 @@ public sealed partial class MainWindow
                 XamlRoot = Root.XamlRoot,
                 Title = "변경 사항을 저장할까요?",
                 Content = "현재 문서에 저장하지 않은 변경 사항이 있습니다.",
-                PrimaryButtonText = "새 파일에 저장",
+                PrimaryButtonText = "저장",
                 SecondaryButtonText = "폐기",
                 CloseButtonText = "취소",
                 DefaultButton = ContentDialogButton.Close,
@@ -147,7 +207,7 @@ public sealed partial class MainWindow
 
         if (result == ContentDialogResult.Secondary)
             return UnsavedDecision.Discard;
-        if (result == ContentDialogResult.Primary && await SaveCopyAsync())
+        if (result == ContentDialogResult.Primary && await SaveDocumentAsync(saveAs: false))
             return UnsavedDecision.Proceed;
 
         return UnsavedDecision.Cancel;

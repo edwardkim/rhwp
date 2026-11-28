@@ -15,9 +15,11 @@ namespace Rhwp.WinUI;
 public sealed partial class MainWindow : Window
 {
     private const string IdleStatus = "HWP 또는 HWPX 파일을 여세요.";
+    private const string RenderingStatus = "쪽 표시 중…";
     private const double MinZoom = 0.5;
     private const double MaxZoom = 4;
     private readonly NativeWorkerDispatcher worker = new();
+    private readonly TaskCompletionSource windowLoaded = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly DispatcherQueueTimer renderTimer;
     private CancellationTokenSource? documentRequest;
     private CancellationTokenSource? renderRequest;
@@ -75,10 +77,19 @@ public sealed partial class MainWindow : Window
             return;
 
         UnsavedDecision decision = await ResolveUnsavedChangesAsync();
-        if (decision != UnsavedDecision.Cancel)
-            await ChangeDocumentAsync(
-                async token => await worker.OpenAsync(path, token, discardChanges: decision == UnsavedDecision.Discard),
-                Path.GetFileName(path), resetZoom: true);
+        if (decision == UnsavedDecision.Cancel)
+            return;
+
+        OpenedDocument? opened = null;
+        await ChangeDocumentAsync(async token =>
+        {
+            opened = await worker.OpenWithLocationAsync(path, token, discardChanges: decision == UnsavedDecision.Discard);
+            return opened.Page;
+        }, Path.GetFileName(path), resetZoom: true, async result =>
+        {
+            AdoptSaveLocation(result, opened?.Location);
+            await ClearRecoveryAsync();
+        });
     }
 
     private void OnFilesDragOver(object sender, DragEventArgs args)
@@ -132,7 +143,11 @@ public sealed partial class MainWindow : Window
         {
             await worker.CloseDocumentAsync(token, discardChanges: decision == UnsavedDecision.Discard);
             return null;
-        }, null, resetZoom: true);
+        }, null, resetZoom: true, async result =>
+        {
+            AdoptSaveLocation(result, null);
+            await ClearRecoveryAsync();
+        });
     }
 
     private async void OnPreviousClicked(object sender, RoutedEventArgs args)
@@ -150,13 +165,13 @@ public sealed partial class MainWindow : Window
     private Task GoToPageAsync(PageInfo current, uint index) =>
         ChangeDocumentAsync(async token => await worker.GetPageAsync(current, index, token), fileName, resetZoom: false);
 
-    private async Task ChangeDocumentAsync(Func<CancellationToken, Task<PageInfo?>> action,
-        string? name, bool resetZoom)
+    private async Task<bool> ChangeDocumentAsync(Func<CancellationToken, Task<PageInfo?>> action,
+        string? name, bool resetZoom, Func<PageInfo?, Task>? onCommitted = null)
     {
         // Keep an accepted document action in flight until its UI and worker
         // state have both settled. Later open or drop gestures can then retry.
         if (!DocumentActionsAvailable)
-            return;
+            return false;
 
         var priorPage = page;
         var priorFile = fileName;
@@ -165,30 +180,34 @@ public sealed partial class MainWindow : Window
         using var request = new CancellationTokenSource();
         documentRequest = request;
         ClearPage();
-        if (resetZoom)
-            zoom = 1;
-        fileName = name;
-        UpdateTitle();
         StatusText.Text = name is null ? "문서 닫는 중…" : "문서 읽는 중…";
         RefreshButtons();
         try
         {
             PageInfo? result = await action(request.Token);
             if (closing || request.IsCancellationRequested)
-                return;
+                return false;
             if (resetZoom)
+            {
+                zoom = 1;
                 editorInfo = null;
-            UpdateTitle();
+            }
+
+            fileName = name;
             page = result;
+            if (onCommitted is not null)
+                await onCommitted(result);
+            UpdateTitle();
             if (result is null)
                 StatusText.Text = IdleStatus;
             else
             {
                 SetPageSize(result);
                 PageScroll.ChangeView(0, 0, null, true);
-                StatusText.Text = "쪽 표시 중…";
+                StatusText.Text = RenderingStatus;
                 QueueRender();
             }
+            return true;
         }
         catch (OperationCanceledException) when (closing || request.IsCancellationRequested)
         {
@@ -212,6 +231,8 @@ public sealed partial class MainWindow : Window
                     RefreshButtons();
             }
         }
+
+        return false;
     }
 
     private async Task RestorePageAsync(PageInfo prior, string? name, double priorZoom, CancellationToken token)
@@ -259,7 +280,7 @@ public sealed partial class MainWindow : Window
 
     private void ZoomTo(double value)
     {
-        if (closing || editorBusy || InlineEditing || page is not PageInfo current)
+        if (!DocumentActionsAvailable || page is not PageInfo current)
             return;
 
         double nextZoom = Math.Clamp(value, MinZoom, MaxZoom);
@@ -273,12 +294,15 @@ public sealed partial class MainWindow : Window
         QueueRender();
     }
 
+    internal Task WaitForWindowLoadedAsync() => windowLoaded.Task;
+
     private void OnLoaded(object sender, RoutedEventArgs args)
     {
         if (Root.XamlRoot is XamlRoot root)
             root.Changed += OnXamlRootChanged;
         _ = LoadPdfCapabilityAsync();
         QueueRender();
+        windowLoaded.TrySetResult();
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs args)
@@ -338,11 +362,9 @@ public sealed partial class MainWindow : Window
             PageImage.Width = frame.PixelWidth / frame.DeviceScale;
             PageImage.Height = frame.PixelHeight / frame.DeviceScale;
             PageImage.Source = source;
-            if (pdfCancellation is null && !InlineEditing)
-            {
+            if (pdfCancellation is null && !InlineEditing && StatusText.Text == RenderingStatus)
                 StatusText.Text = documentError ??
                     $"{current.Page + 1} / {current.PageCount}쪽 · {(int)Math.Round(zoom * 100)}%";
-            }
         }
         catch (OperationCanceledException) when (closing || request.IsCancellationRequested)
         {
@@ -364,7 +386,8 @@ public sealed partial class MainWindow : Window
     {
         bool available = DocumentActionsAvailable;
         OpenButton.IsEnabled = available;
-        SaveCopyButton.IsEnabled = available && (page is not null || editorInfo is not null);
+        SaveButton.IsEnabled = available && SaveTarget is not null;
+        SaveCopyButton.IsEnabled = SaveButton.IsEnabled;
         ExportPdfButton.Content = pdfCancellation is null ? "현재 쪽 PDF 미리보기" : "PDF 작업 취소";
         ExportPdfButton.IsEnabled = pdfCancellation is CancellationTokenSource export
             ? !export.IsCancellationRequested
@@ -381,7 +404,11 @@ public sealed partial class MainWindow : Window
     private async void OnClosing(AppWindow sender, AppWindowClosingEventArgs args)
     {
         args.Cancel = true;
-        if (closing || await ResolveUnsavedChangesAsync() == UnsavedDecision.Cancel)
+        if (closing || picking || documentRequest is not null)
+            return;
+
+        UnsavedDecision decision = await ResolveUnsavedChangesAsync();
+        if (decision == UnsavedDecision.Cancel)
             return;
 
         closing = true;
@@ -392,6 +419,7 @@ public sealed partial class MainWindow : Window
         try
         {
             await worker.CloseAsync();
+            await ClearRecoveryAsync();
         }
         catch (Exception error)
         {

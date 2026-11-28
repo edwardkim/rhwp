@@ -3,6 +3,31 @@ using System.Text.Json;
 namespace Rhwp.WinUI;
 
 internal enum DocumentFormat { Hwp, Hwpx }
+internal sealed record DocumentFileLocation(string Path, DocumentFileFingerprint Fingerprint, DocumentFormat? Format)
+{
+    private static ReadOnlySpan<byte> HwpContainerMagic => [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1];
+
+    public static DocumentFormat? FormatForPath(string path) =>
+        System.IO.Path.GetExtension(path).ToLowerInvariant() switch
+        {
+            ".hwp" => DocumentFormat.Hwp,
+            ".hwpx" => DocumentFormat.Hwpx,
+            _ => null,
+        };
+
+    public static DocumentFileLocation FromOpenedBytes(string path, ReadOnlySpan<byte> contents)
+    {
+        DocumentFormat? format = FormatForPath(path) switch
+        {
+            DocumentFormat.Hwp when contents.StartsWith(HwpContainerMagic) => DocumentFormat.Hwp,
+            DocumentFormat.Hwpx when contents.StartsWith("PK\x03\x04"u8) => DocumentFormat.Hwpx,
+            _ => null,
+        };
+        return new DocumentFileLocation(path, DocumentFileFingerprint.FromBytes(contents), format);
+    }
+}
+
+internal sealed record OpenedDocument(PageInfo Page, DocumentFileLocation Location);
 internal sealed record SaveLoss(string Code, string Subject, string Path, string Reason, uint? ResourceId);
 internal sealed record SaveLossReport(uint SchemaVersion, string OutputFormat, int Count, SaveLoss[] Losses);
 internal sealed record PreparedDocumentSave(DocumentTarget Target, ulong Token, byte[] Bytes, SaveLossReport Report);

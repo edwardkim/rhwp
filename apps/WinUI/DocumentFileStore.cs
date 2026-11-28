@@ -37,7 +37,10 @@ internal sealed class DocumentFilePublicationException(
 /// <remarks>
 /// The fingerprint identifies the file's contents by length and SHA-256.
 /// Existing-file checks detect observed changes and serialize app publications.
-/// Other processes can still change the path between the check and replacement.
+/// Windows keeps a read handle open through replacement, blocking writes to
+/// that file while still allowing renames. The displaced file is verified
+/// before its backup can be deleted, since another process can still rename
+/// a different file into the path.
 /// A flush persists staged data subject to the filesystem's guarantees. This
 /// layer does not flush the parent directory or manage crash recovery.
 /// </remarks>
@@ -101,7 +104,12 @@ internal static class DocumentFileStore
             await PublicationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                await RequireExpectedAsync(destination, expected, cancellationToken).ConfigureAwait(false);
+                await using var readLock = expected is not null && OperatingSystem.IsWindows()
+                    ? await LockReplacementDestinationAsync(destination, expected, cancellationToken)
+                        .ConfigureAwait(false)
+                    : null;
+                if (readLock is null)
+                    await RequireExpectedAsync(destination, expected, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
 
                 string? backup = null;
@@ -132,20 +140,7 @@ internal static class DocumentFileStore
                 }
                 ownsStagingFile = false;
 
-                // Publication has happened. Finish verification even if the
-                // caller cancels while the OS is replacing the destination.
-                try
-                {
-                    await RequireExpectedAsync(destination, fingerprint, CancellationToken.None)
-                        .ConfigureAwait(false);
-                }
-                catch (Exception error) when (error is IOException or UnauthorizedAccessException)
-                {
-                    throw new DocumentFilePublicationException(destination, true, backup, error);
-                }
-
-                var retainedBackup = backup is not null && TryDelete(backup) is not null ? backup : null;
-                return new DocumentFileReceipt(destination, fingerprint, retainedBackup);
+                return await VerifyPublicationAsync(destination, fingerprint, backup, expected).ConfigureAwait(false);
             }
             finally
             {
@@ -161,6 +156,26 @@ internal static class DocumentFileStore
             }
             throw;
         }
+    }
+
+    internal static async Task<DocumentFileReceipt> VerifyPublicationAsync(string destination,
+        DocumentFileFingerprint fingerprint, string? backup, DocumentFileFingerprint? expected)
+    {
+        // Publication has happened. Verification is independent of cancellation,
+        // and a late conflicting writer's displaced bytes remain in the backup.
+        try
+        {
+            await RequireExpectedAsync(destination, fingerprint, CancellationToken.None).ConfigureAwait(false);
+            if (backup is not null && expected is not null)
+                await RequireExpectedAsync(backup, expected, CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+        {
+            throw new DocumentFilePublicationException(destination, true, backup, error);
+        }
+
+        var retainedBackup = backup is not null && TryDelete(backup) is not null ? backup : null;
+        return new DocumentFileReceipt(destination, fingerprint, retainedBackup);
     }
 
     private static async Task RequireExpectedAsync(string path, DocumentFileFingerprint? expected,
@@ -186,26 +201,70 @@ internal static class DocumentFileStore
         var attributes = ReadAttributesOrMissing(path);
         if (attributes is null)
             return null;
-        if ((attributes.Value & (FileAttributes.Directory | FileAttributes.ReparsePoint | FileAttributes.Device)) != 0)
-            throw new IOException($"The destination must be a regular file: {path}");
+        EnsureRegularFile(path, attributes.Value);
 
         try
         {
-            await using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read,
-                64 * 1024, FileOptions.Asynchronous | FileOptions.SequentialScan);
-            var length = file.Length;
-            var lastWrite = File.GetLastWriteTimeUtc(file.SafeFileHandle);
-            if (expectedLength is long expected && length != expected)
-                throw new DocumentFileConflictException(path);
-            var hash = await SHA256.HashDataAsync(file, cancellationToken).ConfigureAwait(false);
-            if (length != file.Length || lastWrite != File.GetLastWriteTimeUtc(file.SafeFileHandle))
-                throw new DocumentFileConflictException(path);
-            return new DocumentFileFingerprint(length, Convert.ToHexString(hash));
+            await using var file = OpenForFingerprint(path, FileShare.Read);
+            return await FingerprintAsync(file, path, expectedLength, cancellationToken).ConfigureAwait(false);
         }
         catch (FileNotFoundException)
         {
             return null;
         }
+    }
+
+    private static async Task<FileStream> LockReplacementDestinationAsync(string path,
+        DocumentFileFingerprint expected, CancellationToken cancellationToken)
+    {
+        var attributes = ReadAttributesOrMissing(path);
+        if (attributes is null)
+            throw new DocumentFileConflictException(path);
+        EnsureRegularFile(path, attributes.Value);
+        FileStream file;
+        try
+        {
+            file = OpenForFingerprint(path, FileShare.Read | FileShare.Delete);
+        }
+        catch (FileNotFoundException error)
+        {
+            throw new DocumentFileConflictException(path, error);
+        }
+
+        try
+        {
+            if (await FingerprintAsync(file, path, expected.ByteLength, cancellationToken).ConfigureAwait(false) != expected)
+                throw new DocumentFileConflictException(path);
+            return file;
+        }
+        catch
+        {
+            await file.DisposeAsync().ConfigureAwait(false);
+            throw;
+        }
+    }
+
+    private static void EnsureRegularFile(string path, FileAttributes attributes)
+    {
+        if ((attributes & (FileAttributes.Directory | FileAttributes.ReparsePoint | FileAttributes.Device)) != 0)
+            throw new IOException($"The destination must be a regular file: {path}");
+    }
+
+    private static FileStream OpenForFingerprint(string path, FileShare share) =>
+        new(path, FileMode.Open, FileAccess.Read, share, 64 * 1024,
+            FileOptions.Asynchronous | FileOptions.SequentialScan);
+
+    private static async Task<DocumentFileFingerprint> FingerprintAsync(FileStream file, string path,
+        long? expectedLength, CancellationToken cancellationToken)
+    {
+        var length = file.Length;
+        var lastWrite = File.GetLastWriteTimeUtc(file.SafeFileHandle);
+        if (expectedLength is long expected && length != expected)
+            throw new DocumentFileConflictException(path);
+        var hash = await SHA256.HashDataAsync(file, cancellationToken).ConfigureAwait(false);
+        if (length != file.Length || lastWrite != File.GetLastWriteTimeUtc(file.SafeFileHandle))
+            throw new DocumentFileConflictException(path);
+        return new DocumentFileFingerprint(length, Convert.ToHexString(hash));
     }
 
     private static FileAttributes? ReadAttributesOrMissing(string path)
