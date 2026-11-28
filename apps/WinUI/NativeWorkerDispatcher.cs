@@ -169,7 +169,7 @@ internal sealed partial class NativeWorkerDispatcher
     private void CheckDirty(bool discardChanges)
     {
         if (dirty && !discardChanges)
-            throw new InvalidOperationException("문서를 닫기 전에 저장 여부를 확인해야 합니다.");
+            throw new InvalidOperationException("문서를 닫기 전에 변경 사항을 저장할지 확인해야 합니다.");
     }
 
     private NativeDocumentInfo AdoptInfo(JsonElement reply, DocumentTarget? expected = null)
