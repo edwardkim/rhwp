@@ -9,6 +9,91 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "examples"))
 from native_worker import NativeWorker
 
 
+def selection_formatting(library):
+    def uniform(value):
+        return {"kind": "uniform", "value": value}
+
+    mixed = {"kind": "mixed"}
+    with NativeWorker(library) as worker:
+        def send(**command):
+            return worker.wait(worker.submit(command))
+
+        def accepted(**command):
+            result = send(**command)
+            assert result["ok"], result
+            return result
+
+        assert worker.host.call("capabilities")["selectionFormatting"]
+        info = accepted(op="new", replace=None)["info"]
+        target = {"documentId": info["documentId"], "revision": info["revision"]}
+        font = info["fontGeneration"]
+        head = {"section": 0, "paragraph": 0, "scalarOffset": 0, "cellPath": []}
+        caret = {"anchor": head, "focus": head}
+        query = {"op": "selectionFormatting", "target": target, "fontGeneration": font,
+                 "selection": caret}
+        assert send(**query)["code"] == "unsupported"
+        accepted(op="beginEdit", target=target, selection=caret)
+        before = accepted(op="info")["info"]
+        empty = accepted(**query)
+        assert empty["kind"] == "selectionFormatting", empty
+        assert empty["target"] == target and empty["fontGeneration"] == font, empty
+        assert empty["selection"] == caret, empty
+        assert empty["formatting"]["bold"]["kind"] == "uniform", empty
+        assert empty["formatting"]["fontSize"]["kind"] == "uniform", empty
+        assert accepted(op="info")["info"] == before
+        composing = accepted(op="beginComposition", target=target)["outcome"]
+        assert send(**query)["code"] == "invalidArgument"
+        accepted(op="cancelComposition", target=target, compositionId=composing["compositionId"])
+        assert accepted(op="info")["info"] == before
+
+        edited = accepted(op="replace", target=target, text="가😀나")["outcome"]
+        target["revision"] = edited["revision"]
+        mid = {**head, "scalarOffset": 1}
+        end = {**head, "scalarOffset": 3}
+        first = {"anchor": mid, "focus": head}
+        rest = {"anchor": end, "focus": mid}
+        for selection, size in ((first, 1500), (rest, 1900)):
+            accepted(op="setSelection", target=target, selection=selection)
+            result = accepted(op="executeCommand", target=target, command={
+                "command": "formatCharacters", "bold": True, "fontSize": size})
+            target["revision"] = result["outcome"]["revision"]
+        result = accepted(op="executeCommand", target=target, command={
+            "command": "setParagraphAlignment", "alignment": "right"})
+        target["revision"] = result["outcome"]["revision"]
+        assert accepted(**{**query, "selection": rest})["formatting"] == {
+            "bold": uniform(True), "fontSize": uniform(1900), "alignment": "right"}
+
+        whole = {"anchor": end, "focus": head}
+        accepted(op="setSelection", target=target, selection=whole)
+        assert send(**{**query, "selection": rest})["code"] == "invalidArgument"
+        assert send(**{**query, "selection": whole, "fontGeneration": font + 1})["code"] == "invalidArgument"
+        stale = {**target, "revision": target["revision"] - 1}
+        assert send(**{**query, "selection": whole, "target": stale})["code"] == "staleRevision"
+        before = accepted(op="info")["info"]
+        assert accepted(**{**query, "selection": whole})["formatting"] == {
+            "bold": uniform(True), "fontSize": mixed, "alignment": "right"}
+        assert accepted(op="info")["info"] == before
+        accepted(op="setSelection", target=target, selection=first)
+        result = accepted(op="executeCommand", target=target, command={
+            "command": "formatCharacters", "bold": False})
+        target["revision"] = result["outcome"]["revision"]
+        accepted(op="setSelection", target=target, selection=whole)
+        assert accepted(**{**query, "selection": whole})["formatting"] == {
+            "bold": mixed, "fontSize": mixed, "alignment": "right"}
+
+        handle = worker.host.open_bytes()
+        try:
+            session = worker.host.request(handle, op="info")
+            worker.host.request(handle, op="beginEdit", expectedRevision=session["revision"],
+                                selection=caret)
+            direct = worker.host.request(handle, op="selectionFormatting",
+                                         expectedRevision=session["revision"],
+                                         fontGeneration=session["fontGeneration"], selection=caret)
+            assert direct["formatting"] == empty["formatting"], direct
+        finally:
+            worker.host.call("close", handle)
+
+
 def run(library):
     with NativeWorker(library) as worker:
         def accepted(command):
@@ -92,6 +177,14 @@ def table_navigation(library):
             assert not moved["outcome"]["documentChanged"], moved
             assert not moved["outcome"]["historyChanged"], moved
         assert worker.host.call("capabilities")["tableCellNavigation"]
+        label = {"anchor": point(4, 4), "focus": point(4)}
+        selection = worker.wait(worker.submit({"op": "setSelection", "target": target, "selection": label}))
+        assert selection["ok"], selection
+        formatting = worker.wait(worker.submit({"op": "selectionFormatting", "target": target,
+                                                 "fontGeneration": info["fontGeneration"],
+                                                 "selection": label}))
+        assert formatting["ok"] and formatting["selection"] == label, formatting
+        assert formatting["formatting"]["fontSize"]["kind"] == "uniform", formatting
 
 
 if __name__ == "__main__":
@@ -99,4 +192,5 @@ if __name__ == "__main__":
     parser.add_argument("--library", required=True)
     library = parser.parse_args().library
     run(library)
+    selection_formatting(library)
     table_navigation(library)
