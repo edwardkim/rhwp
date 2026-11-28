@@ -13,6 +13,7 @@ use rhwp_core::document_core::native_interaction::{
 use rhwp_core::native_host::accessibility::NativeAccessibilityRequest;
 use rhwp_core::native_host::commands::{
     MAX_CREATE_TABLE_CELLS, MAX_CREATE_TABLE_COLUMNS, MAX_CREATE_TABLE_ROWS,
+    MAX_EQUATION_FONT_SIZE, MAX_EQUATION_SCRIPT_BYTES, MIN_EQUATION_FONT_SIZE,
 };
 use rhwp_core::native_host::editor::ime_edit::{NativeImeEdit, NativeImeEditContext};
 use rhwp_core::native_host::editor::{NativeCompositionFocusLoss, NativeEditOutcome, NativeEditor};
@@ -855,8 +856,7 @@ fn frame_result(
 #[no_mangle]
 pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
     response(|| {
-        Ok(
-            json!({"ok":true,"abiVersion":1,"nativeSkia":cfg!(feature="native-skia"),
+        let mut capabilities = json!({"ok":true,"abiVersion":1,"nativeSkia":cfg!(feature="native-skia"),
         "tableCellParagraphCommands":true,
         "tableCellNavigation":true,
         "tableCellTextNavigation":true,
@@ -883,8 +883,12 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
         "livePdfExport":cfg!(feature="native-skia"),
         "maxLivePdfPages":rhwp_core::native_host::runtime::MAX_LIVE_PDF_PAGES,
         "maxLivePdfBytes":rhwp_core::native_host::runtime::MAX_LIVE_PDF_BYTES,
-        "pixelFormat":"rgba8Premultiplied","colorSpace":"srgb"}),
-        )
+        "pixelFormat":"rgba8Premultiplied","colorSpace":"srgb"});
+        capabilities["insertEquation"] = true.into();
+        capabilities["maxEquationScriptBytes"] = MAX_EQUATION_SCRIPT_BYTES.into();
+        capabilities["minEquationFontSize"] = MIN_EQUATION_FONT_SIZE.into();
+        capabilities["maxEquationFontSize"] = MAX_EQUATION_FONT_SIZE.into();
+        Ok(capabilities)
     })
 }
 
