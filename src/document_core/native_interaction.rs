@@ -36,12 +36,41 @@ pub struct NativeTextPosition {
     pub cell_path: Vec<NativeCellPathEntry>,
 }
 
+impl NativeTextPosition {
+    pub(crate) fn leaf_paragraph(&self) -> u32 {
+        self.cell_path
+            .last()
+            .map_or(self.paragraph, |entry| entry.paragraph)
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    pub(crate) fn set_leaf_paragraph(&mut self, paragraph: u32) {
+        if let Some(entry) = self.cell_path.last_mut() {
+            entry.paragraph = paragraph;
+        } else {
+            self.paragraph = paragraph;
+        }
+    }
+}
+
 /// Anchor/focus order is preserved; geometry normalizes their document order.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct NativeTextSelection {
     pub anchor: NativeTextPosition,
     pub focus: NativeTextPosition,
+}
+
+impl NativeTextSelection {
+    pub(crate) fn ordered(&self) -> (&NativeTextPosition, &NativeTextPosition) {
+        let key =
+            |position: &NativeTextPosition| (position.leaf_paragraph(), position.scalar_offset);
+        if key(&self.anchor) <= key(&self.focus) {
+            (&self.anchor, &self.focus)
+        } else {
+            (&self.focus, &self.anchor)
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
@@ -140,13 +169,7 @@ impl DocumentCore {
         &self,
         position: &NativeTextPosition,
     ) -> Result<(), NativeInteractionError> {
-        let paragraph = self.native_text_paragraph(position)?;
-        if paragraph.controls.iter().any(Control::is_logical_inline) {
-            return Err(NativeInteractionError::Unsupported(
-                "inline-object affinity is not supported by scalar interaction positions",
-            ));
-        }
-        Ok(())
+        check_scalar_interaction(self.native_text_paragraph(position)?)
     }
 
     pub fn native_caret_rect(
@@ -199,30 +222,8 @@ impl DocumentCore {
         &self,
         selection: &NativeTextSelection,
     ) -> Result<Vec<NativeSelectionRect>, NativeInteractionError> {
-        let mut start = &selection.anchor;
-        let mut end = &selection.focus;
-        self.check_native_interaction_support(start)?;
-        self.check_native_interaction_support(end)?;
-        if !same_container(start, end) {
-            return Err(NativeInteractionError::Unsupported(
-                "selection across sections or cell containers is not supported",
-            ));
-        }
-        if position_order(start) > position_order(end) {
-            std::mem::swap(&mut start, &mut end);
-        }
-        // Intermediate paragraphs also need scalar-only geometry. Checking only
-        // the endpoints would silently reinterpret inline slots in the middle.
-        for paragraph in position_order(start).0..=position_order(end).0 {
-            let mut position = start.clone();
-            position.scalar_offset = 0;
-            if let Some(leaf) = position.cell_path.last_mut() {
-                leaf.paragraph = paragraph;
-            } else {
-                position.paragraph = paragraph;
-            }
-            self.check_native_interaction_support(&position)?;
-        }
+        self.check_native_selection_support(selection)?;
+        let (start, end) = selection.ordered();
         if start == end {
             return Ok(Vec::new());
         }
@@ -241,9 +242,9 @@ impl DocumentCore {
                 start.section as usize,
                 start.paragraph as usize,
                 &legacy_path_json(&start.cell_path),
-                position_order(start).0 as usize,
+                start.leaf_paragraph() as usize,
                 start.scalar_offset as usize,
-                position_order(end).0 as usize,
+                end.leaf_paragraph() as usize,
                 end.scalar_offset as usize,
                 None,
             )?
@@ -266,6 +267,34 @@ impl DocumentCore {
                 })
             })
             .collect()
+    }
+
+    pub(crate) fn check_native_selection_support(
+        &self,
+        selection: &NativeTextSelection,
+    ) -> Result<(), NativeInteractionError> {
+        let (start, end) = selection.ordered();
+        self.check_native_interaction_support(start)?;
+        if start == end {
+            return Ok(());
+        }
+        self.check_native_interaction_support(end)?;
+        if !same_container(start, end) {
+            return Err(NativeInteractionError::Unsupported(
+                "selection across sections or cell containers is not supported",
+            ));
+        }
+        if start.leaf_paragraph() != end.leaf_paragraph() {
+            // A logical object in an intermediate paragraph also changes the
+            // meaning of the scalar positions used for the selection geometry.
+            let paragraphs = self.native_text_container(start)?;
+            let first = start.leaf_paragraph() as usize + 1;
+            let last = end.leaf_paragraph() as usize;
+            for paragraph in &paragraphs[first..last] {
+                check_scalar_interaction(paragraph)?;
+            }
+        }
+        Ok(())
     }
 
     /// Move one visual line through the existing navigation implementation.
@@ -329,6 +358,13 @@ impl DocumentCore {
         self.resolve_native_text_paragraph(position, false)
     }
 
+    pub(crate) fn native_text_container(
+        &self,
+        position: &NativeTextPosition,
+    ) -> Result<&[Paragraph], NativeInteractionError> {
+        self.resolve_native_text_container(position, false)
+    }
+
     /// Selection and geometry can still read protected cells.
     #[cfg(not(target_arch = "wasm32"))]
     pub(crate) fn native_editable_text_paragraph<'a>(
@@ -343,25 +379,38 @@ impl DocumentCore {
         position: &NativeTextPosition,
         for_edit: bool,
     ) -> Result<&'a Paragraph, NativeInteractionError> {
+        let paragraph = self
+            .resolve_native_text_container(position, for_edit)?
+            .get(position.leaf_paragraph() as usize)
+            .ok_or_else(invalid_position)?;
+        if position.scalar_offset as usize > paragraph.text.chars().count() {
+            return Err(invalid_position());
+        }
+        Ok(paragraph)
+    }
+
+    fn resolve_native_text_container(
+        &self,
+        position: &NativeTextPosition,
+        for_edit: bool,
+    ) -> Result<&[Paragraph], NativeInteractionError> {
         if position.cell_path.len() > NATIVE_CELL_PATH_MAX_DEPTH {
             return Err(NativeInteractionError::InvalidInput(
                 "cell path exceeds depth limit",
             ));
         }
-        let invalid = || {
-            NativeInteractionError::InvalidPosition("text position is outside the document".into())
-        };
-        let mut paragraph = self
+        let mut paragraphs = &self
             .document
             .sections
             .get(position.section as usize)
-            .and_then(|section| section.paragraphs.get(position.paragraph as usize))
-            .ok_or_else(invalid)?;
+            .ok_or_else(invalid_position)?
+            .paragraphs;
+        let mut paragraph_index = position.paragraph;
         for entry in &position.cell_path {
-            let control = paragraph
-                .controls
-                .get(entry.control as usize)
-                .ok_or_else(invalid)?;
+            let control = paragraphs
+                .get(paragraph_index as usize)
+                .and_then(|paragraph| paragraph.controls.get(entry.control as usize))
+                .ok_or_else(invalid_position)?;
             let Control::Table(table) = control else {
                 return Err(NativeInteractionError::Unsupported(
                     "only table-cell paths are supported",
@@ -375,21 +424,16 @@ impl DocumentCore {
                     "table-caption paths are not supported by native text positions",
                 ));
             }
-            let cell = table.cells.get(cell_index).ok_or_else(invalid)?;
+            let cell = table.cells.get(cell_index).ok_or_else(invalid_position)?;
             if for_edit && (table.common.locked || cell.cell_protect()) {
                 return Err(NativeInteractionError::Unsupported(
                     "protected table cells cannot be edited",
                 ));
             }
-            paragraph = cell
-                .paragraphs
-                .get(entry.paragraph as usize)
-                .ok_or_else(invalid)?;
+            paragraphs = &cell.paragraphs;
+            paragraph_index = entry.paragraph;
         }
-        if position.scalar_offset as usize > paragraph.text.chars().count() {
-            return Err(invalid());
-        }
-        Ok(paragraph)
+        Ok(paragraphs)
     }
 
     fn native_validate_page(&self, page: u32) -> Result<(), NativeInteractionError> {
@@ -490,17 +534,20 @@ impl DocumentCore {
     }
 }
 
-fn position_order(position: &NativeTextPosition) -> (u32, u32) {
-    (
-        position
-            .cell_path
-            .last()
-            .map_or(position.paragraph, |entry| entry.paragraph),
-        position.scalar_offset,
-    )
+fn invalid_position() -> NativeInteractionError {
+    NativeInteractionError::InvalidPosition("text position is outside the document".into())
 }
 
-fn same_container(a: &NativeTextPosition, b: &NativeTextPosition) -> bool {
+fn check_scalar_interaction(paragraph: &Paragraph) -> Result<(), NativeInteractionError> {
+    if paragraph.controls.iter().any(Control::is_logical_inline) {
+        return Err(NativeInteractionError::Unsupported(
+            "inline-object affinity is not supported by scalar interaction positions",
+        ));
+    }
+    Ok(())
+}
+
+pub(crate) fn same_container(a: &NativeTextPosition, b: &NativeTextPosition) -> bool {
     a.section == b.section
         && match (a.cell_path.split_last(), b.cell_path.split_last()) {
             (None, None) => true,

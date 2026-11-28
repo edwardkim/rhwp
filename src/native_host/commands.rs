@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::document_core::native_interaction::{
-    legacy_cell_path, NativeCellPathEntry, NativeTextPosition, NativeTextSelection,
+    legacy_cell_path, same_container, NativeCellPathEntry, NativeTextPosition, NativeTextSelection,
     NativeVerticalDirection,
 };
 use crate::model::{paragraph::Paragraph, style::Alignment};
@@ -332,7 +332,7 @@ impl NativeEditor {
 
     fn formatting_paragraph(&self) -> Result<&Paragraph, NativeHostError> {
         let selection = self.selection();
-        if selection.anchor.paragraph != selection.focus.paragraph {
+        if selection.anchor.leaf_paragraph() != selection.focus.leaf_paragraph() {
             return Err(NativeHostError::Unsupported(
                 "formatting requires a selection within one paragraph".into(),
             ));
@@ -361,7 +361,7 @@ impl NativeEditor {
 
         let paragraph = self.formatting_paragraph()?;
         let doc_info = &self.session().document().document().doc_info;
-        let (from, to) = Self::ordered(selection);
+        let (from, to) = selection.ordered();
         let start = from.scalar_offset as usize;
         let end = to.scalar_offset as usize;
         if end > paragraph.char_offsets.len() {
@@ -432,7 +432,7 @@ impl NativeEditor {
             ));
         }
         let paragraph = self.formatting_paragraph()?;
-        let (start, end) = Self::ordered(self.selection());
+        let (start, end) = self.selection().ordered();
         let range = start.scalar_offset as usize..end.scalar_offset as usize;
         if range.is_empty() {
             return Err(NativeHostError::InvalidArgument(
@@ -528,12 +528,7 @@ impl NativeEditor {
         } else {
             focus.clone()
         };
-        if extend
-            && !anchor.cell_path.is_empty()
-            && (anchor.section != focus.section
-                || anchor.paragraph != focus.paragraph
-                || anchor.cell_path != focus.cell_path)
-        {
+        if extend && !anchor.cell_path.is_empty() && !same_container(&anchor, &focus) {
             return self.set_selection(revision, self.selection().clone());
         }
         self.set_selection(revision, NativeTextSelection { anchor, focus })
@@ -575,26 +570,30 @@ impl NativeEditor {
         backward: bool,
         extend: bool,
     ) -> Result<NativeTextPosition, NativeHostError> {
-        let (start, end) = Self::ordered(self.selection());
+        let (start, end) = self.selection().ordered();
         if !extend && start != end {
             return Ok(if backward { start } else { end }.clone());
         }
         let mut target = self.selection().focus.clone();
         let text = self.command_text(&target)?;
         let length = scalar_len(text)?;
-        if target.cell_path.is_empty() && backward && target.scalar_offset == 0 {
-            if target.paragraph > 0 {
-                target.paragraph -= 1;
+        let paragraph = target.leaf_paragraph();
+        if backward && target.scalar_offset == 0 {
+            if paragraph > 0 {
+                target.set_leaf_paragraph(paragraph - 1);
                 target.scalar_offset = scalar_len(self.command_text(&target)?)?;
             }
-        } else if target.cell_path.is_empty() && !backward && target.scalar_offset == length {
-            let count = self.session().document().document().sections[target.section as usize]
-                .paragraphs
+        } else if !backward && target.scalar_offset == length {
+            let count = self
+                .session()
+                .document()
+                .native_text_container(&target)?
                 .len();
-            if (target.paragraph as usize) + 1 < count {
-                target.paragraph = target.paragraph.checked_add(1).ok_or_else(|| {
+            if (paragraph as usize) + 1 < count {
+                let next = paragraph.checked_add(1).ok_or_else(|| {
                     NativeHostError::LimitExceeded("paragraph address range exhausted".into())
                 })?;
+                target.set_leaf_paragraph(next);
                 target.scalar_offset = 0;
             }
         } else {
@@ -649,7 +648,7 @@ impl NativeEditor {
         if !selection.focus.cell_path.is_empty() {
             return self.split_cell_selection(revision, selection);
         }
-        let (start, end) = Self::ordered(&selection);
+        let (start, end) = selection.ordered();
         let mut after = start.clone();
         after.paragraph = after.paragraph.checked_add(1).ok_or_else(|| {
             NativeHostError::LimitExceeded("paragraph address range exhausted".into())
@@ -763,16 +762,21 @@ impl NativeEditor {
             .take(end - start)
             .collect();
         let anchor = &selection.anchor;
-        let anchor_scalar = (anchor.paragraph == focus.paragraph
+        let anchor_scalar = (anchor.leaf_paragraph() == focus.leaf_paragraph()
             && (anchor.scalar_offset as usize) >= start
             && (anchor.scalar_offset as usize) <= end)
             .then(|| anchor.scalar_offset - start as u32);
-        let (from, to) = Self::ordered(selection);
+        let (from, to) = selection.ordered();
+        let paragraphs = core.native_text_container(from)?;
+        let first = from.leaf_paragraph() as usize;
+        let last = to.leaf_paragraph() as usize;
         let mut selected = String::new();
         let mut count = 0usize;
         let mut truncated = false;
-        'paragraphs: for index in from.paragraph..=to.paragraph {
-            if index > from.paragraph {
+        'paragraphs: for (index, paragraph) in
+            paragraphs.iter().enumerate().take(last + 1).skip(first)
+        {
+            if index > first {
                 if count == NATIVE_IME_CONTEXT_SCALARS {
                     truncated = true;
                     break;
@@ -780,24 +784,17 @@ impl NativeEditor {
                 selected.push('\n');
                 count += 1;
             }
-            // A validated cell selection stays in the single resolved leaf. Only
-            // body selections can span other paragraphs in the same section.
-            let text = if index == focus.paragraph {
-                &paragraph.text
-            } else {
-                &core.document().sections[from.section as usize].paragraphs[index as usize].text
-            };
-            let left = if index == from.paragraph {
+            let left = if index == first {
                 from.scalar_offset as usize
             } else {
                 0
             };
-            let right = if index == to.paragraph {
-                to.scalar_offset as usize
+            let count_in_paragraph = if index == last {
+                to.scalar_offset as usize - left
             } else {
-                text.chars().count()
+                usize::MAX
             };
-            for ch in text.chars().skip(left).take(right - left) {
+            for ch in paragraph.text.chars().skip(left).take(count_in_paragraph) {
                 if count == NATIVE_IME_CONTEXT_SCALARS {
                     truncated = true;
                     break 'paragraphs;

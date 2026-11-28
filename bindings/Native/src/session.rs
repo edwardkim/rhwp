@@ -852,6 +852,7 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
         "tableCellParagraphCommands":true,
         "tableCellNavigation":true,
         "tableCellTextNavigation":true,
+        "tableCellParagraphSelection":true,
         "basicTextFormatting":true,
         "selectionFormatting":true,
         "createTable":true,

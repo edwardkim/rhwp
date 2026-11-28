@@ -133,7 +133,7 @@ impl NativeEditor {
                 .as_deref()
                 .unwrap_or(&composition.original_text);
             check_text_bound(text)?;
-            let start = Self::ordered(&composition.replacement_range).0;
+            let start = composition.replacement_range.ordered().0;
             if !same_text_address(start, &context.position) {
                 return Err(invalid("composition is outside the IME paragraph"));
             }

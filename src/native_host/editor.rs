@@ -1,16 +1,13 @@
 //! Opt-in native editor state. The document engine itself remains history-free.
 //!
 //! Offsets are Unicode scalar indices. Plain-text replacement supports body
-//! ranges and a single paragraph of a table cell, including nested tables. Object-bearing
-//! paragraph mutations, inline-control affinity and tabs are rejected explicitly.
-//! Composition and explicit paragraph split/join also support editable cell
-//! paragraphs. The selection addresses one leaf paragraph at a time.
+//! ranges within one body section or table cell, including nested tables.
+//! Object-bearing paragraph mutations, inline-control affinity and tabs are
+//! rejected explicitly. Cell IME composition stays within one paragraph.
 
 use std::collections::VecDeque;
 
-use crate::document_core::native_interaction::{
-    legacy_cell_path, NativeTextPosition, NativeTextSelection,
-};
+use crate::document_core::native_interaction::{legacy_cell_path, NativeTextSelection};
 use crate::model::control::Control;
 use crate::DocumentCore;
 
@@ -238,8 +235,8 @@ impl NativeEditor {
     }
 
     /// Insert at a collapsed selection, delete with an empty string, or replace a
-    /// range. Body ranges may span one section. Cell ranges stay within one
-    /// paragraph. Newlines and tabs are outside this text replacement contract.
+    /// range within a body section or table cell. Newlines and tabs are outside
+    /// this text replacement contract.
     pub fn replace_selection(
         &mut self,
         expected_revision: u64,
@@ -261,14 +258,22 @@ impl NativeEditor {
         Self::validate_text(text)?;
         Self::validate_selection(&self.session.core, selection)?;
         let selection_after = Self::replacement_end(selection, text)?;
-        if self.selected_text(selection) == text {
+        let (start, end) = selection.ordered();
+        let joins_cell_paragraphs =
+            !start.cell_path.is_empty() && start.leaf_paragraph() != end.leaf_paragraph();
+        if !joins_cell_paragraphs && self.selected_text(selection) == text {
             self.selection = selection_after;
             return Ok(self.outcome(false, false));
         }
-        self.edit_transaction(expected_revision, |core| {
+        let edit = |core: &mut DocumentCore| {
             Self::apply_replacement(core, selection, text)?;
             Ok(selection_after)
-        })
+        };
+        if joins_cell_paragraphs {
+            self.edit_explicit_ranges_transaction(expected_revision, edit)
+        } else {
+            self.edit_transaction(expected_revision, edit)
+        }
     }
 
     pub(super) fn check_edit_ready(&self, expected_revision: u64) -> Result<(), NativeHostError> {
@@ -353,6 +358,11 @@ impl NativeEditor {
         self.require_no_composition()?;
         Self::validate_selection(&self.session.core, &self.selection)?;
         if !self.selection.focus.cell_path.is_empty() {
+            if self.selection.anchor.leaf_paragraph() != self.selection.focus.leaf_paragraph() {
+                return Err(NativeHostError::Unsupported(
+                    "cell composition requires one paragraph".into(),
+                ));
+            }
             Self::check_editable_text_span(&self.session.core, &self.selection)?;
         }
         self.check_snapshot_slots(2)?;
@@ -590,18 +600,9 @@ impl NativeEditor {
         selection: &NativeTextSelection,
     ) -> Result<(), NativeHostError> {
         if !selection.anchor.cell_path.is_empty() || !selection.focus.cell_path.is_empty() {
-            if selection.anchor.section != selection.focus.section
-                || selection.anchor.paragraph != selection.focus.paragraph
-                || selection.anchor.cell_path != selection.focus.cell_path
-            {
-                return Err(NativeHostError::Unsupported(
-                    "cell editing requires one paragraph of the same table cell".into(),
-                ));
-            }
-            for position in [&selection.anchor, &selection.focus] {
-                core.check_native_interaction_support(position)?;
-            }
-            return Ok(());
+            return core
+                .check_native_selection_support(selection)
+                .map_err(Into::into);
         }
         for position in [&selection.anchor, &selection.focus] {
             core.validate_native_text_position(position)
@@ -612,49 +613,43 @@ impl NativeEditor {
                 "cross-section text replacement is not supported".into(),
             ));
         }
-        let (start, end) = Self::ordered(selection);
-        for paragraph in start.paragraph..=end.paragraph {
-            core.check_native_interaction_support(&NativeTextPosition {
-                section: start.section,
-                paragraph,
-                scalar_offset: 0,
-                cell_path: Vec::new(),
-            })
-            .map_err(|error| NativeHostError::Unsupported(error.to_string()))?;
-        }
-        Ok(())
+        core.check_native_selection_support(selection)
+            .map_err(|error| NativeHostError::Unsupported(error.to_string()))
     }
 
     pub(super) fn check_editable_text_span(
         core: &DocumentCore,
         selection: &NativeTextSelection,
     ) -> Result<(), NativeHostError> {
-        let position = &selection.anchor;
-        if position.cell_path.is_empty() {
+        let (start, end) = selection.ordered();
+        if start.cell_path.is_empty() {
             return Self::check_body_text_span(core, selection);
         }
-        if !core
-            .native_editable_text_paragraph(position)?
-            .controls
-            .is_empty()
-        {
-            return Err(NativeHostError::Unsupported(
-                "cell text edits cannot include semantic controls".into(),
-            ));
+        let first = start.leaf_paragraph() as usize;
+        let last = end.leaf_paragraph() as usize;
+        // Resolve through the editable path to check every ancestor cell's
+        // protection before any mutation, including a join through the range.
+        let paragraph = core.native_editable_text_paragraph(start)?;
+        if first == last {
+            if !paragraph.controls.is_empty() {
+                return Err(NativeHostError::Unsupported(
+                    "cell text edits cannot include semantic controls".into(),
+                ));
+            }
+        } else {
+            let paragraphs = core.native_text_container(start)?;
+            if paragraphs[first..=last].iter().any(|paragraph| {
+                !paragraph.controls.is_empty()
+                    || !paragraph.field_ranges.is_empty()
+                    || !paragraph.orphan_field_ends.is_empty()
+            }) {
+                return Err(NativeHostError::Unsupported(
+                    "cell paragraph joins cannot include semantic controls or field boundaries"
+                        .into(),
+                ));
+            }
         }
         Ok(())
-    }
-
-    pub(super) fn ordered(
-        selection: &NativeTextSelection,
-    ) -> (&NativeTextPosition, &NativeTextPosition) {
-        if (selection.anchor.paragraph, selection.anchor.scalar_offset)
-            <= (selection.focus.paragraph, selection.focus.scalar_offset)
-        {
-            (&selection.anchor, &selection.focus)
-        } else {
-            (&selection.focus, &selection.anchor)
-        }
     }
 
     /// The scalar body-edit surface cannot preserve/export semantic controls
@@ -666,7 +661,7 @@ impl NativeEditor {
         core: &DocumentCore,
         selection: &NativeTextSelection,
     ) -> Result<(), NativeHostError> {
-        let (start, end) = Self::ordered(selection);
+        let (start, end) = selection.ordered();
         for paragraph in &core.document().sections[start.section as usize].paragraphs
             [start.paragraph as usize..=end.paragraph as usize]
         {
@@ -689,7 +684,7 @@ impl NativeEditor {
         selection: &NativeTextSelection,
         text: &str,
     ) -> Result<NativeTextSelection, NativeHostError> {
-        let (start, _) = Self::ordered(selection);
+        let (start, _) = selection.ordered();
         let length = u32::try_from(text.chars().count()).map_err(|_| {
             NativeHostError::LimitExceeded("input text exceeds the scalar address range".into())
         })?;
@@ -704,34 +699,35 @@ impl NativeEditor {
     }
 
     pub(super) fn selected_text(&self, selection: &NativeTextSelection) -> String {
-        let (start, end) = Self::ordered(selection);
-        if !start.cell_path.is_empty() {
-            return self
-                .session
-                .core
-                .native_text_paragraph(start)
-                .expect("validated cell paragraph")
-                .text
-                .chars()
-                .skip(start.scalar_offset as usize)
-                .take((end.scalar_offset - start.scalar_offset) as usize)
-                .collect();
-        }
-        let paragraphs = &self.session.core.document().sections[start.section as usize].paragraphs;
-        (start.paragraph..=end.paragraph)
-            .map(|paragraph| {
-                let text = &paragraphs[paragraph as usize].text;
-                let from = if paragraph == start.paragraph {
+        let (start, end) = selection.ordered();
+        let paragraphs = self
+            .session
+            .core
+            .native_text_container(start)
+            .expect("validated text container");
+        let first = start.leaf_paragraph() as usize;
+        let last = end.leaf_paragraph() as usize;
+        let selection_paragraphs = &paragraphs[first..=last];
+        selection_paragraphs
+            .iter()
+            .enumerate()
+            .map(|(index, paragraph)| {
+                let from = if index == 0 {
                     start.scalar_offset as usize
                 } else {
                     0
                 };
-                let to = if paragraph == end.paragraph {
-                    end.scalar_offset as usize
+                let count = if index + 1 == selection_paragraphs.len() {
+                    end.scalar_offset as usize - from
                 } else {
-                    text.chars().count()
+                    usize::MAX
                 };
-                text.chars().skip(from).take(to - from).collect::<String>()
+                paragraph
+                    .text
+                    .chars()
+                    .skip(from)
+                    .take(count)
+                    .collect::<String>()
             })
             .collect::<Vec<_>>()
             .join("\n")
@@ -745,18 +741,36 @@ impl NativeEditor {
         // Also covers IME previews and command edit ranges distinct from the
         // editor's current selection. This check precedes all core mutations.
         Self::check_editable_text_span(core, selection)?;
-        let (start, end) = Self::ordered(selection);
+        let (start, end) = selection.ordered();
         if !start.cell_path.is_empty() {
             let path = legacy_cell_path(&start.cell_path);
-            core.replace_text_in_cell_by_path(
-                start.section as usize,
-                start.paragraph as usize,
-                &path,
-                start.scalar_offset as usize,
-                (end.scalar_offset - start.scalar_offset) as usize,
-                text,
-                false,
-            )?;
+            let section = start.section as usize;
+            let paragraph = start.paragraph as usize;
+            let offset = start.scalar_offset as usize;
+            if start.leaf_paragraph() == end.leaf_paragraph() {
+                core.replace_text_in_cell_by_path(
+                    section,
+                    paragraph,
+                    &path,
+                    offset,
+                    (end.scalar_offset - start.scalar_offset) as usize,
+                    text,
+                    false,
+                )?;
+            } else {
+                core.delete_range_in_cell_by_path(
+                    section,
+                    paragraph,
+                    &path,
+                    start.leaf_paragraph() as usize,
+                    offset,
+                    end.leaf_paragraph() as usize,
+                    end.scalar_offset as usize,
+                )?;
+                if !text.is_empty() {
+                    core.insert_text_in_cell_by_path(section, paragraph, &path, offset, text)?;
+                }
+            }
             return Ok(());
         }
         if start.paragraph == end.paragraph

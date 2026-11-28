@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Exercise nested cell movement, deletion and paragraph commands on the C ABI."""
+"""Exercise nested cell movement, selection and paragraph commands on the C ABI."""
 
 import argparse
 from pathlib import Path
@@ -60,7 +60,7 @@ def run(library):
 
         def accepted(op, **payload):
             result = call(worker, {"op": op, "target": target, **payload})
-            if "outcome" in result:
+            if result.get("outcome") is not None:
                 target["revision"] = result["outcome"]["revision"]
             return result
 
@@ -129,6 +129,73 @@ def run(library):
         vertical = command("moveDown", extendSelection=True, preferredX=None)
         assert vertical["outcome"]["selection"]["focus"]["cellPath"] == point(0)["cellPath"]
         assert vertical["preferredX"] >= 0 and not vertical["outcome"]["documentChanged"]
+
+        assert capabilities["tableCellParagraphSelection"]
+        accepted("setSelection", selection=caret(0, 4))
+        command("splitParagraph")
+        original_split = contents(worker, target)
+        revision = target["revision"]
+        boundary = command("moveLeft", extendSelection=True)["outcome"]
+        assert boundary["selection"] == {"anchor": point(1), "focus": point(0, 4)}
+        assert command("moveRight")["outcome"]["selection"] == caret(1)
+        assert command("moveLeft")["outcome"]["selection"] == caret(0, 4)
+        assert command("moveRight", extendSelection=True)["outcome"]["selection"] == {
+            "anchor": point(0, 4), "focus": point(1),
+        }
+        accepted("setSelection", selection=caret(0, 1))
+        extended = command("moveDown", extendSelection=True)["outcome"]["selection"]
+        assert extended["anchor"] == point(0, 1)
+        assert extended["focus"]["cellPath"] == point(1)["cellPath"], extended
+        assert target["revision"] == revision
+
+        reverse = {"anchor": point(1, 1), "focus": point(0, 1)}
+        accepted("setSelection", selection=reverse)
+        rectangles = accepted("selectionRects", selection=reverse)["rects"]
+        assert len(rectangles) == 2 and all(rect["bounds"]["width"] > 0 for rect in rectangles)
+        snapshot = accepted("accessibility", request={
+            "geometry": True,
+            "range": {"section": 0, "startParagraph": 1, "endParagraph": 2},
+        })["snapshot"]
+        assert snapshot["selection"] == reverse
+        assert snapshot["selectionGeometry"]["rectangles"] == rectangles
+        assert accepted("copySelection")["payload"] == {"plainText": "👩‍💻\n다", "html": None}
+        surrounding = accepted("imeContext")["context"]
+        assert surrounding["anchorScalar"] is None and surrounding["selectedText"] == "👩‍💻\n다"
+
+        neighbor = point(0)
+        neighbor["cellPath"][-1]["cell"] = 4
+        rejected = [
+            {"op": "setSelection", "selection": {"anchor": point(0), "focus": neighbor}},
+            {"op": "beginComposition"},
+            {"op": "imeEditContext"},
+            {"op": "executeCommand", "command": {"command": "formatCharacters", "bold": True}},
+            {"op": "executeCommand", "command": {"command": "setParagraphAlignment", "alignment": "left"}},
+            {"op": "executeCommand", "command": {"command": "splitParagraph"}},
+        ]
+        for operation in rejected:
+            result = worker.wait(worker.submit({"target": target, **operation}))
+            assert not result["ok"] and result["code"] == "unsupported", (operation, result)
+        current = call(worker, {"op": "info"})["info"]
+        assert current["revision"] == revision and current["selection"] == reverse
+        assert contents(worker, target) == original_split
+
+        cut = accepted("cutSelection")
+        assert cut["payload"]["plainText"] == "👩‍💻\n다"
+        assert cut["outcome"]["revision"] == revision + 1
+        assert cut["outcome"]["selection"] == caret(0, 1)
+        assert accepted("imeContext")["context"]["text"] == "가"
+        assert accepted("undo")["outcome"]["selection"] == reverse
+        assert contents(worker, target) == original_split
+        assert accepted("redo")["outcome"]["selection"] == caret(0, 1)
+        assert accepted("undo")["outcome"]["selection"] == reverse
+        replaced = accepted("replace", text="😀")["outcome"]
+        assert replaced["selection"] == caret(0, 2)
+        expected = original_split[:split_index] + [
+            ("tableCellParagraph", point(0), point(0, 2), "가😀"),
+        ] + original_split[split_index + 2:]
+        assert contents(worker, target) == expected
+        check_split_round_trips(library, worker, target, replaced["selection"], expected)
+        print("PASS: nested cell selection, Unicode clipboard, edit guards, undo/redo and round trips")
 
 
 if __name__ == "__main__":
