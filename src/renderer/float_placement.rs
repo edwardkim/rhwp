@@ -3697,8 +3697,12 @@ pub(crate) fn stored_empty_control_table_frame(
         .count()
         == 1
         && host.controls.iter().all(|control| {
-            matches!(control, Control::Table(_) | Control::SectionDef(_))
-                || matches!(control, Control::ColumnDef(column) if column.column_count == 1)
+            matches!(
+                control,
+                Control::Table(_) | Control::SectionDef(_) | Control::PageNumberPos(_)
+            ) || matches!(control, Control::ColumnDef(column) if column.column_count == 1)
+                || matches!(control, Control::NewNumber(number)
+                    if number.number_type == crate::model::control::AutoNumberType::Page)
         });
     if !host.text.trim().is_empty()
         || !single_table_host
