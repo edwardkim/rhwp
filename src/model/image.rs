@@ -202,6 +202,116 @@ pub(crate) fn picture_soft_edge_radius(extra: &[u8]) -> Option<f64> {
     (radius.is_finite() && radius >= 0.0).then_some(radius)
 }
 
+/// Parameters of an unscaled outer picture shadow, in document units.
+#[derive(Debug, Clone, Copy)]
+pub struct PictureOuterShadow {
+    pub opacity: f64,
+    pub radius_hu: f64,
+    pub offset_hu: (f64, f64),
+    pub rgb: [u8; 3],
+}
+
+impl PictureOuterShadow {
+    fn new(
+        transparency: f64,
+        radius_hu: f64,
+        direction: f64,
+        distance_hu: f64,
+        rgb: [u8; 3],
+    ) -> Option<Self> {
+        if !(0.0..1.0).contains(&transparency)
+            || !radius_hu.is_finite()
+            || radius_hu < 0.0
+            || !direction.is_finite()
+            || !distance_hu.is_finite()
+            || distance_hu < 0.0
+        {
+            return None;
+        }
+        let (sin, cos) = direction.rem_euclid(360.0).to_radians().sin_cos();
+        Some(Self {
+            opacity: 1.0 - transparency,
+            radius_hu,
+            offset_hu: (distance_hu * cos, distance_hu * sin),
+            rgb,
+        })
+    }
+
+    fn from_hwp(extra: &[u8]) -> Option<Self> {
+        let word = |offset| {
+            extra
+                .get(offset..offset + 4)
+                .and_then(|bytes| bytes.try_into().ok().map(u32::from_le_bytes))
+        };
+        let value = |offset| word(offset).map(|bits| f64::from(f32::from_bits(bits)));
+        // HWP5 tables 108, 109 and 113. The shadow is the first effect.
+        // Preserve the raw record and accept an unscaled, unskewed RGB shadow.
+        let flags = word(5)?;
+        if flags & 1 == 0
+            || flags & !0x0f != 0
+            || word(9)? != 0
+            || value(33)? != 0.0
+            || value(37)? != 0.0
+            || value(41)? != 1.0
+            || value(45)? != 1.0
+            || word(53)? != 0
+            || word(61)? != 0
+        {
+            return None;
+        }
+        let [_, red, green, blue] = word(57)?.to_be_bytes();
+        Self::new(
+            value(13)?,
+            value(17)?,
+            value(21)?,
+            value(25)?,
+            [red, green, blue],
+        )
+    }
+
+    fn from_hwpx(shadow: &PictureShadow) -> Option<Self> {
+        let exactly = |point: Option<&EffectPoint>, expected: f64| {
+            point.is_none_or(|point| {
+                [&point.x, &point.y].into_iter().all(|axis| {
+                    axis.as_deref()
+                        .is_none_or(|axis| axis.parse::<f64>() == Ok(expected))
+                })
+            })
+        };
+        if shadow.style.as_deref() != Some("OUTSIDE")
+            || !exactly(shadow.skew.as_ref(), 0.0)
+            || !exactly(shadow.scale.as_ref(), 1.0)
+        {
+            return None;
+        }
+        let color = shadow.color.as_ref()?;
+        if color.color_type.as_deref() != Some("RGB") {
+            return None;
+        }
+        let color = color.rgb.as_ref()?;
+        Self::new(
+            shadow.alpha.as_ref()?.parse().ok()?,
+            shadow.radius.as_ref()?.parse().ok()?,
+            shadow.direction.as_ref()?.parse().ok()?,
+            shadow.distance.as_ref()?.parse().ok()?,
+            [
+                color.r.as_ref()?.parse().ok()?,
+                color.g.as_ref()?.parse().ok()?,
+                color.b.as_ref()?.parse().ok()?,
+            ],
+        )
+    }
+}
+
+impl Picture {
+    pub(crate) fn outer_shadow(&self) -> Option<PictureOuterShadow> {
+        match &self.effects.shadow {
+            Some(shadow) => PictureOuterShadow::from_hwpx(shadow),
+            None => PictureOuterShadow::from_hwp(&self.raw_picture_extra),
+        }
+    }
+}
+
 /// HWPX 그림 그림자 효과 (`hp:shadow`).
 #[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct PictureShadow {

@@ -1346,6 +1346,7 @@ impl LayoutEngine {
                                     crop,
                                     original_size_hu,
                                     soft_edge_radius_hu: pic.effects.soft_edge_radius,
+                                    outer_shadow: pic.outer_shadow(),
                                     effect: pic.image_attr.effect,
                                     brightness: pic.image_attr.brightness,
                                     contrast: pic.image_attr.contrast,

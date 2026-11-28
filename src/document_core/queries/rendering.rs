@@ -6874,10 +6874,19 @@ impl DocumentCore {
             )?;
         }
         self.render_normalization.sections = out;
+        let rendered_sections = self
+            .render_normalization
+            .sections
+            .iter()
+            .filter_map(|section| section.as_ref())
+            .map(|section| section.paragraphs.as_slice());
         let mut overlay =
             crate::renderer::render_normalization::RenderNormalizationOverlay::from_document_reusing_with_storage(
                 &self.document,
-                &self.render_normalization.overlay,storage)?;
+                &self.render_normalization.overlay,
+                rendered_sections,
+                storage,
+            )?;
         for (source, rendered) in self
             .document
             .sections

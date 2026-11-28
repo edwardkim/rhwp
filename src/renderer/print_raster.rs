@@ -65,6 +65,18 @@ impl PrintRasterFrame {
         self.values
     }
 
+    /// 원본 그림의 연속 행을 같은 인쇄 장치 원점에서 채운다.
+    pub(crate) fn vertical_band(self, first: u32, end: u32, rows: u32) -> Option<Self> {
+        if first >= end || end > rows {
+            return None;
+        }
+        let [pw, ph, l, top, width, height, r, bottom] = self.values;
+        let pos = |row| top + (height * (f64::from(row) / f64::from(rows))).round();
+        let start = pos(first);
+        let end = pos(end);
+        Self::from_values([pw, ph, l, start, width, end - start, r, bottom.min(end)])
+    }
+
     // 기존 rhWP sampling 선언 다음에 독립 APP15를 둔다. decoder는 이를 무시한다.
     pub(crate) fn attach(self, bytes: &mut Vec<u8>) {
         if !bytes.starts_with(&[0xff, 0xd8]) {

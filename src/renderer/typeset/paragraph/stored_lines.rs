@@ -24,6 +24,128 @@ pub(in crate::renderer::typeset) fn stored_page_boundary_invalidated_at_current_
         )
 }
 
+/// A blank at an automatic reset may fit at the end of a shortened body frame.
+/// The blank still consumes its entire stored advance. The following paragraph
+/// keeps the new source page and enters it with its own stored origin.
+pub(in crate::renderer::typeset) fn stored_blank_prefix_fits_reduced_frame(
+    st: &super::super::TypesetState,
+    paragraphs: &[Paragraph],
+    index: usize,
+    styles: &ResolvedStyleSet,
+) -> bool {
+    use crate::model::paragraph::ColumnBreakType;
+    use crate::renderer::pagination::PageItem;
+
+    let Some((before, paragraph)) = index
+        .checked_sub(1)
+        .and_then(|previous| paragraphs.get(previous).zip(paragraphs.get(index)))
+    else {
+        return false;
+    };
+    let [line] = paragraph.line_segs.as_slice() else {
+        return false;
+    };
+    let advance = line.line_height.saturating_add(line.line_spacing);
+    if st.col_count != 1
+        || !st.profile.hwp5_stored_pagination_layout()
+        || st.profile.session_edited()
+        || st.profile.hwp3_layout()
+        || st.hide_empty_line
+        || st.current_items.is_empty()
+        || st.current_endnote_flow
+        || st.current_start_height != 0.0
+        || st.wrap_around_cs >= 0
+        || paragraph.column_type != ColumnBreakType::None
+        || paragraph.stored_text_partition_is_dirty()
+        || paragraph.cell_format_vpos_dirty
+        || !paragraph.text.is_empty()
+        || !paragraph.controls.is_empty()
+        || line.vertical_pos != 0
+        || line.is_first_line_of_page()
+        || line.is_first_line_of_column()
+        || super::is_synthetic_line_seg(line)
+        || line.line_height <= 0
+        || line.line_spacing < 0
+        || styles
+            .para_styles
+            .get(paragraph.para_shape_id as usize)
+            .is_none_or(|style| {
+                style.page_break_before || style.spacing_before != 0.0 || style.spacing_after != 0.0
+            })
+        || !paragraphs.get(index + 1).is_some_and(|next| {
+            next.column_type == ColumnBreakType::None
+                && next.line_segs.first().is_some_and(|next_line| {
+                    next_line.vertical_pos == advance && !super::is_synthetic_line_seg(next_line)
+                })
+        })
+    {
+        return false;
+    }
+
+    let dpi = st.layout.dpi;
+    let needed = hwpunit_to_px(advance, dpi);
+    let occupied = st
+        .visible_float_exclusions
+        .iter()
+        .map(|region| region.bottom)
+        .fold(st.current_height, f64::max);
+    let capacity = st.available_height();
+    if occupied + needed > capacity {
+        return false;
+    }
+    // A retained source origin on the preceding owner proves a projection in
+    // this frame. A certified positive opening also leaves source space behind
+    // when the preceding paragraph has already been placed on the earlier page.
+    let shifted = |p: &Paragraph| {
+        p.layout_stored_first_origin
+            .zip(p.line_segs.first())
+            .map_or(0, |(original, first)| {
+                original.saturating_sub(first.vertical_pos)
+            })
+    };
+    let removed = shifted(before);
+    if removed > 0 && occupied + hwpunit_to_px(removed, dpi) + needed > capacity {
+        return true;
+    }
+    let Some(PageItem::FullParagraph {
+        para_index: opening,
+    }) = st.current_items.first()
+    else {
+        return false;
+    };
+    let Some((preceding_index, first)) = opening
+        .checked_sub(1)
+        .zip(paragraphs.get(*opening).and_then(|p| p.line_segs.first()))
+    else {
+        return false;
+    };
+    if first.vertical_pos <= 0
+        || super::is_synthetic_line_seg(first)
+        || !st.pages.iter().rev().nth(1).is_some_and(|page| {
+            page.section_index == st.section_index
+                && page.column_contents.last().is_some_and(|column| {
+                    matches!(column.items.last(), Some(PageItem::FullParagraph { para_index })
+                        if *para_index == preceding_index)
+                })
+        })
+    {
+        return false;
+    }
+    let preceding = &paragraphs[preceding_index];
+    let preceding_opening_blank = preceding.text.is_empty()
+        && preceding.controls.is_empty()
+        && matches!(preceding.line_segs.as_slice(), [previous]
+            if previous.vertical_pos == 0
+                && previous.line_height.saturating_add(previous.line_spacing) == first.vertical_pos);
+    if shifted(preceding) <= 0 && !preceding_opening_blank {
+        return false;
+    }
+    stored_tail_end_and_advance_hu(before).is_some_and(|(source_end, _)| {
+        let original_end = occupied + hwpunit_to_px(first.vertical_pos, dpi);
+        original_end.max(hwpunit_to_px(source_end, dpi)) + needed > capacity
+    })
+}
+
 /// 현재 실제 페이지가 저장 프레임의 중간부터 시작하는지 실제 앞뒤 소유로 확인한다.
 /// 저장 prefix가 이전 실제 페이지에서 소비됐으면 다음 자동 reset도 재배분 대상이다.
 #[derive(Clone, Copy)]

@@ -255,6 +255,53 @@ impl TypesetState {
         (pen + 0.5 < self.data.square_band_bottom).then_some(pen)
     }
 
+    /// 저장 줄이 확정한 다음 문단의 시작을 실제 흐름과 그리기에 게시한다.
+    pub(in crate::renderer::typeset) fn place_stored_overlay_guide_successor<
+        S: crate::storage::Storage,
+    >(
+        &mut self,
+        paragraphs: &[Paragraph],
+        styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+        index: usize,
+        dpi: f64,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        use crate::renderer::pagination::PageItem;
+        let Some(PageItem::PartialTable {
+            para_index: anchor,
+            control_index,
+            is_continuation: true,
+            ..
+        }) = self.current_items.first()
+        else {
+            return Ok(());
+        };
+        let (anchor, control_index) = (*anchor, *control_index);
+        if !self.current_items.iter().skip(1).all(|item| {
+            matches!(item, PageItem::FullParagraph { para_index }
+                if *para_index > anchor && *para_index < index &&
+                    paragraphs.get(*para_index).is_some_and(|p| p.controls.is_empty()
+                        && p.text.chars().all(char::is_whitespace)))
+        }) || !self.pages.iter().rev().nth(1).is_some_and(|previous| {
+            previous.column_contents.iter().flat_map(|column| &column.items).any(|item| {
+                matches!(item, PageItem::PartialTable { para_index, control_index: owner, is_continuation: false, .. }
+                    if *para_index == anchor && *owner == control_index)
+            })
+        }) {
+            return Ok(());
+        }
+        let origin = crate::renderer::float_placement::ParagraphFloatPlacement::stored_overlay_guide_successor_origin(
+            paragraphs, anchor, index, self.layout.body_area.height, styles, dpi,
+        );
+        if let Some(origin) = origin
+            .filter(|origin| *origin > self.current_height && *origin < self.available_height())
+        {
+            storage.insert_map(&mut self.data.page_band_flow_starts, index, origin)?;
+            self.align_flow_to(origin);
+        }
+        Ok(())
+    }
+
     /// 밴드 안 차선의 펜에서 문단을 시작한다. 배치도 같은 시작을 소비한다.
     pub(super) fn start_paragraph_at_band_pen(&mut self, para_idx: usize, pen: f64) {
         self.data.current_height = pen;

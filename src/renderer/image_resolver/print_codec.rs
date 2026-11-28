@@ -86,7 +86,7 @@ pub(crate) fn print_device_image_payload(
     // 묶음의 원본 그림은 자식 창이 아니라 전체 자원을 Print에 싣는 독립 계약이다.
     // 묶음 재생의 clip·행렬은 기존 경로를 보존한다.
     if !in_shape_group {
-        if let Some(payload) = super::print_bitmap_window::payload(image, width_points) {
+        if let Some(payload) = super::print_bitmap_window::payload(image, width_points, None) {
             return Some(payload);
         }
     }

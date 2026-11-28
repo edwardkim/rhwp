@@ -10,9 +10,12 @@ use crate::renderer::render_tree::ImageNode;
 
 /// 창의 정수 경계와 출력 크기는 각각 원본 좌표와 창의 길이에서 구한다.
 /// 재표본화 필터는 실제 원본 안에 있는 창 바깥 픽셀도 소비한다.
-pub(super) fn payload(image: &ImageNode, width_points: f64) -> Option<ResolvedImagePayload> {
-    if !image.hancom2024_print_bitmap
-        || image.effect != ImageEffect::RealPic
+pub(crate) fn payload(
+    image: &ImageNode,
+    width_points: f64,
+    print_png_rgb555: Option<bool>,
+) -> Option<ResolvedImagePayload> {
+    if image.effect != ImageEffect::RealPic
         || image.brightness != 0
         || image.contrast != 0
         || image.opacity != 1.0
@@ -28,8 +31,10 @@ pub(super) fn payload(image: &ImageNode, width_points: f64) -> Option<ResolvedIm
     if super::png_sampling::pdf_source(source) {
         return None;
     }
+    let print_2024 = image.hancom2024_print_bitmap;
+    let rgb555 = print_2024 || print_png_rgb555.unwrap_or(true);
     let format = match detect_image_mime_type(source) {
-        "image/bmp" => image::ImageFormat::Bmp,
+        "image/bmp" if print_2024 => image::ImageFormat::Bmp,
         "image/png" => image::ImageFormat::Png,
         _ => return None,
     };
@@ -80,24 +85,41 @@ pub(super) fn payload(image: &ImageNode, width_points: f64) -> Option<ResolvedIm
         requested
     };
     let data = memoized(
-        Conversion::Hancom2024ResampledBitmapWindow {
+        Conversion::PrintResampledBitmapWindow {
             bounds,
             width,
             height,
             quality,
+            print_2024,
+            rgb555,
         },
         source,
         || {
             let rgba = super::decode_image_with_format_limited(source, format)?.to_rgba8();
-            let resized = print_prefilter::resize_opaque_window(&rgba, bounds, (width, height))?;
-            // 재표본화한 창은 원본 팔레트에 들어가는 그림도 공통 RGB555
-            // 표면을 거친다. 분리하지 않은 원본색의 팔레트 판정은 유지한다.
-            print_alpha::encode_planes(resized, quality, |channel, _| channel)
+            let mut resized =
+                print_prefilter::resize_opaque_window(&rgba, bounds, (width, height))?;
+            if print_2024 {
+                return print_alpha::encode_planes(resized, quality, |channel, _| channel);
+            }
+            // 한컴 2020의 잘린 불투명 PNG는 재표본화한 장치 창을 JPEG로 보낸다.
+            if rgb555 {
+                super::print_rgb555::quantize(resized.as_mut(), width, height)?;
+            }
+            let mut data = print_codec::encode_rgb(
+                image::DynamicImage::ImageRgba8(resized).into_rgb8(),
+                quality,
+            )?;
+            super::png_sampling::mark_print_jpeg(&mut data, rgb555);
+            Some(data)
         },
     )?;
     Some(ResolvedImagePayload {
         data,
-        mime: "image/png",
+        mime: if print_2024 {
+            "image/png"
+        } else {
+            "image/jpeg"
+        },
         kind: ResolvedImageKind::OutputDeviceWindow,
         suppress_effects: false,
     })
