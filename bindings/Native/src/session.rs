@@ -880,7 +880,6 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
         "tableCellParagraphCommands":true,
         "tableCellNavigation":true,
         "tableCellTextNavigation":true,
-        "textUnitSelection":true,
         "basicTextFormatting":true,
         "selectionFormatting":true,
         "createTable":true,
@@ -912,6 +911,7 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
         capabilities["maxEquationFontSize"] = MAX_EQUATION_FONT_SIZE.into();
         capabilities["characterFontColorFormatting"] = true.into();
         capabilities["systemFontFamilies"] = cfg!(feature = "native-skia").into();
+        capabilities["textUnitSelection"] = true.into();
         Ok(capabilities)
     })
 }
