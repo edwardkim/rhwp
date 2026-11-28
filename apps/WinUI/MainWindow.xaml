@@ -67,10 +67,10 @@
                     </MenuFlyoutItem>
                 </MenuBarItem>
                 <MenuBarItem Title="보기" AccessKey="V" AutomationProperties.AutomationId="ViewMenu">
-                    <MenuFlyoutItem Text="이전 쪽" Icon="Back" Click="OnPreviousClicked"
-                                    IsEnabled="{x:Bind PreviousButton.IsEnabled, Mode=OneWay}" />
-                    <MenuFlyoutItem Text="다음 쪽" Icon="Forward" Click="OnNextClicked"
-                                    IsEnabled="{x:Bind NextButton.IsEnabled, Mode=OneWay}" />
+                    <MenuFlyoutItem x:Name="PreviousPageMenuItem" Text="이전 쪽" Icon="Back"
+                                    Click="OnPreviousClicked" IsEnabled="False" />
+                    <MenuFlyoutItem x:Name="NextPageMenuItem" Text="다음 쪽" Icon="Forward"
+                                    Click="OnNextClicked" IsEnabled="False" />
                     <MenuFlyoutSeparator />
                     <MenuFlyoutItem Text="확대" Icon="ZoomIn" Click="OnZoomInClicked"
                                     IsEnabled="{x:Bind ZoomInButton.IsEnabled, Mode=OneWay}" />
@@ -112,11 +112,6 @@
                         <KeyboardAccelerator Key="Y" Modifiers="Control" />
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
-                <AppBarSeparator />
-                <AppBarButton x:Name="PreviousButton" Label="이전 쪽" Icon="Back" LabelPosition="Collapsed"
-                              Click="OnPreviousClicked" IsEnabled="False" />
-                <AppBarButton x:Name="NextButton" Label="다음 쪽" Icon="Forward" LabelPosition="Collapsed"
-                              Click="OnNextClicked" IsEnabled="False" />
                 <AppBarSeparator />
                 <AppBarButton x:Name="ZoomOutButton" Label="축소" Icon="ZoomOut" LabelPosition="Collapsed"
                               Click="OnZoomOutClicked" IsEnabled="False" />

@@ -326,8 +326,8 @@ public sealed partial class MainWindow : Window
             ? !export.IsCancellationRequested
             : available && page is not null && pdfLimits is not null;
         CloseButton.IsEnabled = available && fileName is not null;
-        PreviousButton.IsEnabled = available && page is { Page: > 0 };
-        NextButton.IsEnabled = available && page is PageInfo current && current.Page + 1 < current.PageCount;
+        PreviousPageMenuItem.IsEnabled = available && page is { Page: > 0 };
+        NextPageMenuItem.IsEnabled = available && page is PageInfo current && current.Page + 1 < current.PageCount;
         ZoomOutButton.IsEnabled = available && page is not null && zoom > MinZoom;
         ZoomInButton.IsEnabled = available && page is not null && zoom < MaxZoom;
         UndoButton.IsEnabled = available && page is not null && editorInfo?.CanUndo == true;
