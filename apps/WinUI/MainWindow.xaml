@@ -28,6 +28,8 @@
             <KeyboardAccelerator Key="Number0" Modifiers="Control" Invoked="OnZoomAcceleratorInvoked" />
             <KeyboardAccelerator Key="B" Modifiers="Control" Invoked="OnBoldAcceleratorInvoked" />
             <KeyboardAccelerator Key="P" Modifiers="Control" Invoked="OnPrintAcceleratorInvoked" />
+            <KeyboardAccelerator Key="I" Modifiers="Control" Invoked="OnCharacterDecorationAcceleratorInvoked" />
+            <KeyboardAccelerator Key="U" Modifiers="Control" Invoked="OnCharacterDecorationAcceleratorInvoked" />
         </Grid.KeyboardAccelerators>
 
         <Border Grid.Row="2" Grid.RowSpan="2" IsHitTestVisible="False"
@@ -248,6 +250,24 @@
                                     </MenuFlyout>
                                 </SplitButton.Flyout>
                             </SplitButton>
+                            <Button x:Name="ApplyItalicButton" Style="{StaticResource ToolbarIconButtonStyle}"
+                                    Tag="Italic" Click="OnCharacterDecorationClicked" Visibility="Collapsed" IsEnabled="False"
+                                    ToolTipService.ToolTip="기울임꼴 (Ctrl+I)" AutomationProperties.Name="기울임꼴 전환"
+                                    AutomationProperties.AutomationId="ApplyItalic">
+                                <SymbolIcon Symbol="Italic" />
+                            </Button>
+                            <Button x:Name="ApplyUnderlineButton" Style="{StaticResource ToolbarIconButtonStyle}"
+                                    Tag="Underline" Click="OnCharacterDecorationClicked" Visibility="Collapsed" IsEnabled="False"
+                                    ToolTipService.ToolTip="밑줄 (Ctrl+U)" AutomationProperties.Name="밑줄 전환"
+                                    AutomationProperties.AutomationId="ApplyUnderline">
+                                <SymbolIcon Symbol="Underline" />
+                            </Button>
+                            <Button x:Name="ApplyStrikethroughButton" Style="{StaticResource ToolbarIconButtonStyle}"
+                                    Tag="Strikethrough" Click="OnCharacterDecorationClicked" Visibility="Collapsed" IsEnabled="False"
+                                    ToolTipService.ToolTip="취소선" AutomationProperties.Name="취소선 전환"
+                                    AutomationProperties.AutomationId="ApplyStrikethrough">
+                                <TextBlock Text="S" TextDecorations="Strikethrough" FontSize="16" />
+                            </Button>
                             <TextBox x:Name="FormattingFontSize" Width="62" Height="32" MinWidth="0" MaxLength="7"
                                      VerticalAlignment="Center" Padding="8,4"
                                      PlaceholderText="pt" InputScope="Number" IsEnabled="False"
@@ -265,6 +285,12 @@
                                     ToolTipService.ToolTip="글자색" AutomationProperties.Name="글자색"
                                     AutomationProperties.AutomationId="FormattingTextColor">
                                 <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE8D3;" FontSize="16" />
+                            </Button>
+                            <Button x:Name="FormattingHighlightButton" Style="{StaticResource ToolbarIconButtonStyle}"
+                                    Click="OnFormattingHighlightClicked" Visibility="Collapsed" IsEnabled="False"
+                                    ToolTipService.ToolTip="형광펜" AutomationProperties.Name="형광펜"
+                                    AutomationProperties.AutomationId="FormattingHighlight">
+                                <PathIcon Data="M 1,16 H 8 V 14 H 1 Z M 2,13 L 3,10 L 6,7 L 10,11 L 7,14 H 2 Z M 7,6 L 12,1 L 16,5 L 11,10 Z" />
                             </Button>
                             <Rectangle Width="1" Height="18" Margin="3,0" VerticalAlignment="Center" IsHitTestVisible="False"
                                        Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
