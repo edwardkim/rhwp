@@ -2,7 +2,7 @@
 //!
 //! Left/right are logical text order, not visual bidi navigation. Home/End mean
 //! paragraph boundaries; Up/Down consume the existing core visual-line query.
-//! SelectAll selects the current body section, never cells or other sections.
+//! SelectAll selects the current body section or the current cell paragraph.
 //! Hosts must commit/cancel composition before issuing these commands.
 
 use std::ops::Range;
@@ -10,12 +10,22 @@ use std::ops::Range;
 use serde::{Deserialize, Serialize};
 use unicode_segmentation::UnicodeSegmentation;
 
+use crate::document_core::helpers::{color_ref_to_css, css_color_to_bgr};
 use crate::document_core::native_interaction::{
-    legacy_cell_path, NativeTextPosition, NativeTextSelection, NativeVerticalDirection,
+    legacy_cell_path, same_container, NativeCellPathEntry, NativeTextPosition, NativeTextSelection,
+    NativeVerticalDirection,
 };
-use crate::model::{paragraph::Paragraph, style::Alignment};
+use crate::document_core::DocumentCore;
+use crate::error::HwpError;
+use crate::model::{
+    color::opaque_rgb,
+    paragraph::Paragraph,
+    style::{Alignment, CharShape},
+};
 
 use super::editor::{NativeEditOutcome, NativeEditor};
+use super::page_setup::NativePageSetupSettings;
+use super::table_object::{NativeTableObjectAddress, NativeTableObjectPropertyChanges};
 use super::NativeHostError;
 
 #[path = "cell_paragraph_commands.rs"]
@@ -23,12 +33,49 @@ mod cell_paragraph_commands;
 #[path = "table_navigation.rs"]
 mod table_navigation;
 
+pub const MAX_CREATE_TABLE_ROWS: u16 = 256;
+pub const MAX_CREATE_TABLE_COLUMNS: u16 = 256;
+pub const MAX_CREATE_TABLE_CELLS: u32 = 4_096;
+
+pub const MAX_EQUATION_SCRIPT_BYTES: usize = 4_096;
+pub const MIN_EQUATION_FONT_SIZE: u32 = 200;
+pub const MAX_EQUATION_FONT_SIZE: u32 = 40_000;
+const DEFAULT_EQUATION_FONT_SIZE: u32 = 1_000;
+pub const MIN_SHAPE_SIZE: u32 = 200;
+pub const MAX_SHAPE_SIZE: u32 = 200_000;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum NativeSimpleShape {
+    Rectangle,
+    Ellipse,
+    Line,
+}
+
+impl NativeSimpleShape {
+    fn core_name(self) -> &'static str {
+        match self {
+            Self::Rectangle => "rectangle",
+            Self::Ellipse => "ellipse",
+            Self::Line => "line",
+        }
+    }
+}
+
 /// Tab moves to the next editable cell, Shift+Tab to the previous cell.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum NativeTableCellDirection {
     Next,
     Previous,
+}
+
+/// Unicode text unit selected within one Native text paragraph.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum NativeTextUnit {
+    Word,
+    Sentence,
 }
 
 /// Paragraph alignment on the Native command wire.
@@ -54,6 +101,49 @@ impl From<NativeParagraphAlignment> for Alignment {
             NativeParagraphAlignment::Split => Self::Split,
         }
     }
+}
+
+impl From<Alignment> for NativeParagraphAlignment {
+    fn from(alignment: Alignment) -> Self {
+        match alignment {
+            Alignment::Justify => Self::Justify,
+            Alignment::Left => Self::Left,
+            Alignment::Right => Self::Right,
+            Alignment::Center => Self::Center,
+            Alignment::Distribute => Self::Distribute,
+            Alignment::Split => Self::Split,
+        }
+    }
+}
+
+/// A property can be uniform even when the selected text uses several shapes.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(tag = "kind", content = "value", rename_all = "camelCase")]
+pub enum NativeFormattingValue<T> {
+    Uniform(T),
+    Mixed,
+}
+
+impl<T: PartialEq> NativeFormattingValue<T> {
+    fn include(&mut self, value: T) {
+        if matches!(self, Self::Uniform(current) if *current != value) {
+            *self = Self::Mixed;
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NativeSelectionFormatting {
+    pub bold: NativeFormattingValue<bool>,
+    /// HWPUNIT (100 units per point), matching formatCharacters.
+    pub font_size: NativeFormattingValue<i32>,
+    /// Names of the seven HWP language slots, in document order.
+    pub font_names: [NativeFormattingValue<Option<String>>; 7],
+    /// An explicit RGB color as #RRGGBB. None is an automatic color.
+    pub text_color: NativeFormattingValue<Option<String>>,
+    /// Always uniform because the selection belongs to one editable paragraph.
+    pub alignment: NativeParagraphAlignment,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -95,27 +185,65 @@ pub enum NativeEditCommand {
         direction: NativeTableCellDirection,
     },
     /// Delete the scalar selection, or one complete grapheme at a caret.
-    /// At the paragraph start, join with the preceding body paragraph.
+    /// At the paragraph start, join with the preceding plain paragraph.
     DeleteBackward {},
     /// Delete the scalar selection, or one complete grapheme at a caret.
     /// At the paragraph end, join with the following body paragraph.
     DeleteForward {},
     /// Replace the scalar selection with a paragraph boundary as one action.
     SplitParagraph {},
+    /// Insert a displayed HWP equation at a collapsed body caret. Font size
+    /// uses HWPUNIT (100 per point), with a default of 10 points.
+    InsertEquation {
+        script: String,
+        font_size: Option<u32>,
+    },
+    /// Insert a native drawing object in the body. Sizes are HWPUNIT.
+    InsertShape {
+        shape: NativeSimpleShape,
+        width: u32,
+        height: u32,
+    },
     /// Join the focus paragraph into its predecessor. Requires a collapsed
     /// selection and places the caret at the join. Backspace/Delete instead
     /// delete a noncollapsed selection.
     JoinPreviousParagraph {},
     SelectAll {},
+    /// Select a word or sentence in the paragraph at the supplied position.
+    SelectTextUnit {
+        unit: NativeTextUnit,
+        position: NativeTextPosition,
+    },
     /// Change at least one character property within a nonempty selection in one
     /// plain paragraph. Font size is in HWPUNIT (100 units per point).
     FormatCharacters {
         bold: Option<bool>,
         font_size: Option<i32>,
+        font_name: Option<String>,
+        text_color: Option<String>,
     },
     /// Align the paragraph that owns the selection. A collapsed caret is valid.
     SetParagraphAlignment {
         alignment: NativeParagraphAlignment,
+    },
+    /// Create a default table at a collapsed, editable body caret.
+    CreateTable {
+        rows: u16,
+        columns: u16,
+    },
+    /// Apply full paper settings to one explicit, zero-based section.
+    SetPageSetup {
+        section: u32,
+        settings: NativePageSetupSettings,
+    },
+    SetTableObjectProperties {
+        table: NativeTableObjectAddress,
+        properties: NativeTableObjectPropertyChanges,
+    },
+    ResizeTableObject {
+        table: NativeTableObjectAddress,
+        width: Option<u32>,
+        height: Option<u32>,
     },
 }
 
@@ -135,16 +263,6 @@ impl NativeEditor {
         command: NativeEditCommand,
     ) -> Result<NativeCommandOutcome, NativeHostError> {
         self.check_edit_ready(expected_revision)?;
-        if !matches!(
-            &command,
-            NativeEditCommand::SplitParagraph {}
-                | NativeEditCommand::JoinPreviousParagraph {}
-                | NativeEditCommand::FormatCharacters { .. }
-                | NativeEditCommand::SetParagraphAlignment { .. }
-                | NativeEditCommand::NavigateTableCell { .. }
-        ) {
-            self.require_body_selection("keyboard commands")?;
-        }
         let mut preferred_x = None;
         let outcome = match command {
             NativeEditCommand::MoveLeft { extend_selection } => {
@@ -162,7 +280,7 @@ impl NativeEditor {
             }
             NativeEditCommand::End { extend_selection } => {
                 let mut target = self.selection().focus.clone();
-                target.scalar_offset = scalar_len(self.command_text(&target))?;
+                target.scalar_offset = scalar_len(self.command_text(&target)?)?;
                 self.move_focus(expected_revision, target, extend_selection)?
             }
             NativeEditCommand::MoveUp {
@@ -197,6 +315,14 @@ impl NativeEditor {
                 self.delete_grapheme(expected_revision, false)?
             }
             NativeEditCommand::SplitParagraph {} => self.split_selection(expected_revision)?,
+            NativeEditCommand::InsertEquation { script, font_size } => {
+                self.insert_equation(expected_revision, script, font_size)?
+            }
+            NativeEditCommand::InsertShape {
+                shape,
+                width,
+                height,
+            } => self.insert_shape(expected_revision, shape, width, height)?,
             NativeEditCommand::JoinPreviousParagraph {} => {
                 if self.selection().anchor != self.selection().focus {
                     return Err(NativeHostError::InvalidArgument(
@@ -209,31 +335,34 @@ impl NativeEditor {
                     self.join_previous_cell_paragraph(expected_revision)?
                 }
             }
-            NativeEditCommand::FormatCharacters { bold, font_size } => {
-                self.format_characters(expected_revision, bold, font_size)?
+            NativeEditCommand::FormatCharacters {
+                bold,
+                font_size,
+                font_name,
+                text_color,
+            } => {
+                self.format_characters(expected_revision, bold, font_size, font_name, text_color)?
             }
             NativeEditCommand::SetParagraphAlignment { alignment } => {
                 self.set_paragraph_alignment(expected_revision, alignment)?
             }
-            NativeEditCommand::SelectAll {} => {
-                let mut start = self.selection().focus.clone();
-                start.paragraph = 0;
-                start.scalar_offset = 0;
-                let paragraphs = &self.session().document().document().sections
-                    [start.section as usize]
-                    .paragraphs;
-                let mut end = start.clone();
-                end.paragraph = u32::try_from(paragraphs.len() - 1).map_err(|_| {
-                    NativeHostError::LimitExceeded("paragraph address range exhausted".into())
-                })?;
-                end.scalar_offset = scalar_len(&paragraphs[end.paragraph as usize].text)?;
-                self.set_selection(
-                    expected_revision,
-                    NativeTextSelection {
-                        anchor: start,
-                        focus: end,
-                    },
-                )?
+            NativeEditCommand::CreateTable { rows, columns } => {
+                self.create_table(expected_revision, rows, columns)?
+            }
+            NativeEditCommand::SetPageSetup { section, settings } => {
+                self.set_page_setup(expected_revision, section, settings)?
+            }
+            NativeEditCommand::SetTableObjectProperties { table, properties } => {
+                self.set_table_object_properties(expected_revision, table, properties)?
+            }
+            NativeEditCommand::ResizeTableObject {
+                table,
+                width,
+                height,
+            } => self.resize_table_object(expected_revision, table, width, height)?,
+            NativeEditCommand::SelectAll {} => self.select_all(expected_revision)?,
+            NativeEditCommand::SelectTextUnit { unit, position } => {
+                self.select_text_unit(expected_revision, unit, position)?
             }
         };
         Ok(NativeCommandOutcome {
@@ -242,9 +371,74 @@ impl NativeEditor {
         })
     }
 
+    fn create_table(
+        &mut self,
+        revision: u64,
+        rows: u16,
+        columns: u16,
+    ) -> Result<NativeEditOutcome, NativeHostError> {
+        self.require_body_selection("createTable")?;
+        let selection = self.selection();
+        if selection.anchor != selection.focus {
+            return Err(NativeHostError::InvalidArgument(
+                "createTable requires a collapsed body caret".into(),
+            ));
+        }
+        if !(1..=MAX_CREATE_TABLE_ROWS).contains(&rows)
+            || !(1..=MAX_CREATE_TABLE_COLUMNS).contains(&columns)
+        {
+            return Err(NativeHostError::InvalidArgument(format!(
+                "createTable requires 1..={MAX_CREATE_TABLE_ROWS} rows and 1..={MAX_CREATE_TABLE_COLUMNS} columns"
+            )));
+        }
+        if u32::from(rows) * u32::from(columns) > MAX_CREATE_TABLE_CELLS {
+            return Err(NativeHostError::LimitExceeded(format!(
+                "createTable supports at most {MAX_CREATE_TABLE_CELLS} cells"
+            )));
+        }
+
+        Self::check_editable_text_span(self.session().document(), selection)?;
+        let caret = selection.focus.clone();
+        self.edit_explicit_ranges_transaction(revision, |core| {
+            #[derive(Deserialize)]
+            #[serde(rename_all = "camelCase")]
+            struct TableLocation {
+                para_idx: u32,
+                control_idx: u32,
+            }
+
+            // With semantic controls excluded, the scalar caret is also the
+            // logical caret used by the existing table constructor.
+            let created = core.create_table_native(
+                caret.section as usize,
+                caret.paragraph as usize,
+                caret.scalar_offset as usize,
+                rows,
+                columns,
+            )?;
+            let location: TableLocation = serde_json::from_str(&created).map_err(|error| {
+                crate::HwpError::RenderError(format!("invalid table creation location: {error}"))
+            })?;
+            let first_cell = NativeTextPosition {
+                section: caret.section,
+                paragraph: location.para_idx,
+                scalar_offset: 0,
+                cell_path: vec![NativeCellPathEntry {
+                    control: location.control_idx,
+                    cell: 0,
+                    paragraph: 0,
+                }],
+            };
+            Ok(NativeTextSelection {
+                anchor: first_cell.clone(),
+                focus: first_cell,
+            })
+        })
+    }
+
     fn formatting_paragraph(&self) -> Result<&Paragraph, NativeHostError> {
         let selection = self.selection();
-        if selection.anchor.paragraph != selection.focus.paragraph {
+        if selection.anchor.leaf_paragraph() != selection.focus.leaf_paragraph() {
             return Err(NativeHostError::Unsupported(
                 "formatting requires a selection within one paragraph".into(),
             ));
@@ -254,15 +448,115 @@ impl NativeEditor {
         Ok(core.native_text_paragraph(&selection.focus)?)
     }
 
+    /// Read the current editable leaf without changing selection or history.
+    pub fn selection_formatting(
+        &self,
+        revision: u64,
+        font_generation: u64,
+        selection: &NativeTextSelection,
+    ) -> Result<NativeSelectionFormatting, NativeHostError> {
+        self.check_edit_ready(revision)?;
+        if font_generation != self.session().font_generation() {
+            return Err(NativeHostError::InvalidArgument(
+                "stale font generation".into(),
+            ));
+        }
+        if selection != self.selection() {
+            return Err(NativeHostError::InvalidArgument("stale selection".into()));
+        }
+
+        let paragraph = self.formatting_paragraph()?;
+        let doc_info = &self.session().document().document().doc_info;
+        let (from, to) = selection.ordered();
+        let start = from.scalar_offset as usize;
+        let end = to.scalar_offset as usize;
+        if end > paragraph.char_offsets.len() {
+            return Err(NativeHostError::InvalidArgument(
+                "invalid character format range".into(),
+            ));
+        }
+
+        // At a caret use the shape at the insertion offset, including the
+        // paragraph-end shape. Otherwise read only actual selected text runs.
+        let ids = if start == end {
+            vec![paragraph.char_shape_id_at(start).unwrap_or(0)]
+        } else {
+            paragraph
+                .char_shape_runs(start, end)
+                .into_iter()
+                .map(|run| run.char_shape_id)
+                .collect()
+        };
+        let shape_for = |id: u32| {
+            doc_info.char_shapes.get(id as usize).ok_or_else(|| {
+                NativeHostError::InvalidArgument("unknown character shape in selection".into())
+            })
+        };
+        let font_name = |shape: &CharShape, language: usize| {
+            doc_info
+                .font_faces
+                .get(language)
+                .and_then(|fonts| fonts.get(shape.font_ids[language] as usize))
+                .map(|font| font.name.as_str())
+        };
+        let mut ids = ids.into_iter();
+        let first = ids.next().ok_or_else(|| {
+            NativeHostError::InvalidArgument("invalid character format range".into())
+        })?;
+        let first = shape_for(first)?;
+        let mut bold = NativeFormattingValue::Uniform(first.bold);
+        let mut font_size = NativeFormattingValue::Uniform(first.base_size);
+        let mut font_names = std::array::from_fn(|language| {
+            NativeFormattingValue::Uniform(font_name(first, language))
+        });
+        let mut text_color = NativeFormattingValue::Uniform(opaque_rgb(first.text_color));
+        for id in ids {
+            let shape = shape_for(id)?;
+            bold.include(shape.bold);
+            font_size.include(shape.base_size);
+            for (language, name) in font_names.iter_mut().enumerate() {
+                name.include(font_name(shape, language));
+            }
+            text_color.include(opaque_rgb(shape.text_color));
+        }
+        let alignment = doc_info
+            .para_shapes
+            .get(paragraph.para_shape_id as usize)
+            .ok_or_else(|| {
+                NativeHostError::InvalidArgument("unknown paragraph shape in selection".into())
+            })?
+            .alignment
+            .into();
+        Ok(NativeSelectionFormatting {
+            bold,
+            font_size,
+            font_names: font_names.map(|name| match name {
+                NativeFormattingValue::Uniform(name) => {
+                    NativeFormattingValue::Uniform(name.map(str::to_owned))
+                }
+                NativeFormattingValue::Mixed => NativeFormattingValue::Mixed,
+            }),
+            text_color: match text_color {
+                NativeFormattingValue::Uniform(color) => {
+                    NativeFormattingValue::Uniform(color.map(color_ref_to_css))
+                }
+                NativeFormattingValue::Mixed => NativeFormattingValue::Mixed,
+            },
+            alignment,
+        })
+    }
+
     fn format_characters(
         &mut self,
         revision: u64,
         bold: Option<bool>,
         font_size: Option<i32>,
+        font_name: Option<String>,
+        text_color: Option<String>,
     ) -> Result<NativeEditOutcome, NativeHostError> {
-        if bold.is_none() && font_size.is_none() {
+        if bold.is_none() && font_size.is_none() && font_name.is_none() && text_color.is_none() {
             return Err(NativeHostError::InvalidArgument(
-                "formatCharacters requires bold or fontSize".into(),
+                "formatCharacters requires bold, fontSize, fontName or textColor".into(),
             ));
         }
         // The model stores its base size as HWPUNIT, with 100 units per point
@@ -272,15 +566,40 @@ impl NativeEditor {
                 "fontSize must be within 1..=409600 HWPUNIT".into(),
             ));
         }
+        let font_name = font_name.as_deref();
+        if font_name.is_some_and(|name| {
+            name.trim().is_empty()
+                || name.trim().chars().count() > 64
+                || name.chars().any(char::is_control)
+        }) {
+            return Err(NativeHostError::InvalidArgument(
+                "fontName must contain 1 to 64 non-control characters".into(),
+            ));
+        }
+        let font_name = font_name.map(str::trim);
+        let requested_family = font_name.map(str::to_lowercase);
+        let color = text_color
+            .as_deref()
+            .map(|value| {
+                if value.bytes().skip(1).all(|byte| byte.is_ascii_hexdigit()) {
+                    if let Some(color) = css_color_to_bgr(value) {
+                        return Ok(color);
+                    }
+                }
+                Err(NativeHostError::InvalidArgument(
+                    "textColor must be #RRGGBB".into(),
+                ))
+            })
+            .transpose()?;
         let paragraph = self.formatting_paragraph()?;
-        let (start, end) = Self::ordered(self.selection());
+        let (start, end) = self.selection().ordered();
         let range = start.scalar_offset as usize..end.scalar_offset as usize;
         if range.is_empty() {
             return Err(NativeHostError::InvalidArgument(
                 "formatCharacters requires a nonempty text selection".into(),
             ));
         }
-        let shapes = &self.session().document().document().doc_info.char_shapes;
+        let doc_info = &self.session().document().document().doc_info;
         let ids = paragraph.char_shape_ids_in_range(range.start, range.end);
         if ids.is_empty() {
             return Err(NativeHostError::InvalidArgument(
@@ -289,16 +608,28 @@ impl NativeEditor {
         }
         let mut changes_style = false;
         for id in ids {
-            let shape = shapes.get(id as usize).ok_or_else(|| {
+            let shape = doc_info.char_shapes.get(id as usize).ok_or_else(|| {
                 NativeHostError::InvalidArgument("unknown character shape in selection".into())
             })?;
             changes_style |= bold.is_some_and(|bold| shape.bold != bold)
-                || font_size.is_some_and(|size| shape.base_size != size);
+                || font_size.is_some_and(|size| shape.base_size != size)
+                || color.is_some_and(|color| shape.text_color != color)
+                || requested_family.as_deref().is_some_and(|requested| {
+                    (0..7).any(|language| {
+                        doc_info
+                            .font_faces
+                            .get(language)
+                            .and_then(|fonts| fonts.get(shape.font_ids[language] as usize))
+                            .is_none_or(|font| font.name.to_lowercase() != requested)
+                    })
+                });
         }
         if !changes_style {
             return Ok(self.outcome(false, false));
         }
-        let properties = serde_json::json!({"bold": bold, "fontSize": font_size});
+        let properties = serde_json::json!({
+            "bold": bold, "fontSize": font_size, "fontName": font_name, "textColor": text_color,
+        });
         self.apply_format(revision, Some(range), &properties.to_string())
     }
 
@@ -369,13 +700,78 @@ impl NativeEditor {
         } else {
             focus.clone()
         };
+        if extend && !anchor.cell_path.is_empty() && !same_container(&anchor, &focus) {
+            return self.set_selection(revision, self.selection().clone());
+        }
         self.set_selection(revision, NativeTextSelection { anchor, focus })
     }
 
-    fn command_text(&self, position: &NativeTextPosition) -> &str {
-        &self.session().document().document().sections[position.section as usize].paragraphs
-            [position.paragraph as usize]
-            .text
+    fn command_text(&self, position: &NativeTextPosition) -> Result<&str, NativeHostError> {
+        Ok(&self
+            .session()
+            .document()
+            .native_text_paragraph(position)?
+            .text)
+    }
+
+    fn select_all(&mut self, revision: u64) -> Result<NativeEditOutcome, NativeHostError> {
+        let mut start = self.selection().focus.clone();
+        let mut end = start.clone();
+        start.scalar_offset = 0;
+        if start.cell_path.is_empty() {
+            start.paragraph = 0;
+            let paragraphs =
+                &self.session().document().document().sections[start.section as usize].paragraphs;
+            end.paragraph = u32::try_from(paragraphs.len() - 1).map_err(|_| {
+                NativeHostError::LimitExceeded("paragraph address range exhausted".into())
+            })?;
+            end.scalar_offset = 0;
+        }
+        end.scalar_offset = scalar_len(self.command_text(&end)?)?;
+        self.set_selection(
+            revision,
+            NativeTextSelection {
+                anchor: start,
+                focus: end,
+            },
+        )
+    }
+
+    fn select_text_unit(
+        &mut self,
+        revision: u64,
+        unit: NativeTextUnit,
+        position: NativeTextPosition,
+    ) -> Result<NativeEditOutcome, NativeHostError> {
+        let text = self.command_text(&position)?;
+        scalar_len(text)?;
+        let offset = position.scalar_offset;
+        let (start, segment) = match unit {
+            NativeTextUnit::Word => text_segment_at(text.split_word_bounds(), offset),
+            NativeTextUnit::Sentence => text_segment_at(text.split_sentence_bounds(), offset),
+        };
+        let mut clusters = segment.grapheme_indices(true);
+        let is_content = |&(_, cluster): &(usize, &str)| !cluster.chars().all(char::is_whitespace);
+        let (from, to) = if let Some((first, cluster)) = clusters.find(is_content) {
+            let end = clusters
+                .rfind(is_content)
+                .map_or(first + cluster.len(), |(last, cluster)| {
+                    last + cluster.len()
+                });
+            let from = start + segment[..first].chars().count() as u32;
+            (from, from + segment[first..end].chars().count() as u32)
+        } else {
+            (offset, offset)
+        };
+        let anchor = NativeTextPosition {
+            scalar_offset: from,
+            ..position.clone()
+        };
+        let focus = NativeTextPosition {
+            scalar_offset: to,
+            ..position
+        };
+        self.set_selection(revision, NativeTextSelection { anchor, focus })
     }
 
     fn horizontal_target(
@@ -383,26 +779,30 @@ impl NativeEditor {
         backward: bool,
         extend: bool,
     ) -> Result<NativeTextPosition, NativeHostError> {
-        let (start, end) = Self::ordered(self.selection());
+        let (start, end) = self.selection().ordered();
         if !extend && start != end {
             return Ok(if backward { start } else { end }.clone());
         }
         let mut target = self.selection().focus.clone();
-        let text = self.command_text(&target);
+        let text = self.command_text(&target)?;
         let length = scalar_len(text)?;
+        let paragraph = target.leaf_paragraph();
         if backward && target.scalar_offset == 0 {
-            if target.paragraph > 0 {
-                target.paragraph -= 1;
-                target.scalar_offset = scalar_len(self.command_text(&target))?;
+            if paragraph > 0 {
+                target.set_leaf_paragraph(paragraph - 1);
+                target.scalar_offset = scalar_len(self.command_text(&target)?)?;
             }
         } else if !backward && target.scalar_offset == length {
-            let count = self.session().document().document().sections[target.section as usize]
-                .paragraphs
+            let count = self
+                .session()
+                .document()
+                .native_text_container(&target)?
                 .len();
-            if (target.paragraph as usize) + 1 < count {
-                target.paragraph = target.paragraph.checked_add(1).ok_or_else(|| {
+            if (paragraph as usize) + 1 < count {
+                let next = paragraph.checked_add(1).ok_or_else(|| {
                     NativeHostError::LimitExceeded("paragraph address range exhausted".into())
                 })?;
+                target.set_leaf_paragraph(next);
                 target.scalar_offset = 0;
             }
         } else {
@@ -421,16 +821,20 @@ impl NativeEditor {
             return self.replace_selection(revision, "");
         }
         let focus = self.selection().focus.clone();
-        let text = self.command_text(&focus);
+        let text = self.command_text(&focus)?;
         let length = scalar_len(text)?;
         if backward && focus.scalar_offset == 0 {
-            return self.join_at(revision, focus.paragraph);
+            return if focus.cell_path.is_empty() {
+                self.join_at(revision, focus.paragraph)
+            } else {
+                self.join_previous_cell_paragraph(revision)
+            };
         }
         if !backward && focus.scalar_offset == length {
             let count = self.session().document().document().sections[focus.section as usize]
                 .paragraphs
                 .len();
-            if (focus.paragraph as usize) + 1 == count {
+            if !focus.cell_path.is_empty() || (focus.paragraph as usize) + 1 == count {
                 return self.set_selection(revision, self.selection().clone());
             }
             let next = focus.paragraph.checked_add(1).ok_or_else(|| {
@@ -448,12 +852,142 @@ impl NativeEditor {
         self.replace_range(revision, &NativeTextSelection { anchor, focus }, "")
     }
 
+    fn insert_equation(
+        &mut self,
+        revision: u64,
+        script: String,
+        font_size: Option<u32>,
+    ) -> Result<NativeEditOutcome, NativeHostError> {
+        if script.len() > MAX_EQUATION_SCRIPT_BYTES {
+            return Err(NativeHostError::LimitExceeded(format!(
+                "equation script exceeds {MAX_EQUATION_SCRIPT_BYTES} UTF-8 bytes"
+            )));
+        }
+        if script.trim().is_empty()
+            || script.chars().any(|c| {
+                (c.is_control() && !matches!(c, '\n' | '\r' | '\t'))
+                    || matches!(c, '\u{fffe}' | '\u{ffff}')
+            })
+        {
+            return Err(NativeHostError::InvalidArgument(
+                "equation script is empty or contains unsupported characters".into(),
+            ));
+        }
+        let font_size = font_size.unwrap_or(DEFAULT_EQUATION_FONT_SIZE);
+        if !(MIN_EQUATION_FONT_SIZE..=MAX_EQUATION_FONT_SIZE).contains(&font_size) {
+            return Err(NativeHostError::InvalidArgument(format!(
+                "equation font size must be {MIN_EQUATION_FONT_SIZE}..={MAX_EQUATION_FONT_SIZE} HWPUNIT"
+            )));
+        }
+
+        let script = if script.contains('\r') {
+            script.replace("\r\n", "\n").replace('\r', "\n")
+        } else {
+            script
+        };
+        self.insert_display_object(revision, "insertEquation", |core, section, paragraph| {
+            core.insert_equation_native(section, paragraph, 0, &script, font_size, 0)?;
+            Ok(())
+        })
+    }
+
+    fn insert_shape(
+        &mut self,
+        revision: u64,
+        shape: NativeSimpleShape,
+        width: u32,
+        height: u32,
+    ) -> Result<NativeEditOutcome, NativeHostError> {
+        let allowed = MIN_SHAPE_SIZE..=MAX_SHAPE_SIZE;
+        if !allowed.contains(&width) || !allowed.contains(&height) {
+            return Err(NativeHostError::InvalidArgument(format!(
+                "shape dimensions must be {MIN_SHAPE_SIZE}..={MAX_SHAPE_SIZE} HWPUNIT"
+            )));
+        }
+        self.insert_display_object(revision, "insertShape", |core, section, paragraph| {
+            core.create_shape_control_native(
+                section,
+                paragraph,
+                0,
+                width,
+                height,
+                0,
+                0,
+                true,
+                "InFrontOfText",
+                shape.core_name(),
+                false,
+                false,
+                &[],
+            )?;
+            Ok(())
+        })
+    }
+
+    fn insert_display_object(
+        &mut self,
+        revision: u64,
+        command: &str,
+        insert: impl FnOnce(&mut DocumentCore, usize, usize) -> Result<(), HwpError>,
+    ) -> Result<NativeEditOutcome, NativeHostError> {
+        self.require_body_selection(command)?;
+        let selection = self.selection();
+        if selection.anchor != selection.focus {
+            return Err(NativeHostError::InvalidArgument(format!(
+                "{command} requires a collapsed body caret"
+            )));
+        }
+
+        let core = self.session().document();
+        Self::check_editable_text_span(core, selection)?;
+        let caret = selection.focus.clone();
+        let text = &core.native_text_paragraph(&caret)?.text;
+        if caret.scalar_offset < scalar_len(text)?
+            && grapheme_span(text, caret.scalar_offset, false).0 != caret.scalar_offset
+        {
+            return Err(NativeHostError::InvalidArgument(format!(
+                "{command} requires a grapheme boundary"
+            )));
+        }
+        let paragraphs_added = 1 + u32::from(caret.scalar_offset != 0);
+        let after_paragraph = caret
+            .paragraph
+            .checked_add(paragraphs_added)
+            .ok_or_else(|| {
+                NativeHostError::LimitExceeded("paragraph address range exhausted".into())
+            })?;
+        let object_paragraph = after_paragraph - 1;
+        let after = NativeTextPosition {
+            paragraph: after_paragraph,
+            scalar_offset: 0,
+            ..caret.clone()
+        };
+        let section = caret.section as usize;
+        self.edit_explicit_ranges_transaction(revision, |core| {
+            // The addressable caret continues in the text tail after the object.
+            core.split_paragraph_native(
+                section,
+                caret.paragraph as usize,
+                caret.scalar_offset as usize,
+                None,
+            )?;
+            if caret.paragraph != object_paragraph {
+                core.split_paragraph_native(section, object_paragraph as usize, 0, None)?;
+            }
+            insert(core, section, object_paragraph as usize)?;
+            Ok(NativeTextSelection {
+                anchor: after.clone(),
+                focus: after,
+            })
+        })
+    }
+
     fn split_selection(&mut self, revision: u64) -> Result<NativeEditOutcome, NativeHostError> {
         let selection = self.selection().clone();
         if !selection.focus.cell_path.is_empty() {
             return self.split_cell_selection(revision, selection);
         }
-        let (start, end) = Self::ordered(&selection);
+        let (start, end) = selection.ordered();
         let mut after = start.clone();
         after.paragraph = after.paragraph.checked_add(1).ok_or_else(|| {
             NativeHostError::LimitExceeded("paragraph address range exhausted".into())
@@ -489,7 +1023,7 @@ impl NativeEditor {
         next.scalar_offset = 0;
         let mut previous = next.clone();
         previous.paragraph -= 1;
-        previous.scalar_offset = scalar_len(self.command_text(&previous))?;
+        previous.scalar_offset = scalar_len(self.command_text(&previous)?)?;
         let span = NativeTextSelection {
             anchor: previous.clone(),
             focus: next.clone(),
@@ -512,6 +1046,29 @@ fn scalar_len(text: &str) -> Result<u32, NativeHostError> {
     u32::try_from(text.chars().count()).map_err(|_| {
         NativeHostError::LimitExceeded("paragraph exceeds the scalar address range".into())
     })
+}
+
+/// Find the segment at a validated scalar offset. At the leading edge of
+/// whitespace, keep the preceding segment so the trailing caret on a visible
+/// glyph can still select it. At paragraph end, use the last segment.
+fn text_segment_at<'a>(segments: impl Iterator<Item = &'a str>, offset: u32) -> (u32, &'a str) {
+    let mut start = 0;
+    let mut previous = (0, "");
+    for segment in segments {
+        let end = start + segment.chars().count() as u32;
+        if offset < end {
+            if offset == start
+                && segment.chars().all(char::is_whitespace)
+                && !previous.1.chars().all(char::is_whitespace)
+            {
+                return previous;
+            }
+            return (start, segment);
+        }
+        previous = (start, segment);
+        start = end;
+    }
+    previous
 }
 
 /// Called only after scalar_len proved that the paragraph fits the public range.
@@ -567,16 +1124,21 @@ impl NativeEditor {
             .take(end - start)
             .collect();
         let anchor = &selection.anchor;
-        let anchor_scalar = (anchor.paragraph == focus.paragraph
+        let anchor_scalar = (anchor.leaf_paragraph() == focus.leaf_paragraph()
             && (anchor.scalar_offset as usize) >= start
             && (anchor.scalar_offset as usize) <= end)
             .then(|| anchor.scalar_offset - start as u32);
-        let (from, to) = Self::ordered(selection);
+        let (from, to) = selection.ordered();
+        let paragraphs = core.native_text_container(from)?;
+        let first = from.leaf_paragraph() as usize;
+        let last = to.leaf_paragraph() as usize;
         let mut selected = String::new();
         let mut count = 0usize;
         let mut truncated = false;
-        'paragraphs: for index in from.paragraph..=to.paragraph {
-            if index > from.paragraph {
+        'paragraphs: for (index, paragraph) in
+            paragraphs.iter().enumerate().take(last + 1).skip(first)
+        {
+            if index > first {
                 if count == NATIVE_IME_CONTEXT_SCALARS {
                     truncated = true;
                     break;
@@ -584,24 +1146,17 @@ impl NativeEditor {
                 selected.push('\n');
                 count += 1;
             }
-            // A validated cell selection stays in the single resolved leaf. Only
-            // body selections can span other paragraphs in the same section.
-            let text = if index == focus.paragraph {
-                &paragraph.text
-            } else {
-                &core.document().sections[from.section as usize].paragraphs[index as usize].text
-            };
-            let left = if index == from.paragraph {
+            let left = if index == first {
                 from.scalar_offset as usize
             } else {
                 0
             };
-            let right = if index == to.paragraph {
-                to.scalar_offset as usize
+            let count_in_paragraph = if index == last {
+                to.scalar_offset as usize - left
             } else {
-                text.chars().count()
+                usize::MAX
             };
-            for ch in text.chars().skip(left).take(right - left) {
+            for ch in paragraph.text.chars().skip(left).take(count_in_paragraph) {
                 if count == NATIVE_IME_CONTEXT_SCALARS {
                     truncated = true;
                     break 'paragraphs;

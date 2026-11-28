@@ -148,6 +148,54 @@ fn execute(
                 .execute_command(target.revision, command)
                 .map(O::CommandExecuted)
         }
+        C::SelectionFormatting {
+            target,
+            font_generation,
+            selection,
+        } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            let formatting =
+                doc.editor()?
+                    .selection_formatting(target.revision, font_generation, &selection)?;
+            Ok(O::SelectionFormatting {
+                target,
+                font_generation,
+                selection,
+                formatting,
+            })
+        }
+        C::PageSetup {
+            target,
+            page,
+            section,
+        } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            let page_setup = doc.session().page_setup(target.revision, page, section)?;
+            Ok(O::PageSetup { target, page_setup })
+        }
+        C::TableObject {
+            target,
+            position,
+            page,
+        } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            let session = doc.session();
+            Ok(O::TableObject {
+                target,
+                font_generation: session.font_generation(),
+                page,
+                table: session.table_object(target.revision, &position, page)?,
+            })
+        }
+        C::SystemFontFamilies { target } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            let families = doc.session().system_font_families(target.revision)?;
+            Ok(O::SystemFontFamilies { target, families })
+        }
         C::ImeContext { target } => {
             let doc = document(owner)?;
             doc.check(target)?;
@@ -243,6 +291,18 @@ fn execute(
             document(owner)?.check(target)?;
             *owner = None;
             Ok(O::DocumentClosed)
+        }
+        C::ReplaceAllMatches {
+            target,
+            request,
+            text,
+        } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            let result = doc
+                .editor()?
+                .replace_all_matches(target.revision, &request, &text)?;
+            Ok(O::ReplaceAllMatches { target, result })
         }
         C::SearchText { target, request } => {
             let doc = document(owner)?;
