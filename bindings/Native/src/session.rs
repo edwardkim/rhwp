@@ -821,6 +821,7 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
             json!({"ok":true,"abiVersion":1,"nativeSkia":cfg!(feature="native-skia"),
         "tableCellParagraphCommands":true,
         "tableCellNavigation":true,
+        "tableCellTextNavigation":true,
         "basicTextFormatting":true,
         "renderTiledRegion":cfg!(feature="native-skia"),"rasterCacheControls":cfg!(feature="native-skia"),
         "cooperativeTiledCancellation":cfg!(feature="native-skia"),"presentation":crate::presentation::capabilities(),"gpuGl":crate::gpu_gl::capabilities(),
