@@ -36,19 +36,18 @@ public sealed partial class MainWindow
     {
         if (args.Pointer.PointerDeviceType != PointerDeviceType.Mouse ||
             !args.GetCurrentPoint(PageCanvas).Properties.IsLeftButtonPressed ||
-            !AcceptPageInput(args.GetPosition(PageCanvas), out PageInfo current, out Point location))
+            !AcceptPageInput(args.GetCurrentPoint(PageCanvas).Position, out PageInfo current, out Point location))
             return;
 
         args.Handled = true;
         dragPointer = PageImage.CapturePointer(args.Pointer) ? args.Pointer.PointerId : null;
-        dragAnchor = null;
         QueuePointerSelection(current, location, extend: false);
     }
 
     private void OnPagePointerMoved(object sender, PointerRoutedEventArgs args)
     {
         if (dragPointer != args.Pointer.PointerId ||
-            !AcceptPageInput(args.GetPosition(PageCanvas), out PageInfo current, out Point location))
+            !AcceptPageInput(args.GetCurrentPoint(PageCanvas).Position, out PageInfo current, out Point location))
             return;
 
         args.Handled = true;
@@ -61,8 +60,8 @@ public sealed partial class MainWindow
             return;
 
         args.Handled = true;
-        if (AcceptPageInput(args.GetPosition(PageCanvas), out PageInfo current, out Point location))
-            QueuePointerSelection(current, location, extend: true);
+        if (AcceptPageInput(args.GetCurrentPoint(PageCanvas).Position, out PageInfo current, out Point location))
+            QueuePointerSelection(current, location, extend: true, final: true);
         dragPointer = null;
         PageImage.ReleasePointerCapture(args.Pointer);
     }
@@ -113,18 +112,20 @@ public sealed partial class MainWindow
             location.X >= 0 && location.Y >= 0 && location.X < current.Width && location.Y < current.Height;
     }
 
-    private void QueuePointerSelection(PageInfo current, Point location, bool extend)
+    private void QueuePointerSelection(PageInfo current, Point location, bool extend, bool final = false)
     {
         long gesture = extend ? pointerGesture : ++pointerGesture;
         long version = ++dragVersion;
         EnqueueDirectEdit(() =>
-            gesture == pointerGesture && (!extend || version == dragVersion)
+            !extend || final || (gesture == pointerGesture && version == dragVersion)
                 ? MovePointerSelectionAsync(current, location, extend)
                 : Task.CompletedTask);
     }
 
     private async Task MovePointerSelectionAsync(PageInfo original, Point location, bool extend)
     {
+        if (!extend)
+            dragAnchor = null;
         if (page is not PageInfo current || current.Page != original.Page ||
             current.Target.DocumentId != original.Target.DocumentId)
             return;
@@ -197,21 +198,24 @@ public sealed partial class MainWindow
         try
         {
             while (!closing && directActions.TryDequeue(out Func<Task>? action))
-                await action();
-        }
-        catch (Exception error)
-        {
-            directActions.Clear();
-            try
             {
-                await CancelNativePreviewAsync();
+                try
+                {
+                    await action();
+                }
+                catch (Exception error)
+                {
+                    try
+                    {
+                        await CancelNativePreviewAsync();
+                    }
+                    catch (Exception cleanup)
+                    {
+                        System.Diagnostics.Debug.WriteLine(cleanup);
+                    }
+                    StatusText.Text = "문서를 편집할 수 없습니다. " + error.Message;
+                }
             }
-            catch (Exception cleanup)
-            {
-                System.Diagnostics.Debug.WriteLine(cleanup);
-            }
-            DismissDirectEditor();
-            StatusText.Text = "문서를 편집할 수 없습니다. " + error.Message;
         }
         finally
         {
@@ -358,13 +362,23 @@ public sealed partial class MainWindow
         previewText = "";
     }
 
-    private void OnDirectPreviewKeyDown(object sender, KeyRoutedEventArgs args)
+    private async void OnDirectPreviewKeyDown(object sender, KeyRoutedEventArgs args)
     {
-        if (!directEditing || platformComposing)
+        if (!directEditing)
             return;
 
         bool control = KeyDown(VirtualKey.Control);
         bool shift = KeyDown(VirtualKey.Shift);
+        if (control && args.Key == VirtualKey.S)
+        {
+            args.Handled = true;
+            if (await SaveDocumentAsync(saveAs: shift))
+                RestorePageEditFocus();
+            return;
+        }
+        if (platformComposing)
+            return;
+
         if (control && args.Key is VirtualKey.Z or VirtualKey.Y)
         {
             args.Handled = true;
