@@ -78,6 +78,57 @@ impl LayoutEngine {
             && current.text_start > previous.text_start
     }
 
+    /// 단일 셀의 원본 쪽을 온전히 소유할 때는 저장 마지막 줄의 끝까지 점유한다.
+    /// 문단 안의 쪽 재시작으로 컷을 인증하고 빈 마지막 줄 상자도 포함한다.
+    pub(super) fn stored_single_cell_restart_content_height(
+        &self,
+        table: &Table,
+        cell: &Cell,
+        units: &[CellUnit],
+        start: usize,
+        end: usize,
+    ) -> Option<f64> {
+        if table.row_count != 1
+            || table.col_count != 1
+            || table.cells.len() != 1
+            || matches!(cell.vertical_align, crate::model::table::VerticalAlign::Top)
+        {
+            return None;
+        }
+        let selected = units.get(start..end)?;
+        let (first, rest) = selected.split_first()?;
+        let is_restart =
+            |unit: &CellUnit| self.stored_in_paragraph_unit_is_original_restart(table, cell, unit);
+        let starts_at_restart = is_restart(first);
+        let ends_at_restart = units.get(end).is_some_and(is_restart);
+        if (!starts_at_restart && !ends_at_restart)
+            || (start != 0 && !starts_at_restart)
+            || (end != units.len() && !ends_at_restart)
+            || rest.iter().any(|unit| unit.page_frame_reset_before)
+            || !self.stored_plain_text_cell_frame(table, cell)
+        {
+            return None;
+        }
+        let mut ink_end = 0;
+        for unit in selected {
+            let para = cell.paragraphs.get(unit.para_idx)?;
+            let empty_line = unit.empty_spacer
+                && unit.vis_start == 0
+                && unit.vis_end == 0
+                && para.text.trim().is_empty()
+                && para.line_segs.len() == 1;
+            if unit.reflowed_line_slot || (!empty_line && unit.vis_end != unit.vis_start + 1) {
+                return None;
+            }
+            let line = para.line_segs.get(unit.vis_start)?;
+            if line.vertical_pos < ink_end {
+                return None;
+            }
+            ink_end = line.vertical_pos.checked_add(line.line_height)?;
+        }
+        Some(hwpunit_to_px(ink_end, self.dpi))
+    }
+
     /// Normalize the original opening box into the ordinary source row. This
     /// only supplies the existing saved-cut tail calculation; accepted physical
     /// rows and the table's occupied extent remain in their original ledger.
@@ -365,6 +416,65 @@ impl LayoutEngine {
         let required =
             self.stored_closing_row_occupancy(table, row, natural_height, height, styles)?;
         (required <= height).then_some(height)
+    }
+
+    /// 표 외곽의 첫 저장 상자는 완결 행이나 원본 재시작 컷의 빈 띠도 소유한다.
+    /// 두 경계 모두 수용된 상자에서 보이는 칸 내용을 정렬한다.
+    pub(crate) fn stored_overlay_opening_closing_row(
+        &self,
+        table: &Table,
+        row: usize,
+        end_cut: &[usize],
+        measured_rows: &[f64],
+        available: f64,
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        if self.profile.get().session_edited()
+            || table.caption.is_some()
+            || table.cell_spacing != 0
+            || row == 0
+            || (end_cut.is_empty() && row + 1 >= usize::from(table.row_count))
+            || (!end_cut.is_empty()
+                && !self.row_cut_ends_at_original_plain_text_reset(
+                    table,
+                    row,
+                    &[],
+                    end_cut,
+                    styles,
+                ))
+            || !self.stored_row_boxes_exceed_first_frame(table)
+            || !crate::renderer::float_placement::complete_declared_column_grid(table)
+            || table.cells.iter().any(|cell| {
+                usize::from(cell.row) <= row
+                    && (cell.row_span != 1 || !self.stored_plain_text_cell_frame(table, cell))
+            })
+        {
+            return None;
+        }
+        let rows = table.get_raw_row_heights();
+        let measured = measured_rows.get(..row)?;
+        let source = rows.get(..row)?;
+        let unit = hwpunit_to_px(1, self.dpi);
+        if source.iter().zip(measured).any(|(&source, &measured)| {
+            source == 0 || (hwpunit_to_px(source as i32, self.dpi) - measured).abs() > unit
+        }) {
+            return None;
+        }
+        let prefix = source.iter().map(|&height| i64::from(height)).sum::<i64>();
+        let band = i32::try_from(i64::from(table.common.height) - prefix).ok()?;
+        let band = hwpunit_to_px(band, self.dpi);
+        let declared = hwpunit_to_px(*rows.get(row)? as i32, self.dpi);
+        if band <= 0.0 || band >= declared || band > available {
+            return None;
+        }
+        let content = if end_cut.is_empty() {
+            self.row_complete_cut_content_height(table, row, styles)
+        } else {
+            self.row_cut_content_height(table, row, &[], end_cut, styles)
+        };
+        (content > 0.0
+            && self.row_aligned_content_bottom(table, row, content, band, styles) <= band)
+            .then_some(band)
     }
 
     pub(super) fn stored_span_partial_first_frame_owner(

@@ -3820,6 +3820,10 @@ impl DocumentCore {
             col.paragraph_float_placements
                 .get(&(parent_para_idx, control_idx))
                 .map(|p| col_area.y + p.table_top),
+            col.paragraph_float_placements
+                .get(&(parent_para_idx, control_idx))
+                .and_then(|p| p.table_left)
+                .map(|left| col_area.x + left),
             crate::renderer::float_placement::preceding_control_flow_bottom_px(
                 &col.paragraph_float_placements,
                 &col.inline_placements,

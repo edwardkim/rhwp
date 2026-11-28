@@ -122,7 +122,28 @@ fn slot(
     // 일반 한글 뒤 구두점의 기존 프로그램 계약과 HWP3 cmap 공급 규칙은 유지한다.
     let hanja_latin_punctuation =
         !styles.source_hwp3_native && inherited == 2 && ch.is_ascii_punctuation();
-    if supplied_latin_punctuation || hanja_latin_punctuation {
+    // HWP3는 글꼴 유형 표기가 없는 원본도 사용한다. 독립 2020 Print는
+    // 같은 영문 원본의 구두점 폭을 쓰며, 확인한 글리프만 해당 슬롯에 둔다.
+    let uses_hft_source = |slot| {
+        style.source_hft_for_lang(slot)
+            || (styles.source_hwp3_native && !style.source_ttf_for_lang(slot))
+    };
+    let measured_latin_punctuation = inherited == 0
+        && ch.is_ascii_punctuation()
+        && uses_hft_source(0)
+        && uses_hft_source(1)
+        && style
+            .original_glyph_metric_face_for_lang(1)
+            .is_some_and(|face| {
+                use crate::renderer::font_metrics_data::{
+                    declared_original_glyph_advance_em, find_metric,
+                };
+                find_metric(face, style.bold, style.italic)
+                    .is_some_and(|metric| metric.metric.hangul.is_none())
+                    && declared_original_glyph_advance_em(face, style.bold, style.italic, ch)
+                        .is_some()
+            });
+    if supplied_latin_punctuation || hanja_latin_punctuation || measured_latin_punctuation {
         1
     } else if style.explicit_latin_slot && super::is_latin_slot_punct(ch) {
         1

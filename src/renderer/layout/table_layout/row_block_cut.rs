@@ -96,12 +96,17 @@ impl<'a> CellCutFrame<'a> {
     }
 
     /// 온전히 선택한 원본 쪽 프레임은 새 글줄이 덜 차지해도 같은 점유 끝을 가진다.
-    /// 예약과 실제 정렬은 이 결과를 함께 사용한다. 문단 내부 컷에는 적용하지 않는다.
+    /// 예약과 실제 정렬은 이 결과를 함께 사용한다. 문단 안에서는 원본 쪽 재시작만 인정한다.
     pub(super) fn stored_content_height(&self, end: usize, content_advance: f64) -> Option<f64> {
         if let Some(height) = self
             .continued_picture_height
             .filter(|_| end == self.units.len())
         {
+            return Some(height);
+        }
+        if let Some(height) = self.engine.stored_single_cell_restart_content_height(
+            self.table, self.cell, self.units, self.start, end,
+        ) {
             return Some(height);
         }
         let frame = self.source_page_frame?;

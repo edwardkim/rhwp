@@ -537,6 +537,35 @@ pub(crate) fn resolve_styles_with_environment(
                             style.font_families_hft_fullwidth_dot[lang] = true;
                         }
                     }
+                    // 문서 지정 HFT 대체를 실제 조회해 원본 폭을 유지할 때는
+                    // 확인된 대체 프로그램의 글리프 표도 직접 선언과 같이 쓴다.
+                    if !declared_true_type
+                        && preserve_source_metrics
+                        && style.font_families_original_glyph_metric_face[lang].is_none()
+                    {
+                        let metric_face = source_font
+                            .filter(|font| !font.is_embedded)
+                            .and_then(|font| font.subst_font.as_ref())
+                            .filter(|substitute| {
+                                substitute.font_type == 2 && !substitute.is_embedded
+                            })
+                            .map(|substitute| substitute.face.trim())
+                            .filter(|face| {
+                                super::font_metrics_data::has_declared_original_glyph_metrics(face)
+                                    && source_face.is_some_and(|source| {
+                                        environment.and_then(|env| {
+                                            env.selected_program_query_for(
+                                                source,
+                                                lang,
+                                                shape.font_ids[lang],
+                                            )
+                                        }) == Some(*face)
+                                    })
+                            })
+                            .map(str::to_owned);
+                        latin_program_changed |= lang == 1 && metric_face.is_some();
+                        style.font_families_original_glyph_metric_face[lang] = metric_face;
+                    }
                 }
             }
             style.font_family = style.font_families[0].clone();

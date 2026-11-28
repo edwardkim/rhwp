@@ -17,6 +17,7 @@ mod stored_float_rows;
 mod stored_nested_host;
 mod stored_opening_row_frame;
 mod stored_row_grid;
+mod stored_rowspan_frame;
 mod stored_table_source;
 pub(crate) use column_ole::column_ole_placement;
 pub(crate) use stored_float_rows::{owns_embedded_float_bands, stored_float_row_span_hu};
@@ -469,6 +470,9 @@ pub(crate) fn stored_complete_row_frame_heights(table: &Table) -> Option<Vec<i32
 
     if let Some(rows) = stored_captioned_picture_row_heights(table) {
         return Some(rows.into());
+    }
+    if table.cells.iter().any(|cell| cell.row_span > 1) {
+        return stored_rowspan_frame::closed_row_heights(table);
     }
     let row_count = usize::from(table.row_count);
     if row_count < 2 || table.common.height > i32::MAX as u32 {

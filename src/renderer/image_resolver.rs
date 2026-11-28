@@ -14,12 +14,15 @@ mod print_tone;
 pub(crate) use print_alpha::print_alpha_payload;
 pub(crate) use print_alpha_device::{print_transparent_png, PrintAlphaDeviceGrid};
 pub(crate) use print_crop::{publish_print_jpeg_crop, resolve_print_jpeg_window};
-pub(crate) use print_jpeg_encode::{encode_print_jpeg, print_jpeg_payload, PrintJpegTransfer};
+pub(crate) use print_jpeg_encode::{
+    encode_print_jpeg, print_jpeg_bands, print_jpeg_payload, PrintJpegTransfer,
+};
 mod print_window;
 #[cfg(target_arch = "wasm32")]
 pub(crate) use print_tone::decode_print_jpeg_replay;
 pub(crate) use print_tone::print_bitmap_payload;
 mod print_bitmap_window;
+pub(crate) use print_bitmap_window::payload as print_resampled_bitmap_window;
 mod print_codec;
 mod print_fill_jpeg;
 mod print_picture_resample;
@@ -43,11 +46,13 @@ use crate::renderer::render_tree::{
 
 mod jpeg_orientation;
 mod picture_adjustments;
+mod picture_shadow;
 mod picture_soft_edge;
 pub use jpeg_orientation::upright_jpeg;
 pub(crate) use picture_adjustments::{
     adjusted_picture_bytes, picture_tone_parameters, resolve_page_background_tone,
 };
+pub(crate) use picture_shadow::prepare_picture_shadow;
 pub(crate) use picture_soft_edge::prepare_picture_soft_edge;
 mod wmf_picture;
 pub(crate) use wmf_picture::adjust_pixels as adjust_wmf_device_pixels;
@@ -134,6 +139,13 @@ const MAX_MEMO_ENTRIES: usize = 64;
 /// 변환 종류. 같은 바이트라도 어떤 변환을 거쳤느냐에 따라 결과가 다르다.
 #[derive(Clone, Copy, Hash)]
 enum Conversion {
+    PictureShadow {
+        radius: u64,
+        dimensions: [u32; 3],
+        crop: [u64; 4],
+        rgb: [u8; 3],
+        opacity: u64,
+    },
     PictureSoftEdge {
         radius: u64,
         width: u32,
@@ -198,11 +210,13 @@ enum Conversion {
         height: u32,
         quality: u8,
     },
-    Hancom2024ResampledBitmapWindow {
+    PrintResampledBitmapWindow {
         bounds: [u32; 4],
         width: u32,
         height: u32,
         quality: u8,
+        print_2024: bool,
+        rgb555: bool,
     },
     PrintOriginalRgbJpeg {
         quality: u8,

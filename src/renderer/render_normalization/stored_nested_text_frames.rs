@@ -383,14 +383,15 @@ pub(crate) fn prove_parent_closed_with_storage<S: crate::storage::Storage>(
 }
 
 pub(super) fn collect(document: &Document) -> HashMap<usize, Arc<StoredNestedTextFrames>> {
-    match collect_with_storage(document, &crate::storage::Unbounded) {
+    match collect_with_storage(document, std::iter::empty(), &crate::storage::Unbounded) {
         Ok(value) => value,
         Err(never) => match never {},
     }
 }
 
-pub(crate) fn collect_with_storage<S: crate::storage::Storage>(
-    document: &Document,
+pub(crate) fn collect_with_storage<'a, S: crate::storage::Storage>(
+    document: &'a Document,
+    rendered_sections: impl Iterator<Item = &'a [crate::model::paragraph::Paragraph]>,
     storage: &S,
 ) -> Result<HashMap<usize, Arc<StoredNestedTextFrames>>, S::Error> {
     Ok({
@@ -438,8 +439,13 @@ pub(crate) fn collect_with_storage<S: crate::storage::Storage>(
         if (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
             && !profile.session_edited()
         {
-            for section in &document.sections {
-                for paragraph in &section.paragraphs {
+            let sections = document
+                .sections
+                .iter()
+                .map(|section| section.paragraphs.as_slice())
+                .chain(rendered_sections);
+            for paragraphs in sections {
+                for paragraph in paragraphs {
                     for control in &paragraph.controls {
                         if let Control::Table(table) = control {
                             visit_with_storage(document, table, &mut result, storage)?;

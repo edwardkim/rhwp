@@ -1216,6 +1216,18 @@ impl LayoutEngine {
             Control::Shape(s) => s.as_ref(),
             _ => return,
         };
+        let running_rule = (self.profile.get().hwp3_native_layout()
+            && !self.profile.get().session_edited()
+            && matches!(
+                parent.node_type,
+                RenderNodeType::Header | RenderNodeType::Footer
+            )
+            && para.text.is_empty()
+            && matches!(para.controls.as_slice(), [Control::Shape(_)])
+            && para.line_segs.len() == 1)
+            .then(|| source_line_frame::hwp3_running_rule(shape))
+            .flatten();
+        let shape = running_rule.as_ref().unwrap_or(shape);
 
         let common = shape.common();
         // [#6185] 세로 오프셋이 **자기 높이의 정확한 음수**인 자리차지 글상자는 그
@@ -2907,6 +2919,7 @@ impl LayoutEngine {
                         crop,
                         original_size_hu,
                         soft_edge_radius_hu: pic.effects.soft_edge_radius,
+                        outer_shadow: pic.outer_shadow(),
                         effect: pic.image_attr.effect,
                         brightness: pic.image_attr.brightness,
                         contrast: pic.image_attr.contrast,
