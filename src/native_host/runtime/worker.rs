@@ -190,6 +190,12 @@ fn execute(
                 table: session.table_object(target.revision, &position, page)?,
             })
         }
+        C::SystemFontFamilies { target } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            let families = doc.session().system_font_families(target.revision)?;
+            Ok(O::SystemFontFamilies { target, families })
+        }
         C::ImeContext { target } => {
             let doc = document(owner)?;
             doc.check(target)?;

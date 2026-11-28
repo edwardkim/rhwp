@@ -210,6 +210,9 @@ enum Request {
         position: NativeTextPosition,
         page: u32,
     },
+    SystemFontFamilies {
+        expected_revision: u64,
+    },
     ReplaceAllMatches {
         expected_revision: u64,
         request: NativeSearchRequest,
@@ -639,6 +642,9 @@ fn worker_output(host: &mut Host, worker: u64, output: NativeRuntimeOutput) -> V
                 json!({"ok":true,"kind":"tableObject","target":target,
                     "fontGeneration":font_generation,"page":page,"table":table})
             }
+            NativeRuntimeOutput::SystemFontFamilies { target, families } => {
+                json!({"ok":true,"kind":"systemFontFamilies","target":target,"families":families})
+            }
             NativeRuntimeOutput::ImeContext(context) => {
                 json!({"ok":true,"kind":"imeContext","context":context})
             }
@@ -903,6 +909,8 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
         capabilities["maxEquationScriptBytes"] = MAX_EQUATION_SCRIPT_BYTES.into();
         capabilities["minEquationFontSize"] = MIN_EQUATION_FONT_SIZE.into();
         capabilities["maxEquationFontSize"] = MAX_EQUATION_FONT_SIZE.into();
+        capabilities["characterFontColorFormatting"] = true.into();
+        capabilities["systemFontFamilies"] = cfg!(feature = "native-skia").into();
         Ok(capabilities)
     })
 }
@@ -990,6 +998,11 @@ pub unsafe extern "C" fn rhwp_session_request(
                     let table=session.table_object(expected_revision,&position,page)?;
                     Ok(json!({"ok":true,"kind":"tableObject","revision":expected_revision,
                         "fontGeneration":session.font_generation(),"page":page,"table":table}))
+                },
+                Request::SystemFontFamilies { expected_revision } => {
+                    let families = session.system_font_families(expected_revision)?;
+                    Ok(json!({"ok":true,"kind":"systemFontFamilies","revision":expected_revision,
+                        "families":families}))
                 },
                 Request::ReplaceAllMatches {expected_revision, request, text}=>{
                     let result=record.editor_mut()?.replace_all_matches(expected_revision,&request,&text)?;

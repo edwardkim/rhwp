@@ -19,6 +19,12 @@ pub(super) struct SystemFontFamilies {
 }
 
 impl SystemFontFamilies {
+    pub(super) fn sorted_names(&self) -> Vec<String> {
+        let mut names: Vec<_> = self.names.iter().cloned().collect();
+        names.sort_unstable();
+        names
+    }
+
     /// Resolving the OS-selected outline may read an entire TTC on Windows.
     /// Both the selected face and a miss are stable for this catalog and style.
     fn preferred_truetype(

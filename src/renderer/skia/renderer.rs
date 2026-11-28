@@ -520,6 +520,10 @@ pub struct SkiaLayerRenderer {
 }
 
 impl SkiaLayerRenderer {
+    pub(crate) fn system_font_families(&self) -> Vec<String> {
+        self.system_families.sorted_names()
+    }
+
     pub fn new() -> Self {
         // [perf] FontMgr::default() + collect_system_families() (시스템 폰트 family 전수
         // 열거) 는 페이지당 ~8ms 가 드는데, 프로세스(스레드) 내에서 불변이다. 매 렌더마다

@@ -175,6 +175,9 @@ pub enum NativeRuntimeCommand {
         position: NativeTextPosition,
         page: u32,
     },
+    SystemFontFamilies {
+        target: NativeRuntimeTarget,
+    },
     ImeContext {
         target: NativeRuntimeTarget,
     },
@@ -589,6 +592,10 @@ pub enum NativeRuntimeOutput {
         page: u32,
         table: NativeTableObject,
     },
+    SystemFontFamilies {
+        target: NativeRuntimeTarget,
+        families: Vec<String>,
+    },
     ImeContext(NativeImeContext),
     ImeEditContext(Box<NativeImeEditContext>),
     Clipboard {
@@ -670,6 +677,7 @@ impl fmt::Debug for NativeRuntimeOutput {
             Self::SelectionFormatting { .. } => "SelectionFormatting",
             Self::PageSetup { .. } => "PageSetup",
             Self::TableObject { .. } => "TableObject",
+            Self::SystemFontFamilies { .. } => "SystemFontFamilies",
             Self::ImeContext(_) => "ImeContext",
             Self::ImeEditContext(_) => "ImeEditContext",
             Self::Clipboard { .. } => "Clipboard",
