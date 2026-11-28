@@ -8,6 +8,7 @@ name: Adapter inter-diff
 on:
   pull_request:
     branches: [main, devel]
+    types: [opened, reopened, synchronize, ready_for_review, converted_to_draft]
   workflow_dispatch:
 
 permissions:
@@ -24,6 +25,7 @@ env:
 
 jobs:
   trusted_postmerge_reuse:
+    if: ${{ github.event.pull_request.draft != true }}
     uses: ./.github/workflows/trusted-postmerge-ci-reuse.yml
     permissions:
       actions: read

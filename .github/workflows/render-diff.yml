@@ -3,7 +3,7 @@ name: Render Diff
 on:
   pull_request:
     branches: [main, devel]
-    types: [opened, reopened, synchronize]
+    types: [opened, reopened, synchronize, ready_for_review, converted_to_draft]
     paths:
       - 'AGENTS.md'
       - 'CLAUDE.md'
@@ -85,12 +85,13 @@ env:
 # [Task #1192 F] 같은 PR 에 새 push 가 오면 진행 중 run 을 취소해 중복 실행 제거.
 # render-diff 는 pull_request 트리거 위주 — cancel-in-progress 는 PR 이벤트 한정.
 concurrency:
-  group: render-diff-${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  group: render-diff-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   preflight:
     name: Render Diff preflight
+    if: ${{ github.event.pull_request.draft != true }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

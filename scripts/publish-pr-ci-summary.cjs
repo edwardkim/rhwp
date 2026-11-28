@@ -10,7 +10,7 @@ async function publish({github, context}) {
   const {owner, repo} = context.repo;
   const api = github.rest;
   const params = {owner, repo};
-  const matches = p => p.state === 'open' && p.base.ref === 'devel' &&
+  const matches = p => p.state === 'open' && p.draft !== true && p.base.ref === 'devel' &&
     p.base.repo.full_name === owner + '/' + repo && p.head.repo?.full_name === trigger.head_repository?.full_name &&
     p.head.ref === trigger.head_branch;
   const linked = trigger.pull_requests || [];

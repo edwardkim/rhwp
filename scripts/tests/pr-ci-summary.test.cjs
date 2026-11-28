@@ -60,9 +60,10 @@ test('fork PR의 실제 head 재확인, 봇 코멘트 한 건 유지, 이전 이
   const live = {...pull,state:'open',base:{ref:'devel',repo:{full_name:'example/rhwp',html_url:'https://github.com/example/rhwp'}}};
   const comments = [{id:7,user:{login:'someone'},body:'<!-- rhwp-pr-ci-summary:v1 -->\n'}];
   const runs = [run];
-  let edits = 0, headMoved = false;
+  let edits = 0, headMoved = false, convertedToDraft = false;
   const rest = {
-    pulls:{list:()=>[live], get:()=>({data:headMoved ? {...live,head:{...live.head,sha:'b'.repeat(40)}} : live})},
+    pulls:{list:()=>[live], get:()=>({data:{...live,draft:convertedToDraft,
+      head:headMoved ? {...live.head,sha:'b'.repeat(40)} : live.head}})},
     actions:{listWorkflowRunsForRepo:()=>runs,listJobsForWorkflowRunAttempt:()=>[]},
     issues:{listComments:()=>comments,createComment:({body})=>comments.push({id:8,user:{login:'github-actions[bot]'},body}),
       updateComment:({comment_id,body})=>{assert.equal(comment_id,8);comments[1].body=body;edits++;}},
@@ -73,6 +74,8 @@ test('fork PR의 실제 head 재확인, 봇 코멘트 한 건 유지, 이전 이
   runs[0]={...run,run_attempt:3,conclusion:'failure'}; await publish(args);
   assert.match(comments[1].body,/시도 3/); assert.equal(edits,1);
   headMoved=true; runs[0]={...run,run_attempt:4}; await publish(args); assert.equal(edits,1);
+  headMoved=false; convertedToDraft=true; await publish(args); assert.equal(edits,1);
+  convertedToDraft=false; live.draft=true; await publish(args); assert.equal(edits,1);
 });
 
 test('실패한 작업과 집계 작업이 함께 실패하면 원래 실패 단계만 표시한다', () => {

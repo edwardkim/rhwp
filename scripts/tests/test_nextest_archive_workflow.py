@@ -425,7 +425,7 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         for name in ("test-archive-a-shard-1:", "test-archive-b-shard-1:", "test-archive-c-shard-1:", "test-archive-d-shard-1:"):
             self.assertIn(name, ci)
         self.assertIn("Archive A shard total mismatch", ci); self.assertIn("Archive B shard total mismatch", ci); self.assertIn("Archive C shard total mismatch", ci); self.assertIn("Archive D shard total mismatch", ci)
-        self.assertIn("name: Build & Test", ci)
+        self.assertIn("|| 'Build & Test' }}", ci)
 
     def test_reusable_builder_rejects_profile_timeout_mismatches(self) -> None:
         step = step_body(self.builder, "Validate test archive policy")
@@ -490,7 +490,7 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         self.assertIn("--lib", step)
 
     def test_required_check_and_release_artifact_contracts_stay_stable(self) -> None:
-        self.assertIn("name: Build & Test", self.ci)
+        self.assertIn("|| 'Build & Test' }}", self.ci)
         self.assertIn(
             "cargo build --locked --release --bin rhwp --features native-skia "
             "--target ${{ matrix.target }}",

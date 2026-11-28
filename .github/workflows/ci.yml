@@ -5,7 +5,7 @@ on:
     tags: ['v*']
   pull_request:
     branches: [main, devel]
-    types: [opened, reopened, synchronize]
+    types: [opened, reopened, synchronize, ready_for_review, converted_to_draft]
     paths-ignore:
       # samples는 required Build & Test를 발행해야 하므로 preflight에서
       # 신규 reference-only와 기존 자료 변경을 구분한다.
@@ -54,11 +54,12 @@ env:
 # [Task #1192 F] 같은 PR 에 새 push 가 오면 진행 중 run 을 취소해 중복 실행 제거.
 # Branch push에서는 검증 CI를 시작하지 않는다. tag/manual 실행은 명시 실행이다.
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   trusted_postmerge_reuse:
+    if: ${{ github.event.pull_request.draft != true }}
     uses: ./.github/workflows/trusted-postmerge-ci-reuse.yml
     permissions:
       actions: read
@@ -2139,7 +2140,8 @@ jobs:
           fi
 
   build-and-test:
-    name: Build & Test
+    # A skipped check can satisfy branch protection. Only Ready and non-PR runs use its name.
+    name: ${{ github.event.pull_request.draft == true && 'Draft Build & Test' || 'Build & Test' }}
     runs-on: ubuntu-latest
     # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
     timeout-minutes: 45
@@ -2160,7 +2162,7 @@ jobs:
       - frontend-unit-gates
       - frontend-package-gates
       - workflow-promotion-preflight
-    if: ${{ always() }}
+    if: ${{ always() && github.event.pull_request.draft != true }}
     permissions:
       contents: read
 

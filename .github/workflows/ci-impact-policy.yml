@@ -8,7 +8,7 @@ name: CI Impact Policy Controller
 on:
   pull_request_target:
     branches: [devel]
-    types: [opened, reopened, synchronize]
+    types: [opened, reopened, synchronize, ready_for_review]
   workflow_run:
     workflows: [CI, CodeQL, Render Diff]
     types: [completed]
@@ -38,10 +38,13 @@ jobs:
     # Missing/multiple links require live resolution; source branch is NOT the PR base.
     if: >-
       ${{
-        (github.event_name == 'pull_request_target' && github.event.pull_request.base.ref == 'devel')
+        (github.event_name == 'pull_request_target'
+          && github.event.pull_request.base.ref == 'devel'
+          && github.event.pull_request.draft != true)
         || (
           github.event_name == 'workflow_run'
           && github.event.workflow_run.event == 'pull_request'
+          && github.event.workflow_run.conclusion != 'skipped'
           && (
             !github.event.workflow_run.pull_requests[0]
             || github.event.workflow_run.pull_requests[1]
@@ -173,6 +176,10 @@ jobs:
 
             if (!pull) {
               core.setOutput('active', 'false');
+              return;
+            }
+            if (pull.draft === true) {
+              ignore('draft-pr');
               return;
             }
 
@@ -742,6 +749,7 @@ jobs:
             if (process.env.BASE_REF !== 'devel'
               || !/^[0-9a-f]{40}$/.test(process.env.BASE_SHA || '')
               || livePull.state !== 'open'
+              || livePull.draft === true
               || livePull.base?.ref !== 'devel'
               || livePull.base?.repo?.full_name !== `${owner}/${repo}`
               || livePull.base?.sha !== process.env.BASE_SHA
