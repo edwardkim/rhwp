@@ -9,7 +9,7 @@ use std::fs;
 use std::os::raw::c_char;
 use std::path::{Path, PathBuf};
 
-use rhwp_core::wasm_api::HwpDocument;
+use rhwp_core::DocumentCore;
 
 mod gpu_d3d;
 mod gpu_gl;
@@ -164,7 +164,7 @@ fn export_pdf_direct_to_file(
         return Err("PDF input exceeds the 128 MiB limit.".to_string());
     }
     let doc =
-        HwpDocument::from_bytes(&data).map_err(|e| format!("PDF input parse failed: {}", e))?;
+        DocumentCore::from_bytes(&data).map_err(|e| format!("PDF input parse failed: {}", e))?;
     let page_count = doc.page_count();
     if target_page.is_none() && page_count > MAX_SELECTED_PAGES {
         return Err("Direct PDF export exceeds the 256 selected-page limit.".to_string());
@@ -210,7 +210,7 @@ fn export_text_to_dir(
 ) -> Result<String, String> {
     let data = fs::read(input_path)
         .map_err(|e| format!("파일을 읽을 수 없습니다 - {}: {}", input_path.display(), e))?;
-    let doc = HwpDocument::from_bytes(&data).map_err(|e| format!("HWP 파싱 실패 - {}", e))?;
+    let doc = DocumentCore::from_bytes(&data).map_err(|e| format!("HWP 파싱 실패 - {}", e))?;
     let page_count = doc.page_count();
     let pages = select_pages(page_count, target_page)?;
     fs::create_dir_all(output_dir).map_err(|e| {
@@ -242,7 +242,7 @@ fn export_text_to_dir(
 fn read_text(input_path: &Path, target_page: Option<u32>) -> Result<String, String> {
     let data = fs::read(input_path)
         .map_err(|e| format!("파일을 읽을 수 없습니다 - {}: {}", input_path.display(), e))?;
-    let doc = HwpDocument::from_bytes(&data).map_err(|e| format!("HWP 파싱 실패 - {}", e))?;
+    let doc = DocumentCore::from_bytes(&data).map_err(|e| format!("HWP 파싱 실패 - {}", e))?;
     let page_count = doc.page_count();
     let pages = select_pages(page_count, target_page)?;
 
@@ -265,7 +265,7 @@ fn export_markdown_to_dir(
 ) -> Result<String, String> {
     let data = fs::read(input_path)
         .map_err(|e| format!("파일을 읽을 수 없습니다 - {}: {}", input_path.display(), e))?;
-    let doc = HwpDocument::from_bytes(&data).map_err(|e| format!("HWP 파싱 실패 - {}", e))?;
+    let doc = DocumentCore::from_bytes(&data).map_err(|e| format!("HWP 파싱 실패 - {}", e))?;
     let page_count = doc.page_count();
     let pages = select_pages(page_count, target_page)?;
     fs::create_dir_all(output_dir).map_err(|e| {
@@ -342,7 +342,7 @@ fn export_markdown_to_dir(
 }
 
 fn extract_image_data(
-    doc: &HwpDocument,
+    doc: &DocumentCore,
     sec_idx: Option<usize>,
     para_idx: Option<usize>,
     control_idx: Option<usize>,
