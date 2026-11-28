@@ -3344,6 +3344,33 @@ impl DocumentCore {
             ));
         }
 
+        // 쪽에서 나뉜 표의 뒤쪽에만 놓인 셀(글 줄 없는 중첩 표 host 문단 등)은 표 첫 쪽에 셀 상자가 없다.
+        // 첫 쪽에서 못 찾았을 때만 셀이 실제로 놓인 후보 쪽의 셀 상자를 쓴다 — 첫 쪽 결과는 그대로다.
+        for &page_num in pages.iter().filter(|&&page| page != first_page) {
+            let mut tree = self.build_page_tree(page_num)?;
+            tree.root.remove_page_areas();
+            if let Some((cx, cy, cw, ch)) = find_table_cell_bbox(
+                &tree.root,
+                parent_para_idx,
+                control_idx,
+                cell_pos.0,
+                cell_pos.1,
+            ) {
+                return Ok(format_cursor_rect_json(
+                    page_num,
+                    cx + cell_pos.2,
+                    cy + cell_pos.3,
+                    (ch - cell_pos.3 - cell_pos.4).max(10.0),
+                    Some(CellCursorBounds {
+                        x: cx,
+                        y: cy,
+                        w: cw,
+                        h: ch,
+                    }),
+                ));
+            }
+        }
+
         Err(HwpError::RenderError(format!(
             "셀 커서 위치를 찾을 수 없습니다: sec={}, parentPara={}, ctrl={}, cell={}, cellPara={}, offset={}",
             section_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx, char_offset
@@ -5565,7 +5592,8 @@ impl DocumentCore {
                         runs.push(HfRunInfo {
                             hf_para_idx,
                             char_start: cs,
-                            char_count: text_run.text.chars().count(),
+                            // 덧말·겹침 run은 본말 글자 수가 아니라 한 칸이다(선택 조회와 같다).
+                            char_count: effective_char_count(text_run),
                             char_positions: positions,
                             bbox_x: node.bbox.x,
                             bbox_y: node.bbox.y,
@@ -5806,8 +5834,9 @@ impl DocumentCore {
                     paragraphs.len()
                 )));
             }
-            let start_len = paragraphs[start_hf_para_idx].text.chars().count();
-            let end_len = paragraphs[end_hf_para_idx].text.chars().count();
+            // 선택 자리는 덧말·겹침·글자처럼 둔 개체를 한 칸으로 센다(아래 run 좌표와 같다).
+            let start_len = navigable_text_len(&paragraphs[start_hf_para_idx]);
+            let end_len = navigable_text_len(&paragraphs[end_hf_para_idx]);
             if start_char_offset > start_len || end_char_offset > end_len {
                 return Err(HwpError::RenderError(format!(
                     "머리말/꼬리말 문자 범위 초과 (start={}/{}, end={}/{})",

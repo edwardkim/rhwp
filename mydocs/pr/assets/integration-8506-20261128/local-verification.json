@@ -1,0 +1,126 @@
+{
+  "base_head": "3a6b7d2b318287361f443b0814702783eb973533",
+  "code_head": "8550d0698f54fda3d66bee84232e753bb4599185",
+  "test_head": "b45dfda9a3de46438d2dd14ea473bd96ec6e6c81",
+  "readme_head": "e83eb5774feb652a0732dcf7aca8c0525615359f",
+  "platform": "macOS arm64",
+  "focused": {
+    "passed": 16,
+    "failed": 0,
+    "skipped": 2088,
+    "summary": "Summary [   0.105s] 16 tests run: 16 passed, 2088 skipped"
+  },
+  "nextest": {
+    "passed": 14267,
+    "failed": 0,
+    "skipped": 45,
+    "summary": "Summary [ 427.087s] 14267 tests run: 14267 passed (1 slow), 45 skipped"
+  },
+  "minimal_fonts": {
+    "profile": "sandbox-exec with font registry isolation",
+    "normal_coretext_files": 1160,
+    "isolated_coretext_files": 203,
+    "explicit_redistributable_fixture": "ttfs/redistributable/happiness-sans/HappinessSansVF.ttf",
+    "fixture_sha256": "3bbd254dcc5780f7524f9d07af4aa981ba5e3e84cf32d7d4e04301b3943e8694"
+  },
+  "native_skia": {
+    "library_binaries": 4,
+    "library_passed": 4032,
+    "library_ignored": 12,
+    "integration_modules": 21,
+    "integration_passed": 193,
+    "module_results": {
+      "cli_exit_codes_native": 2,
+      "issue_1144_native": 1,
+      "issue_2225_missing_picture_placeholder": 2,
+      "render_p37_direct_pdf_export": 37,
+      "issue_7950_pdf_paint": 4,
+      "issue_2083_hide_fill_page_background": 1,
+      "issue_2292_chart_png_clip": 1,
+      "issue_2293_chart_png_text": 2,
+      "issue_7820_sixel_contract": 7,
+      "issue_8150_kitty_contract": 8,
+      "issue_4961_font_decision_trace": 12,
+      "issue_7902_original_frame_and_content": 7,
+      "issue_8160_hwp2022_paragraph_relations": 3,
+      "native_fractional_glyph_origin": 7,
+      "skia_native_glyph_replay": 24,
+      "issue_8153_opaque_mixed_axis_image_sampling": 2,
+      "issue_8153_print_glyph_geometry": 9,
+      "issue_8153_symbol_fallback": 2,
+      "issue_536_native_region_cache": 39,
+      "skia_region_plan": 10,
+      "skia_host_surface": 13
+    }
+  },
+  "protected_pages": {
+    "documents": 23,
+    "native": 2023,
+    "wasm": 2023,
+    "below_floor": 0,
+    "identical_devel_png": 4046,
+    "report": "protected-page-comparison.tsv",
+    "report_sha256": "9711301ce7e3cbd7c7b6a1af8de6883aa8893857fa32427df64ccb3c1cb99e57"
+  },
+  "windows": {
+    "host": "win10-ted",
+    "source": "8550d0698f54fda3d66bee84232e753bb4599185",
+    "dotnet_sdk": "10.0.400",
+    "dll_sha256": "5e64b810e172f6d0d97647d14bc2567724374784de490ca6a64329de6904a3f5",
+    "input_sha256": "0b250ddb5a578a6a278cbbc90779d2236fcfa454b9e455124d033bf9cec1df8b",
+    "nativeCSharpSmoke": true,
+    "livePdf": true,
+    "os": "Microsoft Windows 10.0.19045",
+    "architecture": "X64"
+  },
+  "wasm_hwp5_save": {
+    "base": [
+      {
+        "label": "plain",
+        "milliseconds": 48,
+        "bytes": 3975680,
+        "sha256": "7110d06f1776c6a5751ae1e0dca340a121501e48a2737771b0c0132dd0f72599"
+      },
+      {
+        "label": "encrypted-first",
+        "milliseconds": 11375,
+        "bytes": 3975680,
+        "sha256": "c12d3e7d67f1d39170861e3e2b5a90480f401caed8eb337911b891c84923adab"
+      },
+      {
+        "label": "encrypted-repeat",
+        "milliseconds": 20114,
+        "bytes": 3975680,
+        "sha256": "c12d3e7d67f1d39170861e3e2b5a90480f401caed8eb337911b891c84923adab"
+      }
+    ],
+    "head": [
+      {
+        "label": "plain",
+        "milliseconds": 18,
+        "bytes": 3975680,
+        "sha256": "7110d06f1776c6a5751ae1e0dca340a121501e48a2737771b0c0132dd0f72599"
+      },
+      {
+        "label": "encrypted-first",
+        "milliseconds": 8503,
+        "bytes": 3975680,
+        "sha256": "c12d3e7d67f1d39170861e3e2b5a90480f401caed8eb337911b891c84923adab"
+      },
+      {
+        "label": "encrypted-repeat",
+        "milliseconds": 33,
+        "bytes": 3975680,
+        "sha256": "c12d3e7d67f1d39170861e3e2b5a90480f401caed8eb337911b891c84923adab"
+      }
+    ]
+  },
+  "sha256": {
+    "base-tools/rhwp": "c3c4541fea32542a5f665d45923ba660e2c32cf8edfb620104f76776a07c0d1c",
+    "base-tools/pkg/rhwp.js": "2608f94b372d15aff7d7894f7c0878192da3d17c9b5288367b1a44bc808af733",
+    "base-tools/pkg/rhwp_bg.wasm": "40b3c8f85627907ce098bd1d3ed2978f07cd5be1f51f5993c3e7c3b54cd8e0f3",
+    "head-tools/rhwp": "acfa10480629fb370ddf017c546e41e51b96c1258616032a77199e18957fc555",
+    "head-tools/pkg/rhwp.js": "2608f94b372d15aff7d7894f7c0878192da3d17c9b5288367b1a44bc808af733",
+    "head-tools/pkg/rhwp_bg.wasm": "9664aca20ea779cefb9227d83efa2c60fd257acaf296c67eff7989d007b50646"
+  }
+}

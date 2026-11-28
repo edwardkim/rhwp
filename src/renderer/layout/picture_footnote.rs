@@ -1237,7 +1237,8 @@ impl LayoutEngine {
                 para_y,
                 0,
                 composed.lines.len(),
-                0,
+                // 캡션 글의 누르기·캐럿이 캡션 주인의 구역을 받는다. 주인을 모르면 0이다.
+                caption_owner.map_or(0, |owner| owner.sec_idx),
                 0,
                 ctx.clone(),
                 false,

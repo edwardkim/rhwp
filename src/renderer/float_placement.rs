@@ -7934,7 +7934,7 @@ impl ParagraphFloatPlacement {
         table_height: f64,
         dpi: f64,
     ) -> Option<Self> {
-        if !matches!(para.controls.as_slice(), [Control::Table(_)])
+        if !Self::empty_offset_host_controls(para)
             || para
                 .text
                 .chars()
@@ -7944,6 +7944,28 @@ impl ParagraphFloatPlacement {
             return None;
         }
         Self::from_stored_host_at(para, table, control_index, text_origin, table_height, dpi)
+    }
+
+    /// 빈 호스트가 가진 제어가 표 하나와 **저장 글줄 안에 머무는 것**뿐인가.
+    ///
+    /// 단·구역 정의는 흐름에 자리가 없고, 글자처럼 취급하는 개체는 저장 글줄 높이에 이미
+    /// 들어 있다. 그 글줄이 표 위에서 끝나는지는 `from_stored_host_at` 이
+    /// (`stored_host_lines_are_valid`) 따로 확인한다. 떠 있는 개체가 하나 더 있으면 그
+    /// 개체의 띠는 이 프레임이 모르므로 받지 않는다 (#8506: 결재 표지 칸 문단
+    /// `[단 정의][제목 표][빈 TAC 그림]`).
+    fn empty_offset_host_controls(para: &Paragraph) -> bool {
+        let mut tables = 0usize;
+        para.controls.iter().all(|control| match control {
+            Control::Table(_) => {
+                tables += 1;
+                tables == 1
+            }
+            Control::SectionDef(_) | Control::ColumnDef(_) => true,
+            Control::Shape(_) | Control::Picture(_) | Control::Equation(_) => {
+                control.is_treat_as_char_object()
+            }
+            _ => false,
+        }) && tables == 1
     }
 
     /// 앞뒤 저장 줄이 같게 닫는 빈 호스트의 실제 줄 상자다.
