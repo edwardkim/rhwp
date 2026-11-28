@@ -12,10 +12,11 @@ internal enum NativeParagraphAlignment
     Split,
 }
 
-internal sealed record NativeFormattingCapabilities(bool Edit, bool Inspect);
+internal sealed record NativeFormattingCapabilities(bool Edit, bool Inspect, bool FontAndColor, bool SystemFonts);
 internal sealed record NativeFormattingValue<T>(string Kind, T Value);
 internal sealed record NativeSelectionFormatting(NativeFormattingValue<bool> Bold,
-    NativeFormattingValue<int> FontSize, string Alignment);
+    NativeFormattingValue<int> FontSize, string Alignment,
+    NativeFormattingValue<string?>[]? FontNames, NativeFormattingValue<string?>? TextColor);
 
 internal sealed partial class NativeWorkerDispatcher
 {
@@ -34,7 +35,9 @@ internal sealed partial class NativeWorkerDispatcher
 
         using var report = ReadSuccess(RhwpNative.SessionCapabilities());
         formattingCapabilities = new(HasCapability(report.RootElement, "basicTextFormatting"),
-            HasCapability(report.RootElement, "selectionFormatting"));
+            HasCapability(report.RootElement, "selectionFormatting"),
+            HasCapability(report.RootElement, "characterFontColorFormatting"),
+            HasCapability(report.RootElement, "systemFontFamilies"));
         return formattingCapabilities;
     }
 
@@ -66,6 +69,21 @@ internal sealed partial class NativeWorkerDispatcher
     public Task<EditResult> FormatCharactersAsync(DocumentTarget expected, bool? bold, int? fontSize,
         CancellationToken cancellation) =>
         ApplyFormattingCommand(expected, new { command = "formatCharacters", bold, fontSize }, cancellation);
+
+    public Task<EditResult> FormatCharacterAppearanceAsync(DocumentTarget expected, string? fontName, string? textColor,
+        CancellationToken cancellation) =>
+        ApplyFormattingCommand(expected, new { command = "formatCharacters", fontName, textColor }, cancellation);
+
+    public Task<string[]> GetSystemFontFamiliesAsync(DocumentTarget expected, CancellationToken cancellation) =>
+        Dispatch(token =>
+        {
+            JsonElement reply = Submit(EnsureWorker(), new { op = "systemFontFamilies", target = expected }, token);
+            if (reply.GetProperty("kind").GetString() != "systemFontFamilies" ||
+                Read<DocumentTarget>(reply.GetProperty("target")) != expected)
+                throw new InvalidDataException("Native 글꼴 목록의 문서가 일치하지 않습니다.");
+
+            return Read<string[]>(reply.GetProperty("families"));
+        }, cancellation);
 
     public Task<EditResult> SetParagraphAlignmentAsync(DocumentTarget expected, NativeParagraphAlignment alignment,
         CancellationToken cancellation) =>

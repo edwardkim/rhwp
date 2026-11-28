@@ -88,6 +88,21 @@ public sealed partial class MainWindow
     private void DisplaySelectionFormatting(NativeSelectionFormatting? value)
     {
         showingFormatting = value is not null;
+        if (appearanceFormattingAvailable)
+        {
+            NativeFormattingValue<string?>? fontName = value?.FontNames is { Length: > 0 } names ? names[0] : null;
+            string label = fontName switch
+            {
+                { Kind: "uniform", Value: { Length: > 0 } family } => family,
+                { Kind: "mixed" } => "혼합",
+                _ => "글꼴",
+            };
+            if (FormattingFontLabel.Text != label)
+                FormattingFontLabel.Text = label;
+            SetFormattingItemStatus(FormattingFontButton, fontName?.Kind == "mixed" ? "글꼴이 혼합되어 있음" : label);
+            SetFormattingItemStatus(FormattingTextColorButton, value?.TextColor?.Kind == "mixed"
+                ? "글자색이 혼합되어 있음" : value?.TextColor?.Value ?? "");
+        }
         bool bold = value?.Bold is { Kind: "uniform", Value: true };
         string boldStatus = value?.Bold.Kind == "mixed" ? "굵기가 혼합되어 있음" : bold ? "굵게 적용됨" : "";
         SetFormattingIndicator(ApplyBoldButton, bold, boldStatus);

@@ -213,6 +213,13 @@
                     <Border Margin="4,0" Padding="2" CornerRadius="5" VerticalAlignment="Center"
                             Background="{ThemeResource ControlFillColorSecondaryBrush}">
                         <StackPanel Orientation="Horizontal" Spacing="2">
+                            <Button x:Name="FormattingFontButton" Height="32" Width="108" Padding="8,0"
+                                    MinHeight="0" HorizontalContentAlignment="Left" VerticalAlignment="Center"
+                                    Click="OnFormattingFontClicked" Visibility="Collapsed" IsEnabled="False"
+                                    ToolTipService.ToolTip="글꼴 선택" AutomationProperties.Name="글꼴 선택"
+                                    AutomationProperties.AutomationId="FormattingFont">
+                                <TextBlock x:Name="FormattingFontLabel" Text="글꼴" TextTrimming="CharacterEllipsis" />
+                            </Button>
                             <SplitButton x:Name="ApplyBoldButton" Height="32" MinHeight="0" Padding="7,0"
                                          VerticalAlignment="Center" VerticalContentAlignment="Center"
                                          IsEnabled="False" BorderThickness="1"
@@ -240,6 +247,12 @@
                                     ToolTipService.ToolTip="글자 크기 적용 (Enter)"
                                     AutomationProperties.Name="글자 크기 적용" AutomationProperties.AutomationId="ApplyFontSize">
                                 <SymbolIcon Symbol="Accept" />
+                            </Button>
+                            <Button x:Name="FormattingTextColorButton" Style="{StaticResource ToolbarIconButtonStyle}"
+                                    Click="OnFormattingTextColorClicked" Visibility="Collapsed" IsEnabled="False"
+                                    ToolTipService.ToolTip="글자색" AutomationProperties.Name="글자색"
+                                    AutomationProperties.AutomationId="FormattingTextColor">
+                                <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE8D3;" FontSize="16" />
                             </Button>
                             <Rectangle Width="1" Height="18" Margin="3,0" VerticalAlignment="Center" IsHitTestVisible="False"
                                        Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />

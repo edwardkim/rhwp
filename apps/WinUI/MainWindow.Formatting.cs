@@ -12,6 +12,8 @@ public sealed partial class MainWindow
 {
     private bool formattingCapabilityChecked;
     private bool basicFormattingAvailable;
+    private bool appearanceFormattingAvailable;
+    private bool systemFontChooserAvailable;
 
     private async void OnFormattingToolbarLoaded(object sender, RoutedEventArgs args)
     {
@@ -24,9 +26,14 @@ public sealed partial class MainWindow
             NativeFormattingCapabilities capabilities = await worker.GetFormattingCapabilitiesAsync(CancellationToken.None);
             basicFormattingAvailable = capabilities.Edit;
             formattingInspectionAvailable = capabilities.Inspect;
+            appearanceFormattingAvailable = capabilities.FontAndColor;
+            systemFontChooserAvailable = capabilities.SystemFonts;
             if (!closing)
             {
                 FormattingToolbar.Visibility = basicFormattingAvailable ? Visibility.Visible : Visibility.Collapsed;
+                FormattingFontButton.Visibility = appearanceFormattingAvailable && systemFontChooserAvailable
+                    ? Visibility.Visible : Visibility.Collapsed;
+                FormattingTextColorButton.Visibility = appearanceFormattingAvailable ? Visibility.Visible : Visibility.Collapsed;
                 RefreshFormattingActions();
             }
         }
@@ -41,12 +48,14 @@ public sealed partial class MainWindow
         // XAML can raise text notifications while InitializeComponent builds the row.
         // A queued cursor move or edit can briefly leave the page and selection
         // on different revisions. Keep the last settled appearance until it completes.
-        if (ApplyFontSizeButton is null || directQueueRunning || dragPointer is not null)
+        if (AlignJustifyButton is null || ApplyFontSizeButton is null || directQueueRunning || dragPointer is not null)
             return;
 
         bool canAlign = TryGetFormattingSelection(requireSelectedText: false, out _, out TextSelection? selection) &&
             DocumentActionsAvailable;
         bool canFormatText = canAlign && selection!.Anchor.ScalarOffset != selection.Focus.ScalarOffset;
+        FormattingFontButton.IsEnabled = canFormatText;
+        FormattingTextColorButton.IsEnabled = canFormatText;
         ApplyBoldButton.IsEnabled = canFormatText;
         FormattingFontSize.IsEnabled = canAlign;
         FormattingFontSize.IsReadOnly = !canFormatText;
@@ -139,10 +148,12 @@ public sealed partial class MainWindow
         }
     }
 
-    private async Task QueueFormattingAsync(bool requireSelectedText, Func<PageInfo, TextSelection, Task<EditResult>> execute)
+    private async Task QueueFormattingAsync(bool requireSelectedText, Func<PageInfo, TextSelection, Task<EditResult>> execute,
+        FormattingContext? expected = null)
     {
         if (!DocumentActionsAvailable || dragPointer is not null ||
-            !TryGetFormattingSelection(requireSelectedText, out PageInfo? initialPage, out TextSelection? requested))
+            !TryGetFormattingSelection(requireSelectedText, out PageInfo? initialPage, out TextSelection? requested) ||
+            expected?.Matches(initialPage, requested) == false)
             return;
 
         ulong documentId = initialPage.Target.DocumentId;
@@ -150,7 +161,7 @@ public sealed partial class MainWindow
         {
             if (!TryGetFormattingSelection(requireSelectedText, out PageInfo? currentPage, out TextSelection? current) ||
                 currentPage.Target.DocumentId != documentId || !SamePosition(requested.Anchor, current.Anchor) ||
-                !SamePosition(requested.Focus, current.Focus))
+                !SamePosition(requested.Focus, current.Focus) || expected?.Matches(currentPage, current) == false)
                 return;
 
             EditResult edit = await execute(currentPage, current);
