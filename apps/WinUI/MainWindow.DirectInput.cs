@@ -44,7 +44,7 @@ public sealed partial class MainWindow
             return;
 
         args.Handled = true;
-        dragPointer = PageImage.CapturePointer(args.Pointer) ? args.Pointer.PointerId : null;
+        dragPointer = PageCanvas.CapturePointer(args.Pointer) ? args.Pointer.PointerId : null;
         QueuePointerSelection(current, location, extend: false);
     }
 
@@ -67,7 +67,7 @@ public sealed partial class MainWindow
         if (AcceptPageInput(args.GetCurrentPoint(PageCanvas).Position, out PageInfo current, out Point location))
             QueuePointerSelection(current, location, extend: true, final: true);
         dragPointer = null;
-        PageImage.ReleasePointerCapture(args.Pointer);
+        PageCanvas.ReleasePointerCapture(args.Pointer);
     }
 
     private void OnPagePointerCaptureLost(object sender, PointerRoutedEventArgs args)
@@ -101,19 +101,29 @@ public sealed partial class MainWindow
                 return;
             }
 
+            if (continuousPages is not { } layout || !layout.TryGet(current.Page, out PagePlacement placement))
+                return;
+
             var location = new Point(
-                Math.Clamp((PageScroll.HorizontalOffset + 4) / zoom, 0, Math.Max(0, current.Width - 1)),
-                Math.Clamp((PageScroll.VerticalOffset + 4) / zoom, 0, Math.Max(0, current.Height - 1)));
+                Math.Clamp((PageScroll.HorizontalOffset + 4) / zoom - placement.Left, 0, Math.Max(0, placement.Width - 1)),
+                Math.Clamp((PageScroll.VerticalOffset + 4) / zoom - placement.Top, 0, Math.Max(0, placement.Height - 1)));
             await MovePointerSelectionAsync(current, location, extend: false);
         });
     }
 
     private bool AcceptPageInput(Point point, out PageInfo current, out Point location)
     {
-        current = page!;
-        location = new Point(point.X / zoom, point.Y / zoom);
-        return current is not null && !HasActiveComposition && CanQueueDirectEdit &&
-            location.X >= 0 && location.Y >= 0 && location.X < current.Width && location.Y < current.Height;
+        current = null!;
+        location = default;
+        if (page is not PageInfo active || HasActiveComposition || !CanQueueDirectEdit ||
+            continuousPages is not { } layout ||
+            !layout.TryHit(point.X / zoom, point.Y / zoom, out PagePlacement placement) ||
+            layout.Measured(active, placement.Index) is not { } measured)
+            return false;
+
+        current = measured;
+        location = new Point(point.X / zoom - placement.Left, point.Y / zoom - placement.Top);
+        return true;
     }
 
     private void QueuePointerSelection(PageInfo current, Point location, bool extend, bool final = false)
@@ -130,11 +140,16 @@ public sealed partial class MainWindow
     {
         if (!extend)
             dragAnchor = null;
-        if (page is not PageInfo current || current.Page != original.Page ||
-            current.Target.DocumentId != original.Target.DocumentId)
+        if (page is not PageInfo activePage || activePage.Target.DocumentId != original.Target.DocumentId ||
+            continuousPages is not { } layout || !layout.TryGet(original.Page, out PagePlacement placement))
             return;
 
         CancellationToken token = CancellationToken.None;
+        PageInfo current = layout.Measured(activePage, placement.Index) ??
+            await worker.GetPageAsync(activePage, placement.Index, token);
+        if (location.X >= current.Width || location.Y >= current.Height)
+            return;
+
         TextHit? hit = await worker.HitTestAsync(current, location.X, location.Y, token);
         if (hit?.Caret is not PageCaret caret || caret.Page != current.Page)
             return;
@@ -554,28 +569,20 @@ public sealed partial class MainWindow
 
         CancellationToken token = CancellationToken.None;
         PageCaret? caret = await worker.CaretAsync(current.Target, selection.Focus, token);
-        if (caret is not null && caret.Page != current.Page && followCaret)
-        {
-            current = await worker.GetPageAsync(current, caret.Page, token);
-            PageImage.Source = null;
-            page = current;
-            SetPageSize(current);
-            QueueRender();
-        }
-
         SelectionRectangle[] rectangles = SamePosition(selection.Anchor, selection.Focus) ? [] :
             await worker.GetSelectionRectanglesAsync(current, selection, token);
+        if (page is not { } active || active.Target != current.Target || active.FontGeneration != current.FontGeneration)
+            return;
+
         directGeometry = (current.Target, current.FontGeneration, caret, rectangles);
+        if (followCaret && caret is not null &&
+            await EnsurePagePlacementAsync(current, caret.Page, token) is { } placement)
+            ShowDocumentPoint(placement, caret.X, caret.Y, caret.Height);
         DrawDirectGeometry();
-        if (caret?.Page == current.Page)
+        if (focus && caret is not null)
         {
-            if (followCaret)
-                BringCaretIntoView(caret);
-            if (focus)
-            {
-                PageCanvas.UpdateLayout();
-                DirectInput.Focus(FocusState.Programmatic);
-            }
+            PageCanvas.UpdateLayout();
+            DirectInput.Focus(FocusState.Programmatic);
         }
     }
 
@@ -583,28 +590,34 @@ public sealed partial class MainWindow
     {
         DirectEditOverlay.Children.Clear();
         if (page is not PageInfo current || directGeometry is not { } geometry ||
-            geometry.Target != current.Target || geometry.FontGeneration != current.FontGeneration)
+            geometry.Target != current.Target || geometry.FontGeneration != current.FontGeneration ||
+            continuousPages is not { } layout)
             return;
 
-        foreach (SelectionRectangle rectangle in geometry.Selection.Where(rectangle => rectangle.Page == current.Page))
-            if (rectangle.Bounds.Width > 0 && rectangle.Bounds.Height > 0)
-                DrawMark(rectangle.Bounds.X, rectangle.Bounds.Y, rectangle.Bounds.Width * zoom,
-                    rectangle.Bounds.Height * zoom, (Brush)DirectEditOverlay.Resources["DirectSelectionBrush"], 0.32);
+        foreach (SelectionRectangle rectangle in geometry.Selection)
+            if (layout.TryGet(rectangle.Page, out PagePlacement placement) &&
+                rectangle.Bounds.Width > 0 && rectangle.Bounds.Height > 0)
+                DrawMark(placement.Left + rectangle.Bounds.X, placement.Top + rectangle.Bounds.Y,
+                    rectangle.Bounds.Width * zoom, rectangle.Bounds.Height * zoom,
+                    (Brush)DirectEditOverlay.Resources["DirectSelectionBrush"], 0.32);
 
-        if (geometry.Caret is not { } caret || caret.Page != current.Page || caret.Height <= 0)
+        if (geometry.Caret is not { Height: > 0 } caret || !layout.TryGet(caret.Page, out PagePlacement caretPage))
             return;
 
+        double x = caretPage.Left + caret.X;
+        double y = caretPage.Top + caret.Y;
         if (geometry.Selection.Length == 0)
-            DrawMark(caret.X, caret.Y, 1.5, caret.Height * zoom,
-                (Brush)DirectEditOverlay.Resources["DirectCaretBrush"], 1);
+            DrawMark(x, y, 1.5, caret.Height * zoom, (Brush)DirectEditOverlay.Resources["DirectCaretBrush"], 1);
 
-        // Keep an actual, measured WinUI text input at the Skia caret for the
-        // input service's screen coordinates. The document renders the visual text.
+        // Keep the input service's native candidate window anchored while it composes.
+        if (platformComposing)
+            return;
+
         DirectInput.Visibility = Visibility.Visible;
         DirectInput.Height = Math.Max(18, caret.Height * zoom);
         DirectInput.FontSize = Math.Clamp(caret.Height * zoom * 0.8, 9, 48);
-        Canvas.SetLeft(DirectInput, caret.X * zoom);
-        Canvas.SetTop(DirectInput, caret.Y * zoom);
+        Canvas.SetLeft(DirectInput, x * zoom);
+        Canvas.SetTop(DirectInput, y * zoom);
     }
 
     private void DrawMark(double x, double y, double width, double height, Brush brush, double opacity)
@@ -616,17 +629,6 @@ public sealed partial class MainWindow
         Canvas.SetLeft(mark, x * zoom);
         Canvas.SetTop(mark, y * zoom);
         DirectEditOverlay.Children.Add(mark);
-    }
-
-    private void BringCaretIntoView(PageCaret caret)
-    {
-        var x = caret.X * zoom;
-        var y = caret.Y * zoom;
-        if (x < PageScroll.HorizontalOffset || x + 2 > PageScroll.HorizontalOffset + PageScroll.ViewportWidth ||
-            y < PageScroll.VerticalOffset || y + caret.Height * zoom > PageScroll.VerticalOffset + PageScroll.ViewportHeight)
-        {
-            PageScroll.ChangeView(Math.Max(0, x - 16), Math.Max(0, y - 24), null, true);
-        }
     }
 
     private void ClearDirectGeometry()

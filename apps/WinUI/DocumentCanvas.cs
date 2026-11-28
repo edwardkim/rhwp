@@ -9,11 +9,15 @@ public sealed partial class DocumentCanvas : Canvas
     internal DocumentAutomationSnapshot? AutomationDocument { get; private set; }
     private ScrollViewer? automationViewport;
     private double zoom = 1;
+    private double pageLeft;
+    private double pageTop;
 
-    internal void UpdateAutomationViewport(ScrollViewer viewport, double pageZoom)
+    internal void UpdateAutomationViewport(ScrollViewer viewport, double pageZoom, double left, double top)
     {
         automationViewport = viewport;
         zoom = pageZoom;
+        pageLeft = left;
+        pageTop = top;
     }
 
     internal Rect AutomationScreenBounds(DocumentAutomationSnapshot snapshot, DocumentAutomationNode node)
@@ -23,12 +27,12 @@ public sealed partial class DocumentCanvas : Canvas
             XamlRoot is not { IsHostVisible: true } root)
             return default;
 
-        var viewport = new CaretBounds(scroll.HorizontalOffset / zoom, scroll.VerticalOffset / zoom,
+        var viewport = new CaretBounds((scroll.HorizontalOffset - pageLeft) / zoom, (scroll.VerticalOffset - pageTop) / zoom,
             scroll.ViewportWidth / zoom, scroll.ViewportHeight / zoom);
         if (node.VisibleBounds(viewport) is not { } bounds)
             return default;
 
-        var local = new Rect(bounds.X * zoom, bounds.Y * zoom, bounds.Width * zoom, bounds.Height * zoom);
+        var local = new Rect(pageLeft + bounds.X * zoom, pageTop + bounds.Y * zoom, bounds.Width * zoom, bounds.Height * zoom);
         Rect inRoot = TransformToVisual(root.Content).TransformBounds(local);
         var physical = root.CoordinateConverter.ConvertLocalToScreen(inRoot);
         return new Rect(physical.X, physical.Y, physical.Width, physical.Height);

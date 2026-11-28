@@ -241,15 +241,21 @@
             <ScrollViewer x:Name="PageScroll" Grid.Row="1" Margin="16,12,16,0"
                           HorizontalContentAlignment="Center" VerticalContentAlignment="Top"
                           HorizontalScrollBarVisibility="Auto" HorizontalScrollMode="Enabled"
-                          VerticalScrollBarVisibility="Auto"
-                          SizeChanged="OnViewportSizeChanged" ViewChanged="OnViewChanged">
+                          VerticalScrollBarVisibility="Auto" VerticalScrollMode="Enabled"
+                          SizeChanged="OnViewportSizeChanged" ViewChanged="OnViewChanged"
+                          AutomationProperties.AutomationId="DocumentViewport">
                 <local:DocumentCanvas x:Name="PageCanvas" HorizontalAlignment="Center" VerticalAlignment="Top"
                                       Width="0" Height="0" IsTabStop="True" KeyDown="OnPageEditKeyDown"
+                                      Background="Transparent" Tapped="OnPageTapped"
+                                      PointerPressed="OnPagePointerPressed" PointerMoved="OnPagePointerMoved"
+                                      PointerReleased="OnPagePointerReleased" PointerCaptureLost="OnPagePointerCaptureLost"
                                       AutomationProperties.AutomationId="DocumentCanvas">
-                    <Image x:Name="PageImage" Stretch="Fill" Tapped="OnPageTapped"
-                           PointerPressed="OnPagePointerPressed" PointerMoved="OnPagePointerMoved"
-                           PointerReleased="OnPagePointerReleased" PointerCaptureLost="OnPagePointerCaptureLost"
-                           AutomationProperties.Name="문서 쪽" />
+                    <Canvas x:Name="PageLayers" IsHitTestVisible="False"
+                            AutomationProperties.AccessibilityView="Raw">
+                        <Canvas.Resources>
+                            <SolidColorBrush x:Key="PagePaperBrush" Color="White" />
+                        </Canvas.Resources>
+                    </Canvas>
                     <Canvas x:Name="SearchHighlightCanvas" IsHitTestVisible="False"
                             AutomationProperties.AccessibilityView="Raw">
                         <Canvas.Resources>
@@ -274,10 +280,6 @@
                              TextCompositionEnded="OnDirectCompositionEnded"
                              AutomationProperties.Name="문서 직접 입력"
                              AutomationProperties.AutomationId="DirectEditorInput" />
-                    <Rectangle Width="{x:Bind PageCanvas.Width, Mode=OneWay}"
-                               Height="{x:Bind PageCanvas.Height, Mode=OneWay}"
-                               Stroke="{ThemeResource CardStrokeColorDefaultBrush}" StrokeThickness="1"
-                               IsHitTestVisible="False" AutomationProperties.AccessibilityView="Raw" />
                 </local:DocumentCanvas>
             </ScrollViewer>
         </Grid>

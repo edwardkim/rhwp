@@ -3,11 +3,8 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Windows.Storage.Pickers;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.Graphics.Imaging;
-using Windows.Security.Cryptography;
 using Windows.Storage;
 
 namespace Rhwp.WinUI;
@@ -168,9 +165,6 @@ public sealed partial class MainWindow : Window
             await GoToPageAsync(current, current.Page + 1);
     }
 
-    private Task GoToPageAsync(PageInfo current, uint index) =>
-        ChangeDocumentAsync(async token => await worker.GetPageAsync(current, index, token), fileName, resetZoom: false);
-
     private async Task<bool> ChangeDocumentAsync(Func<CancellationToken, Task<PageInfo?>> action,
         string? name, bool resetZoom, Func<PageInfo?, Task>? onCommitted = null)
     {
@@ -272,18 +266,7 @@ public sealed partial class MainWindow : Window
         DrawSearchHighlight(null);
         renderRequest?.Cancel();
         renderTimer.Stop();
-        PageImage.Source = null;
-        PageCanvas.Width = 0;
-        PageCanvas.Height = 0;
-    }
-
-    private void SetPageSize(PageInfo current)
-    {
-        PageCanvas.Width = current.Width * zoom;
-        PageCanvas.Height = current.Height * zoom;
-        UpdateAutomationDocument(current);
-        DrawSearchHighlight(current);
-        DrawDirectGeometry();
+        ResetContinuousPages();
     }
 
     private void OnZoomOutClicked(object sender, RoutedEventArgs args) => ZoomTo(zoom / 1.25);
@@ -295,12 +278,18 @@ public sealed partial class MainWindow : Window
             return;
 
         double nextZoom = Math.Clamp(value, MinZoom, MaxZoom);
+        if (nextZoom == zoom || continuousPages is not { } layout)
+            return;
+
         double ratio = nextZoom / zoom;
+        double left = PageScroll.HorizontalOffset * ratio;
+        double top = PageScroll.VerticalOffset * ratio;
+        renderRequest?.Cancel();
         zoom = nextZoom;
-        PageImage.Source = null;
-        SetPageSize(current);
-        PageScroll.ChangeView(PageScroll.HorizontalOffset * ratio, PageScroll.VerticalOffset * ratio,
-            null, true);
+        UpdatePageExtent(layout);
+        RefreshViewportOverlays(current);
+        PageScroll.UpdateLayout();
+        PageScroll.ChangeView(left, top, null, true);
         RefreshButtons();
         QueueRender();
     }
@@ -324,74 +313,6 @@ public sealed partial class MainWindow : Window
 
     private void OnXamlRootChanged(XamlRoot sender, XamlRootChangedEventArgs args) => QueueRender();
     private void OnViewportSizeChanged(object sender, SizeChangedEventArgs args) => QueueRender();
-    private void OnViewChanged(object? sender, ScrollViewerViewChangedEventArgs args) => QueueRender();
-
-    private void QueueRender()
-    {
-        if (closing || page is null)
-            return;
-
-        viewVersion++;
-        renderRequest?.Cancel();
-        if (renderRequest is null)
-        {
-            renderTimer.Stop();
-            renderTimer.Start();
-        }
-    }
-
-    private async void OnRenderTick(DispatcherQueueTimer sender, object args)
-    {
-        if (closing || renderRequest is not null || page is not PageInfo current)
-            return;
-
-        double deviceScale = Root.XamlRoot?.RasterizationScale ?? 1;
-        PageViewport? viewport = PageViewport.Visible(current, PageScroll.HorizontalOffset,
-            PageScroll.VerticalOffset, PageScroll.ViewportWidth, PageScroll.ViewportHeight, zoom, deviceScale);
-        if (viewport is null)
-            return;
-
-        ulong version = viewVersion;
-        using var request = new CancellationTokenSource();
-        renderRequest = request;
-        try
-        {
-            PageFrame frame = await worker.RenderAsync(current, viewport, request.Token);
-            if (closing || request.IsCancellationRequested)
-                return;
-
-            var pixels = CryptographicBuffer.CreateFromByteArray(frame.Bgra);
-            using var bitmap = SoftwareBitmap.CreateCopyFromBuffer(pixels, BitmapPixelFormat.Bgra8,
-                frame.PixelWidth, frame.PixelHeight, BitmapAlphaMode.Premultiplied);
-            var source = new SoftwareBitmapSource();
-            await source.SetBitmapAsync(bitmap);
-            if (closing || request.IsCancellationRequested)
-                return;
-
-            Canvas.SetLeft(PageImage, frame.OriginX / frame.DeviceScale);
-            Canvas.SetTop(PageImage, frame.OriginY / frame.DeviceScale);
-            PageImage.Width = frame.PixelWidth / frame.DeviceScale;
-            PageImage.Height = frame.PixelHeight / frame.DeviceScale;
-            PageImage.Source = source;
-            if (pdfCancellation is null && StatusText.Text == RenderingStatus)
-                StatusText.Text = documentError ?? string.Empty;
-        }
-        catch (OperationCanceledException) when (closing || request.IsCancellationRequested)
-        {
-        }
-        catch (Exception error)
-        {
-            if (!closing && !request.IsCancellationRequested)
-                StatusText.Text = "쪽을 표시할 수 없습니다. " + error.Message;
-        }
-        finally
-        {
-            renderRequest = null;
-            if (!closing && page is not null && version != viewVersion)
-                renderTimer.Start();
-        }
-    }
-
     private void RefreshButtons()
     {
         bool available = DocumentActionsAvailable;

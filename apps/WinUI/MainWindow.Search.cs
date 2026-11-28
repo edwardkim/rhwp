@@ -204,22 +204,13 @@ public sealed partial class MainWindow
         if (first is null)
             return;
 
-        if (current.Page != first.Page)
-        {
-            current = await worker.GetPageAsync(current, first.Page, CancellationToken.None);
-            if (!ReferenceEquals(searchResults, results))
-                return;
-
-            ClearPage();
-            page = current;
-            SetPageSize(current);
-        }
+        PagePlacement? placement = await EnsurePagePlacementAsync(current, first.Page, CancellationToken.None);
+        if (placement is not { } destination || !ReferenceEquals(searchResults, results))
+            return;
 
         searchHighlight = (current.Target, current.FontGeneration, rectangles);
         DrawSearchHighlight(current);
-        PageScroll.UpdateLayout();
-        PageScroll.ChangeView(Math.Max(0, first.Bounds.X * zoom - 16),
-            Math.Max(0, first.Bounds.Y * zoom - 24), null, true);
+        ShowDocumentPoint(destination, first.Bounds.X, first.Bounds.Y, first.Bounds.Height);
         QueueRender();
     }
 
@@ -265,17 +256,21 @@ public sealed partial class MainWindow
 
         SearchHighlightCanvas.Children.Clear();
         if (current is null || searchHighlight is not { } highlight ||
-            highlight.Target != current.Target || highlight.FontGeneration != current.FontGeneration)
+            highlight.Target != current.Target || highlight.FontGeneration != current.FontGeneration ||
+            continuousPages is not { } layout)
             return;
 
         var brush = (Brush)SearchHighlightCanvas.Resources["SearchHighlightBrush"];
-        foreach (SearchRectangle rectangle in highlight.Rectangles.Where(rectangle => rectangle.Page == current.Page))
+        foreach (SearchRectangle rectangle in highlight.Rectangles)
         {
+            if (!layout.TryGet(rectangle.Page, out PagePlacement placement))
+                continue;
+
             CaretBounds bounds = rectangle.Bounds;
-            double left = Math.Clamp(bounds.X, 0, current.Width);
-            double top = Math.Clamp(bounds.Y, 0, current.Height);
-            double right = Math.Clamp(bounds.X + bounds.Width, 0, current.Width);
-            double bottom = Math.Clamp(bounds.Y + bounds.Height, 0, current.Height);
+            double left = Math.Clamp(bounds.X, 0, placement.Width);
+            double top = Math.Clamp(bounds.Y, 0, placement.Height);
+            double right = Math.Clamp(bounds.X + bounds.Width, 0, placement.Width);
+            double bottom = Math.Clamp(bounds.Y + bounds.Height, 0, placement.Height);
             if (right <= left || bottom <= top)
                 continue;
 
@@ -284,8 +279,8 @@ public sealed partial class MainWindow
                 Width = (right - left) * zoom, Height = (bottom - top) * zoom,
                 Stroke = brush, StrokeThickness = 2,
             };
-            Canvas.SetLeft(outline, left * zoom);
-            Canvas.SetTop(outline, top * zoom);
+            Canvas.SetLeft(outline, (placement.Left + left) * zoom);
+            Canvas.SetTop(outline, (placement.Top + top) * zoom);
             SearchHighlightCanvas.Children.Add(outline);
         }
     }

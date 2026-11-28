@@ -9,7 +9,10 @@ public sealed partial class MainWindow
 
     private void UpdateAutomationDocument(PageInfo? current)
     {
-        PageCanvas.UpdateAutomationViewport(PageScroll, zoom);
+        PagePlacement placement = default;
+        if (current is not null)
+            continuousPages?.TryGet(current.Page, out placement);
+        PageCanvas.UpdateAutomationViewport(PageScroll, zoom, placement.Left * zoom, placement.Top * zoom);
         (DocumentTarget Target, ulong FontGeneration, uint Page)? identity = current is null
             ? null : (current.Target, current.FontGeneration, current.Page);
         if (identity == automationDocument)
