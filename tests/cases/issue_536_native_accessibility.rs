@@ -78,6 +78,39 @@ fn issue_536_native_accessibility_fast_snapshot_is_read_only_and_scalar_addresse
 }
 
 #[test]
+fn page_accessibility_uses_laid_out_page_even_beyond_document_snapshot_limit() {
+    let mut document = multi_paragraph();
+    document
+        .mark_page_break_at_paragraph_start_native(0, 2)
+        .unwrap();
+    assert_eq!(document.page_count(), 2);
+    let session = NativeDocumentSession::from_core(document);
+    let mut request = NativeAccessibilityRequest {
+        max_nodes: 1,
+        ..Default::default()
+    };
+    let prefix = session.accessibility_snapshot(&request, None).unwrap();
+    assert_eq!(prefix.nodes[0].text, "first");
+    assert!(prefix.truncated);
+
+    request.page = Some(1);
+    let later = session.accessibility_snapshot(&request, None).unwrap();
+    assert_eq!(later.page, Some(1));
+    assert_eq!(later.nodes.len(), 1);
+    let node = &later.nodes[0];
+    assert_eq!(node.text, "third");
+    assert_eq!(node.start, body(2, 0));
+    let size = session.page_size(1).unwrap();
+    assert!(!node.page_bounds.is_empty());
+    assert!(node.page_bounds.iter().all(|bounds| bounds.x >= 0.0
+        && bounds.y >= 0.0
+        && bounds.width > 0.0
+        && bounds.height > 0.0
+        && bounds.x + bounds.width <= size.width + 0.001
+        && bounds.y + bounds.height <= size.height + 0.001));
+}
+
+#[test]
 fn issue_536_native_accessibility_nested_cells_keep_full_paths_and_structural_order() {
     let session = nested();
     let snapshot = session
@@ -521,7 +554,13 @@ fn issue_536_native_accessibility_request_and_selection_validation_fail_before_s
     assert!(session
         .accessibility_snapshot(&NativeAccessibilityRequest::default(), Some(&invalid))
         .is_err());
-    assert!(serde_json::from_str::<NativeAccessibilityRequest>(r#"{"page":0}"#).is_err());
+    let inconsistent: NativeAccessibilityRequest = serde_json::from_str(
+        r#"{"page":0,"range":{"section":0,"startParagraph":0,"endParagraph":1}}"#,
+    )
+    .unwrap();
+    assert!(session.accessibility_snapshot(&inconsistent, None).is_err());
+    let out_of_range: NativeAccessibilityRequest = serde_json::from_str(r#"{"page":1}"#).unwrap();
+    assert!(session.accessibility_snapshot(&out_of_range, None).is_err());
     assert!(serde_json::from_str::<NativeAccessibilityRequest>(r#"{"maxNodes":1.5}"#).is_err());
     assert!(serde_json::from_str::<NativeAccessibilityRequest>(
         r#"{"range":{"section":0,"startParagraph":0,"endParagraph":1,"extra":true}}"#
