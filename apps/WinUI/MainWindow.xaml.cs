@@ -284,6 +284,7 @@ public sealed partial class MainWindow : Window
         _ = LoadTitleBarLogoAsync();
         _ = LoadPdfCapabilityAsync();
         _ = LoadTableCapabilityAsync();
+        _ = LoadPageSetupCapabilityAsync();
         QueueRender();
         windowLoaded.TrySetResult();
     }
@@ -323,6 +324,7 @@ public sealed partial class MainWindow : Window
         RefreshClipboardActions(available);
         RefreshFormattingActions();
         RefreshTableActions();
+        RefreshPageSetupAction();
     }
 
     private async void OnClosing(AppWindow sender, AppWindowClosingEventArgs args)

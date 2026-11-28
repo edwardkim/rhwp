@@ -99,6 +99,11 @@
                     <MenuFlyoutItem x:Name="InsertTableMenuItem" Text="표 삽입…" Click="OnInsertTableClicked"
                                     IsEnabled="False" AutomationProperties.AutomationId="InsertTable" />
                 </MenuBarItem>
+                <MenuBarItem x:Name="PageMenu" Title="쪽" Visibility="Collapsed"
+                             AutomationProperties.AutomationId="PageMenu">
+                    <MenuFlyoutItem x:Name="PageSetupMenuItem" Text="쪽 설정…" Click="OnPageSetupClicked"
+                                    IsEnabled="False" AutomationProperties.AutomationId="PageSetup" />
+                </MenuBarItem>
                 <MenuBarItem Title="보기" AccessKey="V" AutomationProperties.AutomationId="ViewMenu">
                     <MenuFlyoutItem x:Name="PreviousPageMenuItem" Text="이전 쪽" Icon="Back"
                                     Click="OnPreviousClicked" IsEnabled="False" />
