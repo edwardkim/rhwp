@@ -206,7 +206,7 @@
                     <TextBox x:Name="DirectInput" Visibility="Collapsed" Opacity="0" Width="28"
                              MinWidth="0" MinHeight="0" Padding="0" BorderThickness="0"
                              IsHitTestVisible="False" AcceptsReturn="False" IsSpellCheckEnabled="False"
-                             TextChanged="OnDirectTextChanged" PreviewKeyDown="OnDirectPreviewKeyDown"
+                             TextChanging="OnDirectTextChanging" PreviewKeyDown="OnDirectPreviewKeyDown"
                              TextCompositionStarted="OnDirectCompositionStarted"
                              TextCompositionChanged="OnDirectCompositionChanged"
                              TextCompositionEnded="OnDirectCompositionEnded"

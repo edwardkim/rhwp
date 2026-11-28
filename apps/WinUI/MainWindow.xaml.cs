@@ -30,7 +30,7 @@ public sealed partial class MainWindow : Window
     private double zoom = 1;
     private bool picking;
     private bool closing;
-    private bool DocumentActionsAvailable => !closing && !editorBusy && !picking &&
+    private bool DocumentActionsAvailable => !closing && !editorBusy && !directQueueRunning && !picking &&
         documentRequest is null && !HasActiveComposition;
 
     public MainWindow()

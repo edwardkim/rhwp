@@ -179,7 +179,29 @@ public sealed partial class MainWindow
 
         directActions.Enqueue(action);
         if (!directQueueRunning)
-            pendingDirectEdits = DrainDirectEditsAsync();
+        {
+            directQueueRunning = true;
+            var finished = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            pendingDirectEdits = finished.Task;
+            // TextChanging can run during XAML layout. Capture its text in
+            // order and leave visual tree and document operations to the queue.
+            if (!DispatcherQueue.TryEnqueue(async () =>
+            {
+                try
+                {
+                    await DrainDirectEditsAsync();
+                }
+                finally
+                {
+                    finished.TrySetResult();
+                }
+            }))
+            {
+                directActions.Clear();
+                directQueueRunning = false;
+                finished.TrySetResult();
+            }
+        }
         return pendingDirectEdits;
     }
 
@@ -192,7 +214,6 @@ public sealed partial class MainWindow
 
     private async Task DrainDirectEditsAsync()
     {
-        directQueueRunning = true;
         editorBusy = true;
         RefreshButtons();
         try
@@ -225,12 +246,12 @@ public sealed partial class MainWindow
         }
     }
 
-    private void OnDirectTextChanged(object sender, TextChangedEventArgs args)
+    private void OnDirectTextChanging(TextBox sender, TextBoxTextChangingEventArgs args)
     {
-        if (changingInput || platformComposing || !directEditing || DirectInput.Text.Length == 0)
+        if (changingInput || platformComposing || !directEditing || sender.Text.Length == 0)
             return;
 
-        string text = DirectInput.Text;
+        string text = sender.Text;
         EmptyInputControl();
         EnqueueDirectEdit(() => InsertDirectTextAsync(text));
     }
