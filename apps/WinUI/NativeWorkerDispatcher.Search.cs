@@ -7,6 +7,7 @@ namespace Rhwp.WinUI;
 internal sealed record SearchMatch(TextSelection Selection, [property: JsonRequired] bool Editable);
 internal sealed record DocumentSearchResult(DocumentTarget Target, SearchMatch[] Matches, bool Truncated,
     bool OmittedContent);
+internal sealed record ReplaceAllResult(EditResult Edit, int ReplacedCount, int SkippedReadOnly, bool OmittedContent);
 internal sealed record SearchRectangle([property: JsonRequired] uint Page, CaretBounds Bounds);
 
 internal sealed partial class NativeWorkerDispatcher
@@ -15,6 +16,7 @@ internal sealed partial class NativeWorkerDispatcher
     private const int MaxSearchMatches = 128;
     private const int MaxNativeCellDepth = 32;
     private bool? workerTextSearch;
+    private bool? workerReplaceAll;
 
     public Task<bool> CanSearchAsync(CancellationToken cancellation) => Dispatch(token =>
     {
@@ -29,8 +31,7 @@ internal sealed partial class NativeWorkerDispatcher
     public Task<DocumentSearchResult> SearchAsync(DocumentTarget expected, string query, bool caseSensitive,
         CancellationToken cancellation, int maxMatches = MaxSearchMatches) => Dispatch(token =>
     {
-        if (Encoding.UTF8.GetByteCount(query) is < 1 or > MaxSearchQueryBytes)
-            throw new ArgumentException($"검색어는 UTF-8 기준 1~{MaxSearchQueryBytes}바이트여야 합니다.", nameof(query));
+        ValidateSearchQuery(query);
         if (maxMatches is < 1 or > MaxSearchMatches)
             throw new ArgumentOutOfRangeException(nameof(maxMatches));
 
@@ -80,6 +81,43 @@ internal sealed partial class NativeWorkerDispatcher
 
         return ApplyEdit(result.Target,
             new { op = "replaceRange", target = result.Target, selection = match.Selection, text }, cancellation);
+    }
+
+    public Task<bool> CanReplaceAllAsync(CancellationToken cancellation) => Dispatch(_ =>
+    {
+        if (workerReplaceAll is bool supported)
+            return supported;
+
+        using JsonDocument capabilities = ReadSuccess(RhwpNative.SessionCapabilities());
+        supported = HasCapability(capabilities.RootElement, "replaceAllMatches");
+        workerReplaceAll = supported;
+        return supported;
+    }, cancellation);
+
+    public Task<ReplaceAllResult> ReplaceAllMatchesAsync(DocumentTarget expected, string query, bool caseSensitive,
+        string text, CancellationToken cancellation) => Dispatch(token =>
+    {
+        ValidateSearchQuery(query);
+        JsonElement reply = Submit(EnsureWorker(), new
+        {
+            op = "replaceAllMatches", target = expected, request = new { query, caseSensitive, maxMatches = MaxSearchMatches },
+            text,
+        }, token);
+        RequireSearchTarget(reply, "replaceAllMatches", expected);
+        JsonElement result = reply.GetProperty("result");
+        int replaced = result.GetProperty("replacedCount").GetInt32();
+        int skipped = result.GetProperty("skippedReadOnly").GetInt32();
+        bool omitted = result.GetProperty("omittedContent").GetBoolean();
+        if (replaced is < 0 or > MaxSearchMatches || skipped < 0 || skipped > MaxSearchMatches - replaced)
+            throw new InvalidDataException("Native 전체 바꾸기 결과의 항목 수가 올바르지 않습니다.");
+
+        return new ReplaceAllResult(AdoptEditOutcome(expected, result), replaced, skipped, omitted);
+    }, cancellation);
+
+    private static void ValidateSearchQuery(string query)
+    {
+        if (Encoding.UTF8.GetByteCount(query) is < 1 or > MaxSearchQueryBytes)
+            throw new ArgumentException($"검색어는 UTF-8 기준 1~{MaxSearchQueryBytes}바이트여야 합니다.", nameof(query));
     }
 
     private static void RequireSearchTarget(JsonElement reply, string operation, DocumentTarget expected)

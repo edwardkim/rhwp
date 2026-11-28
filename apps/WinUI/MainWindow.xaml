@@ -282,7 +282,7 @@
                             <SymbolIcon Symbol="Cancel" />
                         </Button>
                     </Grid>
-                    <Grid x:Name="ReplaceRow" Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="8"
+                    <Grid x:Name="ReplaceRow" Grid.Row="1" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8"
                           Visibility="Collapsed">
                         <TextBox x:Name="ReplacementText" PlaceholderText="바꿀 내용"
                                  TextCompositionStarted="OnSearchCompositionStarted"
@@ -290,6 +290,9 @@
                                  AutomationProperties.Name="바꿀 내용" AutomationProperties.AutomationId="ReplacementText" />
                         <Button x:Name="ReplaceMatchButton" Grid.Column="1" Content="현재 항목 바꾸기"
                                 Click="OnReplaceMatchClicked" AutomationProperties.AutomationId="ReplaceMatch" />
+                        <Button x:Name="ReplaceAllButton" Grid.Column="2" Content="모두 바꾸기"
+                                Click="OnReplaceAllClicked" IsEnabled="False" Visibility="Collapsed"
+                                AutomationProperties.AutomationId="ReplaceAll" />
                     </Grid>
                     <Grid Grid.Row="2" ColumnDefinitions="Auto,*" ColumnSpacing="12">
                         <CheckBox x:Name="SearchCaseSensitive" Content="대/소문자 구분" Click="OnSearchCaseChanged" />

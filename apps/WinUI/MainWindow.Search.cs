@@ -13,6 +13,7 @@ public sealed partial class MainWindow
     private int searchIndex;
     private bool searchComposing;
     private bool searchUiReady;
+    private bool? replaceAllAvailable;
     private (DocumentTarget Target, ulong FontGeneration, SearchRectangle[] Rectangles)? searchHighlight;
 
     private void OnFindClicked(object sender, RoutedEventArgs args) => ShowSearchPanel(replace: false);
@@ -26,6 +27,8 @@ public sealed partial class MainWindow
 
         SearchPanel.Visibility = Visibility.Visible;
         ReplaceRow.Visibility = replace ? Visibility.Visible : Visibility.Collapsed;
+        if (replace && replaceAllAvailable is null)
+            _ = LoadReplaceAllCapabilityAsync();
         RefreshSearchActions();
         DispatcherQueue.TryEnqueue(() =>
         {
@@ -154,6 +157,73 @@ public sealed partial class MainWindow
         });
     }
 
+    private async Task LoadReplaceAllCapabilityAsync()
+    {
+        replaceAllAvailable = false;
+        try
+        {
+            replaceAllAvailable = await worker.CanReplaceAllAsync(CancellationToken.None);
+            if (!closing && replaceAllAvailable == true)
+            {
+                ReplaceAllButton.Visibility = Visibility.Visible;
+                RefreshSearchActions();
+            }
+        }
+        catch (Exception error)
+        {
+            System.Diagnostics.Debug.WriteLine(error);
+            replaceAllAvailable = null;
+        }
+    }
+
+    private async void OnReplaceAllClicked(object sender, RoutedEventArgs args)
+    {
+        string query = SearchQuery.Text;
+        if (replaceAllAvailable != true || query.Length == 0)
+            return;
+
+        string replacement = ReplacementText.Text;
+        bool caseSensitive = SearchCaseSensitive.IsChecked == true;
+        await RunSearchActionAsync(async current =>
+        {
+            CancellationToken token = CancellationToken.None;
+            NativeDocumentInfo info = editorInfo is { } known && known.Target == current.Target
+                ? known : await worker.GetDocumentInfoAsync(current.Target, token);
+            if (!info.Editing)
+            {
+                // A viewer needs an editable position to enter the native editor.
+                DocumentSearchResult found = await worker.SearchAsync(current.Target, query, caseSensitive, token);
+                if (found.Truncated)
+                    throw new InvalidOperationException("검색 결과 한도에 도달했습니다. 검색 범위를 좁혀 다시 시도하세요.");
+                SearchMatch? first = found.Matches.FirstOrDefault(match => match.Editable);
+                if (first is null)
+                {
+                    InvalidateSearchResults();
+                    SearchStatus.Text = ReplaceAllStatus(0, found.Matches.Length, found.OmittedContent);
+                    return;
+                }
+                info = await worker.BeginEditAsync(current.Target, first.Selection, token);
+            }
+            editorInfo = info;
+
+            ReplaceAllResult result = await worker.ReplaceAllMatchesAsync(current.Target, query, caseSensitive,
+                replacement, token);
+            InvalidateSearchResults();
+            if (result.Edit.Outcome.DocumentChanged)
+            {
+                await RefreshEditedPageAsync(current, result.Edit);
+                if (directEditing)
+                    await UpdateDirectGeometryAsync(followCaret: false);
+            }
+            SearchStatus.Text = ReplaceAllStatus(result.ReplacedCount, result.SkippedReadOnly, result.OmittedContent);
+        });
+    }
+
+    private static string ReplaceAllStatus(int replaced, int skipped, bool omitted) =>
+        (replaced == 0 ? "바뀐 내용이 없습니다." : $"{replaced}개 항목을 바꿨습니다.")
+        + (skipped == 0 ? "" : $" · 읽기 전용 {skipped}개")
+        + (omitted ? " · 검색할 수 없는 문서 내용이 있습니다." : "");
+
     private async Task RunSearchActionAsync(Func<PageInfo, Task> action)
     {
         if (!DocumentActionsAvailable || searchComposing || page is not PageInfo current)
@@ -246,6 +316,7 @@ public sealed partial class MainWindow
         NextMatchButton.IsEnabled = PreviousMatchButton.IsEnabled;
         ReplaceMatchButton.IsEnabled = enabled && searchResults is { Matches.Length: > 0 } current
             && current.Matches[searchIndex].Editable;
+        ReplaceAllButton.IsEnabled = PreviousMatchButton.IsEnabled && replaceAllAvailable == true;
         CloseSearchButton.IsEnabled = !editorBusy;
     }
 
