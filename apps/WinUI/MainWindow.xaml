@@ -35,6 +35,21 @@
                     <MenuFlyoutItem Text="다시 실행" Icon="Redo" Click="OnRedoClicked"
                                     IsEnabled="{x:Bind RedoButton.IsEnabled, Mode=OneWay}"
                                     KeyboardAcceleratorTextOverride="Ctrl+Shift+Z" />
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutItem Text="찾기" Icon="Find" Click="OnFindClicked"
+                                    IsEnabled="{x:Bind CloseButton.IsEnabled, Mode=OneWay}"
+                                    AutomationProperties.AutomationId="FindInDocument">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="F" Modifiers="Control" />
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem Text="바꾸기" Click="OnFindReplaceClicked"
+                                    IsEnabled="{x:Bind CloseButton.IsEnabled, Mode=OneWay}"
+                                    AutomationProperties.AutomationId="ReplaceInDocument">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="H" Modifiers="Control" />
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
                 </MenuBarItem>
                 <MenuBarItem Title="보기" AccessKey="V" AutomationProperties.AutomationId="ViewMenu">
                     <MenuFlyoutItem Text="이전 쪽" Icon="Back" Click="OnPreviousClicked"
@@ -109,8 +124,52 @@
             </CommandBar>
         </Border>
 
-        <Grid Grid.Row="2" Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}">
-            <ScrollViewer x:Name="PageScroll" Margin="16,12,16,0"
+        <Grid Grid.Row="2" RowDefinitions="Auto,*" Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}">
+            <Border x:Name="SearchPanel" Visibility="Collapsed" Padding="16,8"
+                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,0,0,1"
+                    KeyDown="OnSearchKeyDown" AutomationProperties.AutomationId="SearchPanel">
+                <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="6" MaxWidth="680" HorizontalAlignment="Left">
+                    <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
+                        <TextBox x:Name="SearchQuery" MinWidth="160" MaxLength="256" PlaceholderText="찾을 내용"
+                                 TextChanged="OnSearchQueryChanged"
+                                 TextCompositionStarted="OnSearchCompositionStarted"
+                                 TextCompositionEnded="OnSearchCompositionEnded"
+                                 AutomationProperties.Name="찾을 내용" AutomationProperties.AutomationId="SearchQuery" />
+                        <Button x:Name="PreviousMatchButton" Grid.Column="1" Click="OnPreviousMatchClicked"
+                                AutomationProperties.Name="이전 찾기" AutomationProperties.AutomationId="PreviousMatch"
+                                ToolTipService.ToolTip="이전 찾기">
+                            <SymbolIcon Symbol="Up" />
+                        </Button>
+                        <Button x:Name="NextMatchButton" Grid.Column="2" Click="OnNextMatchClicked"
+                                AutomationProperties.Name="다음 찾기" AutomationProperties.AutomationId="NextMatch"
+                                ToolTipService.ToolTip="다음 찾기">
+                            <SymbolIcon Symbol="Down" />
+                        </Button>
+                        <Button x:Name="CloseSearchButton" Grid.Column="3" Click="OnCloseSearchClicked"
+                                AutomationProperties.Name="검색 닫기" AutomationProperties.AutomationId="CloseSearch"
+                                ToolTipService.ToolTip="검색 닫기 (Esc)">
+                            <SymbolIcon Symbol="Cancel" />
+                        </Button>
+                    </Grid>
+                    <Grid x:Name="ReplaceRow" Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="8"
+                          Visibility="Collapsed">
+                        <TextBox x:Name="ReplacementText" PlaceholderText="바꿀 내용"
+                                 TextCompositionStarted="OnSearchCompositionStarted"
+                                 TextCompositionEnded="OnSearchCompositionEnded"
+                                 AutomationProperties.Name="바꿀 내용" AutomationProperties.AutomationId="ReplacementText" />
+                        <Button x:Name="ReplaceMatchButton" Grid.Column="1" Content="현재 항목 바꾸기"
+                                Click="OnReplaceMatchClicked" AutomationProperties.AutomationId="ReplaceMatch" />
+                    </Grid>
+                    <Grid Grid.Row="2" ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                        <CheckBox x:Name="SearchCaseSensitive" Content="대/소문자 구분" Click="OnSearchCaseChanged" />
+                        <TextBlock x:Name="SearchStatus" Grid.Column="1" VerticalAlignment="Center" TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="SearchStatus"
+                                   AutomationProperties.LiveSetting="Polite" />
+                    </Grid>
+                </Grid>
+            </Border>
+            <ScrollViewer x:Name="PageScroll" Grid.Row="1" Margin="16,12,16,0"
                           HorizontalContentAlignment="Center" VerticalContentAlignment="Top"
                           HorizontalScrollBarVisibility="Auto" HorizontalScrollMode="Enabled"
                           VerticalScrollBarVisibility="Auto"
@@ -120,6 +179,12 @@
                                       AutomationProperties.AutomationId="DocumentCanvas">
                     <Image x:Name="PageImage" Stretch="Fill" Tapped="OnPageTapped"
                            AutomationProperties.Name="문서 쪽" />
+                    <Canvas x:Name="SearchHighlightCanvas" IsHitTestVisible="False"
+                            AutomationProperties.AccessibilityView="Raw">
+                        <Canvas.Resources>
+                            <SolidColorBrush x:Key="SearchHighlightBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+                        </Canvas.Resources>
+                    </Canvas>
                     <Rectangle Width="{x:Bind PageCanvas.Width, Mode=OneWay}"
                                Height="{x:Bind PageCanvas.Height, Mode=OneWay}"
                                Stroke="{ThemeResource CardStrokeColorDefaultBrush}" StrokeThickness="1"

@@ -10,6 +10,7 @@
     <Compile Include="../WinUI/NativeWorkerDispatcher.cs" Link="NativeWorkerDispatcher.cs" />
     <Compile Include="../WinUI/NativeWorkerDispatcher.Accessibility.cs" Link="NativeWorkerDispatcher.Accessibility.cs" />
     <Compile Include="../WinUI/NativeWorkerDispatcher.Editor.cs" Link="NativeWorkerDispatcher.Editor.cs" />
+    <Compile Include="../WinUI/NativeWorkerDispatcher.Search.cs" Link="NativeWorkerDispatcher.Search.cs" />
     <Compile Include="../WinUI/NativeWorkerDispatcher.Save.cs" Link="NativeWorkerDispatcher.Save.cs" />
     <Compile Include="../WinUI/NativeWorkerDispatcher.Recovery.cs" Link="NativeWorkerDispatcher.Recovery.cs" />
     <Compile Include="../WinUI/NativeWorkerDispatcher.Pdf.cs" Link="NativeWorkerDispatcher.Pdf.cs" />

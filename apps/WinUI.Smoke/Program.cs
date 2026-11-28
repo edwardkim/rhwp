@@ -119,6 +119,7 @@ catch (OperationCanceledException)
 }
 
 await EditorSmoke.RunAsync(args[1]);
+await SearchSmoke.RunAsync(args[1]);
 await SaveCopySmoke.RunAsync(args[1]);
 await RecoverySmoke.RunAsync();
 if (testLivePdf)

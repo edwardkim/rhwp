@@ -191,6 +191,7 @@ public sealed partial class MainWindow : Window
             {
                 zoom = 1;
                 editorInfo = null;
+                InvalidateSearchResults();
             }
 
             fileName = name;
@@ -261,6 +262,7 @@ public sealed partial class MainWindow : Window
     {
         page = null;
         UpdateAutomationDocument(null);
+        DrawSearchHighlight(null);
         renderRequest?.Cancel();
         renderTimer.Stop();
         PageImage.Source = null;
@@ -273,6 +275,7 @@ public sealed partial class MainWindow : Window
         PageCanvas.Width = current.Width * zoom;
         PageCanvas.Height = current.Height * zoom;
         UpdateAutomationDocument(current);
+        DrawSearchHighlight(current);
     }
 
     private void OnZoomOutClicked(object sender, RoutedEventArgs args) => ZoomTo(zoom / 1.25);
@@ -400,6 +403,7 @@ public sealed partial class MainWindow : Window
         RedoButton.IsEnabled = available && page is not null && editorInfo?.CanRedo == true;
         PagePositionText.Text = page is PageInfo shown ? $"{shown.Page + 1} / {shown.PageCount}쪽" : "";
         ZoomValueText.Text = page is null ? "" : $"{(int)Math.Round(zoom * 100)}%";
+        RefreshSearchActions();
     }
 
     private async void OnClosing(AppWindow sender, AppWindowClosingEventArgs args)

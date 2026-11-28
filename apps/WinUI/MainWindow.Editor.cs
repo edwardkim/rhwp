@@ -314,6 +314,7 @@ public sealed partial class MainWindow
         renderTimer.Stop();
         PageImage.Source = null;
         page = null;
+        DrawSearchHighlight(null);
         if (editorInfo is NativeDocumentInfo prior)
         {
             editorInfo = prior with
