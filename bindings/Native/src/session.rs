@@ -13,7 +13,8 @@ use rhwp_core::document_core::native_interaction::{
 use rhwp_core::native_host::accessibility::NativeAccessibilityRequest;
 use rhwp_core::native_host::commands::{
     MAX_CREATE_TABLE_CELLS, MAX_CREATE_TABLE_COLUMNS, MAX_CREATE_TABLE_ROWS,
-    MAX_EQUATION_FONT_SIZE, MAX_EQUATION_SCRIPT_BYTES, MIN_EQUATION_FONT_SIZE,
+    MAX_EQUATION_FONT_SIZE, MAX_EQUATION_SCRIPT_BYTES, MAX_SHAPE_SIZE, MIN_EQUATION_FONT_SIZE,
+    MIN_SHAPE_SIZE,
 };
 use rhwp_core::native_host::editor::ime_edit::{NativeImeEdit, NativeImeEditContext};
 use rhwp_core::native_host::editor::{NativeCompositionFocusLoss, NativeEditOutcome, NativeEditor};
@@ -912,6 +913,9 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
         capabilities["characterFontColorFormatting"] = true.into();
         capabilities["systemFontFamilies"] = cfg!(feature = "native-skia").into();
         capabilities["textUnitSelection"] = true.into();
+        capabilities["insertShape"] = true.into();
+        capabilities["minShapeSize"] = MIN_SHAPE_SIZE.into();
+        capabilities["maxShapeSize"] = MAX_SHAPE_SIZE.into();
         Ok(capabilities)
     })
 }

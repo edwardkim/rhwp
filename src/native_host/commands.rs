@@ -15,6 +15,8 @@ use crate::document_core::native_interaction::{
     legacy_cell_path, same_container, NativeCellPathEntry, NativeTextPosition, NativeTextSelection,
     NativeVerticalDirection,
 };
+use crate::document_core::DocumentCore;
+use crate::error::HwpError;
 use crate::model::{
     color::opaque_rgb,
     paragraph::Paragraph,
@@ -39,6 +41,26 @@ pub const MAX_EQUATION_SCRIPT_BYTES: usize = 4_096;
 pub const MIN_EQUATION_FONT_SIZE: u32 = 200;
 pub const MAX_EQUATION_FONT_SIZE: u32 = 40_000;
 const DEFAULT_EQUATION_FONT_SIZE: u32 = 1_000;
+pub const MIN_SHAPE_SIZE: u32 = 200;
+pub const MAX_SHAPE_SIZE: u32 = 200_000;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum NativeSimpleShape {
+    Rectangle,
+    Ellipse,
+    Line,
+}
+
+impl NativeSimpleShape {
+    fn core_name(self) -> &'static str {
+        match self {
+            Self::Rectangle => "rectangle",
+            Self::Ellipse => "ellipse",
+            Self::Line => "line",
+        }
+    }
+}
 
 /// Tab moves to the next editable cell, Shift+Tab to the previous cell.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -176,6 +198,12 @@ pub enum NativeEditCommand {
         script: String,
         font_size: Option<u32>,
     },
+    /// Insert a native drawing object in the body. Sizes are HWPUNIT.
+    InsertShape {
+        shape: NativeSimpleShape,
+        width: u32,
+        height: u32,
+    },
     /// Join the focus paragraph into its predecessor. Requires a collapsed
     /// selection and places the caret at the join. Backspace/Delete instead
     /// delete a noncollapsed selection.
@@ -290,6 +318,11 @@ impl NativeEditor {
             NativeEditCommand::InsertEquation { script, font_size } => {
                 self.insert_equation(expected_revision, script, font_size)?
             }
+            NativeEditCommand::InsertShape {
+                shape,
+                width,
+                height,
+            } => self.insert_shape(expected_revision, shape, width, height)?,
             NativeEditCommand::JoinPreviousParagraph {} => {
                 if self.selection().anchor != self.selection().focus {
                     return Err(NativeHostError::InvalidArgument(
@@ -825,13 +858,6 @@ impl NativeEditor {
         script: String,
         font_size: Option<u32>,
     ) -> Result<NativeEditOutcome, NativeHostError> {
-        self.require_body_selection("insertEquation")?;
-        let selection = self.selection();
-        if selection.anchor != selection.focus {
-            return Err(NativeHostError::InvalidArgument(
-                "insertEquation requires a collapsed body caret".into(),
-            ));
-        }
         if script.len() > MAX_EQUATION_SCRIPT_BYTES {
             return Err(NativeHostError::LimitExceeded(format!(
                 "equation script exceeds {MAX_EQUATION_SCRIPT_BYTES} UTF-8 bytes"
@@ -854,6 +880,64 @@ impl NativeEditor {
             )));
         }
 
+        let script = if script.contains('\r') {
+            script.replace("\r\n", "\n").replace('\r', "\n")
+        } else {
+            script
+        };
+        self.insert_display_object(revision, "insertEquation", |core, section, paragraph| {
+            core.insert_equation_native(section, paragraph, 0, &script, font_size, 0)?;
+            Ok(())
+        })
+    }
+
+    fn insert_shape(
+        &mut self,
+        revision: u64,
+        shape: NativeSimpleShape,
+        width: u32,
+        height: u32,
+    ) -> Result<NativeEditOutcome, NativeHostError> {
+        let allowed = MIN_SHAPE_SIZE..=MAX_SHAPE_SIZE;
+        if !allowed.contains(&width) || !allowed.contains(&height) {
+            return Err(NativeHostError::InvalidArgument(format!(
+                "shape dimensions must be {MIN_SHAPE_SIZE}..={MAX_SHAPE_SIZE} HWPUNIT"
+            )));
+        }
+        self.insert_display_object(revision, "insertShape", |core, section, paragraph| {
+            core.create_shape_control_native(
+                section,
+                paragraph,
+                0,
+                width,
+                height,
+                0,
+                0,
+                true,
+                "InFrontOfText",
+                shape.core_name(),
+                false,
+                false,
+                &[],
+            )?;
+            Ok(())
+        })
+    }
+
+    fn insert_display_object(
+        &mut self,
+        revision: u64,
+        command: &str,
+        insert: impl FnOnce(&mut DocumentCore, usize, usize) -> Result<(), HwpError>,
+    ) -> Result<NativeEditOutcome, NativeHostError> {
+        self.require_body_selection(command)?;
+        let selection = self.selection();
+        if selection.anchor != selection.focus {
+            return Err(NativeHostError::InvalidArgument(format!(
+                "{command} requires a collapsed body caret"
+            )));
+        }
+
         let core = self.session().document();
         Self::check_editable_text_span(core, selection)?;
         let caret = selection.focus.clone();
@@ -861,9 +945,9 @@ impl NativeEditor {
         if caret.scalar_offset < scalar_len(text)?
             && grapheme_span(text, caret.scalar_offset, false).0 != caret.scalar_offset
         {
-            return Err(NativeHostError::InvalidArgument(
-                "equation insertion requires a grapheme boundary".into(),
-            ));
+            return Err(NativeHostError::InvalidArgument(format!(
+                "{command} requires a grapheme boundary"
+            )));
         }
         let paragraphs_added = 1 + u32::from(caret.scalar_offset != 0);
         let after_paragraph = caret
@@ -872,38 +956,25 @@ impl NativeEditor {
             .ok_or_else(|| {
                 NativeHostError::LimitExceeded("paragraph address range exhausted".into())
             })?;
-        let equation_paragraph = after_paragraph - 1;
+        let object_paragraph = after_paragraph - 1;
         let after = NativeTextPosition {
             paragraph: after_paragraph,
             scalar_offset: 0,
             ..caret.clone()
         };
         let section = caret.section as usize;
-        let script = if script.contains('\r') {
-            script.replace("\r\n", "\n").replace('\r', "\n")
-        } else {
-            script
-        };
         self.edit_explicit_ranges_transaction(revision, |core| {
-            // A regular HWP equation occupies an inline slot. Keep it in its
-            // own paragraph so the scalar caret can continue in the text tail.
+            // The addressable caret continues in the text tail after the object.
             core.split_paragraph_native(
                 section,
                 caret.paragraph as usize,
                 caret.scalar_offset as usize,
                 None,
             )?;
-            if caret.paragraph != equation_paragraph {
-                core.split_paragraph_native(section, equation_paragraph as usize, 0, None)?;
+            if caret.paragraph != object_paragraph {
+                core.split_paragraph_native(section, object_paragraph as usize, 0, None)?;
             }
-            core.insert_equation_native(
-                section,
-                equation_paragraph as usize,
-                0,
-                &script,
-                font_size,
-                0,
-            )?;
+            insert(core, section, object_paragraph as usize)?;
             Ok(NativeTextSelection {
                 anchor: after.clone(),
                 focus: after,
