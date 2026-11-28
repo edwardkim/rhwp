@@ -19,3 +19,9 @@ venv/bin/python scripts/visual_sweep_contributor.py --rhwp-bin <고정 Native> -
 | pic-crop-01 | wasm | 100.00% | [전쪽 TSV](pic-crop-01-wasm.tsv) | [비교 PNG](pic-crop-01-wasm-review.png) · [Overlay](pic-crop-01-wasm-overlay.png) |
 | shape-group-02 | native | 100.00% | [전쪽 TSV](shape-group-02-native.tsv) | [비교 PNG](shape-group-02-native-review.png) · [Overlay](shape-group-02-native-overlay.png) |
 | shape-group-02 | wasm | 100.00% | [전쪽 TSV](shape-group-02-wasm.tsv) | [비교 PNG](shape-group-02-wasm-review.png) · [Overlay](shape-group-02-wasm-overlay.png) |
+
+## 정본 보호 Native 전수 결과
+
+23개 문서 전 2,023쪽이 쪽별 정본 표시값을 충족했다. 전쪽 최저는 98.86%였다.
+103개 출력 기록에서 전체 쪽의 확보, 글꼴 공급 순서와 제외 목록을 확인했다.
+[전쪽 정본·후보 비교표](all-native-pages.tsv) · [입력과 실행물 검증 자료](all-native-manifest.json)
