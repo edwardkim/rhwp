@@ -1,0 +1,22 @@
+<Window
+    x:Class="Rhwp.WinUI.PropertyWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid x:Name="LayoutRoot" RowDefinitions="*,Auto"
+          Background="{ThemeResource SolidBackgroundFillColorBaseBrush}">
+        <Grid.KeyboardAccelerators>
+            <KeyboardAccelerator Key="Escape" Invoked="OnEscapeInvoked" />
+        </Grid.KeyboardAccelerators>
+        <ContentControl x:Name="Fields" Padding="20" HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Stretch" />
+        <Border Grid.Row="1" Padding="20,12" BorderThickness="0,1,0,0"
+                BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}">
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                <Button x:Name="ApplyButton" Content="적용" Style="{StaticResource AccentButtonStyle}"
+                        MinWidth="84" Click="OnApplyClicked" AutomationProperties.AutomationId="PropertyApply" />
+                <Button x:Name="CloseButton" Content="취소" MinWidth="84" Click="OnCloseClicked"
+                        AutomationProperties.AutomationId="PropertyClose" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
