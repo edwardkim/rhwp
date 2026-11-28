@@ -198,6 +198,10 @@ pub enum NativeEditCommand {
     SetParagraphAlignment {
         alignment: NativeParagraphAlignment,
     },
+    /// Apply an existing paragraph style to the paragraph that owns the selection.
+    ApplyParagraphStyle {
+        style_id: u8,
+    },
     /// Create a default table at a collapsed, editable body caret.
     CreateTable {
         rows: u16,
@@ -313,6 +317,9 @@ impl NativeEditor {
             NativeEditCommand::SetParagraphAlignment { alignment } => {
                 self.set_paragraph_alignment(expected_revision, alignment)?
             }
+            NativeEditCommand::ApplyParagraphStyle { style_id } => {
+                self.apply_paragraph_style(expected_revision, style_id)?
+            }
             NativeEditCommand::CreateTable { rows, columns } => {
                 self.create_table(expected_revision, rows, columns)?
             }
@@ -403,7 +410,7 @@ impl NativeEditor {
         })
     }
 
-    fn formatting_paragraph(&self) -> Result<&Paragraph, NativeHostError> {
+    pub(super) fn formatting_paragraph(&self) -> Result<&Paragraph, NativeHostError> {
         let selection = self.selection();
         if selection.anchor.leaf_paragraph() != selection.focus.leaf_paragraph() {
             return Err(NativeHostError::Unsupported(

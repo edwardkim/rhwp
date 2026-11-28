@@ -33,6 +33,7 @@ use super::commands::{
 use super::editor::ime_edit::{NativeImeEdit, NativeImeEditContext, NativeImeReplacement};
 use super::editor::{NativeEditOutcome, NativeEditor};
 use super::page_setup::NativePageSetup;
+use super::paragraph_style::NativeParagraphStyles;
 use super::render_snapshot::{NativeRenderSnapshot, NativeRenderSnapshotLimits};
 use super::save::NativeSaveCaretPolicy;
 use super::save::{NativeSaveFormat, NativeSaveStatus, NativeSaveToken, PreparedSave};
@@ -163,6 +164,10 @@ pub enum NativeRuntimeCommand {
     SelectionFormatting {
         target: NativeRuntimeTarget,
         font_generation: u64,
+        selection: NativeTextSelection,
+    },
+    ParagraphStyles {
+        target: NativeRuntimeTarget,
         selection: NativeTextSelection,
     },
     PageSetup {
@@ -416,7 +421,8 @@ impl NativeRuntimeCommand {
             Self::CopySelection { .. } | Self::CutSelection { .. } => Some(MAX_CLIPBOARD_BYTES),
             Self::BeginEdit { selection, .. }
             | Self::SetSelection { selection, .. }
-            | Self::SelectionFormatting { selection, .. } => selection_bytes(selection),
+            | Self::SelectionFormatting { selection, .. }
+            | Self::ParagraphStyles { selection, .. } => selection_bytes(selection),
             Self::ReplaceRange {
                 selection, text, ..
             } => selection_bytes(selection).and_then(|bytes| bytes.checked_add(text.capacity())),
@@ -582,6 +588,11 @@ pub enum NativeRuntimeOutput {
         selection: NativeTextSelection,
         formatting: NativeSelectionFormatting,
     },
+    ParagraphStyles {
+        target: NativeRuntimeTarget,
+        selection: NativeTextSelection,
+        paragraph_styles: NativeParagraphStyles,
+    },
     PageSetup {
         target: NativeRuntimeTarget,
         page_setup: NativePageSetup,
@@ -675,6 +686,7 @@ impl fmt::Debug for NativeRuntimeOutput {
             Self::Info(_) => "Info",
             Self::CommandExecuted(_) => "CommandExecuted",
             Self::SelectionFormatting { .. } => "SelectionFormatting",
+            Self::ParagraphStyles { .. } => "ParagraphStyles",
             Self::PageSetup { .. } => "PageSetup",
             Self::TableObject { .. } => "TableObject",
             Self::SystemFontFamilies { .. } => "SystemFontFamilies",

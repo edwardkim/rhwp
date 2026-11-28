@@ -165,6 +165,18 @@ fn execute(
                 formatting,
             })
         }
+        C::ParagraphStyles { target, selection } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            let paragraph_styles = doc
+                .editor()?
+                .paragraph_styles(target.revision, &selection)?;
+            Ok(O::ParagraphStyles {
+                target,
+                selection,
+                paragraph_styles,
+            })
+        }
         C::PageSetup {
             target,
             page,
@@ -698,9 +710,10 @@ pub(super) fn worker_loop(
             break;
         }
         let render = request.command.is_render();
-        let exports_snapshot = matches!(
+        let grows_output_reservation = matches!(
             &request.command,
             NativeRuntimeCommand::ExportRenderSnapshot { .. }
+                | NativeRuntimeCommand::ParagraphStyles { .. }
         );
         let mut result = if request
             .phase
@@ -740,12 +753,15 @@ pub(super) fn worker_loop(
                 accessibility_retained_bytes(snapshot)
             }
             Ok(NativeRuntimeOutput::SearchText { result, .. }) => result.retained_bytes(),
+            Ok(NativeRuntimeOutput::ParagraphStyles {
+                paragraph_styles, ..
+            }) => paragraph_styles.retained_bytes(),
             Ok(NativeRuntimeOutput::RenderSnapshot { snapshot, .. }) => {
                 snapshot.usage().estimated_bytes
             }
             _ => 0,
         };
-        let covered = if exports_snapshot {
+        let covered = if grows_output_reservation {
             request.reservation.grow_to(retained)
         } else {
             request.reservation.covers(retained)
