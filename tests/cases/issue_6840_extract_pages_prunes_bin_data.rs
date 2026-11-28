@@ -1,3 +1,8 @@
+//! 관계형: 그림의 원본 순서와 셀 안의 포함·비겹침을 검사한다.
+//! 주석 갱신: 2026-11-28T19:54:22+09:00; 직전 파일 커밋: 2026-10-13T20:40:43+09:00 (cdaa4ede1dec75988d4c47b2e2778c262af1a8a3).
+//! 2026-11-28 한컴 Print 대조(96dpi, PDFium, 2px raw), 전1쪽 최저와 1쪽 모두 Native 100.00% / fresh WASM 100.00%.
+//! 근거: mydocs/pr/assets/issues7813_8100/native/7863.tsv, mydocs/pr/assets/issues7813_8100/wasm/7863.tsv 및 각 대표 비교 PNG.
+//!
 //! [Issue #6840] `extract-pages` 가 참조 없는 `BinData` 를 하나도 버리지 않아, 쪽을 한
 //! 장만 남겨도 파일이 거의 줄지 않던 결함의 가드.
 //!
@@ -18,7 +23,7 @@
 //! `ImageAttr.bin_data_id` 는 **1 기준 순번(위치)** 이라 항목을 지우면 뒤 참조가 한 칸씩
 //! 밀려 **그림이 조용히 뒤바뀐다.** 개수만 보는 시험은 그걸 못 잡으므로, 남은 그림의
 //! **원본 소유 경로와 이미지 바이트**를 정리 전후로 대조한다.
-//! 축약 #5833 입력의 미달 렌더링 geometry는 #7863으로 이관하고 데이터 계약은 유지한다.
+//! 축약 #5833 입력의 그림 순서와 소속을 #7863의 관계형 회귀로 복원했다.
 //!
 //! ⚠ 내장 글꼴은 순번이 아니라 **storage id** 로 참조한다
 //! (`load_bounded_embedded_font_bytes` 가 `content.id == font_id` 로 찾는다). 그 축을
@@ -179,4 +184,66 @@ fn fully_referenced_bin_data_is_left_alone() {
         "버릴 것이 없는데 항목이 줄었다"
     );
     assert_eq!(page_images(&core), before, "그림이 바뀌었다");
+}
+
+#[test]
+fn stacked_cell_pictures_stay_in_their_cell_in_source_order() {
+    use rhwp::{
+        model::control::Control,
+        renderer::render_tree::{RenderNode, RenderNodeType},
+    };
+
+    fn find_picture_cell(node: &RenderNode) -> Option<&RenderNode> {
+        if matches!(&node.node_type, RenderNodeType::TableCell(cell) if cell.row == 1 && cell.col == 0)
+            && node
+                .children
+                .iter()
+                .any(|child| matches!(child.node_type, RenderNodeType::Image(_)))
+        {
+            return Some(node);
+        }
+        node.children.iter().find_map(find_picture_cell)
+    }
+
+    let core = load(PICTURES);
+    let Control::Table(source) = &core.document().sections[0].paragraphs[1].controls[0] else {
+        panic!("원본 그림 표");
+    };
+    let source_pictures: Vec<_> = source
+        .cells
+        .iter()
+        .find(|cell| cell.row == 1 && cell.col == 0)
+        .expect("원본의 두 그림을 소유한 셀")
+        .paragraphs
+        .iter()
+        .flat_map(|para| &para.controls)
+        .filter_map(|control| match control {
+            Control::Picture(picture) => Some(picture.image_attr.bin_data_id),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(source_pictures.len(), 2);
+    let tree = core.build_page_render_tree(0).expect("1쪽 출력");
+    let cell = find_picture_cell(&tree.root).expect("머리기사와 본문 그림을 소유한 셀");
+    let pictures: Vec<_> = cell
+        .children
+        .iter()
+        .filter_map(|child| match &child.node_type {
+            RenderNodeType::Image(image) => Some((image.bin_data_id, child.bbox)),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(
+        pictures.iter().map(|&(id, _)| id).collect::<Vec<_>>(),
+        source_pictures,
+        "두 원본 개체를 각각 한 번, 원래 순서로 그린다",
+    );
+    assert!(pictures
+        .iter()
+        .all(|(_, picture)| cell.bbox.contains(picture)));
+    let (first, second) = (pictures[0].1, pictures[1].1);
+    assert!(
+        first.y + first.height <= second.y,
+        "두 그림은 세로로 겹치지 않는다"
+    );
 }
