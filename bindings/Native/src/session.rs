@@ -861,12 +861,10 @@ fn frame_result(
 #[no_mangle]
 pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
     response(|| {
-        Ok(
-            json!({"ok":true,"abiVersion":1,"nativeSkia":cfg!(feature="native-skia"),
+        let mut capabilities = json!({"ok":true,"abiVersion":1,"nativeSkia":cfg!(feature="native-skia"),
         "tableCellParagraphCommands":true,
         "tableCellNavigation":true,
         "tableCellTextNavigation":true,
-        "tableObjectProperties":true,
         "basicTextFormatting":true,
         "selectionFormatting":true,
         "createTable":true,
@@ -888,8 +886,9 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
         "livePdfExport":cfg!(feature="native-skia"),
         "maxLivePdfPages":rhwp_core::native_host::runtime::MAX_LIVE_PDF_PAGES,
         "maxLivePdfBytes":rhwp_core::native_host::runtime::MAX_LIVE_PDF_BYTES,
-        "pixelFormat":"rgba8Premultiplied","colorSpace":"srgb"}),
-        )
+        "pixelFormat":"rgba8Premultiplied","colorSpace":"srgb"});
+        capabilities["tableObjectProperties"] = true.into();
+        Ok(capabilities)
     })
 }
 
