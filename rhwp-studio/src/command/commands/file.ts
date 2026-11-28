@@ -68,6 +68,7 @@ import { userSettings } from '@/core/user-settings';
 import { showToast } from '@/ui/toast';
 import { addRecentDoc, clearRecentDocs, listRecentDocs, removeRecentDoc } from '@/recent/recent-store';
 import { openRecentEntry } from '@/recent/recent-open';
+import { isDesktopFormat } from '@/desktop/desktop-host';
 
 import { t } from '../../i18n/index.ts';
 /**
@@ -75,6 +76,10 @@ import { t } from '../../i18n/index.ts';
  * 문서를 로드한다. `file:open` 커맨드와 "최근 문서" 메타-only 항목 재열기가 공유한다.
  */
 async function openFileViaPicker(services: CommandServices): Promise<void> {
+  if (services.desktopFiles) {
+    await services.desktopFiles.request('open');
+    return;
+  }
   await openDocumentViaPicker({
     pdfImportEnabled: services.wasm.hasPdfImportCapability?.() === true,
     canReplace: () => confirmSaveBeforeReplacingDocument(services),
@@ -117,7 +122,7 @@ function saveBaseNameFor(fileName: string, format: SaveFormat): string {
   return fileNameForFormat(fileName, format).replace(/\.(hwp|hwpx|hml)$/i, '');
 }
 
-function flushDeferredPaginationBeforeExplicitOutput(
+export function flushDeferredPaginationBeforeExplicitOutput(
   services: CommandServices,
   reason: string,
 ): void {
@@ -330,6 +335,12 @@ async function saveAsFormat(services: CommandServices, format: SaveFormat): Prom
     const options = await promptSaveAsOptions(services, format);
     if (options === null) return;
     password = options.password;
+    if (services.desktopFiles && password === null && isDesktopFormat(format)
+      && isDesktopFormat(sourceFormat) && !services.wasm.requiresPasswordForSave) {
+      if (services.wasm.documentGeneration !== generation) throw new Error('DOCUMENT_CHANGED_DURING_SAVE');
+      await services.desktopFiles.request('saveAs', format, options.fileName);
+      return;
+    }
 
     flushDeferredPaginationBeforeExplicitOutput(services, 'save-as');
     const saveName = options.fileName;
@@ -404,6 +415,10 @@ export async function saveCurrentDocument(services: CommandServices): Promise<Sa
   let recoveryCipher: RecoveryCipher | null = null;
   const generation = services.wasm.documentGeneration;
   try {
+    if (services.desktopFiles && isDesktopFormat(services.wasm.getSourceFormat()) && !services.wasm.requiresPasswordForSave) {
+      const result = await services.desktopFiles.request('save');
+      return result === 'completed' ? 'failed' : result;
+    }
     flushDeferredPaginationBeforeExplicitOutput(services, 'save');
     const sourceFormat = services.wasm.getSourceFormat();
     let target = resolveSaveTarget(
