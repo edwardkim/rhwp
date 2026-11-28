@@ -1,3 +1,9 @@
+//! 고정형: #7834의 기존 본문 하단 넘침 한도와 검사 범위를 복원한다.
+//! 주석 갱신: 2026-11-28T19:58:50+09:00; 직전 파일 커밋: 2026-11-28T09:13:50+09:00 (1ac90dfbcb6054365f967e32114b4846e949a239).
+//! 2026-11-28 한컴 Print(96dpi, PDFium, 2px raw), Native / fresh WASM 순.
+//! #7834 6쪽 99.99% / 99.99%, 7쪽 100.00% / 100.00%, 8쪽 100.00% / 100.00%. 전 15쪽 최저 99.98% / 99.98%.
+//! 근거: mydocs/pr/assets/issues7813_8100/native/7834.tsv 및 wasm/7834.tsv.
+//!
 //! 관계형·고정형: 기존 계약을 유지하고 #7754~#7765의 수용한 원본 범위를 복원한다.
 //! 주석 갱신: 2026-11-22T03:21:21+09:00; 직전 파일 변경: 2026-11-21T10:11:20+09:00 ca231d64f43f19da1d1d1aec4cf26a05b817aa22.
 //! 복원 원본 측정: 2026-11-22 KST,96DPI·Print·PDFium·보정 전2px raw, 각 독립 Print와 같은 전체 쪽수.
@@ -105,9 +111,6 @@ const DEDICATED_SLOW_FIXTURES: &[&str] = &["issue2063_huge_cellbreak_table.hwp"]
 /// 각 원문의 증가/시각 근거는 #7445 증적과 corpus_scope_restore_validation.json에 연결한다.
 /// 원문은 samples에 유지하며 다른 래칫·쪽수·렌더러 비교 대상에서는 제외하지 않는다.
 const DEFERRED_BODY_OVERFLOW_FIXTURES: &[&str] = &[
-    // #7834: 고정 devel bfa28a77a 전15쪽 Native/fresh 최저45.18405%.
-    // 본문 넘침 원문과 기존0행을 보존하여 이 입력만 이관한다.
-    "issue6854/22037757-chuncheon-personnel-rule-annex13.hwpx",
     // #7445: CGMP 48쪽은 다른 작업이 보정한다. 사용자 요청으로 이 입력의 회귀를 제거한다.
     "issue6035/cgmp_evaluation_table.hwpx",
     "issue3637/press_release_split_cell_nested_table.hwpx",

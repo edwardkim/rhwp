@@ -4,7 +4,7 @@
   "build_sha256": "0948dfb6e5a9efdae96ad4ddcd211fb39875cf28e9d6e5b1ad78589c48fd4411",
   "dpi": 96,
   "radius_px": 2,
-  "pages": 10,
+  "pages": 96,
   "minimum_percent": "98.12",
   "cases": [
     {
@@ -85,6 +85,152 @@
         "file": "7822-p001.png",
         "sha256": "b907175d5e9f5b59812bac712028f7cada786c46143157cc93a705469c542b4d",
         "match_percent": "100.00"
+      }
+    },
+    {
+      "issue": 7830,
+      "key": "7830",
+      "input": "samples/hwpx_sample2.hwp",
+      "input_sha256": "ca66d521d070ac8442e09fd3f283e17611eb9efb45eb4bf6c3a8f65e604f6b5f",
+      "print_pdf": "pdf/hwpx_sample2-hwp-2024.pdf",
+      "print_sha256": "1b2e13e966787f6b91f590c8901dcb988e73ac7063d5e1cb95c8952400fd9a47",
+      "compat": 2022,
+      "pages": 29,
+      "minimum_percent": "98.95",
+      "minimum_percent_pages": [
+        14
+      ],
+      "below_90": 0,
+      "tsv": "7830.tsv",
+      "tsv_sha256": "9f4f74c9926a8493ef5acda0ea016ebb195be568ace11b494a03a5fffb90afad",
+      "measurement_head": "8b769627c0cc3cd562041052fc7388e92f3e31c8",
+      "sweep_sha256": "de6ce038084e534187164796bc84467d83fb43c029c7529160f2ea318e46c250",
+      "renderer": "wasm-canvas2d",
+      "font_source": "explicit",
+      "font_sha256": [
+        "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5",
+        "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+        "93e4c77ebe4e4ca5f0b7405bec1b26e8b4465dd5ab2fc36aabdf9ca02f0ef23c",
+        "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+        "5b0b9fa5f3ba2f7b2e3576c6c2e2f2a7a92f68c98f8270e10791ceb363ce1e51",
+        "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+        "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082",
+        "9bcd6064e3b52fa30a347edd6e82506e2ec8b1602930b423c629a82c10468a5b",
+        "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226"
+      ],
+      "font_environment_sha256": null,
+      "review": {
+        "page": 8,
+        "file": "7830-p008.png",
+        "sha256": "8ec65d368eccd58f5a80d3fa9bc6b3b23adfb648d8e563d0d2e64b1a86499f5d",
+        "match_percent": "100.00"
+      }
+    },
+    {
+      "issue": 7831,
+      "key": "7831",
+      "input": "samples/task2430/1382000_domestic_violence_survey.hwp",
+      "input_sha256": "a3c6a227d26c41c7de9aa258f470001a629da90fa606cdddcbd385add43b7381",
+      "print_pdf": "pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf",
+      "print_sha256": "8f17972e8f3fe1c15aabd886aceed3bb7e3cd87cba70bd0cb20e2da0eb1861c2",
+      "compat": 2022,
+      "pages": 39,
+      "minimum_percent": "98.12",
+      "minimum_percent_pages": [
+        29
+      ],
+      "below_90": 0,
+      "tsv": "7831.tsv",
+      "tsv_sha256": "28b088d0c0fdf6877e8a8869393a7876ec3553b7da832c1923f2c5f18e5b7f67",
+      "measurement_head": "8b769627c0cc3cd562041052fc7388e92f3e31c8",
+      "sweep_sha256": "de6ce038084e534187164796bc84467d83fb43c029c7529160f2ea318e46c250",
+      "renderer": "wasm-canvas2d",
+      "font_source": "explicit",
+      "font_sha256": [
+        "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5",
+        "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f",
+        "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4",
+        "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275",
+        "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d",
+        "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7",
+        "e0288775c8f021f327fd77f9eb251eea80e4601bbbb068478c7878caa23e8f92",
+        "0d355f9766ffd1c7ec7648260611ddea9e12ea3c610423e552d52b921fc0f29f",
+        "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+        "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+        "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+        "5b0b9fa5f3ba2f7b2e3576c6c2e2f2a7a92f68c98f8270e10791ceb363ce1e51",
+        "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+        "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+        "820d3212f688b546a327ea43a7202e3379cdbbd767ebac9753997e3f3d285171",
+        "8e14668bbae03f78ed668dbe3261218881960dcd9fb80ad6c1d1dfb4226a57c3",
+        "99f0af2d1941707fecda23da38bafbed5144a73a3720d773c05b9d4c445920ed",
+        "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280",
+        "a101a7a219ffd57273374a423e734adfba1529e5eaf2e9a7476f7150708ea506",
+        "a3f57b4cb4292977479c1511b52997daadaf04c37f180ff05ab152c4d12ccaf5",
+        "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+        "d0e722b91ffd5391cc2e7d6e976f274d5aee9fe0b8d0fedfffe093763e695cde",
+        "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+        "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082",
+        "93e4c77ebe4e4ca5f0b7405bec1b26e8b4465dd5ab2fc36aabdf9ca02f0ef23c",
+        "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+        "0362ff4594bdbb892f29d18aaab77ec497d40556dcc12dd32521596f1b996859",
+        "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1",
+        "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+        "6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b"
+      ],
+      "font_environment_sha256": null,
+      "review": {
+        "page": 19,
+        "file": "7831-p019.png",
+        "sha256": "23ee8b5772c6c52bf41c89cc8e09ee928df604a63de3271b8e5b73bc817936a2",
+        "match_percent": "99.65"
+      }
+    },
+    {
+      "issue": 7834,
+      "key": "7834",
+      "input": "samples/issue6854/22037757-chuncheon-personnel-rule-annex13.hwpx",
+      "input_sha256": "1d2ae7a559189f73d41f380da59b03aba41102511a69fbf67514141362cb962f",
+      "print_pdf": "pdf/issues7813_8100/7834-original-2024.pdf",
+      "print_sha256": "551c9c7463b8c85cbab19659336d8a19ed7a08a17310bd4ac375eaac9fdf1709",
+      "compat": 2022,
+      "pages": 15,
+      "minimum_percent": "99.98",
+      "minimum_percent_pages": [
+        9
+      ],
+      "below_90": 0,
+      "tsv": "7834.tsv",
+      "tsv_sha256": "82d4599342ad023d5f9d26cf1df6fe3b17220c9e9fd0a09786b52223948247ba",
+      "measurement_head": "0ba9bd7e528fffb3e77f76240a0377ddc63bce63",
+      "sweep_sha256": "de6ce038084e534187164796bc84467d83fb43c029c7529160f2ea318e46c250",
+      "renderer": "wasm-canvas2d",
+      "font_source": "explicit",
+      "font_sha256": [
+        "0d355f9766ffd1c7ec7648260611ddea9e12ea3c610423e552d52b921fc0f29f",
+        "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+        "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+        "49dd1ef0caa6989a7dd95b484fdd052cbc846f6514c0c08421ed03a6cb1669cc",
+        "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+        "8e14668bbae03f78ed668dbe3261218881960dcd9fb80ad6c1d1dfb4226a57c3",
+        "99f0af2d1941707fecda23da38bafbed5144a73a3720d773c05b9d4c445920ed",
+        "a101a7a219ffd57273374a423e734adfba1529e5eaf2e9a7476f7150708ea506",
+        "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+        "d0e722b91ffd5391cc2e7d6e976f274d5aee9fe0b8d0fedfffe093763e695cde",
+        "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+        "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082",
+        "596303d75b0c9a700c3c1aa0e8c55e09d120e9eb1479e284e5941dc0ac26585c",
+        "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+        "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+        "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+        "6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b"
+      ],
+      "font_environment_sha256": null,
+      "review": {
+        "page": 6,
+        "file": "7834-p006.png",
+        "sha256": "67fdf1a326621cc0b199384ab80dc206b90002b26a3686856315004ecbaa1e5a",
+        "match_percent": "99.99"
       }
     },
     {
@@ -249,6 +395,51 @@
         "file": "7922-p001.png",
         "sha256": "175fc0b705c14a7102d10fa64eeddf00bd4ec1c448d7ef306e2ba425ba598756",
         "match_percent": "99.16"
+      }
+    },
+    {
+      "issue": 7955,
+      "key": "7955",
+      "input": "tests/fixtures/issue_7047/housing-lease-standard-form.hwp",
+      "input_sha256": "fe295c12c5f9bd9e7e73a540c7c7ecd044f18ed58ea9826c0de5d55ba2710439",
+      "print_pdf": "pdf/issue7642-failed-regression-print/housing-lease-standard-form-hwp-print-2020.pdf",
+      "print_sha256": "40cd4fe7aa7beb950704c3f5f75325a97ce68b7e8366d6babea9ceaba0809e29",
+      "compat": 2024,
+      "pages": 3,
+      "minimum_percent": "99.85",
+      "minimum_percent_pages": [
+        1
+      ],
+      "below_90": 0,
+      "tsv": "7955.tsv",
+      "tsv_sha256": "cad99fded4f98d0ea254cc0cdf6a895b3d9ca2746f63d285d8355e35deb844a9",
+      "measurement_head": "2e7a40a8cd65027f8bd0f9ffd1951df4efe6bf99",
+      "sweep_sha256": "de6ce038084e534187164796bc84467d83fb43c029c7529160f2ea318e46c250",
+      "renderer": "wasm-canvas2d",
+      "font_source": "explicit",
+      "font_sha256": [
+        "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5",
+        "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+        "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+        "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+        "820d3212f688b546a327ea43a7202e3379cdbbd767ebac9753997e3f3d285171",
+        "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280",
+        "a101a7a219ffd57273374a423e734adfba1529e5eaf2e9a7476f7150708ea506",
+        "cf8614cb09e038ff24c0edb2ba2cfa6b8911c7c913cfe590e7e56014e7e63e5a",
+        "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082",
+        "950272dc7af1fb7cdd4c33f74f0619256b9ac84d5d3815f1c295b590bd2243e2",
+        "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+        "0362ff4594bdbb892f29d18aaab77ec497d40556dcc12dd32521596f1b996859",
+        "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1",
+        "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+        "6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b"
+      ],
+      "font_environment_sha256": null,
+      "review": {
+        "page": 1,
+        "file": "7955-p001.png",
+        "sha256": "60fe435c9d54b379f4512bcac90b0da776d392cb7762937d3e4ccb96aafd100d",
+        "match_percent": "99.85"
       }
     }
   ]
