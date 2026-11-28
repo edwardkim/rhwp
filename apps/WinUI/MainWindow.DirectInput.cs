@@ -40,8 +40,11 @@ public sealed partial class MainWindow
     private void OnPagePointerPressed(object sender, PointerRoutedEventArgs args)
     {
         if (args.Pointer.PointerDeviceType != PointerDeviceType.Mouse ||
-            !args.GetCurrentPoint(PageCanvas).Properties.IsLeftButtonPressed ||
-            !AcceptPageInput(args.GetCurrentPoint(PageCanvas).Position, out PageInfo current, out Point location))
+            !args.GetCurrentPoint(PageCanvas).Properties.IsLeftButtonPressed)
+            return;
+
+        ClearTableObjectSelection();
+        if (!AcceptPageInput(args.GetCurrentPoint(PageCanvas).Position, out PageInfo current, out Point location))
             return;
 
         args.Handled = true;
@@ -94,10 +97,13 @@ public sealed partial class MainWindow
 
     private void OnPageEditKeyDown(object sender, KeyRoutedEventArgs args)
     {
-        if (args.Key != VirtualKey.F2 || KeyDown(VirtualKey.Control) || !DocumentActionsAvailable || page is not PageInfo current)
+        bool exitTable = args.Key == VirtualKey.Escape && selectedTable is not null;
+        if ((!exitTable && (args.Key != VirtualKey.F2 || KeyDown(VirtualKey.Control))) ||
+            !DocumentActionsAvailable || page is not PageInfo current)
             return;
 
         args.Handled = true;
+        ClearTableObjectSelection();
         EnqueueDirectEdit(async () =>
         {
             if (editorInfo is { Editing: true, Selection: not null } info && info.Target == current.Target)
@@ -204,7 +210,10 @@ public sealed partial class MainWindow
         }
 
         if (!extend && !platformComposing)
+        {
+            ClearTableObjectSelection();
             EmptyInputControl();
+        }
         preferredX = null;
         directEditing = true;
         await UpdateDirectGeometryAsync(followCaret: false, focus: !extend);
@@ -722,6 +731,7 @@ public sealed partial class MainWindow
     {
         directGeometry = null;
         DirectEditOverlay.Children.Clear();
+        ClearTableObjectSelection();
     }
 
     private void DismissDirectEditor()

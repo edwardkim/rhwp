@@ -7,6 +7,12 @@ if (args is ["--pdf-contract-only"])
     return;
 }
 
+if (args is ["--table-object-contract-only"])
+{
+    await TableObjectSmoke.RunAsync();
+    return;
+}
+
 bool testLivePdf = args.Length == 3 && args[2] == "--live-pdf";
 if (args.Length != 2 && !testLivePdf)
     throw new ArgumentException("Pass a multipage HWP and a second HWPX path, optionally followed by --live-pdf.");
