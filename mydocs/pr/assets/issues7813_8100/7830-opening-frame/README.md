@@ -39,4 +39,6 @@ fit과 paint는 같은 표 원점과 점유 하단을 받는다.
 앞 표의 위끝과 높이는 40.9px, 104.3px을 유지했다. 2026-11-28 KST에
 `rhwp export-render-tree samples/hwpx_sample2.hwp --compat 2022 -p 0`으로
 실행했으며 후보 바이너리 SHA-256은 `b59879eef872a1c4a1e6e240aac804411ff6e44cfaab56959c179f5e3f37e364`이다.
-전29쪽 실루엣은 같은 빌드로 재측정 중이다.
+
+같은 후보의 96dpi Native 전29쪽 최저 raw는 98.90%이고, 1쪽은 99.84%였다.
+[리베이스 후 측정표](rebased-native.tsv)
