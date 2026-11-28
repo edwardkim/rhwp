@@ -111,3 +111,14 @@ Chrome에서 11건의 입력 19개 전 512쪽을 대조했다. 최저는 98.04%�
 공개 글꼴 공통 보호의 Native·fresh WASM 8건이 통과했다. 편람 HWPX Native 전
 383쪽도 쪽별 정본 표시값을 충족했고, 전쪽 최저는 99.97%였다.
 [전쪽 TSV와 대표 비교 이미지](protected/README.md)
+
+## PR 제출 전 최종 검사
+
+2026-11-28 22:44 KST에 비교 기준 `274ae9d4c83154e06da049c90eed6904a8b2ec89`와 회귀 실행 커밋 `2ae8cc2508cd2813bc2bfe489b20bcf3b2196f65`를 고정했다. 최신 devel과 후보의 파일·Print PDF·compat·글꼴 공급·backend를 맞췄다. 원래 정밀도로 Native 512쪽과 fresh WASM 512쪽을 각각 대조했으며, 일치율이 낮아진 쪽은 두 경로 모두 0쪽이었다.
+[전쪽 devel·후보 비교](devel-comparison.tsv) · [실행물 SHA와 모듈별 건수](local-validation.json)
+
+- 최소 글꼴 환경의 release-test nextest가 14,303건을 통과했다.
+- Native Skia 라이브러리 4,036건과 CI 통합 21개 모듈 194건이 통과했다.
+- 서식 검사, Native·WASM32·workspace Clippy, workspace 빌드, Rust 통합 suite와 unit-tier 정책 검사도 통과했다.
+- #9495의 연구노트 편집은 기준과 후보에서 같은 케이스를 실행해 배치 순서와 저장 후 재열기를 확인했다.
+- #2063 초대형 표는 같은 최소 글꼴 환경의 Native `dump-pages`에서 devel 357.00초, 후보 352.83초였다. 둘 다 161쪽이며 배치 덤프 SHA-256이 일치했다.
