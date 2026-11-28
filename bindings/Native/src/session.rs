@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use std::ffi::CString;
 use std::os::raw::c_char;
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::time::Duration;
 
 use rhwp_core::document_core::native_interaction::{
     NativeTextPosition, NativeTextSelection, NativeVerticalDirection,
@@ -32,6 +33,7 @@ const MAX_SESSIONS: usize = 8;
 const MAX_REQUEST_BYTES: usize = 1024 * 1024;
 const MAX_BUFFER_BYTES: usize = 128 * 1024 * 1024;
 const MAX_BUFFERS: usize = 64;
+const MAX_WORKER_POLL_WAIT_MS: u64 = 10;
 static NEXT_HANDLE: AtomicU64 = AtomicU64::new(1);
 
 #[derive(Default)]
@@ -364,6 +366,7 @@ enum HostRequest {
     },
     WorkerPoll {
         worker: u64,
+        wait_ms: Option<u64>,
     },
     WorkerCancel {
         worker: u64,
@@ -477,10 +480,11 @@ pub unsafe extern "C" fn rhwp_native_host_request(
                 let runtime=host.workers.get_mut(&worker).ok_or_else(invalid_handle)?;
                 Ok(worker_submit_result(runtime.try_submit(NativeRuntimeCommand::OpenRecovery {replace,bytes:data.to_vec()})))
             }),
-            HostRequest::WorkerPoll { worker } => HOST.with(|host| {
+            HostRequest::WorkerPoll { worker, wait_ms } => HOST.with(|host| {
                 let mut host=host.borrow_mut();
                 let runtime=host.workers.get_mut(&worker).ok_or_else(invalid_handle)?;
-                match runtime.try_recv() {
+                let wait = Duration::from_millis(wait_ms.unwrap_or(0).min(MAX_WORKER_POLL_WAIT_MS));
+                match runtime.recv_timeout(wait) {
                     Ok(None) => Ok(json!({"ok":true,"completion":null})),
                     Ok(Some(completion)) => {
                         let mut output=match completion.result {
@@ -853,6 +857,7 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
         "tableCellTextClipboard":true,
         "atomicImeEdits":true,
         "workerTextSearch":true,
+        "workerWait":true,
         "replaceAllMatches":true,
         "accessibilityCellLayout":true,
         "accessibilityPageSnapshots":true,

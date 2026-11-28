@@ -18,9 +18,10 @@
 use std::collections::HashMap;
 use std::fmt;
 use std::sync::atomic::{AtomicU64, AtomicU8, AtomicUsize, Ordering};
-use std::sync::mpsc::{self, Receiver, SyncSender, TryRecvError, TrySendError};
+use std::sync::mpsc::{self, Receiver, RecvTimeoutError, SyncSender, TryRecvError, TrySendError};
 use std::sync::{Arc, Mutex, Weak};
 use std::thread::{self, JoinHandle};
+use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
 
@@ -888,7 +889,7 @@ struct InFlight {
 }
 
 /// A movable host handle; the !Send engine is constructed only inside its worker.
-/// Polling and submission never wait for work/completion queue capacity.
+/// Nonblocking polling and submission never wait for queue capacity.
 pub struct NativeRuntime {
     config: NativeRuntimeConfig,
     sender: Option<SyncSender<Request>>,
@@ -1045,10 +1046,27 @@ impl NativeRuntime {
     }
 
     pub fn try_recv(&mut self) -> Result<Option<NativeRuntimeCompletion>, NativeRuntimeError> {
+        self.recv_timeout(Duration::ZERO)
+    }
+
+    /// Wait for one completion on the host thread. A zero timeout polls immediately.
+    /// Hosts should use a bounded timeout and keep this call off the UI thread.
+    pub fn recv_timeout(
+        &mut self,
+        timeout: Duration,
+    ) -> Result<Option<NativeRuntimeCompletion>, NativeRuntimeError> {
         let Some(receiver) = &self.completions else {
             return Err(NativeRuntimeError::Closed);
         };
-        match receiver.try_recv() {
+        let result = if timeout.is_zero() {
+            receiver.try_recv()
+        } else {
+            receiver.recv_timeout(timeout).map_err(|error| match error {
+                RecvTimeoutError::Timeout => TryRecvError::Empty,
+                RecvTimeoutError::Disconnected => TryRecvError::Disconnected,
+            })
+        };
+        match result {
             Ok(mut completion) => {
                 if let Some(request) = self.in_flight.remove(&completion.request_id) {
                     request.reservation.release();
