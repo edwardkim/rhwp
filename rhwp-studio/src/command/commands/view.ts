@@ -1,4 +1,5 @@
 import type { CommandDef, CommandServices } from '../types';
+import { memoCommand } from './memo';
 import { setThemeMode, setThemeSkin, syncThemeMenu, type EffectiveTheme } from '../../core/theme';
 import { userSettings, type ThemeMode, type ThemeSkin } from '../../core/user-settings';
 import { GridSettingsDialog } from '../../ui/grid-settings-dialog';
@@ -393,11 +394,11 @@ export const viewCommands: CommandDef[] = [
     },
   } satisfies CommandDef,
   {
-    id: 'view:memo-margin',
-    label: t('command.view.memoMargin.label'),
+    id: 'view:memo-visibility',
+    label: t('dialog.memo.visibility'),
     icon: 'icon-comment',
     canExecute: ctx => ctx.hasDocument,
-    execute: services => services.eventBus.emit('memo-view-toggle', 'margin'),
+    execute: services => services.eventBus.emit('memo-view-toggle', 'visibility'),
   },
   {
     id: 'view:memo-guides',
@@ -405,6 +406,11 @@ export const viewCommands: CommandDef[] = [
     icon: 'icon-comment',
     canExecute: ctx => ctx.hasDocument,
     execute: services => services.eventBus.emit('memo-view-toggle', 'guides'),
+  },
+  {
+    ...memoCommand,
+    id: 'view:memo-list',
+    label: t('dialog.memo.viewList'),
   },
   {
     id: 'view:toggle-grid',

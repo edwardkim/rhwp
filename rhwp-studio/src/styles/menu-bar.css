@@ -243,3 +243,57 @@
 .md-sub:not(.disabled):hover > .md-sub-panel {
   display: block;
 }
+
+/* 메모 하위 메뉴는 마우스, 터치, 키보드로 펼친다. */
+.md-sub.md-memo-sub {
+  display: block;
+  padding: 0;
+  background: transparent;
+  color: var(--color-text);
+}
+.md-memo-sub > summary {
+  display: flex;
+  align-items: center;
+  padding: 5px 16px 5px 32px;
+  list-style: none;
+}
+.md-memo-sub > summary::-webkit-details-marker { display: none; }
+.md-memo-sub > summary:hover,
+.md-memo-sub[open] > summary {
+  background: var(--ui-selected);
+  color: var(--color-primary-dark);
+}
+.md-memo-sub > summary:focus-visible,
+.md-memo-sub .md-item:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+.md-sub.md-memo-sub:not([open]) > .md-sub-panel { display: none; }
+.md-memo-sub[open] > .md-sub-panel { display: block; }
+.md-memo-sub .md-item {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  text-align: start;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.md-memo-sub .md-item:is(:hover, .active):not(:disabled) { background: var(--ui-selected); }
+
+@media (max-width: 600px) {
+  .menu-dropdown:has(> .md-memo-sub[open]) {
+    max-height: calc(100dvh - 48px);
+    overflow-y: auto;
+  }
+  .md-memo-sub > .md-sub-panel {
+    position: static;
+    min-width: 0;
+    margin-inline: 8px;
+    box-shadow: none;
+  }
+  .md-memo-sub[open] .md-arrow { transform: rotate(90deg); }
+}
+@media (pointer: coarse) {
+  .md-memo-sub > summary { min-height: 36px; }
+}

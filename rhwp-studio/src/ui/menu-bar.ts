@@ -35,6 +35,7 @@ export class MenuBar {
     syncMenuShortcutLabels(container, registry);
     this.setupTitleClicks();
     this.setupTitleHover();
+    this.setupSubmenuHover();
     this.setupItemClicks();
     this.setupOutsideClose();
     this.setupKeyboardClose();
@@ -50,7 +51,7 @@ export class MenuBar {
         if (this.openMenu === item) {
           this.closeAll();
         } else {
-          this.openMenu?.classList.remove('open');
+          this.closeAll();
           item.classList.add('open');
           this.openMenu = item;
           this.updateMenuStates(item);
@@ -67,11 +68,35 @@ export class MenuBar {
       if (!title) continue;
       title.addEventListener('mouseenter', () => {
         if (this.openMenu && this.openMenu !== item) {
-          this.openMenu.classList.remove('open');
+          this.closeAll();
           item.classList.add('open');
           this.openMenu = item;
           this.updateMenuStates(item);
           this.onMenuOpen?.(item.dataset.menu ?? '', item);
+        }
+      });
+    }
+  }
+
+  private setupSubmenuHover(): void {
+    for (const submenu of this.container.querySelectorAll<HTMLDetailsElement>('details.md-sub')) {
+      let openedByHover = false;
+      submenu.addEventListener('pointerenter', event => {
+        if (event.pointerType !== 'mouse' || submenu.open || submenu.classList.contains('disabled')) return;
+        openedByHover = true;
+        submenu.open = true;
+      });
+      submenu.addEventListener('pointerleave', event => {
+        if (event.pointerType !== 'mouse' || !openedByHover) return;
+        openedByHover = false;
+        if (!submenu.querySelector(':focus-visible')) submenu.open = false;
+      });
+      submenu.querySelector('summary')?.addEventListener('click', event => {
+        // 마우스로 이미 펼친 항목을 클릭해도 닫히지 않는다. 터치와 키보드는 기본 동작을 쓴다.
+        if (submenu.classList.contains('disabled') || (event.detail > 0 && openedByHover && submenu.open)) {
+          event.preventDefault();
+        } else {
+          openedByHover = false;
         }
       });
     }
@@ -151,6 +176,7 @@ export class MenuBar {
       const cmdId = el.dataset.cmd!;
       const enabled = this.dispatcher.isEnabled(cmdId);
       el.classList.toggle('disabled', !enabled);
+      if (el instanceof HTMLButtonElement) el.disabled = !enabled;
       if (cmdId === 'file:save') {
         el.removeAttribute('title');
       }
@@ -171,6 +197,9 @@ export class MenuBar {
   }
 
   private closeAll(): void {
+    this.openMenu?.querySelectorAll<HTMLDetailsElement>('details.md-sub[open]').forEach(sub => {
+      sub.open = false;
+    });
     this.openMenu?.classList.remove('open');
     this.openMenu = null;
   }

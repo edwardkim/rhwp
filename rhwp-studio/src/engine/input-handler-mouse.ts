@@ -2,7 +2,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { hyperlinkAtPointer, hoverHyperlink, rememberHyperlinkClick, followHyperlinkClick } from './input-handler-hyperlink';
-import type { CellPathLike, HitTestResult } from '@/core/types';
+import { hyperlinkTarget } from '@/core/hyperlink';
+import type { CellPathLike, DocumentPosition, HitTestResult } from '@/core/types';
+import type { MemoInfo } from '@/core/memo-editor';
+import { t } from '../i18n/index.ts';
 import type { ContextMenuItem } from '@/ui/context-menu';
 import { chartTargetFromSelection, matchChartRef } from '@/core/chart-data-target';
 import * as _connector from './input-handler-connector';
@@ -1558,15 +1561,56 @@ export function onContextMenu(this: any, e: MouseEvent): void {
   const pageX = (contentX - pageLeft) / zoom;
   const pageY = (contentY - pageOffset) / zoom;
 
-  let inTable = false;
+  let hit: HitTestResult | null = null;
   try {
-    const hit = this.wasm.hitTest(pageIdx, pageX, pageY);
-    inTable = hit.parentParaIndex !== undefined && !hit.isTextBox;
-  } catch { /* hitTest 실패 시 표 밖으로 처리 */ }
+    if (pageIdx >= 0 && pageIdx < this.wasm.pageCount) hit = this.wasm.hitTest(pageIdx, pageX, pageY);
+  } catch { /* hitTest 실패 시 일반 메뉴를 표시한다. */ }
+  const inTable = hit?.parentParaIndex !== undefined && !hit.isTextBox;
 
   let items: ContextMenuItem[] = inTable
     ? this.getTableContextMenuItems()
     : this.getDefaultContextMenuItems();
+
+  if (hit && this.canEditHyperlink() && !isProtectedCellHit(this, hit)) {
+    try {
+      const generation = this.wasm.documentGeneration;
+      const location = JSON.stringify(hyperlinkTarget(hit));
+      const selection = this.getSelection() as { start: DocumentPosition; end: DocumentPosition } | null;
+      const sameText = selection && JSON.stringify(hyperlinkTarget(selection.start)) === location
+        && JSON.stringify(hyperlinkTarget(selection.end)) === location;
+      const spansBodyParagraphs = selection && selection.start.parentParaIndex === undefined
+        && selection.end.parentParaIndex === undefined && hit.parentParaIndex === undefined
+        && selection.start.sectionIndex === hit.sectionIndex && selection.end.sectionIndex === hit.sectionIndex
+        && selection.start.paragraphIndex !== selection.end.paragraphIndex;
+      const inside = sameText && hit.charOffset >= selection.start.charOffset && hit.charOffset <= selection.end.charOffset
+        || spansBodyParagraphs && hit.paragraphIndex >= selection.start.paragraphIndex
+          && hit.paragraphIndex <= selection.end.paragraphIndex
+          && (hit.paragraphIndex !== selection.start.paragraphIndex || hit.charOffset >= selection.start.charOffset)
+          && (hit.paragraphIndex !== selection.end.paragraphIndex || hit.charOffset <= selection.end.charOffset);
+      const memo = (this.wasm.getMemos() as MemoInfo[]).find(candidate => {
+        if (candidate.parentId !== null || candidate.sectionIndex !== hit!.sectionIndex
+          || candidate.paraIndex !== (hit!.parentParaIndex ?? hit!.paragraphIndex)) return false;
+        const target = this.wasm.getMemoTarget(candidate, true);
+        if (!target || JSON.stringify(hyperlinkTarget(target.start)) !== location) return false;
+        return target.highlight.length
+          ? target.highlight.some((r: { pageIndex: number; x: number; y: number; width: number; height: number }) =>
+            r.pageIndex === pageIdx && pageX >= r.x && pageX <= r.x + r.width && pageY >= r.y && pageY <= r.y + r.height)
+          : target.start.charOffset === hit.charOffset;
+      });
+      items = [...items, { type: 'separator' },
+        { type: 'command', commandId: 'insert:comment', label: t('dialog.memo.insertHere'), params: {
+          compose: 'insert', generation, position: hit, selection: inside ? selection : null,
+        } }];
+      if (memo?.editable) {
+        items.push(
+          { type: 'command', commandId: 'insert:comment', label: t('dialog.memo.editHere'),
+            params: { memoId: memo.id, compose: 'update', generation } },
+          { type: 'command', commandId: 'insert:comment', label: t('dialog.memo.delete'),
+            params: { memoId: memo.id, compose: 'remove', generation } },
+        );
+      }
+    } catch { /* 주소를 확인할 수 없는 대상에는 메모 명령을 표시하지 않는다. */ }
+  }
 
   const hyperlinkHit = hyperlinkAtPointer(this, e);
   if (hyperlinkHit) {

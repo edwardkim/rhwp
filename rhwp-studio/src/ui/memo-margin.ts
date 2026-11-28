@@ -1,105 +1,436 @@
 import type { EventBus } from '@/core/event-bus';
-import type { MemoInfo } from '@/core/memo-editor';
+import type { MemoActionRequest, MemoComposeRequest, MemoInfo } from '@/core/memo-editor';
+import { userSettings } from '@/core/user-settings';
 import { t } from '../i18n/index.ts';
+import { LocalContextMenu } from './local-context-menu';
+import { MemoSwitchDialog } from './memo-switch-dialog';
 
-interface LocatedMemo {
-  memo: MemoInfo;
+export interface LocatedAnchor {
   x: number;
   y: number;
   edge: number;
 }
 
-const CARD_HEIGHT = 72;
-const CARD_PITCH = 80;
+export interface LocatedMemo extends LocatedAnchor {
+  memo: MemoInfo;
+  replies: MemoInfo[];
+}
+
+export type MemoAction = (id: number, action?: 'update' | 'reply' | 'remove') => void;
+
 const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function action(label: string, invoke: () => void, className = ''): HTMLButtonElement {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.textContent = label;
+  button.className = className;
+  button.addEventListener('click', invoke);
+  return button;
+}
+
+interface MemoComposer {
+  form: HTMLFormElement;
+  request: MemoComposeRequest;
+  focus: () => void;
+  hasChanges: () => boolean;
+  apply: () => boolean;
+}
 
 export class MemoMargin {
   private panel = document.createElement('aside');
   private cards = document.createElement('div');
   private empty = document.createElement('p');
   private guides = document.createElementNS(SVG_NS, 'svg');
-  private shown = false;
-  private connected = false;
-  private entries = new Map<number, HTMLButtonElement>();
+  private composer: MemoComposer | null = null;
+  private switchDialog: MemoSwitchDialog | null = null;
+  private menu = new LocalContextMenu();
+  private connected = userSettings.getViewSettings().showMemoGuides;
+  private selected: number | null = null;
+  private hovered: number | null = null;
+  private focused: number | null = null;
+  private entries = new Map<number, { card: HTMLElement; signature: string }>();
+
+  private showMemos: boolean | null = null;
+  private hasAnchoredMemos = false;
+
+  get visible(): boolean { return this.showMemos ?? this.hasAnchoredMemos; }
+
+  get draftAnchor() { return this.composer?.request.anchor; }
+
+  get active(): number | null { return this.composer?.request.cardId ?? this.hovered ?? this.focused ?? this.selected; }
 
   constructor(
-    private container: HTMLElement, bus: EventBus, private open: (id: number) => void, schedule: () => void,
+    private container: HTMLElement, bus: EventBus, private open: MemoAction, private schedule: () => void,
   ) {
+    const header = document.createElement('header');
+    header.className = 'spl-header memo-margin-header';
     const title = document.createElement('h2');
+    title.className = 'spl-title';
     title.textContent = t('dialog.memo.margin');
+    const close = action('×', () => this.setVisible(false), 'spl-close memo-margin-close');
+    close.title = t('dialog.memo.hideMargin');
+    close.setAttribute('aria-label', close.title);
+    header.append(title, close);
     this.panel.className = 'memo-margin';
     this.panel.setAttribute('aria-label', title.textContent);
     this.panel.hidden = true;
     this.cards.className = 'memo-margin-cards';
     this.empty.textContent = t('dialog.memo.marginEmpty');
     this.cards.append(this.empty);
-    this.panel.append(title, this.cards);
+    this.panel.append(header, this.cards);
     this.guides.classList.add('memo-margin-guides');
     this.guides.setAttribute('aria-hidden', 'true');
     container.after(this.panel, this.guides);
     this.cards.addEventListener('scroll', schedule, { passive: true });
-    bus.on('memo-view-toggle', option => {
-      if (option === 'margin') this.shown = !this.shown;
-      if (option === 'guides') this.connected = !this.connected;
-      this.panel.hidden = !this.shown;
-      for (const [name, value] of [['margin', this.shown], ['guides', this.connected]] as const) {
-        for (const item of document.querySelectorAll('[data-cmd="view:memo-' + name + '"]')) {
-          item.classList.toggle('active', value);
-          item.setAttribute('aria-pressed', String(value));
-        }
+    this.setupDocumentClick();
+    bus.on('memo-compose', value => this.compose(value as MemoComposeRequest));
+    bus.on('memo-before-action', value => {
+      const action = value as MemoActionRequest;
+      if (this.switchDialog) {
+        action.handled = true;
+        return;
       }
-      schedule();
+      if (!this.composer) return;
+      action.handled = true;
+      void this.switchTo(action, this.composer);
+    });
+    bus.on('memo-view-toggle', option => {
+      if (option === 'visibility') this.setVisible(!this.visible);
+      if (option === 'guides') {
+        this.connected = !this.connected;
+        userSettings.setShowMemoGuides(this.connected);
+        this.syncVisibility();
+      }
+    });
+    this.syncVisibility();
+  }
+
+  setHasAnchoredMemos(hasAnchoredMemos: boolean): void {
+    if (this.hasAnchoredMemos === hasAnchoredMemos) return;
+    this.hasAnchoredMemos = hasAnchoredMemos;
+    this.syncVisibility();
+  }
+
+  reset(): void {
+    this.menu.hide();
+    this.composer?.form.remove();
+    this.composer = null;
+    this.switchDialog?.hide();
+    this.switchDialog = null;
+    this.selected = this.hovered = this.focused = null;
+    for (const { card } of this.entries.values()) card.remove();
+    this.entries.clear();
+  }
+
+  private setVisible(visible: boolean): void {
+    const restoreFocus = !visible && this.panel.contains(document.activeElement);
+    this.showMemos = visible;
+    this.syncVisibility();
+    if (restoreFocus) this.container.focus({ preventScroll: true });
+  }
+
+  private syncVisibility(): void {
+    this.panel.hidden = !this.visible;
+    if (this.panel.hidden) this.menu.hide();
+    for (const [name, value] of [['visibility', this.visible], ['guides', this.connected]] as const) {
+      for (const item of document.querySelectorAll('[data-cmd="view:memo-' + name + '"]')) {
+        item.classList.toggle('active', value);
+        item.setAttribute('aria-pressed', String(value));
+      }
+    }
+    this.schedule();
+  }
+
+  private setupDocumentClick(): void {
+    let press: { x: number; y: number } | null = null;
+    this.container.addEventListener('pointerdown', event => {
+      press = event.isPrimary && event.button === 0 ? { x: event.clientX, y: event.clientY } : null;
+    });
+    this.container.addEventListener('pointermove', event => {
+      // 문서 편집기의 셀 끌기 시작 거리와 같게 적용한다.
+      if (press && Math.hypot(event.clientX - press.x, event.clientY - press.y) >= 3) press = null;
+    });
+    this.container.addEventListener('pointercancel', () => { press = null; });
+    this.container.addEventListener('pointerleave', event => {
+      if (event.pointerType === 'mouse') press = null;
+    });
+    this.container.addEventListener('click', event => {
+      const start = press;
+      press = null;
+      if (!start || event.button !== 0 || event.ctrlKey || event.altKey || event.metaKey || event.shiftKey
+        || Math.hypot(event.clientX - start.x, event.clientY - start.y) >= 3
+        || !this.visible || this.switchDialog) return;
+      const target = event.target;
+      if (target !== this.container && !(target instanceof Element
+        && target.matches('#scroll-content, #scroll-content canvas, .page-placeholder'))) return;
+
+      const clearSelection = () => {
+        this.selected = this.hovered = this.focused = null;
+        this.schedule();
+      };
+      // click 이후라 본문의 기존 캐럿 배치가 먼저 끝난 상태다.
+      if (this.composer) void this.leaveComposer(this.composer, 'document', clearSelection);
+      else clearSelection();
     });
   }
 
-  update(located: readonly LocatedMemo[]): void {
+  private async switchTo(action: MemoActionRequest, composer: MemoComposer): Promise<void> {
+    if (composer.request.kind === action.kind && composer.request.memoId === action.memoId) {
+      this.setVisible(true);
+      composer.focus();
+      return;
+    }
+    await this.leaveComposer(composer, 'memo', action.run);
+  }
+
+  private async leaveComposer(
+    composer: MemoComposer, destination: 'memo' | 'document', finish: () => void,
+  ): Promise<void> {
+    if (!composer.hasChanges()) {
+      this.closeComposer(false);
+      finish();
+      return;
+    }
+
+    const dialog = this.switchDialog = new MemoSwitchDialog(destination);
+    try {
+      const choice = await dialog.ask();
+      if (this.composer !== composer) return;
+      if (choice === 'continue' || (choice === 'apply' && !composer.apply())) {
+        this.setVisible(true);
+        composer.focus();
+        return;
+      }
+      this.closeComposer(false);
+      if (choice === 'apply' && destination === 'memo') {
+        // 반영된 카드가 다시 그려진 뒤 다음 작업의 입력칸을 붙인다.
+        await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+        if (this.switchDialog !== dialog) return;
+      }
+    } finally {
+      if (this.switchDialog === dialog) this.switchDialog = null;
+    }
+    finish();
+  }
+
+  private closeComposer(restoreFocus: boolean): void {
+    const composer = this.composer;
+    if (!composer) return;
+    this.composer = null;
+    composer.form.remove();
+    if (restoreFocus) {
+      const { cardId, memoId } = composer.request;
+      const card = cardId === null ? null : this.entries.get(cardId)?.card;
+      const reply = card?.querySelector<HTMLButtonElement>('[data-memo-reply="' + memoId + '"]');
+      const trigger = reply ?? card?.querySelector('button');
+      if (trigger) trigger.focus();
+      else composer.request.restoreFocus();
+    }
+    this.schedule();
+  }
+
+  private compose(request: MemoComposeRequest): void {
+    const form = document.createElement('form');
+    form.className = 'memo-inline-editor';
+    const title = document.createElement('strong');
+    title.textContent = t(request.kind === 'insert' ? 'dialog.memo.insertHere'
+      : request.kind === 'reply' ? 'dialog.memo.addReply' : 'dialog.memo.editHere');
+    const author = document.createElement('input');
+    author.placeholder = t('dialog.memo.author');
+    author.setAttribute('aria-label', author.placeholder);
+    author.value = request.author;
+    author.maxLength = 64;
+    author.disabled = author.hidden = request.kind === 'update';
+    const textarea = document.createElement('textarea');
+    textarea.setAttribute('aria-label', t('dialog.memo.text'));
+    textarea.value = request.text;
+    textarea.maxLength = 100000;
+    textarea.rows = 4;
+    const error = document.createElement('p');
+    error.setAttribute('role', 'alert');
+    const apply = () => {
+      try {
+        request.submit(author.value, textarea.value);
+        return true;
+      } catch (reason) {
+        error.textContent = reason instanceof Error ? reason.message : String(reason);
+        return false;
+      }
+    };
+    const focus = () => textarea.focus({ preventScroll: true });
+    const save = document.createElement('button');
+    save.type = 'submit';
+    save.textContent = t('dialog.memo.apply');
+    const buttons = document.createElement('div');
+    buttons.append(save, action(t('dialog.dialog.cancelBtn.text'), () => this.closeComposer(true)));
+    form.append(title, author, textarea, buttons, error);
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      if (apply()) this.closeComposer(true);
+    });
+    form.addEventListener('keydown', event => {
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); this.closeComposer(true); }
+    });
+    this.composer = {
+      form, request, focus, apply,
+      hasChanges: () => author.value !== request.author || textarea.value !== request.text,
+    };
+    const card = request.cardId === null ? null : this.entries.get(request.cardId)?.card;
+    if (card) card.append(form);
+    else if (request.kind === 'insert') {
+      form.classList.add('memo-draft');
+      this.cards.append(form);
+      this.cards.scrollTop = 0;
+    } else this.panel.insertBefore(form, this.cards);
+    this.setVisible(true);
+    focus();
+  }
+
+  private renderCard(memo: MemoInfo, replies: MemoInfo[]): HTMLElement {
+    const card = document.createElement('article');
+    card.className = 'memo-card';
+    card.dataset.memoId = String(memo.id);
+    card.addEventListener('pointerenter', () => { this.hovered = memo.id; this.schedule(); });
+    card.addEventListener('pointerleave', () => { this.hovered = null; this.schedule(); });
+    card.addEventListener('focusin', () => { this.focused = memo.id; this.schedule(); });
+    card.addEventListener('focusout', event => {
+      if (!card.contains(event.relatedTarget as Node | null)) {
+        this.focused = null;
+        this.schedule();
+      }
+    });
+    card.addEventListener('contextmenu', event => {
+      if (event.target instanceof HTMLElement && event.target.closest('.memo-inline-editor')) return;
+      event.preventDefault();
+      this.selected = memo.id;
+      this.schedule();
+      const disabledReason = memo.editable ? undefined : t('dialog.memo.readOnly');
+      this.menu.show(event.clientX, event.clientY, [
+        { type: 'command', label: t('dialog.memo.editHere'), disabledReason, run: () => this.open(memo.id, 'update') },
+        { type: 'command', label: t('dialog.memo.delete'), disabledReason, run: () => this.open(memo.id, 'remove') },
+      ]);
+    });
+    const body = action(memo.text, () => {
+      this.selected = memo.id;
+      this.schedule();
+      this.open(memo.id);
+    }, 'memo-card-open');
+    body.title = memo.text;
+    card.append(this.renderMemoHeader(memo), body);
+    if (memo.editable) {
+      const tools = document.createElement('div');
+      tools.className = 'memo-card-actions';
+      const edit = action(t('dialog.memo.editCard'), () => this.open(memo.id, 'update'));
+      edit.setAttribute('aria-label', t('dialog.memo.editHere'));
+      tools.append(edit, action(t('dialog.memo.reply').replace(/^↳\s*/, ''), () => this.open(memo.id, 'reply')));
+      card.append(tools);
+    }
+    if (replies.length) {
+      const thread = document.createElement('details');
+      const count = document.createElement('summary');
+      count.textContent = t('dialog.memo.replyCount', { p1: replies.length });
+      thread.append(count);
+      for (const reply of replies) {
+        const row = document.createElement('div');
+        row.className = 'memo-card-reply';
+        const body = action(reply.text, () => this.open(reply.id, reply.editable ? 'update' : undefined), 'memo-reply-open');
+        body.dataset.memoReply = String(reply.id);
+        row.append(this.renderMemoHeader(reply), body);
+        thread.append(row);
+      }
+      thread.addEventListener('toggle', this.schedule);
+      card.append(thread);
+    }
+    return card;
+  }
+
+  private renderMemoHeader(memo: MemoInfo): HTMLElement {
+    const header = document.createElement('header');
+    const author = document.createElement('strong');
+    author.textContent = memo.author || t('dialog.memo.noAuthor');
+    header.append(author);
+    if (memo.date) {
+      const date = document.createElement('time');
+      date.dateTime = memo.date;
+      date.textContent = memo.date.replace('T', ' ').slice(0, 16);
+      header.append(date);
+    }
+    return header;
+  }
+
+  update(located: readonly LocatedMemo[], draft: LocatedAnchor | null): void {
     this.guides.replaceChildren();
-    if (!this.shown) return;
+    if (this.panel.hidden) return;
     const content = this.container.querySelector('#scroll-content')!;
     const editorRect = this.container.parentElement!.getBoundingClientRect();
     const contentRect = content.getBoundingClientRect();
     const viewRect = this.container.getBoundingClientRect();
     const railRect = this.cards.getBoundingClientRect();
-    const visible = located.filter(mark => contentRect.top + mark.y >= viewRect.top
-      && contentRect.top + mark.y <= viewRect.bottom).sort((a, b) => a.y - b.y);
+    const inView = ({ y }: LocatedAnchor) => contentRect.top + y >= viewRect.top
+      && contentRect.top + y <= viewRect.bottom;
+    const visible = located.filter(inView).sort((a, b) => a.y - b.y);
+    const guide = (anchor: LocatedAnchor, toY: number, active: boolean, isDraft = false) => {
+      const fromX = contentRect.left + anchor.x;
+      const fromY = contentRect.top + anchor.y;
+      if (!this.connected || toY < railRect.top || toY > railRect.bottom
+        || fromX < viewRect.left || fromX > viewRect.right) return;
+      const elbow = Math.max(fromX, Math.min(viewRect.right, contentRect.left + anchor.edge));
+      const point = (px: number, py: number) => (px - editorRect.left) + ',' + (py - editorRect.top);
+      const line = document.createElementNS(SVG_NS, 'polyline');
+      line.classList.toggle('is-active', active);
+      if (isDraft) line.classList.add('is-draft');
+      line.setAttribute('points', [point(fromX, fromY), point(elbow, fromY), point(railRect.left, toY)].join(' '));
+      this.guides.append(line);
+    };
     const ids = new Set(visible.map(({ memo }) => memo.id));
-    for (const [id, card] of this.entries) {
-      if (ids.has(id)) continue;
+    for (const [id, { card }] of this.entries) {
+      if (ids.has(id) || this.composer?.form.parentElement === card) continue;
       card.remove();
       this.entries.delete(id);
     }
-    this.empty.hidden = visible.length !== 0;
+    const form = this.composer?.form.classList.contains('memo-draft') ? this.composer.form : null;
+    this.empty.hidden = visible.length !== 0 || !!form;
+    const scrolling = this.cards.scrollTop;
+    let draftTop = 0;
+    let draftHeight = 0;
+    if (form) {
+      draftHeight = form.offsetHeight;
+      const hasAnchor = draft !== null && inView(draft);
+      const preferred = hasAnchor ? contentRect.top + draft.y - railRect.top - draftHeight / 2 : 4;
+      // 기준 글자가 화면 밖으로 벗어나도 작성 중인 내용에는 접근할 수 있어야 한다.
+      draftTop = Math.max(4, Math.min(preferred, railRect.height - draftHeight - 4));
+      form.style.top = String(draftTop) + 'px';
+      if (hasAnchor) guide(draft, railRect.top + draftTop + Math.min(draftHeight / 2, 32) - scrolling, true, true);
+    }
     let next = 4;
-    for (const { memo, x, y, edge } of visible) {
-      let card = this.entries.get(memo.id);
-      if (!card) {
-        card = document.createElement('button');
-        card.type = 'button';
-        card.dataset.memoId = String(memo.id);
-        card.addEventListener('click', () => this.open(memo.id));
-        card.append(document.createElement('strong'), document.createElement('span'));
-        this.cards.append(card);
-        this.entries.set(memo.id, card);
+    for (const anchor of visible) {
+      const { memo, replies, y } = anchor;
+      const signature = JSON.stringify([memo, replies]);
+      let entry = this.entries.get(memo.id);
+      if (!entry || (entry.signature !== signature && this.composer?.form.parentElement !== entry.card)) {
+        const card = this.renderCard(memo, replies);
+        if (entry) {
+          const thread = card.querySelector('details');
+          if (thread) thread.open = entry.card.querySelector('details')?.open ?? false;
+          entry.card.replaceWith(card);
+        } else this.cards.append(card);
+        entry = { card, signature };
+        this.entries.set(memo.id, entry);
       }
-      card.children[0].textContent = memo.author || t('dialog.memo.noAuthor');
-      card.children[1].textContent = memo.text;
-      card.title = memo.text;
+      const { card } = entry;
+      const active = this.active === memo.id;
+      card.classList.toggle('is-active', active);
       const fromY = contentRect.top + y;
-      const preferred = fromY - railRect.top - CARD_HEIGHT / 2;
-      const top = Math.max(next, Math.min(preferred, railRect.height - CARD_HEIGHT - 4));
+      const height = card.offsetHeight;
+      const preferred = fromY - railRect.top - height / 2;
+      let top = Math.max(next, Math.min(preferred, railRect.height - height - 4));
+      if (form && top < draftTop + draftHeight + 7 && top + height + 7 > draftTop) {
+        top = draftTop + draftHeight + 7;
+      }
       card.style.top = String(top) + 'px';
-      next = top + CARD_PITCH;
-
-      const toY = railRect.top + top + CARD_HEIGHT / 2 - this.cards.scrollTop;
-      const fromX = contentRect.left + x;
-      if (!this.connected || toY < railRect.top || toY > railRect.bottom
-        || fromX < viewRect.left || fromX > viewRect.right) continue;
-      const elbow = Math.max(fromX, Math.min(viewRect.right, contentRect.left + edge));
-      const point = (px: number, py: number) => (px - editorRect.left) + ',' + (py - editorRect.top);
-      const guide = document.createElementNS(SVG_NS, 'polyline');
-      guide.setAttribute('points', [point(fromX, fromY), point(elbow, fromY),
-        point(railRect.left, toY)].join(' '));
-      this.guides.append(guide);
+      next = top + height + 7;
+      guide(anchor, railRect.top + top + Math.min(height / 2, 32) - scrolling, active);
     }
   }
 }

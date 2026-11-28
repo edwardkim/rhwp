@@ -129,7 +129,7 @@ export abstract class ModalDialog {
         btn?.click();
         return;
       }
-      if (e.key === 'Tab' && this.onTabKey(e)) {
+      if ((e.key === 'Tab' && this.onTabKey(e)) || this.onDialogKey(e)) {
         e.stopPropagation();
         e.preventDefault();
         return;
@@ -165,6 +165,8 @@ export abstract class ModalDialog {
   protected abstract createBody(): HTMLElement;
 
   protected onTabKey(_e: KeyboardEvent): boolean { return false; }
+
+  protected onDialogKey(_e: KeyboardEvent): boolean { return false; }
 
   /** 특정 한 줄 입력만 확인 동작에 연결한다. 일반 입력과 textarea는 기존 동작을 유지한다. */
   protected shouldConfirmOnEnter(_target: HTMLElement): boolean { return false; }

@@ -65,6 +65,8 @@ export interface DialogSettings {
 
 /** 보기 표시 설정 */
 export interface ViewSettings {
+  /** 여백 카드와 본문 위치를 잇는 메모 안내선 표시 여부 */
+  showMemoGuides: boolean;
   /** 문단부호 표시 여부 */
   showParagraphMarks: boolean;
   /** 조판부호 표시 여부 */
@@ -175,6 +177,7 @@ function defaultSettings(): AppSettings {
       showPdfPrintGuidance: true,
     },
     view: {
+      showMemoGuides: true,
       showParagraphMarks: false,
       showControlCodes: false,
       clipView: true,
@@ -283,6 +286,7 @@ class UserSettingsService {
         view: {
           ...defaults.view,
           ...view,
+          showMemoGuides: normalizeBoolean(view.showMemoGuides, defaults.view.showMemoGuides),
           showParagraphMarks: normalizeBoolean(
             view.showParagraphMarks,
             defaults.view.showParagraphMarks,
@@ -426,6 +430,11 @@ class UserSettingsService {
   /** 보기 표시 설정 반환 */
   getViewSettings(): ViewSettings {
     return this.data.view;
+  }
+
+  setShowMemoGuides(value: boolean): void {
+    this.data.view.showMemoGuides = value;
+    this.save();
   }
 
   /** 문단부호 표시 설정 */
