@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <WebView2EnableCsWinRTProjection>false</WebView2EnableCsWinRTProjection>
+    <WebView2NeverCopyLoaderDllToOutputDirectory>true</WebView2NeverCopyLoaderDllToOutputDirectory>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- WinUI 2.7 restores WebView2 metadata for XAML. Keep its SDK payload out of the native app. -->
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3719.77"
+                      ExcludeAssets="runtime;native;build;buildTransitive;buildMultitargeting;contentFiles" />
+  </ItemGroup>
+</Project>
