@@ -18,6 +18,7 @@ use crate::model::{paragraph::Paragraph, style::Alignment};
 
 use super::editor::{NativeEditOutcome, NativeEditor};
 use super::page_setup::NativePageSetupSettings;
+use super::table_object::{NativeTableObjectAddress, NativeTableObjectPropertyChanges};
 use super::NativeHostError;
 
 #[path = "cell_paragraph_commands.rs"]
@@ -183,6 +184,15 @@ pub enum NativeEditCommand {
         section: u32,
         settings: NativePageSetupSettings,
     },
+    SetTableObjectProperties {
+        table: NativeTableObjectAddress,
+        properties: NativeTableObjectPropertyChanges,
+    },
+    ResizeTableObject {
+        table: NativeTableObjectAddress,
+        width: Option<u32>,
+        height: Option<u32>,
+    },
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -280,6 +290,14 @@ impl NativeEditor {
             NativeEditCommand::SetPageSetup { section, settings } => {
                 self.set_page_setup(expected_revision, section, settings)?
             }
+            NativeEditCommand::SetTableObjectProperties { table, properties } => {
+                self.set_table_object_properties(expected_revision, table, properties)?
+            }
+            NativeEditCommand::ResizeTableObject {
+                table,
+                width,
+                height,
+            } => self.resize_table_object(expected_revision, table, width, height)?,
             NativeEditCommand::SelectAll {} => self.select_all(expected_revision)?,
         };
         Ok(NativeCommandOutcome {

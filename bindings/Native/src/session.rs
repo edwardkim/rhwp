@@ -205,6 +205,11 @@ enum Request {
         page: Option<u32>,
         section: Option<u32>,
     },
+    TableObject {
+        expected_revision: u64,
+        position: NativeTextPosition,
+        page: u32,
+    },
     ReplaceAllMatches {
         expected_revision: u64,
         request: NativeSearchRequest,
@@ -625,6 +630,15 @@ fn worker_output(host: &mut Host, worker: u64, output: NativeRuntimeOutput) -> V
             NativeRuntimeOutput::PageSetup { target, page_setup } => {
                 json!({"ok":true,"kind":"pageSetup","target":target,"pageSetup":page_setup})
             }
+            NativeRuntimeOutput::TableObject {
+                target,
+                font_generation,
+                page,
+                table,
+            } => {
+                json!({"ok":true,"kind":"tableObject","target":target,
+                    "fontGeneration":font_generation,"page":page,"table":table})
+            }
             NativeRuntimeOutput::ImeContext(context) => {
                 json!({"ok":true,"kind":"imeContext","context":context})
             }
@@ -860,10 +874,8 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
         "tableCellParagraphCommands":true,
         "tableCellNavigation":true,
         "tableCellTextNavigation":true,
-        "tableCellParagraphSelection":true,
         "basicTextFormatting":true,
         "selectionFormatting":true,
-        "pageSetup":true,
         "createTable":true,
         "maxCreateTableRows":MAX_CREATE_TABLE_ROWS,
         "maxCreateTableColumns":MAX_CREATE_TABLE_COLUMNS,
@@ -884,6 +896,9 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
         "maxLivePdfPages":rhwp_core::native_host::runtime::MAX_LIVE_PDF_PAGES,
         "maxLivePdfBytes":rhwp_core::native_host::runtime::MAX_LIVE_PDF_BYTES,
         "pixelFormat":"rgba8Premultiplied","colorSpace":"srgb"});
+        capabilities["tableCellParagraphSelection"] = true.into();
+        capabilities["tableObjectProperties"] = true.into();
+        capabilities["pageSetup"] = true.into();
         capabilities["insertEquation"] = true.into();
         capabilities["maxEquationScriptBytes"] = MAX_EQUATION_SCRIPT_BYTES.into();
         capabilities["minEquationFontSize"] = MIN_EQUATION_FONT_SIZE.into();
@@ -970,6 +985,11 @@ pub unsafe extern "C" fn rhwp_session_request(
                 Request::PageSetup { expected_revision, page, section } => {
                     let page_setup = session.page_setup(expected_revision, page, section)?;
                     Ok(json!({"ok":true,"kind":"pageSetup","revision":expected_revision,"pageSetup":page_setup}))
+                },
+                Request::TableObject {expected_revision, position, page}=>{
+                    let table=session.table_object(expected_revision,&position,page)?;
+                    Ok(json!({"ok":true,"kind":"tableObject","revision":expected_revision,
+                        "fontGeneration":session.font_generation(),"page":page,"table":table}))
                 },
                 Request::ReplaceAllMatches {expected_revision, request, text}=>{
                     let result=record.editor_mut()?.replace_all_matches(expected_revision,&request,&text)?;
