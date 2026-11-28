@@ -2728,7 +2728,10 @@ pub(crate) fn stored_overlap_spacer_advance(
         return None;
     }
     let forward = i64::from(next.vertical_pos) - i64::from(seg.vertical_pos);
-    if forward <= 0 || forward > i64::from(seg.line_height) {
+    // [docs#1101] 전진 0 은 되감김이 아니라 줄 전진(`lh + ls`)이 0 인 겹침 빈 줄이다.
+    // 그 줄도 자기 앞 간격은 점유한다 — 50627 p[18](앞 간격 500HU, lh 1200 ls −1200)의
+    // 저장 vpos 는 앞 문단 끝 + 500 이고 다음 문단과 같다. 접으면 앞 간격째 사라진다.
+    if forward < 0 || forward > i64::from(seg.line_height) {
         return None;
     }
     let spacing_before = |p: &crate::model::paragraph::Paragraph| {

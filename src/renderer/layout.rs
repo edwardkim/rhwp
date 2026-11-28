@@ -17809,6 +17809,16 @@ impl LayoutEngine {
                         && end_cut.is_empty()
                         && end_row >= table.row_count as usize
                         && (!para_has_visible_text(para)
+                            // [#9479] host 글이 모두 표 위에서 끝나 앞 쪽에 있고 조판이 저장
+                            // 종료식으로 꼬리 조각 상자를 예약했으면, 흐름 끝은 그 상자 끝이다.
+                            || (crate::renderer::float_placement::host_text_precedes_table(
+                                para, table,
+                            ) && paragraphs.get(para_index + 1).is_some_and(|next| {
+                                crate::renderer::float_placement::stored_single_cell_closing_frame_bottom(
+                                    para, next, table, self.dpi,
+                                )
+                                .is_some()
+                            }))
                             || ctx
                                 .paragraph_float_placements
                                 .get(&(para_index, control_index))

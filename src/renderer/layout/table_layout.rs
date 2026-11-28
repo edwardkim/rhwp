@@ -19974,6 +19974,20 @@ impl LayoutEngine {
                         spacing_before + occupied + spacing_after
                     } else if has_visible_text_with_nested && nested_h > 0.0 {
                         line_based_h + nested_h + 4.0
+                    } else if let Some(advance) = (nested_h > 0.0)
+                        .then(|| cell.paragraphs.get(pi + 1))
+                        .flatten()
+                        .and_then(|next| {
+                            crate::renderer::float_placement::stored_inline_table_successor_advance(
+                                p, next, styles, self.dpi,
+                            )
+                        })
+                    {
+                        // 저장 줄 하나가 TAC 표만 품고 다음 문단의 저장 델타가 그 줄의
+                        // `lh + ls` 와 같으면 흐름 전진은 그 저장 전진이다. 칸 배치
+                        // (`table_partial` 의 같은 helper)와 같은 값을 쓴다. 음수 줄간격이면
+                        // 다음 줄이 표 바깥 상자 아래끝보다 위에서 시작한다.
+                        spacing_before + advance
                     } else {
                         nested_h.max(line_based_h)
                     }
