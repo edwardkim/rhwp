@@ -240,10 +240,10 @@ public sealed partial class MainWindow
         }
 
         if (!extend && unit is { } textUnit &&
-            await worker.SelectTextUnitAsync(current.Target, textUnit, hit.Position, token) is { } selected)
+            await worker.SelectTextUnitAsync(current.Target, textUnit, hit.Position, token) is { } unitEdit)
         {
-            dragTextUnit = selected.Outcome.Selection;
-            editorInfo = editorInfo! with { Selection = selected.Outcome.Selection };
+            dragTextUnit = unitEdit.Outcome.Selection;
+            editorInfo = editorInfo! with { Selection = unitEdit.Outcome.Selection };
         }
 
         if (!extend && !platformComposing)
