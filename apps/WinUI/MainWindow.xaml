@@ -14,6 +14,7 @@
                 <Setter Property="Height" Value="32" />
                 <Setter Property="Padding" Value="0" />
                 <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="VerticalAlignment" Value="Center" />
             </Style>
             <SolidColorBrush x:Key="ActiveFormattingBrush" Color="{ThemeResource SystemAccentColor}" />
         </Grid.Resources>
@@ -34,8 +35,13 @@
 
         <Border x:Name="MenuBarFallback" Background="Transparent"
                 BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
-            <MenuBar x:Name="DocumentMenuBar" Margin="8,0" TitleBar.IsDragRegion="False"
-                     AutomationProperties.Name="주 메뉴">
+            <Grid x:Name="TitleBarLeadingContent" ColumnDefinitions="Auto,Auto" ColumnSpacing="8"
+                  Margin="16,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center">
+                <Image x:Name="RhwpTitleLogo" Width="20" Height="20" VerticalAlignment="Center"
+                       IsHitTestVisible="False" AutomationProperties.AccessibilityView="Raw"
+                       AutomationProperties.AutomationId="RhwpTitleLogo" />
+                <MenuBar x:Name="DocumentMenuBar" Grid.Column="1" TitleBar.IsDragRegion="False"
+                         AutomationProperties.Name="주 메뉴">
                 <MenuBarItem Title="파일" AccessKey="F" AutomationProperties.AutomationId="FileMenu">
                     <MenuFlyoutItem Text="새 문서" Icon="Add" Click="OnNewDocumentClicked"
                                     AutomationProperties.AutomationId="NewDocumentMenu"
@@ -111,10 +117,11 @@
                     <MenuFlyoutItem x:Name="ActualSizeMenuItem" Text="100%" Click="OnActualSizeClicked"
                                     IsEnabled="False" AutomationProperties.AutomationId="Zoom100Percent" />
                 </MenuBarItem>
-            </MenuBar>
+                </MenuBar>
+            </Grid>
         </Border>
 
-        <Border Grid.Row="1" Margin="12,2,12,8" Padding="4,0,0,0" CornerRadius="8"
+        <Border Grid.Row="1" Margin="12,2,12,4" Padding="4,0" CornerRadius="6"
                 Background="{ThemeResource LayerFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
             <CommandBar Background="Transparent" HorizontalAlignment="Left" DefaultLabelPosition="Collapsed"
@@ -122,8 +129,14 @@
                         AutomationProperties.Name="문서 도구 모음"
                         AutomationProperties.AutomationId="DocumentCommands">
                 <CommandBar.Resources>
+                    <!-- Align the native icon and overflow templates with the formatting row. -->
+                    <x:Double x:Key="AppBarThemeCompactHeight">38</x:Double>
+                    <Thickness x:Key="AppBarButtonContentViewboxCollapsedMargin">0,11</Thickness>
+                    <Thickness x:Key="AppBarButtonInnerBorderMargin">2,3</Thickness>
+                    <Thickness x:Key="CommandBarMoreButtonMargin">12,0</Thickness>
                     <Style TargetType="AppBarButton" BasedOn="{StaticResource DefaultAppBarButtonStyle}">
                         <Setter Property="Width" Value="40" />
+                        <Setter Property="VerticalAlignment" Value="Center" />
                     </Style>
                 </CommandBar.Resources>
                 <AppBarButton x:Name="NewButton" Label="새 문서" Icon="Add" Click="OnNewDocumentClicked"
@@ -167,16 +180,19 @@
                               IsEnabled="{x:Bind PasteMenuItem.IsEnabled, Mode=OneWay}" />
                 <AppBarElementContainer x:Name="FormattingToolbar" Visibility="Collapsed"
                                         Loaded="OnFormattingToolbarLoaded" DynamicOverflowOrder="1"
+                                        VerticalAlignment="Center"
                                         AutomationProperties.Name="글자와 문단 서식"
                                         AutomationProperties.AutomationId="FormattingToolbar">
-                    <Border Margin="4,3" Padding="2" CornerRadius="6" VerticalAlignment="Center"
+                    <Border Margin="4,0" Padding="2" CornerRadius="5" VerticalAlignment="Center"
                             Background="{ThemeResource ControlFillColorSecondaryBrush}">
                         <StackPanel Orientation="Horizontal" Spacing="2">
-                            <SplitButton x:Name="ApplyBoldButton" IsEnabled="False" BorderThickness="1"
+                            <SplitButton x:Name="ApplyBoldButton" Height="32" MinHeight="0" Padding="7,0"
+                                         VerticalAlignment="Center" VerticalContentAlignment="Center"
+                                         IsEnabled="False" BorderThickness="1"
                                          Background="Transparent" BorderBrush="Transparent" ToolTipService.ToolTip="굵게 전환"
                                          AutomationProperties.Name="굵게 전환"
                                          AutomationProperties.AutomationId="ApplyBold" Click="OnApplyBoldClicked">
-                                <SymbolIcon Symbol="Bold" />
+                                <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE8DD;" FontSize="16" />
                                 <SplitButton.Flyout>
                                     <MenuFlyout>
                                         <MenuFlyoutItem Text="굵게 적용" Click="OnSetBoldClicked"
@@ -186,8 +202,8 @@
                                     </MenuFlyout>
                                 </SplitButton.Flyout>
                             </SplitButton>
-                            <TextBox x:Name="FormattingFontSize" Width="62" Height="34" MinWidth="0" MaxLength="7"
-                                     VerticalAlignment="Center"
+                            <TextBox x:Name="FormattingFontSize" Width="62" Height="32" MinWidth="0" MaxLength="7"
+                                     VerticalAlignment="Center" Padding="8,4"
                                      PlaceholderText="pt" InputScope="Number" IsEnabled="False"
                                      KeyDown="OnFormattingSizeKeyDown" TextChanged="OnFormattingSizeTextChanged"
                                      AutomationProperties.Name="글자 크기(포인트)"
@@ -198,7 +214,7 @@
                                     AutomationProperties.Name="글자 크기 적용" AutomationProperties.AutomationId="ApplyFontSize">
                                 <SymbolIcon Symbol="Accept" />
                             </Button>
-                            <Rectangle Width="1" Height="18" Margin="3,0" IsHitTestVisible="False"
+                            <Rectangle Width="1" Height="18" Margin="3,0" VerticalAlignment="Center" IsHitTestVisible="False"
                                        Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
                             <Button x:Name="AlignLeftButton" Style="{StaticResource ToolbarIconButtonStyle}"
                                     Tag="Left" Click="OnAlignmentClicked" IsEnabled="False"

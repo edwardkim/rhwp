@@ -23,7 +23,7 @@ public sealed partial class MainWindow
 
         MenuBarFallback.Child = null;
         MenuBarFallback.Visibility = Visibility.Collapsed;
-        EditorTitleBar.Content = DocumentMenuBar;
+        EditorTitleBar.Content = TitleBarLeadingContent;
         EditorTitleBar.Visibility = Visibility.Visible;
 
         ExtendsContentIntoTitleBar = true;

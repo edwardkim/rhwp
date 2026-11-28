@@ -19,6 +19,7 @@
     <PackageReference Include="Microsoft.WindowsAppSDK.Runtime" Version="2.7.0" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2957" />
     <Compile Include="../../bindings/csharp/RhwpNative.cs" Link="RhwpNative.cs" />
+    <EmbeddedResource Include="../../rhwp-desk/icons/32x32.png" LogicalName="Rhwp.WinUI.TitleLogo.png" />
   </ItemGroup>
   <ItemGroup Condition="'$(RhwpNativeDll)' != ''">
     <Content Include="$(RhwpNativeDll)" Link="rhwp_native_ffi.dll"

@@ -281,6 +281,7 @@ public sealed partial class MainWindow : Window
     {
         if (Root.XamlRoot is XamlRoot root)
             root.Changed += OnXamlRootChanged;
+        _ = LoadTitleBarLogoAsync();
         _ = LoadPdfCapabilityAsync();
         _ = LoadTableCapabilityAsync();
         QueueRender();
