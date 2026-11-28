@@ -11,19 +11,16 @@ public sealed partial class MainWindow
 {
     private NativeTableLimits? tableLimits;
 
-    private async Task LoadTableCapabilityAsync()
+    private async Task LoadInsertCapabilitiesAsync()
     {
         if (closing)
             return;
 
         try
         {
-            tableLimits = await worker.GetTableLimitsAsync(CancellationToken.None);
-            if (!closing && tableLimits is not null)
-            {
-                InsertMenu.Visibility = Visibility.Visible;
-                RefreshTableActions();
-            }
+            (tableLimits, equationLimits) = await worker.GetInsertLimitsAsync(CancellationToken.None);
+            if (!closing)
+                RefreshInsertActions();
         }
         catch (Exception error)
         {
@@ -31,17 +28,24 @@ public sealed partial class MainWindow
         }
     }
 
-    private void RefreshTableActions()
+    private void RefreshInsertActions()
     {
-        if (!directQueueRunning && InsertTableMenuItem is not null)
-            InsertTableMenuItem.IsEnabled = DocumentActionsAvailable && TryGetTableCaret(out _, out _);
+        if (directQueueRunning || InsertTableMenuItem is null || InsertEquationMenuItem is null)
+            return;
+
+        bool canInsert = DocumentActionsAvailable && TryGetBodyInsertionCaret(out _, out _);
+        InsertMenu.Visibility = tableLimits is not null || equationLimits is not null ? Visibility.Visible : Visibility.Collapsed;
+        InsertTableMenuItem.Visibility = tableLimits is not null ? Visibility.Visible : Visibility.Collapsed;
+        InsertEquationMenuItem.Visibility = equationLimits is not null ? Visibility.Visible : Visibility.Collapsed;
+        InsertTableMenuItem.IsEnabled = canInsert && tableLimits is not null;
+        InsertEquationMenuItem.IsEnabled = canInsert && equationLimits is not null;
     }
 
-    private bool TryGetTableCaret([NotNullWhen(true)] out PageInfo? current, [NotNullWhen(true)] out TextPosition? caret)
+    private bool TryGetBodyInsertionCaret([NotNullWhen(true)] out PageInfo? current, [NotNullWhen(true)] out TextPosition? caret)
     {
         current = page;
         caret = null;
-        if (tableLimits is null || closing || !directEditing || HasActiveComposition || current is null ||
+        if (closing || !directEditing || HasActiveComposition || current is null ||
             editorInfo is not { Editing: true, CompositionId: null, Selection: { } selection } info ||
             info.Target != current.Target || info.FontGeneration != current.FontGeneration ||
             selection.Anchor.CellPath.Length != 0 || !SamePosition(selection.Anchor, selection.Focus))
@@ -55,7 +59,7 @@ public sealed partial class MainWindow
     {
         await SettleDirectInputAsync();
         if (!DocumentActionsAvailable || tableLimits is not { } limits ||
-            !TryGetTableCaret(out PageInfo? requestedPage, out TextPosition? requestedCaret))
+            !TryGetBodyInsertionCaret(out PageInfo? requestedPage, out TextPosition? requestedCaret))
             return;
 
         (int Rows, int Columns)? size = await ShowTableSizeDialogAsync(limits);
@@ -64,7 +68,7 @@ public sealed partial class MainWindow
 
         await EnqueueDirectEdit(async () =>
         {
-            if (!TryGetTableCaret(out PageInfo? current, out TextPosition? caret) ||
+            if (!TryGetBodyInsertionCaret(out PageInfo? current, out TextPosition? caret) ||
                 current.Target != requestedPage.Target || !SamePosition(requestedCaret, caret))
                 return;
 

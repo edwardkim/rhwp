@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace Rhwp.WinUI;
 
 internal sealed record NativeTableLimits(int Rows, int Columns, int Cells)
@@ -9,22 +11,27 @@ internal sealed record NativeTableLimits(int Rows, int Columns, int Cells)
 
 internal sealed partial class NativeWorkerDispatcher
 {
-    public Task<NativeTableLimits?> GetTableLimitsAsync(CancellationToken cancellation) =>
-        Dispatch<NativeTableLimits?>(_ =>
+    public Task<(NativeTableLimits? Table, NativeEquationLimits? Equation)> GetInsertLimitsAsync(CancellationToken cancellation) =>
+        Dispatch(_ =>
         {
             using var report = ReadSuccess(RhwpNative.SessionCapabilities());
             var capabilities = report.RootElement;
-            if (!HasCapability(capabilities, "createTable"))
-                return null;
-
-            NativeTableLimits limits = new(capabilities.GetProperty("maxCreateTableRows").GetInt32(),
-                capabilities.GetProperty("maxCreateTableColumns").GetInt32(),
-                capabilities.GetProperty("maxCreateTableCells").GetInt32());
-            if (limits.Rows is < 1 or > ushort.MaxValue || limits.Columns is < 1 or > ushort.MaxValue || limits.Cells < 1)
-                throw new InvalidDataException("Native 표 만들기 제한이 올바르지 않습니다.");
-
-            return limits;
+            return (ReadTableLimits(capabilities), ReadEquationLimits(capabilities));
         }, cancellation);
+
+    private static NativeTableLimits? ReadTableLimits(JsonElement capabilities)
+    {
+        if (!HasCapability(capabilities, "createTable"))
+            return null;
+
+        NativeTableLimits limits = new(capabilities.GetProperty("maxCreateTableRows").GetInt32(),
+            capabilities.GetProperty("maxCreateTableColumns").GetInt32(),
+            capabilities.GetProperty("maxCreateTableCells").GetInt32());
+        if (limits.Rows is < 1 or > ushort.MaxValue || limits.Columns is < 1 or > ushort.MaxValue || limits.Cells < 1)
+            throw new InvalidDataException("Native 표 만들기 제한이 올바르지 않습니다.");
+
+        return limits;
+    }
 
     public Task<EditResult> CreateTableAsync(DocumentTarget expected, int rows, int columns, CancellationToken cancellation) =>
         Dispatch(token => AdoptEditOutcome(expected,

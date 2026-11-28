@@ -284,7 +284,7 @@ public sealed partial class MainWindow : Window
             root.Changed += OnXamlRootChanged;
         _ = LoadTitleBarLogoAsync();
         _ = LoadPdfCapabilityAsync();
-        _ = LoadTableCapabilityAsync();
+        _ = LoadInsertCapabilitiesAsync();
         _ = LoadPageSetupCapabilityAsync();
         QueueRender();
         windowLoaded.TrySetResult();
@@ -324,7 +324,7 @@ public sealed partial class MainWindow : Window
         RefreshSearchActions();
         RefreshClipboardActions(available);
         RefreshFormattingActions();
-        RefreshTableActions();
+        RefreshInsertActions();
         RefreshPageSetupAction();
     }
 
