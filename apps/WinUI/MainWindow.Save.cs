@@ -13,7 +13,7 @@ public sealed partial class MainWindow
     private async Task<bool> SaveCopyAsync()
     {
         DocumentTarget? target = page?.Target ?? editorInfo?.Target;
-        if (target is null || editorBusy || closing || picking)
+        if (target is null || editorBusy || closing || picking || InlineEditing)
             return false;
 
         editorBusy = true;
@@ -107,6 +107,11 @@ public sealed partial class MainWindow
 
     private async Task<UnsavedDecision> ResolveUnsavedChangesAsync()
     {
+        if (InlineEditing)
+        {
+            StatusText.Text = "현재 문단을 적용하거나 취소하세요.";
+            return UnsavedDecision.Cancel;
+        }
         if (editorBusy)
             return UnsavedDecision.Cancel;
         if (editorInfo?.IsDirty != true)

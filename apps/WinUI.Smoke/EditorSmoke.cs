@@ -4,7 +4,7 @@ internal static class EditorSmoke
 {
     public static async Task RunAsync(string publicForm)
     {
-        CheckDialogOffsets();
+        CheckPageEditOffsets();
         var worker = new NativeWorkerDispatcher();
         CancellationToken token = CancellationToken.None;
         try
@@ -15,6 +15,15 @@ internal static class EditorSmoke
             Assert(hit.Position.Paragraph == applicant.Paragraph &&
                 hit.Position.CellPath.SequenceEqual(applicant.CellPath) &&
                 hit.Position.ScalarOffset == applicant.ScalarOffset, "public form applicant hit-test address");
+            PageCaret clicked = hit.Caret ?? throw new InvalidOperationException("Missing applicant caret.");
+            PageCaret? paragraphStart = await worker.CaretAsync(form.Target, applicant with { ScalarOffset = 0 }, token);
+            InlineEditorPlacement placement = InlineEditorPlacement.Create(form, clicked, paragraphStart, 2, 480, 360)
+                ?? throw new InvalidOperationException("Missing inline position for the applicant cell.");
+            Assert(placement.Left >= 0 && placement.Left + placement.Width <= form.Width * 2 &&
+                placement.Width <= 480 && placement.FitTop(form.Height * 2, 150) + 150 <= form.Height * 2,
+                "nested text overlay fits the zoomed page and viewport");
+            Assert(InlineEditorPlacement.Create(form, clicked with { Page = clicked.Page + 1 }, paragraphStart,
+                2, 480, 360) is null, "inline overlay rejects a caret on a different page");
 
             PageInfo blank = await worker.NewAsync(token);
             var start = new TextPosition(0, 0, 0, []);
@@ -40,8 +49,8 @@ internal static class EditorSmoke
             await Reject(worker.CommitImeAsync(selected.Target, context,
                 new(new(2, 3), "한"), null, token), "surrogate pair");
             ImeReplacement replacement = PageEditText.Difference(context.Context.Text, "가한나")
-                ?? throw new InvalidOperationException("Missing dialog delta.");
-            Assert(replacement.Range == new Utf16Range(1, 3), "dialog edits only the changed scalar");
+                ?? throw new InvalidOperationException("Missing inline text delta.");
+            Assert(replacement.Range == new Utf16Range(1, 3), "inline edit changes only the affected scalar");
             EditResult committed = await worker.CommitImeAsync(selected.Target, context,
                 replacement, PageEditText.Selection("가한나", 2, 0), token);
             Assert(committed.Outcome.DocumentChanged && committed.Outcome.HistoryChanged &&
@@ -85,10 +94,10 @@ internal static class EditorSmoke
         }
     }
 
-    private static void CheckDialogOffsets()
+    private static void CheckPageEditOffsets()
     {
         Assert(PageEditText.Utf16Offset("가😀나", 2) == 3, "offset before the last scalar");
-        Assert(PageEditText.Difference("같음", "같음") is null, "unchanged dialog");
+        Assert(PageEditText.Difference("같음", "같음") is null, "unchanged inline text");
         Assert(PageEditText.Difference("가😀나", "가😁나") ==
             new ImeReplacement(new(1, 3), "😁"), "shared high surrogate");
         Assert(PageEditText.Difference("😀!", "\U0001FA00!") ==

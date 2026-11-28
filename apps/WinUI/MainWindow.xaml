@@ -29,7 +29,7 @@
                       SizeChanged="OnViewportSizeChanged" ViewChanged="OnViewChanged"
                       Background="{ThemeResource LayerFillColorDefaultBrush}">
             <Canvas x:Name="PageCanvas" HorizontalAlignment="Left" VerticalAlignment="Top"
-                    Width="0" Height="0">
+                                  Width="0" Height="0" IsTabStop="True" KeyDown="OnPageEditKeyDown">
                 <Image x:Name="PageImage" Stretch="Fill" Tapped="OnPageTapped"
                        AutomationProperties.Name="문서 쪽" />
             </Canvas>

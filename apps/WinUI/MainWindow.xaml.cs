@@ -42,7 +42,7 @@ public sealed partial class MainWindow : Window
 
     private async void OnOpenClicked(object sender, RoutedEventArgs args)
     {
-        if (picking || closing || editorBusy)
+        if (picking || closing || editorBusy || InlineEditing)
             return;
 
         picking = true;
@@ -83,7 +83,7 @@ public sealed partial class MainWindow : Window
 
     private void OnFilesDragOver(object sender, DragEventArgs args)
     {
-        if (!closing && !editorBusy && args.DataView.Contains(StandardDataFormats.StorageItems))
+        if (!closing && !editorBusy && !InlineEditing && args.DataView.Contains(StandardDataFormats.StorageItems))
         {
             args.AcceptedOperation = DataPackageOperation.Copy;
             args.Handled = true;
@@ -92,7 +92,7 @@ public sealed partial class MainWindow : Window
 
     private async void OnFilesDropped(object sender, DragEventArgs args)
     {
-        if (closing || editorBusy || !args.DataView.Contains(StandardDataFormats.StorageItems))
+        if (closing || editorBusy || InlineEditing || !args.DataView.Contains(StandardDataFormats.StorageItems))
             return;
 
         args.Handled = true;
@@ -137,13 +137,13 @@ public sealed partial class MainWindow : Window
 
     private async void OnPreviousClicked(object sender, RoutedEventArgs args)
     {
-        if (page is { Page: > 0 } current && !closing && !editorBusy)
+        if (page is { Page: > 0 } current && !closing && !editorBusy && !InlineEditing)
             await GoToPageAsync(current, current.Page - 1);
     }
 
     private async void OnNextClicked(object sender, RoutedEventArgs args)
     {
-        if (page is PageInfo current && current.Page + 1 < current.PageCount && !closing && !editorBusy)
+        if (page is PageInfo current && current.Page + 1 < current.PageCount && !closing && !editorBusy && !InlineEditing)
             await GoToPageAsync(current, current.Page + 1);
     }
 
@@ -262,7 +262,7 @@ public sealed partial class MainWindow : Window
 
     private void ZoomTo(double value)
     {
-        if (closing || editorBusy || page is not PageInfo current)
+        if (closing || editorBusy || InlineEditing || page is not PageInfo current)
             return;
 
         double nextZoom = Math.Clamp(value, MinZoom, MaxZoom);
@@ -341,7 +341,7 @@ public sealed partial class MainWindow : Window
             PageImage.Width = frame.PixelWidth / frame.DeviceScale;
             PageImage.Height = frame.PixelHeight / frame.DeviceScale;
             PageImage.Source = source;
-            if (pdfCancellation is null)
+            if (pdfCancellation is null && !InlineEditing)
             {
                 StatusText.Text = documentError ??
                     $"{current.Page + 1} / {current.PageCount}쪽 · {(int)Math.Round(zoom * 100)}%";
@@ -365,7 +365,7 @@ public sealed partial class MainWindow : Window
 
     private void RefreshButtons()
     {
-        bool available = !closing && !editorBusy && !picking;
+        bool available = !closing && !editorBusy && !picking && !InlineEditing;
         OpenButton.IsEnabled = available;
         SaveCopyButton.IsEnabled = available && (page is not null || editorInfo is not null);
         ExportPdfButton.Content = pdfCancellation is null ? "현재 쪽 PDF 미리보기" : "PDF 작업 취소";
