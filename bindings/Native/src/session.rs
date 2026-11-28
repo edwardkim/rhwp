@@ -20,6 +20,7 @@ use rhwp_core::native_host::runtime::{
 use rhwp_core::native_host::save::{
     NativeSaveFormat, NativeSaveStatus, NativeSaveToken, PreparedSave,
 };
+use rhwp_core::native_host::search::NativeSearchRequest;
 use rhwp_core::native_host::view::{
     NativePagePoint, NativeView, NativeViewConfig, NativeViewPoint, NativeViewRect, NativeViewState,
 };
@@ -192,6 +193,11 @@ enum Request {
         expected_revision: u64,
         font_generation: u64,
         selection: NativeTextSelection,
+    },
+    ReplaceAllMatches {
+        expected_revision: u64,
+        request: NativeSearchRequest,
+        text: String,
     },
     ImeContext {
         expected_revision: u64,
@@ -615,6 +621,9 @@ fn worker_output(host: &mut Host, worker: u64, output: NativeRuntimeOutput) -> V
             NativeRuntimeOutput::SearchText { target, result } => {
                 json!({"ok":true,"kind":"searchText","target":target,"result":result})
             }
+            NativeRuntimeOutput::ReplaceAllMatches { target, result } => {
+                json!({"ok":true,"kind":"replaceAllMatches","target":target,"result":result})
+            }
             NativeRuntimeOutput::Accessibility { target, snapshot } => {
                 json!({"ok":true,"kind":"accessibility","target":target,"snapshot":snapshot})
             }
@@ -844,6 +853,7 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
         "tableCellTextClipboard":true,
         "atomicImeEdits":true,
         "workerTextSearch":true,
+        "replaceAllMatches":true,
         "accessibilityCellLayout":true,
         "accessibilityPageSnapshots":true,
         "worker":true,"maxWorkers":4,"hostRequests":true,"viewState":true,"accessibilitySnapshots":true,"threadAffine":true,"maxSessions":MAX_SESSIONS,"maxDocumentBytes":MAX_DOCUMENT_BYTES,
@@ -930,6 +940,10 @@ pub unsafe extern "C" fn rhwp_session_request(
                     let formatting=record.editor_mut()?.selection_formatting(expected_revision,font_generation,&selection)?;
                     Ok(json!({"ok":true,"kind":"selectionFormatting","revision":expected_revision,
                         "fontGeneration":font_generation,"selection":selection,"formatting":formatting}))
+                },
+                Request::ReplaceAllMatches {expected_revision, request, text}=>{
+                    let result=record.editor_mut()?.replace_all_matches(expected_revision,&request,&text)?;
+                    Ok(json!({"ok":true,"kind":"replaceAllMatches","result":result}))
                 },
                 Request::ImeContext {expected_revision}=>Ok(json!({"ok":true,"context":record.editor_mut()?.ime_context(expected_revision)?})),
                 Request::ImeEditContext {expected_revision}=>Ok(json!({"ok":true,"context":record.editor_mut()?.ime_edit_context(expected_revision)?})),

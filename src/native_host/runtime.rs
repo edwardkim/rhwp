@@ -34,7 +34,7 @@ use super::editor::{NativeEditOutcome, NativeEditor};
 use super::render_snapshot::{NativeRenderSnapshot, NativeRenderSnapshotLimits};
 use super::save::NativeSaveCaretPolicy;
 use super::save::{NativeSaveFormat, NativeSaveStatus, NativeSaveToken, PreparedSave};
-use super::search::{NativeSearchRequest, NativeSearchResult};
+use super::search::{NativeReplaceAllResult, NativeSearchRequest, NativeSearchResult};
 use super::NativePageSize;
 use super::{
     NativeDocumentSession, NativeFrame, NativeHostError, MAX_DOCUMENT_BYTES, MAX_FRAME_PIXELS,
@@ -197,6 +197,11 @@ pub enum NativeRuntimeCommand {
     SearchText {
         target: NativeRuntimeTarget,
         request: NativeSearchRequest,
+    },
+    ReplaceAllMatches {
+        target: NativeRuntimeTarget,
+        request: NativeSearchRequest,
+        text: String,
     },
     /// Export only owned immutable inputs. The worker clamps the input ceiling
     /// to its byte quota and charges the actual estimate before completion.
@@ -453,6 +458,14 @@ impl NativeRuntimeCommand {
                     .map_err(|_| NativeRuntimeError::InvalidArgument)?;
                 request.reservation_bytes()
             }
+            Self::ReplaceAllMatches { request, text, .. } => {
+                request
+                    .validate()
+                    .map_err(|_| NativeRuntimeError::InvalidArgument)?;
+                request
+                    .reservation_bytes()
+                    .and_then(|bytes| bytes.checked_add(text.capacity()))
+            }
             _ => Some(0),
         };
         bytes.ok_or(NativeRuntimeError::ByteCapacity)
@@ -563,6 +576,10 @@ pub enum NativeRuntimeOutput {
         target: NativeRuntimeTarget,
         result: NativeSearchResult,
     },
+    ReplaceAllMatches {
+        target: NativeRuntimeTarget,
+        result: NativeReplaceAllResult,
+    },
     RenderSnapshot {
         document_id: NativeRequestId,
         snapshot: Arc<NativeRenderSnapshot>,
@@ -629,6 +646,7 @@ impl fmt::Debug for NativeRuntimeOutput {
             Self::Clipboard { .. } => "Clipboard",
             Self::Accessibility { .. } => "Accessibility",
             Self::SearchText { .. } => "SearchText",
+            Self::ReplaceAllMatches { .. } => "ReplaceAllMatches",
             Self::RenderSnapshot { .. } => "RenderSnapshot",
             Self::DocumentClosed => "DocumentClosed",
             Self::RasterCacheLimit { .. } => "RasterCacheLimit",

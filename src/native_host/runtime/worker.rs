@@ -261,6 +261,18 @@ fn execute(
             *owner = None;
             Ok(O::DocumentClosed)
         }
+        C::ReplaceAllMatches {
+            target,
+            request,
+            text,
+        } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            let result = doc
+                .editor()?
+                .replace_all_matches(target.revision, &request, &text)?;
+            Ok(O::ReplaceAllMatches { target, result })
+        }
         C::SearchText { target, request } => {
             let doc = document(owner)?;
             doc.check(target)?;
