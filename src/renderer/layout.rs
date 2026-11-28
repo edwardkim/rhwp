@@ -18397,6 +18397,10 @@ impl LayoutEngine {
                     .get(para_index)
                     .and_then(|p| p.controls.get(control_index))
                 {
+                    let (margin_left, margin_right) = paragraphs
+                        .get(para_index)
+                        .and_then(|para| styles.para_styles.get(para.para_shape_id as usize))
+                        .map_or((0.0, 0.0), |style| (style.margin_left, style.margin_right));
                     let mut temp_parent = RenderNode::new(
                         tree.next_id(),
                         RenderNodeType::Column(0),
@@ -18441,8 +18445,8 @@ impl LayoutEngine {
                             None,
                             &[],
                             &[],
-                            0.0,
-                            0.0,
+                            margin_left,
+                            margin_right,
                             None,
                             None,
                             false,
@@ -18480,8 +18484,8 @@ impl LayoutEngine {
                             Some((para_index, control_index)),
                             alignment,
                             None,
-                            0.0,
-                            0.0,
+                            margin_left,
+                            margin_right,
                             None,
                             overlay_cut.as_ref(),
                             None,

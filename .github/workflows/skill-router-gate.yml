@@ -7,7 +7,7 @@ name: Skill router gate
 on:
   pull_request:
     branches: [main, devel]
-    types: [opened, reopened, synchronize]
+    types: [opened, reopened, synchronize, ready_for_review, converted_to_draft]
     paths:
       - '.claude/skills/**'
       - '.agents/skills/**'
@@ -20,7 +20,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: skill-router-gate-${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  group: skill-router-gate-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
@@ -28,6 +28,7 @@ env:
 
 jobs:
   gate:
+    if: ${{ github.event.pull_request.draft != true }}
     name: Skill router gate
     runs-on: ubuntu-latest
     timeout-minutes: 15

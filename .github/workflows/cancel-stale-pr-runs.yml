@@ -41,10 +41,12 @@ jobs:
     # same-repo는 pull_request 경로로, fork는 pull_request_target 경로로만 실행해
     # 이중 발동을 막는다.
     if: >-
-      (github.event_name == 'pull_request'
-        && github.event.pull_request.head.repo.full_name == github.repository)
-      || (github.event_name == 'pull_request_target'
-        && github.event.pull_request.head.repo.full_name != github.repository)
+      github.event.pull_request.draft != true && (
+        (github.event_name == 'pull_request'
+          && github.event.pull_request.head.repo.full_name == github.repository)
+        || (github.event_name == 'pull_request_target'
+          && github.event.pull_request.head.repo.full_name != github.repository)
+      )
     runs-on: ubuntu-latest
     steps:
       - name: Force-cancel older pull-request runs for this PR

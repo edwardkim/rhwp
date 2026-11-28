@@ -3,6 +3,7 @@ name: CodeQL
 on:
   pull_request:
     branches: [main, devel]
+    types: [opened, reopened, synchronize, ready_for_review, converted_to_draft]
     paths-ignore:
       # samples는 PR preflight에서 신규 reference-only와 기존 자료 변경을
       # 구분해 CodeQL no-op/full 판정을 발행한다.
@@ -36,11 +37,12 @@ on:
 # [Task #1192 F] 같은 PR 에 새 push 가 오면 진행 중 run 을 취소해 중복 실행 제거.
 # Branch push에서는 분석하지 않는다. schedule/manual 분석은 별도 명시 정책이다.
 concurrency:
-  group: codeql-${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  group: codeql-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   trusted_postmerge_reuse:
+    if: ${{ github.event.pull_request.draft != true }}
     uses: ./.github/workflows/trusted-postmerge-ci-reuse.yml
     permissions:
       actions: read
@@ -840,7 +842,7 @@ jobs:
     # 분석 범위를 줄이지 않고 실제 완료까지 허용한다.
     timeout-minutes: 90
     needs: preflight
-    if: ${{ always() && needs.preflight.outputs.fast_pass != 'true' }}
+    if: ${{ always() && github.event.pull_request.draft != true && needs.preflight.outputs.fast_pass != 'true' }}
     # preflight가 cancel·runner 장애로 job output을 발행하지 못해도 빈 선택이
     # 네 no-op success로 열리지 않도록 consumer에서 다시 네 언어 full로 닫는다.
     env:

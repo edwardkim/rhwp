@@ -787,7 +787,9 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
                     InlineFlowContent::Text { range, .. } => attached_word_metrics
                         .get(&range.start)
                         .filter(|(metrics, can_break)| {
-                            !can_break || metrics.width <= row_width + 0.01
+                            // 글자 뒤에서 줄을 나눌 수 있으면 남은 폭에 표까지
+                            // 들어갈 때만 합쳐 본다. 표가 넘쳐도 끝 글자는 앞 줄을 소유한다.
+                            !can_break || row_metrics.width + metrics.width <= row_width + 0.01
                         })
                         .map(|(metrics, _)| *metrics)
                         .or_else(|| {

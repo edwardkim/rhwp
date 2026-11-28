@@ -17563,6 +17563,9 @@ impl LayoutEngine {
             let stored_empty_successor_advance = stored_empty_successor_geometry
                 .as_ref()
                 .map(|geometry| geometry.advance);
+            let nested_block_closing_line = is_empty_spacer_para
+                .then(|| self.stored_nested_block_closing_line(cell, table, styles, pi))
+                .flatten();
             let closing_empty_line_advance = is_empty_spacer_para
                 .then(|| {
                     self.stored_closing_empty_line_advance_hu(
@@ -17583,7 +17586,11 @@ impl LayoutEngine {
                         styles,
                     )
                 })
-                .flatten();
+                .flatten()
+                .or_else(|| {
+                    let line = nested_block_closing_line?;
+                    line.line_height.checked_add(line.line_spacing)
+                });
             let stored_frame_empty_advance = authenticated_hwpx_frame
                 .then(|| self.stored_empty_line_advance_hu(cell, pi))
                 .flatten()
@@ -17669,6 +17676,8 @@ impl LayoutEngine {
                                     let slot = i64::from(seg.line_height)
                                         + i64::from(seg.line_spacing.max(0));
                                     (forward - slot).abs() <= 2
+                                        || (!next_para.text.trim().is_empty()
+                                            && stored_empty_successor_advance.is_some())
                                 }
                             })
                         }
@@ -17880,26 +17889,28 @@ impl LayoutEngine {
             };
             // 되감김 기하와 강제 컷의 인증은 다른 상태다. 원본 첫 조각의
             // 높이를 대조하는 소비자는 양수·동일 원점의 기하도 보존해야 한다.
-            let paragraph_origin_rewind =
-                (pi > 0 && cell_has_local_vpos_origin && !rewind_follows_unstored_text(pi))
-                    .then(|| {
-                        cell.paragraphs[..pi]
-                            .iter()
-                            .rev()
-                            .find_map(|para| para.line_segs.last())
-                            .zip(p.line_segs.first())
-                    })
-                    .flatten()
-                    .filter(|(previous, current)| {
-                        let end = previous.vertical_pos.saturating_add(previous.line_height);
-                        !line_seg_is_synthetic(previous)
-                            && !line_seg_is_synthetic(current)
-                            && current.vertical_pos >= 0
-                            && end > 0
-                            && current.vertical_pos < end
-                            && (!cell_uses_overlapping_line_boxes
-                                || current.vertical_pos < previous.vertical_pos)
-                    });
+            let paragraph_origin_rewind = (pi > 0
+                && cell_has_local_vpos_origin
+                && nested_block_closing_line.is_none()
+                && !rewind_follows_unstored_text(pi))
+            .then(|| {
+                cell.paragraphs[..pi]
+                    .iter()
+                    .rev()
+                    .find_map(|para| para.line_segs.last())
+                    .zip(p.line_segs.first())
+            })
+            .flatten()
+            .filter(|(previous, current)| {
+                let end = previous.vertical_pos.saturating_add(previous.line_height);
+                !line_seg_is_synthetic(previous)
+                    && !line_seg_is_synthetic(current)
+                    && current.vertical_pos >= 0
+                    && end > 0
+                    && current.vertical_pos < end
+                    && (!cell_uses_overlapping_line_boxes
+                        || current.vertical_pos < previous.vertical_pos)
+            });
             // 그림 띠와 다음 원본 글줄은 셀의 다른 문단을 편집했는지와 무관한
             // 로컬 출처를 공유한다. 인증 함수는 앞뒤 원본 줄·실제 본문 예산·
             // 같은 그림 띠 높이를 대조하며, 재조판한 당사자 문단은 기각한다.
@@ -17942,7 +17953,11 @@ impl LayoutEngine {
             let stored_frame_break_before_para = declared_two_line_frame
                 || source_text_frame_reset
                 || deferred_picture_source_reset
-                || if pi > 0 && cell_has_local_vpos_origin && !rewind_follows_unstored_text(pi) {
+                || if pi > 0
+                    && cell_has_local_vpos_origin
+                    && nested_block_closing_line.is_none()
+                    && !rewind_follows_unstored_text(pi)
+                {
                     let prev_para = &cell.paragraphs[pi - 1];
                     match (prev_para.line_segs.last(), p.line_segs.first()) {
                         (Some(prev), Some(cur)) => is_stored_frame_rewind(prev, cur, pi, 0),

@@ -248,7 +248,21 @@ pub(super) fn resolve(
         crate::renderer::float_placement::stored_empty_square_host_uses_paragraph_origin(
             para, table,
         );
+    // 저장 줄이 없는 HWPX에서 문단 첫 제어인 0 오프셋 표는 재조판한
+    // 본문보다 먼저 흐름을 점유한다. 표 앞에는 개체의 바깥 위 여백만 둔다.
+    let computed_rowbreak_precedes_text = profile().hwpx_stored_layout()
+        && is_visible_host_float
+        && crate::renderer::para_has_no_stored_line_segs(para)
+        && table.common.flow_with_text
+        && table.layout_page_break() == crate::model::table::TablePageBreak::RowBreak
+        && signed_hwpunit(table.common.vertical_offset) == 0
+        && matches!(
+            para.controls.as_slice(),
+            [crate::model::control::Control::Table(_)]
+        )
+        && para.control_text_positions().get(ctrl_idx) == Some(&0);
     let before = if square_paragraph_origin
+        || computed_rowbreak_precedes_text
         || (!is_tac
             && table_wrap_take_place
             && !(is_topbottom_empty_anchor && next_is_empty_table_anchor))

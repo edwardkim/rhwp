@@ -93,6 +93,20 @@ pub(crate) fn try_resolve_styles_for_document<S: storage::Storage>(
     }
     super::legacy_font_advances::select_native_programs(document, &mut styles);
     original_font_slots::refresh(&lookup, &mut styles, storage)?;
+    if missing_fonts::missing_latin_default(document).is_some() {
+        // 원본에 영문 글꼴 표가 없으면 숫자와 ASCII 구두점 모두
+        // 같은 기본 영문 슬롯을 소비한다. 줄 채움과 표시의 선택을 맞춘다.
+        for (source, style) in document
+            .doc_info
+            .char_shapes
+            .iter()
+            .zip(&mut styles.char_styles)
+        {
+            if source.font_ids[1] == 0 {
+                style.ascii_punct_latin_slot = true;
+            }
+        }
+    }
     // [#7051] 계보 신호가 없는 저장본의 HFT ASCII 반각 판정은 로드 시 한 번 내려 출처에 둔다.
     styles.hft_ascii_halfwidth |= document.provenance.hft_ascii_halfwidth_witnessed;
     if profile.hwpx_stored_layout() {

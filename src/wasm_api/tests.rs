@@ -5,6 +5,8 @@ mod exam_fixtures {
     ));
 }
 
+mod issue_7813_deferred_pagination;
+
 use super::*;
 use crate::model::document::{Document, Section};
 use crate::model::paragraph::{LineSeg, Paragraph};

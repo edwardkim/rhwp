@@ -89,7 +89,7 @@ class RenderDiffTriggerPolicyTests(unittest.TestCase):
 
     def test_label_events_do_not_restart_render_diff_and_manual_dispatch_is_full(self) -> None:
         self.assertIn(
-            "types: [opened, reopened, synchronize]",
+            "types: [opened, reopened, synchronize, ready_for_review, converted_to_draft]",
             self.workflow,
         )
         self.assertNotIn("labeled, unlabeled", self.workflow)

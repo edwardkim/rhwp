@@ -6,6 +6,63 @@ use crate::renderer::hwpunit_to_px;
 use super::{LayoutEngine, ResolvedStyleSet, ROW_CUT_CAPACITY_FP_EPSILON_PX};
 
 impl LayoutEngine {
+    /// 원본 0 원점에서 시작해 마지막 빈 줄 하단까지 닫힌 셀의 내용 높이.
+    /// 호출자가 후속 문단의 저장 좌표와 실제 물리 상자를 함께 확인한다.
+    pub(crate) fn stored_terminal_blank_cell_content_hu(
+        &self,
+        table: &Table,
+        start: usize,
+        styles: &ResolvedStyleSet,
+    ) -> Option<i32> {
+        use crate::model::paragraph::LineSeg;
+        let [cell] = table.cells.as_slice() else {
+            return None;
+        };
+        if !self.profile.get().hwp5_stored_pagination_layout()
+            || self.profile.get().session_edited()
+            || table.common.treat_as_char
+            || table.layout_page_break() != crate::model::table::TablePageBreak::RowBreak
+            || cell.dirty_flag
+            || self
+                .render_normalization
+                .borrow()
+                .cell_frame_reflowed(table, cell)
+            || self.cell_unit_stored_page_frame_origin(cell, table, styles, start) != Some(0)
+        {
+            return None;
+        }
+        let units = self.cell_units(cell, table, styles);
+        let first = units.get(start)?;
+        let suffix = cell.paragraphs.get(first.para_idx..)?;
+        let last = suffix.last()?;
+        let [closing] = last.line_segs.as_slice() else {
+            return None;
+        };
+        if first.vis_start != 0
+            || !last.text.is_empty()
+            || !last.controls.is_empty()
+            || suffix.iter().any(|para| {
+                !para.controls.is_empty()
+                    || para.line_segs.is_empty()
+                    || para.stored_text_partition_is_dirty()
+                    || para.cell_format_vpos_dirty
+            })
+        {
+            return None;
+        }
+        let mut end = 0i32;
+        for line in suffix.iter().flat_map(|para| &para.line_segs) {
+            if line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                || line.vertical_pos < end
+                || line.line_height <= 0
+            {
+                return None;
+            }
+            end = line.vertical_pos.checked_add(line.line_height)?;
+        }
+        (closing.vertical_pos > 0).then_some(end)
+    }
+
     /// 현재 조각에서 시작해 이 행에서 끝나는 병합 칸은 수용한 행 상자에서 완결한다.
     /// 다른 칸이 뒤 행으로 이어진다는 사실은 이 칸의 빈 꼬리를 다시 여는 근거가 아니다.
     /// 앞 쪽에서 시작한 칸과 개체·저장 재시작은 이 원본 전체 내용 검사로 추정하지 않는다.

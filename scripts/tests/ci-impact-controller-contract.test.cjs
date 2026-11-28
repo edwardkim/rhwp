@@ -310,20 +310,76 @@ const auditContext = (linked = [{ number: 123, base: { ref: 'devel' } }]) => ({ 
   eventName: 'workflow_run', payload: { workflow_run: { id: 789, event: 'pull_request',
     head_sha: HEAD, head_branch: 'topic', head_repository: clone(repository), pull_requests: linked } } });
 
-test('actual job condition skips known non-devel PRs and non-PR runs', () => {
-  const condition = controller.split('    if: >-\n')[1].split('    runs-on:')[0].trim();
-  assert.ok(condition.startsWith('${{') && condition.endsWith('}}'));
+function evaluateJobExpression(value, ctx) {
+  assert.ok(value.startsWith('${{') && value.endsWith('}}'));
   // Only the workflow's property lookups are adapted. The Boolean expression itself is executed.
-  const expression = condition.slice(3, -2).replace(/github(?:\.[a-zA-Z_]\w*|\[\d+\])+/g,
+  const expression = value.slice(3, -2).replace(/github(?:\.[a-zA-Z_]\w*|\[\d+\])+/g,
     (key) => 'lookup(' + JSON.stringify(key) + ')');
-  const evaluate = (ctx) => Boolean(vm.runInNewContext(expression, { lookup: (key) => {
-    const values = { github: { event_name: ctx.eventName, event: ctx.payload } };
-    return key.replace(/\[(\d+)\]/g, '.$1').split('.').reduce((value, part) => value?.[part], values) ?? null;
-  } }));
+  return vm.runInNewContext(expression, {
+    always: () => true,
+    needs: { preflight: { outputs: {} } },
+    lookup: (key) => {
+      const values = { github: { event_name: ctx.eventName, event: ctx.payload } };
+      return key.replace(/\[(\d+)\]/g, '.$1').split('.').reduce((value, part) => value?.[part], values) ?? null;
+    },
+  });
+}
+
+test('PR entry jobs and unconditional aggregates skip Draft but allow Ready and manual runs', () => {
+  const jobs = {
+    'ci.yml': ['trusted_postmerge_reuse', 'build-and-test'],
+    'codeql.yml': ['trusted_postmerge_reuse', 'analyze'],
+    'proptest-roundtrip.yml': ['trusted_postmerge_reuse'],
+    'adapter-diff.yml': ['trusted_postmerge_reuse'],
+    'render-diff.yml': ['preflight'],
+    'skill-router-gate.yml': ['gate'],
+    'gym-release-gate.yml': ['contracts'],
+  };
+  for (const [name, jobIds] of Object.entries(jobs)) {
+    const workflow = readWorkflow(name);
+    const triggers = workflow.split('  pull_request:\n')[1].split(/\n  [a-z_]+:/)[0];
+    assert.match(triggers, /types: \[[^\n]*\bready_for_review\b[^\n]*\bconverted_to_draft\b/);
+    assert.match(workflow, /group: [^\n]*\$\{\{ github\.ref \}\}/);
+    for (const jobId of jobIds) {
+      const job = workflow.split('\n  ' + jobId + ':\n')[1].split(/\n  [\w-]+:\n/)[0];
+      const condition = job.match(/^    if: (.+)$/m)[1];
+      for (const action of ['opened', 'reopened', 'synchronize', 'converted_to_draft']) {
+        assert.equal(evaluateJobExpression(condition, {
+          eventName: 'pull_request', payload: { action, pull_request: { ...pull(), draft: true } },
+        }), false, name + ':' + jobId + ':' + action);
+      }
+      for (const action of ['ready_for_review', 'synchronize']) {
+        assert.equal(evaluateJobExpression(condition, {
+          eventName: 'pull_request', payload: { action, pull_request: { ...pull(), draft: false } },
+        }), true, name + ':' + jobId + ':' + action);
+      }
+      assert.equal(evaluateJobExpression(condition, { eventName: 'workflow_dispatch', payload: {} }), true);
+    }
+  }
+});
+
+test('Draft cannot post a skipped check under the Ready branch protection name', () => {
+  const job = readWorkflow('ci.yml').split('\n  build-and-test:\n')[1];
+  const name = job.match(/^    name: (.+)$/m)[1];
+  const event = draft => ({ eventName: 'pull_request', payload: { pull_request: { draft } } });
+  assert.equal(evaluateJobExpression(name, event(true)), 'Draft Build & Test');
+  assert.equal(evaluateJobExpression(name, event(false)), 'Build & Test');
+  assert.equal(evaluateJobExpression(name, { eventName: 'workflow_dispatch', payload: {} }), 'Build & Test');
+});
+
+test('actual controller job condition skips Draft, skipped completions and irrelevant PRs', () => {
+  const condition = controller.split('    if: >-\n')[1].split('    runs-on:')[0].trim();
+  const evaluate = (ctx) => Boolean(evaluateJobExpression(condition, ctx));
   assert.equal(evaluate(context()), true);
+  const draft = context(); draft.payload.pull_request.draft = true;
+  assert.equal(evaluate(draft), false);
+  draft.payload.action = 'ready_for_review'; draft.payload.pull_request.draft = false;
+  assert.equal(evaluate(draft), true);
   const main = context(); main.payload.pull_request.base.ref = 'main';
   assert.equal(evaluate(main), false);
   assert.equal(evaluate(auditContext()), true);
+  const skipped = auditContext(); skipped.payload.workflow_run.conclusion = 'skipped';
+  assert.equal(evaluate(skipped), false);
   assert.equal(evaluate(auditContext([{ number: 123, base: { ref: 'main' } }])), false);
   assert.equal(evaluate(auditContext([{ number: 123, base: { ref: 'release' } }])), false);
   assert.equal(evaluate(auditContext([])), true, 'missing fork linkage needs live resolution');
@@ -412,6 +468,21 @@ test('resolve accepts an exact open devel PR', async () => {
   assert.equal(result.outputs.active, 'true');
   assert.equal(result.outputs.base_ref, 'devel');
 });
+test('both controller paths stop at an exact live Draft PR and resume on Ready', async () => {
+  const live = { ...pull(), draft: true };
+  for (const ctx of [context(), auditContext(), auditContext([])]) {
+    const result = await execute(resolveScript, ctx, { live, candidates: [live] });
+    assert.equal(result.outputs.active, 'false');
+    assert.equal(result.outputs.scope_reason, 'draft-pr');
+    assert.ok(!result.calls.includes('permission'));
+  }
+  const ready = context();
+  ready.payload.action = 'ready_for_review';
+  ready.payload.pull_request.draft = false;
+  const result = await execute(resolveScript, ready, { live: { ...live, draft: false } });
+  assert.equal(result.outputs.active, 'true');
+  assert.equal(result.outputs.head_sha, HEAD);
+});
 test('resolve rejects retarget, stale and incomplete identity before permission lookup', async () => {
   const mutations = [(p) => { p.base.ref = 'main'; }, (p) => { p.state = 'closed'; },
     (p) => { p.head.sha = 'c'.repeat(40); }, (p) => { p.head.ref = 'other'; },
@@ -477,11 +548,11 @@ test('non-PR completed workflows cannot activate an audit', async () => {
 test('API failure cannot publish or synthesize an active identity', async () => {
   await assert.rejects(execute(resolveScript, context(), { apiError: true }), /mock API failure/);
 });
-test('publish rejects retarget, base advancement, head or repository changes and closed PR', async () => {
+test('publish rejects retarget, base advancement, head or repository changes and closed or Draft PR', async () => {
   for (const mutate of [(p) => { p.base.ref = 'main'; }, (p) => { p.base.sha = 'c'.repeat(40); },
     (p) => { p.base.repo.full_name = 'other/repo'; }, (p) => { p.head.sha = 'c'.repeat(40); },
     (p) => { p.head.repo.full_name = 'other/repo'; }, (p) => { p.head.ref = 'other'; },
-    (p) => { p.state = 'closed'; }]) {
+    (p) => { p.state = 'closed'; }, (p) => { p.draft = true; }]) {
     const live = pull(); mutate(live);
     const result = await execute(publishScript, context(), { live, env: publishEnv() });
     assert.equal(result.posted.length, 0, JSON.stringify(live));

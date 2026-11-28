@@ -1779,28 +1779,45 @@ impl LayoutEngine {
                     );
                     start > 0 && end >= units.len()
                 };
-            let frame_owns_alignment = !descendant_owns_closing_band
-                && (ordinary_source_frame_owns_alignment
-                    || stored_mixed_opening_frame.is_some()
-                    || closing_source_frame_owns_alignment
-                    || computed_frame_owns_alignment
-                    || complete_suffix_frame
-                    || heading_frame_owns_alignment
-                    || self
-                        .stored_nested_text_frame_for_cut(
-                            table,
-                            start_cut,
-                            end_cut,
-                            start_cut_is_block,
-                            is_block_split,
+            let stored_before_nested_block_height =
+                (is_continuation && !is_block_split && !start_cut_is_block)
+                    .then(|| {
+                        let (start, end) = cut_units?;
+                        self.stored_frame_before_nested_block_content_height(
+                            cell, table, styles, start, end,
                         )
-                        .is_some()
-                    || full_width_row_frame_owns_alignment
-                    || plain_cut_frame_owns_alignment
-                    || nested_single_cell_frame_owns_alignment
-                    || cut_frame_owns_alignment
-                    || stored_span_frame_owns_alignment
-                    || original_restart_span_owns_alignment);
+                        .filter(|&height| height + pad_top + pad_bottom <= cell_h)
+                    })
+                    .flatten();
+            let stored_nested_block_frame = cut_units.and_then(|(start, end)| {
+                let units = self.cell_units(cell, table, styles);
+                self.stored_nested_block_cut_frame(cell, table, styles, &units, start, end)
+                    .filter(|&(_, height)| height + pad_top + pad_bottom <= cell_h)
+            });
+            let frame_owns_alignment = stored_nested_block_frame.is_some()
+                || !descendant_owns_closing_band
+                    && (ordinary_source_frame_owns_alignment
+                        || stored_before_nested_block_height.is_some()
+                        || stored_mixed_opening_frame.is_some()
+                        || closing_source_frame_owns_alignment
+                        || computed_frame_owns_alignment
+                        || complete_suffix_frame
+                        || heading_frame_owns_alignment
+                        || self
+                            .stored_nested_text_frame_for_cut(
+                                table,
+                                start_cut,
+                                end_cut,
+                                start_cut_is_block,
+                                is_block_split,
+                            )
+                            .is_some()
+                        || full_width_row_frame_owns_alignment
+                        || plain_cut_frame_owns_alignment
+                        || nested_single_cell_frame_owns_alignment
+                        || cut_frame_owns_alignment
+                        || stored_span_frame_owns_alignment
+                        || original_restart_span_owns_alignment);
             let saved_frame_needs_alignment =
                 (align_saved_opening_frame && cell_row + 1 == end_row || frame_owns_alignment)
                     && cell.vertical_align != crate::model::table::VerticalAlign::Top;
@@ -2340,34 +2357,35 @@ impl LayoutEngine {
             });
             let cell_content_cut_by_slice = has_multicol_nested
                 && self.cell_units_content_height(cell, table, styles) > inner_height + 0.5;
-            let effective_align = if descendant_owns_closing_band {
-                VerticalAlign::Top
-            } else if stored_picture_cut_frame.is_some() {
-                // 수용한 물리 띠 안에서 이번 컷의 그림과 소유 줄만 정렬한다.
-                cell.vertical_align
-            } else if frame_owns_alignment
-                || mixed_opening_frame.is_some()
-                || declared_opening_frame_owns_alignment
-                || atomic_opening_frame_owns_alignment
-            {
-                // 앞 조각의 빈 공간을 보존한 물리 상자는 이 조각 내용으로 정렬한다.
-                cell.vertical_align
-            } else if center_saved_spanning_cell == Some(cell_idx) {
-                VerticalAlign::Center
-            } else if align_saved_opening_frame
-                && cell_row + 1 == end_row
-                && !cell_content_cut_by_slice
-            {
-                // 이 유한한 저장 프레임은 선택한 앞 조각만 소유한다.
-                // 원래 정렬은 남은 꼬리가 아니라 line_ranges를 사용한다.
-                cell.vertical_align
-            } else if (is_in_split_row || is_rowbreak_straddle)
-                && (cell_was_split || cell_content_cut_by_slice)
-            {
-                VerticalAlign::Top
-            } else {
-                cell.vertical_align
-            };
+            let effective_align =
+                if descendant_owns_closing_band && stored_nested_block_frame.is_none() {
+                    VerticalAlign::Top
+                } else if stored_picture_cut_frame.is_some() {
+                    // 수용한 물리 띠 안에서 이번 컷의 그림과 소유 줄만 정렬한다.
+                    cell.vertical_align
+                } else if frame_owns_alignment
+                    || mixed_opening_frame.is_some()
+                    || declared_opening_frame_owns_alignment
+                    || atomic_opening_frame_owns_alignment
+                {
+                    // 앞 조각의 빈 공간을 보존한 물리 상자는 이 조각 내용으로 정렬한다.
+                    cell.vertical_align
+                } else if center_saved_spanning_cell == Some(cell_idx) {
+                    VerticalAlign::Center
+                } else if align_saved_opening_frame
+                    && cell_row + 1 == end_row
+                    && !cell_content_cut_by_slice
+                {
+                    // 이 유한한 저장 프레임은 선택한 앞 조각만 소유한다.
+                    // 원래 정렬은 남은 꼬리가 아니라 line_ranges를 사용한다.
+                    cell.vertical_align
+                } else if (is_in_split_row || is_rowbreak_straddle)
+                    && (cell_was_split || cell_content_cut_by_slice)
+                {
+                    VerticalAlign::Top
+                } else {
+                    cell.vertical_align
+                };
             // 온전한 셀은 그림 띠와 빈 마지막 줄의 닫힌 원본 프레임을 함께 소비한다.
             // 실제 내용 컷은 그 조각의 기존 유닛 소유를 유지한다.
             let stored_empty_picture_frame = (!cell_was_split
@@ -2442,9 +2460,29 @@ impl LayoutEngine {
             let stored_page_content_height = cut_units.and_then(|(start, end)| {
                 self.stored_cell_cut_alignment_height(cell, table, styles, start, end)
             });
-            let centered_content_height = if let Some(height) = stored_closing_content_height {
+            let terminal_blank_content_height = closing_source_frame_owns_alignment
+                .then(|| {
+                    let (start, end) = cut_units?;
+                    if end < self.cell_units(cell, table, styles).len() {
+                        return None;
+                    }
+                    let content = hwpunit_to_px(
+                        self.stored_terminal_blank_cell_content_hu(table, start, styles)?,
+                        self.dpi,
+                    );
+                    let physical = end_row_height_override?;
+                    ((content + pad_top + pad_bottom - physical).abs()
+                        <= hwpunit_to_px(1, self.dpi))
+                    .then_some(content)
+                })
+                .flatten();
+            let centered_content_height = if let Some(height) =
+                terminal_blank_content_height.or(stored_closing_content_height)
+            {
                 height
-            } else if let Some(height) = atomic_opening_alignment_height {
+            } else if let Some(height) =
+                atomic_opening_alignment_height.or(stored_before_nested_block_height)
+            {
                 height
             } else if let Some(frame) = &stored_picture_cut_frame {
                 frame.content_height
@@ -5087,7 +5125,12 @@ impl LayoutEngine {
                                             nested_table, para_y_before_lines, nested_h, self.dpi,
                                         ))
                                         .flatten();
-                                    let nested_origin = if let Some(owner) = frame_owner {
+                                    let nested_origin = if stored_nested_block_frame
+                                        .is_some_and(|(host, _)| host == cp_idx)
+                                    {
+                                        // 현재 행 조각이 자식 원점과 종료 줄을 함께 소유한다.
+                                        NestedTableOrigin::Table(text_y_start)
+                                    } else if let Some(owner) = frame_owner {
                                         let base = para
                                             .line_segs
                                             .get(start_line)
@@ -7461,17 +7504,27 @@ impl LayoutEngine {
                     {
                         continue;
                     }
+                    if start_block == Some((bs, be)) {
+                        let stop = be.min(row_count).min(end_row);
+                        let end = if end_block == Some((bs, be)) {
+                            end_cut
+                        } else {
+                            &[]
+                        };
+                        self.reserve_block_continuation_span_heights(
+                            table,
+                            (bs, be),
+                            &mut row_heights[bs..stop],
+                            start_cut,
+                            end,
+                            styles,
+                        );
+                        continue;
+                    }
                     let mut target = 0.0f64;
                     for c in table.cells.iter().filter(|c| {
                         c.row_span > 1 && (c.row as usize) >= bs && (c.row as usize) < be
                     }) {
-                        let su = if start_block == Some((bs, be)) {
-                            block_cut_index(table, bs, be, c)
-                                .and_then(|i| start_cut.get(i).copied())
-                                .unwrap_or(0)
-                        } else {
-                            0
-                        };
                         let eu = if end_block == Some((bs, be)) {
                             block_cut_index(table, bs, be, c)
                                 .and_then(|i| end_cut.get(i).copied())
@@ -7479,7 +7532,7 @@ impl LayoutEngine {
                         } else {
                             usize::MAX
                         };
-                        target = target.max(self.cell_cut_visible_height(c, table, styles, su, eu));
+                        target = target.max(self.cell_cut_visible_height(c, table, styles, 0, eu));
                     }
                     if target <= 0.0 {
                         continue;

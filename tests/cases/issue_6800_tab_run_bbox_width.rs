@@ -1,3 +1,8 @@
+//! 관계형: 공개 문자 좌표, bbox와 뒤 런의 클릭 커서가 같은 끝 탭 경계를 사용한다.
+//! 주석 갱신: 2026-11-28T19:54:22+09:00; 직전 파일 커밋: 2026-10-31T02:41:48+09:00 (298d1ecc520014c2d18cf8c9016471f586967c03).
+//! 2026-11-28 한컴 Print 대조(96dpi, PDFium, 2px raw), 전1쪽 최저와 1쪽 모두 Native 99.18% / fresh WASM 99.16%.
+//! 근거: mydocs/pr/assets/issues7813_8100/native/7922.tsv, mydocs/pr/assets/issues7813_8100/wasm/7922.tsv 및 각 대표 비교 PNG.
+//!
 //! 관계형: 탭 뒤 가시문자의 문자 경계가 런 bbox에 포함되고 같은 줄의 다음 런을 침범하지 않는지 검사한다.
 //! 주석 갱신: 2026-10-31T02:14:48+09:00; 직전 파일 커밋: 2026-10-15T20:24:34+09:00 (39a634e547621c32ae6f9ba8c1694d35c827078b).
 //! lseg-05-tab.hwp: 2026-10-31, 96 DPI PDFium, 2px raw, 전체 1쪽 Native 98.06% / fresh WASM 97.91% (전쪽 최저와 같음).
@@ -58,8 +63,7 @@ use std::path::Path;
 use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
-// 선행 공백 분리 후 단일 런을 가정한3검사는 사용자 지정으로 #7922에 이관했다.
-// 공유 원본·PDF와 아래 정상 대조 검사는 보존한다.
+// #7922에서 이관한 끝 탭의 연속 좌표와 클릭 커서 경계를 관계형 검사로 복원한다.
 const SAMPLE: &str = "mydocs/pr/assets/issue7922/trailing-tab-regressions-20261015/1192000-202100017-policy-research-report.hwp";
 
 /// 정식 fixture는 `MANIFEST.json`의 SHA-256로 고정된다. fixture 부재는 회귀 시험의
@@ -159,5 +163,68 @@ fn tab_run_bbox_does_not_swallow_the_next_run() {
     assert!(
         worst < 20.0,
         "같은 줄의 런끼리 크게 겹치면 안 된다 — #6800 회귀          (겹침 {worst:.1}px; 수정 전 468.7px)"
+    );
+}
+
+/// 다음 가시 런의 첫 글자를 클릭하면 앞 공백·탭 뒤의 논리 경계로 이동한다.
+#[test]
+fn trailing_tab_preserves_the_next_runs_character_and_caret_boundary() {
+    let core = DocumentCore::from_bytes(&sample()).expect("문서 로드");
+    let layout: serde_json::Value =
+        serde_json::from_str(&core.get_page_text_layout_native(0).unwrap()).unwrap();
+    let (tab, next) = layout["runs"]
+        .as_array()
+        .unwrap()
+        .windows(2)
+        .find_map(|pair| {
+            let (tab, next) = (&pair[0], &pair[1]);
+            (tab["text"]
+                .as_str()
+                .is_some_and(|text| text.ends_with('\t'))
+                && next["text"]
+                    .as_str()
+                    .is_some_and(|text| text.starts_with("내수면 어업인의")))
+            .then_some((tab, next))
+        })
+        .expect("같은 줄의 끝 탭과 뒤 가시 런");
+    assert_eq!(tab["cellPath"], next["cellPath"]);
+    let x = |run: &serde_json::Value| run["x"].as_f64().unwrap();
+    let positions: Vec<_> = tab["charX"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|position| position.as_f64().unwrap())
+        .collect();
+    assert_eq!(
+        positions.len(),
+        tab["text"].as_str().unwrap().chars().count() + 1
+    );
+    assert_eq!(positions[0], 0.0);
+    assert!(positions.windows(2).all(|pair| pair[1] >= pair[0]));
+    let tab_end = *positions.last().unwrap();
+    assert!(
+        (tab_end - tab["w"].as_f64().unwrap()).abs() <= 0.1,
+        "탭의 bbox와 공개 문자 좌표가 끝 경계를 공유한다"
+    );
+    assert!(
+        (x(tab) + tab_end - x(next)).abs() <= 0.1,
+        "탭의 문자 경계가 같은 줄의 다음 런 시작에 닿는다"
+    );
+
+    let first_advance = next["charX"][1].as_f64().unwrap();
+    assert!(first_advance > 0.0);
+    let y = next["y"].as_f64().unwrap() + next["h"].as_f64().unwrap() / 2.0;
+    let hit: serde_json::Value = serde_json::from_str(
+        &core
+            .hit_test_native(0, x(next) + first_advance / 20.0, y)
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(hit["cellPath"], next["cellPath"]);
+    assert_eq!(hit["charOffset"], next["charStart"]);
+    let caret_x = hit["cursorRect"]["x"].as_f64().unwrap();
+    assert!(
+        (caret_x - x(next)).abs() <= 0.1,
+        "커서가 다음 런의 시작 경계를 사용해야 한다"
     );
 }

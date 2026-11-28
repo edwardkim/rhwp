@@ -775,14 +775,15 @@ pub(super) fn flush_deferred_tables(
 }
 
 /// Query 결과를 확정한 뒤에만 기존 페이지 전이를 수행한다.
-pub(super) fn prepare_tac_paragraph(
+pub(super) fn prepare_tac_paragraph<S: crate::storage::Storage>(
     st: &mut TypesetState,
     para_idx: usize,
     para: &Paragraph,
     fmt: &FormattedParagraph,
     measured_tables: &[MeasuredTable],
     flow: tac_flow::TacFlowQuery<'_>,
-) -> tac_fit::TacFitPlan {
+    storage: &S,
+) -> Result<tac_fit::TacFitPlan, S::Error> {
     let plan = tac_fit::prepare(
         para_idx,
         para,
@@ -791,11 +792,12 @@ pub(super) fn prepare_tac_paragraph(
         st.tac_fit_page(),
         || st.available_height(),
         flow,
-    );
+        storage,
+    )?;
     if plan.advance_before_place {
-        st.advance_column_or_new_page();
+        st.advance_column_or_new_page_with_storage(storage)?;
     }
-    plan
+    Ok(plan)
 }
 
 /// 기존 저장 줄 경로가 문단 전체를 수용한 경우에만 일반 컨트롤 경로를 생략한다.

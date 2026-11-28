@@ -349,6 +349,12 @@ PR 생성은 별도 승인을 받는다. GitHub 설정을 직접 바꾸는 O1·O
 - push에서 검증이 끝난 reference-only 변경을 다시 full lane으로 실행할 이유가 없다면 event filter에서
   억제한다. PR 설정을 그대로 복사하지 않는다.
 
+Draft PR의 자동 검증은 job 조건에서 생략한다. Draft에서 Ready for review로 전환하면 같은 커밋도
+`ready_for_review` 이벤트로 검증한다. 다시 Draft로 전환하면 `converted_to_draft` 이벤트가 같은 PR의
+동시 실행 그룹에서 진행 중인 검증을 취소한다. Draft의 생략된 집계는 `Draft Build & Test`로 표시해
+필수 검사 `Build & Test`와 구분한다. CI Impact Policy는 live PR의 Draft 상태를 확인한 뒤 판정하며,
+기본 브랜치에 변경이 반영되면 이 조건이 활성화된다.
+
 ### 7.2 `paths-ignore` 의미
 
 `paths-ignore`는 변경 파일이 **모두** ignore pattern에 맞을 때만 workflow를 억제한다. 한 commit에

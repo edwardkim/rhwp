@@ -160,6 +160,36 @@ pub(in crate::renderer::typeset) fn prepare_occupied(
     horizontal_pen(para, table, control, composed, styles, dpi)
 }
 
+/// 번호 제어가 소비한 앞줄과 별도로, 표 순서와 정확히 닫힌 저장 줄의 폭을 사용한다.
+pub(in crate::renderer::typeset) fn prepare_numbered_stack_row(
+    para: &Paragraph,
+    table: &Table,
+    owner: usize,
+    measured_height: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<OwnedRow> {
+    let line = para.line_segs.get(owner)?;
+    let height = i64::from(table.common.height)
+        + i64::from(table.outer_margin_top)
+        + i64::from(table.outer_margin_bottom);
+    if !table.common.treat_as_char
+        || table.caption.is_some()
+        || line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || line.line_height <= 0
+        || line.line_spacing < 0
+        || i64::from(line.line_height) != height
+        || line.text_height != line.line_height
+        || line.column_start < 0
+        || line.segment_width <= 0
+        || u32::try_from(crate::renderer::px_to_hwpunit(measured_height, dpi)).ok()
+            != Some(table.common.height)
+    {
+        return None;
+    }
+    stored_horizontal_pen(para, table, owner, 0.0, styles, dpi)
+}
+
 fn horizontal_pen(
     para: &Paragraph,
     table: &Table,
@@ -182,7 +212,6 @@ fn horizontal_pen(
     {
         return None;
     }
-    let line = para.line_segs.get(owner)?;
     let composed = composed?;
     if composed.lines.len() != para.line_segs.len() {
         return None;
@@ -197,6 +226,18 @@ fn horizontal_pen(
         position,
         Some(owner),
     );
+    stored_horizontal_pen(para, table, owner, leading, styles, dpi)
+}
+
+fn stored_horizontal_pen(
+    para: &Paragraph,
+    table: &Table,
+    owner: usize,
+    leading: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<OwnedRow> {
+    let line = para.line_segs.get(owner)?;
     let width = hwpunit_to_px(table.common.width.min(i32::MAX as u32) as i32, dpi)
         + hwpunit_to_px(
             i32::from(table.outer_margin_left) + i32::from(table.outer_margin_right),
@@ -211,7 +252,7 @@ fn horizontal_pen(
         para_style.indent,
         owner,
         Some(para),
-        composed.lines.len(),
+        para.line_segs.len(),
         true,
         available,
         dpi,

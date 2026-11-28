@@ -999,7 +999,8 @@ fn parse_paragraph_body(
                         let utf16_pos = calc_utf16_len_from_parts(&text_parts);
                         char_shape_changes.push((utf16_pos, current_char_shape_id));
                     }
-                    b"lineBreak" | b"softHyphen" => {
+                    // 줄바꿈은 hp:t의 인라인 요소로만 처리한다.
+                    b"softHyphen" => {
                         text_parts.push("\n".to_string());
                     }
                     b"columnBreak" => {

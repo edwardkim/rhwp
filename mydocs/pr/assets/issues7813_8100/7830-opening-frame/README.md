@@ -1,0 +1,44 @@
+# #7830 저장 빈 줄과 다음 쪽에 시작하는 중첩 표
+
+8쪽의 빈 문단은 앞쪽 본문과 마지막 제목 사이에 줄 상자를 차지한다. 저장 좌표는 빈 문단
+59,568HU에서 제목 61,628HU로 2,060HU 전진한다. 이 값은 빈 줄 높이 1,100HU,
+줄간격 660HU, 다음 문단 앞 간격 300HU의 합이다. 뒤따르는 중첩 표는 같은 호스트 문단의
+별도 줄을 소유하며 저장 세로 위치가 0으로 돌아가는 다음 쪽에서 시작한다.
+
+`stored_empty_successor_geometry`가 빈 줄 전진을 확인하고, 그 결과로 셀 컷의 유효 줄 범위를
+보존한다. `CellCutFrame`은 제목 줄 하단 62,728HU에서 닫히는 원본의 점유 범위를 예약과
+가운데 정렬에 전달한다. 후보에서 8쪽 제목은 한컴 Print 위치로 이동했고, 앞 본문의 위치와 전체
+29쪽 구성을 유지했다.
+
+| 비교 | 8쪽 raw | 전29쪽 최저 | 전쪽 TSV |
+| --- | ---: | ---: | --- |
+| 기준 Native | 96.12% | 96.12% | [측정표](base-native.tsv) |
+| 후보 Native | 100.00% | 96.67% | [측정표](candidate-native.tsv) |
+
+측정은 2026-11-28 KST, 96dpi, 2022 프로필, 색상 경계 보정 전 2px 실루엣 기준이다.
+기준 커밋은 `ca96e9f342a541da8aee40f96495180b6b2ee863`, 후보 Native 실행 파일 SHA-256은
+`1c4f3414966fa95defc8bfb9561f09cbad0736ef34799caca98b05428395f73f`이다.
+`venv/bin/python scripts/visual_sweep.py --silhouette-only --hwp samples/hwpx_sample2.hwp --pdf pdf/hwpx_sample2-2020.pdf --rhwp-bin <고정 후보 실행 파일> --compat 2022 --dpi 96`을 실행했다.
+
+- [HWP 원본](../../../../../samples/hwpx_sample2.hwp) SHA-256 `ca66d521d070ac8442e09fd3f283e17611eb9efb45eb4bf6c3a8f65e604f6b5f`.
+- [한컴 Print PDF](../../../../../pdf/hwpx_sample2-2020.pdf) SHA-256 `3d792e4116183a9cbf9f31b6abe561d040565f2e16af30ab57eb449732f99c78`.
+
+1쪽의 96.67%는 기준과 같다. 1쪽 차이 판독, 후보 fresh WASM 전쪽과 기존 회귀 재검사는
+후속 단계에 남아 있다.
+
+## 1쪽 표 전진 보정
+
+1쪽 첫 표 뒤의 저장 줄 원점 8,199HU는 세로 오프셋 91HU, 바깥 위·아래 여백
+각 141HU, 실제 표 본체 7,826HU의 합이다. 이전 조판은 첫 표의 오프셋 자리에
+호스트 줄간격 392HU를 소비했다. 단일 표 호스트에서 쪽 번호 제어를 함께 읽더라도,
+전체 실측 상자가 다음 저장 줄을 정확히 닫으면 기존 닫힌 프레임을 사용한다.
+fit과 paint는 같은 표 원점과 점유 하단을 받는다.
+
+최신 기준 `274ae9d4c8` 위 후보의 최소 글꼴 Native render tree에서 두 후속 표의
+위끝은 149.0px, 189.4px이었다. 한컴 Print에서는 각각 148.80px, 189.23px이었다.
+앞 표의 위끝과 높이는 40.9px, 104.3px을 유지했다. 2026-11-28 KST에
+`rhwp export-render-tree samples/hwpx_sample2.hwp --compat 2022 -p 0`으로
+실행했으며 후보 바이너리 SHA-256은 `b59879eef872a1c4a1e6e240aac804411ff6e44cfaab56959c179f5e3f37e364`이다.
+
+같은 후보의 96dpi Native 전29쪽 최저 raw는 98.90%이고, 1쪽은 99.84%였다.
+[리베이스 후 측정표](rebased-native.tsv)

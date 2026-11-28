@@ -352,17 +352,72 @@ impl LayoutEngine {
         if self.row_cut_closes_original_nested_object_frame(table, row, cut, styles) {
             return true;
         }
-        let owners = Self::row_cut_cell_order(table, row);
-        // 일반 행 컷은 row_span == 1 소유자만 표현한다. 이 행을 가로지르는
-        // 병합 셀이 있으면 블록 컷의 별도 소유 관계가 필요하므로 추정하지 않는다.
-        if owners.is_empty()
-            || owners.len() != cut.len()
-            || table.cells.iter().any(|cell| {
-                cell.row_span > 1
-                    && usize::from(cell.row) <= row
-                    && row < usize::from(cell.row) + usize::from(cell.row_span)
+        if table.cells.iter().any(|cell| {
+            cell.row_span > 1
+                && usize::from(cell.row) <= row
+                && row < usize::from(cell.row) + usize::from(cell.row_span)
+        }) {
+            return false;
+        }
+        self.ordinary_cells_close_shared_original_frame(table, row, cut, styles)
+    }
+
+    /// 병합 셀에 이번 컷의 미소비 내용이 없고 일반 셀들이 같은 원본
+    /// 재시작을 소유하면 일반 행의 선언 상자를 독립적으로 보존한다.
+    pub(crate) fn stored_span_free_restart_row_height(
+        &self,
+        table: &Table,
+        row: usize,
+        cut: &[usize],
+        carried: &[crate::renderer::pagination::StraddleCellCarry],
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        let (ordinary, spans): (Vec<_>, Vec<_>) = table
+            .cells
+            .iter()
+            .enumerate()
+            .filter(|(_, cell)| {
+                let first = usize::from(cell.row);
+                first <= row && row < first + usize::from(cell.row_span)
             })
+            .partition(|(_, cell)| cell.row_span == 1);
+        let height = ordinary.first()?.1.height;
+        if height == 0
+            || height > i32::MAX as u32
+            || spans.is_empty()
+            || ordinary.iter().any(|(_, cell)| {
+                cell.height != height || !self.stored_body_text_cell_frame(table, cell)
+            })
+            || spans.iter().any(|&(index, cell)| {
+                let vacant = if usize::from(cell.row) == row {
+                    cell.paragraphs
+                        .iter()
+                        .all(|para| para.text.trim().is_empty() && para.controls.is_empty())
+                } else {
+                    carried.iter().any(|entry| {
+                        entry.cell_index == index
+                            && entry.accepted_physical_height.is_some()
+                            && entry.next_unit == Some(self.cell_units(cell, table, styles).len())
+                    })
+                };
+                !vacant || !self.stored_body_text_cell_frame(table, cell)
+            })
+            || !self.ordinary_cells_close_shared_original_frame(table, row, cut, styles)
         {
+            return None;
+        }
+        Some(crate::renderer::hwpunit_to_px(height as i32, self.dpi))
+    }
+
+    fn ordinary_cells_close_shared_original_frame(
+        &self,
+        table: &Table,
+        row: usize,
+        cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        let owners = Self::row_cut_cell_order(table, row);
+        if owners.is_empty() || owners.len() != cut.len() {
             return false;
         }
         let mut unfinished = 0;

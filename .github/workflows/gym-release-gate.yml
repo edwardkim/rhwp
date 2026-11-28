@@ -10,6 +10,7 @@ name: Gym Benchmark Validation
 
 on:
   pull_request:
+    types: [opened, reopened, synchronize, ready_for_review, converted_to_draft]
     paths:
       - 'gym/**'
       - 'scripts/tests/test_gym_*.py'
@@ -35,6 +36,7 @@ concurrency:
 jobs:
   contracts:
     name: Gym benchmark contracts
+    if: ${{ github.event.pull_request.draft != true }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

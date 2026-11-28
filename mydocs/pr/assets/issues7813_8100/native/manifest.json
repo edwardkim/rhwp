@@ -1,0 +1,583 @@
+{
+  "base": "274ae9d4c83154e06da049c90eed6904a8b2ec89",
+  "source_head": "592e625dda60d88181777f892878fe4d8d6f6364",
+  "build_sha256": "98d952901d7bfa8eda0f3ec35165684e42d29e2c2a12302cc8aa494e027f43e4",
+  "dpi": 96,
+  "radius_px": 2,
+  "pages": 512,
+  "minimum_percent": "98.04",
+  "cases": [
+    {
+      "issue": 7813,
+      "key": "7813-hwp",
+      "input": "samples/issue1949_giant_cell_nested_tables_perf.hwp",
+      "input_sha256": "ef10261cd29325116028e4f4f3e6be1a72c675eb771bddfd8484e7fe5aa94b4e",
+      "print_pdf": "pdf/issue1949_giant_cell_nested_tables_perf-hwp-2024.pdf",
+      "print_sha256": "9fb08dea604813eed90a0449f29682d400be54dacd413352cc4f680f37cd4a44",
+      "compat": 2024,
+      "pages": 115,
+      "minimum_percent": "98.29",
+      "minimum_percent_pages": [
+        6
+      ],
+      "below_90": 0,
+      "tsv": "7813-hwp.tsv",
+      "tsv_sha256": "d002351f4c1a7c0d34e43e1ef0d6fb51234c847c6d75b6b83da89c40aaa7a617",
+      "measurement_head": "89e578a9969bb824661f2632c5068824ea218072",
+      "sweep_sha256": "de6ce038084e534187164796bc84467d83fb43c029c7529160f2ea318e46c250",
+      "renderer": "native-skia",
+      "font_source": "automatic_local_and_web",
+      "font_sha256": [
+        "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834",
+        "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a"
+      ],
+      "font_environment_sha256": "dbc10633b44df3ab45c2b8f7ee22b2d35d03bd702b0f4f99d1e5074f8fe363dc",
+      "review": {
+        "page": 6,
+        "file": "7813-p006.png",
+        "sha256": "9fc27d1731fca7705c55b4178073c872b02abd60639e6c2e4ab4b7721ae590cd",
+        "match_percent": "98.29"
+      }
+    },
+    {
+      "issue": 7813,
+      "key": "7813-hwpx",
+      "input": "samples/issue1949_giant_cell_nested_tables_perf.hwpx",
+      "input_sha256": "fc6e5f156de470dfbb14aab392389491720ee7fb1bf6f03fe9a018e93b420c65",
+      "print_pdf": "pdf/issues7813_8100/7813-hwpx-original-2024.pdf",
+      "print_sha256": "2ed78035ef52a5a130fe730b10170355ca8997643209483b09d464d4629e614b",
+      "compat": 2022,
+      "pages": 115,
+      "minimum_percent": "98.04",
+      "minimum_percent_pages": [
+        6
+      ],
+      "below_90": 0,
+      "tsv": "7813-hwpx.tsv",
+      "tsv_sha256": "d7a16cea96baa20d68ce37b1ba40652b3747c682bd3628462993bbc67fdef6a2",
+      "measurement_head": "89e578a9969bb824661f2632c5068824ea218072",
+      "sweep_sha256": "de6ce038084e534187164796bc84467d83fb43c029c7529160f2ea318e46c250",
+      "renderer": "native-skia",
+      "font_source": "automatic_local_and_web",
+      "font_sha256": [
+        "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834",
+        "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a"
+      ],
+      "font_environment_sha256": "6c431037bea1f2d9f5db8f4b0c22ca6391e339df992408899555652338dec529"
+    },
+    {
+      "issue": 7821,
+      "key": "7821",
+      "input": "samples/issue5807/coanchored_float_tac_order.hwp",
+      "input_sha256": "15e37d4e8139f8cb494f882f6d7423fe8d7ae991b51e238a23f5388699e8ef8a",
+      "print_pdf": "pdf/issues7813_8100/7821-original-2024.pdf",
+      "print_sha256": "3af699859cd40087a0afa504903e0cc1794e081b415e6ea1a3213d730263e684",
+      "compat": 2022,
+      "pages": 3,
+      "minimum_percent": "98.16",
+      "minimum_percent_pages": [
+        3
+      ],
+      "below_90": 0,
+      "tsv": "7821.tsv",
+      "tsv_sha256": "d3ed7a91e7eb1e2ed3a7439ee62ad6f546282d9cca78ce41a4b945ec46df7df7",
+      "measurement_head": "592e625dda60d88181777f892878fe4d8d6f6364",
+      "sweep_sha256": "de6ce038084e534187164796bc84467d83fb43c029c7529160f2ea318e46c250",
+      "renderer": "native-skia",
+      "font_source": "automatic_local_and_web",
+      "font_sha256": [
+        "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834",
+        "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a"
+      ],
+      "font_environment_sha256": "5c5fce027e6b40bf225242901c19d59b1c3036e3e79c2c5bf22c97d6cd1710f8",
+      "review": {
+        "page": 1,
+        "file": "7821-p001.png",
+        "sha256": "7813f36c2ee0c03cf2a92c43b7b11b3a2235bc9f9b4348abb6bb9ed83794eebc",
+        "match_percent": "99.97"
+      }
+    },
+    {
+      "issue": 7822,
+      "key": "7822",
+      "input": "samples/issue6025/3232693_employment_support_criteria.hwpx",
+      "input_sha256": "b53e9a83a79903b9c7cf69521519dcdf7b128348ac26ec21e6ac7b8fc6c0e441",
+      "print_pdf": "pdf/issues7813_8100/7822-original-2024.pdf",
+      "print_sha256": "1ae214cf4c3b2a52e14086fe4a4099604d900a253bfb5df11b255b438091e44d",
+      "compat": 2022,
+      "pages": 4,
+      "minimum_percent": "100.00",
+      "minimum_percent_pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "below_90": 0,
+      "tsv": "7822.tsv",
+      "tsv_sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1",
+      "measurement_head": "89e578a9969bb824661f2632c5068824ea218072",
+      "sweep_sha256": "de6ce038084e534187164796bc84467d83fb43c029c7529160f2ea318e46c250",
+      "renderer": "native-skia",
+      "font_source": "none",
+      "font_sha256": [],
+      "font_environment_sha256": null,
+      "review": {
+        "page": 1,
+        "file": "7822-p001.png",
+        "sha256": "cbbacf38c08ab1fac6b2a897ac45626163ea6d4e1499dc0e5f62e866417e1731",
+        "match_percent": "100.00"
+      }
+    },
+    {
+      "issue": 7830,
+      "key": "7830",
+      "input": "samples/hwpx_sample2.hwp",
+      "input_sha256": "ca66d521d070ac8442e09fd3f283e17611eb9efb45eb4bf6c3a8f65e604f6b5f",
+      "print_pdf": "pdf/hwpx_sample2-hwp-2024.pdf",
+      "print_sha256": "1b2e13e966787f6b91f590c8901dcb988e73ac7063d5e1cb95c8952400fd9a47",
+      "compat": 2022,
+      "pages": 29,
+      "minimum_percent": "98.88",
+      "minimum_percent_pages": [
+        14
+      ],
+      "below_90": 0,
+      "tsv": "7830.tsv",
+      "tsv_sha256": "2d89bef2ee3f4ae1b1b67cf734028ae894dbcf59b0252ba97f9bbf9a817aa7c3",
+      "measurement_head": "592e625dda60d88181777f892878fe4d8d6f6364",
+      "sweep_sha256": "de6ce038084e534187164796bc84467d83fb43c029c7529160f2ea318e46c250",
+      "renderer": "native-skia",
+      "font_source": "none",
+      "font_sha256": [],
+      "font_environment_sha256": null,
+      "review": {
+        "page": 8,
+        "file": "7830-p008.png",
+        "sha256": "0c1dc811dc56db90557453e674dc19d044d77cab7e96e619cb4bcdc292428414",
+        "match_percent": "100.00"
+      }
+    },
+    {
+      "issue": 7831,
+      "key": "7831",
+      "input": "samples/task2430/1382000_domestic_violence_survey.hwp",
+      "input_sha256": "a3c6a227d26c41c7de9aa258f470001a629da90fa606cdddcbd385add43b7381",
+      "print_pdf": "pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf",
+      "print_sha256": "8f17972e8f3fe1c15aabd886aceed3bb7e3cd87cba70bd0cb20e2da0eb1861c2",
+      "compat": 2022,
+      "pages": 39,
+      "minimum_percent": "98.25",
+      "minimum_percent_pages": [
+        29
+      ],
+      "below_90": 0,
+      "tsv": "7831.tsv",
+      "tsv_sha256": "d10619330e6035820b86c0b19fe5017955dfd2ad7792102280ec8ab42398de1f",
+      "measurement_head": "592e625dda60d88181777f892878fe4d8d6f6364",
+      "sweep_sha256": "de6ce038084e534187164796bc84467d83fb43c029c7529160f2ea318e46c250",
+      "renderer": "native-skia",
+      "font_source": "none",
+      "font_sha256": [],
+      "font_environment_sha256": null,
+      "review": {
+        "page": 19,
+        "file": "7831-p019.png",
+        "sha256": "15d3f2d8ca21fe9da52e4d9b0a40a3b8139e7daf2e5a87d8a14b55e47a4fa485",
+        "match_percent": "99.77"
+      }
+    },
+    {
+      "issue": 7834,
+      "key": "7834",
+      "input": "samples/issue6854/22037757-chuncheon-personnel-rule-annex13.hwpx",
+      "input_sha256": "1d2ae7a559189f73d41f380da59b03aba41102511a69fbf67514141362cb962f",
+      "print_pdf": "pdf/issues7813_8100/7834-original-2024.pdf",
+      "print_sha256": "551c9c7463b8c85cbab19659336d8a19ed7a08a17310bd4ac375eaac9fdf1709",
+      "compat": 2022,
+      "pages": 15,
+      "minimum_percent": "99.98",
+      "minimum_percent_pages": [
+        3
+      ],
+      "below_90": 0,
+      "tsv": "7834.tsv",
+      "tsv_sha256": "55029aa372e85635eb33d2b470444e8e3615b5248d3c696b9e0a5ebd4942627b",
+      "measurement_head": "89e578a9969bb824661f2632c5068824ea218072",
+      "sweep_sha256": "de6ce038084e534187164796bc84467d83fb43c029c7529160f2ea318e46c250",
+      "renderer": "native-skia",
+      "font_source": "automatic_local_and_web",
+      "font_sha256": [
+        "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834",
+        "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a"
+      ],
+      "font_environment_sha256": "cc23a1362fc2ece634a721bad913e664a2167bf8a2eb75441c97ca12dc89cd66",
+      "review": {
+        "page": 6,
+        "file": "7834-p006.png",
+        "sha256": "eaaca32d05bdae341054eb175e35d146f6a021fcb7d8db10c2b0dc0506f7bde1",
+        "match_percent": "99.99"
+      }
+    },
+    {
+      "issue": 7863,
+      "key": "7863",
+      "input": "mydocs/pr/assets/semanticist21-20261008/legacy-cropped-fixtures-v448/5833/cell_multi_para_float_pics.hwp",
+      "input_sha256": "a0e58d445f81797eb3e72e4db7ec4b0c563387ee57185252adaacee71c02ac70",
+      "print_pdf": "mydocs/pr/assets/semanticist21-20261008/legacy-cropped-fixtures-v448/5833/independent-hancom2020-print.pdf",
+      "print_sha256": "a578dde586dd92c4574a5a1858d45ce0d7420b03163818e15f5577889acc33de",
+      "compat": 2022,
+      "pages": 1,
+      "minimum_percent": "100.00",
+      "minimum_percent_pages": [
+        1
+      ],
+      "below_90": 0,
+      "tsv": "7863.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "measurement_head": "06563d59e0fb6e8ba995260ad6e2aed457389a24",
+      "sweep_sha256": "de6ce038084e534187164796bc84467d83fb43c029c7529160f2ea318e46c250",
+      "renderer": "native-skia",
+      "font_source": "automatic_local_and_web",
+      "font_sha256": [
+        "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834",
+        "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a"
+      ],
+      "font_environment_sha256": "af3b396bd715041906a77bd6717cda542b25ccde85b5d31de903cc0d9529c8a9",
+      "review": {
+        "page": 1,
+        "file": "7863-p001.png",
+        "sha256": "0d08809b20a437d8ddcd233edb0816f885bd335aa8bded7bd6621bfe371e3086",
+        "match_percent": "100.00"
+      }
+    },
+    {
+      "issue": 7864,
+      "key": "7864",
+      "input": "mydocs/pr/assets/semanticist21-20261008/legacy-cropped-fixtures-v448/6575/tac_picture_line_top.hwpx",
+      "input_sha256": "ae4c01001405de8deb2332cab5f469896a3b5ca12b18c1c28a48ff9719cadf85",
+      "print_pdf": "mydocs/pr/assets/semanticist21-20261008/legacy-cropped-fixtures-v448/6575/independent-hancom2020-print.pdf",
+      "print_sha256": "c56fdb74c26611ae6b4c3cf1f1b1ad8e01f1e14b248ddf44c4c6c0bd2d0d3d11",
+      "compat": 2022,
+      "pages": 1,
+      "minimum_percent": "100.00",
+      "minimum_percent_pages": [
+        1
+      ],
+      "below_90": 0,
+      "tsv": "7864.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "measurement_head": "592e625dda60d88181777f892878fe4d8d6f6364",
+      "sweep_sha256": "de6ce038084e534187164796bc84467d83fb43c029c7529160f2ea318e46c250",
+      "renderer": "native-skia",
+      "font_source": "automatic_local_and_web",
+      "font_sha256": [
+        "f40f958a1dd2310490030505337433de9244d5d8b30b3ae2bc8592689cdbc2c8",
+        "3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673",
+        "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834",
+        "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a"
+      ],
+      "font_environment_sha256": "1bc7d148a4745a56159a6822c9dc26490abbc85eee715d2c5379d3420c458eed",
+      "review": {
+        "page": 1,
+        "file": "7864-p001.png",
+        "sha256": "e518e2e45f2df405625b2d97b9ed7469923dae89563d188d61b38a968d736053",
+        "match_percent": "100.00"
+      }
+    },
+    {
+      "issue": 7922,
+      "key": "7922",
+      "input": "mydocs/pr/assets/issue7922/trailing-tab-regressions-20261015/1192000-202100017-policy-research-report.hwp",
+      "input_sha256": "fd0b95cb4239b08e2ab9130b6b697af56dda379f1c9029dbf5f5a0b97af5ceee",
+      "print_pdf": "pdf/issues7813_8100/7922-original-2020.pdf",
+      "print_sha256": "5bc17fa4681c284009d6657446b18cef334a7cfaea26537b64ba618e52cc8564",
+      "compat": 2022,
+      "pages": 1,
+      "minimum_percent": "99.18",
+      "minimum_percent_pages": [
+        1
+      ],
+      "below_90": 0,
+      "tsv": "7922.tsv",
+      "tsv_sha256": "97fb84e23d40d5a5a2d9538bb629d548820e39d835ffbd947e59bb1467a0b79a",
+      "measurement_head": "06563d59e0fb6e8ba995260ad6e2aed457389a24",
+      "sweep_sha256": "de6ce038084e534187164796bc84467d83fb43c029c7529160f2ea318e46c250",
+      "renderer": "native-skia",
+      "font_source": "none",
+      "font_sha256": [],
+      "font_environment_sha256": null,
+      "review": {
+        "page": 1,
+        "file": "7922-p001.png",
+        "sha256": "49a4e7f9454e94994c1221fa03f034421bd354817ccef1eec4af0a30a4875e95",
+        "match_percent": "99.18"
+      }
+    },
+    {
+      "issue": 7955,
+      "key": "7955",
+      "input": "tests/fixtures/issue_7047/housing-lease-standard-form.hwp",
+      "input_sha256": "fe295c12c5f9bd9e7e73a540c7c7ecd044f18ed58ea9826c0de5d55ba2710439",
+      "print_pdf": "pdf/issue7642-failed-regression-print/housing-lease-standard-form-hwp-print-2020.pdf",
+      "print_sha256": "40cd4fe7aa7beb950704c3f5f75325a97ce68b7e8366d6babea9ceaba0809e29",
+      "compat": 2024,
+      "pages": 3,
+      "minimum_percent": "99.87",
+      "minimum_percent_pages": [
+        1
+      ],
+      "below_90": 0,
+      "tsv": "7955.tsv",
+      "tsv_sha256": "0394357185dda6700ced566fe48f51f5dd0cb6eba13e012a8722852e652d84eb",
+      "measurement_head": "89e578a9969bb824661f2632c5068824ea218072",
+      "sweep_sha256": "de6ce038084e534187164796bc84467d83fb43c029c7529160f2ea318e46c250",
+      "renderer": "native-skia",
+      "font_source": "none",
+      "font_sha256": [],
+      "font_environment_sha256": null,
+      "review": {
+        "page": 1,
+        "file": "7955-p001.png",
+        "sha256": "d1a7bbbefe46482649791adb21abdd8e835a2993ff7215a01cca7bc328e72d20",
+        "match_percent": "99.87"
+      }
+    },
+    {
+      "issue": 8100,
+      "key": "8100-added-issue7677-float_push_spacing_before_continuation-2024-hwp",
+      "input": "mydocs/pr/assets/issue7445/deferred-20261020/added-issue7677-float_push_spacing_before_continuation-2024-hwp/float_push_spacing_before_continuation-2024.hwp",
+      "input_sha256": "7ba2eb8f17ecbd36e5c1856ac70544f2f0876b84f6a26c46b5b13d9e312708b9",
+      "print_pdf": "mydocs/pr/assets/issue7445/deferred-20261020/added-issue7677-float_push_spacing_before_continuation-2024-hwp/float_push_spacing_before_continuation-2024.pdf",
+      "print_sha256": "5cf2e66a638aabcbe25fee5f3679632532b647ef7eca51da13024b08751d692e",
+      "compat": 2024,
+      "pages": 6,
+      "minimum_percent": "99.76",
+      "minimum_percent_pages": [
+        1
+      ],
+      "below_90": 0,
+      "tsv": "8100-added-issue7677-float_push_spacing_before_continuation-2024-hwp.tsv",
+      "tsv_sha256": "616c391db854522c5cf3e0b1e60203b89edba9b726fdc5596db17bcad3c02b31",
+      "measurement_head": "06563d59e0fb6e8ba995260ad6e2aed457389a24",
+      "sweep_sha256": "de6ce038084e534187164796bc84467d83fb43c029c7529160f2ea318e46c250",
+      "renderer": "native-skia",
+      "font_source": "none",
+      "font_sha256": [],
+      "font_environment_sha256": null
+    },
+    {
+      "issue": 8100,
+      "key": "8100-added-issue7677-float_push_spacing_before_continuation-hwpx",
+      "input": "mydocs/pr/assets/issue7445/deferred-20261020/added-issue7677-float_push_spacing_before_continuation-hwpx/float_push_spacing_before_continuation.hwpx",
+      "input_sha256": "89cd4550ec7c6b983c14805c1a056a4cd5c6eacfa8673a8cc115886ac5245c21",
+      "print_pdf": "mydocs/pr/assets/issue7445/deferred-20261020/added-issue7677-float_push_spacing_before_continuation-hwpx/float_push_spacing_before_continuation-2024.pdf",
+      "print_sha256": "5cf2e66a638aabcbe25fee5f3679632532b647ef7eca51da13024b08751d692e",
+      "compat": 2024,
+      "pages": 6,
+      "minimum_percent": "100.00",
+      "minimum_percent_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "below_90": 0,
+      "tsv": "8100-added-issue7677-float_push_spacing_before_continuation-hwpx.tsv",
+      "tsv_sha256": "cdcf3e026b8de27abee1649a14fc0767bd3b6d02806046e34dcc9164c24df91f",
+      "measurement_head": "06563d59e0fb6e8ba995260ad6e2aed457389a24",
+      "sweep_sha256": "de6ce038084e534187164796bc84467d83fb43c029c7529160f2ea318e46c250",
+      "renderer": "native-skia",
+      "font_source": "none",
+      "font_sha256": [],
+      "font_environment_sha256": null
+    },
+    {
+      "issue": 8100,
+      "key": "8100-added-issue7678-float_push_spacing_before_continuation-2024-hwp",
+      "input": "mydocs/pr/assets/issue7445/deferred-20261020/added-issue7678-float_push_spacing_before_continuation-2024-hwp/float_push_spacing_before_continuation-2024.hwp",
+      "input_sha256": "5f67a3bb5efda84987d45b21c0c90baf0b11994fad87e34a2864f2d05be237f5",
+      "print_pdf": "mydocs/pr/assets/issue7445/deferred-20261020/added-issue7678-float_push_spacing_before_continuation-2024-hwp/float_push_spacing_before_continuation-2024.pdf",
+      "print_sha256": "c7607495671467daaad828c75183ef5c927bda19cef8b69f1b81b2e2e6d49a07",
+      "compat": 2024,
+      "pages": 8,
+      "minimum_percent": "99.76",
+      "minimum_percent_pages": [
+        1
+      ],
+      "below_90": 0,
+      "tsv": "8100-added-issue7678-float_push_spacing_before_continuation-2024-hwp.tsv",
+      "tsv_sha256": "45f05d10aa02c32052760318df50d2784c1559ab1c510c99f8e7497759502219",
+      "measurement_head": "06563d59e0fb6e8ba995260ad6e2aed457389a24",
+      "sweep_sha256": "de6ce038084e534187164796bc84467d83fb43c029c7529160f2ea318e46c250",
+      "renderer": "native-skia",
+      "font_source": "none",
+      "font_sha256": [],
+      "font_environment_sha256": null
+    },
+    {
+      "issue": 8100,
+      "key": "8100-added-issue7678-float_push_spacing_before_continuation-hwpx",
+      "input": "mydocs/pr/assets/issue7445/deferred-20261020/added-issue7678-float_push_spacing_before_continuation-hwpx/float_push_spacing_before_continuation.hwpx",
+      "input_sha256": "1762f37c5cdb0926ca0f213528d4b2d3b1be763c0f2c524bb25d1a93f691f1d3",
+      "print_pdf": "mydocs/pr/assets/issue7445/deferred-20261020/added-issue7678-float_push_spacing_before_continuation-hwpx/float_push_spacing_before_continuation-2024.pdf",
+      "print_sha256": "c7607495671467daaad828c75183ef5c927bda19cef8b69f1b81b2e2e6d49a07",
+      "compat": 2024,
+      "pages": 8,
+      "minimum_percent": "100.00",
+      "minimum_percent_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "below_90": 0,
+      "tsv": "8100-added-issue7678-float_push_spacing_before_continuation-hwpx.tsv",
+      "tsv_sha256": "cf674b8584e849ab00eea6be1a10b8a0281b42852f12f236f4209b035083a64e",
+      "measurement_head": "06563d59e0fb6e8ba995260ad6e2aed457389a24",
+      "sweep_sha256": "de6ce038084e534187164796bc84467d83fb43c029c7529160f2ea318e46c250",
+      "renderer": "native-skia",
+      "font_source": "none",
+      "font_sha256": [],
+      "font_environment_sha256": null
+    },
+    {
+      "issue": 8100,
+      "key": "8100-added-issue7679-tac-after-text-hwpx",
+      "input": "mydocs/pr/assets/issue7445/deferred-20261020/added-issue7679-tac-after-text-hwpx/tac-after-text.hwpx",
+      "input_sha256": "c448e13d2d8f9799e54b8b49435242eb8f717753d24f9123b473467c923fbf02",
+      "print_pdf": "mydocs/pr/assets/issue7445/deferred-20261020/added-issue7679-tac-after-text-hwpx/tac-after-text-2024.pdf",
+      "print_sha256": "e866a99dd98c9a572baee13f9d62db06a4a17f7026957a1cb3893132524d5425",
+      "compat": 2024,
+      "pages": 3,
+      "minimum_percent": "100.00",
+      "minimum_percent_pages": [
+        1,
+        2,
+        3
+      ],
+      "below_90": 0,
+      "tsv": "8100-added-issue7679-tac-after-text-hwpx.tsv",
+      "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "measurement_head": "592e625dda60d88181777f892878fe4d8d6f6364",
+      "sweep_sha256": "de6ce038084e534187164796bc84467d83fb43c029c7529160f2ea318e46c250",
+      "renderer": "native-skia",
+      "font_source": "none",
+      "font_sha256": [],
+      "font_environment_sha256": null
+    },
+    {
+      "issue": 8100,
+      "key": "8100-added-issue7695-footnote-page-tail-hwpx",
+      "input": "mydocs/pr/assets/issue7445/deferred-20261020/added-issue7695-footnote-page-tail-hwpx/footnote-page-tail.hwpx",
+      "input_sha256": "032ac821200737606d7b1d6b4dd5b53af0199a3ccfb2bb81cff6907f4f788bf3",
+      "print_pdf": "mydocs/pr/assets/issue7445/deferred-20261020/added-issue7695-footnote-page-tail-hwpx/footnote-page-tail-2024.pdf",
+      "print_sha256": "d82042b149d3df8aae8a693a14c6c2bb89945f2cab72a4b58b786e6a4928b89b",
+      "compat": 2024,
+      "pages": 32,
+      "minimum_percent": "100.00",
+      "minimum_percent_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32
+      ],
+      "below_90": 0,
+      "tsv": "8100-added-issue7695-footnote-page-tail-hwpx.tsv",
+      "tsv_sha256": "dbe1bff4b965dbbffdbbe5f1562009ff0a64219ee746054a5c229798d8c94332",
+      "measurement_head": "592e625dda60d88181777f892878fe4d8d6f6364",
+      "sweep_sha256": "de6ce038084e534187164796bc84467d83fb43c029c7529160f2ea318e46c250",
+      "renderer": "native-skia",
+      "font_source": "none",
+      "font_sha256": [],
+      "font_environment_sha256": null
+    },
+    {
+      "issue": 8100,
+      "key": "8100-added-issue7874-omitted-spacing-after-hwpx",
+      "input": "samples/issue7874/omitted-spacing-after.hwpx",
+      "input_sha256": "b1905e369c93f4086047e3c68b77474eab0468491fae7da97bcbd4d944ac0cbf",
+      "print_pdf": "pdf/issue7874/omitted-spacing-after-2024.pdf",
+      "print_sha256": "8a15a05c3f7c7f43e999e4bfa75971255a1892e03643f54f0ffc7cf848da2bce",
+      "compat": 2024,
+      "pages": 2,
+      "minimum_percent": "100.00",
+      "minimum_percent_pages": [
+        1,
+        2
+      ],
+      "below_90": 0,
+      "tsv": "8100-added-issue7874-omitted-spacing-after-hwpx.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "measurement_head": "06563d59e0fb6e8ba995260ad6e2aed457389a24",
+      "sweep_sha256": "de6ce038084e534187164796bc84467d83fb43c029c7529160f2ea318e46c250",
+      "renderer": "native-skia",
+      "font_source": "none",
+      "font_sha256": [],
+      "font_environment_sha256": null
+    },
+    {
+      "issue": 8100,
+      "key": "8100-counter-22081993",
+      "input": "mydocs/pr/assets/issue7445/deferred-20261020/counter-22081993/22081993_[별표 1] 사무분장표(제77조제1항¸ 제79조¸ 제82조 관련)(전남광주통합특별시교육청 행정기구 설치 조례 시행규칙).hwp",
+      "input_sha256": "5ca5e5256dc960690474f741879b9d2f19055a09ecfca8a810da6133e2600b1f",
+      "print_pdf": "mydocs/pr/assets/issue7445/deferred-20261020/counter-22081993/22081993-office-duties-counter-2020.pdf",
+      "print_sha256": "fce705c647b247beed54c0029bc9e4eccb8496e5a00ba65b9abcf0531a202060",
+      "compat": 2022,
+      "pages": 121,
+      "minimum_percent": "99.89",
+      "minimum_percent_pages": [
+        48
+      ],
+      "below_90": 0,
+      "tsv": "8100-counter-22081993.tsv",
+      "tsv_sha256": "52e5bdf357679ececf178716fef7e691533e73d10c2b45f9e0009ae7a6b18682",
+      "measurement_head": "89e578a9969bb824661f2632c5068824ea218072",
+      "sweep_sha256": "de6ce038084e534187164796bc84467d83fb43c029c7529160f2ea318e46c250",
+      "renderer": "native-skia",
+      "font_source": "none",
+      "font_sha256": [],
+      "font_environment_sha256": null,
+      "review": {
+        "page": 92,
+        "file": "8100-p092.png",
+        "sha256": "ff497d8a3f4f1891ce7e17413002836247d4b88107849989ee47dc5aba3511b1",
+        "match_percent": "100.00"
+      }
+    }
+  ]
+}

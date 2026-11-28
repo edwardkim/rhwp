@@ -1212,9 +1212,24 @@ impl TextRunNode {
         let suffix_style = self.style.for_text_fragment(tab + 1);
         let suffix_positions = super::layout::compute_char_positions(&suffix, &suffix_style);
         let suffix_width = *suffix_positions.last()?;
-        // 앞의 공백과 뒤 공백도 자연 전진을 갖는다. 요청 폭이 이보다 작으면
-        // 음수 탭이나 공백 절단 대신 최소 점유 폭을 같은 배열·bbox에 보존한다.
-        let width = requested_width.max(positions[tab] + suffix_width);
+        // 탭 앞의 말미 공백은 다음 블록의 원점까지 남은 폭을 나눠 쓴다.
+        // 앞선 잉크와 탭 뒤 공백의 위치는 그대로 보존한다.
+        let blank_start = chars[..tab]
+            .iter()
+            .rposition(|ch| !matches!(*ch, ' ' | '\u{2007}'))
+            .map_or(0, |index| index + 1);
+        let blank_origin = positions[blank_start];
+        let blank_end = requested_width - suffix_width;
+        let width = if blank_end >= blank_origin && blank_end < positions[tab] {
+            let scale = (blank_end - blank_origin) / (positions[tab] - blank_origin);
+            for position in &mut positions[blank_start..tab] {
+                *position = blank_origin + (*position - blank_origin) * scale;
+            }
+            positions[tab] = blank_end;
+            requested_width
+        } else {
+            requested_width.max(positions[tab] + suffix_width)
+        };
         let tab_end = width - suffix_width;
         if !tab_end.is_finite() || tab_end < positions[tab] {
             return None;
