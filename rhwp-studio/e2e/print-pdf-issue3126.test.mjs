@@ -12,7 +12,7 @@
  */
 import { execFileSync } from 'child_process';
 import { mkdirSync } from 'fs';
-import { runTest, loadApp, loadHwpFile, assert } from './helpers.mjs';
+import { runTest, loadApp, loadHwpFile, createNewDocument, assert } from './helpers.mjs';
 
 const OUTPUT_DIR = '../output/e2e/issue-3126';
 
@@ -464,4 +464,119 @@ await runTest('#3126 인쇄 경로 — same-origin 미리보기와 수동 인쇄
   await preview.click('#close-btn');
   await closePromise;
   assert(true, '미리보기 닫기 버튼으로 창 종료');
+});
+
+await runTest('#9333 메모 선택 인쇄 — 본문·표 셀·댓글과 별도 메모 목록', async ({ page, browser }) => {
+  await applyPdfGuidancePreference(page, true);
+  await createNewDocument(page);
+  const memo = await page.evaluate(async () => {
+    const wasm = window.__wasm;
+    wasm.doc.insertText(0, 0, 0, '첫 쪽 본문');
+    wasm.insertMemo({ section: 0, para: 0, cellPath: [] }, 0, 3, '검토자',
+      '첫 쪽 검토 메모\n' + ('긴 메모에서 다음 내용을 확인합니다.\n').repeat(85) + '계속 쪽 끝 확인');
+    const parent = wasm.getMemos()[0];
+    wasm.insertMemoReply(parent.id, '회신자', '부모 메모에 대한 회신');
+    wasm.insertPageBreak(0, 0, 6);
+    const table = wasm.createTable(0, 1, 0, 1, 1);
+    wasm.insertTextInCell(0, table.paraIdx, table.controlIdx, 0, 0, 0, '둘째 쪽의 표 셀');
+    wasm.insertMemo({ section: 0, para: table.paraIdx, cellPath: [[table.controlIdx, 0, 0]] },
+      0, 2, '검토자', '표 셀 검토 메모');
+    await window.__canvasView.loadDocument();
+    return { pages: wasm.pageCount, source: Array.from(wasm.exportHwpx()), dirty: window.__documentState.isDirty() };
+  });
+  assert(memo.pages === 2, '검증 문서의 두 원래 쪽');
+  const popup = new Promise(resolve => page.once('popup', resolve));
+  await clickPrintMenuItem(page);
+  const preview = await popup;
+  await preview.waitForSelector('#print-btn');
+  const content = () => preview.$$eval('.page', els => els.map(e => e.textContent.replace(/\s/g, '')));
+  const unannotated = await content();
+  assert(unannotated.length === 2 && !unannotated.join('').includes('검토메모'), '미리보기 기본은 메모 제외');
+  await preview.click('.print-preview-bar summary');
+  await preview.click('[name="print-memo-include"]');
+  assert(await preview.$eval('[name="print-memo-list"]', el => el.checked), '메모 포함 선택 시 별도 목록도 선택');
+  const withList = await content();
+  assert(withList.at(-1).includes('메모내용'), '별도 메모 내용 페이지');
+  await preview.click('[name="print-memo-list"]');
+  const withoutList = await content();
+  assert(withoutList[0].includes('첫쪽검토메모'), '첫 쪽 대상 메모');
+  assert(withoutList.at(-1).includes('표셀검토메모'), '나중 쪽의 셀 메모');
+  assert(withoutList.slice(1, -1).join('').includes('계속쪽끝확인'), '긴 메모의 이어지는 쪽');
+  assert(withoutList.join('').includes('부모메모에대한회신'), '부모와 댓글을 같은 검토 출력에 포함');
+  await preview.click('[name="print-memo-include"]');
+  assert(JSON.stringify(await content()) === JSON.stringify(unannotated), '옵션을 끄면 모든 원래 쪽으로 돌아감');
+  await preview.close();
+
+  await installPrintCapture(page);
+  await clickPdfMenuItem(page);
+  await page.waitForSelector('[data-testid="pdf-print-dialog"]');
+  await page.click('[data-testid="pdf-print-dialog"] [name="print-memo-include"]');
+  await page.click('[data-testid="pdf-print-dialog"] [name="print-memo-list"]');
+  await confirmPdfDialog(page);
+  const result = await capturePrintDocument(page);
+  const pdfPages = result.capture.pages.map(p => p.text.replace(/\s/g, ''));
+  assert(JSON.stringify(pdfPages) === JSON.stringify(withoutList), 'PDF 출력과 인쇄 미리보기가 같은 쪽과 메모를 표시');
+  const outputPath = await renderCapturedPdf(browser, result.capture.html, 'memo-review-print');
+  const pdf = inspectPdf(outputPath);
+  assert(pdf.pageCount === withoutList.length, '검색 가능한 PDF 페이지가 미리보기와 같음');
+  if (pdf.text !== null) {
+    for (const phrase of ['첫 쪽 검토 메모', '계속 쪽 끝 확인', '부모 메모에 대한 회신', '표 셀 검토 메모']) {
+      assert(pdf.text.replace(/\s/g, '').includes(phrase.replace(/\s/g, '')), 'PDF 내용 보존 ' + phrase);
+    }
+  }
+  const source = await page.evaluate(() => Array.from(window.__wasm.exportHwpx()));
+  assert(JSON.stringify(source) === JSON.stringify(memo.source), '인쇄 설정은 원본 문서에 저장되지 않음');
+});
+
+await runTest('#9336 짧은 용지의 이어지는 메모 인쇄', async ({ page, browser }) => {
+  await applyPdfGuidancePreference(page, true);
+  await createNewDocument(page);
+  const original = await page.evaluate(async () => {
+    const wasm = window.__wasm;
+    wasm.setPageDef(0, {
+      ...wasm.getPageDef(0), width: 30000, height: 7200,
+      leftMargin: 300, rightMargin: 300, topMargin: 300, bottomMargin: 300,
+      headerMargin: 0, footerMargin: 0,
+    });
+    wasm.doc.insertText(0, 0, 0, '메모가 달린 글자');
+    wasm.insertMemo({ section: 0, para: 0, cellPath: [] }, 0, 2, '작성자',
+      '검토 줄 1\n검토 줄 2\n검토 줄 3\n검토 줄 4\n검토 줄 5');
+    await window.__canvasView.loadDocument();
+    return wasm.getPageInfo(0);
+  });
+  const popup = new Promise(resolve => page.once('popup', resolve));
+  await clickPrintMenuItem(page);
+  const preview = await popup;
+  await preview.waitForSelector('#print-btn');
+  await preview.click('.print-preview-bar summary');
+  await preview.click('[name="print-memo-include"]');
+  await preview.click('[name="print-memo-list"]');
+  const pages = await preview.$$eval('.page', nodes => nodes.map(node => ({
+    text: node.textContent.replace(/\s/g, ''),
+    height: Number(node.querySelector('svg').getAttribute('height')),
+  })));
+  assert(pages.length === 2, `높이 25.4mm에서 제목만 있는 쪽 없이 두 쪽 인쇄 (실제 ${pages.length}쪽)`);
+  assert(pages[0].height === original.height && pages[1].height > original.height,
+    '본문은 원래 용지, 이어지는 메모는 본문을 담을 수 있는 별도 용지');
+  assert(pages[0].text.includes('검토줄1') && pages[1].text.includes('1쪽검토줄2검토줄3검토줄4검토줄5'),
+    '이어지는 쪽에 원래 쪽 번호와 나머지 메모 줄을 순서대로 보존');
+  await preview.close();
+
+  await installPrintCapture(page);
+  await clickPdfMenuItem(page);
+  await page.waitForSelector('[data-testid="pdf-print-dialog"]');
+  await page.click('[data-testid="pdf-print-dialog"] [name="print-memo-include"]');
+  await page.click('[data-testid="pdf-print-dialog"] [name="print-memo-list"]');
+  await confirmPdfDialog(page);
+  const { capture } = await capturePrintDocument(page);
+  const outputPath = await renderCapturedPdf(browser, capture.html, 'memo-short-paper');
+  const pdf = inspectPdf(outputPath);
+  assert(pdf.pageCount === pages.length, '실제 PDF의 페이지 수가 미리보기와 일치');
+  assert(JSON.stringify(capture.pages.map(p => p.text.replace(/\s/g, '')))
+    === JSON.stringify(pages.map(p => p.text)), '실제 PDF의 입력과 미리보기가 같은 쪽·내용을 구성');
+  if (pdf.text !== null) {
+    const [first, continued] = pdf.text.split('\f').map(text => text.replace(/\s/g, ''));
+    assert(first.includes('검토줄1') && continued.includes('1쪽검토줄2검토줄3검토줄4검토줄5'),
+      '실제 PDF 각 쪽에서 메모 줄을 읽을 수 있음');
+  }
 });
