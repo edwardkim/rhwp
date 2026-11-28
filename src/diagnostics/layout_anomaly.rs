@@ -490,22 +490,6 @@ fn has_visible_text(s: &str) -> bool {
     s.chars().any(|c| !c.is_whitespace())
 }
 
-/// Empty paragraph carriers reserve cursor/line height without painting content.
-/// Keep whitespace, display substitutions, shading, borders and object children checked.
-fn is_empty_text_carrier(node: &RenderNode) -> bool {
-    matches!(node.node_type, RenderNodeType::TextLine(_))
-        && !node.children.is_empty()
-        && node.children.iter().all(|child| {
-            matches!(&child.node_type, RenderNodeType::TextRun(run)
-                if run.text.is_empty()
-                    && run.display_or_text().is_empty()
-                    && run.border_fill_id == 0
-                    && crate::model::color::char_shade(run.style.shade_color).is_none()
-                    && run.style.tab_leaders.is_empty())
-                && child.children.is_empty()
-        })
-}
-
 /// `TextRun` bbox 를 **글자 상자**로 좁힌다.
 ///
 /// 노드 bbox 는 줄 상자(전진폭 × 줄높이)이지 글리프 잉크가 아니다. 줄높이는 줄 간격을
@@ -673,7 +657,7 @@ fn deep_vertical_union_bbox(node: &RenderNode) -> BoundingBox {
             // 빈 운반 줄은 커서·흐름의 높이를 소유하지만 그 상자를 그리지는 않는다.
             // 세로 그리기 합집합에서도 기존 판정을 재사용한다. 공백·장식·대체 표시·
             // 개체 자식은 이 조건을 얻지 않으며 조판/배치의 점유 높이는 바꾸지 않는다.
-            if !child.visible || child.editor_only || is_empty_text_carrier(child) {
+            if !child.visible || child.editor_only || child.is_empty_text_carrier() {
                 continue;
             }
             if child.bbox.height > 0.0 && child.bbox.width > 0.0 {
@@ -869,7 +853,7 @@ fn walk(
             next_off_canvas_suppress = true;
         }
         if !suppress && type_allowed(label, opts) {
-            if !is_empty_text_carrier(node) {
+            if !node.is_empty_text_carrier() {
                 // 수용 글줄의 원본 후행 채움만 본문 바닥을 넘을 수 있다. 도형·글자와
                 // 용지 밖 검사는 실제 상자를 유지하며, 선언 밴드 초과도 허용하지 않는다.
                 let mut fill_boundary = *boundary;

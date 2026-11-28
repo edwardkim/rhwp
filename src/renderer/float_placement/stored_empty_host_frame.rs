@@ -346,7 +346,99 @@ impl StoredLeadingFloatFrame {
 }
 
 impl ParagraphFloatPlacement {
-    /// 표 이어받기 옆의 빈 저장 줄이 새 쪽의 앵커 축을 닫는다.
+    /// 이어받기 표 옆의 빈 저장 줄 사다리가 본문 끝에서 한 번만 재시작하면
+    /// 뒤 본문과 자리차지 표의 첫 줄은 그 새 쪽의 상대 원점을 소유한다.
+    pub(crate) fn stored_overlay_guide_successor_origin(
+        paragraphs: &[Paragraph],
+        anchor: usize,
+        successor: usize,
+        body_height: f64,
+        styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+        dpi: f64,
+    ) -> Option<f64> {
+        if anchor.checked_add(1)? >= successor {
+            return None;
+        }
+        let host = paragraphs.get(anchor)?;
+        let [Control::Table(source)] = host.controls.as_slice() else {
+            return None;
+        };
+        if !host.text.is_empty()
+            || !matches!(
+                source.common.text_wrap,
+                TextWrap::InFrontOfText | TextWrap::BehindText
+            )
+            || source.common.treat_as_char
+            || source.common.vert_rel_to != VertRelTo::Para
+            || source.common.vert_align != VertAlign::Top
+            || source.layout_page_break() != crate::model::table::TablePageBreak::RowBreak
+        {
+            return None;
+        }
+        let tail = paragraphs.get(successor)?;
+        let blank = |para: &Paragraph| para.text.chars().all(char::is_whitespace);
+        match tail.controls.as_slice() {
+            [] if !blank(tail) => (),
+            [Control::Table(table)]
+                if blank(tail)
+                    && is_para_topbottom_float(&table.common)
+                    && table.common.vert_rel_to == VertRelTo::Para
+                    && table.common.vert_align == VertAlign::Top => {}
+            _ => return None,
+        }
+
+        let body = px_to_hwpunit(body_height, dpi);
+        let mut previous_ink_end = None;
+        let mut previous_advance_end = 0i32;
+        let mut reset = false;
+        for (index, paragraph) in paragraphs.get(anchor..=successor)?.iter().enumerate() {
+            let [line] = paragraph.line_segs.as_slice() else {
+                return None;
+            };
+            let top = stored_line(paragraph)?;
+            let style = styles.para_styles.get(paragraph.para_shape_id as usize)?;
+            if paragraph.column_type != ColumnBreakType::None
+                || (index > 0
+                    && index < successor - anchor
+                    && (!blank(paragraph) || !paragraph.controls.is_empty()))
+                || top < 0
+                || line.line_height <= 0
+                || line.line_spacing < 0
+                || !style.spacing_before.is_finite()
+                || !style.spacing_after.is_finite()
+                || style.spacing_before < 0.0
+                || style.spacing_after < 0.0
+            {
+                return None;
+            }
+            let before = px_to_hwpunit(style.spacing_before, dpi);
+            if let Some(ink) = previous_ink_end {
+                let expected = previous_advance_end.checked_add(before)?;
+                if top != expected {
+                    if reset
+                        || top != before
+                        || ink > body
+                        || expected.checked_add(line.line_height)? <= body
+                    {
+                        return None;
+                    }
+                    reset = true;
+                }
+            }
+            let ink_end = top.checked_add(line.line_height)?;
+            previous_ink_end = Some(ink_end);
+            previous_advance_end = ink_end
+                .checked_add(line.line_spacing)?
+                .checked_add(px_to_hwpunit(style.spacing_after, dpi))?;
+            if index == successor - anchor {
+                return (reset && ink_end <= body)
+                    .then_some(hwpunit_to_px(top.checked_sub(before)?, dpi));
+            }
+        }
+        None
+    }
+
+    /// 표 이어받기 옆의 빈 저장 줄 사다리가 새 쪽의 앵커 축을 닫는다.
     /// 이전 쪽의 마지막 줄간격은 새 쪽 호스트의 원점에 재가산하지 않는다.
     pub(crate) fn from_stored_overlay_guide_chain(
         paragraphs: &[Paragraph],

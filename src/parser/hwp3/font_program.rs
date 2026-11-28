@@ -8,7 +8,9 @@ pub(super) fn preserve_source_kind(font: &mut Font, original: &str, normalized: 
     // 근거: hwp3-sample16-2020.pdf, T3 xref31, Widths xref1738.
     // 이름 변경 여부를 프로그램 종류로 대신하면 표시용 Palatino의 폭으로
     // 되돌아간다. 미확인 이름과 HWP5/HWPX의 TTF 선언에는 적용하지 않는다.
-    if original != normalized || original.trim() == "HCI Poppy" {
+    // SO-SUEOP의 2020 Print 27쪽 T13과 한컴 HWPX 재저장본은
+    // 필기도 원본 HFT 프로그램으로 확인한다.
+    if original != normalized || matches!(original.trim(), "HCI Poppy" | "필기") {
         font.alt_type = 2;
     }
 }

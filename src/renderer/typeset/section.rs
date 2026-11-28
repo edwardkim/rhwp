@@ -384,6 +384,20 @@ impl TypesetEngine {
                 &mut st, para_idx, para, paragraphs, storage,
             )?;
 
+            let absorbed_opening_blank =
+                super::paragraph::stored_lines::stored_blank_prefix_fits_reduced_frame(
+                    &st, paragraphs, para_idx, styles,
+                );
+            if st.col_count == 1
+                && st.current_start_height == 0.0
+                && st.current_zone_y_offset == 0.0
+                && !profile.session_edited()
+                && (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+            {
+                st.place_stored_overlay_guide_successor(
+                    paragraphs, styles, para_idx, self.dpi, storage,
+                )?;
+            }
             let picture_host_origin = (
                 st.pages.len(),
                 st.current_column,
@@ -432,6 +446,14 @@ impl TypesetEngine {
                 native_hwp5_footnote_break,
                 storage,
             )?;
+
+            if absorbed_opening_blank
+                && st.pages.len() == picture_host_origin.0
+                && matches!(st.current_items.last(), Some(super::PageItem::FullParagraph { para_index })
+                    if *para_index == para_idx)
+            {
+                st.advance_column_or_new_page_with_storage(storage)?;
+            }
 
             // [Task #1007] variant vpos reset 감지용 prev_para_idx 갱신
             variant_prev_para_idx = Some(para_idx);

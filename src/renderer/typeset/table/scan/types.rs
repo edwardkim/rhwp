@@ -35,6 +35,8 @@ pub(in crate::renderer::typeset) struct BlockTableRowScan {
 pub(in crate::renderer::typeset) struct BlockRowScanVars {
     /// 앞 문단의 이어받기 뒤 첫 표 프레임은 현재 쪽 원점이 인증되지 않았다.
     pub(in crate::renderer::typeset) source_frame_origin_unverified: bool,
+    /// 앞 조각이 물리 본문의 하단을 인증한 일반 이어받기 표.
+    pub(in crate::renderer::typeset) owns_continued_source_bottom: bool,
     pub(in crate::renderer::typeset) cursor_row: usize,
     pub(in crate::renderer::typeset) row_count: usize,
     pub(in crate::renderer::typeset) cs: f64,

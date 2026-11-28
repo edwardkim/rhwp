@@ -341,6 +341,7 @@ samples/issue5652/표식이있는꺽은선형-행추가.hwp	1	1
 samples/issue5652/표식이있는꺽은선형-행추가.hwpx	1	1
 samples/issue5787/nested_square_table_horz_offset.hwp	1	1
 samples/issue5788/tac_table_missing_anchor_line_spacing.hwp	8	8
+samples/issue5792/2700727_animal_facility_standards.hwpx	6	6
 samples/issue5798/offcolumn_float_table_no_band.hwp	1	1
 # 검증한 과거 경로: pdf/issue5140-version-boundary/issue5800-hancom-symbol-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
 samples/issue5800-hancom-symbol.hwp	1	1
@@ -392,7 +393,7 @@ samples/issue6037/원형대원형-계열추가-데이터추가.hwp	1	1
 samples/issue6037/원형대원형-계열추가-데이터추가.hwpx	1	1
 samples/issue6037/원형대원형-계열추가.hwp	1	1
 samples/issue6037/원형대원형-계열추가.hwpx	1	1
-samples/issue6111/56345_regulatory_impact_analysis.hwp	21	20
+samples/issue6111/56345_regulatory_impact_analysis.hwp	21	21
 samples/issue6697/80550-agricultural-machinery-act-amendment.hwpx	31	31
 samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	204	204
 samples/issue6929/148776468_search_ad_terms_press_release.hwp	17	18
@@ -896,3 +897,9 @@ samples/side_by_side_photo_cell/photo-left-touch.hwp	1	1
 samples/side_by_side_photo_cell/photo-right-overlap.hwp	1	1
 # 검증한 과거 경로: pdf/side-by-side-photo-rows-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
 samples/side_by_side_photo_cell/side-by-side-photo-rows.hwp	1	1
+samples/issue6712/중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp	2	2
+mydocs/pr/assets/issue7445/aift74/aift.hwp	74	74
+mydocs/pr/assets/issue7445/table-text-anchor-wrap/table_text_anchor_wrap.hwpx	3	3
+samples/SO-SUEOP.hwp	46	46
+samples/SO-SUEOP.hwpx	46	46
+samples/table_giant_cell_overfill.hwpx	48	48

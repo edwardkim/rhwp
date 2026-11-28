@@ -505,6 +505,8 @@ impl LayerBuilder {
         }
 
         let mut image_fill_clip = None;
+        let mut picture_shadow = None;
+        let mut image_band_bounds = None;
         let own_ops = match &node.node_type {
             RenderNodeType::PageBackground(background) => Some(vec![PaintOp::page_background(
                 node.bbox,
@@ -656,6 +658,11 @@ impl LayerBuilder {
                     self.page_context
                         .map_or(node.bbox, |context| context.image_frame(node, image, pixel))
                 };
+                picture_shadow = crate::renderer::image_resolver::prepare_picture_shadow(
+                    image,
+                    frame,
+                    self.layout_dpi,
+                );
                 if image_fill_clip.is_none()
                     && !node.layer.as_ref().is_some_and(|layer| layer.master_page)
                     && (self.hancom2024_print_bitmap
@@ -714,6 +721,36 @@ impl LayerBuilder {
                     if let Some((full, image, payload)) = group_projection {
                         image_fill_clip = Some(frame);
                         vec![PaintOp::image(full, image, Some(payload))]
+                    } else if let Some(bands) = (self.profile == RenderProfile::Print
+                        && self.shape_group_depth == 0
+                        && !soft_edge_prepared
+                        && image_fill_clip.is_none())
+                    .then(|| {
+                        let device_frame = crate::renderer::print_raster::PrintRasterFrame::new(
+                            self.image_page_size,
+                            self.image_reference_origin,
+                            node.bbox,
+                            self.layout_dpi,
+                        )?;
+                        crate::renderer::image_resolver::print_jpeg_bands(
+                            &image,
+                            frame,
+                            self.layout_dpi,
+                            self.print_png_rgb555,
+                            device_frame,
+                        )
+                    })
+                    .flatten()
+                    {
+                        image_band_bounds = Some(frame);
+                        // 띠의 출력 바이트는 원본 BinData와 독립이다.
+                        image.data = None;
+                        bands
+                            .into_iter()
+                            .map(|(bbox, payload)| {
+                                PaintOp::image(bbox, image.clone(), Some(payload))
+                            })
+                            .collect()
                     } else {
                         crate::renderer::image_resolver::publish_print_jpeg_crop(&mut image);
                         let device_effect = soft_edge_payload.as_ref().is_some_and(|p| {
@@ -759,6 +796,23 @@ impl LayerBuilder {
                                         )
                                     })
                                     .flatten()
+                            })
+                            .or_else(|| {
+                                if self.profile != RenderProfile::Print
+                                    || self.hancom2024_print_bitmap
+                                    || self.shape_group_depth > 0
+                                    || image_fill_clip.is_some()
+                                    || image.source_rect.is_some()
+                                {
+                                    return None;
+                                }
+                                let width =
+                                    self.page_context?.image_codec_width_points(&image, frame)?;
+                                crate::renderer::image_resolver::print_resampled_bitmap_window(
+                                    &image,
+                                    width,
+                                    self.print_png_rgb555,
+                                )
                             })
                             .or_else(|| {
                                 if self.profile != RenderProfile::Print
@@ -967,7 +1021,8 @@ impl LayerBuilder {
         };
 
         if let Some(ops) = own_ops {
-            let own_bounds = ops.first().map_or(node.bbox, PaintOp::bounds);
+            let own_bounds =
+                image_band_bounds.unwrap_or_else(|| ops.first().map_or(node.bbox, PaintOp::bounds));
             let mut own_leaf =
                 LayerNode::leaf(own_bounds, Some(node.id), ops).with_layer(node.layer);
             own_leaf = super::metafile_picture::lower(own_leaf);
@@ -980,6 +1035,20 @@ impl LayerBuilder {
                     ClipKind::PrintBitmapFill,
                 )
                 .with_layer(node.layer);
+            }
+            if let Some(shadow) = picture_shadow {
+                let shadow =
+                    LayerNode::leaf(shadow.bounds(), None, vec![shadow]).with_layer(node.layer);
+                let mut group = LayerNode::group(
+                    node.bbox,
+                    Some(node.id),
+                    vec![shadow, own_leaf],
+                    CacheHint::None,
+                    GroupKind::Generic,
+                )
+                .with_layer(node.layer);
+                group.bounds = group.visual_bounds(true);
+                own_leaf = group;
             }
             // 내부 문단이 없는 사각형도 원본 컨트롤 부호를 출력해야 한다.
             let has_source_marker = self.output_options.show_control_codes

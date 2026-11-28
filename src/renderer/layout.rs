@@ -8275,6 +8275,9 @@ impl LayoutEngine {
         // 문단 테두리 범위 수집 초기화
         self.para_border_ranges.borrow_mut().clear();
         self.paragraph_spacing_consumed.borrow_mut().clear();
+        self.whitespace_float_host_line_owner.set(None);
+        self.whitespace_host_frames.borrow_mut().clear();
+        self.whitespace_host_pending_frame.set(None);
     }
 
     fn build_single_column(
@@ -15928,10 +15931,37 @@ impl LayoutEngine {
                             .unwrap_or(y_offset)
                     });
                     let flow_before = y_offset;
+                    // 공백 글줄 자체와 달리, 같은 호스트에 먼저 놓인 인라인 표는
+                    // 자리차지 표를 밀 수 있다. 쪽 나누기가 확정한 줄 끝을 재사용한다.
+                    let inline_floors = col_node.children.iter().filter_map(|node| {
+                        let RenderNodeType::Table(placed) = &node.node_type else {
+                            return None;
+                        };
+                        let index = placed.control_index?;
+                        if t.common.allow_overlap
+                            || placed.para_index != Some(para_index)
+                            || index >= control_index
+                            || right <= node.bbox.x + 0.5
+                            || left >= node.bbox.x + node.bbox.width - 0.5
+                        {
+                            return None;
+                        }
+                        let Control::Table(earlier) = para.controls.get(index)? else {
+                            return None;
+                        };
+                        if !earlier.common.treat_as_char {
+                            return None;
+                        }
+                        ctx.inline_placements
+                            .get(&(para_index, index))?
+                            .advance_end
+                            .map(|end| col_area.y + end)
+                    });
                     y_offset = frames
                         .iter()
                         .filter(|frame| right > frame.2 + 0.5 && left < frame.3 - 0.5)
                         .map(|frame| frame.4)
+                        .chain(inline_floors)
                         .fold(para_top, f64::max);
                     self.whitespace_host_pending_frame.set(Some((
                         para_top,
@@ -17695,6 +17725,10 @@ impl LayoutEngine {
             ctx.paragraph_float_placements
                 .get(&(para_index, control_index))
                 .map(|p| col_area.y + p.table_top),
+            ctx.paragraph_float_placements
+                .get(&(para_index, control_index))
+                .and_then(|p| p.table_left)
+                .map(|left| col_area.x + left),
             crate::renderer::float_placement::preceding_control_flow_bottom_px(
                 ctx.paragraph_float_placements,
                 ctx.inline_placements,
@@ -18379,7 +18413,7 @@ impl LayoutEngine {
                         .iter()
                         .find(|(pi, ci, _)| *pi == para_index && *ci == control_index)
                         .map(|(_, _, cut)| cut);
-                    if let Some(cut) = source_cut.filter(|cut| !cut.end_cut.is_empty()) {
+                    if let Some(cut) = source_cut.filter(|cut| cut.end_row_height.is_some()) {
                         self.layout_partial_table(
                             tree,
                             &mut temp_parent,
@@ -18412,6 +18446,7 @@ impl LayoutEngine {
                             None,
                             None,
                             false,
+                            None,
                             None,
                             None,
                             None,

@@ -1,3 +1,16 @@
+//! 관계형·고정형 — #7808 이어받기 표의 내용 소속·중복·누락과 마지막 글줄 포함.
+//! 주석 갱신 2026-11-28T10:42:02+09:00. 직전 파일 커밋 be48607ad9444d8232df4f699c73832d9a34885d 2026-11-28T07:25:36+09:00.
+//! Native Skia·fresh WASM Print를 독립 한컴 PDF에 96 DPI·PDFium·2px raw 실루엣으로 대조했다.
+//! 측정 코드 be48607ad9444d8232df4f699c73832d9a34885d.
+//! sample1-repro · 기준 pdf/issue4514/sample1-repro-hwp-2020.pdf · 전체 46쪽.
+//! 전쪽 최저 Native 98.26% / fresh WASM 98.35%.
+//! 9쪽 Native 99.97% / fresh WASM 99.97%.
+//! 10쪽 Native 99.94% / fresh WASM 99.94%.
+//! 11쪽 Native 99.97% / fresh WASM 99.97%.
+//! 42쪽 Native 100.00% / fresh WASM 100.00%.
+//! 43쪽 Native 100.00% / fresh WASM 100.00%.
+//! 전쪽 TSV와 대표 PNG는 mydocs/pr/assets/issues7789_7812/sample1-repro/에 있다.
+//!
 //! [#4514] overlay 표 필러 흐름·클램프 회귀 가드.
 //!
 //! sample1-repro 는 글앞으로(overlay) 비-TAC 4×5 표 37개가 빈 문단에 앵커되고 뒤따르는
@@ -9,48 +22,37 @@
 //! 2. ECR-001~005 구간 3쪽 구조 (한컴 실측 구조: N / N+1 / N+2)
 #![cfg(not(target_arch = "wasm32"))]
 
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType, TableNode};
 use rhwp::DocumentCore;
 
-fn top_level_table_spans(root: &serde_json::Value) -> Vec<(i64, f64, f64)> {
-    fn span_of(node: &serde_json::Value) -> Option<(i64, f64, f64)> {
-        if node.get("type").and_then(|t| t.as_str()) != Some("Table") {
+fn top_level_tables(root: &RenderNode) -> impl Iterator<Item = (&RenderNode, &TableNode)> {
+    let body_tables = root
+        .children
+        .iter()
+        .filter(|node| matches!(node.node_type, RenderNodeType::Body { .. }))
+        .flat_map(|body| body.children.iter())
+        .filter(|node| matches!(node.node_type, RenderNodeType::Column(_)))
+        .flat_map(|column| column.children.iter());
+    root.children.iter().chain(body_tables).filter_map(|node| {
+        let RenderNodeType::Table(table) = &node.node_type else {
             return None;
-        }
-        let b = node.get("bbox")?;
-        let y = b.get("y")?.as_f64()?;
-        let h = b.get("h")?.as_f64()?;
-        Some((
-            node.get("pi").and_then(|p| p.as_i64()).unwrap_or(-1),
-            y,
-            y + h,
-        ))
-    }
-    let empty = Vec::new();
-    let children = |n: &serde_json::Value| -> Vec<serde_json::Value> {
-        n.get("children")
-            .and_then(|c| c.as_array())
-            .unwrap_or(&empty)
-            .clone()
-    };
-    let mut out = Vec::new();
-    for child in children(root) {
-        if let Some(s) = span_of(&child) {
-            out.push(s);
-        }
-        if child.get("type").and_then(|t| t.as_str()) == Some("Body") {
-            for col in children(&child) {
-                if col.get("type").and_then(|t| t.as_str()) != Some("Column") {
-                    continue;
-                }
-                for item in children(&col) {
-                    if let Some(s) = span_of(&item) {
-                        out.push(s);
-                    }
-                }
-            }
+        };
+        Some((node, table))
+    })
+}
+
+fn append_text_runs<'tree>(
+    node: &'tree RenderNode,
+    runs: &mut Vec<(&'tree RenderNode, &'tree str)>,
+) {
+    if let RenderNodeType::TextRun(run) = &node.node_type {
+        if !run.text.trim().is_empty() {
+            runs.push((node, &run.text));
         }
     }
-    out
+    for child in &node.children {
+        append_text_runs(child, runs);
+    }
 }
 
 #[test]
@@ -69,6 +71,7 @@ fn issue_4514_overlay_tables_do_not_overlap() {
     let mut requirement_table_pages: Vec<u32> = Vec::new();
     let mut ecr004_pages: Vec<u32> = Vec::new();
     let mut ecr004_neighbors: Vec<(u32, Vec<i64>, Vec<i64>)> = Vec::new();
+    let mut fragment_text = Vec::new();
     for page in 0..total {
         let tree = core
             .build_page_render_tree(page)
@@ -84,10 +87,34 @@ fn issue_4514_overlay_tables_do_not_overlap() {
                 .collect::<Vec<_>>()
         );
 
-        let json: serde_json::Value =
-            serde_json::from_str(&tree.root.to_json()).expect("render tree JSON");
-        let root = json.get("root").unwrap_or(&json);
-        let mut spans = top_level_table_spans(root);
+        let mut spans = Vec::new();
+        for (table_node, table) in top_level_tables(&tree.root) {
+            let owner = table.para_index.map_or(-1, |index| index as i64);
+            let top = table_node.bbox.y;
+            let bottom = top + table_node.bbox.height;
+            spans.push((owner, top, bottom));
+
+            if matches!(owner, 139 | 158 | 765) {
+                let mut runs = Vec::new();
+                append_text_runs(table_node, &mut runs);
+                let text: String = runs
+                    .iter()
+                    .flat_map(|(_, text)| text.chars())
+                    .filter(|c| !c.is_whitespace())
+                    .collect();
+                fragment_text.push((owner, page + 1, text));
+
+                if owner == 765 {
+                    for (run, text) in runs {
+                        assert!(
+                            top <= run.bbox.y && run.bbox.y + run.bbox.height <= bottom,
+                            "{}쪽 보안 특약 글줄이 해당 표 조각 안에 있어야 한다: {text}",
+                            page + 1,
+                        );
+                    }
+                }
+            }
+        }
         spans.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
         for w in spans.windows(2) {
             let overlap = w[0].2 - w[1].1;
@@ -161,4 +188,28 @@ fn issue_4514_overlay_tables_do_not_overlap() {
         "ECR-004 이어받기는 다음 쪽의 첫 표이며 ECR-005보다 앞에 있어야 한다: {:?}",
         ecr004_neighbors
     );
+
+    // 같은 원본의 독립 한컴 Print 9–11쪽에서 앞 행, 이어받기 끝, 다음
+    // 표의 상세 행과 그 이어받기를 골라 페이지와 소유 표를 함께 확인한다.
+    for (owner, physical_page, phrase) in [
+        (139, 9, "ECR-004"),
+        (139, 9, "도입수량:1대"),
+        (139, 10, "분리발주예정인백업소프트웨어설치지원"),
+        (158, 10, "ECR-005"),
+        (158, 10, "스토리지모니터링을위한SW또는유사기능지원"),
+        (158, 11, "스토리지컨트롤러기반이기종스토리지가상화기능제공"),
+        (765, 42, "도출된취약점에대한개선을"),
+        (765, 43, "완료하고그결과를제출해야한다."),
+    ] {
+        let pages: Vec<_> = fragment_text
+            .iter()
+            .filter(|(table, _, _)| *table == owner)
+            .flat_map(|(_, page, text)| text.match_indices(phrase).map(|_| *page))
+            .collect();
+        assert_eq!(
+            pages,
+            [physical_page],
+            "{phrase}는 원본 표 {owner}의 해당 쪽에서 한 번만 보여야 한다"
+        );
+    }
 }

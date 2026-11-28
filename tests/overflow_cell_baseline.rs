@@ -54,19 +54,7 @@ const DEDICATED_SLOW_FIXTURES: &[&str] = &["issue2063_huge_cellbreak_table.hwp"]
 /// #7382의 실제 차단 입력 중 독립 한컴 비교가 90% 미만인 셀 넘침 판정만 보류한다.
 /// #7445 및 cgmp6035_cell_blocking_scope_validation.json에 근거를 보존한다.
 /// 원문과 수집/분할은 유지하여 다른 입력의 소속과 원장 관측값을 바꾸지 않는다.
-const DEFERRED_CELL_OVERFLOW_FIXTURES: &[&str] = &[
-    // 사용자 요청: 아래 세 HWPX의 조판 보정은 다른 브랜치에서 진행한다.
-    "table_giant_cell_overfill.hwpx",
-    "issue5792/2700727_animal_facility_standards.hwpx",
-    "issue6035/cgmp_evaluation_table.hwpx",
-];
-
-/// #7751로 이관한 편람 HWP의 셀 넘침 검사는 원장에서 제거한다.
-/// 원본과 독립 Print PDF는 보존하며, 다른 원문의 분할/기준값은 바꾸지 않는다.
-const REMOVED_CELL_OVERFLOW_FIXTURES: &[&str] = &[
-    // #7812: 원본은 유지하고 다른 브랜치의 보정 대상으로 분리한다.
-    "table_giant_cell_overfill.hwpx",
-];
+const DEFERRED_CELL_OVERFLOW_FIXTURES: &[&str] = &["issue6035/cgmp_evaluation_table.hwpx"];
 
 /// 독립 PDF에서도 용지 경계에서 잘리는 입력은 원시 진단 줄 수 대신
 /// 기존 `issue_7418_host_text_and_split_row_geometry`의 표/후속 문단 쪽 소속 계약으로 검사한다.
@@ -180,7 +168,7 @@ fn count_doc(path: &Path) -> Option<u64> {
 
 fn overflow_cell_lines_do_not_grow_partition(part: usize) {
     let buckets = partition_samples(collect_samples(), PARTITIONS);
-    let mut samples = buckets
+    let samples = buckets
         .into_iter()
         .nth(part)
         .unwrap_or_else(|| panic!("없는 partition: {part}"));
@@ -188,7 +176,6 @@ fn overflow_cell_lines_do_not_grow_partition(part: usize) {
         !samples.is_empty(),
         "overflow-cell partition {part} 이 비어 있음"
     );
-    samples.retain(|(_, rel)| !REMOVED_CELL_OVERFLOW_FIXTURES.contains(&rel.as_str()));
     let selected_rels: BTreeSet<String> = samples.iter().map(|(_, rel)| rel.clone()).collect();
     let baseline = load_baseline();
 
