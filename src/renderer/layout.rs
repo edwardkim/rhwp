@@ -241,19 +241,6 @@ impl ColumnItemCtx<'_> {
 pub(crate) const ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU: i32 = 1984;
 const SINGLE_ROW_DECLARED_TRUST_MAX_RATIO: f64 = 1.5;
 
-/// 표 앞 제어가 줄 내용 제어 문자([`crate::renderer::composer::control_is_line_content_marker`])
-/// 하나 이상과 구역·단 정의뿐인지.
-fn tac_has_only_line_content_markers_before(para: &Paragraph, control_index: usize) -> bool {
-    let before = &para.controls[..control_index.min(para.controls.len())];
-    before
-        .iter()
-        .any(crate::renderer::composer::control_is_line_content_marker)
-        && before.iter().all(|control| {
-            matches!(control, Control::SectionDef(_) | Control::ColumnDef(_))
-                || crate::renderer::composer::control_is_line_content_marker(control)
-        })
-}
-
 /// 빈 host의 full-band TAC 표가 두 번째 저장 줄을 온전히 점유했을 때 표의 실제
 /// 상단을 복원한다. 한컴은 그 줄의 `text_height`를 `표 높이 + 위·아래 outMargin`으로
 /// 기록하고, 잉크를 `vertical_pos + outMargin.top`에 둔다.
@@ -274,10 +261,7 @@ fn stored_empty_full_band_tac_table_top(
         || !(tac_has_only_in_front_decoration_shapes_before(para, control_index)
             // [#9016] 앞 제어 없이 제목 차례 표시만 앞 슬롯을 차지하는 문단도 표가 둘째
             // 저장 줄을 온전히 소유한다(제목 표시 줄은 글자 높이 줄, 표 줄 th = 표 + 여백).
-            || (control_index == 0 && para.title_marks.iter().any(|mark| mark.char_idx == 0))
-            // [#8684] 글자 없는 host 에서 누름틀 시작·책갈피 같은 줄 내용 제어 문자만 표 앞에
-            // 있으면 한/글은 그 제어 문자 줄(글자 높이)을 두고 표를 둘째 저장 줄에 놓는다.
-            || (para.text.is_empty() && tac_has_only_line_content_markers_before(para, control_index)))
+            || (control_index == 0 && para.title_marks.iter().any(|mark| mark.char_idx == 0)))
     {
         return None;
     }

@@ -111,12 +111,25 @@ pub(crate) fn owned_tac_prefix_rows(para: &Paragraph, owner: usize) -> bool {
     ordinary_tac_prefix_rows(para, owner)
         || (para.text.is_empty()
             && !crate::renderer::para_has_no_stored_line_segs(para)
-            && para
-                .controls
-                .iter()
-                .take_while(|control| !control.is_treat_as_char_object())
-                .any(control_is_line_content_marker)
+            && marker_led_prefix_rows(para, owner)
             && stored_prefix_rows_are_text_rows(para, owner))
+}
+
+/// 첫 글자처럼 취급 개체 앞에 줄 내용 제어 문자가 있어 앞 저장 줄이 그 제어 문자 줄인지.
+/// 필드 시작은 #8782 계약 그대로 받는다. [#8684] 다른 표식은 첫 개체가 이 개체 줄에 있을
+/// 때만 받는다 — 앞 줄에 묶음 개체 등이 함께 있으면(156739836 3쪽: 쪽 번호·새 번호와 묶음이
+/// 첫 줄, 표가 둘째 줄) 그 줄은 개체 줄이라 기존 경로가 그린다.
+fn marker_led_prefix_rows(para: &Paragraph, owner: usize) -> bool {
+    let first_object = para
+        .controls
+        .iter()
+        .position(|control| control.is_treat_as_char_object());
+    let leading = &para.controls[..first_object.unwrap_or(para.controls.len())];
+    leading
+        .iter()
+        .any(|control| matches!(control, Control::Field(_)))
+        || (leading.iter().any(control_is_line_content_marker)
+            && first_object.and_then(|ci| control_line_seg_index(para, ci)) == Some(owner))
 }
 
 /// 개체 줄 앞 저장 줄들이 같은 조각 안에서 앞으로만 진행하는 글자 높이 줄인지.
@@ -151,6 +164,10 @@ pub(crate) fn stored_tac_lines(para: &Paragraph) -> Option<Vec<StoredTacLine>> {
     let origin = para.line_segs.first()?.vertical_pos;
     let mut lines = Vec::new();
     let mut previous_owner = None;
+    let first_tac_table = para
+        .controls
+        .iter()
+        .position(|control| matches!(control, Control::Table(table) if table.common.treat_as_char));
     for (ci, control) in para.controls.iter().enumerate() {
         let table = match control {
             Control::Table(table) if table.common.treat_as_char => table,
@@ -165,9 +182,15 @@ pub(crate) fn stored_tac_lines(para: &Paragraph) -> Option<Vec<StoredTacLine>> {
             // 감추기는 쪽 표시 설정이며 본문 글줄을 점유하지 않는다.
             | Control::PageHide(_)
             | Control::Field(_) => continue,
-            // [#8684] 책갈피·새 번호·쪽 번호 제어·찾아보기 표식도 누름틀 시작처럼 8유닛 칸만
-            // 차지하고 개체 상자를 만들지 않는다. 그 뒤 넘친 표는 저장 줄이 다음 줄로 적는다.
-            marker if control_is_line_content_marker(marker) => continue,
+            // [#8684] 표 앞의 책갈피·새 번호·쪽 번호 제어·찾아보기 표식도 누름틀 시작처럼
+            // 8유닛 칸만 차지하고 개체 상자를 만들지 않는다. 그 뒤 넘친 표는 저장 줄이 다음
+            // 줄로 적는다. 표 뒤 표식 줄은 이 경로가 소유하지 않으므로 기존 경로에 둔다.
+            marker
+                if first_tac_table.is_some_and(|first| ci < first)
+                    && control_is_line_content_marker(marker) =>
+            {
+                continue
+            }
             _ => return None,
         };
         let owner = control_line_seg_index(para, ci)?;

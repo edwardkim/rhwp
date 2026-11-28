@@ -6964,6 +6964,7 @@ fn try_reflow_line_segs_impl<S: Storage>(
         // [#9058] 줄 시작은 제어 위치(`control_source_positions`)와 같은 축으로 센다. 제어 앞에
         // 놓인 `controls[]` 밖 슬롯(누름틀 끝·제목 차례 표시)을 빼면 그 뒤 개체가 저장 줄보다
         // 8유닛 앞에서 시작하고, 제어 위치와 비교할 때 한 줄 뒤로 판정된다.
+        let mut seen_object = false;
         let inline_sizes = storage.collect(
             para.controls
                 .iter()
@@ -6977,12 +6978,17 @@ fn try_reflow_line_segs_impl<S: Storage>(
                     Some((start, ctrl))
                 })
                 .filter_map(|(start, ctrl)| {
-                    inline_control_occupied_size_hwp(ctrl, styles, dpi)
+                    let occupied = inline_control_occupied_size_hwp(ctrl, styles, dpi);
+                    // [#8684] 필드 시작 밖의 줄 내용 제어 문자는 첫 개체 앞에서만 센다.
+                    // 개체 뒤 표식이 만드는 꼬리 줄은 이 이슈가 확인한 범위가 아니다.
+                    let marker = matches!(ctrl, Control::Field(_))
+                        || (!seen_object && control_is_line_content_marker(ctrl));
+                    seen_object |= occupied.is_some();
+                    occupied
                         .map(|occupied| (start, Some(occupied)))
                         .or_else(|| {
-                            (control_is_line_content_marker(ctrl)
-                                || inline_frame_input::is_nonflow_anchor(ctrl))
-                            .then_some((start, None))
+                            (marker || inline_frame_input::is_nonflow_anchor(ctrl))
+                                .then_some((start, None))
                         })
                 }),
         )?;
