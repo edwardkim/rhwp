@@ -296,6 +296,29 @@ impl NativeEditor {
     ) -> Result<NativeEditOutcome, NativeHostError> {
         self.check_edit_ready(expected_revision)?;
         Self::check_editable_text_span(&self.session.core, &self.selection)?;
+        self.commit_edit_transaction(edit)
+    }
+
+    /// Transact over independently validated ranges while retaining the live
+    /// selection as the undo origin. Explicit replacements check each edited leaf.
+    pub(super) fn edit_explicit_ranges_transaction(
+        &mut self,
+        expected_revision: u64,
+        edit: impl FnOnce(&mut DocumentCore) -> Result<NativeTextSelection, NativeHostError>,
+    ) -> Result<NativeEditOutcome, NativeHostError> {
+        self.check_edit_ready(expected_revision)?;
+        let event_count = self.session.core.event_log.len();
+        let result = self.commit_edit_transaction(edit);
+        if result.is_err() {
+            self.session.core.event_log.truncate(event_count);
+        }
+        result
+    }
+
+    fn commit_edit_transaction(
+        &mut self,
+        edit: impl FnOnce(&mut DocumentCore) -> Result<NativeTextSelection, NativeHostError>,
+    ) -> Result<NativeEditOutcome, NativeHostError> {
         self.check_mutation_capacity()?;
         self.check_snapshot_slots(2)?;
         let selection_before = self.selection.clone();
@@ -553,7 +576,7 @@ impl NativeEditor {
             })
     }
 
-    fn validate_text(text: &str) -> Result<(), NativeHostError> {
+    pub(super) fn validate_text(text: &str) -> Result<(), NativeHostError> {
         if text.chars().any(char::is_control) {
             return Err(NativeHostError::Unsupported(
                 "text input does not insert control characters, tabs or paragraphs".into(),
@@ -662,7 +685,7 @@ impl NativeEditor {
         Ok(())
     }
 
-    fn replacement_end(
+    pub(super) fn replacement_end(
         selection: &NativeTextSelection,
         text: &str,
     ) -> Result<NativeTextSelection, NativeHostError> {
