@@ -321,7 +321,8 @@ public sealed partial class MainWindow
                     {
                         System.Diagnostics.Debug.WriteLine(cleanup);
                     }
-                    StatusText.Text = "문서를 편집할 수 없습니다. " + error.Message;
+                    if (error is not NativeRequestException { IsUnsupportedTextPosition: true })
+                        StatusText.Text = "문서를 편집할 수 없습니다. " + error.Message;
                 }
             }
         }

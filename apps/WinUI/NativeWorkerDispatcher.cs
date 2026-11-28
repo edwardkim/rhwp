@@ -3,6 +3,14 @@ using System.Text.Json;
 
 namespace Rhwp.WinUI;
 
+internal sealed class NativeRequestException(string? code, string? detail) : InvalidOperationException($"{detail} ({code})")
+{
+    public string? Code { get; } = code;
+    public bool IsUnsupportedTextPosition => Code == "unsupported" && detail is not null &&
+        (detail.Contains("inline-object affinity", StringComparison.Ordinal) ||
+         detail.Contains("object/textbox hits", StringComparison.Ordinal));
+}
+
 // The ABI's worker handle and transferred buffers belong to the OS thread
 // that created the handle. Only managed page pixels leave the dispatcher.
 internal sealed partial class NativeWorkerDispatcher
@@ -413,8 +421,4 @@ internal sealed partial class NativeWorkerDispatcher
             throw new NativeRequestException(result.GetProperty("code").GetString(), result.GetProperty("error").GetString());
     }
 
-    private sealed class NativeRequestException(string? code, string? message) : InvalidOperationException($"{message} ({code})")
-    {
-        public string? Code { get; } = code;
-    }
 }
