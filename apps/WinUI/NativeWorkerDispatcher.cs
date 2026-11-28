@@ -22,6 +22,7 @@ internal sealed partial class NativeWorkerDispatcher
     private DocumentTarget? target;
     private ulong committedRevision;
     private bool dirty;
+    private bool workerWaitAvailable;
 
     public NativeWorkerDispatcher()
     {
@@ -128,7 +129,7 @@ internal sealed partial class NativeWorkerDispatcher
 
     private ulong EnsureWorker() => worker ??= CreateWorker();
 
-    private static ulong CreateWorker()
+    private ulong CreateWorker()
     {
         using var report = ReadSuccess(RhwpNative.SessionCapabilities());
         JsonElement capabilities = report.RootElement;
@@ -140,6 +141,7 @@ internal sealed partial class NativeWorkerDispatcher
         }
 
         using var created = Send(new { op = "workerCreate", config = new { maxOutstanding = 1 } });
+        workerWaitAvailable = HasCapability(capabilities, "workerWait");
         return created.RootElement.GetProperty("worker").GetUInt64();
     }
 
@@ -321,10 +323,14 @@ internal sealed partial class NativeWorkerDispatcher
                 cancelSent = true;
             }
 
-            using var polled = Send(new { op = "workerPoll", worker = handle });
+            using var polled = workerWaitAvailable
+                ? Send(new { op = "workerPoll", worker = handle, waitMs = PollIntervalMs })
+                : Send(new { op = "workerPoll", worker = handle });
             JsonElement completion = polled.RootElement.GetProperty("completion");
             if (completion.ValueKind == JsonValueKind.Null)
             {
+                if (workerWaitAvailable)
+                    continue;
                 if (shortWaitsRemaining > 0)
                 {
                     shortWaitsRemaining--;
