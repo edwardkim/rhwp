@@ -2,8 +2,10 @@
 """Exercise command and IME-context transport against the actual native worker."""
 
 import argparse
+from io import BytesIO
 from pathlib import Path
 import sys
+from zipfile import ZipFile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "examples"))
 from native_worker import NativeWorker
@@ -92,6 +94,131 @@ def selection_formatting(library):
             assert direct["formatting"] == empty["formatting"], direct
         finally:
             worker.host.call("close", handle)
+
+
+def page_setup(library):
+    with NativeWorker(library) as worker:
+        def send(**command):
+            return worker.wait(worker.submit(command))
+
+        def accepted(**command):
+            result = send(**command)
+            assert result["ok"], result
+            return result
+
+        def read(**location):
+            response = accepted(op="pageSetup", target=target, **location)
+            assert response["kind"] == "pageSetup" and response["target"] == target, response
+            return response["pageSetup"]
+
+        def apply(settings, section=0):
+            return send(op="executeCommand", target=target, command={
+                "command": "setPageSetup", "section": section, "settings": settings,
+            })
+
+        assert worker.host.call("capabilities")["pageSetup"]
+        info = accepted(op="new", replace=None)["info"]
+        target = {"documentId": info["documentId"], "revision": info["revision"]}
+        initial = read(page=0)
+        assert initial["section"] == 0 and initial == read(section=0), initial
+        assert initial["settings"]["width"] == 59528 and initial["settings"]["height"] == 84186, initial
+        assert accepted(op="info")["info"] == info
+        start = initial["startPosition"]
+        assert start == {"section": 0, "paragraph": 0, "scalarOffset": 0, "cellPath": []}, start
+        for locator in ({}, {"page": 0, "section": 0}, {"page": 1}, {"section": 1}):
+            error = send(op="pageSetup", target=target, **locator)
+            assert not error["ok"] and error["code"] == "invalidArgument", error
+
+        settings = {**initial["settings"], "width": 67500, "height": 90000, "landscape": True,
+                    "marginLeft": 5000, "marginRight": 6000, "marginTop": 7000,
+                    "marginBottom": 3500, "marginHeader": 2200, "marginFooter": 1800,
+                    "marginGutter": 850, "binding": 1}
+        selection = {"anchor": start, "focus": start}
+        accepted(op="beginEdit", target=target, selection=selection)
+        before = accepted(op="info")["info"]
+        old_size = accepted(op="pageSize", target=target, page=0)["size"]
+        for invalid in ({"width": 0}, {"height": 288001}, {"binding": 3},
+                        {"marginGutter": 2**32 - 1}, {"marginFooter": settings["width"]}):
+            rejected = apply({**settings, **invalid})
+            assert not rejected["ok"] and rejected["code"] == "invalidArgument", rejected
+        bad_section = apply(settings, section=1)
+        assert not bad_section["ok"] and bad_section["code"] == "invalidArgument", bad_section
+        unchanged = apply(initial["settings"])["outcome"]
+        assert not unchanged["documentChanged"] and not unchanged["historyChanged"], unchanged
+        assert accepted(op="info")["info"] == before and read(page=0) == initial
+
+        stale = target.copy()
+        changed = apply(settings)
+        assert changed["ok"] and changed["kind"] == "command", changed
+        outcome = changed["outcome"]
+        assert outcome["selection"] == selection and outcome["revision"] == target["revision"] + 1, outcome
+        assert outcome["documentChanged"] and outcome["historyChanged"], outcome
+        target["revision"] = outcome["revision"]
+        assert read(page=0)["settings"] == settings
+        assert accepted(op="pageSize", target=target, page=0)["size"] == {"width": 1200.0, "height": 900.0}
+        assert send(op="pageSetup", target=stale, page=0)["code"] == "staleRevision"
+
+        for file_format in ("hwp", "hwpx"):
+            prepared = accepted(op="prepareSave", target=target, format=file_format)
+            handle = worker.host.open_bytes(worker.copy_buffer(prepared))
+            try:
+                direct = worker.host.request(handle, op="pageSetup", expectedRevision=0, page=0)
+                assert direct["kind"] == "pageSetup" and direct["revision"] == 0, direct
+                assert direct["pageSetup"]["settings"] == settings, direct
+            finally:
+                worker.host.call("close", handle)
+            accepted(op="cancelSave", documentId=target["documentId"], token=prepared["token"])
+
+        undone = accepted(op="undo", target=target)["outcome"]
+        target["revision"] = undone["revision"]
+        assert undone["selection"] == selection and read(section=0) == initial, undone
+        assert not accepted(op="info")["info"]["canUndo"]
+        assert accepted(op="pageSize", target=target, page=0)["size"] == old_size
+        redone = accepted(op="redo", target=target)["outcome"]
+        target["revision"] = redone["revision"]
+        assert redone["selection"] == selection and read(section=0)["settings"] == settings, redone
+
+        handle = worker.host.open_bytes()
+        try:
+            worker.host.request(handle, op="beginEdit", expectedRevision=0, selection=selection)
+            direct = worker.host.request(handle, op="executeCommand", expectedRevision=0,
+                                         command={"command": "setPageSetup", "section": 0, "settings": settings})
+            revision = direct["outcome"]["revision"]
+            read_back = worker.host.request(handle, op="pageSetup", expectedRevision=revision, section=0)
+            assert read_back["pageSetup"]["settings"] == settings, read_back
+        finally:
+            worker.host.call("close", handle)
+
+        # Duplicate the existing blank section in memory. Applying settings to
+        # its page must keep the original section's paper and selection intact.
+        fixture = Path(__file__).resolve().parents[3] / "saved/blank_hwpx.hwpx"
+        package = BytesIO()
+        with ZipFile(fixture) as source, ZipFile(package, "w") as result:
+            second_section = source.read("Contents/section0.xml")
+            for entry in source.infolist():
+                data = source.read(entry)
+                if entry.filename == "Contents/header.xml":
+                    data = data.replace(b'secCnt="1"', b'secCnt="2"')
+                if entry.filename == "Contents/content.hpf":
+                    data = data.replace(b"</opf:manifest>", b'<opf:item id="section1" '
+                                        b'href="Contents/section1.xml" media-type="application/xml"/>'
+                                        b"</opf:manifest>")
+                    data = data.replace(b"</opf:spine>", b'<opf:itemref idref="section1"/></opf:spine>')
+                result.writestr(entry, data)
+            result.writestr("Contents/section1.xml", second_section)
+
+        opened = worker.wait(worker.open_bytes(package.getvalue(), replace=target))
+        assert opened["ok"] and opened["info"]["pageCount"] == 2, opened
+        info = opened["info"]
+        target = {"documentId": info["documentId"], "revision": info["revision"]}
+        first, second = read(page=0), read(page=1)
+        assert first["section"] == 0 and second["section"] == 1
+        assert second == read(section=1) and second["startPosition"]["section"] == 1
+        accepted(op="beginEdit", target=target, selection=selection)
+        changed = apply(settings, section=second["section"])
+        assert changed["ok"] and changed["outcome"]["selection"] == selection, changed
+        target["revision"] = changed["outcome"]["revision"]
+        assert read(page=0) == first and read(page=1)["settings"] == settings
 
 
 def run(library):
@@ -302,3 +429,4 @@ if __name__ == "__main__":
     selection_formatting(library)
     table_navigation(library)
     table_creation(library)
+    page_setup(library)

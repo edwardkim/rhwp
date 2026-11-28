@@ -199,6 +199,11 @@ enum Request {
         font_generation: u64,
         selection: NativeTextSelection,
     },
+    PageSetup {
+        expected_revision: u64,
+        page: Option<u32>,
+        section: Option<u32>,
+    },
     ReplaceAllMatches {
         expected_revision: u64,
         request: NativeSearchRequest,
@@ -616,6 +621,9 @@ fn worker_output(host: &mut Host, worker: u64, output: NativeRuntimeOutput) -> V
                 json!({"ok":true,"kind":"selectionFormatting","target":target,
                     "fontGeneration":font_generation,"selection":selection,"formatting":formatting})
             }
+            NativeRuntimeOutput::PageSetup { target, page_setup } => {
+                json!({"ok":true,"kind":"pageSetup","target":target,"pageSetup":page_setup})
+            }
             NativeRuntimeOutput::ImeContext(context) => {
                 json!({"ok":true,"kind":"imeContext","context":context})
             }
@@ -854,6 +862,7 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
         "tableCellTextNavigation":true,
         "basicTextFormatting":true,
         "selectionFormatting":true,
+        "pageSetup":true,
         "createTable":true,
         "maxCreateTableRows":MAX_CREATE_TABLE_ROWS,
         "maxCreateTableColumns":MAX_CREATE_TABLE_COLUMNS,
@@ -952,6 +961,10 @@ pub unsafe extern "C" fn rhwp_session_request(
                     let formatting=record.editor_mut()?.selection_formatting(expected_revision,font_generation,&selection)?;
                     Ok(json!({"ok":true,"kind":"selectionFormatting","revision":expected_revision,
                         "fontGeneration":font_generation,"selection":selection,"formatting":formatting}))
+                },
+                Request::PageSetup { expected_revision, page, section } => {
+                    let page_setup = session.page_setup(expected_revision, page, section)?;
+                    Ok(json!({"ok":true,"kind":"pageSetup","revision":expected_revision,"pageSetup":page_setup}))
                 },
                 Request::ReplaceAllMatches {expected_revision, request, text}=>{
                     let result=record.editor_mut()?.replace_all_matches(expected_revision,&request,&text)?;
