@@ -11902,6 +11902,38 @@ pub(crate) fn stored_cell_content_extent_hu(paragraphs: &[Paragraph]) -> Option<
     last.vertical_pos.checked_add(last.line_height)
 }
 
+/// 첫 줄을 수용한 가로 칸의 같은 줄 사다리가 선언한 칸 끝을 넘어가는지 확인한다.
+/// 선언 프레임을 저장 이후의 줄 추가에도 그대로 사용할 수 있는지 판단하는 근거다.
+pub(crate) fn table_cell_lines_exceed_frame(table: &Table) -> bool {
+    table.cells.iter().any(|cell| {
+        let Ok(height) = i32::try_from(cell.height) else {
+            return false;
+        };
+        let Some(first) = cell.paragraphs.first().and_then(|p| p.line_segs.first()) else {
+            return false;
+        };
+        if cell.text_direction != 0
+            || first.vertical_pos < 0
+            || first.line_height <= 0
+            || first.vertical_pos.saturating_add(first.line_height) > height
+            || !stored_cell_content_extent_hu(&cell.paragraphs).is_some_and(|end| end > height)
+        {
+            return false;
+        }
+
+        // 쪽별로 0부터 다시 시작하는 줄의 끝은 칸 전체의 좌표가 아니다.
+        let mut previous = first.vertical_pos;
+        cell.paragraphs
+            .iter()
+            .flat_map(|p| &p.line_segs)
+            .all(|line| {
+                let continues = line.vertical_pos >= previous;
+                previous = line.vertical_pos;
+                continues
+            })
+    })
+}
+
 /// [#8756] 칸 문단의 자리차지 표가 자기 앵커 줄을 아래로 민 저장 형상(`stored_cell_picture_pushed_line_origin_hu`)
 /// 이면 칸 내용의 저장 끝(HWPUNIT)을 돌려준다.
 ///

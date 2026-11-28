@@ -1072,10 +1072,30 @@ impl TypesetEngine {
                     declared_stack_height > 0.0
                         && para_start_height + declared_stack_height <= bounds.0
                 });
+        let placed_sibling_exceeds_saved_cell = || {
+            st.current_items.iter().any(|item| {
+                matches!(item, PageItem::Table { para_index, control_index }
+                    | PageItem::PartialTable { para_index, control_index, .. }
+                    if *para_index == para_idx && *control_index != ctrl_idx
+                        && matches!(&para.controls[*control_index], Control::Table(sibling)
+                            if is_para_topbottom_float(&sibling.common)
+                                && sibling.common.flow_with_text
+                                && !sibling.common.allow_overlap
+                                && crate::renderer::float_placement::table_cell_lines_exceed_frame(sibling)))
+            })
+        };
         let saved_host_line_after_stack_fits = saved_stack_fits_host_origin
             && has_preceding_coanchored_float
             && table_total <= available
-            && !page_has_table_continuation;
+            && !page_has_table_continuation
+            // 저장 앵커는 옛 스택을 증명한다. 현재 표의 칸이 커졌거나
+            // 같은 단에서 앞 형제가 이미 늘어난 공간을 소비한 경우에는
+            // 실제로 남은 예산을 넘겨 통째 수용하는 데 사용할 수 없다.
+            && !(st.current_height + table_total > available
+                && table.common.flow_with_text
+                && !table.common.allow_overlap
+                && (crate::renderer::float_placement::table_cell_lines_exceed_frame(table)
+                    || placed_sibling_exceeds_saved_cell()));
         if std::env::var("RHWP_DIAG_2813").is_ok() {
             eprintln!(
                 "DIAG_2813 pi={} ci={} float={} vis_text={} segs={} real_segs={} bounds={:?} cur_h={:.1} avail={:.1} verdict={}",
@@ -1098,6 +1118,7 @@ impl TypesetEngine {
         // 이월이 실제 발생한 경우에만 placement 기준을 fresh page-local current_height 로
         // 재설정한다. #1860 의 budget_para_start_height 는 별도 예산 계약이므로 불변이다.
         let mut placement_para_start_height = para_start_height;
+        let mut sibling_anchor_stays_in_previous_column = false;
         if is_para_topbottom_float(&table.common)
             && matches!(
                 table.layout_page_break(),
@@ -1126,6 +1147,10 @@ impl TypesetEngine {
                     para_idx, st.section_index, st.current_height
                 );
             }
+            sibling_anchor_stays_in_previous_column = !para_has_visible_text(para)
+                && table.common.flow_with_text
+                && !table.common.allow_overlap
+                && placed_sibling_exceeds_saved_cell();
             st.advance_column_or_new_page();
             placement_para_start_height = st.current_height;
         }
@@ -2693,11 +2718,18 @@ impl TypesetEngine {
                     .min_by_key(|((_, control), _)| *control)
                     .map_or(st.current_height, |(_, placement)| placement.anchor_y)
             };
-            let natural_top = host_origin
-                + hwpunit_to_px(
-                    signed_hwpunit(table.common.vertical_offset).max(0),
-                    self.dpi,
-                );
+            // 다음 단을 이 표만으로 열면 앞 단의 형제 원점에서 쟀던
+            // 오프셋은 이미 소비됐다.
+            let vertical_offset =
+                if sibling_anchor_stays_in_previous_column && st.current_items.is_empty() {
+                    0.0
+                } else {
+                    hwpunit_to_px(
+                        signed_hwpunit(table.common.vertical_offset).max(0),
+                        self.dpi,
+                    )
+                };
+            let natural_top = host_origin + vertical_offset;
             crate::renderer::float_placement::ParagraphFloatPlacement::from_empty_sibling_box(
                 para,
                 table,
