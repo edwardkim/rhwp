@@ -66,7 +66,19 @@ internal sealed partial class NativeWorkerDispatcher
         }, cancellation);
 
     public Task<TextHit?> HitTestAsync(PageInfo page, double x, double y, CancellationToken cancellation) =>
-        Query<TextHit>(new { op = "hitTest", target = page.Target, page.Page, x, y }, "hit", cancellation);
+        Dispatch<TextHit?>(token =>
+        {
+            try
+            {
+                return Submit(EnsureWorker(), new { op = "hitTest", target = page.Target, page.Page, x, y },
+                    token, interactive: true).GetProperty("hit").Deserialize<TextHit>(WireJson);
+            }
+            catch (NativeRequestException error) when (error.Code == "unsupported")
+            {
+                // Text hit testing has no caret for object controls or text boxes.
+                return null;
+            }
+        }, cancellation);
 
     public Task<PageCaret?> CaretAsync(DocumentTarget expected, TextPosition position, CancellationToken cancellation) =>
         Query<PageCaret>(new { op = "caretRect", target = expected, position }, "caret", cancellation);

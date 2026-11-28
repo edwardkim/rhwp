@@ -410,6 +410,11 @@ internal sealed partial class NativeWorkerDispatcher
     private static void RequireSuccess(JsonElement result)
     {
         if (!result.GetProperty("ok").GetBoolean())
-            throw new InvalidOperationException($"{result.GetProperty("error").GetString()} ({result.GetProperty("code").GetString()})");
+            throw new NativeRequestException(result.GetProperty("code").GetString(), result.GetProperty("error").GetString());
+    }
+
+    private sealed class NativeRequestException(string? code, string? message) : InvalidOperationException($"{message} ({code})")
+    {
+        public string? Code { get; } = code;
     }
 }

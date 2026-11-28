@@ -150,13 +150,13 @@ public sealed partial class MainWindow
                 : Task.CompletedTask);
     }
 
-    private async Task MovePointerSelectionAsync(PageInfo original, Point location, bool extend)
+    private async Task<bool> MovePointerSelectionAsync(PageInfo original, Point location, bool extend)
     {
         if (!extend)
             dragAnchor = null;
         if (page is not PageInfo activePage || activePage.Target.DocumentId != original.Target.DocumentId ||
             continuousPages is not { } layout || !layout.TryGet(original.Page, out PagePlacement placement))
-            return;
+            return false;
 
         CancellationToken token = CancellationToken.None;
         PageInfo current = layout.Measured(activePage, placement.Index) ??
@@ -169,21 +169,21 @@ public sealed partial class MainWindow
         }
         else if (location.X >= current.Width || location.Y >= current.Height)
         {
-            return;
+            return false;
         }
 
         TextHit? hit = await worker.HitTestAsync(current, location.X, location.Y, token);
         if (hit?.Caret is not PageCaret caret || caret.Page != current.Page)
-            return;
+            return false;
 
         if (!extend)
             dragAnchor = hit.Position;
         if (dragAnchor is not TextPosition anchor || anchor.Section != hit.Position.Section)
-            return;
+            return false;
         if ((anchor.CellPath.Length != 0 || hit.Position.CellPath.Length != 0) &&
             !SharesTextLeaf(anchor, hit.Position) &&
             (!SharesTableCell(anchor, hit.Position) || !await worker.SupportsCellParagraphSelectionAsync(token)))
-            return;
+            return false;
 
         var selection = new TextSelection(anchor, hit.Position);
         if (editorInfo is { Editing: true } active && active.Target == current.Target)
@@ -205,6 +205,7 @@ public sealed partial class MainWindow
         preferredX = null;
         directEditing = true;
         await UpdateDirectGeometryAsync(followCaret: false, focus: !extend);
+        return true;
     }
 
     private static bool SharesTextLeaf(TextPosition left, TextPosition right) =>

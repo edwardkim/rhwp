@@ -335,7 +335,7 @@
                           AutomationProperties.AutomationId="DocumentViewport">
                 <local:DocumentCanvas x:Name="PageCanvas" HorizontalAlignment="Center" VerticalAlignment="Top"
                                       Width="0" Height="0" IsTabStop="True" KeyDown="OnPageEditKeyDown"
-                                      Background="Transparent" Tapped="OnPageTapped"
+                                      Background="Transparent" Tapped="OnPageTapped" RightTapped="OnPageRightTapped"
                                       PointerPressed="OnPagePointerPressed" PointerMoved="OnPagePointerMoved"
                                       PointerReleased="OnPagePointerReleased" PointerCaptureLost="OnPagePointerCaptureLost"
                                       AutomationProperties.AutomationId="DocumentCanvas">
