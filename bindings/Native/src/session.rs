@@ -829,6 +829,7 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
         "atomicImeEdits":true,
         "workerTextSearch":true,
         "accessibilityCellLayout":true,
+        "accessibilityPageSnapshots":true,
         "worker":true,"maxWorkers":4,"hostRequests":true,"viewState":true,"accessibilitySnapshots":true,"threadAffine":true,"maxSessions":MAX_SESSIONS,"maxDocumentBytes":MAX_DOCUMENT_BYTES,
         "maxRequestBytes":MAX_REQUEST_BYTES,"maxBufferBytes":MAX_BUFFER_BYTES,
         "livePdfExport":cfg!(feature="native-skia"),
