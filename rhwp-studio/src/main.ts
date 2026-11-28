@@ -37,7 +37,8 @@ import { CommandDispatcher } from '@/command/dispatcher';
 import type { EditorContext, CommandServices, EditorEditMode } from '@/command/types';
 import { defaultShortcuts, matchShortcut } from '@/command/shortcut-map';
 import { handleDocumentSelectAllShortcut, isTextEditingTarget } from '@/command/document-shortcut-guard';
-import { confirmSaveBeforeReplacingDocument, fileCommands } from '@/command/commands/file';
+import { confirmSaveBeforeReplacingDocument, fileCommands, flushDeferredPaginationBeforeExplicitOutput } from '@/command/commands/file';
+import { exportDocumentWithReportForFormat } from '@/command/save-document-format';
 import { editCommands } from '@/command/commands/edit';
 import { syncClipMenu, syncTextMarkMenu, syncToolboxMenu, viewCommands } from '@/command/commands/view';
 import { formatCommands } from '@/command/commands/format';
@@ -125,10 +126,13 @@ import { DocumentAgentController } from '@/document-agent/controller';
 import { initI18n, t } from '@/i18n/index.ts';
 import { SidePanelController, createDomSidePanelView } from '@/view/side-panel-host';
 import { navigateToSearchHit } from '@/ui/find-dialog';
+import { DesktopHost, getDesktopTransport, isDesktopFormat, type DesktopState } from '@/desktop/desktop-host';
 
 // 언어팩 초기화 — 정적 마크업의 라벨을 결정된 로케일로 갱신한다. 카탈로그에 없는 키는
 // 원문(ko)으로 물러나므로 번역이 없는 상태에서도 화면은 도입 전과 같다.
 initI18n();
+
+const desktopTransport = getDesktopTransport(window);
 
 const wasm = new WasmBridge();
 installDocumentTitle(wasm);
@@ -142,7 +146,7 @@ Object.defineProperty(window, 'rhwpCommandErrors', { value: Object.freeze({
   inspect: inspectCommandError,
   getState: () => inputHandler?.getCommandErrorState() ?? null,
 }), configurable: true });
-documentState.installBeforeUnload(window);
+if (!desktopTransport) documentState.installBeforeUnload(window);
 const autosaveManager = new AutosaveManager({
   exportBytes: () => wasm.exportHwp(),
   // No plaintext persistence: protected documents need a session-only recovery key.
@@ -218,6 +222,8 @@ let rendererRuntimeRequest: EmbedRendererRuntimeRequestV1 | null = null;
 let renderBackendFallbackReason: RenderBackendFallbackReason | null = null;
 let rendererInitializationError: string | null = null;
 let rendererInitialized = false;
+let startupDocumentFlow: Promise<void> | undefined;
+let desktopHost: DesktopHost | undefined;
 let extensionViewerSettings: ExtensionViewerSettings = {
   disableExternalWebFonts: false,
 };
@@ -307,6 +313,7 @@ const commandServices: CommandServices = {
   eventBus,
   wasm,
   documentState,
+  get desktopFiles() { return desktopHost; },
   getContext,
   getInputHandler: () => inputHandler,
   getViewportManager: () => canvasView?.getViewportManager() ?? null,
@@ -925,7 +932,7 @@ async function initialize(): Promise<void> {
     setupGlobalShortcuts();
     // 시작 진입점은 순서를 지켜야 한다 — ?url= 로드와 자동저장 복구가 문서를 열 기회를
     // 먼저 갖고, 아무도 열지 않았을 때만 빈 문서를 연다.
-    void (async () => {
+    startupDocumentFlow = (async () => {
       await loadFromUrlParam();
       // embed 프로파일: 자동저장 복구 다이얼로그의 드래프트 복원도 호스트가 감지할 수
       // 없는 문서 교체 경로이므로 띄우지 않는다 (드래프트 기록 자체는 유지).
@@ -1690,7 +1697,12 @@ function passwordOpenFailure(error: unknown): Error {
  * 일반 열기를 먼저 시도하고, 지원되는 HWP3/HWP5 암호 문서가 감지된 경우에만 암호
  * 입력 UI로 전환한다. 암호 문자열은 이 함수의 단일 시도 범위를 벗어나 보관하지 않는다.
  */
-async function openPasswordProtectedDocument(data: Uint8Array, fileName: string, signal: AbortSignal): Promise<void> {
+async function openPasswordProtectedDocument(
+  data: Uint8Array,
+  fileName: string,
+  signal: AbortSignal,
+  validateBeforeOpen?: () => Promise<void>,
+): Promise<void> {
   let retryMessage: string | undefined;
   const generation = wasm.documentGeneration;
 
@@ -1703,6 +1715,7 @@ async function openPasswordProtectedDocument(data: Uint8Array, fileName: string,
     try {
       if (wasm.documentGeneration !== generation) throw new DocumentOpenCancelledError();
       cipher = await RecoveryCipher.create(password);
+      if (validateBeforeOpen) await validateBeforeOpen();
       signal.throwIfAborted();
       if (wasm.documentGeneration !== generation) throw new DocumentOpenCancelledError();
       wasm.loadDocumentWithPassword(data, password, fileName);
@@ -1728,13 +1741,20 @@ async function openPasswordProtectedDocument(data: Uint8Array, fileName: string,
   }
 }
 
-async function loadDocumentForOpen(data: Uint8Array, fileName: string, openSignal: AbortSignal, pdfSource?: PdfInputSource): Promise<DocumentInfo> {
+async function loadDocumentForOpen(
+  data: Uint8Array,
+  fileName: string,
+  openSignal: AbortSignal,
+  pdfSource?: PdfInputSource,
+  validateBeforeOpen?: () => Promise<void>,
+): Promise<DocumentInfo> {
   if (pdfSource || isPdfInput(data, fileName)) {
     if (!wasm.hasPdfImportCapability()) throw new Error('PDF_IMPORT_DISABLED: 이 빌드에서는 PDF 가져오기를 사용할 수 없습니다.');
     const generation = wasm.documentGeneration;
     let imported: DocumentInfo | undefined;
     await showPdfImportDialog(pdfSource ?? { byteLength: data.byteLength, read: async () => data },
       fileName, options => wasm.getPdfImportPolicy(options), async (prepared, signal) => {
+        if (validateBeforeOpen) await validateBeforeOpen();
         openSignal.throwIfAborted();
         imported = await wasm.loadImportedPdf(prepared, fileName, signal, generation);
       }, userSettings.getPdfImportLayout());
@@ -1746,7 +1766,7 @@ async function loadDocumentForOpen(data: Uint8Array, fileName: string, openSigna
     return wasm.loadDocument(data, fileName);
   } catch (error) {
     if (!isPasswordRequiredError(error)) throw error;
-    await openPasswordProtectedDocument(data, fileName, openSignal);
+    await openPasswordProtectedDocument(data, fileName, openSignal, validateBeforeOpen);
     return wasm.getDocumentInfo();
   }
 }
@@ -1841,7 +1861,7 @@ async function loadBytes(
       sbMessage().textContent = 'PDF 가져오기';
       await options.validateBeforeOpen?.();
       signal.throwIfAborted();
-      imported = await loadDocumentForOpen(data, fileName, signal, options.pdfSource);
+      imported = await loadDocumentForOpen(data, fileName, signal, options.pdfSource, options.validateBeforeOpen);
       signal.throwIfAborted();
     }
     // 일반 문서의 파싱·쪽 계산과 성공한 PDF의 뷰 초기화 동안 대기 커서를 든다.
@@ -1857,7 +1877,7 @@ async function loadBytes(
         await options.validateBeforeOpen?.();
       }
       signal.throwIfAborted();
-      const docInfo = imported ?? await loadDocumentForOpen(data, fileName, signal);
+      const docInfo = imported ?? await loadDocumentForOpen(data, fileName, signal, undefined, options.validateBeforeOpen);
       signal.throwIfAborted();
       if (options.recoveryCipher) {
         wasm.requiresPasswordForSave = true;
@@ -2298,13 +2318,121 @@ function showLoadError(error: unknown): void {
 }
 
 const initPromise = initialize();
+
+if (desktopTransport) {
+  let savedFormat: { documentEpoch: number; format: 'hwp' | 'hwpx' } | undefined;
+  let composing = false;
+  document.addEventListener('compositionstart', () => { composing = true; }, true);
+  document.addEventListener('compositionend', () => { composing = false; }, true);
+
+  const state = (): DesktopState => {
+    const hasDocument = wasm.hasLoadedDocument();
+    const revision = documentAgent?.getDocumentRevision() ?? { documentEpoch: 0, changeSeq: 0 };
+    const sourceFormat = wasm.getSourceFormat();
+    const format = savedFormat?.documentEpoch === revision.documentEpoch
+      ? savedFormat.format : isDesktopFormat(sourceFormat) ? sourceFormat : null;
+    return {
+      ...revision,
+      hasDocument,
+      fileName: hasDocument ? wasm.fileName : '',
+      format: hasDocument ? format : null,
+      dirty: documentState.isDirty(),
+      canNativeSave: hasDocument && isDesktopFormat(sourceFormat) && !wasm.requiresPasswordForSave,
+    };
+  };
+
+  const host = new DesktopHost(desktopTransport, {
+    state,
+    async load(bytes, fileName, validate) {
+      try {
+        await loadBytes(bytes, fileName, null, performance.now(), {
+          validateBeforeOpen: async () => validate(),
+        });
+      } catch (error) {
+        restoreViewAfterFailedOpen();
+        if (isDocumentOpenCancelled(error)) throw new Error('문서 열기가 취소되었습니다.');
+        throw error;
+      }
+    },
+    export(format) {
+      flushDeferredPaginationBeforeExplicitOutput(commandServices, 'desktop-save');
+      const artifact = exportDocumentWithReportForFormat(wasm, format);
+      if (artifact.contentLoss && artifact.contentLoss.count > 0) {
+        throw new Error(`문서 요소 ${artifact.contentLoss.count}개를 저장 형식에 보존할 수 없습니다.`);
+      }
+      return artifact.bytes;
+    },
+    async saved(fileName, format) {
+      savedFormat = { documentEpoch: state().documentEpoch, format };
+      await completeHostSave(fileName);
+      commandServices.refreshDocumentStatus();
+    },
+    async discard() {
+      documentState.markClean('host-discard');
+      await autosaveManager.discardCurrentDraft('host-discard');
+    },
+    theme(theme) {
+      document.documentElement.dataset.rhwpDesktopTheme = theme;
+      const mode = theme === 'highContrast' ? 'system' : theme;
+      const effective = setThemeMode(mode);
+      eventBus.emit('theme-changed', { mode, effective });
+      eventBus.emit('command-state-changed');
+    },
+    lock() {
+      if (documentOpenSession.pending) throw new Error('문서를 여는 중입니다.');
+      if (composing) throw new Error('글자 입력을 마친 뒤 파일 작업을 다시 시도해 주세요.');
+      const focus = document.activeElement;
+      const wasInert = document.body.inert;
+      const blockShortcuts = (event: KeyboardEvent) => {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      };
+      window.addEventListener('keydown', blockShortcuts, true);
+      document.body.inert = true;
+      return () => {
+        window.removeEventListener('keydown', blockShortcuts, true);
+        document.body.inert = wasInert;
+        if (focus instanceof HTMLElement && focus.isConnected) focus.focus({ preventScroll: true });
+      };
+    },
+  });
+  desktopHost = host;
+
+  const onFileNameChanged = wasm.onFileNameChanged;
+  let notificationQueued = false;
+  const notifyDesktop = () => {
+    if (notificationQueued) return;
+    notificationQueued = true;
+    queueMicrotask(() => {
+      notificationQueued = false;
+      host.notifyChanged();
+    });
+  };
+  wasm.onFileNameChanged = fileName => {
+    onFileNameChanged?.(fileName);
+    notifyDesktop();
+  };
+  eventBus.on('document-dirty-changed', notifyDesktop);
+  eventBus.on('document-mutated', notifyDesktop);
+  eventBus.on('document-agent-changed', notifyDesktop);
+  eventBus.on('document-swapped', notifyDesktop);
+  void initPromise.then(async () => {
+    await startupDocumentFlow;
+    if (rendererInitialized) host.notifyReady();
+    else host.notifyFailed();
+  }).catch(error => {
+    console.error('[desktop] Studio initialization failed', error);
+    host.notifyFailed();
+  });
+}
+
 // 첫 실행이면 스킨 선택을 안내한다 (초기화 성공 후, 임베드 모드 제외).
 // initialize() 는 실패해도 내부에서 삼키고 resolve 하므로, 렌더러가 실제로
 // 준비된 경우에만 띄운다 — 실패 화면 위에 안내가 겹치고 1회성 플래그가
 // 소모되는 것을 막는다.
 void initPromise.then(() => {
   if (!rendererInitialized) return;
-  maybeShowSkinOnboarding();
+  if (!desktopTransport) maybeShowSkinOnboarding();
   // 내장 AI 도우미. 최상위 창의 studio 에서만 자동으로 올린다 — iframe 으로 넣은 studio 는
   // 호스트가 고른 플러그인만 가진다(`plugins.load('ai-assistant')` 로 직접 올릴 수는 있다).
   // 실패해도 편집기는 그대로 쓸 수 있어야 하므로 로그만 남긴다.
