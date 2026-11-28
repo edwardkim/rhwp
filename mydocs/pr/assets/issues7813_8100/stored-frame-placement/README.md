@@ -37,3 +37,22 @@
 내용 위치가 일치하고 마지막 괘선이 한컴 Print보다 약 11px 위에 있다. 원본의 마지막
 빈 줄 끝, 칸 안여백, 표 바깥여백이 후속 빈 문단의 저장 위치를 닫는 관계를 확인했다.
 이 보정과 fresh WASM 재측정을 이어간다.
+
+## #7831 마지막 빈 줄의 물리 높이
+
+19쪽 이어받기에서 0HU로 다시 시작한 셀의 마지막 빈 줄은 64,120HU에서 시작해
+65,020HU에 끝난다. 칸 위아래 안여백 282HU와 표 위아래 바깥여백 282HU를 더하면 바로
+뒤 빈 문단의 저장 위치 65,584HU와 일치한다. 분할 스캔이 수용한 이 상자를 배치가
+사용하고, 가운데 정렬은 같은 저장 빈 줄의 하단을 내용 끝으로 잡는다. 괘선 하단은
+974.2px에서 986.2px로 옮겨졌고, 용지 척도를 반영한 기준은 약 986.0px이다.
+
+2026-11-28 18:19 KST, 96dpi, 색상 경계 보정 전 2px 실루엣의
+[39쪽 Native TSV](7831-terminal-blank-native.tsv)에서 19쪽은 95.62%에서 99.77%로
+올랐다. 22·23·25쪽은 각각 100.00%를 유지했고, 전체 최저는 29쪽 98.25%다.
+
+- 원본 `samples/task2430/1382000_domestic_violence_survey.hwp`
+  SHA-256 `a3c6a227d26c41c7de9aa258f470001a629da90fa606cdddcbd385add43b7381`
+- 기준 `pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf`
+  SHA-256 `8f17972e8f3fe1c15aabd886aceed3bb7e3cd87cba70bd0cb20e2da0eb1861c2`
+- 실행 `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96 --rhwp-bin <고정 Native 실행 파일>`
+  실행 파일 SHA-256 `7aeb7f7031cc303ab63d54465a83c728c3f48db7163eebf47be7d5f7fe23f5bc`

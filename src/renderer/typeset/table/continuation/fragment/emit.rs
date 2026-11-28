@@ -1301,6 +1301,42 @@ impl TypesetEngine {
                     partial_height += extension;
                 }
             }
+            let stored_terminal_blank = (is_continuation
+                && cursor_row == 0
+                && !start_cut_is_block
+                && st.current_height == 0.0)
+                .then(|| {
+                    let [start] = start_cut.as_slice() else { return None; };
+                    let content = layout_engine.stored_terminal_blank_cell_content_hu(
+                        table, *start, styles,
+                    )?;
+                    let padding = table.cells[0].effective_vertical_padding_hu(&table.padding);
+                    let physical = content.checked_add(padding)?;
+                    let next = input.source.paragraphs_all.get(para_idx + 1)?;
+                    let [line] = next.line_segs.as_slice() else { return None; };
+                    let top = crate::renderer::px_to_hwpunit(
+                        host_before_overhead + vert_offset_overhead + bottom_caption_extra,
+                        self.dpi,
+                    );
+                    let bottom = top.checked_add(physical)?
+                        .checked_add(i32::from(table.outer_margin_bottom))?;
+                    let height = hwpunit_to_px(physical, self.dpi);
+                    (line.vertical_pos == bottom
+                        && !is_synthetic_line_seg(line)
+                        && !next.stored_text_partition_is_dirty()
+                        && !next.cell_format_vpos_dirty
+                        && next.column_type == crate::model::paragraph::ColumnBreakType::None
+                        && next.controls.is_empty()
+                        && next.text.is_empty()
+                        && height >= partial_height
+                        && height <= avail_for_rows)
+                        .then_some((height, hwpunit_to_px(bottom, self.dpi)))
+                })
+                .flatten();
+            if let Some((height, _)) = stored_terminal_blank {
+                end_row_height_override = Some(height);
+                partial_height = height;
+            }
             // [#7677] 끝 조각 뒤 흐름이 조각 하단에서 더 내려간 몫(바깥 아래 여백 등) — host
             // 글줄을 예약할 때 배치가 같은 자리에서 시작하도록 넘긴다.
             let mut terminal_host_push = 0.0f64;
@@ -1417,16 +1453,18 @@ impl TypesetEngine {
                     straddle_page_bands: straddle_page_bands.clone(),
                     fragment_row_heights: fragment_rows.clone(),
                     fragment_block_frames: fragment_block_frames.clone(),
-                    end_row_owns_stored_frame: completed_empty_row_frame || closed_carried_row,
+                    end_row_owns_stored_frame: completed_empty_row_frame
+                        || closed_carried_row
+                        || stored_terminal_blank.is_some(),
                 });
                 // 마지막 조각: spacing_after만 포함 (페이지 분할기 engine.rs:1051과 동일)
                 // 호스트 줄 전진과 양의 오프셋은 원래 앵커 조각의 계약이며,
                 // 이어받기 끝에서 다시 더하면 다음 본문을 이중으로 민다(#2439).
-                let occupied = host_before_overhead
-                    + vert_offset_overhead
-                    + partial_height
-                    + bottom_caption_extra
-                    + terminal_outer_bottom_overhead;
+                let occupied = stored_terminal_blank.map_or(
+                    host_before_overhead + vert_offset_overhead + partial_height
+                        + bottom_caption_extra + terminal_outer_bottom_overhead,
+                    |(_, advance)| advance,
+                );
                 let sibling_gap = siblings_emitted
                     .then(|| st.table_flow_successor(para_idx, input.source.paragraphs_all))
                     .flatten()
@@ -1441,7 +1479,8 @@ impl TypesetEngine {
                             true,
                         )
                     });
-                terminal_successor_gap = sibling_gap.or_else(|| {
+                terminal_successor_gap = stored_terminal_blank.map(|_| 0.0)
+                    .or(sibling_gap).or_else(|| {
                     is_continuation
                         .then(|| st.table_flow_successor(para_idx, input.source.paragraphs_all))
                         .flatten()

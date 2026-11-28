@@ -2460,7 +2460,25 @@ impl LayoutEngine {
             let stored_page_content_height = cut_units.and_then(|(start, end)| {
                 self.stored_cell_cut_alignment_height(cell, table, styles, start, end)
             });
-            let centered_content_height = if let Some(height) = stored_closing_content_height {
+            let terminal_blank_content_height = closing_source_frame_owns_alignment
+                .then(|| {
+                    let (start, end) = cut_units?;
+                    if end < self.cell_units(cell, table, styles).len() {
+                        return None;
+                    }
+                    let content = hwpunit_to_px(
+                        self.stored_terminal_blank_cell_content_hu(table, start, styles)?,
+                        self.dpi,
+                    );
+                    let physical = end_row_height_override?;
+                    ((content + pad_top + pad_bottom - physical).abs()
+                        <= hwpunit_to_px(1, self.dpi))
+                        .then_some(content)
+                })
+                .flatten();
+            let centered_content_height = if let Some(height) =
+                terminal_blank_content_height.or(stored_closing_content_height)
+            {
                 height
             } else if let Some(height) = atomic_opening_alignment_height.or(stored_before_nested_block_height) {
                 height
