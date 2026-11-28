@@ -1,0 +1,258 @@
+{
+  "source_head": "592e625dda60d88181777f892878fe4d8d6f6364",
+  "base": "274ae9d4c83154e06da049c90eed6904a8b2ec89",
+  "baseline_sha256": "8141acb297ce2f39148f9014e463986431d266120629e8f368665e5917138f9d",
+  "native_sha256": "98d952901d7bfa8eda0f3ec35165684e42d29e2c2a12302cc8aa494e027f43e4",
+  "wasm_sha256": "0948dfb6e5a9efdae96ad4ddcd211fb39875cf28e9d6e5b1ad78589c48fd4411",
+  "contributor": [
+    {
+      "document_id": "52ee61fe7201e36b",
+      "input": {
+        "path": "samples/re-03-latin-only-hancom.hwp",
+        "sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+        "bytes": 9216
+      },
+      "pdf": {
+        "path": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+        "sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+        "bytes": 11752
+      },
+      "backend": "native",
+      "page_count": 1,
+      "minimum_display": "100.00",
+      "minimum_raw": "100.0",
+      "tsv": {
+        "file": "re-03-latin-only-hancom-native.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "review": {
+        "file": "re-03-latin-only-hancom-native-review.png",
+        "sha256": "c49ffdc9736e6a1080efa55e305e520c8a55c6437546dc00366a0f6bae2ec168"
+      },
+      "overlay": {
+        "file": "re-03-latin-only-hancom-native-overlay.png",
+        "sha256": "dccee7d8474d59cb01d6038d889055f45ae3d7c8115e0b096094f8587e82d4ee"
+      }
+    },
+    {
+      "document_id": "52ee61fe7201e36b",
+      "input": {
+        "path": "samples/re-03-latin-only-hancom.hwp",
+        "sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+        "bytes": 9216
+      },
+      "pdf": {
+        "path": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+        "sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+        "bytes": 11752
+      },
+      "backend": "wasm",
+      "page_count": 1,
+      "minimum_display": "100.00",
+      "minimum_raw": "100.0",
+      "tsv": {
+        "file": "re-03-latin-only-hancom-wasm.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "review": {
+        "file": "re-03-latin-only-hancom-wasm-review.png",
+        "sha256": "03a40c5dd59b3589afd07e296b71d34e41721da5d247700fb2cad41b5523de23"
+      },
+      "overlay": {
+        "file": "re-03-latin-only-hancom-wasm-overlay.png",
+        "sha256": "2f00dc3260c3bddfa1c3958794cc16b1a0c01b6b4f14674f7bc26478c9081a59"
+      }
+    },
+    {
+      "document_id": "59f6ab1155623bda",
+      "input": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+        "sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+        "bytes": 6848
+      },
+      "pdf": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+        "sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+        "bytes": 10328
+      },
+      "backend": "native",
+      "page_count": 1,
+      "minimum_display": "100.00",
+      "minimum_raw": "100.0",
+      "tsv": {
+        "file": "angle-2400-native.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "review": {
+        "file": "angle-2400-native-review.png",
+        "sha256": "b7305cd737d65244eda0792781a2277f04956a68fea3fba540033679c5f8aa3d"
+      },
+      "overlay": {
+        "file": "angle-2400-native-overlay.png",
+        "sha256": "a8a9c21bc7382a231ac300d91244f1b5114f39d8758a2b57a440df351181c2b2"
+      }
+    },
+    {
+      "document_id": "59f6ab1155623bda",
+      "input": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+        "sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+        "bytes": 6848
+      },
+      "pdf": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+        "sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+        "bytes": 10328
+      },
+      "backend": "wasm",
+      "page_count": 1,
+      "minimum_display": "100.00",
+      "minimum_raw": "100.0",
+      "tsv": {
+        "file": "angle-2400-wasm.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "review": {
+        "file": "angle-2400-wasm-review.png",
+        "sha256": "9a419983ea99526735522a7a75d92e627727357d235a1805c7bb4bbd24aeb477"
+      },
+      "overlay": {
+        "file": "angle-2400-wasm-overlay.png",
+        "sha256": "ccb4abe863c7d9eb3d7f068b55d416dded20773c13e396d1899778b4ac362b7b"
+      }
+    },
+    {
+      "document_id": "cdacd874b6e6ac66",
+      "input": {
+        "path": "samples/pic-crop-01.hwp",
+        "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+        "bytes": 131072
+      },
+      "pdf": {
+        "path": "pdf/pic-crop-01-2022.pdf",
+        "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+        "bytes": 19211
+      },
+      "backend": "native",
+      "page_count": 1,
+      "minimum_display": "100.00",
+      "minimum_raw": "99.99756",
+      "tsv": {
+        "file": "pic-crop-01-native.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "review": {
+        "file": "pic-crop-01-native-review.png",
+        "sha256": "8ae93a85525666d5df563119a25f43aac3705f9bd003c0aad2da71eb8474ec38"
+      },
+      "overlay": {
+        "file": "pic-crop-01-native-overlay.png",
+        "sha256": "e492665747dd06f00373e8a93934f59652f6eda4af703575e77bd2ec71d8fb34"
+      }
+    },
+    {
+      "document_id": "cdacd874b6e6ac66",
+      "input": {
+        "path": "samples/pic-crop-01.hwp",
+        "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+        "bytes": 131072
+      },
+      "pdf": {
+        "path": "pdf/pic-crop-01-2022.pdf",
+        "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+        "bytes": 19211
+      },
+      "backend": "wasm",
+      "page_count": 1,
+      "minimum_display": "100.00",
+      "minimum_raw": "99.99756",
+      "tsv": {
+        "file": "pic-crop-01-wasm.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "review": {
+        "file": "pic-crop-01-wasm-review.png",
+        "sha256": "8abc67a85b0bab59101a3db8d71ad5f101790ac3fd73149e21915408bccbffbe"
+      },
+      "overlay": {
+        "file": "pic-crop-01-wasm-overlay.png",
+        "sha256": "35a911ebe2d4755ac652a082beed6921272ebb49e6e6605dda0a3b91b0db5626"
+      }
+    },
+    {
+      "document_id": "d03a9dde3d5dc7ac",
+      "input": {
+        "path": "samples/shape-group-02.hwp",
+        "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+        "bytes": 16384
+      },
+      "pdf": {
+        "path": "pdf/shape-group-02-hwp-2020.pdf",
+        "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+        "bytes": 89651
+      },
+      "backend": "native",
+      "page_count": 1,
+      "minimum_display": "100.00",
+      "minimum_raw": "100.0",
+      "tsv": {
+        "file": "shape-group-02-native.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "review": {
+        "file": "shape-group-02-native-review.png",
+        "sha256": "2aa82e664eba1bf96b69864941d873d9f0962caa0b800417f91e5dc741611ee5"
+      },
+      "overlay": {
+        "file": "shape-group-02-native-overlay.png",
+        "sha256": "13aa1d8844d06bd3593d96bcdb19fa5a29e28beebfa28e78dbaf7ea4dcd4de2d"
+      }
+    },
+    {
+      "document_id": "d03a9dde3d5dc7ac",
+      "input": {
+        "path": "samples/shape-group-02.hwp",
+        "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+        "bytes": 16384
+      },
+      "pdf": {
+        "path": "pdf/shape-group-02-hwp-2020.pdf",
+        "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+        "bytes": 89651
+      },
+      "backend": "wasm",
+      "page_count": 1,
+      "minimum_display": "100.00",
+      "minimum_raw": "100.0",
+      "tsv": {
+        "file": "shape-group-02-wasm.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "review": {
+        "file": "shape-group-02-wasm-review.png",
+        "sha256": "60aab5e68772376dd2a2148c6319829729548195a4a0c88a431cbfc4385de467"
+      },
+      "overlay": {
+        "file": "shape-group-02-wasm-overlay.png",
+        "sha256": "eda0ab33f824f0baf982af9ce058789cb72828b57b66359374735c2eccbf49fc"
+      }
+    }
+  ],
+  "handbook_hwpx_native": {
+    "input": {
+      "path": "samples/2025 행정업무운영 편람(최종).hwpx",
+      "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6"
+    },
+    "pdf": {
+      "path": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+      "sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e"
+    },
+    "compat": "2024",
+    "page_count": 383,
+    "minimum": "99.97",
+    "tsv": {
+      "file": "handbook-hwpx-native.tsv",
+      "sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590"
+    }
+  }
+}
