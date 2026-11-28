@@ -282,6 +282,7 @@ public sealed partial class MainWindow : Window
         if (Root.XamlRoot is XamlRoot root)
             root.Changed += OnXamlRootChanged;
         _ = LoadPdfCapabilityAsync();
+        _ = LoadTableCapabilityAsync();
         QueueRender();
         windowLoaded.TrySetResult();
     }
@@ -320,6 +321,7 @@ public sealed partial class MainWindow : Window
         RefreshSearchActions();
         RefreshClipboardActions(available);
         RefreshFormattingActions();
+        RefreshTableActions();
     }
 
     private async void OnClosing(AppWindow sender, AppWindowClosingEventArgs args)

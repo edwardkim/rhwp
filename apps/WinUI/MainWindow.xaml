@@ -88,6 +88,11 @@
                         </MenuFlyoutItem.KeyboardAccelerators>
                     </MenuFlyoutItem>
                 </MenuBarItem>
+                <MenuBarItem x:Name="InsertMenu" Title="삽입" AccessKey="I" Visibility="Collapsed"
+                             AutomationProperties.AutomationId="InsertMenu">
+                    <MenuFlyoutItem x:Name="InsertTableMenuItem" Text="표 삽입…" Click="OnInsertTableClicked"
+                                    IsEnabled="False" AutomationProperties.AutomationId="InsertTable" />
+                </MenuBarItem>
                 <MenuBarItem Title="보기" AccessKey="V" AutomationProperties.AutomationId="ViewMenu">
                     <MenuFlyoutItem x:Name="PreviousPageMenuItem" Text="이전 쪽" Icon="Back"
                                     Click="OnPreviousClicked" IsEnabled="False" />
