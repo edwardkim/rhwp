@@ -117,7 +117,18 @@ LD_LIBRARY_PATH=/path/to/library-dir dotnet run --project apps/WinUI.Smoke -- --
 뒤에 `--live-pdf`를 추가합니다. 현재 둘째 쪽의 출력, 잘못된 revision·글꼴 세대·출력 한도 거부,
 PDF 사본 게시, 미저장 편집과 기존 문서 저장 토큰의 보존을 함께 검사합니다.
 
-Windows 창에서 다음 동작을 확인합니다.
+Windows 데스크톱에서는 EXE의 파일 활성화와 첫 쪽 렌더링, UI Automation 본문 노출을 검사할 수
+있습니다. 이미 저장하지 않은 복구 사본이 있는 프로필에서는 복구 선택을 먼저 끝냅니다.
+입력 문서는 각 형식의 본문 텍스트를 포함해야 합니다.
+
+```powershell
+powershell.exe -NoProfile -File apps/WinUI.Smoke/Verify-Windows.ps1 `
+    -AppPath .\Rhwp.WinUI.exe `
+    -Hwp samples/basic/issue2007_nested_cell_pagination_42065.hwp `
+    -Hwpx samples/issue5599_oracle/3191107_leave_request_form.hwpx
+```
+
+Windows 창에서 다음 동작도 확인합니다.
 
 - 한글 파일명의 여러 쪽 HWP와 HWPX를 교차로 엽니다. 1·2쪽 이동, 확대·축소 및 스크롤 중
   이전 문서나 다른 쪽 픽셀이 나타나지 않는지 확인합니다.

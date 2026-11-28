@@ -363,8 +363,7 @@ public sealed partial class MainWindow : Window
             PageImage.Height = frame.PixelHeight / frame.DeviceScale;
             PageImage.Source = source;
             if (pdfCancellation is null && !InlineEditing && StatusText.Text == RenderingStatus)
-                StatusText.Text = documentError ??
-                    $"{current.Page + 1} / {current.PageCount}쪽 · {(int)Math.Round(zoom * 100)}%";
+                StatusText.Text = documentError ?? string.Empty;
         }
         catch (OperationCanceledException) when (closing || request.IsCancellationRequested)
         {
@@ -388,7 +387,7 @@ public sealed partial class MainWindow : Window
         OpenButton.IsEnabled = available;
         SaveButton.IsEnabled = available && SaveTarget is not null;
         SaveCopyButton.IsEnabled = SaveButton.IsEnabled;
-        ExportPdfButton.Content = pdfCancellation is null ? "현재 쪽 PDF 미리보기" : "PDF 작업 취소";
+        ExportPdfButton.Label = pdfCancellation is null ? "현재 쪽 PDF 미리보기" : "PDF 작업 취소";
         ExportPdfButton.IsEnabled = pdfCancellation is CancellationTokenSource export
             ? !export.IsCancellationRequested
             : available && page is not null && pdfLimits is not null;
@@ -399,6 +398,8 @@ public sealed partial class MainWindow : Window
         ZoomInButton.IsEnabled = available && page is not null && zoom < MaxZoom;
         UndoButton.IsEnabled = available && page is not null && editorInfo?.CanUndo == true;
         RedoButton.IsEnabled = available && page is not null && editorInfo?.CanRedo == true;
+        PagePositionText.Text = page is PageInfo shown ? $"{shown.Page + 1} / {shown.PageCount}쪽" : "";
+        ZoomValueText.Text = page is null ? "" : $"{(int)Math.Round(zoom * 100)}%";
     }
 
     private async void OnClosing(AppWindow sender, AppWindowClosingEventArgs args)
