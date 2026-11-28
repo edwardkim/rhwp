@@ -114,6 +114,70 @@ impl TypesetEngine {
         })
     }
 
+    /// 남은 빈 행 상자와 반복 머리행이 다음 저장 문단의 원점을 닫을 때,
+    /// 내용이 소진된 행도 다음 조각에서 그 물리 공간을 소유한다.
+    pub(super) fn stored_repeated_header_terminal_tail(
+        &self,
+        st: &TypesetState,
+        input: FragmentInput<'_>,
+        row: usize,
+        accepted: f64,
+        header: f64,
+    ) -> Option<f64> {
+        let source = input.source;
+        let table = source.row_geometry_table;
+        if st.col_count != 1
+            || header <= 0.0
+            || !self.stored_header_physical_rows(st, source)
+            || self.render_normalization.row_frame_reflowed(table, row)
+            || table.caption.is_some()
+            || !std::ptr::eq(table, source.table)
+        {
+            return None;
+        }
+        let cells = table.cells.iter().filter(|cell| {
+            let first = usize::from(cell.row);
+            first <= row && row < first + usize::from(cell.row_span)
+        });
+        let height = cells.clone().next()?.height;
+        if height == 0
+            || height > i32::MAX as u32
+            || cells.clone().any(|cell| {
+                usize::from(cell.row) != row
+                    || cell.row_span != 1
+                    || cell.height != height
+                    || cell.dirty_flag
+                    || cell.paragraphs.iter().any(|para| {
+                        para.stored_text_partition_is_dirty() || para.cell_format_vpos_dirty
+                    })
+            })
+            || cells.map(|cell| usize::from(cell.col_span)).sum::<usize>()
+                != usize::from(table.col_count)
+        {
+            return None;
+        }
+        let (_, successor) = st.table_flow_successor(source.para_index, source.paragraphs_all)?;
+        let line = successor.line_segs.first()?;
+        if successor.stored_text_partition_is_dirty()
+            || successor.cell_format_vpos_dirty
+            || crate::renderer::typeset::is_synthetic_line_seg(line)
+            || line.vertical_pos <= 0
+        {
+            return None;
+        }
+        let remainder = hwpunit_to_px(height as i32, self.dpi) - accepted;
+        let outer = hwpunit_to_px(
+            i32::from(table.outer_margin_top) + i32::from(table.outer_margin_bottom),
+            self.dpi,
+        );
+        let next_origin = hwpunit_to_px(line.vertical_pos, self.dpi);
+        let occupied = header + remainder + outer;
+        (remainder > 0.0
+            && occupied <= st.layout.body_area.height
+            && (next_origin - occupied).abs() <= hwpunit_to_px(2, self.dpi))
+            .then_some(remainder)
+    }
+
     /// 쪽 끝 내용 컷에 걸리는 병합 칸의 최소 높이 중 현재 조각이 소유하는 잔여다.
     /// 앞서 수용한 물리 행 상자와 현재 조각을 차감한다. 후속 행으로 이어지는 칸은
     /// 같은 행의 남은 내용과 뒤 행의 높이도 예약한다.

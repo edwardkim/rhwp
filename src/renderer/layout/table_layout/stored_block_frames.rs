@@ -546,6 +546,46 @@ impl LayoutEngine {
         true
     }
 
+    /// 이어받은 병합 셀의 미소비 내용은 자기 행 범위에서 공간을 예약한다.
+    /// 블록에 속하더라도 셀 바깥의 행 높이는 그 셀의 가시 상자가 될 수 없다.
+    pub(crate) fn reserve_block_continuation_span_heights(
+        &self,
+        table: &Table,
+        block: (usize, usize),
+        rows: &mut [f64],
+        start_cut: &[usize],
+        end_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) {
+        let (first, end) = block;
+        let mut cells = Self::row_block_cells(table, first, end);
+        cells.sort_by_key(|cell| (cell.row, cell.col));
+        let mut spans: Vec<_> = cells
+            .into_iter()
+            .enumerate()
+            .filter_map(|(index, cell)| {
+                let start = usize::from(cell.row).checked_sub(first)?;
+                let stop = (start + usize::from(cell.row_span)).min(rows.len());
+                (cell.row_span > 1 && start < stop).then_some((stop, start, index, cell))
+            })
+            .collect();
+        // 먼저 끝나는 셀에 배정한 공간은 뒤에서 끝나는 겹친 셀도 사용할 수 있다.
+        spans.sort_by_key(|&(stop, start, index, _)| (stop, start, index));
+        let spacing = crate::renderer::hwpunit_to_px(i32::from(table.cell_spacing), self.dpi);
+        for (stop, start, index, cell) in spans {
+            let su = start_cut.get(index).copied().unwrap_or(0);
+            let eu = end_cut.get(index).copied().unwrap_or(usize::MAX);
+            let required = self.cell_cut_visible_height(cell, table, styles, su, eu);
+            let occupied = rows[start..stop].iter().filter(|&&height| height > 0.0);
+            let gaps = occupied.clone().count().saturating_sub(1);
+            let available = occupied.sum::<f64>() + spacing * gaps as f64;
+            if required - available > super::ROW_CUT_CAPACITY_FP_EPSILON_PX {
+                let last = (start..stop).rfind(|&row| rows[row] > 0.0).unwrap_or(stop - 1);
+                rows[last] += required - available;
+            }
+        }
+    }
+
     /// 앞 조각이 실제 수용한 높이를 원본 행 순서로 차감한다. 남은 내용/안여백은
     /// 최소 높이보다 우선하며 걸침이 끝나는 행에 부족분을 예약한다.
     pub(crate) fn stored_block_remaining_rows(

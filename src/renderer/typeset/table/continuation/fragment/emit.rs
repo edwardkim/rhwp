@@ -1273,6 +1273,27 @@ impl TypesetEngine {
                                 + spacing_before;
                             (stored_px > st.current_height).then_some(stored_px - projected_px)
                         });
+                // 다음 문단이 새 쪽의 시작인 경우에도, 이 조각이 원본 저장
+                // 프레임 재시작으로 열렸다면 선언 행의 잔여를 현재 쪽에 수용한다.
+                let next_para_room = next_para_room.or_else(|| {
+                    let next = input.source.paragraphs_all.get(para_idx + 1)?;
+                    let line = next.line_segs.first()?;
+                    let cell = &table.cells[0];
+                    let &start = start_cut.first()?;
+                    (!st.profile.session_edited()
+                        && st.col_count == 1
+                        && !next.stored_text_partition_is_dirty()
+                        && !next.cell_format_vpos_dirty
+                        && !is_synthetic_line_seg(line)
+                        && line.vertical_pos == 0
+                        && next.controls.is_empty()
+                        && !next.text.trim().is_empty()
+                        && layout_engine.cell_unit_opens_stored_page_frame(
+                            cell, table, styles, start,
+                        )
+                        && remainder <= avail_for_rows)
+                        .then_some(avail_for_rows - partial_height)
+                });
                 let extension =
                     next_para_room.map_or(0.0, |room| (remainder - partial_height).min(room));
                 if extension > 0.5 {
@@ -2042,6 +2063,18 @@ impl TypesetEngine {
                 restart_frame_closes_body: source_restart_frame_closes_body,
             },
         );
+        let source_terminal_header_tail = (is_continuation
+            && end_row == row_count
+            && terminal_cut_consumed
+            && split_block_start.is_none())
+            .then(|| {
+                let row = end_row.checked_sub(1)?;
+                let accepted = continuation.accepted_row_boxes.get(row)?.as_ref()?;
+                self.stored_repeated_header_terminal_tail(
+                    st, input, row, *accepted, budget.header_overhead,
+                )
+            })
+            .flatten();
         // 선언된 첫 개체 상자와 현재 수용한 격자 프레임이 닫히면,
         // 그 안에서 선택한 글줄은 원본 세로 정렬을 소유한다. 남은 본문 전체의
         // 높이나 임의 용량 컷을 현재 프레임으로 대신하지 않는다.
@@ -2183,7 +2216,7 @@ impl TypesetEngine {
             + partial_height
             + fragment_outer_bottom_overhead;
         st.align_flow_to(st.current_height.max(fragment_end));
-        if terminal_cut_consumed {
+        if terminal_cut_consumed && source_terminal_header_tail.is_none() {
             let terminal_successor_gap = is_continuation
                 .then(|| st.table_flow_successor(para_idx, input.source.paragraphs_all))
                 .flatten()
@@ -2430,6 +2463,7 @@ impl TypesetEngine {
                     .then_some(frames.closing_height)
             })
             .or(complete_block_next_height)
+            .or(source_terminal_header_tail)
             .or(source_first_frame_remaining)
             .or_else(|| {
                 layout_engine.stored_inline_picture_closing_row_height(

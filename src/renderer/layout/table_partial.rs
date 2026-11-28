@@ -1779,8 +1779,20 @@ impl LayoutEngine {
                     );
                     start > 0 && end >= units.len()
                 };
+            let stored_before_nested_block_height = (is_continuation
+                && !is_block_split
+                && !start_cut_is_block)
+                .then(|| {
+                    let (start, end) = cut_units?;
+                    self.stored_frame_before_nested_block_content_height(
+                        cell, table, styles, start, end,
+                    )
+                    .filter(|&height| height + pad_top + pad_bottom <= cell_h)
+                })
+                .flatten();
             let frame_owns_alignment = !descendant_owns_closing_band
                 && (ordinary_source_frame_owns_alignment
+                    || stored_before_nested_block_height.is_some()
                     || stored_mixed_opening_frame.is_some()
                     || closing_source_frame_owns_alignment
                     || computed_frame_owns_alignment
@@ -2444,7 +2456,7 @@ impl LayoutEngine {
             });
             let centered_content_height = if let Some(height) = stored_closing_content_height {
                 height
-            } else if let Some(height) = atomic_opening_alignment_height {
+            } else if let Some(height) = atomic_opening_alignment_height.or(stored_before_nested_block_height) {
                 height
             } else if let Some(frame) = &stored_picture_cut_frame {
                 frame.content_height
@@ -7461,17 +7473,23 @@ impl LayoutEngine {
                     {
                         continue;
                     }
+                    if start_block == Some((bs, be)) {
+                        let stop = be.min(row_count).min(end_row);
+                        let end = if end_block == Some((bs, be)) { end_cut } else { &[] };
+                        self.reserve_block_continuation_span_heights(
+                            table,
+                            (bs, be),
+                            &mut row_heights[bs..stop],
+                            start_cut,
+                            end,
+                            styles,
+                        );
+                        continue;
+                    }
                     let mut target = 0.0f64;
                     for c in table.cells.iter().filter(|c| {
                         c.row_span > 1 && (c.row as usize) >= bs && (c.row as usize) < be
                     }) {
-                        let su = if start_block == Some((bs, be)) {
-                            block_cut_index(table, bs, be, c)
-                                .and_then(|i| start_cut.get(i).copied())
-                                .unwrap_or(0)
-                        } else {
-                            0
-                        };
                         let eu = if end_block == Some((bs, be)) {
                             block_cut_index(table, bs, be, c)
                                 .and_then(|i| end_cut.get(i).copied())
@@ -7479,7 +7497,7 @@ impl LayoutEngine {
                         } else {
                             usize::MAX
                         };
-                        target = target.max(self.cell_cut_visible_height(c, table, styles, su, eu));
+                        target = target.max(self.cell_cut_visible_height(c, table, styles, 0, eu));
                     }
                     if target <= 0.0 {
                         continue;

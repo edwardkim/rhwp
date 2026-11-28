@@ -18,6 +18,87 @@ pub(in crate::renderer::layout) enum StoredNestedHostFlow {
 }
 
 impl LayoutEngine {
+    /// 자식 표가 새 쪽에서 시작하더라도 그 host의 저장 줄은 앞쪽 프레임을 닫는다.
+    /// 부모의 수용된 행 상자 안에서 앞쪽 선택 글줄의 정렬 높이를 반환한다.
+    pub(in crate::renderer::layout) fn stored_frame_before_nested_block_content_height(
+        &self,
+        cell: &Cell,
+        table: &Table,
+        styles: &ResolvedStyleSet,
+        start: usize,
+        end: usize,
+    ) -> Option<f64> {
+        use crate::model::{paragraph::LineSeg, table::VerticalAlign};
+        if start == 0
+            || start >= end
+            || cell.dirty_flag
+            || cell.vertical_align != VerticalAlign::Center
+            || !self.profile.get().hwp5_stored_pagination_layout()
+            || self.profile.get().session_edited()
+            || self
+                .render_normalization
+                .borrow()
+                .cell_frame_reflowed(table, cell)
+        {
+            return None;
+        }
+        let units = self.cell_units(cell, table, styles);
+        let first = units.get(start)?;
+        let last = units.get(end - 1)?;
+        let next = units.get(end)?;
+        let child_cut = next.nested_table_fragment.as_ref()?;
+        if !first.page_frame_reset_before
+            || !last.empty_spacer
+            || next.nested_row != Some(0)
+            || child_cut.start_cut.iter().any(|&cut| cut != 0)
+            || units[start + 1..end].iter().any(|unit| {
+                unit.reflowed_line_slot
+                    || unit.page_frame_reset_before
+                    || unit.nested_row.is_some()
+                    || unit.mixed_nested_fragment
+            })
+        {
+            return None;
+        }
+        let first_para = cell.paragraphs.get(first.para_idx)?;
+        let first_line = first_para.line_segs.get(first.vis_start)?;
+        let last_para = cell.paragraphs.get(last.para_idx)?;
+        let previous = last_para.line_segs.get(last.vis_start)?;
+        let host = cell.paragraphs.get(next.para_idx)?;
+        let [Control::Table(child)] = host.controls.as_slice() else {
+            return None;
+        };
+        let [closing] = host.line_segs.as_slice() else {
+            return None;
+        };
+        if [first_para, last_para, host]
+            .into_iter()
+            .any(|para| para.stored_text_partition_is_dirty() || para.cell_format_vpos_dirty)
+            || !host.text.trim().is_empty()
+            || !crate::renderer::float_placement::is_para_topbottom_float(&child.common)
+            || child.common.treat_as_char
+            || [first_line, previous, closing].into_iter().any(|line| {
+                line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                    || line.vertical_pos < 0
+                    || line.line_height <= 0
+            })
+        {
+            return None;
+        }
+        let previous_end = previous
+            .vertical_pos
+            .checked_add(previous.line_height)?
+            .checked_add(previous.line_spacing)?;
+        if previous_end != closing.vertical_pos {
+            return None;
+        }
+        let extent = closing
+            .vertical_pos
+            .checked_add(closing.line_height)?
+            .checked_sub(first_line.vertical_pos)?;
+        (extent > 0).then(|| crate::renderer::hwpunit_to_px(extent, self.dpi))
+    }
+
     pub(in crate::renderer::layout) fn stored_nested_host_physical_flow(
         &self,
         cell: &Cell,
