@@ -19,7 +19,11 @@ public sealed partial class MainWindow
     private bool directEditing;
     private bool directQueueRunning;
     private bool changingInput;
+    private bool inputClearScheduled;
+    private string capturedInputText = "";
+    private string compositionInputPrefix = "";
     private bool platformComposing;
+    private TaskCompletionSource? platformCompositionFinished;
     private bool nativePreviewAvailable;
     private string previewText = "";
     private long previewVersion;
@@ -207,8 +211,19 @@ public sealed partial class MainWindow
 
     private async Task SettleDirectInputAsync()
     {
-        if (platformComposing)
+        if (platformCompositionFinished is { Task: var finished })
+        {
             PageCanvas.Focus(FocusState.Programmatic);
+            try
+            {
+                await finished.WaitAsync(TimeSpan.FromSeconds(1));
+            }
+            catch (TimeoutException)
+            {
+                StatusText.Text = "입력기 조합이 끝난 뒤 다시 시도하세요.";
+            }
+        }
+
         await pendingDirectEdits;
     }
 
@@ -248,16 +263,39 @@ public sealed partial class MainWindow
 
     private void OnDirectTextChanging(TextBox sender, TextBoxTextChangingEventArgs args)
     {
-        if (changingInput || platformComposing || !directEditing || sender.Text.Length == 0)
+        if (changingInput || platformComposing || !directEditing || !CanQueueDirectEdit)
             return;
 
-        string text = sender.Text;
-        EmptyInputControl();
-        EnqueueDirectEdit(() => InsertDirectTextAsync(text));
+        string current = sender.Text;
+        string text = UncapturedInput(current, capturedInputText);
+        capturedInputText = current;
+        if (text.Length != 0)
+            EnqueueDirectEdit(() => InsertDirectTextAsync(text));
+
+        ScheduleInputClear();
+    }
+
+    // Another key or composition can arrive before the posted clear. The
+    // prefix has already been handed off to the document edit queue.
+    private static string UncapturedInput(string current, string prefix) =>
+        current.StartsWith(prefix, StringComparison.Ordinal) ? current[prefix.Length..] : current;
+
+    private void ScheduleInputClear()
+    {
+        if (inputClearScheduled || capturedInputText.Length == 0)
+            return;
+
+        inputClearScheduled = DispatcherQueue.TryEnqueue(() =>
+        {
+            inputClearScheduled = false;
+            if (!platformComposing && DirectInput.Text == capturedInputText)
+                EmptyInputControl();
+        });
     }
 
     private void EmptyInputControl()
     {
+        capturedInputText = "";
         if (DirectInput.Text.Length == 0)
             return;
         changingInput = true;
@@ -284,9 +322,12 @@ public sealed partial class MainWindow
 
     private void OnDirectCompositionStarted(TextBox sender, TextCompositionStartedEventArgs args)
     {
-        if (!directEditing || changingInput || !CanQueueDirectEdit)
+        if (!directEditing || changingInput || platformComposing || !CanQueueDirectEdit)
             return;
+
+        compositionInputPrefix = capturedInputText;
         platformComposing = true;
+        platformCompositionFinished = new(TaskCreationOptions.RunContinuationsAsynchronously);
         previewVersion++;
         EnqueueDirectEdit(BeginNativePreviewAsync);
     }
@@ -297,7 +338,7 @@ public sealed partial class MainWindow
             return;
 
         long version = ++previewVersion;
-        string text = sender.Text;
+        string text = UncapturedInput(sender.Text, compositionInputPrefix);
         EnqueueDirectEdit(() => version == previewVersion ? SetNativePreviewAsync(text, updateView: true) :
             Task.CompletedTask);
     }
@@ -306,11 +347,19 @@ public sealed partial class MainWindow
     {
         if (!platformComposing)
             return;
-        string text = sender.Text;
+        string current = sender.Text;
+        string text = UncapturedInput(current, compositionInputPrefix);
+        TaskCompletionSource? finished = platformCompositionFinished;
+        platformCompositionFinished = null;
+        compositionInputPrefix = "";
         platformComposing = false;
         previewVersion++;
-        EmptyInputControl();
+        capturedInputText = current;
         EnqueueDirectEdit(() => FinishNativePreviewAsync(text));
+        // Leave the TextBox value alone until the platform has finished its
+        // composition callback and has handed off any later keystrokes.
+        ScheduleInputClear();
+        finished?.TrySetResult();
     }
 
     private async Task BeginNativePreviewAsync()
@@ -333,10 +382,24 @@ public sealed partial class MainWindow
             return;
 
         CancellationToken token = CancellationToken.None;
-        ImeEditContext context = await worker.ReadImeEditContextAsync(current.Target, token);
-        Utf16Range range = context.Preedit ?? throw new InvalidOperationException("입력기 조합 범위가 없습니다.");
-        EditResult preview = await worker.ContinueCompositionAsync(current.Target, context,
-            new ImeReplacement(range, text), null, token);
+        EditResult preview;
+        try
+        {
+            ImeEditContext context = await worker.ReadImeEditContextAsync(current.Target, token);
+            Utf16Range range = context.Preedit ?? throw new InvalidOperationException("입력기 조합 범위가 없습니다.");
+            preview = await worker.ContinueCompositionAsync(current.Target, context,
+                new ImeReplacement(range, text), null, token);
+        }
+        catch (InvalidOperationException error) when (
+            error.Message.EndsWith("(limitExceeded)", StringComparison.Ordinal) ||
+            error.Message.EndsWith("(unsupported)", StringComparison.Ordinal))
+        {
+            // Preedit is optional. Restore the original range so the IME's
+            // final text can still be inserted in one committed operation.
+            await CancelNativePreviewAsync();
+            return;
+        }
+
         previewText = text;
         await RefreshEditedPageAsync(current, preview);
         if (updateView)
@@ -345,13 +408,6 @@ public sealed partial class MainWindow
 
     private async Task FinishNativePreviewAsync(string text)
     {
-        if (!nativePreviewAvailable)
-        {
-            if (text.Length != 0)
-                await InsertDirectTextAsync(text);
-            return;
-        }
-
         if (text.Length == 0)
         {
             await CancelNativePreviewAsync();
@@ -359,10 +415,15 @@ public sealed partial class MainWindow
         else
         {
             await SetNativePreviewAsync(text, updateView: false);
-            if (page is PageInfo current && editorInfo?.CompositionId is ulong composition)
+            if (nativePreviewAvailable && page is PageInfo current &&
+                editorInfo?.CompositionId is ulong composition)
             {
                 EditResult edit = await worker.CommitCompositionAsync(current.Target, composition, CancellationToken.None);
                 await RefreshEditedPageAsync(current, edit);
+            }
+            else
+            {
+                await InsertDirectTextAsync(text);
             }
         }
 
@@ -385,7 +446,7 @@ public sealed partial class MainWindow
 
     private async void OnDirectPreviewKeyDown(object sender, KeyRoutedEventArgs args)
     {
-        if (!directEditing)
+        if (!directEditing || KeyDown(VirtualKey.Menu))
             return;
 
         bool control = KeyDown(VirtualKey.Control);
@@ -393,8 +454,8 @@ public sealed partial class MainWindow
         if (control && args.Key == VirtualKey.S)
         {
             args.Handled = true;
-            if (await SaveDocumentAsync(saveAs: shift))
-                RestorePageEditFocus();
+            await SaveDocumentAsync(saveAs: shift);
+            RestorePageEditFocus();
             return;
         }
         if (platformComposing)
@@ -411,6 +472,14 @@ public sealed partial class MainWindow
         {
             args.Handled = true;
             EnqueueClipboardAction(args.Key);
+            return;
+        }
+
+        if (!control && args.Key == VirtualKey.Tab &&
+            editorInfo?.Selection is { Focus.CellPath.Length: > 0 })
+        {
+            args.Handled = true;
+            EnqueueDirectEdit(() => NavigateDirectTableCellAsync(shift));
             return;
         }
 
@@ -439,26 +508,38 @@ public sealed partial class MainWindow
     private static bool KeyDown(VirtualKey key) =>
         (InputKeyboardSource.GetKeyStateForCurrentThread(key) & CoreVirtualKeyStates.Down) != 0;
 
+    private async Task NavigateDirectTableCellAsync(bool previous)
+    {
+        if (page is not PageInfo current || editorInfo?.Selection is not { Focus.CellPath.Length: > 0 })
+            return;
+
+        EditResult edit = await worker.NavigateTableCellAsync(current.Target, previous, CancellationToken.None);
+        preferredX = null;
+        await RefreshEditedPageAsync(current, edit);
+        await UpdateDirectGeometryAsync(followCaret: true);
+    }
+
     private async Task ApplyDirectKeyAsync(NativeEditKey key, bool extendSelection)
     {
         if (page is not PageInfo current || editorInfo?.Selection is not { } selection)
             return;
 
-        if (selection.Focus.CellPath.Length != 0 && key != NativeEditKey.SplitParagraph)
+        CancellationToken token = CancellationToken.None;
+        if (selection.Focus.CellPath.Length != 0 && key != NativeEditKey.SplitParagraph &&
+            !await worker.SupportsCellTextNavigationAsync(token))
         {
             if (key is NativeEditKey.DeleteBackward or NativeEditKey.DeleteForward &&
                 !SamePosition(selection.Anchor, selection.Focus))
             {
-                EditResult removed = await worker.ReplaceAsync(current.Target, "", CancellationToken.None);
+                EditResult removed = await worker.ReplaceAsync(current.Target, "", token);
                 await RefreshEditedPageAsync(current, removed);
                 await UpdateDirectGeometryAsync(followCaret: true);
                 return;
             }
-            StatusText.Text = "표 셀의 방향키와 삭제 명령은 아직 지원 범위가 제한됩니다.";
+            StatusText.Text = "이 Native 라이브러리는 표 셀 방향키와 삭제 명령을 지원하지 않습니다.";
             return;
         }
 
-        CancellationToken token = CancellationToken.None;
         NativeCommandResult result = await worker.ExecuteEditCommandAsync(current.Target, key, token, extendSelection,
             preferredX);
         preferredX = result.PreferredX;
@@ -558,6 +639,9 @@ public sealed partial class MainWindow
     {
         directEditing = false;
         platformComposing = false;
+        platformCompositionFinished?.TrySetResult();
+        platformCompositionFinished = null;
+        compositionInputPrefix = "";
         dragPointer = null;
         dragAnchor = null;
         pointerGesture++;

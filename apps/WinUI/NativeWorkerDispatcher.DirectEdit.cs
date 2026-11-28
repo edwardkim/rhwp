@@ -23,6 +23,27 @@ internal sealed record SelectionRectangle([property: JsonRequired] uint Page, Ca
 
 internal sealed partial class NativeWorkerDispatcher
 {
+    private bool? cellTextNavigation;
+
+    public Task<bool> SupportsCellTextNavigationAsync(CancellationToken cancellation) => Dispatch(_ =>
+    {
+        if (cellTextNavigation is bool supported)
+            return supported;
+
+        using JsonDocument capabilities = ReadSuccess(RhwpNative.SessionCapabilities());
+        supported = HasCapability(capabilities.RootElement, "tableCellTextNavigation");
+        cellTextNavigation = supported;
+        return supported;
+    }, cancellation);
+
+    public Task<EditResult> NavigateTableCellAsync(DocumentTarget expected, bool previous,
+        CancellationToken cancellation) => Dispatch(token =>
+    {
+        JsonElement reply = SubmitEditCommand(expected,
+            new { command = "navigateTableCell", direction = previous ? "previous" : "next" }, token);
+        return AdoptEditOutcome(expected, reply);
+    }, cancellation);
+
     public Task<SelectionRectangle[]> GetSelectionRectanglesAsync(PageInfo page, TextSelection selection,
         CancellationToken cancellation) => Dispatch(token =>
     {
