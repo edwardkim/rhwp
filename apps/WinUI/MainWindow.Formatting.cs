@@ -41,7 +41,7 @@ public sealed partial class MainWindow
         // XAML can raise text notifications while InitializeComponent builds the row.
         // A queued cursor move or edit can briefly leave the page and selection
         // on different revisions. Keep the last settled appearance until it completes.
-        if (ApplyFontSizeButton is null || directQueueRunning)
+        if (ApplyFontSizeButton is null || directQueueRunning || dragPointer is not null)
             return;
 
         bool canAlign = TryGetFormattingSelection(requireSelectedText: false, out _, out TextSelection? selection) &&
@@ -59,8 +59,19 @@ public sealed partial class MainWindow
         RefreshSelectionFormatting(canAlign ? page : null, canAlign ? selection : null);
     }
 
-    private async void OnApplyBoldClicked(SplitButton sender, SplitButtonClickEventArgs args) =>
-        await QueueFormattingAsync(requireSelectedText: true,
+    private async void OnApplyBoldClicked(SplitButton sender, SplitButtonClickEventArgs args) => await ToggleBoldAsync();
+
+    private async void OnBoldAcceleratorInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        if (!ApplyBoldButton.IsEnabled || !DocumentActionsAvailable || dragPointer is not null)
+            return;
+        if (FocusManager.GetFocusedElement(Root.XamlRoot) is TextBox focused && focused != DirectInput)
+            return;
+        args.Handled = true;
+        await ToggleBoldAsync();
+    }
+
+    private Task ToggleBoldAsync() => QueueFormattingAsync(requireSelectedText: true,
             async (current, selection) =>
             {
                 NativeSelectionFormatting? formatting = await worker.GetSelectionFormattingAsync(current.Target,
@@ -130,7 +141,7 @@ public sealed partial class MainWindow
 
     private async Task QueueFormattingAsync(bool requireSelectedText, Func<PageInfo, TextSelection, Task<EditResult>> execute)
     {
-        if (!DocumentActionsAvailable ||
+        if (!DocumentActionsAvailable || dragPointer is not null ||
             !TryGetFormattingSelection(requireSelectedText, out PageInfo? initialPage, out TextSelection? requested))
             return;
 

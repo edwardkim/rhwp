@@ -104,6 +104,8 @@ public sealed partial class MainWindow
 
     private void OnViewChanged(object? sender, ScrollViewerViewChangedEventArgs args)
     {
+        if (HandleGestureZoom(args.IsIntermediate))
+            return;
         UpdateViewportPage();
         QueueRender();
     }
@@ -167,7 +169,7 @@ public sealed partial class MainWindow
     {
         if (closing || renderRequest is not null || page is not PageInfo current ||
             continuousPages is not { } layout || !layout.Matches(current) ||
-            PageScroll.ViewportHeight <= 0 || PageScroll.ViewportWidth <= 0)
+            PageScroll.ViewportHeight <= 0 || PageScroll.ViewportWidth <= 0 || PageScroll.ZoomFactor != 1)
             return;
 
         uint? editedPage = pendingEditRenderPage;
@@ -307,7 +309,7 @@ public sealed partial class MainWindow
         !closing && !request.IsCancellationRequested && ReferenceEquals(continuousPages, layout) &&
         layout.PlacementVersion == placementVersion && page is { } active &&
         active.Target == current.Target && active.FontGeneration == current.FontGeneration &&
-        zoom == renderZoom && (Root.XamlRoot?.RasterizationScale ?? 1) == deviceScale;
+        zoom == renderZoom && PageScroll.ZoomFactor == 1 && (Root.XamlRoot?.RasterizationScale ?? 1) == deviceScale;
 
     private IEnumerable<PagePlacement> VisiblePages(ContinuousPageLayout layout)
     {

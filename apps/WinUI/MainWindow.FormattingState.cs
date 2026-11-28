@@ -54,13 +54,15 @@ public sealed partial class MainWindow
         {
             // Let sustained typing and key repeats use the document worker first.
             await Task.Delay(FormattingReadDelay, request.Token);
-            if (directQueueRunning || !TryGetFormattingSelection(false, out PageInfo? current, out TextSelection? selection) ||
+            if (directQueueRunning || dragPointer is not null ||
+                !TryGetFormattingSelection(false, out PageInfo? current, out TextSelection? selection) ||
                 !context.Matches(current, selection))
                 return;
 
             NativeSelectionFormatting? value = await worker.GetSelectionFormattingAsync(context.Target,
                 context.FontGeneration, context.Selection, request.Token);
-            if (!request.IsCancellationRequested && ReferenceEquals(lastFormattingContext, context) &&
+            if (!request.IsCancellationRequested && !directQueueRunning && dragPointer is null &&
+                ReferenceEquals(lastFormattingContext, context) &&
                 TryGetFormattingSelection(false, out current, out selection) && context.Matches(current, selection))
             {
                 DisplaySelectionFormatting(value);
@@ -91,13 +93,17 @@ public sealed partial class MainWindow
         SetFormattingIndicator(ApplyBoldButton, bold, boldStatus);
 
         bool mixedSize = value?.FontSize.Kind == "mixed";
-        FormattingFontSize.PlaceholderText = mixedSize ? "혼합" : "pt";
-        AutomationProperties.SetItemStatus(FormattingFontSize, mixedSize ? "글자 크기가 혼합되어 있음" : "");
+        string placeholder = mixedSize ? "혼합" : "pt";
+        if (FormattingFontSize.PlaceholderText != placeholder)
+            FormattingFontSize.PlaceholderText = placeholder;
+        SetFormattingItemStatus(FormattingFontSize, mixedSize ? "글자 크기가 혼합되어 있음" : "");
         if (FormattingFontSize.FocusState == FocusState.Unfocused)
         {
-            FormattingFontSize.Text = value?.FontSize is { Kind: "uniform", Value: var size }
+            string text = value?.FontSize is { Kind: "uniform", Value: var size }
                 ? (size / 100m).ToString(CultureInfo.CurrentCulture)
                 : "";
+            if (FormattingFontSize.Text != text)
+                FormattingFontSize.Text = text;
         }
 
         string? alignment = value?.Alignment;
@@ -113,10 +119,18 @@ public sealed partial class MainWindow
 
     private void SetFormattingIndicator(Control control, bool active, string status)
     {
-        if (active)
-            control.BorderBrush = (Brush)Root.Resources["ActiveFormattingBrush"];
-        else
+        Brush accent = (Brush)Root.Resources["ActiveFormattingBrush"];
+        bool emphasized = ReferenceEquals(control.BorderBrush, accent);
+        if (active && !emphasized)
+            control.BorderBrush = accent;
+        else if (!active && emphasized)
             control.ClearValue(Control.BorderBrushProperty);
-        AutomationProperties.SetItemStatus(control, status);
+        SetFormattingItemStatus(control, status);
+    }
+
+    private static void SetFormattingItemStatus(Control control, string status)
+    {
+        if (AutomationProperties.GetItemStatus(control) != status)
+            AutomationProperties.SetItemStatus(control, status);
     }
 }

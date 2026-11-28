@@ -1,4 +1,6 @@
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Input;
+using Windows.System;
 
 namespace Rhwp.WinUI;
 
@@ -9,10 +11,72 @@ public sealed partial class MainWindow
     private ZoomFitMode? zoomFitMode;
     private bool fitResizeScheduled;
     private ulong zoomRequest;
+    private bool applyingGestureZoom;
 
     private void OnZoomOutClicked(object sender, RoutedEventArgs args) => ZoomTo(zoom / 1.25);
     private void OnZoomInClicked(object sender, RoutedEventArgs args) => ZoomTo(zoom * 1.25);
     private void OnActualSizeClicked(object sender, RoutedEventArgs args) => ZoomTo(1);
+
+    private void OnZoomAcceleratorInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        if (!DocumentActionsAvailable || page is null ||
+            (FocusManager.GetFocusedElement(Root.XamlRoot) is Microsoft.UI.Xaml.Controls.TextBox focused &&
+                focused != DirectInput))
+            return;
+
+        args.Handled = true;
+        ZoomTo(sender.Key switch
+        {
+            VirtualKey.Up or VirtualKey.Right or VirtualKey.Add => zoom * 1.25,
+            VirtualKey.Down or VirtualKey.Left or VirtualKey.Subtract => zoom / 1.25,
+            _ => 1,
+        });
+    }
+
+    private bool HandleGestureZoom(bool isIntermediate)
+    {
+        if (applyingGestureZoom)
+            return true;
+        float factor = PageScroll.ZoomFactor;
+        if (factor == 1)
+            return false;
+        if (isIntermediate || closing)
+            return true;
+
+        applyingGestureZoom = true;
+        try
+        {
+            if (page is not { } current || continuousPages is not { } layout || !layout.Matches(current))
+            {
+                PageScroll.ChangeView(null, null, 1, true);
+                return true;
+            }
+
+            // WinUI scales the current visual during the pinch. Fold its scale into
+            // the document's zoom at the end so Skia redraws crisp pixels at that scale.
+            double transient = zoom * factor;
+            double next = Math.Clamp(transient, Math.Min(MinZoom, zoom), MaxZoom);
+            double ratio = next / transient;
+            double left = PageScroll.HorizontalOffset * ratio;
+            double top = PageScroll.VerticalOffset * ratio;
+            zoomRequest++;
+            zoomFitMode = null;
+            renderRequest?.Cancel();
+            zoom = next;
+            UpdatePageExtent(layout);
+            PageScroll.UpdateLayout();
+            PageScroll.ChangeView(left, top, 1, true);
+            UpdateViewportPage();
+            RefreshViewportOverlays(page);
+            RefreshButtons();
+            QueueRender();
+            return true;
+        }
+        finally
+        {
+            applyingGestureZoom = false;
+        }
+    }
 
     private async void OnFitWidthClicked(object sender, RoutedEventArgs args)
     {

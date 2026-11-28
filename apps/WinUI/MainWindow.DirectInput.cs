@@ -76,7 +76,10 @@ public sealed partial class MainWindow
     private void OnPagePointerCaptureLost(object sender, PointerRoutedEventArgs args)
     {
         if (dragPointer == args.Pointer.PointerId)
+        {
             dragPointer = null;
+            RefreshFormattingActions();
+        }
     }
 
     private void OnPageTapped(object sender, TappedRoutedEventArgs args)
@@ -91,7 +94,7 @@ public sealed partial class MainWindow
 
     private void OnPageEditKeyDown(object sender, KeyRoutedEventArgs args)
     {
-        if (args.Key != VirtualKey.F2 || !DocumentActionsAvailable || page is not PageInfo current)
+        if (args.Key != VirtualKey.F2 || KeyDown(VirtualKey.Control) || !DocumentActionsAvailable || page is not PageInfo current)
             return;
 
         args.Handled = true;
@@ -118,7 +121,7 @@ public sealed partial class MainWindow
     {
         current = null!;
         location = default;
-        if (page is not { PageCount: > 0 } active || HasActiveComposition || !CanQueueDirectEdit ||
+        if (page is not { PageCount: > 0 } active || PageScroll.ZoomFactor != 1 || HasActiveComposition || !CanQueueDirectEdit ||
             continuousPages is not { } layout || !layout.Matches(active))
             return false;
 

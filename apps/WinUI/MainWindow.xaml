@@ -18,6 +18,16 @@
             </Style>
             <SolidColorBrush x:Key="ActiveFormattingBrush" Color="{ThemeResource SystemAccentColor}" />
         </Grid.Resources>
+        <Grid.KeyboardAccelerators>
+            <KeyboardAccelerator Key="Up" Modifiers="Control" Invoked="OnZoomAcceleratorInvoked" />
+            <KeyboardAccelerator Key="Right" Modifiers="Control" Invoked="OnZoomAcceleratorInvoked" />
+            <KeyboardAccelerator Key="Down" Modifiers="Control" Invoked="OnZoomAcceleratorInvoked" />
+            <KeyboardAccelerator Key="Left" Modifiers="Control" Invoked="OnZoomAcceleratorInvoked" />
+            <KeyboardAccelerator Key="Add" Modifiers="Control" Invoked="OnZoomAcceleratorInvoked" />
+            <KeyboardAccelerator Key="Subtract" Modifiers="Control" Invoked="OnZoomAcceleratorInvoked" />
+            <KeyboardAccelerator Key="Number0" Modifiers="Control" Invoked="OnZoomAcceleratorInvoked" />
+            <KeyboardAccelerator Key="B" Modifiers="Control" Invoked="OnBoldAcceleratorInvoked" />
+        </Grid.KeyboardAccelerators>
 
         <Border Grid.Row="2" Grid.RowSpan="2" IsHitTestVisible="False"
                 Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
@@ -63,6 +73,8 @@
                     <MenuFlyoutSeparator />
                     <MenuFlyoutItem Text="문서 닫기" Icon="Cancel" Click="OnCloseClicked"
                                     IsEnabled="{x:Bind CloseButton.IsEnabled, Mode=OneWay}" />
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutItem Text="앱 정보" Click="OnAboutClicked" AutomationProperties.AutomationId="AboutApp" />
                 </MenuBarItem>
                 <MenuBarItem Title="편집" AccessKey="E" AutomationProperties.AutomationId="EditMenu">
                     <MenuFlyoutItem Text="실행 취소" Icon="Undo" Click="OnUndoClicked"
@@ -91,6 +103,7 @@
                                     AutomationProperties.AutomationId="ReplaceInDocument">
                         <MenuFlyoutItem.KeyboardAccelerators>
                             <KeyboardAccelerator Key="H" Modifiers="Control" />
+                            <KeyboardAccelerator Key="F2" Modifiers="Control" />
                         </MenuFlyoutItem.KeyboardAccelerators>
                     </MenuFlyoutItem>
                 </MenuBarItem>
@@ -102,7 +115,11 @@
                 <MenuBarItem x:Name="PageMenu" Title="쪽" Visibility="Collapsed"
                              AutomationProperties.AutomationId="PageMenu">
                     <MenuFlyoutItem x:Name="PageSetupMenuItem" Text="쪽 설정…" Click="OnPageSetupClicked"
-                                    IsEnabled="False" AutomationProperties.AutomationId="PageSetup" />
+                                    IsEnabled="False" AutomationProperties.AutomationId="PageSetup">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="F7" />
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
                 </MenuBarItem>
                 <MenuBarItem Title="보기" AccessKey="V" AutomationProperties.AutomationId="ViewMenu">
                     <MenuFlyoutItem x:Name="PreviousPageMenuItem" Text="이전 쪽" Icon="Back"
@@ -111,8 +128,10 @@
                                     Click="OnNextClicked" IsEnabled="False" />
                     <MenuFlyoutSeparator />
                     <MenuFlyoutItem Text="확대" Icon="ZoomIn" Click="OnZoomInClicked"
+                                    KeyboardAcceleratorTextOverride="Ctrl+↑ / Ctrl+→"
                                     IsEnabled="{x:Bind ZoomInButton.IsEnabled, Mode=OneWay}" />
                     <MenuFlyoutItem Text="축소" Icon="ZoomOut" Click="OnZoomOutClicked"
+                                    KeyboardAcceleratorTextOverride="Ctrl+↓ / Ctrl+←"
                                     IsEnabled="{x:Bind ZoomOutButton.IsEnabled, Mode=OneWay}" />
                     <MenuFlyoutSeparator />
                     <MenuFlyoutItem x:Name="FitWidthMenuItem" Text="너비 맞춤" Click="OnFitWidthClicked"
@@ -120,6 +139,7 @@
                     <MenuFlyoutItem x:Name="FitPageMenuItem" Text="쪽 맞춤" Click="OnFitPageClicked"
                                     IsEnabled="False" AutomationProperties.AutomationId="FitWholePage" />
                     <MenuFlyoutItem x:Name="ActualSizeMenuItem" Text="100%" Click="OnActualSizeClicked"
+                                    KeyboardAcceleratorTextOverride="Ctrl+0"
                                     IsEnabled="False" AutomationProperties.AutomationId="Zoom100Percent" />
                 </MenuBarItem>
                 </MenuBar>
@@ -328,6 +348,7 @@
                 </Grid>
             </Border>
             <ScrollViewer x:Name="PageScroll" Grid.Row="1" Margin="16,12,16,0"
+                          ZoomMode="Enabled" MinZoomFactor="0.125" MaxZoomFactor="8" IsZoomChainingEnabled="False"
                           HorizontalContentAlignment="Center" VerticalContentAlignment="Top"
                           HorizontalScrollBarVisibility="Auto" HorizontalScrollMode="Enabled"
                           VerticalScrollBarVisibility="Auto" VerticalScrollMode="Enabled"
