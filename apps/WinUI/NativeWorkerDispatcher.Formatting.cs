@@ -24,6 +24,9 @@ internal sealed partial class NativeWorkerDispatcher
     public Task<NativeFormattingCapabilities> GetFormattingCapabilitiesAsync(CancellationToken cancellation) =>
         Dispatch(_ => ReadFormattingCapabilities(), cancellation);
 
+    public Task<bool> SupportsBasicTextFormattingAsync(CancellationToken cancellation) =>
+        Dispatch(_ => ReadFormattingCapabilities().Edit, cancellation);
+
     private NativeFormattingCapabilities ReadFormattingCapabilities()
     {
         if (formattingCapabilities is not null)
