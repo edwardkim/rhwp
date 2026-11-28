@@ -12,6 +12,7 @@
     <Compile Include="../WinUI/NativeWorkerDispatcher.Editor.cs" Link="NativeWorkerDispatcher.Editor.cs" />
     <Compile Include="../WinUI/NativeWorkerDispatcher.DirectEdit.cs" Link="NativeWorkerDispatcher.DirectEdit.cs" />
     <Compile Include="../WinUI/NativeWorkerDispatcher.Clipboard.cs" Link="NativeWorkerDispatcher.Clipboard.cs" />
+    <Compile Include="../WinUI/NativeWorkerDispatcher.Formatting.cs" Link="NativeWorkerDispatcher.Formatting.cs" />
     <Compile Include="../WinUI/NativeWorkerDispatcher.Search.cs" Link="NativeWorkerDispatcher.Search.cs" />
     <Compile Include="../WinUI/NativeWorkerDispatcher.Save.cs" Link="NativeWorkerDispatcher.Save.cs" />
     <Compile Include="../WinUI/NativeWorkerDispatcher.Recovery.cs" Link="NativeWorkerDispatcher.Recovery.cs" />

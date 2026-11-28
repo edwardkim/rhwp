@@ -28,17 +28,15 @@ internal sealed partial class NativeWorkerDispatcher
 
     public Task<EditResult> FormatCharactersAsync(DocumentTarget expected, bool? bold, int? fontSize,
         CancellationToken cancellation) =>
-        ApplyEdit(expected, new
-        {
-            op = "executeCommand", target = expected,
-            command = new { command = "formatCharacters", bold, fontSize },
-        }, cancellation);
+        ApplyFormattingCommand(expected, new { command = "formatCharacters", bold, fontSize }, cancellation);
 
     public Task<EditResult> SetParagraphAlignmentAsync(DocumentTarget expected, NativeParagraphAlignment alignment,
         CancellationToken cancellation) =>
-        ApplyEdit(expected, new
-        {
-            op = "executeCommand", target = expected,
-            command = new { command = "setParagraphAlignment", alignment = alignment.ToString().ToLowerInvariant() },
-        }, cancellation);
+        ApplyFormattingCommand(expected,
+            new { command = "setParagraphAlignment", alignment = alignment.ToString().ToLowerInvariant() },
+            cancellation);
+
+    private Task<EditResult> ApplyFormattingCommand(DocumentTarget expected, object command,
+        CancellationToken cancellation) =>
+        Dispatch(token => AdoptEditOutcome(expected, SubmitEditCommand(expected, command, token)), cancellation);
 }

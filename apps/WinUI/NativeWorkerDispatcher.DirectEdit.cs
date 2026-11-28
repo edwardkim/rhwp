@@ -58,11 +58,7 @@ internal sealed partial class NativeWorkerDispatcher
             _ => throw new ArgumentOutOfRangeException(nameof(key)),
         };
 
-        JsonElement reply = Submit(EnsureWorker(),
-            new { op = "executeCommand", target = expected, command = arguments }, token);
-        if (reply.GetProperty("kind").GetString() != "command")
-            throw new InvalidDataException("Native 편집 명령의 응답이 올바르지 않습니다.");
-
+        JsonElement reply = SubmitEditCommand(expected, arguments, token);
         EditResult edit = AdoptEditOutcome(expected, reply);
         JsonElement x = reply.GetProperty("preferredX");
         double? nextPreferredX = x.ValueKind == JsonValueKind.Null ? null : x.GetDouble();
@@ -71,6 +67,14 @@ internal sealed partial class NativeWorkerDispatcher
 
         return new NativeCommandResult(edit, nextPreferredX);
     }, cancellation);
+
+    private JsonElement SubmitEditCommand(DocumentTarget expected, object command, CancellationToken token)
+    {
+        JsonElement reply = Submit(EnsureWorker(), new { op = "executeCommand", target = expected, command }, token);
+        if (reply.GetProperty("kind").GetString() != "command")
+            throw new InvalidDataException("Native 편집 명령의 응답이 올바르지 않습니다.");
+        return reply;
+    }
 
     public Task<EditResult> BeginCompositionAsync(DocumentTarget expected, CancellationToken cancellation) =>
         ApplyEdit(expected, new { op = "beginComposition", target = expected }, cancellation);
