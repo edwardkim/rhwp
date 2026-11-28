@@ -24,6 +24,11 @@ internal static class EditorSmoke
                 "nested text overlay fits the zoomed page and viewport");
             Assert(InlineEditorPlacement.Create(form, clicked with { Page = clicked.Page + 1 }, paragraphStart,
                 2, 480, 360) is null, "inline overlay rejects a caret on a different page");
+            DocumentAutomationSnapshot formText = await ReadAutomation(worker, form, token);
+            var dates = formText.Paragraphs.Where(node => node.Text == "생년월일" && node.CellPath.Count == 2).ToArray();
+            Assert(dates.Length == 2 && dates[0].CellPath[1].TableKey != dates[1].CellPath[1].TableKey &&
+                dates.All(node => node.TextComplete && node.CellPath[1] is { RowSpan: > 0, ColumnSpan: > 0 }),
+                "applicant and child labels retain separate nested cell addresses and grid metadata");
 
             PageInfo blank = await worker.NewAsync(token);
             var start = new TextPosition(0, 0, 0, []);
@@ -58,6 +63,9 @@ internal static class EditorSmoke
             Assert((await worker.ReadImeEditContextAsync(committed.Target, token)).Context.Text == "가한나",
                 "same logical character replaced");
             await Reject(worker.ReadImeEditContextAsync(selected.Target, token), "staleRevision");
+            await Reject(worker.GetAutomationDocumentAsync(page, token), "staleRevision");
+            DocumentAutomationSnapshot editedText = await ReadAutomation(worker, page with { Target = committed.Target }, token);
+            Assert(editedText.Paragraphs.Single().Text == "가한나", "accessibility shows the committed revision");
 
             NativeDocumentInfo editedVersion = await worker.GetDocumentInfoAsync(committed.Target, token);
             Assert(editedVersion.CanUndo && !editedVersion.CanRedo && editedVersion.IsDirty,
@@ -67,6 +75,8 @@ internal static class EditorSmoke
             ImeEditContext restored = await worker.ReadImeEditContextAsync(undone.Target, token);
             Assert(restored.Context.Text == "가😀나" && restored.Context.SelectedText == "😀",
                 "undo restores text and backwards selection");
+            DocumentAutomationSnapshot restoredText = await ReadAutomation(worker, page with { Target = undone.Target }, token);
+            Assert(restoredText.Paragraphs.Single().Text == "가😀나", "accessibility preserves surrogate pairs after undo");
             EditResult redone = await worker.RedoAsync(undone.Target, token);
             Assert((await worker.ReadImeEditContextAsync(redone.Target, token)).Context.Text == "가한나",
                 "redo restores committed text");
@@ -87,12 +97,17 @@ internal static class EditorSmoke
             await worker.CloseDocumentAsync(token, discardChanges: true);
             Assert((await worker.OpenAsync(publicForm, token)).Target != form.Target, "file reopen after explicit discard");
             Console.WriteLine("Editor ABI: public leaf hit-test; scalar selection; UTF-16 IME; undo/redo; dirty close guard.");
+            Console.WriteLine("Accessibility ABI: nested cell paths and spans; committed Unicode; stale revision rejection.");
         }
         finally
         {
             await worker.CloseAsync();
         }
     }
+
+    private static async Task<DocumentAutomationSnapshot> ReadAutomation(NativeWorkerDispatcher worker, PageInfo page,
+        CancellationToken token) => await worker.GetAutomationDocumentAsync(page, token)
+        ?? throw new InvalidOperationException("The native worker does not provide accessibility snapshots.");
 
     private static void CheckPageEditOffsets()
     {

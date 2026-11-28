@@ -2,6 +2,7 @@
     x:Class="Rhwp.WinUI.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Rhwp.WinUI"
     Title="RHWP">
     <Grid x:Name="Root" RowDefinitions="Auto,Auto,*" Loaded="OnLoaded" Unloaded="OnUnloaded"
           AllowDrop="True" DragOver="OnFilesDragOver" Drop="OnFilesDropped">
@@ -28,11 +29,11 @@
                       HorizontalScrollMode="Enabled" VerticalScrollBarVisibility="Auto"
                       SizeChanged="OnViewportSizeChanged" ViewChanged="OnViewChanged"
                       Background="{ThemeResource LayerFillColorDefaultBrush}">
-            <Canvas x:Name="PageCanvas" HorizontalAlignment="Left" VerticalAlignment="Top"
+            <local:DocumentCanvas x:Name="PageCanvas" HorizontalAlignment="Left" VerticalAlignment="Top"
                                   Width="0" Height="0" IsTabStop="True" KeyDown="OnPageEditKeyDown">
                 <Image x:Name="PageImage" Stretch="Fill" Tapped="OnPageTapped"
                        AutomationProperties.Name="문서 쪽" />
-            </Canvas>
+            </local:DocumentCanvas>
         </ScrollViewer>
     </Grid>
 </Window>

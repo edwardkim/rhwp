@@ -160,7 +160,7 @@ public sealed partial class MainWindow : Window
         documentRequest?.Cancel();
         using var request = new CancellationTokenSource();
         documentRequest = request;
-        ClearPage();
+        ClearPage(clearAutomation: resetZoom);
         if (resetZoom)
             zoom = 1;
         fileName = name;
@@ -241,9 +241,11 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    private void ClearPage()
+    private void ClearPage(bool clearAutomation = true)
     {
         page = null;
+        if (clearAutomation)
+            UpdateAutomationDocument(null);
         renderRequest?.Cancel();
         renderTimer.Stop();
         PageImage.Source = null;
@@ -255,6 +257,7 @@ public sealed partial class MainWindow : Window
     {
         PageCanvas.Width = current.Width * zoom;
         PageCanvas.Height = current.Height * zoom;
+        UpdateAutomationDocument(current);
     }
 
     private void OnZoomOutClicked(object sender, RoutedEventArgs args) => ZoomTo(zoom / 1.25);

@@ -307,6 +307,8 @@ public sealed partial class MainWindow
 
     private async Task RefreshEditedPageAsync(PageInfo previous, EditResult edit)
     {
+        if (edit.Target != previous.Target)
+            UpdateAutomationDocument(null);
         renderRequest?.Cancel();
         renderTimer.Stop();
         PageImage.Source = null;
