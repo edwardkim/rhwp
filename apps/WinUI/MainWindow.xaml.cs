@@ -178,6 +178,7 @@ public sealed partial class MainWindow : Window
         var priorPage = page;
         var priorFile = fileName;
         double priorZoom = zoom;
+        ZoomFitMode? priorFitMode = zoomFitMode;
         documentError = null;
         using var request = new CancellationTokenSource();
         documentRequest = request;
@@ -192,6 +193,7 @@ public sealed partial class MainWindow : Window
             if (resetZoom)
             {
                 zoom = 1;
+                zoomFitMode = null;
                 editorInfo = null;
                 InvalidateSearchResults();
             }
@@ -222,7 +224,7 @@ public sealed partial class MainWindow : Window
                 documentError = "문서 요청을 처리할 수 없습니다. " + error.Message;
                 StatusText.Text = documentError;
                 if (priorPage is not null)
-                    await RestorePageAsync(priorPage, priorFile, priorZoom, request.Token);
+                    await RestorePageAsync(priorPage, priorFile, priorZoom, priorFitMode, request.Token);
             }
         }
         finally
@@ -238,7 +240,8 @@ public sealed partial class MainWindow : Window
         return false;
     }
 
-    private async Task RestorePageAsync(PageInfo prior, string? name, double priorZoom, CancellationToken token)
+    private async Task RestorePageAsync(PageInfo prior, string? name, double priorZoom, ZoomFitMode? priorFitMode,
+        CancellationToken token)
     {
         try
         {
@@ -249,6 +252,7 @@ public sealed partial class MainWindow : Window
             page = restored;
             fileName = name;
             zoom = priorZoom;
+            zoomFitMode = priorFitMode;
             SetPageSize(restored);
             UpdateTitle();
             QueueRender();
@@ -271,31 +275,6 @@ public sealed partial class MainWindow : Window
         ResetContinuousPages();
     }
 
-    private void OnZoomOutClicked(object sender, RoutedEventArgs args) => ZoomTo(zoom / 1.25);
-    private void OnZoomInClicked(object sender, RoutedEventArgs args) => ZoomTo(zoom * 1.25);
-
-    private void ZoomTo(double value)
-    {
-        if (!DocumentActionsAvailable || page is not PageInfo current)
-            return;
-
-        double nextZoom = Math.Clamp(value, MinZoom, MaxZoom);
-        if (nextZoom == zoom || continuousPages is not { } layout)
-            return;
-
-        double ratio = nextZoom / zoom;
-        double left = PageScroll.HorizontalOffset * ratio;
-        double top = PageScroll.VerticalOffset * ratio;
-        renderRequest?.Cancel();
-        zoom = nextZoom;
-        UpdatePageExtent(layout);
-        RefreshViewportOverlays(current);
-        PageScroll.UpdateLayout();
-        PageScroll.ChangeView(left, top, null, true);
-        RefreshButtons();
-        QueueRender();
-    }
-
     internal Task WaitForWindowLoadedAsync() => windowLoaded.Task;
 
     private void OnLoaded(object sender, RoutedEventArgs args)
@@ -314,7 +293,7 @@ public sealed partial class MainWindow : Window
     }
 
     private void OnXamlRootChanged(XamlRoot sender, XamlRootChangedEventArgs args) => QueueRender();
-    private void OnViewportSizeChanged(object sender, SizeChangedEventArgs args) => QueueRender();
+
     private void RefreshButtons()
     {
         bool available = DocumentActionsAvailable;
@@ -333,6 +312,7 @@ public sealed partial class MainWindow : Window
         NextPageMenuItem.IsEnabled = available && page is PageInfo current && current.Page + 1 < current.PageCount;
         ZoomOutButton.IsEnabled = available && page is not null && zoom > MinZoom;
         ZoomInButton.IsEnabled = available && page is not null && zoom < MaxZoom;
+        RefreshFitZoomActions(available && page is not null);
         UndoButton.IsEnabled = available && page is not null && editorInfo?.CanUndo == true;
         RedoButton.IsEnabled = available && page is not null && editorInfo?.CanRedo == true;
         PagePositionText.Text = page is PageInfo shown ? $"{shown.Page + 1} / {shown.PageCount}쪽" : "";

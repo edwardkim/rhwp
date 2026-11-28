@@ -98,6 +98,13 @@
                                     IsEnabled="{x:Bind ZoomInButton.IsEnabled, Mode=OneWay}" />
                     <MenuFlyoutItem Text="축소" Icon="ZoomOut" Click="OnZoomOutClicked"
                                     IsEnabled="{x:Bind ZoomOutButton.IsEnabled, Mode=OneWay}" />
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutItem x:Name="FitWidthMenuItem" Text="너비 맞춤" Click="OnFitWidthClicked"
+                                    IsEnabled="False" AutomationProperties.AutomationId="FitPageWidth" />
+                    <MenuFlyoutItem x:Name="FitPageMenuItem" Text="쪽 맞춤" Click="OnFitPageClicked"
+                                    IsEnabled="False" AutomationProperties.AutomationId="FitWholePage" />
+                    <MenuFlyoutItem x:Name="ActualSizeMenuItem" Text="100%" Click="OnActualSizeClicked"
+                                    IsEnabled="False" AutomationProperties.AutomationId="Zoom100Percent" />
                 </MenuBarItem>
             </MenuBar>
         </Border>
