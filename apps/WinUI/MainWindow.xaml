@@ -158,6 +158,14 @@
                                     KeyboardAcceleratorTextOverride="Ctrl+0"
                                     IsEnabled="False" AutomationProperties.AutomationId="Zoom100Percent" />
                 </MenuBarItem>
+                <MenuBarItem Title="AI" AutomationProperties.AutomationId="LocalAgentMenu">
+                    <MenuFlyoutItem x:Name="CodexSelectionMenuItem" Text="Codex에 선택한 텍스트 보내기…"
+                                    IsEnabled="False" Click="OnCodexSelectionClicked"
+                                    AutomationProperties.AutomationId="CodexSelectedText" />
+                    <MenuFlyoutItem x:Name="ClaudeSelectionMenuItem" Text="Claude Code에 선택한 텍스트 보내기…"
+                                    IsEnabled="False" Click="OnClaudeSelectionClicked"
+                                    AutomationProperties.AutomationId="ClaudeSelectedText" />
+                </MenuBarItem>
                 </MenuBar>
             </Grid>
         </Border>
