@@ -319,6 +319,7 @@ public sealed partial class MainWindow : Window
         bool available = DocumentActionsAvailable;
         DirectInput.IsReadOnly = closing || picking || documentRequest is not null ||
             (editorBusy && !directQueueRunning);
+        NewButton.IsEnabled = available;
         OpenButton.IsEnabled = available;
         SaveButton.IsEnabled = available && SaveTarget is not null;
         SaveCopyButton.IsEnabled = SaveButton.IsEnabled;

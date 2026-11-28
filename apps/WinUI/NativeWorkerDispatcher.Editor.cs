@@ -55,10 +55,10 @@ internal readonly record struct DirectInputChange(string RemovedSuffix, string I
 
 internal sealed partial class NativeWorkerDispatcher
 {
-    public Task<PageInfo> NewAsync(CancellationToken cancellation) =>
+    public Task<PageInfo> NewAsync(CancellationToken cancellation, bool discardChanges = false) =>
         Dispatch(token =>
         {
-            CheckDirty(false);
+            CheckDirty(discardChanges);
             ulong handle = EnsureWorker();
             return InitialPage(handle, Submit(handle, new { op = "new", replace = target }, token), token);
         }, cancellation);

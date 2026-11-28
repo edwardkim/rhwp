@@ -1,22 +1,34 @@
+using Microsoft.UI.Xaml;
+
 namespace Rhwp.WinUI;
 
 public sealed partial class MainWindow
 {
     private const string UntitledDocumentName = "새 문서";
 
-    internal async Task OpenNewDocumentAtStartupAsync()
+    internal Task OpenNewDocumentAtStartupAsync() =>
+        page is null ? CreateNewDocumentAsync(discardChanges: false) : Task.CompletedTask;
+
+    private async void OnNewDocumentClicked(object sender, RoutedEventArgs args)
     {
-        if (page is not null)
+        if (!DocumentActionsAvailable)
             return;
 
+        UnsavedDecision decision = await ResolveUnsavedChangesAsync();
+        if (decision != UnsavedDecision.Cancel)
+            await CreateNewDocumentAsync(discardChanges: decision == UnsavedDecision.Discard);
+    }
+
+    private async Task CreateNewDocumentAsync(bool discardChanges)
+    {
         bool opened = await ChangeDocumentAsync(
-            async token => await worker.NewAsync(token),
+            async token => await worker.NewAsync(token, discardChanges),
             UntitledDocumentName,
             resetZoom: true,
-            onCommitted: result =>
+            onCommitted: async result =>
             {
                 AdoptSaveLocation(result, null);
-                return Task.CompletedTask;
+                await ClearRecoveryAsync();
             });
         if (!opened || page is not PageInfo current)
             return;
