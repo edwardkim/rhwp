@@ -29,6 +29,30 @@ internal sealed record ImeSurroundingText(string Text, uint CursorScalar, uint? 
 internal sealed record ImeEditContext(ulong Revision, ulong FontGeneration, ImeSurroundingText Context,
     TextSelection Selection, ulong? CompositionId, Utf16Range? Preedit);
 
+internal readonly record struct DirectInputChange(string RemovedSuffix, string InsertedSuffix)
+{
+    public static DirectInputChange Between(string previous, string current)
+    {
+        if (current.StartsWith(previous, StringComparison.Ordinal))
+            return new("", current[previous.Length..]);
+
+        // The existing diff finds the common prefix without splitting a surrogate pair.
+        int start = (int)PageEditText.Difference(previous, current)!.Range.Start;
+        return new(previous[start..], current[start..]);
+    }
+
+    public ImeReplacement ReplacementAtCaret(ImeSurroundingText context)
+    {
+        int end = PageEditText.Utf16Offset(context.Text, context.CursorScalar);
+        int start = end - RemovedSuffix.Length;
+        if (start < 0 || !context.Text.AsSpan(start, RemovedSuffix.Length).SequenceEqual(RemovedSuffix.AsSpan()) ||
+            PageEditText.Selection(context.Text, start, RemovedSuffix.Length) is null)
+            throw new InvalidOperationException("입력기 조합과 문서의 커서 앞 텍스트가 일치하지 않습니다.");
+
+        return new ImeReplacement(new Utf16Range((uint)start, (uint)end), InsertedSuffix);
+    }
+}
+
 internal sealed partial class NativeWorkerDispatcher
 {
     public Task<PageInfo> NewAsync(CancellationToken cancellation) =>

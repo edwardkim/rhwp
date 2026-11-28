@@ -268,16 +268,11 @@ public sealed partial class MainWindow
             return;
 
         string current = sender.Text;
-        string text = UncapturedInput(current, capturedInputText);
+        DirectInputChange change = DirectInputChange.Between(capturedInputText, current);
         capturedInputText = current;
-        if (text.Length != 0)
-            EnqueueDirectEdit(() => InsertDirectTextAsync(text));
+        if (change.RemovedSuffix.Length != 0 || change.InsertedSuffix.Length != 0)
+            EnqueueDirectEdit(() => ApplyDirectInputChangeAsync(change));
     }
-
-    // WinUI owns the surrounding input until the document selection moves.
-    // Clearing it between committed syllables can interrupt the OS IME.
-    private static string UncapturedInput(string current, string prefix) =>
-        current.StartsWith(prefix, StringComparison.Ordinal) ? current[prefix.Length..] : current;
 
     private void EmptyInputControl()
     {
@@ -306,6 +301,35 @@ public sealed partial class MainWindow
         await UpdateDirectGeometryAsync(followCaret: true);
     }
 
+    private async Task ApplyDirectInputChangeAsync(DirectInputChange change)
+    {
+        if (change.RemovedSuffix.Length == 0)
+        {
+            await InsertDirectTextAsync(change.InsertedSuffix);
+            return;
+        }
+
+        if (!directEditing || page is not PageInfo current || editorInfo is not { Editing: true, Selection: { } selection })
+            return;
+
+        // The platform can rewrite characters it previously delivered. Replace
+        // that suffix only if it still sits immediately before the native caret.
+        CancellationToken token = CancellationToken.None;
+        ImeEditContext context = await worker.ReadImeEditContextAsync(current.Target, token);
+        if (context.CompositionId is not null ||
+            !SamePosition(selection.Anchor, selection.Focus) ||
+            !SamePosition(context.Selection.Anchor, context.Selection.Focus) ||
+            !SamePosition(context.Selection.Focus, selection.Focus) ||
+            !SamePosition(context.Context.Position, selection.Focus))
+            throw new InvalidOperationException("입력기 조합 중 문서의 커서 위치가 바뀌었습니다.");
+
+        ImeReplacement replacement = change.ReplacementAtCaret(context.Context);
+        EditResult edit = await worker.CommitImeAsync(current.Target, context, replacement, null, token);
+        preferredX = null;
+        await RefreshEditedPageAsync(current, edit);
+        await UpdateDirectGeometryAsync(followCaret: true);
+    }
+
     private void OnDirectCompositionStarted(TextBox sender, TextCompositionStartedEventArgs args)
     {
         if (!directEditing || changingInput || platformComposing || !CanQueueDirectEdit)
@@ -324,7 +348,14 @@ public sealed partial class MainWindow
             return;
 
         long version = ++previewVersion;
-        string text = UncapturedInput(sender.Text, compositionInputPrefix);
+        string current = sender.Text;
+        if (!current.StartsWith(compositionInputPrefix, StringComparison.Ordinal))
+        {
+            EnqueueDirectEdit(() => version == previewVersion ? CancelNativePreviewAsync() : Task.CompletedTask);
+            return;
+        }
+
+        string text = current[compositionInputPrefix.Length..];
         EnqueueDirectEdit(() => version == previewVersion ? SetNativePreviewAsync(text, updateView: true) :
             Task.CompletedTask);
     }
@@ -334,14 +365,14 @@ public sealed partial class MainWindow
         if (!platformComposing)
             return;
         string current = sender.Text;
-        string text = UncapturedInput(current, compositionInputPrefix);
+        DirectInputChange change = DirectInputChange.Between(compositionInputPrefix, current);
         TaskCompletionSource? finished = platformCompositionFinished;
         platformCompositionFinished = null;
         compositionInputPrefix = "";
         platformComposing = false;
         previewVersion++;
         capturedInputText = current;
-        EnqueueDirectEdit(() => FinishNativePreviewAsync(text));
+        EnqueueDirectEdit(() => FinishNativePreviewAsync(change));
         finished?.TrySetResult();
     }
 
@@ -389,8 +420,16 @@ public sealed partial class MainWindow
             await UpdateDirectGeometryAsync(followCaret: true);
     }
 
-    private async Task FinishNativePreviewAsync(string text)
+    private async Task FinishNativePreviewAsync(DirectInputChange change)
     {
+        if (change.RemovedSuffix.Length != 0)
+        {
+            await CancelNativePreviewAsync();
+            await ApplyDirectInputChangeAsync(change);
+            return;
+        }
+
+        string text = change.InsertedSuffix;
         if (text.Length == 0)
         {
             await CancelNativePreviewAsync();
