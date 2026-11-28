@@ -48,7 +48,9 @@ public sealed partial class MainWindow
             CancellationToken token = CancellationToken.None;
             if (editorInfo is { Selection.Focus: TextPosition focus } info && info.Target == current.Target &&
                 await worker.CaretAsync(current.Target, focus, token) is { } selectedCaret &&
-                selectedCaret.Page == current.Page)
+                selectedCaret.Page == current.Page && InlineEditorPlacement.IsCaretVisible(selectedCaret, zoom,
+                    PageScroll.HorizontalOffset, PageScroll.VerticalOffset, PageScroll.ViewportWidth,
+                    PageScroll.ViewportHeight))
             {
                 await BeginInlineEditorAsync(current, focus, selectedCaret);
                 return;
@@ -197,15 +199,14 @@ public sealed partial class MainWindow
             string current = draft.Text.Text;
             Utf16Selection selection = PageEditText.Selection(current, draft.Text.SelectionStart,
                 draft.Text.SelectionLength) ?? throw new InvalidOperationException("텍스트 선택 범위가 올바르지 않습니다.");
-            ImeReplacement replacement = PageEditText.Difference(draft.Context.Context.Text, current)
-                ?? new ImeReplacement(new Utf16Range(0, 0), string.Empty);
+            IReadOnlyList<ImeReplacement> replacements = PageEditText.Differences(draft.Context.Context.Text, current);
 
             draft.Text.IsReadOnly = true;
             draft.Apply.IsEnabled = false;
             draft.Cancel.IsEnabled = false;
             try
             {
-                EditResult edited = await worker.CommitImeAsync(draft.Page.Target, draft.Context, replacement,
+                EditResult edited = await worker.CommitParagraphAsync(draft.Page.Target, draft.Context, replacements,
                     selection, CancellationToken.None);
                 DismissInlineEditor();
                 if (edited.Outcome.DocumentChanged)

@@ -78,6 +78,23 @@ internal sealed partial class NativeWorkerDispatcher
             edit = new { kind = "commit", replacement, selection },
         }, cancellation);
 
+    public Task<EditResult> CommitParagraphAsync(DocumentTarget expected, ImeEditContext context,
+        IReadOnlyList<ImeReplacement> replacements, Utf16Selection? selection, CancellationToken cancellation)
+    {
+        if (replacements.Count <= 1)
+        {
+            ImeReplacement replacement = replacements.Count == 0
+                ? new ImeReplacement(new Utf16Range(0, 0), string.Empty) : replacements[0];
+            return CommitImeAsync(expected, context, replacement, selection, cancellation);
+        }
+
+        return ApplyEdit(expected, new
+        {
+            op = "applyImeEdit", target = expected, expected = context,
+            edit = new { kind = "commitBatch", replacements, selection },
+        }, cancellation);
+    }
+
     private Task<T?> Query<T>(object command, string field, CancellationToken cancellation) where T : class =>
         Dispatch(token => Submit(EnsureWorker(), command, token).GetProperty(field).Deserialize<T>(WireJson),
             cancellation);

@@ -8,7 +8,8 @@ internal sealed record DocumentAutomationParagraph(
     string Key,
     string Text,
     bool TextComplete,
-    IReadOnlyList<DocumentAutomationCell> CellPath);
+    IReadOnlyList<DocumentAutomationCell> CellPath,
+    IReadOnlyList<CaretBounds> PageBounds);
 
 internal sealed record DocumentAutomationCell(
     string TableKey,
@@ -32,7 +33,8 @@ internal sealed class DocumentAutomationNode(
     DocumentAutomationRole role,
     string key,
     string text = "",
-    bool textComplete = true)
+    bool textComplete = true,
+    IReadOnlyList<CaretBounds>? pageBounds = null)
 {
     internal DocumentAutomationRole Role { get; } = role;
     internal string Key { get; } = key;
@@ -40,6 +42,7 @@ internal sealed class DocumentAutomationNode(
     internal bool TextComplete { get; } = textComplete;
     internal DocumentAutomationCell? Layout { get; private set; }
     internal List<DocumentAutomationNode> Children { get; } = [];
+    private IReadOnlyList<CaretBounds> PageBounds { get; } = pageBounds ?? [];
 
     internal static DocumentAutomationNode Build(DocumentAutomationSnapshot snapshot)
     {
@@ -62,7 +65,7 @@ internal sealed class DocumentAutomationNode(
             }
 
             parent.Children.Add(new DocumentAutomationNode(DocumentAutomationRole.Paragraph,
-                $"paragraph:{paragraph.Key}", paragraph.Text, paragraph.TextComplete));
+                $"paragraph:{paragraph.Key}", paragraph.Text, paragraph.TextComplete, paragraph.PageBounds));
         }
 
         return document;
@@ -92,6 +95,41 @@ internal sealed class DocumentAutomationNode(
         DocumentAutomationRole.Paragraph => TextComplete ? "빈 문단" : "문단",
         _ => "문서 내용",
     };
+
+    // Test each layout fragment before taking their union, so an empty space
+    // between disjoint lines cannot make the paragraph report as on-screen.
+    internal CaretBounds? VisibleBounds(CaretBounds viewport)
+    {
+        CaretBounds? visible = null;
+        foreach (CaretBounds bounds in PageBounds)
+        {
+            double left = Math.Max(viewport.X, bounds.X);
+            double top = Math.Max(viewport.Y, bounds.Y);
+            double right = Math.Min(viewport.X + viewport.Width, bounds.X + bounds.Width);
+            double bottom = Math.Min(viewport.Y + viewport.Height, bounds.Y + bounds.Height);
+            if (left < right && top < bottom)
+                visible = Union(visible, new CaretBounds(left, top, right - left, bottom - top));
+        }
+
+        foreach (DocumentAutomationNode child in Children)
+        {
+            if (child.VisibleBounds(viewport) is { } childBounds)
+                visible = Union(visible, childBounds);
+        }
+        return visible;
+    }
+
+    private static CaretBounds Union(CaretBounds? bounds, CaretBounds next)
+    {
+        if (bounds is null)
+            return next;
+
+        double x = Math.Min(bounds.X, next.X);
+        double y = Math.Min(bounds.Y, next.Y);
+        double right = Math.Max(bounds.X + bounds.Width, next.X + next.Width);
+        double bottom = Math.Max(bounds.Y + bounds.Height, next.Y + next.Height);
+        return new CaretBounds(x, y, right - x, bottom - y);
+    }
 
     internal string HelpText => Role switch
     {

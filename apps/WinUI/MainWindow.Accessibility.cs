@@ -4,13 +4,14 @@ namespace Rhwp.WinUI;
 
 public sealed partial class MainWindow
 {
-    private (DocumentTarget Target, ulong FontGeneration)? automationDocument;
+    private (DocumentTarget Target, ulong FontGeneration, uint Page)? automationDocument;
     private CancellationTokenSource? automationRequest;
 
     private void UpdateAutomationDocument(PageInfo? current)
     {
-        (DocumentTarget Target, ulong FontGeneration)? identity = current is null
-            ? null : (current.Target, current.FontGeneration);
+        PageCanvas.UpdateAutomationViewport(PageScroll, zoom);
+        (DocumentTarget Target, ulong FontGeneration, uint Page)? identity = current is null
+            ? null : (current.Target, current.FontGeneration, current.Page);
         if (identity == automationDocument)
             return;
 
@@ -33,7 +34,7 @@ public sealed partial class MainWindow
         {
             try
             {
-                DocumentAutomationSnapshot? snapshot = await worker.GetAutomationDocumentAsync(current, request.Token);
+                DocumentAutomationSnapshot? snapshot = await worker.GetAutomationPageAsync(current, request.Token);
                 if (!closing && !request.IsCancellationRequested && ReferenceEquals(automationRequest, request))
                     PageCanvas.SetAutomationDocument(snapshot);
             }

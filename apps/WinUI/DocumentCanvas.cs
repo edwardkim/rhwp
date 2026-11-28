@@ -7,6 +7,32 @@ namespace Rhwp.WinUI;
 public sealed partial class DocumentCanvas : Canvas
 {
     internal DocumentAutomationSnapshot? AutomationDocument { get; private set; }
+    private ScrollViewer? automationViewport;
+    private double zoom = 1;
+
+    internal void UpdateAutomationViewport(ScrollViewer viewport, double pageZoom)
+    {
+        automationViewport = viewport;
+        zoom = pageZoom;
+    }
+
+    internal Rect AutomationScreenBounds(DocumentAutomationSnapshot snapshot, DocumentAutomationNode node)
+    {
+        if (!ReferenceEquals(AutomationDocument, snapshot) ||
+            automationViewport is not { ViewportWidth: > 0, ViewportHeight: > 0 } scroll ||
+            XamlRoot is not { IsHostVisible: true } root)
+            return default;
+
+        var viewport = new CaretBounds(scroll.HorizontalOffset / zoom, scroll.VerticalOffset / zoom,
+            scroll.ViewportWidth / zoom, scroll.ViewportHeight / zoom);
+        if (node.VisibleBounds(viewport) is not { } bounds)
+            return default;
+
+        var local = new Rect(bounds.X * zoom, bounds.Y * zoom, bounds.Width * zoom, bounds.Height * zoom);
+        Rect inRoot = TransformToVisual(root.Content).TransformBounds(local);
+        var physical = root.CoordinateConverter.ConvertLocalToScreen(inRoot);
+        return new Rect(physical.X, physical.Y, physical.Width, physical.Height);
+    }
 
     internal void SetAutomationDocument(DocumentAutomationSnapshot? snapshot)
     {
@@ -49,7 +75,7 @@ internal sealed class DocumentCanvasAutomationPeer : FrameworkElementAutomationP
         {
             cachedSnapshot = snapshot;
             documentChildren = snapshot is null ? [] : DocumentAutomationNode.Build(snapshot).Children
-                .Select(node => (AutomationPeer)new DocumentContentAutomationPeer(node)).ToArray();
+                .Select(node => (AutomationPeer)new DocumentContentAutomationPeer(canvas, snapshot, node)).ToArray();
         }
 
         // The bitmap is only a visual surface. Keep real controls such as the
@@ -68,7 +94,8 @@ internal sealed class DocumentCanvasAutomationPeer : FrameworkElementAutomationP
     }
 }
 
-internal sealed class DocumentContentAutomationPeer(DocumentAutomationNode node) : AutomationPeer
+internal sealed class DocumentContentAutomationPeer(DocumentCanvas canvas,
+    DocumentAutomationSnapshot snapshot, DocumentAutomationNode node) : AutomationPeer
 {
     private IList<AutomationPeer>? children;
 
@@ -90,11 +117,9 @@ internal sealed class DocumentContentAutomationPeer(DocumentAutomationNode node)
     protected override bool HasKeyboardFocusCore() => false;
     protected override bool IsEnabledCore() => true;
 
-    // Nodes represent document structure. The worker does not provide reliable
-    // page positions for these nodes, including paragraphs split between pages.
-    protected override bool IsOffscreenCore() => true;
-    protected override Rect GetBoundingRectangleCore() => default;
+    protected override bool IsOffscreenCore() => GetBoundingRectangleCore() is not { Width: > 0, Height: > 0 };
+    protected override Rect GetBoundingRectangleCore() => canvas.AutomationScreenBounds(snapshot, node);
 
     protected override IList<AutomationPeer> GetChildrenCore() => children ??= node.Children
-        .Select(child => (AutomationPeer)new DocumentContentAutomationPeer(child)).ToList();
+        .Select(child => (AutomationPeer)new DocumentContentAutomationPeer(canvas, snapshot, child)).ToList();
 }

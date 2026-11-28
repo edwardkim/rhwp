@@ -34,6 +34,14 @@ internal sealed record InlineEditorPlacement(double Left, double Top, double Wid
     public double FitTop(double pageHeight, double editorHeight) =>
         Math.Clamp(Top, 0, Math.Max(0, pageHeight - editorHeight));
 
+    internal static bool IsCaretVisible(PageCaret caret, double zoom, double left, double top,
+        double width, double height)
+    {
+        double x = caret.X * zoom;
+        double y = caret.Y * zoom;
+        return x >= left && x < left + width && y + caret.Height * zoom > top && y < top + height;
+    }
+
     private static double Available(double pageSize, double viewportSize) =>
         double.IsFinite(viewportSize) && viewportSize > 0 ? Math.Min(pageSize, viewportSize) : pageSize;
 

@@ -5,6 +5,7 @@ internal static class EditorSmoke
     public static async Task RunAsync(string publicForm)
     {
         CheckPageEditOffsets();
+        AccessibilitySmoke.CheckContract();
         var worker = new NativeWorkerDispatcher();
         CancellationToken token = CancellationToken.None;
         try
@@ -24,6 +25,11 @@ internal static class EditorSmoke
                 "nested text overlay fits the zoomed page and viewport");
             Assert(InlineEditorPlacement.Create(form, clicked with { Page = clicked.Page + 1 }, paragraphStart,
                 2, 480, 360) is null, "inline overlay rejects a caret on a different page");
+            var keyboardCaret = clicked with { X = 110, Y = 120, Height = 14 };
+            Assert(InlineEditorPlacement.IsCaretVisible(keyboardCaret, 2, 200, 230, 80, 60),
+                "F2 can reuse a caret in the zoomed viewport");
+            Assert(!InlineEditorPlacement.IsCaretVisible(keyboardCaret, 2, 200, 280, 80, 60),
+                "F2 ignores the previous caret after scrolling down");
             DocumentAutomationSnapshot formText = await ReadAutomation(worker, form, token);
             var dates = formText.Paragraphs.Where(node => node.Text == "생년월일" && node.CellPath.Count == 2).ToArray();
             Assert(dates.Length == 2 && dates[0].CellPath[1].TableKey != dates[1].CellPath[1].TableKey &&
@@ -121,6 +127,12 @@ internal static class EditorSmoke
             new ImeReplacement(new(2, 2), " 이름"), "append");
         Assert(PageEditText.Difference("문단 이름", "문단") ==
             new ImeReplacement(new(2, 5), ""), "delete");
+        Assert(PageEditText.Differences("abcdefghijklmno", "XbcdefghijklmnY").SequenceEqual(
+            [new ImeReplacement(new(0, 1), "X"), new ImeReplacement(new(14, 15), "Y")]),
+            "separate edits retain the untouched formatted span");
+        Assert(PageEditText.Differences("가😀나😁다", "한😀나😁마").SequenceEqual(
+            [new ImeReplacement(new(0, 1), "한"), new ImeReplacement(new(6, 7), "마")]),
+            "unchanged supplementary characters retain their UTF-16 range");
         Assert(PageEditText.Selection("가😀나", 2, 0) is null &&
             PageEditText.Selection("가😀나", 1, 2) == new Utf16Selection(1, 3),
             "TextBox selection must remain on UTF-16 boundaries");
