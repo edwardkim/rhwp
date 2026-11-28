@@ -2104,6 +2104,35 @@ impl TypesetEngine {
             - vert_offset_overhead)
             .max(0.0);
 
+        // 글줄보다 앞에 저장된 표는 그 줄을 이어받기 뒤에 남겨 둔다.
+        // 앞 본문 바로 뒤의 첫 조각은 예산이 예약한 바깥 위 여백에서 시작한다.
+        let table_leads_host_line = (st.profile.hwp5_stored_pagination_layout()
+            || st.profile.hwpx_stored_layout())
+            && !st.profile.session_edited()
+            && table.row_count > 1
+            && table.layout_page_break() == crate::model::table::TablePageBreak::RowBreak
+            && table.caption.is_none()
+            && !table.repeat_header
+            && table_footnotes.is_empty()
+            && crate::renderer::float_placement::is_para_topbottom_float(&table.common)
+            && table.common.flow_with_text
+            && !table.common.allow_overlap
+            && table.common.vertical_offset == 0
+            && matches!(para.controls.as_slice(), [Control::Table(_)])
+            && para_has_visible_text(para)
+            && para.control_text_positions().first() == Some(&0)
+            && !st.pre_emitted_host_paras.contains(&para_idx)
+            && table.outer_margin_top > 0
+            && crate::renderer::px_to_hwpunit(host_before_overhead, self.dpi)
+                == i32::from(table.outer_margin_top)
+            && st.current_items.last().is_some_and(|item| {
+                matches!(item, crate::renderer::pagination::PageItem::FullParagraph { para_index }
+                    if para_index.checked_add(1) == Some(para_idx)
+                        && input.source.paragraphs_all.get(*para_index)
+                            .is_some_and(|previous| previous.controls.is_empty()
+                                && para_has_non_whitespace_text(previous)))
+            });
+
         FragmentBudget {
             fragment_opens_outer_top,
             physical_content_limit,
@@ -2126,9 +2155,10 @@ impl TypesetEngine {
                         && cursor_row == 0
                         && start_cut.is_empty()
                         && std::ptr::eq(row_geometry_table, table)
-                        && crate::renderer::float_placement::stored_rowbreak_opening_uses_host_budget(
-                            st.profile, para, table,
-                        ))
+                        && (table_leads_host_line
+                            || crate::renderer::float_placement::stored_rowbreak_opening_uses_host_budget(
+                                st.profile, para, table,
+                            )))
                     .then(|| {
                         // 예산에서 이미 예약한 원점을 paint가 같은 좌표계로 소비한다.
                         // 기존 반복 여백 분기에서 원점을 다시 추정하거나 여백을 중복하지 않는다.
