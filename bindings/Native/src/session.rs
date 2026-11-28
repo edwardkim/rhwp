@@ -18,6 +18,7 @@ use rhwp_core::native_host::commands::{
 };
 use rhwp_core::native_host::editor::ime_edit::{NativeImeEdit, NativeImeEditContext};
 use rhwp_core::native_host::editor::{NativeCompositionFocusLoss, NativeEditOutcome, NativeEditor};
+use rhwp_core::native_host::picture_object::{MAX_PICTURE_BYTES, MAX_PICTURE_SIZE};
 use rhwp_core::native_host::presentation::{NativePresentationId, NativePresentationStamp};
 use rhwp_core::native_host::runtime::{
     NativeRequestId, NativeRuntime, NativeRuntimeCommand, NativeRuntimeConfig, NativeRuntimeOutput,
@@ -386,6 +387,10 @@ enum HostRequest {
         worker: u64,
         replace: Option<NativeRuntimeTarget>,
     },
+    WorkerInsertPicture {
+        worker: u64,
+        target: NativeRuntimeTarget,
+    },
     WorkerPoll {
         worker: u64,
         wait_ms: Option<u64>,
@@ -454,7 +459,7 @@ enum ViewCommand {
     },
 }
 
-/// Platform-neutral host operations. The worker open operations consume binary document bytes.
+/// Platform-neutral host operations. Worker open and picture insertion consume binary bytes.
 /// # Safety
 /// Each nonempty span must be readable for its declared length during the call.
 #[no_mangle]
@@ -466,18 +471,21 @@ pub unsafe extern "C" fn rhwp_native_host_request(
 ) -> *mut c_char {
     response(|| {
         let request = unsafe { input(request, request_len, MAX_REQUEST_BYTES)? };
-        let data = unsafe { input(data, data_len, MAX_DOCUMENT_BYTES)? };
         let request: HostRequest = serde_json::from_slice(request)
             .map_err(|_| NativeHostError::InvalidArgument("invalid host request JSON".into()))?;
-        if !matches!(
-            &request,
-            HostRequest::WorkerOpen { .. } | HostRequest::WorkerOpenRecovery { .. }
-        ) && !data.is_empty()
-        {
-            return Err(NativeHostError::InvalidArgument(
-                "this request does not accept binary data".into(),
-            ));
-        }
+        let byte_limit = match &request {
+            HostRequest::WorkerOpen { .. } | HostRequest::WorkerOpenRecovery { .. } => {
+                MAX_DOCUMENT_BYTES
+            }
+            HostRequest::WorkerInsertPicture { .. } => MAX_PICTURE_BYTES,
+            _ if data_len != 0 => {
+                return Err(NativeHostError::InvalidArgument(
+                    "this request does not accept binary data".into(),
+                ))
+            }
+            _ => 0,
+        };
+        let data = unsafe { input(data, data_len, byte_limit)? };
         match request {
             HostRequest::WorkerCreate { config } => HOST.with(|host| {
                 let mut host = host.borrow_mut();
@@ -501,6 +509,14 @@ pub unsafe extern "C" fn rhwp_native_host_request(
                 let mut host=host.borrow_mut();
                 let runtime=host.workers.get_mut(&worker).ok_or_else(invalid_handle)?;
                 Ok(worker_submit_result(runtime.try_submit(NativeRuntimeCommand::OpenRecovery {replace,bytes:data.to_vec()})))
+            }),
+            HostRequest::WorkerInsertPicture { worker, target } => HOST.with(|host| {
+                let mut host = host.borrow_mut();
+                let runtime = host.workers.get_mut(&worker).ok_or_else(invalid_handle)?;
+                Ok(worker_submit_result(runtime.try_submit(NativeRuntimeCommand::InsertPicture {
+                    target,
+                    bytes: data.to_vec(),
+                })))
             }),
             HostRequest::WorkerPoll { worker, wait_ms } => HOST.with(|host| {
                 let mut host=host.borrow_mut();
@@ -654,6 +670,15 @@ fn worker_output(host: &mut Host, worker: u64, output: NativeRuntimeOutput) -> V
             } => {
                 json!({"ok":true,"kind":"tableObject","target":target,
                     "fontGeneration":font_generation,"page":page,"table":table})
+            }
+            NativeRuntimeOutput::PictureObject {
+                target,
+                font_generation,
+                page,
+                picture,
+            } => {
+                json!({"ok":true,"kind":"pictureObject","target":target,
+                    "fontGeneration":font_generation,"page":page,"picture":picture})
             }
             NativeRuntimeOutput::SystemFontFamilies { target, families } => {
                 json!({"ok":true,"kind":"systemFontFamilies","target":target,"families":families})
@@ -929,6 +954,10 @@ pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
         capabilities["minShapeSize"] = MIN_SHAPE_SIZE.into();
         capabilities["maxShapeSize"] = MAX_SHAPE_SIZE.into();
         capabilities["paragraphStyles"] = true.into();
+        capabilities["insertPicture"] = true.into();
+        capabilities["maxPictureBytes"] = MAX_PICTURE_BYTES.into();
+        capabilities["pictureObjectProperties"] = true.into();
+        capabilities["maxPictureObjectSize"] = MAX_PICTURE_SIZE.into();
         Ok(capabilities)
     })
 }

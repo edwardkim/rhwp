@@ -34,6 +34,7 @@ use super::editor::ime_edit::{NativeImeEdit, NativeImeEditContext, NativeImeRepl
 use super::editor::{NativeEditOutcome, NativeEditor};
 use super::page_setup::NativePageSetup;
 use super::paragraph_style::NativeParagraphStyles;
+use super::picture_object::{NativePictureObject, NativePictureObjectAddress, MAX_PICTURE_BYTES};
 use super::render_snapshot::{NativeRenderSnapshot, NativeRenderSnapshotLimits};
 use super::save::NativeSaveCaretPolicy;
 use super::save::{NativeSaveFormat, NativeSaveStatus, NativeSaveToken, PreparedSave};
@@ -160,6 +161,22 @@ pub enum NativeRuntimeCommand {
     ExecuteCommand {
         target: NativeRuntimeTarget,
         command: NativeEditCommand,
+    },
+    #[serde(skip)]
+    InsertPicture {
+        target: NativeRuntimeTarget,
+        bytes: Vec<u8>,
+    },
+    PictureObjectAt {
+        target: NativeRuntimeTarget,
+        page: u32,
+        x: f64,
+        y: f64,
+    },
+    PictureObject {
+        target: NativeRuntimeTarget,
+        page: u32,
+        address: NativePictureObjectAddress,
     },
     SelectionFormatting {
         target: NativeRuntimeTarget,
@@ -404,6 +421,12 @@ impl NativeRuntimeCommand {
                 >())
         };
         let bytes = match self {
+            Self::InsertPicture { bytes, .. } => {
+                if bytes.len() > MAX_PICTURE_BYTES {
+                    return Err(NativeRuntimeError::InvalidArgument);
+                }
+                Some(bytes.capacity())
+            }
             Self::Open {
                 bytes, password, ..
             } => bytes
@@ -603,6 +626,12 @@ pub enum NativeRuntimeOutput {
         page: u32,
         table: NativeTableObject,
     },
+    PictureObject {
+        target: NativeRuntimeTarget,
+        font_generation: u64,
+        page: u32,
+        picture: Option<NativePictureObject>,
+    },
     SystemFontFamilies {
         target: NativeRuntimeTarget,
         families: Vec<String>,
@@ -689,6 +718,7 @@ impl fmt::Debug for NativeRuntimeOutput {
             Self::ParagraphStyles { .. } => "ParagraphStyles",
             Self::PageSetup { .. } => "PageSetup",
             Self::TableObject { .. } => "TableObject",
+            Self::PictureObject { .. } => "PictureObject",
             Self::SystemFontFamilies { .. } => "SystemFontFamilies",
             Self::ImeContext(_) => "ImeContext",
             Self::ImeEditContext(_) => "ImeEditContext",

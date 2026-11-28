@@ -148,6 +148,39 @@ fn execute(
                 .execute_command(target.revision, command)
                 .map(O::CommandExecuted)
         }
+        C::InsertPicture { target, bytes } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            doc.editor()?
+                .insert_picture(target.revision, &bytes)
+                .map(O::Edited)
+        }
+        C::PictureObjectAt { target, page, x, y } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            let session = doc.session();
+            Ok(O::PictureObject {
+                target,
+                font_generation: session.font_generation(),
+                page,
+                picture: session.picture_object_at(target.revision, page, x, y)?,
+            })
+        }
+        C::PictureObject {
+            target,
+            page,
+            address,
+        } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            let session = doc.session();
+            Ok(O::PictureObject {
+                target,
+                font_generation: session.font_generation(),
+                page,
+                picture: session.picture_object(target.revision, page, address)?,
+            })
+        }
         C::SelectionFormatting {
             target,
             font_generation,

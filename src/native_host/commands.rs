@@ -25,6 +25,7 @@ use crate::model::{
 
 use super::editor::{NativeEditOutcome, NativeEditor};
 use super::page_setup::NativePageSetupSettings;
+use super::picture_object::NativePictureObjectAddress;
 use super::table_object::{NativeTableObjectAddress, NativeTableObjectPropertyChanges};
 use super::NativeHostError;
 
@@ -204,6 +205,11 @@ pub enum NativeEditCommand {
         width: u32,
         height: u32,
     },
+    ResizePictureObject {
+        picture: NativePictureObjectAddress,
+        width: Option<u32>,
+        height: Option<u32>,
+    },
     /// Join the focus paragraph into its predecessor. Requires a collapsed
     /// selection and places the caret at the join. Backspace/Delete instead
     /// delete a noncollapsed selection.
@@ -327,6 +333,11 @@ impl NativeEditor {
                 width,
                 height,
             } => self.insert_shape(expected_revision, shape, width, height)?,
+            NativeEditCommand::ResizePictureObject {
+                picture,
+                width,
+                height,
+            } => self.resize_picture_object(expected_revision, picture, width, height)?,
             NativeEditCommand::JoinPreviousParagraph {} => {
                 if self.selection().anchor != self.selection().focus {
                     return Err(NativeHostError::InvalidArgument(
@@ -931,7 +942,7 @@ impl NativeEditor {
         })
     }
 
-    fn insert_display_object(
+    pub(super) fn insert_display_object(
         &mut self,
         revision: u64,
         command: &str,

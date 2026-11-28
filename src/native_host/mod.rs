@@ -24,6 +24,7 @@ pub(crate) mod gpu_tiles;
 mod live_pdf;
 pub mod page_setup;
 pub mod paragraph_style;
+pub mod picture_object;
 pub mod presentation;
 #[cfg(feature = "native-skia")]
 pub mod region_cache;
