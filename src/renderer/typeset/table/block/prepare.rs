@@ -86,7 +86,6 @@ impl TypesetEngine {
             ..
         } = input;
         let SplitTableEntry {
-            follows_placed_sibling,
             computed_host_tail,
             mut total_footnote,
             next_starts_new_page,
@@ -1949,7 +1948,6 @@ impl TypesetEngine {
             })
             .flatten();
         let prepared = BlockTableContinuationPreparedState {
-            follows_placed_sibling,
             relocated_picture_caption_rows,
             relocated_picture_successor,
             computed_host_tail,

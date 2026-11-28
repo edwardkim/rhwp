@@ -180,12 +180,10 @@ impl TypesetEngine {
             && split_end_limit == 0.0
             && end_row_height_override.is_some()
             && accepted_end_row_box.is_some_and(|(row, height)| {
-                let minimum = if input.prepared.follows_placed_sibling && !is_continuation {
-                    layout_engine.unchanged_empty_row_frame_height(row_geometry_table, row, styles)
-                } else {
-                    layout_engine.stored_empty_row_frame_height(row_geometry_table, row, styles)
-                };
-                row + 1 == end_row && minimum.is_some_and(|minimum| height >= minimum)
+                row + 1 == end_row
+                    && layout_engine
+                        .stored_empty_row_frame_height(row_geometry_table, row, styles)
+                        .is_some_and(|minimum| height >= minimum)
             });
         let source_first_row_frame = input
             .prepared

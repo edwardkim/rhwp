@@ -12,7 +12,7 @@ use crate::renderer::{
     composer::ComposedParagraph,
     float_placement::{
         coanchored_float_overlaps_preceding_horizontally, is_para_topbottom_float, signed_hwpunit,
-        table_cell_lines_exceed_frame, FloatLaneSet, ParagraphFloatFlow, ParagraphFloatPlacement,
+        FloatLaneSet, ParagraphFloatFlow, ParagraphFloatPlacement,
     },
     height_measurer::MeasuredTable,
     hwpunit_to_px,
@@ -225,101 +225,6 @@ fn try_place_closed_terminal_sibling(
     st.align_flow_to(end);
     st.record_stored_paragraph_flow_end(para_idx, end);
     true
-}
-
-/// 같은 빈 앵커에서 커진 표가 단에 안 들면 남은 형제가 먼저 들어갈 수 있다.
-/// 일반 lane 조회를 재사용하므로 형제의 가로 충돌, 위아래 여백과 각주 예산도 검사한다.
-pub(super) fn fitting_sibling_after_overflow(
-    engine: &TypesetEngine,
-    st: &TypesetState,
-    input: &FlowTableInput<'_>,
-    lanes: &FloatLaneSet,
-) -> Option<usize> {
-    let FlowTableInput {
-        para_idx,
-        ctrl_idx,
-        para,
-        table,
-        measured_tables,
-        styles,
-        composed,
-        next_para,
-        para_start_height,
-        paragraphs_all,
-        ctrl_order,
-        order_pos,
-        ..
-    } = *input;
-    let separate_float = |table: &Table| {
-        is_para_topbottom_float(&table.common)
-            && table.common.flow_with_text
-            && !table.common.allow_overlap
-            && table.common.prevent_page_break == 0
-            && table.common.vert_align == VertAlign::Top
-            && table.layout_page_break() == TablePageBreak::RowBreak
-    };
-    if order_pos == 0
-        || order_pos + 1 >= ctrl_order.len()
-        || !separate_float(table)
-        || !crate::renderer::float_placement::empty_topbottom_sibling_host(para, table)
-        || para.line_segs.len() != 1
-        || lanes.lanes().is_empty()
-        || !para
-            .controls
-            .iter()
-            .all(|control| matches!(control, Control::Table(table) if separate_float(table)))
-        || !table_cell_lines_exceed_frame(table)
-    {
-        return None;
-    }
-
-    let fits_lane = |index: usize, table: &Table| {
-        if engine.stored_cell_page_frames_require_split(table, styles) {
-            return false;
-        }
-        let ft = engine.format_table(
-            para,
-            para_idx,
-            index,
-            table,
-            measured_tables,
-            styles,
-            composed,
-            next_para,
-            st.flow_table_column_top(),
-        );
-        super::empty_float::prepare(
-            para_idx,
-            index,
-            para,
-            table,
-            &ft,
-            composed,
-            para_idx.checked_sub(1).and_then(|i| paragraphs_all.get(i)),
-            next_para,
-            styles,
-            para_start_height,
-            lanes,
-            st.empty_float_page(paragraphs_all, para_idx),
-            engine.render_normalization.table_text_reflowed(table),
-            false,
-            || st.empty_float_available_height(ft.table_footnote_height, ft.table_footnote_count),
-            engine.dpi,
-        )
-        .is_some()
-    };
-    if fits_lane(ctrl_idx, table) {
-        return None;
-    }
-
-    ctrl_order
-        .iter()
-        .enumerate()
-        .skip(order_pos + 1)
-        .find_map(|(position, &index)| match &para.controls[index] {
-            Control::Table(table) if fits_lane(index, table) => Some(position),
-            _ => None,
-        })
 }
 
 pub(in crate::renderer::typeset) fn place(

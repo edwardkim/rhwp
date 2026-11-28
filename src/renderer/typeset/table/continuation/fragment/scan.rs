@@ -273,13 +273,6 @@ impl TypesetEngine {
             avail_for_rows,
             reflow_frame_avail_for_rows,
             reflow_blank_avail_for_rows,
-            opens_after_fitting_sibling: input.prepared.follows_placed_sibling
-                && !is_continuation
-                && st.current_items.is_empty()
-                && !input.row_cursor_is_nested
-                && std::ptr::eq(row_geometry_table, table)
-                && table.caption.is_none()
-                && input.prepared.table_footnotes.is_empty(),
             header_overhead,
             landscape_rowbreak_bleed,
             has_table_footnotes: !input.prepared.table_footnotes.is_empty(),

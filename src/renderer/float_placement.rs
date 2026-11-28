@@ -11898,9 +11898,6 @@ pub(crate) fn stored_cell_content_extent_hu(paragraphs: &[Paragraph]) -> Option<
     last.vertical_pos.checked_add(last.line_height)
 }
 
-/// 자리차지 개체가 이미 확정한 프레임의 단 경계를 비교할 때 쓰는 래스터 여유.
-pub(crate) const FLOAT_FRAME_FIT_TOLERANCE_PX: f64 = 0.5;
-
 /// 첫 줄을 수용한 가로 칸의 같은 줄 사다리가 선언한 칸 끝을 넘어가는지 확인한다.
 /// 선언 프레임을 저장 이후의 줄 추가에도 그대로 사용할 수 있는지 판단하는 근거다.
 pub(crate) fn table_cell_lines_exceed_frame(table: &Table) -> bool {

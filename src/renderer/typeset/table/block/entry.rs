@@ -1072,20 +1072,30 @@ impl TypesetEngine {
                     declared_stack_height > 0.0
                         && para_start_height + declared_stack_height <= bounds.0
                 });
+        let placed_sibling_exceeds_saved_cell = || {
+            st.current_items.iter().any(|item| {
+                matches!(item, PageItem::Table { para_index, control_index }
+                    | PageItem::PartialTable { para_index, control_index, .. }
+                    if *para_index == para_idx && *control_index != ctrl_idx
+                        && matches!(&para.controls[*control_index], Control::Table(sibling)
+                            if is_para_topbottom_float(&sibling.common)
+                                && sibling.common.flow_with_text
+                                && !sibling.common.allow_overlap
+                                && crate::renderer::float_placement::table_cell_lines_exceed_frame(sibling)))
+            })
+        };
         let saved_host_line_after_stack_fits = saved_stack_fits_host_origin
             && has_preceding_coanchored_float
             && table_total <= available
             && !page_has_table_continuation
-            // 한 형제라도 현재 줄 프로그램으로 선언 칸을 넘으면, 넘치는
-            // 표를 통째 수용할 때 이 스택의 옛 줄을 근거로 쓸 수 없다.
-            && (st.current_height + table_total <= available
-                || !table.common.flow_with_text
-                || table.common.allow_overlap
-                || !para.controls.iter().any(|control| {
-                    matches!(control, Control::Table(sibling)
-                        if is_para_topbottom_float(&sibling.common)
-                            && crate::renderer::float_placement::table_cell_lines_exceed_frame(sibling))
-                }));
+            // 저장 앵커는 옛 스택을 증명한다. 현재 표의 칸이 커졌거나
+            // 같은 단에서 앞 형제가 이미 늘어난 공간을 소비한 경우에는
+            // 실제로 남은 예산을 넘겨 통째 수용하는 데 사용할 수 없다.
+            && !(st.current_height + table_total > available
+                && table.common.flow_with_text
+                && !table.common.allow_overlap
+                && (crate::renderer::float_placement::table_cell_lines_exceed_frame(table)
+                    || placed_sibling_exceeds_saved_cell()));
         if std::env::var("RHWP_DIAG_2813").is_ok() {
             eprintln!(
                 "DIAG_2813 pi={} ci={} float={} vis_text={} segs={} real_segs={} bounds={:?} cur_h={:.1} avail={:.1} verdict={}",
@@ -1108,26 +1118,7 @@ impl TypesetEngine {
         // 이월이 실제 발생한 경우에만 placement 기준을 fresh page-local current_height 로
         // 재설정한다. #1860 의 budget_para_start_height 는 별도 예산 계약이므로 불변이다.
         let mut placement_para_start_height = para_start_height;
-        // 앞 단에서 자리 잡은 뒤 형제는 이미 자기 상자를 소유한다. 이 표가
-        // 다음 단을 처음 열면, 표 본체와 수용용 여백이 거기 들어가는지 본다.
-        // 그 뒤의 흐름 간격까지 수용 높이로 치면 닫히는 마지막 행도 잘린다.
-        let follows_placed_sibling = !para_has_visible_text(para)
-            && ft.table_footnotes.is_empty()
-            && table.common.flow_with_text
-            && !table.common.allow_overlap
-            && st.current_items.iter().any(|item| {
-                matches!(item, PageItem::Table { para_index, control_index }
-                    if *para_index == para_idx && *control_index > ctrl_idx
-                        && matches!(&para.controls[*control_index], Control::Table(sibling)
-                            if is_para_topbottom_float(&sibling.common)))
-            })
-            && crate::renderer::float_placement::table_cell_lines_exceed_frame(table);
-        let fit_slack = if follows_placed_sibling {
-            crate::renderer::float_placement::FLOAT_FRAME_FIT_TOLERANCE_PX
-        } else {
-            0.0
-        };
-        let mut restarts_after_grown_sibling = false;
+        let mut sibling_anchor_stays_in_previous_column = false;
         if is_para_topbottom_float(&table.common)
             && matches!(
                 table.layout_page_break(),
@@ -1136,7 +1127,7 @@ impl TypesetEngine {
             && has_preceding_coanchored_float
             && !st.current_items.is_empty()
             && st.current_height + table_total > available
-            && table_total <= available + fit_slack
+            && table_total <= available
             && !saved_host_line_after_stack_fits
         {
             // [#3674 진단] 통짜 이월 분기 발동 기록 — 동작 불변.
@@ -1156,46 +1147,10 @@ impl TypesetEngine {
                     para_idx, st.section_index, st.current_height
                 );
             }
-            // 떨어져 나간 개체가 새 단을 채워 앵커 줄까지 들어가지 않으면
-            // 줄은 이미 놓인 형제들과 같은 단에서 한 번만 소비한다.
-            if follows_placed_sibling
-                && is_last_placed
-                && fmt.line_count() == 1
-                && !st.pre_emitted_host_paras.contains(&para_idx)
-                && !st.current_items.iter().any(|item| {
-                    matches!(item, PageItem::FullParagraph { para_index }
-                        | PageItem::PartialParagraph { para_index, .. } if *para_index == para_idx)
-                })
-            {
-                let (line_content, line_advance) = fmt.host_text_bounds(para, 0..1, self.dpi);
-                if table_total + line_content > available + fit_slack
-                    && st.current_height + line_content <= available
-                {
-                    st.record_host_text_fragment(para_idx, 0..1, para, fmt, self.dpi);
-                    st.append_item(PageItem::PartialParagraph {
-                        para_index: para_idx,
-                        start_line: 0,
-                        end_line: 1,
-                    });
-                    st.advance_flow_by(line_advance);
-                    st.mark_pre_emitted_host(para_idx);
-                    if st.defer_host_line_item_para == Some(para_idx) {
-                        st.finish_deferred_host_line();
-                    }
-                }
-            }
-            // 이미 앞 단에 놓인 커진 형제는 그곳의 앵커를 소비했다.
-            // 옮겨진 개체만으로 새 단을 열 때 이전 앵커와의 거리를 다시 더하지 않는다.
-            restarts_after_grown_sibling = !para_has_visible_text(para)
+            sibling_anchor_stays_in_previous_column = !para_has_visible_text(para)
                 && table.common.flow_with_text
                 && !table.common.allow_overlap
-                && st.current_items.iter().any(|item| {
-                    matches!(item, PageItem::Table { para_index, control_index }
-                        if *para_index == para_idx
-                            && matches!(&para.controls[*control_index], Control::Table(sibling)
-                                if is_para_topbottom_float(&sibling.common)
-                                    && crate::renderer::float_placement::table_cell_lines_exceed_frame(sibling)))
-                });
+                && placed_sibling_exceeds_saved_cell();
             st.advance_column_or_new_page();
             placement_para_start_height = st.current_height;
         }
@@ -2009,7 +1964,7 @@ impl TypesetEngine {
             st.align_flow_to(source_top);
             placement_para_start_height = source_top;
         }
-        if host_line_trails_float_stack && !st.pre_emitted_host_paras.contains(&para_idx) {
+        if host_line_trails_float_stack {
             // [#2813] 앵커 줄 아이템을 float 스택 뒤로 이연(한글 문서순) —
             // 스택 첫 표 배치 전에 걸려야 렌더 순서가 표→줄로 나온다.
             st.defer_host_line(Some(para_idx));
@@ -2763,14 +2718,17 @@ impl TypesetEngine {
                     .min_by_key(|((_, control), _)| *control)
                     .map_or(st.current_height, |(_, placement)| placement.anchor_y)
             };
-            let vertical_offset = if restarts_after_grown_sibling && st.current_items.is_empty() {
-                0.0
-            } else {
-                hwpunit_to_px(
-                    signed_hwpunit(table.common.vertical_offset).max(0),
-                    self.dpi,
-                )
-            };
+            // 다음 단을 이 표만으로 열면 앞 단의 형제 원점에서 쟀던
+            // 오프셋은 이미 소비됐다.
+            let vertical_offset =
+                if sibling_anchor_stays_in_previous_column && st.current_items.is_empty() {
+                    0.0
+                } else {
+                    hwpunit_to_px(
+                        signed_hwpunit(table.common.vertical_offset).max(0),
+                        self.dpi,
+                    )
+                };
             let natural_top = host_origin + vertical_offset;
             crate::renderer::float_placement::ParagraphFloatPlacement::from_empty_sibling_box(
                 para,
@@ -3384,7 +3342,6 @@ impl TypesetEngine {
         }
 
         Some(SplitTableEntry {
-            follows_placed_sibling,
             computed_host_tail,
             total_footnote,
             next_starts_new_page,

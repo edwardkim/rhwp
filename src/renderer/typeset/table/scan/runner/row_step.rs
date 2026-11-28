@@ -119,11 +119,7 @@ impl TypesetEngine {
             crate::model::shape::TextWrap::TopAndBottom
         ) && (layout_engine.row_has_plain_line_units(table, r, styles)
             || crate::renderer::typeset::is_reparsed_single_column_cell_split_row(table, r));
-        let avail_for_rows = if v.opens_after_fitting_sibling {
-            v.blank_row_available_height()
-        } else {
-            v.plain_row_available_height(owns_plain_row_frame, plain_body_band)
-        };
+        let avail_for_rows = v.plain_row_available_height(owns_plain_row_frame, plain_body_band);
         if avail_for_rows < v.avail_for_rows && std::env::var("RHWP_DIAG_SCAN").is_ok() {
             eprintln!(
                 "DIAG_SCAN PLAIN_BODY_BUDGET r={} splittable={} legacy={:.6} physical={:.6}",
@@ -577,25 +573,6 @@ impl TypesetEngine {
                 r += 1;
                 end_row = r;
                 return true;
-            }
-            // 새 단의 끝에서 선언 행 높이는 넘지만 저장 빈 줄과 안 여백이
-            // 들어가면 행을 이 조각의 상자에서 닫는다. 빈 여유는 다음 조각에
-            // 이어 쓰지 않고, 승인한 행 끝과 물리 높이를 그리기에 전달한다.
-            let rest = avail_for_rows - consumed - cs_before;
-            if v.opens_after_fitting_sibling
-                && r > cursor_row
-                && !rowspan_touched[r]
-                && row_start_cut.is_empty()
-                && rest > 0.0
-                && rest < row_total
-                && layout_engine
-                    .unchanged_empty_row_frame_height(table, r, styles)
-                    .is_some_and(|height| height <= rest)
-            {
-                consumed += cs_before + rest;
-                end_row = r + 1;
-                end_row_height_override = Some(rest);
-                return false;
             }
             if r > cursor_row
                 && terminal_response_before_empty_spacer
