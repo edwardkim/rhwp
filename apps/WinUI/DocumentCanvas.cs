@@ -20,7 +20,7 @@ public sealed partial class DocumentCanvas : Canvas
         pageTop = top;
     }
 
-    internal Rect AutomationScreenBounds(DocumentAutomationSnapshot snapshot, DocumentAutomationNode node)
+    internal Rect AutomationClientBounds(DocumentAutomationSnapshot snapshot, DocumentAutomationNode node)
     {
         if (!ReferenceEquals(AutomationDocument, snapshot) ||
             automationViewport is not { ViewportWidth: > 0, ViewportHeight: > 0 } scroll ||
@@ -34,8 +34,9 @@ public sealed partial class DocumentCanvas : Canvas
 
         var local = new Rect(pageLeft + bounds.X * zoom, pageTop + bounds.Y * zoom, bounds.Width * zoom, bounds.Height * zoom);
         Rect inRoot = TransformToVisual(root.Content).TransformBounds(local);
-        var physical = root.CoordinateConverter.ConvertLocalToScreen(inRoot);
-        return new Rect(physical.X, physical.Y, physical.Width, physical.Height);
+        // WinUI translates the peer's physical client bounds into UI Automation screen bounds.
+        double scale = root.RasterizationScale;
+        return new Rect(inRoot.X * scale, inRoot.Y * scale, inRoot.Width * scale, inRoot.Height * scale);
     }
 
     internal void SetAutomationDocument(DocumentAutomationSnapshot? snapshot)
@@ -122,7 +123,7 @@ internal sealed class DocumentContentAutomationPeer(DocumentCanvas canvas,
     protected override bool IsEnabledCore() => true;
 
     protected override bool IsOffscreenCore() => GetBoundingRectangleCore() is not { Width: > 0, Height: > 0 };
-    protected override Rect GetBoundingRectangleCore() => canvas.AutomationScreenBounds(snapshot, node);
+    protected override Rect GetBoundingRectangleCore() => canvas.AutomationClientBounds(snapshot, node);
 
     protected override IList<AutomationPeer> GetChildrenCore() => children ??= node.Children
         .Select(child => (AutomationPeer)new DocumentContentAutomationPeer(canvas, snapshot, child)).ToList();
