@@ -29,6 +29,7 @@ pub mod render_snapshot;
 pub mod runtime;
 pub mod save;
 pub mod search;
+pub mod table_object;
 pub mod view;
 
 use std::marker::PhantomData;
