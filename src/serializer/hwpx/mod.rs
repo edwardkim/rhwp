@@ -51,7 +51,8 @@ use writer::HwpxZipWriter;
 /// - HWPX 원본: 원본 ZIP 엔트리가 deflate 이고 CRC-32·크기가 `payload` 와 같을 때.
 /// - HWP5 원본: 저장 스트림을 raw deflate 로 풀어 낸 CRC-32·크기가 `payload` 와 같을 때.
 ///   HWP5 읽기는 raw deflate 가 실패하면 zlib 으로도 푸는데, zlib 스트림은 ZIP 엔트리가
-///   될 수 없으므로 raw deflate 로 풀리는지까지 확인한다.
+///   될 수 없으므로 raw deflate 로 풀리는지까지 확인한다. HWP5 저장 스트림에 gzip 꼬리가
+///   붙은 경우에도 ZIP 엔트리에는 deflate 스트림까지만 쓴다.
 fn reusable_deflate(
     data: &crate::model::bin_data::BinDataBytes,
     payload: &[u8],
@@ -74,13 +75,20 @@ fn reusable_deflate(
     )
     .ok()?;
     let crc = crc32();
-    (inflated_size == payload.len() as u64 && inflated.crc().sum() == crc).then_some(
-        crate::model::bin_data::DeflatedZipEntry {
-            crc32: crc,
-            uncompressed_size: payload.len() as u64,
-            compressed_bytes: stored.bytes,
-        },
-    )
+    if inflated_size != payload.len() as u64 || inflated.crc().sum() != crc {
+        return None;
+    }
+    let consumed = usize::try_from(inflated.get_ref().total_in()).ok()?;
+    let mut compressed_bytes = stored.bytes;
+    if consumed == 0 || consumed > compressed_bytes.len() {
+        return None;
+    }
+    compressed_bytes.truncate(consumed);
+    Some(crate::model::bin_data::DeflatedZipEntry {
+        crc32: crc,
+        uncompressed_size: payload.len() as u64,
+        compressed_bytes,
+    })
 }
 
 pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {

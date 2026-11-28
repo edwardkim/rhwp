@@ -73,10 +73,14 @@ fn hwpx_source_keeps_original_deflate_bytes() {
 fn hwp_source_reuses_stored_deflate_stream() {
     let source = read_fixture("samples/exam_kor.hwp");
     let original = parse_document(&source).expect("parse hwp");
-    let core = DocumentCore::from_bytes(&source).expect("open");
-    let saved = bin_data_entries(&core.export_hwpx_native().expect("save hwpx"));
+    let mut core = DocumentCore::from_bytes(&source).expect("open HWP");
+    let marker = "BinData round trip ";
+    core.insert_text_native(0, 0, 0, marker).expect("edit HWP");
+    let saved_bytes = core.export_hwpx_native().expect("save HWP as HWPX");
+    let saved = bin_data_entries(&saved_bytes);
     assert!(!saved.is_empty());
 
+    let mut trailer_count = 0;
     for content in &original.bin_data_content {
         let Some(stored) = content.data.load_raw().filter(|stored| stored.compressed) else {
             continue;
@@ -86,12 +90,40 @@ fn hwp_source_reuses_stored_deflate_stream() {
             .iter()
             .find(|(_, _, saved_content)| *saved_content == loaded)
             .unwrap_or_else(|| panic!("BIN{:04X} 내용의 엔트리가 저장본에 없다", content.id));
+        let mut decoder = flate2::bufread::DeflateDecoder::new(stored.bytes.as_slice());
+        let inflated_size = std::io::copy(&mut decoder, &mut std::io::sink()).expect("inflate HWP");
+        assert_eq!(inflated_size, loaded.len() as u64);
+        let trailer = decoder.into_inner();
+        if !trailer.is_empty() {
+            let mut crc = flate2::Crc::new();
+            crc.update(&loaded);
+            assert_eq!(trailer.len(), 8);
+            assert_eq!(trailer[..4], crc.sum().to_le_bytes());
+            assert_eq!(trailer[4..], (loaded.len() as u32).to_le_bytes());
+            trailer_count += 1;
+        }
+        let deflate = &stored.bytes[..stored.bytes.len() - trailer.len()];
         assert!(
-            *saved_raw == stored.bytes,
-            "{name} 가 HWP 저장 스트림을 그대로 쓰지 않았다"
+            saved_raw == deflate,
+            "{name}: HWPX 엔트리는 원본 deflate 스트림까지만 담아야 한다"
         );
-        assert_eq!(*saved_content, loaded);
+        assert!(saved_content == &loaded, "{name} 그림 내용이 달라졌다");
     }
+    assert!(trailer_count > 0, "검증 입력에 gzip 꼬리가 있어야 한다");
+
+    let reopened = DocumentCore::from_bytes(&saved_bytes).expect("reopen HWPX");
+    assert!(reopened.document().sections[0].paragraphs[0]
+        .text
+        .starts_with(marker));
+    let saved_again = reopened.export_hwpx_native().expect("resave HWPX");
+    let reopened_again = DocumentCore::from_bytes(&saved_again).expect("reopen resaved HWPX");
+    assert!(reopened_again.document().sections[0].paragraphs[0]
+        .text
+        .starts_with(marker));
+    assert!(
+        bin_data_entries(&saved_again) == saved,
+        "재저장본 그림이 달라졌다"
+    );
 }
 
 #[test]
