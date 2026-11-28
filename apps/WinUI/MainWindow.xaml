@@ -5,8 +5,7 @@
     xmlns:local="using:Rhwp.WinUI"
     Title="RHWP">
     <Grid x:Name="Root" RowDefinitions="Auto,Auto,*,Auto" Loaded="OnLoaded" Unloaded="OnUnloaded"
-          Background="Transparent"
-          AllowDrop="True" DragOver="OnFilesDragOver" Drop="OnFilesDropped">
+          Background="Transparent" AllowDrop="True">
 
         <Grid.Resources>
             <Style x:Key="ToolbarIconButtonStyle" TargetType="Button" BasedOn="{StaticResource SubtleButtonStyle}">
@@ -414,7 +413,7 @@
                     </Grid>
                 </Grid>
             </Border>
-            <ScrollViewer x:Name="PageScroll" Grid.Row="1" Margin="16,12,16,0"
+            <ScrollViewer x:Name="PageScroll" Grid.Row="1" Margin="16,12,16,0" AllowDrop="True"
                           ZoomMode="Enabled" MinZoomFactor="0.125" MaxZoomFactor="8" IsZoomChainingEnabled="False"
                           HorizontalContentAlignment="Center" VerticalContentAlignment="Top"
                           HorizontalScrollBarVisibility="Auto" HorizontalScrollMode="Enabled"
@@ -422,7 +421,7 @@
                           SizeChanged="OnViewportSizeChanged" ViewChanged="OnViewChanged"
                           AutomationProperties.AutomationId="DocumentViewport">
                 <local:DocumentCanvas x:Name="PageCanvas" HorizontalAlignment="Center" VerticalAlignment="Top"
-                                      Width="0" Height="0" IsTabStop="True" KeyDown="OnPageEditKeyDown"
+                                      Width="0" Height="0" IsTabStop="True" AllowDrop="True" KeyDown="OnPageEditKeyDown"
                                       Background="Transparent" Tapped="OnPageTapped" RightTapped="OnPageRightTapped"
                                       PointerPressed="OnPagePointerPressed" PointerMoved="OnPagePointerMoved"
                                       PointerReleased="OnPagePointerReleased" PointerCaptureLost="OnPagePointerCaptureLost"

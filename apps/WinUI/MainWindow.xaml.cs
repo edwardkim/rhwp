@@ -34,6 +34,8 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        Root.AddHandler(UIElement.DragOverEvent, new DragEventHandler(OnFilesDragOver), handledEventsToo: true);
+        Root.AddHandler(UIElement.DropEvent, new DragEventHandler(OnFilesDropped), handledEventsToo: true);
         InitializeAppIcon();
         InitializeWindowChrome();
         searchUiReady = true;
