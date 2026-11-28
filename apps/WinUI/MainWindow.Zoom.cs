@@ -19,18 +19,30 @@ public sealed partial class MainWindow
 
     private void OnZoomAcceleratorInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
     {
-        if (!DocumentActionsAvailable || page is null ||
-            (FocusManager.GetFocusedElement(Root.XamlRoot) is Microsoft.UI.Xaml.Controls.TextBox focused &&
-                focused != DirectInput))
+        if (FocusManager.GetFocusedElement(Root.XamlRoot) is Microsoft.UI.Xaml.Controls.TextBox focused &&
+            focused != DirectInput)
             return;
 
-        args.Handled = true;
-        ZoomTo(sender.Key switch
+        args.Handled = TryZoomFromKey(sender.Key);
+    }
+
+    private bool TryZoomFromKey(VirtualKey key)
+    {
+        if (!DocumentActionsAvailable || page is null)
+            return false;
+
+        double? next = key switch
         {
             VirtualKey.Up or VirtualKey.Right or VirtualKey.Add => zoom * 1.25,
             VirtualKey.Down or VirtualKey.Left or VirtualKey.Subtract => zoom / 1.25,
-            _ => 1,
-        });
+            VirtualKey.Number0 or VirtualKey.NumberPad0 => 1,
+            _ => null,
+        };
+        if (next is not double value)
+            return false;
+
+        ZoomTo(value);
+        return true;
     }
 
     private bool HandleGestureZoom(bool isIntermediate)

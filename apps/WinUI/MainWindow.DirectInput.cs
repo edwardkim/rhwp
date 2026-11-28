@@ -94,6 +94,13 @@ public sealed partial class MainWindow
 
     private void OnPageEditKeyDown(object sender, KeyRoutedEventArgs args)
     {
+        if (KeyDown(VirtualKey.Control) && !KeyDown(VirtualKey.Shift) && !KeyDown(VirtualKey.Menu) &&
+            TryZoomFromKey(args.Key))
+        {
+            args.Handled = true;
+            return;
+        }
+
         if (args.Key != VirtualKey.F2 || KeyDown(VirtualKey.Control) || !DocumentActionsAvailable || page is not PageInfo current)
             return;
 
@@ -556,6 +563,12 @@ public sealed partial class MainWindow
         }
         if (platformComposing)
             return;
+
+        if (control && !shift && TryZoomFromKey(args.Key))
+        {
+            args.Handled = true;
+            return;
+        }
 
         if (control && args.Key is VirtualKey.Z or VirtualKey.Y)
         {
