@@ -7,6 +7,7 @@ from xml.etree import ElementTree
 from zipfile import ZipFile
 
 from native_equation_contract import NativeWorker, PARAGRAPH_NS, caret
+from native_host import NativeCallError
 
 
 def inspect(data, expected_shape, expected_text):
@@ -51,8 +52,12 @@ def run(library):
         for values in ({"width": 199}, {"height": 200_001}, {"shape": "unknown"}):
             invalid = {"command": "insertShape", "shape": "rectangle", "width": 7200, "height": 3600}
             invalid.update(values)
-            result = call(op="executeCommand", target=target, command=invalid)
-            assert not result["ok"], result
+            try:
+                result = call(op="executeCommand", target=target, command=invalid)
+                assert not result["ok"], result
+            except NativeCallError:
+                # Unknown enum values are rejected by the FFI parser before queuing.
+                assert values == {"shape": "unknown"}
             assert accepted(op="info")["info"]["revision"] == target["revision"]
 
         for kind, tag in (("rectangle", "rect"), ("ellipse", "ellipse"), ("line", "line")):
