@@ -56,6 +56,45 @@ impl From<NativeParagraphAlignment> for Alignment {
     }
 }
 
+impl From<Alignment> for NativeParagraphAlignment {
+    fn from(alignment: Alignment) -> Self {
+        match alignment {
+            Alignment::Justify => Self::Justify,
+            Alignment::Left => Self::Left,
+            Alignment::Right => Self::Right,
+            Alignment::Center => Self::Center,
+            Alignment::Distribute => Self::Distribute,
+            Alignment::Split => Self::Split,
+        }
+    }
+}
+
+/// A property can be uniform even when the selected text uses several shapes.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(tag = "kind", content = "value", rename_all = "camelCase")]
+pub enum NativeFormattingValue<T> {
+    Uniform(T),
+    Mixed,
+}
+
+impl<T: PartialEq> NativeFormattingValue<T> {
+    fn include(&mut self, value: T) {
+        if matches!(self, Self::Uniform(current) if *current != value) {
+            *self = Self::Mixed;
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NativeSelectionFormatting {
+    pub bold: NativeFormattingValue<bool>,
+    /// HWPUNIT (100 units per point), matching formatCharacters.
+    pub font_size: NativeFormattingValue<i32>,
+    /// Always uniform because the selection belongs to one editable paragraph.
+    pub alignment: NativeParagraphAlignment,
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(
     tag = "command",
@@ -223,6 +262,77 @@ impl NativeEditor {
         let core = self.session().document();
         Self::check_editable_text_span(core, selection)?;
         Ok(core.native_text_paragraph(&selection.focus)?)
+    }
+
+    /// Read the current editable leaf without changing selection or history.
+    pub fn selection_formatting(
+        &self,
+        revision: u64,
+        font_generation: u64,
+        selection: &NativeTextSelection,
+    ) -> Result<NativeSelectionFormatting, NativeHostError> {
+        self.check_edit_ready(revision)?;
+        if font_generation != self.session().font_generation() {
+            return Err(NativeHostError::InvalidArgument(
+                "stale font generation".into(),
+            ));
+        }
+        if selection != self.selection() {
+            return Err(NativeHostError::InvalidArgument("stale selection".into()));
+        }
+
+        let paragraph = self.formatting_paragraph()?;
+        let doc_info = &self.session().document().document().doc_info;
+        let (from, to) = Self::ordered(selection);
+        let start = from.scalar_offset as usize;
+        let end = to.scalar_offset as usize;
+        if end > paragraph.char_offsets.len() {
+            return Err(NativeHostError::InvalidArgument(
+                "invalid character format range".into(),
+            ));
+        }
+
+        // At a caret use the shape at the insertion offset, including the
+        // paragraph-end shape. Otherwise read only actual selected text runs.
+        let ids = if start == end {
+            vec![paragraph.char_shape_id_at(start).unwrap_or(0)]
+        } else {
+            paragraph
+                .char_shape_runs(start, end)
+                .into_iter()
+                .map(|run| run.char_shape_id)
+                .collect()
+        };
+        let shape_for = |id: u32| {
+            doc_info.char_shapes.get(id as usize).ok_or_else(|| {
+                NativeHostError::InvalidArgument("unknown character shape in selection".into())
+            })
+        };
+        let mut ids = ids.into_iter();
+        let first = ids.next().ok_or_else(|| {
+            NativeHostError::InvalidArgument("invalid character format range".into())
+        })?;
+        let first = shape_for(first)?;
+        let mut bold = NativeFormattingValue::Uniform(first.bold);
+        let mut font_size = NativeFormattingValue::Uniform(first.base_size);
+        for id in ids {
+            let shape = shape_for(id)?;
+            bold.include(shape.bold);
+            font_size.include(shape.base_size);
+        }
+        let alignment = doc_info
+            .para_shapes
+            .get(paragraph.para_shape_id as usize)
+            .ok_or_else(|| {
+                NativeHostError::InvalidArgument("unknown paragraph shape in selection".into())
+            })?
+            .alignment
+            .into();
+        Ok(NativeSelectionFormatting {
+            bold,
+            font_size,
+            alignment,
+        })
     }
 
     fn format_characters(
