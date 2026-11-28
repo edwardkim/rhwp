@@ -1,0 +1,73 @@
+<ContentDialog
+    x:Class="Rhwp.WinUI.PageSetupDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="쪽 설정"
+    PrimaryButtonText="적용"
+    CloseButtonText="취소"
+    DefaultButton="Primary"
+    PrimaryButtonClick="OnApply"
+    AutomationProperties.AutomationId="PageSetupDialog">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollMode="Disabled">
+        <StackPanel Spacing="12">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                <StackPanel Spacing="8">
+                    <ComboBox x:Name="Preset" Header="용지" HorizontalAlignment="Stretch"
+                              SelectionChanged="OnPaperChanged" AutomationProperties.AutomationId="PaperPreset">
+                        <ComboBoxItem Content="사용자 지정" />
+                        <ComboBoxItem Content="A4" />
+                        <ComboBoxItem Content="A5" />
+                        <ComboBoxItem Content="B5 (JIS)" />
+                        <ComboBoxItem Content="Letter" />
+                        <ComboBoxItem Content="Legal" />
+                    </ComboBox>
+                    <ComboBox x:Name="Orientation" Header="방향" HorizontalAlignment="Stretch"
+                              SelectionChanged="OnOrientationChanged" AutomationProperties.AutomationId="PaperOrientation">
+                        <ComboBoxItem Content="세로" />
+                        <ComboBoxItem Content="가로" />
+                    </ComboBox>
+                </StackPanel>
+                <Grid Grid.Column="1" Width="96" Height="96" VerticalAlignment="Center"
+                      Background="{ThemeResource ControlFillColorSecondaryBrush}" CornerRadius="6"
+                      AutomationProperties.AccessibilityView="Raw">
+                    <Border x:Name="PaperPreview" HorizontalAlignment="Center" VerticalAlignment="Center"
+                            BorderBrush="{ThemeResource ControlStrongStrokeColorDefaultBrush}" BorderThickness="1"
+                            Background="{ThemeResource SolidBackgroundFillColorBaseBrush}">
+                        <Border x:Name="BodyPreview" BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
+                                BorderThickness="1" CornerRadius="1" />
+                    </Border>
+                </Grid>
+            </Grid>
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                <NumberBox x:Name="PaperWidth" Header="너비 (mm)" MinWidth="0" SmallChange="1" ValueChanged="OnDimensionChanged"
+                           AutomationProperties.AutomationId="PaperWidth" />
+                <NumberBox x:Name="PaperHeight" Grid.Column="1" Header="높이 (mm)" MinWidth="0" SmallChange="1"
+                           ValueChanged="OnDimensionChanged" AutomationProperties.AutomationId="PaperHeight" />
+            </Grid>
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="6">
+                <NumberBox x:Name="MarginTop" Header="위쪽 (mm)" MinWidth="0" ValueChanged="OnMarginChanged"
+                           AutomationProperties.AutomationId="MarginTop" />
+                <NumberBox x:Name="MarginBottom" Grid.Column="1" Header="아래쪽 (mm)" MinWidth="0" ValueChanged="OnMarginChanged"
+                           AutomationProperties.AutomationId="MarginBottom" />
+                <NumberBox x:Name="MarginLeft" Grid.Row="1" Header="왼쪽 (mm)" MinWidth="0" ValueChanged="OnMarginChanged"
+                           AutomationProperties.AutomationId="MarginLeft" />
+                <NumberBox x:Name="MarginRight" Grid.Row="1" Grid.Column="1" Header="오른쪽 (mm)" MinWidth="0"
+                           ValueChanged="OnMarginChanged" AutomationProperties.AutomationId="MarginRight" />
+                <NumberBox x:Name="MarginHeader" Grid.Row="2" Header="머리말 (mm)" MinWidth="0" ValueChanged="OnMarginChanged"
+                           AutomationProperties.AutomationId="MarginHeader" />
+                <NumberBox x:Name="MarginFooter" Grid.Row="2" Grid.Column="1" Header="꼬리말 (mm)" MinWidth="0"
+                           ValueChanged="OnMarginChanged" AutomationProperties.AutomationId="MarginFooter" />
+                <NumberBox x:Name="MarginGutter" Grid.Row="3" Header="제본 여백 (mm)" MinWidth="0" ValueChanged="OnMarginChanged"
+                           AutomationProperties.AutomationId="MarginGutter" />
+                <ComboBox x:Name="Binding" Grid.Row="3" Grid.Column="1" Header="제본 방식" HorizontalAlignment="Stretch"
+                          AutomationProperties.AutomationId="PaperBinding">
+                    <ComboBoxItem Content="한쪽 편집" />
+                    <ComboBoxItem Content="맞쪽 편집" />
+                    <ComboBoxItem Content="위로 넘기기" />
+                </ComboBox>
+            </Grid>
+            <TextBlock x:Name="Validation" Visibility="Collapsed" TextWrapping="Wrap"
+                       AutomationProperties.LiveSetting="Polite" />
+        </StackPanel>
+    </ScrollViewer>
+</ContentDialog>
