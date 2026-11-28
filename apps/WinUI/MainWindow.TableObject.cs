@@ -90,16 +90,17 @@ public sealed partial class MainWindow
         if (!DocumentActionsAvailable || !IsCurrentTablePage(context.Page))
             return;
         await EnqueueDirectEdit(() => SelectTableObjectAsync(context));
-        if (!DocumentActionsAvailable || !IsSelectedTable(context) || page is not PageInfo active)
+        if (!DocumentActionsAvailable || !IsSelectedTable(context))
             return;
 
         editorBusy = true;
         RefreshButtons();
         try
         {
-            var dialog = new TableObjectDialog(context.Table, resize) { XamlRoot = Root.XamlRoot };
-            if (await dialog.ShowAsync() != ContentDialogResult.Primary || !IsCurrentTablePage(context.Page) ||
-                !IsSelectedTable(context))
+            var dialog = new TableObjectDialog(context.Table, resize);
+            if (!await PropertyWindow.ShowAsync(this, resize ? "표 크기" : "표 속성", dialog,
+                    dialog.CanApply ? dialog.TryApply : null, height: resize ? 212 : 580) ||
+                !IsCurrentTablePage(context.Page) || !IsSelectedTable(context) || page is not PageInfo active)
                 return;
 
             CancellationToken token = CancellationToken.None;

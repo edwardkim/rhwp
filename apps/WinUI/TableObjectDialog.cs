@@ -7,21 +7,19 @@ using Windows.Globalization.NumberFormatting;
 
 namespace Rhwp.WinUI;
 
-internal sealed class TableObjectDialog : ContentDialog
+internal sealed class TableObjectDialog : UserControl
 {
     private const double UnitsPerMillimeter = 7200.0 / 25.4;
     private readonly TextBlock validation = new() { Visibility = Visibility.Collapsed, TextWrapping = TextWrapping.Wrap };
+    private readonly Func<bool> apply;
 
+    public bool CanApply { get; }
     public (uint Width, uint Height)? SizeChange { get; private set; }
     public TableObjectPropertyChanges? PropertyChanges { get; private set; }
 
     public TableObjectDialog(NativeTableObject table, bool resize)
     {
-        bool editable = resize ? table.CanResize : table.Editable;
-        Title = resize ? "표 크기" : "표 속성";
-        PrimaryButtonText = editable ? "적용" : "";
-        CloseButtonText = editable ? "취소" : "닫기";
-        DefaultButton = editable ? ContentDialogButton.Primary : ContentDialogButton.Close;
+        bool editable = CanApply = resize ? table.CanResize : table.Editable;
         AutomationProperties.SetAutomationId(this, resize ? "TableObjectSizeDialog" : "TableObjectPropertiesDialog");
         AutomationProperties.SetLiveSetting(validation, AutomationLiveSetting.Polite);
 
@@ -33,15 +31,15 @@ internal sealed class TableObjectDialog : ContentDialog
             NumberBox width = Measurement("너비 (mm)", "TableObjectWidth", original.TableWidth, int.MaxValue);
             NumberBox height = Measurement("높이 (mm)", "TableObjectHeight", original.TableHeight, int.MaxValue);
             panel.Children.Add(Pair(width, height));
-            PrimaryButtonClick += (_, args) =>
+            apply = () =>
             {
                 if (!TryRead(width, original.TableWidth, int.MaxValue, out long widthUnits) || widthUnits == 0 ||
                     !TryRead(height, original.TableHeight, int.MaxValue, out long heightUnits) || heightUnits == 0)
                 {
-                    Reject(args, "너비와 높이를 0보다 큰 값으로 입력하세요.");
-                    return;
+                    return Reject("너비와 높이를 0보다 큰 값으로 입력하세요.");
                 }
                 SizeChange = ((uint)widthUnits, (uint)heightUnits);
+                return true;
             };
         }
         else
@@ -72,25 +70,24 @@ internal sealed class TableObjectDialog : ContentDialog
             NumberBox[] boxes = fields.Select(field => Margin(field.Label, field.Id, field.Value)).ToArray();
             panel.Children.Add(Group("셀 기본 여백 (mm)", boxes[0], boxes[1], boxes[2], boxes[3]));
             panel.Children.Add(Group("표 바깥 여백 (mm)", boxes[4], boxes[5], boxes[6], boxes[7]));
-            PrimaryButtonClick += (_, args) =>
+            apply = () =>
             {
                 if (pageBreak.SelectedIndex < 0 || !TryRead(spacing, original.CellSpacing, short.MaxValue, out long gap))
                 {
-                    Reject(args, "쪽 나눔과 셀 간격을 확인하세요.");
-                    return;
+                    return Reject("쪽 나눔과 셀 간격을 확인하세요.");
                 }
                 var values = new short[boxes.Length];
                 for (int index = 0; index < boxes.Length; index++)
                 {
                     if (!TryRead(boxes[index], fields[index].Value, short.MaxValue, out long units))
                     {
-                        Reject(args, "여백은 0 이상으로 입력하세요.");
-                        return;
+                        return Reject("여백은 0 이상으로 입력하세요.");
                     }
                     values[index] = (short)units;
                 }
                 PropertyChanges = new((short)gap, values[0], values[1], values[2], values[3],
                     values[4], values[5], values[6], values[7], (byte)pageBreak.SelectedIndex, repeat.IsChecked == true);
+                return true;
             };
         }
 
@@ -169,11 +166,13 @@ internal sealed class TableObjectDialog : ContentDialog
         return true;
     }
 
-    private void Reject(ContentDialogButtonClickEventArgs args, string message)
+    public bool TryApply() => CanApply && apply();
+
+    private bool Reject(string message)
     {
-        args.Cancel = true;
         validation.Text = message;
         validation.Visibility = Visibility.Visible;
         validation.StartBringIntoView();
+        return false;
     }
 }

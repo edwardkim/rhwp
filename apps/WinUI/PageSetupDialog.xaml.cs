@@ -4,7 +4,7 @@ using Windows.Globalization.NumberFormatting;
 
 namespace Rhwp.WinUI;
 
-public sealed partial class PageSetupDialog : ContentDialog
+public sealed partial class PageSetupDialog : UserControl
 {
     private const double UnitsPerMillimeter = 7200.0 / 25.4;
     private const double MaxMillimeters = 1016;
@@ -118,14 +118,14 @@ public sealed partial class PageSetupDialog : ContentDialog
         MarginLeft.Value + MarginRight.Value + MarginGutter.Value < PaperWidth.Value &&
         MarginTop.Value + MarginBottom.Value + MarginHeader.Value + MarginFooter.Value < PaperHeight.Value;
 
-    private void OnApply(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+    internal bool TryApply()
     {
         if (!IsValid() || Binding.SelectedIndex < 0)
         {
-            args.Cancel = true;
             Validation.Text = "용지 크기와 여백을 확인하세요. 여백을 빼고 본문이 들어갈 공간이 있어야 합니다.";
             Validation.Visibility = Visibility.Visible;
-            return;
+            Validation.StartBringIntoView();
+            return false;
         }
 
         Result = new NativePageSettings(
@@ -135,5 +135,6 @@ public sealed partial class PageSetupDialog : ContentDialog
             ReadUnits(MarginTop, original.MarginTop), ReadUnits(MarginBottom, original.MarginBottom),
             ReadUnits(MarginHeader, original.MarginHeader), ReadUnits(MarginFooter, original.MarginFooter),
             ReadUnits(MarginGutter, original.MarginGutter), landscape, (uint)Binding.SelectedIndex);
+        return true;
     }
 }

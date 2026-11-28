@@ -1,12 +1,7 @@
-<ContentDialog
+<UserControl
     x:Class="Rhwp.WinUI.PageSetupDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="쪽 설정"
-    PrimaryButtonText="적용"
-    CloseButtonText="취소"
-    DefaultButton="Primary"
-    PrimaryButtonClick="OnApply"
     AutomationProperties.AutomationId="PageSetupDialog">
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollMode="Disabled">
         <StackPanel Spacing="12">
@@ -70,4 +65,4 @@
                        AutomationProperties.LiveSetting="Polite" />
         </StackPanel>
     </ScrollViewer>
-</ContentDialog>
+</UserControl>

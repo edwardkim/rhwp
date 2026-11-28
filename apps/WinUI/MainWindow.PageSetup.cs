@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 
 namespace Rhwp.WinUI;
 
@@ -43,9 +42,10 @@ public sealed partial class MainWindow
         {
             CancellationToken token = CancellationToken.None;
             NativePageSetup setup = await worker.GetPageSetupAsync(current, token);
-            var dialog = new PageSetupDialog(setup.Settings) { XamlRoot = Root.XamlRoot };
-            if (await dialog.ShowAsync() != ContentDialogResult.Primary || dialog.Result is not { } settings ||
-                settings == setup.Settings)
+            var dialog = new PageSetupDialog(setup.Settings);
+            if (!await PropertyWindow.ShowAsync(this, "쪽 설정", dialog, dialog.TryApply, height: 560) ||
+                dialog.Result is not { } settings || settings == setup.Settings || closing ||
+                page is not { } active || active.Target != current.Target || active.FontGeneration != current.FontGeneration)
                 return;
 
             if (editorInfo is not { Editing: true } info || info.Target != current.Target)
@@ -59,7 +59,7 @@ public sealed partial class MainWindow
             }
 
             EditResult edit = await worker.SetPageSetupAsync(current.Target, setup.Section, settings, token);
-            await RefreshEditedPageAsync(current, edit);
+            await RefreshEditedPageAsync(active, edit);
             await UpdateDirectGeometryAsync(followCaret: false, focus: directEditing);
         }
         catch (Exception error)
