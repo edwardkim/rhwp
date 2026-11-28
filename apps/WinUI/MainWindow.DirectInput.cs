@@ -19,7 +19,6 @@ public sealed partial class MainWindow
     private bool directEditing;
     private bool directQueueRunning;
     private bool changingInput;
-    private bool inputClearScheduled;
     private string capturedInputText = "";
     private string compositionInputPrefix = "";
     private bool platformComposing;
@@ -161,6 +160,8 @@ public sealed partial class MainWindow
             editorInfo = await worker.BeginEditAsync(current.Target, selection, token);
         }
 
+        if (!extend && !platformComposing)
+            EmptyInputControl();
         preferredX = null;
         directEditing = true;
         await UpdateDirectGeometryAsync(followCaret: false, focus: !extend);
@@ -271,27 +272,12 @@ public sealed partial class MainWindow
         capturedInputText = current;
         if (text.Length != 0)
             EnqueueDirectEdit(() => InsertDirectTextAsync(text));
-
-        ScheduleInputClear();
     }
 
-    // Another key or composition can arrive before the posted clear. The
-    // prefix has already been handed off to the document edit queue.
+    // WinUI owns the surrounding input until the document selection moves.
+    // Clearing it between committed syllables can interrupt the OS IME.
     private static string UncapturedInput(string current, string prefix) =>
         current.StartsWith(prefix, StringComparison.Ordinal) ? current[prefix.Length..] : current;
-
-    private void ScheduleInputClear()
-    {
-        if (inputClearScheduled || capturedInputText.Length == 0)
-            return;
-
-        inputClearScheduled = DispatcherQueue.TryEnqueue(() =>
-        {
-            inputClearScheduled = false;
-            if (!platformComposing && DirectInput.Text == capturedInputText)
-                EmptyInputControl();
-        });
-    }
 
     private void EmptyInputControl()
     {
@@ -356,9 +342,6 @@ public sealed partial class MainWindow
         previewVersion++;
         capturedInputText = current;
         EnqueueDirectEdit(() => FinishNativePreviewAsync(text));
-        // Leave the TextBox value alone until the platform has finished its
-        // composition callback and has handed off any later keystrokes.
-        ScheduleInputClear();
         finished?.TrySetResult();
     }
 
@@ -464,6 +447,7 @@ public sealed partial class MainWindow
         if (control && args.Key is VirtualKey.Z or VirtualKey.Y)
         {
             args.Handled = true;
+            EmptyInputControl();
             bool redo = args.Key == VirtualKey.Y || shift;
             EnqueueDirectEdit(() => EditHistoryAsync(redo));
             return;
@@ -471,6 +455,8 @@ public sealed partial class MainWindow
         if (control && args.Key is VirtualKey.C or VirtualKey.X or VirtualKey.V)
         {
             args.Handled = true;
+            if (args.Key != VirtualKey.C)
+                EmptyInputControl();
             EnqueueClipboardAction(args.Key);
             return;
         }
@@ -479,6 +465,7 @@ public sealed partial class MainWindow
             editorInfo?.Selection is { Focus.CellPath.Length: > 0 })
         {
             args.Handled = true;
+            EmptyInputControl();
             EnqueueDirectEdit(() => NavigateDirectTableCellAsync(shift));
             return;
         }
@@ -501,6 +488,7 @@ public sealed partial class MainWindow
         if (key is NativeEditKey command)
         {
             args.Handled = true;
+            EmptyInputControl();
             EnqueueDirectEdit(() => ApplyDirectKeyAsync(command, shift));
         }
     }
