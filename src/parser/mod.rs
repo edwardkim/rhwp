@@ -1209,7 +1209,7 @@ fn load_bin_data_content_lenient(
             BinDataType::Storage => true,
             BinDataType::Link => {
                 // 연결 레코드도 순번 자리를 지켜야 뒤 그림이 제 항목을 가리킨다.
-                contents.push(crate::model::bin_data::hwp5_link_slot());
+                contents.push(crate::model::bin_data::link_slot());
                 continue;
             }
         };
@@ -2160,7 +2160,7 @@ fn load_bin_data_content(
             BinDataType::Storage => true,
             BinDataType::Link => {
                 // 연결 레코드도 순번 자리를 지켜야 뒤 그림이 제 항목을 가리킨다.
-                contents.push(crate::model::bin_data::hwp5_link_slot());
+                contents.push(crate::model::bin_data::link_slot());
                 continue;
             }
         };

@@ -355,13 +355,13 @@ impl From<Vec<u8>> for BinDataBytes {
     }
 }
 
-/// HWP5 연결(Link) 레코드 자리를 지키는 빈 항목.
+/// 연결(Link) 레코드 자리를 지키는 빈 항목(HWP5·HWP3 파서 공통).
 ///
 /// 그림의 `bin_data_id` 는 BIN_DATA 레코드 순번이고 `content_index` 는 그 순번을
 /// 배열 위치로 쓴다. 연결 레코드는 저장 스트림이 없어 건너뛰면 뒤 항목이 한 칸씩
 /// 앞당겨져 뒤 그림이 다른 그림을 가리킨다. 저장 id 0 은 BIN0000 스트림이 될 수
 /// 없는 값이라 실제 항목과 겹치지 않는다.
-pub(crate) fn hwp5_link_slot() -> BinDataContent {
+pub(crate) fn link_slot() -> BinDataContent {
     BinDataContent {
         id: 0,
         data: BinDataBytes::Loaded(Vec::new()),
@@ -369,15 +369,19 @@ pub(crate) fn hwp5_link_slot() -> BinDataContent {
     }
 }
 
-/// `record`(같은 위치의 BIN_DATA 레코드) 자리를 지키는 `hwp5_link_slot` 인가.
+/// `record`(같은 위치의 BIN_DATA 레코드)가 연결 레코드이고 `content` 가 그 자리를 지키는
+/// `link_slot` 인가. 연결 레코드는 저장 스트림(HWP)·ZIP 항목(HWPX)이 없으므로 저장할 때 건너뛴다.
 ///
-/// HWP5 연결 레코드는 저장 id 가 없어 0 이다(HWP3·HWPX 연결 레코드는 0 이 아니다).
-/// 외부 그림이 채워져 id 가 바뀐 항목은 해당하지 않는다.
-pub(crate) fn is_hwp5_link_slot(content: &BinDataContent, record: Option<&BinData>) -> bool {
+/// 자리 항목의 모양은 원본 형식과 무관하다 — HWP5 연결 레코드는 저장 id 가 없어 0 이고, HWP3
+/// 연결 레코드는 그림 번호를 저장 id 로 갖지만(파서가 id 순으로 정렬해 자리와 맞춘다) 두 경우
+/// 모두 자리 항목은 id 0 의 빈 항목이다. 그래서 레코드의 저장 id 는 보지 않는다(종전에는 0 만
+/// 보아 HWP3 문서를 HWP5 로 저장하면 빈 `BinData/BIN0000.` 스트림이 생겼다). 외부 그림이 채워져
+/// id 가 바뀐 항목은 해당하지 않는다.
+pub(crate) fn is_link_slot(content: &BinDataContent, record: Option<&BinData>) -> bool {
     content.id == 0
         && content.extension.is_empty()
         && matches!(&content.data, BinDataBytes::Loaded(v) if v.is_empty())
-        && record.is_some_and(|bd| bd.data_type == BinDataType::Link && bd.storage_id == 0)
+        && record.is_some_and(|bd| bd.data_type == BinDataType::Link)
 }
 
 /// Resolve the document-record index first, with sparse storage IDs only as a fallback.

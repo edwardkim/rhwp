@@ -710,7 +710,7 @@ where
     const CFB_MAGIC: [u8; 8] = [0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1];
     for (index, content) in bin_data_content.iter().enumerate() {
         // 연결 레코드 자리 항목은 저장 스트림이 없다.
-        if crate::model::bin_data::is_hwp5_link_slot(content, bin_data_list.get(index)) {
+        if crate::model::bin_data::is_link_slot(content, bin_data_list.get(index)) {
             continue;
         }
         let (storage_id, ext, mut should_compress) =

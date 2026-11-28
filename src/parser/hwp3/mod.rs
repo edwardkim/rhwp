@@ -4809,12 +4809,10 @@ fn parse_hwp3_inner(
     }
 
     let max_id = pic_name_to_id.values().max().copied().unwrap_or(0);
+    // 그림 번호마다 연결 레코드 자리를 먼저 채우고, 문서 안에 담긴 그림이 제 자리를 덮는다.
+    // 남은 자리(연결 그림)는 저장 스트림이 없다(`is_link_slot` — 저장할 때 건너뛴다).
     let mut doc_bin_data_content: Vec<crate::model::bin_data::BinDataContent> = (0..max_id)
-        .map(|_| crate::model::bin_data::BinDataContent {
-            id: 0,
-            extension: String::new(),
-            data: Vec::new().into(),
-        })
+        .map(|_| crate::model::bin_data::link_slot())
         .collect();
 
     for content in temp_bin_data_content {
