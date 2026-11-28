@@ -169,7 +169,7 @@ internal sealed partial class NativeWorkerDispatcher
     private void CheckDirty(bool discardChanges)
     {
         if (dirty && !discardChanges)
-            throw new InvalidOperationException("문서를 닫기 전에 변경 사항을 저장하거나 폐기해야 합니다.");
+            throw new InvalidOperationException("문서를 닫기 전에 저장 여부를 확인해야 합니다.");
     }
 
     private NativeDocumentInfo AdoptInfo(JsonElement reply, DocumentTarget? expected = null)
@@ -196,7 +196,8 @@ internal sealed partial class NativeWorkerDispatcher
         if (page >= pageCount)
             throw new ArgumentOutOfRangeException(nameof(page));
 
-        JsonElement sized = Submit(handle, new { op = "pageSize", target = current, page }, cancellation);
+        JsonElement sized = Submit(handle, new { op = "pageSize", target = current, page }, cancellation,
+            interactive: true);
         JsonElement size = sized.GetProperty("size");
         double width = size.GetProperty("width").GetDouble();
         double height = size.GetProperty("height").GetDouble();
@@ -287,12 +288,13 @@ internal sealed partial class NativeWorkerDispatcher
         return bgra;
     }
 
-    private JsonElement Submit(ulong handle, object command, CancellationToken cancellation)
+    private JsonElement Submit(ulong handle, object command, CancellationToken cancellation, bool interactive = false)
     {
         CheckClosing();
         cancellation.ThrowIfCancellationRequested();
         using var submitted = Send(new { op = "workerSubmit", worker = handle, command });
-        return GetCompleted(Poll(handle, submitted.RootElement.GetProperty("requestId").GetUInt64(), cancellation));
+        return GetCompleted(Poll(handle, submitted.RootElement.GetProperty("requestId").GetUInt64(), cancellation,
+            interactive));
     }
 
     private static JsonElement GetCompleted(JsonElement completion)
@@ -303,9 +305,11 @@ internal sealed partial class NativeWorkerDispatcher
         return completion;
     }
 
-    private JsonElement Poll(ulong handle, ulong requestId, CancellationToken cancellation)
+    private JsonElement Poll(ulong handle, ulong requestId, CancellationToken cancellation, bool interactive = false)
     {
         bool cancelSent = false;
+        // The first replies for caret and input usually arrive before the regular polling interval.
+        int shortWaitsRemaining = interactive ? 3 : 0;
         while (true)
         {
             CheckClosing();
@@ -321,7 +325,15 @@ internal sealed partial class NativeWorkerDispatcher
             JsonElement completion = polled.RootElement.GetProperty("completion");
             if (completion.ValueKind == JsonValueKind.Null)
             {
-                Thread.Sleep(PollIntervalMs);
+                if (shortWaitsRemaining > 0)
+                {
+                    shortWaitsRemaining--;
+                    Thread.Sleep(1);
+                }
+                else
+                {
+                    Thread.Sleep(PollIntervalMs);
+                }
                 continue;
             }
 

@@ -48,7 +48,7 @@ internal sealed partial class NativeWorkerDispatcher
         CancellationToken cancellation) => Dispatch(token =>
     {
         JsonElement reply = Submit(EnsureWorker(),
-            new { op = "selectionRects", target = page.Target, selection }, token);
+            new { op = "selectionRects", target = page.Target, selection }, token, interactive: true);
         if (reply.GetProperty("kind").GetString() != "selectionRects" ||
             Read<DocumentTarget>(reply.GetProperty("target")) != page.Target)
             throw new InvalidDataException("Native 선택 영역 응답의 문서가 바뀌었습니다.");
@@ -91,7 +91,8 @@ internal sealed partial class NativeWorkerDispatcher
 
     private JsonElement SubmitEditCommand(DocumentTarget expected, object command, CancellationToken token)
     {
-        JsonElement reply = Submit(EnsureWorker(), new { op = "executeCommand", target = expected, command }, token);
+        JsonElement reply = Submit(EnsureWorker(), new { op = "executeCommand", target = expected, command }, token,
+            interactive: true);
         if (reply.GetProperty("kind").GetString() != "command")
             throw new InvalidDataException("Native 편집 명령의 응답이 올바르지 않습니다.");
         return reply;

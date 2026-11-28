@@ -70,12 +70,13 @@ internal sealed partial class NativeWorkerDispatcher
         Query<PageCaret>(new { op = "caretRect", target = expected, position }, "caret", cancellation);
 
     public Task<NativeDocumentInfo> GetDocumentInfoAsync(DocumentTarget expected, CancellationToken cancellation) =>
-        Dispatch(token => AdoptInfo(Submit(EnsureWorker(), new { op = "info" }, token), expected), cancellation);
+        Dispatch(token => AdoptInfo(Submit(EnsureWorker(), new { op = "info" }, token, interactive: true), expected),
+            cancellation);
 
     public Task<NativeDocumentInfo> BeginEditAsync(DocumentTarget expected, TextSelection selection,
         CancellationToken cancellation) =>
         Dispatch(token => AdoptInfo(Submit(EnsureWorker(),
-            new { op = "beginEdit", target = expected, selection }, token)), cancellation);
+            new { op = "beginEdit", target = expected, selection }, token, interactive: true)), cancellation);
 
     public Task<EditResult> SetSelectionAsync(DocumentTarget expected, TextSelection selection,
         CancellationToken cancellation) =>
@@ -92,7 +93,7 @@ internal sealed partial class NativeWorkerDispatcher
 
     public Task<ImeEditContext> ReadImeEditContextAsync(DocumentTarget expected, CancellationToken cancellation) =>
         Dispatch(token => Read<ImeEditContext>(Submit(EnsureWorker(),
-            new { op = "imeEditContext", target = expected }, token).GetProperty("context")), cancellation);
+            new { op = "imeEditContext", target = expected }, token, interactive: true).GetProperty("context")), cancellation);
 
     public Task<EditResult> CommitImeAsync(DocumentTarget expected, ImeEditContext context,
         ImeReplacement replacement, Utf16Selection? selection, CancellationToken cancellation) =>
@@ -120,13 +121,13 @@ internal sealed partial class NativeWorkerDispatcher
     }
 
     private Task<T?> Query<T>(object command, string field, CancellationToken cancellation) where T : class =>
-        Dispatch(token => Submit(EnsureWorker(), command, token).GetProperty(field).Deserialize<T>(WireJson),
+        Dispatch(token => Submit(EnsureWorker(), command, token, interactive: true).GetProperty(field).Deserialize<T>(WireJson),
             cancellation);
 
     private Task<EditResult> ApplyEdit(DocumentTarget expected, object command, CancellationToken cancellation) =>
         Dispatch(token =>
         {
-            JsonElement reply = Submit(EnsureWorker(), command, token);
+            JsonElement reply = Submit(EnsureWorker(), command, token, interactive: true);
             if (reply.GetProperty("kind").GetString() != "edited")
                 throw new InvalidDataException("Native 편집 응답이 올바르지 않습니다.");
 

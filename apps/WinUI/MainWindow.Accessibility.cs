@@ -20,10 +20,12 @@ public sealed partial class MainWindow
 
         automationRequest?.Cancel();
         automationRequest = null;
-        automationDocument = identity;
+        // Invalidate old bounds immediately, but submit only the latest
+        // changed snapshot after the edit queue yields the native worker.
+        automationDocument = directQueueRunning ? null : identity;
         PageCanvas.SetAutomationDocument(null);
 
-        if (current is not null)
+        if (current is not null && !directQueueRunning)
         {
             var request = new CancellationTokenSource();
             automationRequest = request;

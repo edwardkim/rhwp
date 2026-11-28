@@ -18,6 +18,8 @@ public sealed partial class MainWindow
     private ulong? pendingRecoveryDocument;
     private bool directEditing;
     private bool directQueueRunning;
+    private const int MaxDeferredCaretUpdates = 4;
+    private int directCaretUpdatesPending;
     private bool changingInput;
     private string capturedInputText = "";
     private string compositionInputPrefix = "";
@@ -249,11 +251,25 @@ public sealed partial class MainWindow
         RefreshButtons();
         try
         {
-            while (!closing && directActions.TryDequeue(out Func<Task>? action))
+            while (!closing)
             {
                 try
                 {
-                    await action();
+                    if (directCaretUpdatesPending >= MaxDeferredCaretUpdates ||
+                        (directCaretUpdatesPending != 0 && directActions.Count == 0))
+                    {
+                        // Present the newest caret when idle and periodically
+                        // while rapid input keeps the queue populated.
+                        await UpdateDirectGeometryAsync(followCaret: true);
+                    }
+                    else if (directActions.TryDequeue(out Func<Task>? action))
+                    {
+                        await action();
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
                 catch (Exception error)
                 {
@@ -273,6 +289,8 @@ public sealed partial class MainWindow
         {
             directQueueRunning = false;
             editorBusy = false;
+            if (!closing)
+                UpdateAutomationDocument(page);
             RefreshButtons();
         }
     }
@@ -313,7 +331,7 @@ public sealed partial class MainWindow
         EditResult edit = await worker.ReplaceAsync(current.Target, text, CancellationToken.None);
         preferredX = null;
         await RefreshEditedPageAsync(current, edit);
-        await UpdateDirectGeometryAsync(followCaret: true);
+        directCaretUpdatesPending++;
     }
 
     private async Task ApplyDirectInputChangeAsync(DirectInputChange change)
@@ -342,7 +360,7 @@ public sealed partial class MainWindow
         EditResult edit = await worker.CommitImeAsync(current.Target, context, replacement, null, token);
         preferredX = null;
         await RefreshEditedPageAsync(current, edit);
-        await UpdateDirectGeometryAsync(followCaret: true);
+        directCaretUpdatesPending++;
     }
 
     private void OnDirectCompositionStarted(TextBox sender, TextCompositionStartedEventArgs args)
@@ -591,6 +609,7 @@ public sealed partial class MainWindow
 
     private async Task UpdateDirectGeometryAsync(bool followCaret, bool focus = false)
     {
+        directCaretUpdatesPending = 0;
         if (!directEditing || page is not PageInfo current || editorInfo?.Selection is not { } selection)
             return;
 
@@ -667,6 +686,7 @@ public sealed partial class MainWindow
     private void DismissDirectEditor()
     {
         directEditing = false;
+        directCaretUpdatesPending = 0;
         platformComposing = false;
         platformCompositionFinished?.TrySetResult();
         platformCompositionFinished = null;
