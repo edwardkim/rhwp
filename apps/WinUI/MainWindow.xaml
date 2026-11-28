@@ -139,12 +139,12 @@
                         <Button x:Name="PreviousMatchButton" Grid.Column="1" Click="OnPreviousMatchClicked"
                                 AutomationProperties.Name="이전 찾기" AutomationProperties.AutomationId="PreviousMatch"
                                 ToolTipService.ToolTip="이전 찾기">
-                            <SymbolIcon Symbol="Up" />
+                            <FontIcon Glyph="&#xE70E;" />
                         </Button>
                         <Button x:Name="NextMatchButton" Grid.Column="2" Click="OnNextMatchClicked"
                                 AutomationProperties.Name="다음 찾기" AutomationProperties.AutomationId="NextMatch"
                                 ToolTipService.ToolTip="다음 찾기">
-                            <SymbolIcon Symbol="Down" />
+                            <FontIcon Glyph="&#xE70D;" />
                         </Button>
                         <Button x:Name="CloseSearchButton" Grid.Column="3" Click="OnCloseSearchClicked"
                                 AutomationProperties.Name="검색 닫기" AutomationProperties.AutomationId="CloseSearch"
