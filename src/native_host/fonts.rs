@@ -70,6 +70,15 @@ impl NativeFontState {
 }
 
 impl NativeDocumentSession {
+    /// List the installed system family names exposed by the native renderer.
+    pub fn system_font_families(&self, revision: u64) -> Result<Vec<String>, NativeHostError> {
+        self.check_revision(revision)?;
+        #[cfg(feature = "native-skia")]
+        return Ok(self.renderer().system_font_families());
+        #[cfg(not(feature = "native-skia"))]
+        Err(NativeHostError::FeatureDisabled)
+    }
+
     pub fn font_state(&self) -> &NativeFontState {
         &self.fonts
     }

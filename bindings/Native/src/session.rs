@@ -5,11 +5,16 @@ use std::collections::HashMap;
 use std::ffi::CString;
 use std::os::raw::c_char;
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::time::Duration;
 
 use rhwp_core::document_core::native_interaction::{
     NativeTextPosition, NativeTextSelection, NativeVerticalDirection,
 };
 use rhwp_core::native_host::accessibility::NativeAccessibilityRequest;
+use rhwp_core::native_host::commands::{
+    MAX_CREATE_TABLE_CELLS, MAX_CREATE_TABLE_COLUMNS, MAX_CREATE_TABLE_ROWS,
+    MAX_EQUATION_FONT_SIZE, MAX_EQUATION_SCRIPT_BYTES, MIN_EQUATION_FONT_SIZE,
+};
 use rhwp_core::native_host::editor::ime_edit::{NativeImeEdit, NativeImeEditContext};
 use rhwp_core::native_host::editor::{NativeCompositionFocusLoss, NativeEditOutcome, NativeEditor};
 use rhwp_core::native_host::presentation::{NativePresentationId, NativePresentationStamp};
@@ -20,6 +25,7 @@ use rhwp_core::native_host::runtime::{
 use rhwp_core::native_host::save::{
     NativeSaveFormat, NativeSaveStatus, NativeSaveToken, PreparedSave,
 };
+use rhwp_core::native_host::search::NativeSearchRequest;
 use rhwp_core::native_host::view::{
     NativePagePoint, NativeView, NativeViewConfig, NativeViewPoint, NativeViewRect, NativeViewState,
 };
@@ -31,6 +37,7 @@ const MAX_SESSIONS: usize = 8;
 const MAX_REQUEST_BYTES: usize = 1024 * 1024;
 const MAX_BUFFER_BYTES: usize = 128 * 1024 * 1024;
 const MAX_BUFFERS: usize = 64;
+const MAX_WORKER_POLL_WAIT_MS: u64 = 10;
 static NEXT_HANDLE: AtomicU64 = AtomicU64::new(1);
 
 #[derive(Default)]
@@ -187,6 +194,33 @@ enum Request {
     ExecuteCommand {
         command: rhwp_core::native_host::commands::NativeEditCommand,
         expected_revision: u64,
+    },
+    SelectionFormatting {
+        expected_revision: u64,
+        font_generation: u64,
+        selection: NativeTextSelection,
+    },
+    ParagraphStyles {
+        expected_revision: u64,
+        selection: NativeTextSelection,
+    },
+    PageSetup {
+        expected_revision: u64,
+        page: Option<u32>,
+        section: Option<u32>,
+    },
+    TableObject {
+        expected_revision: u64,
+        position: NativeTextPosition,
+        page: u32,
+    },
+    SystemFontFamilies {
+        expected_revision: u64,
+    },
+    ReplaceAllMatches {
+        expected_revision: u64,
+        request: NativeSearchRequest,
+        text: String,
     },
     ImeContext {
         expected_revision: u64,
@@ -353,6 +387,7 @@ enum HostRequest {
     },
     WorkerPoll {
         worker: u64,
+        wait_ms: Option<u64>,
     },
     WorkerCancel {
         worker: u64,
@@ -466,10 +501,11 @@ pub unsafe extern "C" fn rhwp_native_host_request(
                 let runtime=host.workers.get_mut(&worker).ok_or_else(invalid_handle)?;
                 Ok(worker_submit_result(runtime.try_submit(NativeRuntimeCommand::OpenRecovery {replace,bytes:data.to_vec()})))
             }),
-            HostRequest::WorkerPoll { worker } => HOST.with(|host| {
+            HostRequest::WorkerPoll { worker, wait_ms } => HOST.with(|host| {
                 let mut host=host.borrow_mut();
                 let runtime=host.workers.get_mut(&worker).ok_or_else(invalid_handle)?;
-                match runtime.try_recv() {
+                let wait = Duration::from_millis(wait_ms.unwrap_or(0).min(MAX_WORKER_POLL_WAIT_MS));
+                match runtime.recv_timeout(wait) {
                     Ok(None) => Ok(json!({"ok":true,"completion":null})),
                     Ok(Some(completion)) => {
                         let mut output=match completion.result {
@@ -589,6 +625,38 @@ fn worker_output(host: &mut Host, worker: u64, output: NativeRuntimeOutput) -> V
             NativeRuntimeOutput::CommandExecuted(result) => {
                 json!({"ok":true,"kind":"command","outcome":result.outcome,"preferredX":result.preferred_x})
             }
+            NativeRuntimeOutput::SelectionFormatting {
+                target,
+                font_generation,
+                selection,
+                formatting,
+            } => {
+                json!({"ok":true,"kind":"selectionFormatting","target":target,
+                    "fontGeneration":font_generation,"selection":selection,"formatting":formatting})
+            }
+            NativeRuntimeOutput::ParagraphStyles {
+                target,
+                selection,
+                paragraph_styles,
+            } => {
+                json!({"ok":true,"kind":"paragraphStyles","target":target,"selection":selection,
+                    "currentStyleId":paragraph_styles.current_style_id,"styles":paragraph_styles.styles})
+            }
+            NativeRuntimeOutput::PageSetup { target, page_setup } => {
+                json!({"ok":true,"kind":"pageSetup","target":target,"pageSetup":page_setup})
+            }
+            NativeRuntimeOutput::TableObject {
+                target,
+                font_generation,
+                page,
+                table,
+            } => {
+                json!({"ok":true,"kind":"tableObject","target":target,
+                    "fontGeneration":font_generation,"page":page,"table":table})
+            }
+            NativeRuntimeOutput::SystemFontFamilies { target, families } => {
+                json!({"ok":true,"kind":"systemFontFamilies","target":target,"families":families})
+            }
             NativeRuntimeOutput::ImeContext(context) => {
                 json!({"ok":true,"kind":"imeContext","context":context})
             }
@@ -600,6 +668,9 @@ fn worker_output(host: &mut Host, worker: u64, output: NativeRuntimeOutput) -> V
             }
             NativeRuntimeOutput::SearchText { target, result } => {
                 json!({"ok":true,"kind":"searchText","target":target,"result":result})
+            }
+            NativeRuntimeOutput::ReplaceAllMatches { target, result } => {
+                json!({"ok":true,"kind":"replaceAllMatches","target":target,"result":result})
             }
             NativeRuntimeOutput::Accessibility { target, snapshot } => {
                 json!({"ok":true,"kind":"accessibility","target":target,"snapshot":snapshot})
@@ -817,25 +888,44 @@ fn frame_result(
 #[no_mangle]
 pub extern "C" fn rhwp_session_capabilities() -> *mut c_char {
     response(|| {
-        Ok(
-            json!({"ok":true,"abiVersion":1,"nativeSkia":cfg!(feature="native-skia"),
+        let mut capabilities = json!({"ok":true,"abiVersion":1,"nativeSkia":cfg!(feature="native-skia"),
         "tableCellParagraphCommands":true,
         "tableCellNavigation":true,
+        "tableCellTextNavigation":true,
         "basicTextFormatting":true,
+        "selectionFormatting":true,
+        "createTable":true,
+        "maxCreateTableRows":MAX_CREATE_TABLE_ROWS,
+        "maxCreateTableColumns":MAX_CREATE_TABLE_COLUMNS,
+        "maxCreateTableCells":MAX_CREATE_TABLE_CELLS,
         "renderTiledRegion":cfg!(feature="native-skia"),"rasterCacheControls":cfg!(feature="native-skia"),
         "cooperativeTiledCancellation":cfg!(feature="native-skia"),"presentation":crate::presentation::capabilities(),"gpuGl":crate::gpu_gl::capabilities(),
         "recoveryOpen":true,
         "tableCellTextClipboard":true,
         "atomicImeEdits":true,
         "workerTextSearch":true,
+        "workerWait":true,
+        "replaceAllMatches":true,
         "accessibilityCellLayout":true,
+        "accessibilityPageSnapshots":true,
         "worker":true,"maxWorkers":4,"hostRequests":true,"viewState":true,"accessibilitySnapshots":true,"threadAffine":true,"maxSessions":MAX_SESSIONS,"maxDocumentBytes":MAX_DOCUMENT_BYTES,
         "maxRequestBytes":MAX_REQUEST_BYTES,"maxBufferBytes":MAX_BUFFER_BYTES,
         "livePdfExport":cfg!(feature="native-skia"),
         "maxLivePdfPages":rhwp_core::native_host::runtime::MAX_LIVE_PDF_PAGES,
         "maxLivePdfBytes":rhwp_core::native_host::runtime::MAX_LIVE_PDF_BYTES,
-        "pixelFormat":"rgba8Premultiplied","colorSpace":"srgb"}),
-        )
+        "pixelFormat":"rgba8Premultiplied","colorSpace":"srgb"});
+        capabilities["tableCellParagraphSelection"] = true.into();
+        capabilities["tableObjectProperties"] = true.into();
+        capabilities["pageSetup"] = true.into();
+        capabilities["insertEquation"] = true.into();
+        capabilities["maxEquationScriptBytes"] = MAX_EQUATION_SCRIPT_BYTES.into();
+        capabilities["minEquationFontSize"] = MIN_EQUATION_FONT_SIZE.into();
+        capabilities["maxEquationFontSize"] = MAX_EQUATION_FONT_SIZE.into();
+        capabilities["characterFontColorFormatting"] = true.into();
+        capabilities["systemFontFamilies"] = cfg!(feature = "native-skia").into();
+        capabilities["textUnitSelection"] = true.into();
+        capabilities["paragraphStyles"] = true.into();
+        Ok(capabilities)
     })
 }
 
@@ -909,6 +999,34 @@ pub unsafe extern "C" fn rhwp_session_request(
                     Ok(json!({"ok":true,"snapshot":session.accessibility_snapshot(&request, selection)?}))
                 }
                 Request::ExecuteCommand {command,expected_revision}=>{let result=record.editor_mut()?.execute_command(expected_revision,command)?;Ok(json!({"ok":true,"outcome":result.outcome,"preferredX":result.preferred_x}))},
+                Request::SelectionFormatting {expected_revision, font_generation, selection}=>{
+                    let formatting=record.editor_mut()?.selection_formatting(expected_revision,font_generation,&selection)?;
+                    Ok(json!({"ok":true,"kind":"selectionFormatting","revision":expected_revision,
+                        "fontGeneration":font_generation,"selection":selection,"formatting":formatting}))
+                },
+                Request::ParagraphStyles { expected_revision, selection } => {
+                    let styles = record.editor_mut()?.paragraph_styles(expected_revision, &selection)?;
+                    Ok(json!({"ok":true,"kind":"paragraphStyles","revision":expected_revision,
+                        "selection":selection,"currentStyleId":styles.current_style_id,"styles":styles.styles}))
+                },
+                Request::PageSetup { expected_revision, page, section } => {
+                    let page_setup = session.page_setup(expected_revision, page, section)?;
+                    Ok(json!({"ok":true,"kind":"pageSetup","revision":expected_revision,"pageSetup":page_setup}))
+                },
+                Request::TableObject {expected_revision, position, page}=>{
+                    let table=session.table_object(expected_revision,&position,page)?;
+                    Ok(json!({"ok":true,"kind":"tableObject","revision":expected_revision,
+                        "fontGeneration":session.font_generation(),"page":page,"table":table}))
+                },
+                Request::SystemFontFamilies { expected_revision } => {
+                    let families = session.system_font_families(expected_revision)?;
+                    Ok(json!({"ok":true,"kind":"systemFontFamilies","revision":expected_revision,
+                        "families":families}))
+                },
+                Request::ReplaceAllMatches {expected_revision, request, text}=>{
+                    let result=record.editor_mut()?.replace_all_matches(expected_revision,&request,&text)?;
+                    Ok(json!({"ok":true,"kind":"replaceAllMatches","result":result}))
+                },
                 Request::ImeContext {expected_revision}=>Ok(json!({"ok":true,"context":record.editor_mut()?.ime_context(expected_revision)?})),
                 Request::ImeEditContext {expected_revision}=>Ok(json!({"ok":true,"context":record.editor_mut()?.ime_edit_context(expected_revision)?})),
                 Request::ApplyImeEdit {expected_revision, expected, edit}=>Ok(edit_result(record.editor_mut()?.apply_ime_edit(expected_revision,&expected,edit)?)),
