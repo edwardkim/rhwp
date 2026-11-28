@@ -27,6 +27,7 @@
             <KeyboardAccelerator Key="Subtract" Modifiers="Control" Invoked="OnZoomAcceleratorInvoked" />
             <KeyboardAccelerator Key="Number0" Modifiers="Control" Invoked="OnZoomAcceleratorInvoked" />
             <KeyboardAccelerator Key="B" Modifiers="Control" Invoked="OnBoldAcceleratorInvoked" />
+            <KeyboardAccelerator Key="P" Modifiers="Control" Invoked="OnPrintAcceleratorInvoked" />
         </Grid.KeyboardAccelerators>
 
         <Border Grid.Row="2" Grid.RowSpan="2" IsHitTestVisible="False"
@@ -70,6 +71,9 @@
                     <MenuFlyoutItem Text="{x:Bind ExportPdfButton.Label, Mode=OneWay}" Icon="View"
                                     IsEnabled="{x:Bind ExportPdfButton.IsEnabled, Mode=OneWay}"
                                     Click="OnExportPdfClicked" />
+                    <MenuFlyoutItem x:Name="PrintMenuItem" Text="인쇄…" Icon="Print" IsEnabled="False"
+                                    Click="OnPrintClicked" KeyboardAcceleratorTextOverride="Ctrl+P"
+                                    AutomationProperties.AutomationId="PrintDocumentMenu" />
                     <MenuFlyoutSeparator />
                     <MenuFlyoutItem Text="문서 닫기" Icon="Cancel" Click="OnCloseClicked"
                                     IsEnabled="{x:Bind CloseButton.IsEnabled, Mode=OneWay}" />
