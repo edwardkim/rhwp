@@ -17,6 +17,9 @@
     <Compile Include="../WinUI/NativeWorkerDispatcher.Save.cs" Link="NativeWorkerDispatcher.Save.cs" />
     <Compile Include="../WinUI/NativeWorkerDispatcher.Recovery.cs" Link="NativeWorkerDispatcher.Recovery.cs" />
     <Compile Include="../WinUI/NativeWorkerDispatcher.Pdf.cs" Link="NativeWorkerDispatcher.Pdf.cs" />
+    <Compile Include="../WinUI/NativeWorkerDispatcher.Table.cs" Link="NativeWorkerDispatcher.Table.cs" />
+    <Compile Include="../WinUI/NativeWorkerDispatcher.Equation.cs" Link="NativeWorkerDispatcher.Equation.cs" />
+    <Compile Include="../WinUI/NativeWorkerDispatcher.TableObject.cs" Link="NativeWorkerDispatcher.TableObject.cs" />
     <Compile Include="../WinUI/LivePdfContract.cs" Link="LivePdfContract.cs" />
     <Compile Include="../WinUI/DocumentFileStore.cs" Link="DocumentFileStore.cs" />
     <Compile Include="../WinUI/DocumentRecoveryStore.cs" Link="DocumentRecoveryStore.cs" />

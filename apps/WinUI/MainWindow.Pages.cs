@@ -52,6 +52,7 @@ public sealed partial class MainWindow
         UpdateAutomationDocument(current);
         DrawSearchHighlight(current);
         DrawDirectGeometry();
+        DrawTableObjectSelection();
     }
 
     private Task GoToPageAsync(PageInfo current, uint index)
@@ -108,7 +109,10 @@ public sealed partial class MainWindow
     {
         if (HandleGestureZoom(args.IsIntermediate))
             return;
+        PageInfo? previous = page;
         UpdateViewportPage();
+        if (ReferenceEquals(page, previous) && selectedTable is not null)
+            DrawTableObjectSelection();
         QueueRender();
     }
 

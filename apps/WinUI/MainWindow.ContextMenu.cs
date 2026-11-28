@@ -17,8 +17,12 @@ public sealed partial class MainWindow
 
         args.Handled = true;
         bool textContext = false;
+        TableContext? tableContext = null;
         await EnqueueDirectEdit(async () =>
         {
+            tableContext = await FindTableContextAsync(current, location);
+            if (tableContext is not null && IsSelectedTable(tableContext))
+                return;
             textContext = IsWithinDocumentSelection(current, location) ||
                 await MovePointerSelectionAsync(current, location, extend: false);
         });
@@ -36,6 +40,18 @@ public sealed partial class MainWindow
             menu.Items.Add(ContextAction("전체 선택", "ContextSelectAll", OnContextSelectAll, true, "Ctrl+A"));
             if (InsertTableMenuItem.IsEnabled)
                 menu.Items.Add(ContextAction("표 삽입…", "ContextInsertTable", OnInsertTableClicked, true));
+            menu.Items.Add(new MenuFlyoutSeparator());
+        }
+
+        if (tableContext is TableContext table && IsCurrentTablePage(table.Page))
+        {
+            menu.Items.Add(ContextAction("표 전체 선택", "ContextSelectTableObject",
+                async (_, _) => await EnqueueDirectEdit(() => SelectTableObjectAsync(table)), true));
+            if (table.Table.CanResize)
+                menu.Items.Add(ContextAction("표 크기…", "ContextResizeTableObject",
+                    async (_, _) => await ShowTableObjectDialogAsync(table, resize: true), true));
+            menu.Items.Add(ContextAction("표 속성…", "ContextTableObjectProperties",
+                async (_, _) => await ShowTableObjectDialogAsync(table, resize: false), true));
             menu.Items.Add(new MenuFlyoutSeparator());
         }
 
