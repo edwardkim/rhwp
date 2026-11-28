@@ -12,6 +12,7 @@ use rhwp::document_core::native_interaction::{
     NativeCellPathEntry, NativeTextPosition, NativeTextSelection,
 };
 use rhwp::model::control::Control;
+use rhwp::native_host::commands::NativeEditCommand;
 use rhwp::native_host::editor::ime_edit::{
     NativeImeEdit, NativeImeEditContext, NativeImePreedit, NativeImeReplacement,
     NativeImeUtf16Range, NativeImeUtf16Selection, MAX_IME_EDIT_BYTES, MAX_IME_EDIT_SCALARS,
@@ -103,6 +104,90 @@ fn native_ime_utf16_commit_and_reversed_selection_are_one_undo() {
     assert!(!editor.can_undo());
     editor.redo(revision(&editor)).unwrap();
     assert_eq!(text(&editor), "가한😀다");
+}
+
+#[test]
+fn native_ime_batch_preserves_unmodified_formatting_across_save_and_history() {
+    let mut editor = editor("abcdefghijklmno");
+    editor.set_selection(0, selected(6, 9)).unwrap();
+    editor
+        .execute_command(
+            0,
+            NativeEditCommand::FormatCharacters {
+                bold: Some(true),
+                font_size: Some(2000),
+            },
+        )
+        .unwrap();
+    let before = revision(&editor);
+    let context = editor.ime_edit_context(before).unwrap();
+    let wire = serde_json::json!({
+        "kind": "commitBatch",
+        "replacements": [replace(0, 1, "X"), replace(14, 15, "Y")],
+        "selection": { "anchor": 15, "focus": 15 }
+    });
+    let outcome = editor
+        .apply_ime_edit(before, &context, serde_json::from_value(wire).unwrap())
+        .unwrap();
+    assert!(outcome.document_changed && outcome.history_changed);
+    assert_eq!(revision(&editor), before + 1);
+    assert_eq!(editor.selection(), &selected(15, 15));
+
+    let check = |core: &DocumentCore, expected: &str| {
+        let document = core.document();
+        let paragraph = &document.sections[0].paragraphs[0];
+        assert_eq!(paragraph.text, expected);
+        for offset in 0..15 {
+            let id = paragraph.char_shape_id_at(offset).unwrap() as usize;
+            let shape = &document.doc_info.char_shapes[id];
+            assert_eq!(shape.bold, (6..9).contains(&offset), "offset {offset}");
+            if shape.bold {
+                assert_eq!(shape.base_size, 2000);
+            }
+        }
+    };
+    check(editor.session().document(), "XbcdefghijklmnY");
+    for format in [NativeSaveFormat::Hwp, NativeSaveFormat::Hwpx] {
+        let prepared = editor.prepare_save(format).unwrap();
+        let reopened = DocumentCore::from_bytes(prepared.bytes()).unwrap();
+        check(&reopened, "XbcdefghijklmnY");
+        editor.cancel_save(prepared.token()).unwrap();
+    }
+    editor.undo(revision(&editor)).unwrap();
+    check(editor.session().document(), "abcdefghijklmno");
+    assert_eq!(editor.selection(), &selected(6, 9));
+    editor.redo(revision(&editor)).unwrap();
+    check(editor.session().document(), "XbcdefghijklmnY");
+    assert_eq!(editor.selection(), &selected(15, 15));
+}
+
+#[test]
+fn native_ime_batch_rejects_an_invalid_later_range_without_changing_history() {
+    let mut editor = editor("가나다😀");
+    editor.replace_selection(0, "x").unwrap();
+    editor.undo(revision(&editor)).unwrap();
+    let before = revision(&editor);
+    let context = editor.ime_edit_context(before).unwrap();
+    for replacements in [
+        vec![replace(0, 1, "한"), replace(4, 5, "x")],
+        vec![replace(0, 3, "한"), replace(2, 3, "다")],
+        vec![replace(2, 3, "한"), replace(0, 1, "x")],
+    ] {
+        assert!(editor
+            .apply_ime_edit(
+                before,
+                &context,
+                NativeImeEdit::CommitBatch {
+                    replacements,
+                    selection: None
+                },
+            )
+            .is_err());
+        assert_eq!(text(&editor), "가나다😀");
+        assert_eq!(revision(&editor), before);
+        assert_eq!(editor.selection(), &context.selection);
+        assert!(editor.can_redo() && !editor.can_undo());
+    }
 }
 
 #[test]
@@ -766,6 +851,19 @@ fn atomic_ime_worker_rejects_retained_input_capacity_before_execution() {
             },
             selection: None,
             preedit: None,
+        },
+    };
+    let rejected = runtime.try_submit(command).unwrap_err();
+    assert_eq!(rejected.error, NativeRuntimeError::ByteCapacity);
+    let command = NativeRuntimeCommand::ApplyImeEdit {
+        target: NativeRuntimeTarget {
+            document_id: NativeRequestId::from_raw(1),
+            revision: 0,
+        },
+        expected: Box::new(editor.ime_edit_context(0).unwrap()),
+        edit: NativeImeEdit::CommitBatch {
+            replacements: Vec::with_capacity(8192),
+            selection: None,
         },
     };
     let rejected = runtime.try_submit(command).unwrap_err();
