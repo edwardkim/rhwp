@@ -38,6 +38,7 @@ public sealed partial class MainWindow
 
     private async Task RefreshEditedPageAsync(PageInfo previous, EditResult edit)
     {
+        uint? editedPage = directGeometry?.Caret?.Page;
         if (edit.Target != previous.Target)
         {
             // Keep the last good image while a new layout and raster are requested.
@@ -85,7 +86,7 @@ public sealed partial class MainWindow
         }, index, token);
         page = updated;
         SetPageSize(updated);
-        QueueRender();
+        QueueRender(editedPage: editedPage ?? updated.Page);
     }
 
     private void ScheduleCommittedRecovery()

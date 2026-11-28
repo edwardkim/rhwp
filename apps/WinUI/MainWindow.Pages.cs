@@ -15,10 +15,13 @@ public sealed partial class MainWindow
     private const int PagesPerRender = 4;
     private ContinuousPageLayout? continuousPages;
     private readonly Dictionary<uint, PageSurface> pageSurfaces = [];
+    private uint? pendingEditRenderPage;
+    private bool editRenderPosted;
 
     private void ResetContinuousPages()
     {
         continuousPages = null;
+        pendingEditRenderPage = null;
         pageSurfaces.Clear();
         PageLayers.Children.Clear();
         PageCanvas.Width = 0;
@@ -122,23 +125,53 @@ public sealed partial class MainWindow
         RefreshButtons();
     }
 
-    private void QueueRender()
+    private void QueueRender(uint? editedPage = null)
     {
         if (closing || page is not { } current || continuousPages?.Matches(current) != true)
             return;
 
         viewVersion++;
-        if (renderRequest is null && !renderTimer.IsRunning)
+        if (editedPage is uint index)
+            pendingEditRenderPage = index;
+        ScheduleRender();
+    }
+
+    private void ScheduleRender()
+    {
+        if (closing || renderRequest is not null || page is not { } current || continuousPages?.Matches(current) != true)
+            return;
+
+        if (pendingEditRenderPage is not null)
+        {
+            renderTimer.Stop();
+            if (!editRenderPosted)
+            {
+                editRenderPosted = DispatcherQueue.TryEnqueue(async () =>
+                {
+                    editRenderPosted = false;
+                    if (pendingEditRenderPage is not null)
+                        await RenderPagesAsync();
+                });
+            }
+            if (editRenderPosted)
+                return;
+        }
+
+        if (!renderTimer.IsRunning)
             renderTimer.Start();
     }
 
-    private async void OnRenderTick(DispatcherQueueTimer sender, object args)
+    private async void OnRenderTick(DispatcherQueueTimer sender, object args) => await RenderPagesAsync();
+
+    private async Task RenderPagesAsync()
     {
         if (closing || renderRequest is not null || page is not PageInfo current ||
             continuousPages is not { } layout || !layout.Matches(current) ||
             PageScroll.ViewportHeight <= 0 || PageScroll.ViewportWidth <= 0)
             return;
 
+        uint? editedPage = pendingEditRenderPage;
+        pendingEditRenderPage = null;
         ulong version = viewVersion;
         ulong placementVersion = layout.PlacementVersion;
         double renderZoom = zoom;
@@ -150,11 +183,21 @@ public sealed partial class MainWindow
         {
             var wanted = VisiblePages(layout).ToArray();
             TrimPageSurfaces(wanted);
-            foreach (PagePlacement placement in wanted)
+            PagePlacement[] batch = wanted;
+            if (editedPage is uint preferred && wanted.Length > 1)
+            {
+                // Draw the edited sheet before measuring or drawing neighboring sheets.
+                batch = [wanted.FirstOrDefault(placement => placement.Index == preferred &&
+                    GetPageViewport(layout.Describe(current, placement), placement, deviceScale, 0) is not null,
+                    wanted[0])];
+                hasMore = true;
+            }
+
+            foreach (PagePlacement placement in batch)
                 GetPageSurface(placement);
 
             var measuredPages = new List<PageInfo>(PagesPerRender);
-            foreach (PagePlacement placement in wanted)
+            foreach (PagePlacement placement in batch)
             {
                 if (layout.Measured(current, placement.Index) is not null)
                     continue;
@@ -171,11 +214,14 @@ public sealed partial class MainWindow
             if (ApplyPageMeasurements(layout, measuredPages))
             {
                 hasMore = true;
-                return;
+                if (editedPage is null || !layout.TryGet(batch[0].Index, out PagePlacement updated))
+                    return;
+                placementVersion = layout.PlacementVersion;
+                batch = [updated];
             }
 
             int rendering = 0;
-            foreach (PagePlacement placement in wanted)
+            foreach (PagePlacement placement in batch)
             {
                 if (!OwnsRender(current, layout, placementVersion, renderZoom, deviceScale, request))
                     return;
@@ -223,8 +269,8 @@ public sealed partial class MainWindow
         finally
         {
             renderRequest = null;
-            if (!closing && page is not null && (hasMore || version != viewVersion))
-                renderTimer.Start();
+            if (hasMore || version != viewVersion)
+                ScheduleRender();
         }
     }
 
