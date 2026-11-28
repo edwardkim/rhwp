@@ -372,7 +372,10 @@ impl LayoutEngine {
         carried: &[crate::renderer::pagination::StraddleCellCarry],
         styles: &ResolvedStyleSet,
     ) -> Option<f64> {
-        let (ordinary, spans): (Vec<_>, Vec<_>) = table.cells.iter().enumerate()
+        let (ordinary, spans): (Vec<_>, Vec<_>) = table
+            .cells
+            .iter()
+            .enumerate()
             .filter(|(_, cell)| {
                 let first = usize::from(cell.row);
                 first <= row && row < first + usize::from(cell.row_span)
@@ -387,9 +390,9 @@ impl LayoutEngine {
             })
             || spans.iter().any(|&(index, cell)| {
                 let vacant = if usize::from(cell.row) == row {
-                    cell.paragraphs.iter().all(|para| {
-                        para.text.trim().is_empty() && para.controls.is_empty()
-                    })
+                    cell.paragraphs
+                        .iter()
+                        .all(|para| para.text.trim().is_empty() && para.controls.is_empty())
                 } else {
                     carried.iter().any(|entry| {
                         entry.cell_index == index

@@ -96,7 +96,12 @@ pub(crate) fn try_resolve_styles_for_document<S: storage::Storage>(
     if missing_fonts::missing_latin_default(document).is_some() {
         // 원본에 영문 글꼴 표가 없으면 숫자와 ASCII 구두점 모두
         // 같은 기본 영문 슬롯을 소비한다. 줄 채움과 표시의 선택을 맞춘다.
-        for (source, style) in document.doc_info.char_shapes.iter().zip(&mut styles.char_styles) {
+        for (source, style) in document
+            .doc_info
+            .char_shapes
+            .iter()
+            .zip(&mut styles.char_styles)
+        {
             if source.font_ids[1] == 0 {
                 style.ascii_punct_latin_slot = true;
             }

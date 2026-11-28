@@ -103,7 +103,8 @@ impl LayoutEngine {
             |unit: &CellUnit| self.stored_in_paragraph_unit_is_original_restart(table, cell, unit);
         let starts_at_restart = is_restart(first);
         let ends_at_restart = units.get(end).is_some_and(is_restart);
-        if (start == 0 || starts_at_restart) && !rest.iter().any(|unit| unit.page_frame_reset_before)
+        if (start == 0 || starts_at_restart)
+            && !rest.iter().any(|unit| unit.page_frame_reset_before)
         {
             if let Some(height) =
                 self.stored_nested_host_restart_content_height(cell, units, start, end, styles)
@@ -180,7 +181,11 @@ impl LayoutEngine {
             styles,
             self.dpi,
         )?;
-        let opening = cell.paragraphs.get(first.para_idx)?.line_segs.get(first.vis_start)?;
+        let opening = cell
+            .paragraphs
+            .get(first.para_idx)?
+            .line_segs
+            .get(first.vis_start)?;
         let closing = host.line_segs.get(title.vis_end.checked_sub(1)?)?;
         let restart = host.line_segs.get(child.vis_start)?;
         if opening.vertical_pos != 0
@@ -193,7 +198,10 @@ impl LayoutEngine {
         {
             return None;
         }
-        Some(hwpunit_to_px(closing.vertical_pos.checked_add(closing.line_height)?, self.dpi))
+        Some(hwpunit_to_px(
+            closing.vertical_pos.checked_add(closing.line_height)?,
+            self.dpi,
+        ))
     }
 
     /// Normalize the original opening box into the ordinary source row. This

@@ -105,12 +105,22 @@ impl<'a> CellCutFrame<'a> {
             return Some(height);
         }
         if let Some(height) = self.engine.stored_single_cell_restart_content_height(
-            self.table, self.cell, self.units, self.start, end, self.styles,
+            self.table,
+            self.cell,
+            self.units,
+            self.start,
+            end,
+            self.styles,
         ) {
             return Some(height);
         }
         if let Some((_, height)) = self.engine.stored_nested_block_cut_frame(
-            self.cell, self.table, self.styles, self.units, self.start, end,
+            self.cell,
+            self.table,
+            self.styles,
+            self.units,
+            self.start,
+            end,
         ) {
             return Some(height);
         }

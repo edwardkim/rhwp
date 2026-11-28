@@ -109,8 +109,9 @@ impl LayoutEngine {
         index: usize,
     ) -> Option<&'a crate::model::paragraph::LineSeg> {
         use crate::model::paragraph::{ColumnBreakType, LineSeg};
-        let [before, host, closing, restart] =
-            cell.paragraphs.get(index.checked_sub(2)?..=index.checked_add(1)?)?
+        let [before, host, closing, restart] = cell
+            .paragraphs
+            .get(index.checked_sub(2)?..=index.checked_add(1)?)?
         else {
             return None;
         };
@@ -136,8 +137,14 @@ impl LayoutEngine {
             || !child.common.flow_with_text
             || crate::renderer::float_placement::signed_hwpunit(child.common.vertical_offset) <= 0
             || child.caption.is_some()
-            || self.render_normalization.borrow().cell_frame_reflowed(table, cell)
-            || self.render_normalization.borrow().table_text_reflowed(child)
+            || self
+                .render_normalization
+                .borrow()
+                .cell_frame_reflowed(table, cell)
+            || self
+                .render_normalization
+                .borrow()
+                .table_text_reflowed(child)
         {
             return None;
         }
@@ -151,28 +158,40 @@ impl LayoutEngine {
             return None;
         };
         let restart_line = restart.line_segs.first()?;
-        if [(before, before_line), (host, host_line), (closing, line), (restart, restart_line)]
-            .iter()
-            .any(|(para, seg)| {
-                seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
-                    || seg.vertical_pos < 0
-                    || seg.line_height <= 0
-                    || seg.line_spacing < 0
-                    || para.source_line_seg_vertical_pos.as_ref()
-                        .is_some_and(|saved| saved.first() != Some(&seg.vertical_pos))
-            })
-            || restart_line.vertical_pos != 0
+        if [
+            (before, before_line),
+            (host, host_line),
+            (closing, line),
+            (restart, restart_line),
+        ]
+        .iter()
+        .any(|(para, seg)| {
+            seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                || seg.vertical_pos < 0
+                || seg.line_height <= 0
+                || seg.line_spacing < 0
+                || para
+                    .source_line_seg_vertical_pos
+                    .as_ref()
+                    .is_some_and(|saved| saved.first() != Some(&seg.vertical_pos))
+        }) || restart_line.vertical_pos != 0
             || line.vertical_pos <= 0
             || line.vertical_pos >= host_line.vertical_pos
-            || before_line.vertical_pos.checked_add(before_line.line_height)?
-                .checked_add(before_line.line_spacing)? != host_line.vertical_pos
+            || before_line
+                .vertical_pos
+                .checked_add(before_line.line_height)?
+                .checked_add(before_line.line_spacing)?
+                != host_line.vertical_pos
         {
             return None;
         }
-        let body = crate::renderer::px_to_hwpunit(self.nested_table_body_height(child, styles), self.dpi);
+        let body =
+            crate::renderer::px_to_hwpunit(self.nested_table_body_height(child, styles), self.dpi);
         (u32::try_from(body).ok()? == child.common.height
-            && body.checked_add(i32::from(child.outer_margin_top))?
-                .checked_add(i32::from(child.outer_margin_bottom))? == line.vertical_pos)
+            && body
+                .checked_add(i32::from(child.outer_margin_top))?
+                .checked_add(i32::from(child.outer_margin_bottom))?
+                == line.vertical_pos)
             .then_some(line)
     }
 

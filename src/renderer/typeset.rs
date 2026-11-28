@@ -2115,7 +2115,9 @@ pub(in crate::renderer) fn cell_unit_row_is_atomic_here(
 }
 
 /// RowBreak 표 셀 안에 저장된 vpos reset이 있는지 판별한다.
-pub(in crate::renderer) fn rowbreak_table_has_internal_saved_vpos_reset(table: &crate::model::table::Table) -> bool {
+pub(in crate::renderer) fn rowbreak_table_has_internal_saved_vpos_reset(
+    table: &crate::model::table::Table,
+) -> bool {
     // [#7639] 행마다 전체 셀을 다시 거르지 않고 셀을 한 번만 훑는다(행×셀 → 셀).
     let row_count = table.row_count as usize;
     table
@@ -4490,11 +4492,16 @@ impl TypesetEngine {
         }
         // 비가시 제어가 소유한 저장 줄의 전진을 첫 표의 적합 판정과 배치에 함께 반영한다.
         let marker_prefix = (is_first_placed && !st.pre_emitted_host_paras.contains(&para_idx))
-            .then(|| numbered_stack.or_else(|| {
-                stored_marker_prefix_advance(
-                    para, ctrl_idx, tac_count >= fmt.line_heights.len(), self.dpi,
-                )
-            }))
+            .then(|| {
+                numbered_stack.or_else(|| {
+                    stored_marker_prefix_advance(
+                        para,
+                        ctrl_idx,
+                        tac_count >= fmt.line_heights.len(),
+                        self.dpi,
+                    )
+                })
+            })
             .flatten();
         if let Some(prefix) = marker_prefix {
             st.advance_flow_by(prefix.advance);
@@ -4724,7 +4731,12 @@ impl TypesetEngine {
             && ft.table_footnotes.is_empty())
         .then(|| {
             controls::stored_tac::owned_row::prepare_numbered_stack_row(
-                para, table, prior_tac, ft.effective_height, styles, self.dpi,
+                para,
+                table,
+                prior_tac,
+                ft.effective_height,
+                styles,
+                self.dpi,
             )
         })
         .flatten();
@@ -9945,28 +9957,29 @@ fn stored_marker_prefix_advance(
     all_measured_rows_assigned_to_tables: bool,
     dpi: f64,
 ) -> Option<StoredMarkerPrefix> {
-    if !para.text.is_empty()
-        || para.stored_text_partition_is_dirty()
-        || para.cell_format_vpos_dirty
+    if !para.text.is_empty() || para.stored_text_partition_is_dirty() || para.cell_format_vpos_dirty
     {
         return None;
     }
     let title_mark_prefix = para.title_marks.iter().any(|mark| mark.char_idx == 0);
     let number_markers = || {
-        para.controls[..ctrl_idx].iter().enumerate().filter_map(|(index, control)| {
-            matches!(
-                control,
-                Control::PageNumberPos(_)
-                    | Control::NewNumber(crate::model::control::NewNumber {
-                        number_type: crate::model::control::AutoNumberType::Page,
-                        ..
-                    })
-            )
-            .then_some(index)
-        })
+        para.controls[..ctrl_idx]
+            .iter()
+            .enumerate()
+            .filter_map(|(index, control)| {
+                matches!(
+                    control,
+                    Control::PageNumberPos(_)
+                        | Control::NewNumber(crate::model::control::NewNumber {
+                            number_type: crate::model::control::AutoNumberType::Page,
+                            ..
+                        })
+                )
+                .then_some(index)
+            })
     };
-    let numbered_empty_host = all_measured_rows_assigned_to_tables
-        && number_markers().next().is_some();
+    let numbered_empty_host =
+        all_measured_rows_assigned_to_tables && number_markers().next().is_some();
     if !title_mark_prefix && !numbered_empty_host {
         return None;
     }
@@ -9997,8 +10010,8 @@ fn stored_marker_prefix_advance(
             (para.hwpx_axis_shift > 0
                 && para.char_offsets.is_empty()
                 && raw_position(para.controls.len())?.checked_add(1) == Some(para.char_count))
-                .then(|| numbered_owner(&raw_owner))
-                .flatten()
+            .then(|| numbered_owner(&raw_owner))
+            .flatten()
         })?
     };
     let rows = para.line_segs.get(..=owner)?;

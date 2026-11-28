@@ -154,8 +154,8 @@ impl RowBlockQuery<'_> {
             block_size,
             ..
         } = *block;
-        let heights = (!start_cut.is_empty())
-            .then(|| self.row_heights_for_cut(block, b_end, start_cut, &[]));
+        let heights =
+            (!start_cut.is_empty()).then(|| self.row_heights_for_cut(block, b_end, start_cut, &[]));
         let mut offsets = Vec::with_capacity(block_size);
         let mut top = 0.0;
         let mut has_row = false;

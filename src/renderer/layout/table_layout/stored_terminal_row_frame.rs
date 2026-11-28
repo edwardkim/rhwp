@@ -23,7 +23,10 @@ impl LayoutEngine {
             || table.common.treat_as_char
             || table.layout_page_break() != crate::model::table::TablePageBreak::RowBreak
             || cell.dirty_flag
-            || self.render_normalization.borrow().cell_frame_reflowed(table, cell)
+            || self
+                .render_normalization
+                .borrow()
+                .cell_frame_reflowed(table, cell)
             || self.cell_unit_stored_page_frame_origin(cell, table, styles, start) != Some(0)
         {
             return None;

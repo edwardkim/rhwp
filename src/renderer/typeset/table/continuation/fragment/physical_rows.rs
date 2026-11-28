@@ -173,8 +173,8 @@ impl TypesetEngine {
             return None;
         }
         let margins = i32::from(table.outer_margin_top) + i32::from(table.outer_margin_bottom);
-        let frame_overhead = crate::renderer::px_to_hwpunit(header, self.dpi)
-            .checked_add(margins)?;
+        let frame_overhead =
+            crate::renderer::px_to_hwpunit(header, self.dpi).checked_add(margins)?;
         let body = crate::renderer::px_to_hwpunit(st.layout.body_area.height, self.dpi);
         (line.vertical_pos > frame_overhead && line.vertical_pos <= body)
             .then_some((line.vertical_pos - frame_overhead, body - frame_overhead))

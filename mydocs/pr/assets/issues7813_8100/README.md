@@ -22,3 +22,9 @@
 | #7955 | [원본](../../../../tests/fixtures/issue_7047/housing-lease-standard-form.hwp) `fe295c12c5f9bd9e7e73a540c7c7ecd044f18ed58ea9826c0de5d55ba2710439` | [PDF](../../../../pdf/housing-lease-standard-form-2020.pdf) `f73f17d57b566d35f1641eef4ba1ab580aaf13725493b29e5ec88e7496e64e39` |
 
 최종 커밋의 fresh WASM 측정, 복원할 관계형 회귀, 전체 회귀와 보호 문서 검증은 후속 단계에서 수행한다.
+
+## 제출 형식 검사
+
+2026-11-28 KST에 이번 분기의 변경 소스 14개에 Rust 서식을 적용했다.
+`cargo fmt --all -- --check`를 통과했다. 위 단계의 측정은 각각 기록한 후보에
+해당하며, 새 검증은 서식 커밋에서 빌드한 Native와 fresh WASM으로 실행한다.

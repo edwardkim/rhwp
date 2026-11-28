@@ -580,7 +580,9 @@ impl LayoutEngine {
             let gaps = occupied.clone().count().saturating_sub(1);
             let available = occupied.sum::<f64>() + spacing * gaps as f64;
             if required - available > super::ROW_CUT_CAPACITY_FP_EPSILON_PX {
-                let last = (start..stop).rfind(|&row| rows[row] > 0.0).unwrap_or(stop - 1);
+                let last = (start..stop)
+                    .rfind(|&row| rows[row] > 0.0)
+                    .unwrap_or(stop - 1);
                 rows[last] += required - available;
             }
         }

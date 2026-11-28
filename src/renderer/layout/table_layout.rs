@@ -17889,29 +17889,28 @@ impl LayoutEngine {
             };
             // 되감김 기하와 강제 컷의 인증은 다른 상태다. 원본 첫 조각의
             // 높이를 대조하는 소비자는 양수·동일 원점의 기하도 보존해야 한다.
-            let paragraph_origin_rewind =
-                (pi > 0
-                    && cell_has_local_vpos_origin
-                    && nested_block_closing_line.is_none()
-                    && !rewind_follows_unstored_text(pi))
-                    .then(|| {
-                        cell.paragraphs[..pi]
-                            .iter()
-                            .rev()
-                            .find_map(|para| para.line_segs.last())
-                            .zip(p.line_segs.first())
-                    })
-                    .flatten()
-                    .filter(|(previous, current)| {
-                        let end = previous.vertical_pos.saturating_add(previous.line_height);
-                        !line_seg_is_synthetic(previous)
-                            && !line_seg_is_synthetic(current)
-                            && current.vertical_pos >= 0
-                            && end > 0
-                            && current.vertical_pos < end
-                            && (!cell_uses_overlapping_line_boxes
-                                || current.vertical_pos < previous.vertical_pos)
-                    });
+            let paragraph_origin_rewind = (pi > 0
+                && cell_has_local_vpos_origin
+                && nested_block_closing_line.is_none()
+                && !rewind_follows_unstored_text(pi))
+            .then(|| {
+                cell.paragraphs[..pi]
+                    .iter()
+                    .rev()
+                    .find_map(|para| para.line_segs.last())
+                    .zip(p.line_segs.first())
+            })
+            .flatten()
+            .filter(|(previous, current)| {
+                let end = previous.vertical_pos.saturating_add(previous.line_height);
+                !line_seg_is_synthetic(previous)
+                    && !line_seg_is_synthetic(current)
+                    && current.vertical_pos >= 0
+                    && end > 0
+                    && current.vertical_pos < end
+                    && (!cell_uses_overlapping_line_boxes
+                        || current.vertical_pos < previous.vertical_pos)
+            });
             // 그림 띠와 다음 원본 글줄은 셀의 다른 문단을 편집했는지와 무관한
             // 로컬 출처를 공유한다. 인증 함수는 앞뒤 원본 줄·실제 본문 예산·
             // 같은 그림 띠 높이를 대조하며, 재조판한 당사자 문단은 기각한다.

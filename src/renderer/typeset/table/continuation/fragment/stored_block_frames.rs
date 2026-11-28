@@ -213,7 +213,8 @@ impl TypesetEngine {
         let (_, end, _) = input.source.measured_table.row_block_for(first);
         let occupied = scan.split_block_physical_height?;
         let stop = scan.end_row;
-        if stop <= first || stop > end || occupied <= 0.0 || scan.end_row_height_override.is_some() {
+        if stop <= first || stop > end || occupied <= 0.0 || scan.end_row_height_override.is_some()
+        {
             return None;
         }
         let layout = &input.prepared.layout_engine;
@@ -256,7 +257,11 @@ impl TypesetEngine {
                 first,
                 end,
                 stop - 1,
-                if input.start.cursor_row == first { &input.start.start_cut } else { &[] },
+                if input.start.cursor_row == first {
+                    &input.start.start_cut
+                } else {
+                    &[]
+                },
                 &scan.split_end_cut,
                 styles,
             ) <= 0.0

@@ -1288,9 +1288,8 @@ impl TypesetEngine {
                         && line.vertical_pos == 0
                         && next.controls.is_empty()
                         && !next.text.trim().is_empty()
-                        && layout_engine.cell_unit_opens_stored_page_frame(
-                            cell, table, styles, start,
-                        )
+                        && layout_engine
+                            .cell_unit_opens_stored_page_frame(cell, table, styles, start)
                         && remainder <= avail_for_rows)
                         .then_some(avail_for_rows - partial_height)
                 });
@@ -1306,19 +1305,23 @@ impl TypesetEngine {
                 && !start_cut_is_block
                 && st.current_height == 0.0)
                 .then(|| {
-                    let [start] = start_cut.as_slice() else { return None; };
-                    let content = layout_engine.stored_terminal_blank_cell_content_hu(
-                        table, *start, styles,
-                    )?;
+                    let [start] = start_cut.as_slice() else {
+                        return None;
+                    };
+                    let content = layout_engine
+                        .stored_terminal_blank_cell_content_hu(table, *start, styles)?;
                     let padding = table.cells[0].effective_vertical_padding_hu(&table.padding);
                     let physical = content.checked_add(padding)?;
                     let next = input.source.paragraphs_all.get(para_idx + 1)?;
-                    let [line] = next.line_segs.as_slice() else { return None; };
+                    let [line] = next.line_segs.as_slice() else {
+                        return None;
+                    };
                     let top = crate::renderer::px_to_hwpunit(
                         host_before_overhead + vert_offset_overhead + bottom_caption_extra,
                         self.dpi,
                     );
-                    let bottom = top.checked_add(physical)?
+                    let bottom = top
+                        .checked_add(physical)?
                         .checked_add(i32::from(table.outer_margin_bottom))?;
                     let height = hwpunit_to_px(physical, self.dpi);
                     (line.vertical_pos == bottom
@@ -1464,18 +1467,27 @@ impl TypesetEngine {
                     && !start_cut.is_empty()
                     && !start_cut_is_block
                     && table_footnotes.is_empty()
-                    && !layout_engine.row_cut_units_exhausted(table, cursor_row, start_cut, styles))
-                    .then(|| {
-                        let accepted = continuation.accepted_row_boxes.get(cursor_row)?.as_ref()?;
-                        let height = self.stored_repeated_header_terminal_tail(
-                            st, input, cursor_row, *accepted, header_overhead,
-                        )?;
-                        let cut = layout_engine.advance_row_cut(
-                            table, cursor_row, start_cut, f64::INFINITY, styles,
-                        );
-                        cut.fully_consumed.then_some((height, cut.end_cut))
-                    })
-                    .flatten();
+                    && !layout_engine
+                        .row_cut_units_exhausted(table, cursor_row, start_cut, styles))
+                .then(|| {
+                    let accepted = continuation.accepted_row_boxes.get(cursor_row)?.as_ref()?;
+                    let height = self.stored_repeated_header_terminal_tail(
+                        st,
+                        input,
+                        cursor_row,
+                        *accepted,
+                        header_overhead,
+                    )?;
+                    let cut = layout_engine.advance_row_cut(
+                        table,
+                        cursor_row,
+                        start_cut,
+                        f64::INFINITY,
+                        styles,
+                    );
+                    cut.fully_consumed.then_some((height, cut.end_cut))
+                })
+                .flatten();
                 if let Some((height, cut)) = repeated_header_tail {
                     commit_fragment(st, partial_height, false, None);
                     st.advance_column_or_new_page();
@@ -1487,8 +1499,11 @@ impl TypesetEngine {
                 // 호스트 줄 전진과 양의 오프셋은 원래 앵커 조각의 계약이며,
                 // 이어받기 끝에서 다시 더하면 다음 본문을 이중으로 민다(#2439).
                 let occupied = stored_terminal_blank.map_or(
-                    host_before_overhead + vert_offset_overhead + partial_height
-                        + bottom_caption_extra + terminal_outer_bottom_overhead,
+                    host_before_overhead
+                        + vert_offset_overhead
+                        + partial_height
+                        + bottom_caption_extra
+                        + terminal_outer_bottom_overhead,
                     |(_, advance)| advance,
                 );
                 let sibling_gap = siblings_emitted
@@ -1505,47 +1520,51 @@ impl TypesetEngine {
                             true,
                         )
                     });
-                terminal_successor_gap = stored_terminal_blank.map(|_| 0.0)
-                    .or(sibling_gap).or_else(|| {
-                    is_continuation
-                        .then(|| st.table_flow_successor(para_idx, input.source.paragraphs_all))
-                        .flatten()
-                        .and_then(|(_, next)| {
-                            let fragment_bottom =
-                                st.inline_flow_column().y + st.current_height + occupied;
-                            layout_engine
-                                .native_text_frame_terminal_successor_gap(
-                                    input.source.paragraph,
-                                    next,
-                                    table,
-                                    &st.inline_flow_column(),
-                                    fragment_bottom,
-                                    styles,
-                                )
-                                .or_else(|| {
-                                    // [#9060] 흐름이 소유한 바깥 아래 여백이 아직 조각 하단에
-                                    // 들어 있지 않으면, 뒤 문단의 저장 줄은 그 여백 아래에서
-                                    // 시작한다(한/글 2020 Print·저장 vpos: ODA 보고서 150쪽 문단
-                                    // 79 = 문단 78 표 끝 조각 하단 + 바깥 아래 566HU). 같은 저장
-                                    // 줄 증거로 여백 아래를 조각 하단으로 보고, 전진량에는 그
-                                    // 여백을 함께 넣는다. 호스트 아래 간격은 앵커 쪽 글줄의
-                                    // 몫이라 이 끝에서 다시 더하지 않는다.
-                                    (terminal_flow_outer_bottom > 0.0)
-                                        .then(|| {
-                                            layout_engine.native_text_frame_terminal_successor_gap(
-                                                input.source.paragraph,
-                                                next,
-                                                table,
-                                                &st.inline_flow_column(),
-                                                fragment_bottom + terminal_flow_outer_bottom,
-                                                styles,
-                                            )
-                                        })
-                                        .flatten()
-                                        .map(|gap| gap + terminal_flow_outer_bottom)
-                                })
-                        })
-                });
+                terminal_successor_gap = stored_terminal_blank
+                    .map(|_| 0.0)
+                    .or(sibling_gap)
+                    .or_else(|| {
+                        is_continuation
+                            .then(|| st.table_flow_successor(para_idx, input.source.paragraphs_all))
+                            .flatten()
+                            .and_then(|(_, next)| {
+                                let fragment_bottom =
+                                    st.inline_flow_column().y + st.current_height + occupied;
+                                layout_engine
+                                    .native_text_frame_terminal_successor_gap(
+                                        input.source.paragraph,
+                                        next,
+                                        table,
+                                        &st.inline_flow_column(),
+                                        fragment_bottom,
+                                        styles,
+                                    )
+                                    .or_else(|| {
+                                        // [#9060] 흐름이 소유한 바깥 아래 여백이 아직 조각 하단에
+                                        // 들어 있지 않으면, 뒤 문단의 저장 줄은 그 여백 아래에서
+                                        // 시작한다(한/글 2020 Print·저장 vpos: ODA 보고서 150쪽 문단
+                                        // 79 = 문단 78 표 끝 조각 하단 + 바깥 아래 566HU). 같은 저장
+                                        // 줄 증거로 여백 아래를 조각 하단으로 보고, 전진량에는 그
+                                        // 여백을 함께 넣는다. 호스트 아래 간격은 앵커 쪽 글줄의
+                                        // 몫이라 이 끝에서 다시 더하지 않는다.
+                                        (terminal_flow_outer_bottom > 0.0)
+                                            .then(|| {
+                                                layout_engine
+                                                    .native_text_frame_terminal_successor_gap(
+                                                        input.source.paragraph,
+                                                        next,
+                                                        table,
+                                                        &st.inline_flow_column(),
+                                                        fragment_bottom
+                                                            + terminal_flow_outer_bottom,
+                                                        styles,
+                                                    )
+                                            })
+                                            .flatten()
+                                            .map(|gap| gap + terminal_flow_outer_bottom)
+                                    })
+                            })
+                    });
                 let terminal_spacing = terminal_successor_gap
                     .unwrap_or(host_spacing_after_only + terminal_host_spacing);
                 st.advance_flow_by(occupied + terminal_spacing);
@@ -1710,16 +1729,27 @@ impl TypesetEngine {
                     return None;
                 }
                 let declared = layout_engine.stored_span_free_restart_row_height(
-                    row_geometry_table, row, &split_end_cut, straddle_page_bands, styles,
+                    row_geometry_table,
+                    row,
+                    &split_end_cut,
+                    straddle_page_bands,
+                    styles,
                 )?;
                 let frame = budget.reflow_blank_avail_for_rows?;
                 let extra = (frame + header_overhead - partial_height).max(0.0);
                 let height = end_row_height_override.unwrap_or(accepted) + extra;
                 let content = layout_engine.row_cut_content_height(
-                    row_geometry_table, row, &split_end_cut, &[], styles,
+                    row_geometry_table,
+                    row,
+                    &split_end_cut,
+                    &[],
+                    styles,
                 );
-                (height > 0.0 && height < declared)
-                    .then_some((height, extra, (declared - height).max(content)))
+                (height > 0.0 && height < declared).then_some((
+                    height,
+                    extra,
+                    (declared - height).max(content),
+                ))
             })
             .flatten();
         if let Some((height, extra, _)) = source_span_row_frame {
@@ -2154,17 +2184,20 @@ impl TypesetEngine {
                 restart_frame_closes_body: source_restart_frame_closes_body,
             },
         );
-        let source_terminal_header_tail = (is_continuation
-            && end_row == row_count
-            && complete_physical_end_cut)
-            .then(|| {
-                let row = end_row.checked_sub(1)?;
-                let accepted = continuation.accepted_row_boxes.get(row)?.as_ref()?;
-                self.stored_repeated_header_terminal_tail(
-                    st, input, row, *accepted, budget.header_overhead,
-                )
-            })
-            .flatten();
+        let source_terminal_header_tail =
+            (is_continuation && end_row == row_count && complete_physical_end_cut)
+                .then(|| {
+                    let row = end_row.checked_sub(1)?;
+                    let accepted = continuation.accepted_row_boxes.get(row)?.as_ref()?;
+                    self.stored_repeated_header_terminal_tail(
+                        st,
+                        input,
+                        row,
+                        *accepted,
+                        budget.header_overhead,
+                    )
+                })
+                .flatten();
         // 선언된 첫 개체 상자와 현재 수용한 격자 프레임이 닫히면,
         // 그 안에서 선택한 글줄은 원본 세로 정렬을 소유한다. 남은 본문 전체의
         // 높이나 임의 용량 컷을 현재 프레임으로 대신하지 않는다.
