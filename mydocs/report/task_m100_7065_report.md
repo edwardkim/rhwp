@@ -40,7 +40,7 @@ Enter 7회 뒤 저장한 같은 HWP에서 고정한 `upstream/devel`은 2쪽 제
 
 병합본의 재검증 증적은 `output/task-7065/order-preserving/post-9481/`에 있다.
 
-## 제출 전 검증과 보류
+## 제출 전 검증과 수용 범위
 
 최신 `upstream/devel` `ca96e9f342`와 후보 소스 `854872d941`을 각각 빌드해 같은 HWP 저장본을 비교했다. Enter 7회와 9회의 `devel` 출력에는 각각 23.4px와 66.1px의 표 겹침이 있었고, 후보에서는 두 경우 모두 겹침이 없었다. Enter 11회와 15회는 두 소스 모두 4쪽이었고 겹침이 없었다.
 
@@ -50,7 +50,23 @@ Enter 7회 뒤 저장한 같은 HWP에서 고정한 `upstream/devel`은 2쪽 제
 
 정본 보호 23개 입력의 전 4,046행을 측정했다. Native는 2,023쪽 중 180쪽, 최적화 WASM은 2,023쪽 중 23쪽이 하한에 못 미쳤다. 누락은 0쪽이다. 미달 203행을 같은 공급 조건의 `devel`에서 다시 출력한 결과, 전부 후보와 표시값 및 PNG SHA-256이 각각 같았다. 편람 HWP·HWPX는 Native·WASM 모두 각 383쪽의 하한을 충족했다.
 
-메인테이너 결정에 따라 정본 하한을 충족할 때까지 PR 제출을 보류한다. 글꼴 허용 목록과 정본 하한에는 변경이 없다. 미달 행의 양쪽 점수·PNG 해시는 `output/task-7065/order-preserving/submission/protected-full-below.tsv`에 기록했다. 같은 폴더에 각 문서의 전쪽 TSV와 비교 로그가 있다.
+정본 하한 미달로 제출을 보류했다가, 메인테이너가 중첩 표 WASM 8쪽의 99.97%와 위 `devel` 대조 결과를 검토하고 이번 제출을 승인했다. 수용 범위는 같은 조건에서 `devel`과 점수·PNG가 일치한 기존 203행이다. 정본 하한과 글꼴 허용 목록은 유지한다. [203행의 점수와 PNG 해시](../pr/assets/issue_7065/protected-below.tsv)
+
+### 제출 시각 증적
+
+공개 연구노트 세 원본을 한컴 2020 Print에 96 DPI, Print 프로필, 2px raw 실루엣으로 대조했다. 검증 소스는 `854872d9411da27d6bda43047a20799f3c1ff741`이며, Native 바이너리 SHA-256은 `ed18fcce1842414d2d0158ac00a7ed2b2c2a65dbde31541d913328c965085cd6`, 새 WASM SHA-256은 `89ea1bdd9ab44df4a0cde7d34a2bacf8217d69f547ae36e83f2727abf46b06fa`다.
+
+| 공개 입력 | 쪽수 | Native 원본 TSV | fresh WASM 원본 TSV | 두 경로의 최저값 |
+| --- | ---: | --- | --- | ---: |
+| `labnote-001.hwp` | 2 | [Native](../pr/assets/issue_7065/native/labnote-001.tsv) | [WASM](../pr/assets/issue_7065/wasm/labnote-001.tsv) | 100.00% |
+| `labnote-001-cp-01.hwp` | 3 | [Native](../pr/assets/issue_7065/native/labnote-001-cp-01.tsv) | [WASM](../pr/assets/issue_7065/wasm/labnote-001-cp-01.tsv) | 100.00% |
+| `labnote-001-cp-02.hwp` | 4 | [Native](../pr/assets/issue_7065/native/labnote-001-cp-02.tsv) | [WASM](../pr/assets/issue_7065/wasm/labnote-001-cp-02.tsv) | 100.00% |
+
+미편집 `labnote-001-cp-01.hwp` 2쪽에서 제목·본문·서명 표의 소속과 순서를 확인했다. [한컴 Print](../pr/assets/issue_7065/labnote-001-cp-01-print-p2.png) · [Native](../pr/assets/issue_7065/native/labnote-001-cp-01-p2.png) · [새 WASM](../pr/assets/issue_7065/wasm/labnote-001-cp-01-p2.png)
+
+`labnote-001.hwp`의 Enter 7회 직후에는 본문이 3쪽, 서명이 4쪽으로 넘어갔다. [브라우저의 본문](../pr/assets/issue_7065/wasm/labnote-001-enter7-p3.png) · [브라우저의 서명](../pr/assets/issue_7065/wasm/labnote-001-enter7-p4.png)
+
+2026년 11월 28일 15:13 KST 제출 사전 확인에서 `edwardkim` 계정의 모든 base 대상 열린 PR은 Draft 포함 0건이었다. 후보와 `upstream/devel` `ca96e9f342`의 `git merge-tree --write-tree`는 성공했다.
 
 ## 검증 기준 정정
 
