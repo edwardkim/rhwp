@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Foundation;
+using Windows.Graphics.Imaging;
 
 namespace Rhwp.WinUI;
 
@@ -197,11 +198,13 @@ public sealed partial class MainWindow
                     !IsFrameUseful(measured, placement, viewport, deviceScale))
                     continue;
 
-                // Fill the new bitmap before replacing the currently visible image.
-                var source = new WriteableBitmap(frame.PixelWidth, frame.PixelHeight);
-                using (Stream pixels = source.PixelBuffer.AsStream())
-                    pixels.Write(frame.Bgra, 0, frame.Bgra.Length);
-                source.Invalidate();
+                using var bitmap = SoftwareBitmap.CreateCopyFromBuffer(frame.Bgra.AsBuffer(), BitmapPixelFormat.Bgra8,
+                    frame.PixelWidth, frame.PixelHeight, BitmapAlphaMode.Premultiplied);
+                var source = new SoftwareBitmapSource();
+                await source.SetBitmapAsync(bitmap);
+                if (!OwnsRender(current, layout, placementVersion, renderZoom, deviceScale, request) ||
+                    !IsFrameUseful(measured, placement, viewport, deviceScale))
+                    continue;
 
                 surface.Commit(measured, viewport, renderZoom, deviceScale, frame, source);
                 ArrangePage(surface, placement);
