@@ -28,5 +28,7 @@ public partial class App : Application
             : FileActivation.FirstDocumentPath(Environment.GetCommandLineArgs().Skip(1));
         if (path is not null)
             await current.OpenFileAsync(path);
+        else
+            await current.OpenNewDocumentAtStartupAsync();
     }
 }

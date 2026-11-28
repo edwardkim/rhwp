@@ -115,8 +115,8 @@ public sealed partial class MainWindow
     {
         var picker = new FileSavePicker(AppWindow.Id)
         {
-            SuggestedFileName = fileName is null
-                ? "새 문서"
+            SuggestedFileName = fileName is null || (saveLocation is null && fileName == UntitledDocumentName)
+                ? UntitledDocumentName
                 : Path.GetFileNameWithoutExtension(fileName) + " - 사본",
             DefaultFileExtension = currentFormat == DocumentFormat.Hwp ? ".hwp" : ".hwpx",
             ShowOverwritePrompt = false,
