@@ -10,7 +10,7 @@ export const memoCommand: CommandDef = {
   id: 'insert:comment', label: t('command.insert.comment.label'), icon: 'icon-comment', opensDialog: true,
   canExecute: ctx => ctx.hasDocument && ctx.isEditable && !ctx.isFormMode
     && !ctx.inCellSelectionMode && !ctx.inPictureObjectSelection && !ctx.inTableObjectSelection,
-  execute(services) {
+  execute(services, params) {
     const ih = services.getInputHandler();
     if (!ih || document.querySelector('[data-memo-dialog]')) return;
     try {
@@ -27,6 +27,7 @@ export const memoCommand: CommandDef = {
       const generation = wasm.documentGeneration;
       let memos = wasm.getMemos();
       let fingerprint = JSON.stringify(memos);
+      const requestedId = typeof params?.memoId === 'number' ? params.memoId : null;
       const dialog = new MemoDialog(memos, insertion !== null, memo => wasm.getMemoDisplayPage(memo), edit => {
         if (wasm.documentGeneration !== generation || services.getInputHandler() !== ih
           || !services.getContext().isEditable || services.getContext().isFormMode || !ih.canEditHyperlink()
@@ -66,6 +67,14 @@ export const memoCommand: CommandDef = {
         if (!applied) throw new Error(t('dialog.memo.failed'));
         memos = wasm.getMemos(); fingerprint = JSON.stringify(memos);
         return memos;
+      }, {
+        initialId: requestedId,
+        goTo(memo) {
+          if (wasm.documentGeneration !== generation || services.getInputHandler() !== ih) return false;
+          const current = wasm.getMemos().find(item => item.id === memo.id);
+          const target = current ? wasm.getMemoTarget(current) : null;
+          return !!target && ih.focusMemoRange(target.start, target.end, target.rect);
+        },
       });
       dialog.afterClose = () => ih.focus(); dialog.show();
     } catch (error) { showToast({ message: error instanceof Error ? error.message : String(error) }); }

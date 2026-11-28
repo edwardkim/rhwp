@@ -9,6 +9,7 @@ export class MemoDialog extends ModalDialog {
   private text!: HTMLTextAreaElement;
   private error!: HTMLParagraphElement;
   private remove!: HTMLButtonElement;
+  private goTo!: HTMLButtonElement;
   private confirm?: HTMLButtonElement;
   private selected: number | null = null;
   private drafts = new Map<number | null, { author: string; text: string }>();
@@ -18,6 +19,7 @@ export class MemoDialog extends ModalDialog {
     private insertAvailable: boolean,
     private pageOf: (memo: MemoInfo) => number | null,
     private apply: (edit: MemoEdit) => MemoInfo[],
+    private navigation: { initialId: number | null; goTo: (memo: MemoInfo) => boolean },
   ) {
     super(t('dialog.memo.title'), 560);
   }
@@ -62,10 +64,20 @@ export class MemoDialog extends ModalDialog {
       if (this.selected !== null) this.submit({ kind: 'remove', id: this.selected });
     });
 
+    this.goTo = document.createElement('button');
+    this.goTo.type = 'button';
+    this.goTo.className = 'dialog-btn memo-go-to';
+    this.goTo.textContent = t('dialog.memo.goTo');
+    this.goTo.addEventListener('click', () => {
+      const current = this.memos.find(memo => memo.id === this.selected);
+      if (current && this.navigation.goTo(current)) this.hide();
+      else this.error.textContent = t('dialog.memo.noLocation');
+    });
+
     this.error = document.createElement('p');
     this.error.setAttribute('role', 'alert');
-    body.append(this.list, label, authorLabel, this.author, textLabel, this.text, this.remove, this.error);
-    this.refresh();
+    body.append(this.list, label, authorLabel, this.author, textLabel, this.text, this.remove, this.goTo, this.error);
+    this.refresh(this.navigation.initialId);
     return body;
   }
 
@@ -91,7 +103,8 @@ export class MemoDialog extends ModalDialog {
       this.list.append(option);
     }
 
-    this.select(preferred ?? (this.insertAvailable ? null : this.memos[0]?.id ?? null), false);
+    const fallback = this.insertAvailable ? null : this.memos[0]?.id ?? null;
+    this.select(this.memos.some(memo => memo.id === preferred) ? preferred : fallback, false);
   }
 
   private select(id: number | null, remember = true): void {
@@ -106,6 +119,8 @@ export class MemoDialog extends ModalDialog {
     this.text.disabled = memo ? !memo.editable : !this.insertAvailable;
     if (this.confirm) this.confirm.disabled = this.text.disabled;
     this.remove.disabled = !memo?.editable;
+    this.goTo.disabled = !memo || this.pageOf(memo) === null;
+    this.goTo.title = memo && this.goTo.disabled ? t('dialog.memo.noLocation') : '';
     this.error.textContent = memo && !memo.editable ? t('dialog.memo.readOnly') : '';
   }
 

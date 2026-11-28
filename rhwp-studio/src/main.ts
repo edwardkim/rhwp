@@ -1,3 +1,4 @@
+import { installMemoMarkers } from '@/ui/memo-markers';
 import { DocumentOpenSession } from './core/document-open-session';
 import { setLinkHostHandler } from './core/link-navigation';
 import { RecoveryCipher, sameRecoveryDraft } from './recovery/recovery-crypto';
@@ -753,6 +754,8 @@ async function initialize(): Promise<void> {
       canvasView.getVirtualScroll(),
       canvasView.getViewportManager(),
     );
+    installMemoMarkers(container, canvasView, wasm, eventBus,
+      memoId => dispatcher.dispatch('insert:comment', { memoId }));
     inputHandler.configureCommandErrors({
       isDirty: () => documentState.isDirty(),
       render: () => canvasView!.refreshDocumentAgentMutation(),
