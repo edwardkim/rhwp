@@ -32,6 +32,7 @@ use super::commands::{
 };
 use super::editor::ime_edit::{NativeImeEdit, NativeImeEditContext, NativeImeReplacement};
 use super::editor::{NativeEditOutcome, NativeEditor};
+use super::page_setup::NativePageSetup;
 use super::render_snapshot::{NativeRenderSnapshot, NativeRenderSnapshotLimits};
 use super::save::NativeSaveCaretPolicy;
 use super::save::{NativeSaveFormat, NativeSaveStatus, NativeSaveToken, PreparedSave};
@@ -162,6 +163,11 @@ pub enum NativeRuntimeCommand {
         target: NativeRuntimeTarget,
         font_generation: u64,
         selection: NativeTextSelection,
+    },
+    PageSetup {
+        target: NativeRuntimeTarget,
+        page: Option<u32>,
+        section: Option<u32>,
     },
     ImeContext {
         target: NativeRuntimeTarget,
@@ -563,6 +569,10 @@ pub enum NativeRuntimeOutput {
         selection: NativeTextSelection,
         formatting: NativeSelectionFormatting,
     },
+    PageSetup {
+        target: NativeRuntimeTarget,
+        page_setup: NativePageSetup,
+    },
     ImeContext(NativeImeContext),
     ImeEditContext(Box<NativeImeEditContext>),
     Clipboard {
@@ -642,6 +652,7 @@ impl fmt::Debug for NativeRuntimeOutput {
             Self::Info(_) => "Info",
             Self::CommandExecuted(_) => "CommandExecuted",
             Self::SelectionFormatting { .. } => "SelectionFormatting",
+            Self::PageSetup { .. } => "PageSetup",
             Self::ImeContext(_) => "ImeContext",
             Self::ImeEditContext(_) => "ImeEditContext",
             Self::Clipboard { .. } => "Clipboard",

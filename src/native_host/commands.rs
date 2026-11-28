@@ -17,6 +17,7 @@ use crate::document_core::native_interaction::{
 use crate::model::{paragraph::Paragraph, style::Alignment};
 
 use super::editor::{NativeEditOutcome, NativeEditor};
+use super::page_setup::NativePageSetupSettings;
 use super::NativeHostError;
 
 #[path = "cell_paragraph_commands.rs"]
@@ -166,6 +167,11 @@ pub enum NativeEditCommand {
         rows: u16,
         columns: u16,
     },
+    /// Apply full paper settings to one explicit, zero-based section.
+    SetPageSetup {
+        section: u32,
+        settings: NativePageSetupSettings,
+    },
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -256,6 +262,9 @@ impl NativeEditor {
             }
             NativeEditCommand::CreateTable { rows, columns } => {
                 self.create_table(expected_revision, rows, columns)?
+            }
+            NativeEditCommand::SetPageSetup { section, settings } => {
+                self.set_page_setup(expected_revision, section, settings)?
             }
             NativeEditCommand::SelectAll {} => self.select_all(expected_revision)?,
         };

@@ -165,6 +165,16 @@ fn execute(
                 formatting,
             })
         }
+        C::PageSetup {
+            target,
+            page,
+            section,
+        } => {
+            let doc = document(owner)?;
+            doc.check(target)?;
+            let page_setup = doc.session().page_setup(target.revision, page, section)?;
+            Ok(O::PageSetup { target, page_setup })
+        }
         C::ImeContext { target } => {
             let doc = document(owner)?;
             doc.check(target)?;
