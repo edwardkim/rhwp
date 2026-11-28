@@ -1,6 +1,7 @@
 using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Globalization.NumberFormatting;
 
@@ -132,7 +133,7 @@ internal sealed class TableObjectDialog : ContentDialog
         }
     }
 
-    private static Grid Pair(UIElement left, UIElement right)
+    private static Grid Pair(FrameworkElement left, FrameworkElement right)
     {
         var grid = new Grid { ColumnSpacing = 12 };
         grid.ColumnDefinitions.Add(new ColumnDefinition());
