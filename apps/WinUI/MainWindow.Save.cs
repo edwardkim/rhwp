@@ -23,6 +23,7 @@ public sealed partial class MainWindow
 
     private async Task<bool> SaveDocumentAsync(bool saveAs)
     {
+        await SettleDirectInputAsync();
         if (!DocumentActionsAvailable || SaveTarget is not DocumentTarget target)
             return false;
 
@@ -167,11 +168,7 @@ public sealed partial class MainWindow
 
     private async Task<UnsavedDecision> ResolveUnsavedChangesAsync()
     {
-        if (InlineEditing)
-        {
-            StatusText.Text = "현재 문단을 적용하거나 취소하세요.";
-            return UnsavedDecision.Cancel;
-        }
+        await SettleDirectInputAsync();
         if (!DocumentActionsAvailable)
             return UnsavedDecision.Cancel;
         if (editorInfo?.IsDirty != true)

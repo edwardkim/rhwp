@@ -42,7 +42,7 @@ public sealed partial class MainWindow
             return;
         }
 
-        if (closing || editorBusy || picking || InlineEditing || page is not PageInfo current ||
+        if (!DocumentActionsAvailable || page is not PageInfo current ||
             pdfLimits is not LivePdfLimits limits)
             return;
 

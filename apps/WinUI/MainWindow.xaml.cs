@@ -30,7 +30,8 @@ public sealed partial class MainWindow : Window
     private double zoom = 1;
     private bool picking;
     private bool closing;
-    private bool DocumentActionsAvailable => !closing && !editorBusy && !picking && documentRequest is null && !InlineEditing;
+    private bool DocumentActionsAvailable => !closing && !editorBusy && !picking &&
+        documentRequest is null && !HasActiveComposition;
 
     public MainWindow()
     {
@@ -40,6 +41,10 @@ public sealed partial class MainWindow : Window
         renderTimer.Interval = TimeSpan.FromMilliseconds(32);
         renderTimer.IsRepeating = false;
         renderTimer.Tick += OnRenderTick;
+        recoveryTimer = DispatcherQueue.CreateTimer();
+        recoveryTimer.Interval = TimeSpan.FromMilliseconds(650);
+        recoveryTimer.IsRepeating = false;
+        recoveryTimer.Tick += OnRecoveryTick;
         AppWindow.Closing += OnClosing;
     }
 
@@ -261,6 +266,7 @@ public sealed partial class MainWindow : Window
 
     private void ClearPage()
     {
+        DismissDirectEditor();
         page = null;
         UpdateAutomationDocument(null);
         DrawSearchHighlight(null);
@@ -277,6 +283,7 @@ public sealed partial class MainWindow : Window
         PageCanvas.Height = current.Height * zoom;
         UpdateAutomationDocument(current);
         DrawSearchHighlight(current);
+        DrawDirectGeometry();
     }
 
     private void OnZoomOutClicked(object sender, RoutedEventArgs args) => ZoomTo(zoom / 1.25);
@@ -366,7 +373,7 @@ public sealed partial class MainWindow : Window
             PageImage.Width = frame.PixelWidth / frame.DeviceScale;
             PageImage.Height = frame.PixelHeight / frame.DeviceScale;
             PageImage.Source = source;
-            if (pdfCancellation is null && !InlineEditing && StatusText.Text == RenderingStatus)
+            if (pdfCancellation is null && StatusText.Text == RenderingStatus)
                 StatusText.Text = documentError ?? string.Empty;
         }
         catch (OperationCanceledException) when (closing || request.IsCancellationRequested)
@@ -388,6 +395,8 @@ public sealed partial class MainWindow : Window
     private void RefreshButtons()
     {
         bool available = DocumentActionsAvailable;
+        DirectInput.IsReadOnly = closing || picking || documentRequest is not null ||
+            (editorBusy && !directQueueRunning);
         OpenButton.IsEnabled = available;
         SaveButton.IsEnabled = available && SaveTarget is not null;
         SaveCopyButton.IsEnabled = SaveButton.IsEnabled;
@@ -405,6 +414,7 @@ public sealed partial class MainWindow : Window
         PagePositionText.Text = page is PageInfo shown ? $"{shown.Page + 1} / {shown.PageCount}쪽" : "";
         ZoomValueText.Text = page is null ? "" : $"{(int)Math.Round(zoom * 100)}%";
         RefreshSearchActions();
+        RefreshClipboardActions(available);
     }
 
     private async void OnClosing(AppWindow sender, AppWindowClosingEventArgs args)
@@ -418,6 +428,7 @@ public sealed partial class MainWindow : Window
             return;
 
         closing = true;
+        recoveryTimer.Stop();
         documentRequest?.Cancel();
         ClearPage();
         RefreshButtons();

@@ -126,7 +126,10 @@ internal sealed partial class NativeWorkerDispatcher
 
         DocumentSaveStatus status = Read<DocumentSaveStatus>(result.GetProperty("status"));
         target = new DocumentTarget(documentId, status.Revision);
-        dirty = status.Dirty;
-        return status;
+        if (command == "acknowledgeSave" && status.SavedRevision is ulong saved &&
+            saved >= committedRevision)
+            dirty = false;
+
+        return status with { Dirty = dirty };
     }
 }

@@ -36,6 +36,13 @@
                                     IsEnabled="{x:Bind RedoButton.IsEnabled, Mode=OneWay}"
                                     KeyboardAcceleratorTextOverride="Ctrl+Shift+Z" />
                     <MenuFlyoutSeparator />
+                    <MenuFlyoutItem x:Name="CutMenuItem" Text="잘라내기" Click="OnCutClicked"
+                                    KeyboardAcceleratorTextOverride="Ctrl+X" IsEnabled="False" />
+                    <MenuFlyoutItem x:Name="CopyMenuItem" Text="복사" Click="OnCopyClicked"
+                                    KeyboardAcceleratorTextOverride="Ctrl+C" IsEnabled="False" />
+                    <MenuFlyoutItem x:Name="PasteMenuItem" Text="붙여넣기" Click="OnPasteClicked"
+                                    KeyboardAcceleratorTextOverride="Ctrl+V" IsEnabled="False" />
+                    <MenuFlyoutSeparator />
                     <MenuFlyoutItem Text="찾기" Icon="Find" Click="OnFindClicked"
                                     IsEnabled="{x:Bind CloseButton.IsEnabled, Mode=OneWay}"
                                     AutomationProperties.AutomationId="FindInDocument">
@@ -178,6 +185,8 @@
                                       Width="0" Height="0" IsTabStop="True" KeyDown="OnPageEditKeyDown"
                                       AutomationProperties.AutomationId="DocumentCanvas">
                     <Image x:Name="PageImage" Stretch="Fill" Tapped="OnPageTapped"
+                           PointerPressed="OnPagePointerPressed" PointerMoved="OnPagePointerMoved"
+                           PointerReleased="OnPagePointerReleased" PointerCaptureLost="OnPagePointerCaptureLost"
                            AutomationProperties.Name="문서 쪽" />
                     <Canvas x:Name="SearchHighlightCanvas" IsHitTestVisible="False"
                             AutomationProperties.AccessibilityView="Raw">
@@ -185,6 +194,24 @@
                             <SolidColorBrush x:Key="SearchHighlightBrush" Color="{ThemeResource SystemColorHighlightColor}" />
                         </Canvas.Resources>
                     </Canvas>
+                    <Canvas x:Name="DirectEditOverlay" IsHitTestVisible="False"
+                            AutomationProperties.AccessibilityView="Raw">
+                        <Canvas.Resources>
+                            <SolidColorBrush x:Key="DirectCaretBrush"
+                                             Color="{ThemeResource SystemColorWindowTextColor}" />
+                            <SolidColorBrush x:Key="DirectSelectionBrush"
+                                             Color="{ThemeResource SystemColorHighlightColor}" />
+                        </Canvas.Resources>
+                    </Canvas>
+                    <TextBox x:Name="DirectInput" Visibility="Collapsed" Opacity="0" Width="28"
+                             MinWidth="0" MinHeight="0" Padding="0" BorderThickness="0"
+                             IsHitTestVisible="False" AcceptsReturn="False" IsSpellCheckEnabled="False"
+                             TextChanged="OnDirectTextChanged" PreviewKeyDown="OnDirectPreviewKeyDown"
+                             TextCompositionStarted="OnDirectCompositionStarted"
+                             TextCompositionChanged="OnDirectCompositionChanged"
+                             TextCompositionEnded="OnDirectCompositionEnded"
+                             AutomationProperties.Name="문서 직접 입력"
+                             AutomationProperties.AutomationId="DirectEditorInput" />
                     <Rectangle Width="{x:Bind PageCanvas.Width, Mode=OneWay}"
                                Height="{x:Bind PageCanvas.Height, Mode=OneWay}"
                                Stroke="{ThemeResource CardStrokeColorDefaultBrush}" StrokeThickness="1"

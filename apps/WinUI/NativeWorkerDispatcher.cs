@@ -20,6 +20,7 @@ internal sealed partial class NativeWorkerDispatcher
     // These fields are read and written by Run's owning OS thread.
     private ulong? worker;
     private DocumentTarget? target;
+    private ulong committedRevision;
     private bool dirty;
 
     public NativeWorkerDispatcher()
@@ -177,9 +178,16 @@ internal sealed partial class NativeWorkerDispatcher
         if (expected is not null && info.Target != expected)
             throw new InvalidOperationException("문서가 바뀌었습니다.");
 
+        if (expected is null)
+        {
+            committedRevision = info.Revision;
+            dirty = info.IsDirty;
+        }
+
         target = info.Target;
-        dirty = info.IsDirty;
-        return info;
+        // Native uses the render revision for its dirty flag. A canceled
+        // composition can advance that revision without keeping any change.
+        return info with { IsDirty = dirty };
     }
 
     private PageInfo ReadPage(ulong handle, DocumentTarget current, ulong fontGeneration, uint page,

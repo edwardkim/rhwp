@@ -102,15 +102,31 @@ internal sealed partial class NativeWorkerDispatcher
     private Task<EditResult> ApplyEdit(DocumentTarget expected, object command, CancellationToken cancellation) =>
         Dispatch(token =>
         {
-            EditOutcome outcome = Read<EditOutcome>(
-                Submit(EnsureWorker(), command, token).GetProperty("outcome"));
-            DocumentTarget current = new(expected.DocumentId, outcome.Revision);
-            // Dispatch observes cancellation only after a committed result
-            // advances the owner's target. A late cancellation cannot erase it.
-            target = current;
-            dirty |= outcome.DocumentChanged;
-            return new EditResult(current, outcome);
+            JsonElement reply = Submit(EnsureWorker(), command, token);
+            if (reply.GetProperty("kind").GetString() != "edited")
+                throw new InvalidDataException("Native 편집 응답이 올바르지 않습니다.");
+
+            return AdoptEditOutcome(expected, reply);
         }, cancellation);
+
+    private EditResult AdoptEditOutcome(DocumentTarget expected, JsonElement reply)
+    {
+        EditOutcome outcome = Read<EditOutcome>(reply.GetProperty("outcome"));
+        if (outcome.Revision < expected.Revision)
+            throw new InvalidDataException("Native 편집 응답의 문서 버전이 올바르지 않습니다.");
+
+        DocumentTarget current = new(expected.DocumentId, outcome.Revision);
+        // A preview may change the render revision. An accepted completion
+        // advances the dispatcher target even when a caller canceled its wait.
+        target = current;
+        if (outcome.HistoryChanged)
+        {
+            committedRevision = outcome.Revision;
+            dirty = true;
+        }
+
+        return new EditResult(current, outcome);
+    }
 
     private static T Read<T>(JsonElement element) where T : class =>
         element.Deserialize<T>(WireJson) ?? throw new InvalidDataException("Native document response is empty.");
