@@ -24,6 +24,7 @@ internal sealed record SelectionRectangle([property: JsonRequired] uint Page, Ca
 internal sealed partial class NativeWorkerDispatcher
 {
     private bool? cellTextNavigation;
+    private bool? cellParagraphSelection;
 
     public Task<bool> SupportsCellTextNavigationAsync(CancellationToken cancellation) => Dispatch(_ =>
     {
@@ -33,6 +34,17 @@ internal sealed partial class NativeWorkerDispatcher
         using JsonDocument capabilities = ReadSuccess(RhwpNative.SessionCapabilities());
         supported = HasCapability(capabilities.RootElement, "tableCellTextNavigation");
         cellTextNavigation = supported;
+        return supported;
+    }, cancellation);
+
+    public Task<bool> SupportsCellParagraphSelectionAsync(CancellationToken cancellation) => Dispatch(_ =>
+    {
+        if (cellParagraphSelection is bool supported)
+            return supported;
+
+        using JsonDocument capabilities = ReadSuccess(RhwpNative.SessionCapabilities());
+        supported = HasCapability(capabilities.RootElement, "tableCellParagraphSelection");
+        cellParagraphSelection = supported;
         return supported;
     }, cancellation);
 

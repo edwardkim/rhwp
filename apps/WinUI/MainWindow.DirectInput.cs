@@ -178,9 +178,11 @@ public sealed partial class MainWindow
 
         if (!extend)
             dragAnchor = hit.Position;
-        if (dragAnchor is not TextPosition anchor || anchor.Section != hit.Position.Section ||
-            ((anchor.CellPath.Length != 0 || hit.Position.CellPath.Length != 0) &&
-             !SharesTextLeaf(anchor, hit.Position)))
+        if (dragAnchor is not TextPosition anchor || anchor.Section != hit.Position.Section)
+            return;
+        if ((anchor.CellPath.Length != 0 || hit.Position.CellPath.Length != 0) &&
+            !SharesTextLeaf(anchor, hit.Position) &&
+            (!SharesTableCell(anchor, hit.Position) || !await worker.SupportsCellParagraphSelectionAsync(token)))
             return;
 
         var selection = new TextSelection(anchor, hit.Position);
@@ -208,6 +210,19 @@ public sealed partial class MainWindow
     private static bool SharesTextLeaf(TextPosition left, TextPosition right) =>
         left.Section == right.Section && left.Paragraph == right.Paragraph &&
         left.CellPath.SequenceEqual(right.CellPath);
+
+    private static bool SharesTableCell(TextPosition left, TextPosition right)
+    {
+        int depth = left.CellPath.Length;
+        if (depth == 0 || right.CellPath.Length != depth || left.Section != right.Section ||
+            left.Paragraph != right.Paragraph)
+            return false;
+
+        CellPathEntry a = left.CellPath[^1];
+        CellPathEntry b = right.CellPath[^1];
+        return a.Control == b.Control && a.Cell == b.Cell &&
+            left.CellPath.AsSpan(0, depth - 1).SequenceEqual(right.CellPath.AsSpan(0, depth - 1));
+    }
 
     private static bool SamePosition(TextPosition left, TextPosition right) =>
         SharesTextLeaf(left, right) && left.ScalarOffset == right.ScalarOffset;
